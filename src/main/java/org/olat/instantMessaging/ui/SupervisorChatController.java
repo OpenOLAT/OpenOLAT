@@ -495,6 +495,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		if(joinRoster) {
 			imService.sendStatusMessage(getIdentity(), fromMe, false, InstantMessageTypeEnum.join,
 					chatResource, resSubPath, row.getChannel());
+		} else {
+			imService.sendPresence(getIdentity(), chatResource, resSubPath, row.getChannel(), fromMe, false, true, true);
 		}
 		imService.deleteNotifications(chatResource, resSubPath, channel);
 		dbInstance.commit();

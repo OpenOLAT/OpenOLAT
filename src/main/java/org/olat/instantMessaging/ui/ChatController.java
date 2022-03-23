@@ -382,6 +382,12 @@ public class ChatController extends BasicController implements GenericEventListe
 			} else {
 				appendToMessageHistory(message, true);
 				sendMessageForm.resetTextField();
+	
+				if(supervisorRosterCtrl != null
+						&& (message.getType() == InstantMessageTypeEnum.text || message.getType() == InstantMessageTypeEnum.meeting)) {
+					// make sure the channel is active after texting
+					supervisorRosterCtrl.activateChannel(channel);
+				}
 			}
 		} else {
 			//ignore empty manObjectessage entry and refocus on entry field
@@ -389,7 +395,6 @@ public class ChatController extends BasicController implements GenericEventListe
 			chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
 		}
 	}
-	
 
 	private void doSendMeetingMessage() {
 		boolean anonym = isAnonym();
@@ -534,8 +539,9 @@ public class ChatController extends BasicController implements GenericEventListe
 					.collect(Collectors.toList());
 			mainVC.contextPut("rosterNonVipEntries", entries);
 			
+			int totalOfEntries = supervisorRosterCtrl.getTotalOfEntries(channel);
 			String i18nNum = allEntries.size() <= 1 ? "num.of.entry" : "num.of.entries";
-			mainVC.contextPut("numOfAllEntriesMsg", translate(i18nNum, Integer.toString(allEntries.size())));
+			mainVC.contextPut("numOfAllEntriesMsg", translate(i18nNum, Integer.toString(totalOfEntries)));
 		}
 		
 		updateSendMessageForm();
@@ -671,7 +677,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private void processInstantMessageEvent(InstantMessagingEvent event) {
 		if ((InstantMessagingEvent.MESSAGE.equals(event.getCommand()) || InstantMessagingEvent.REQUEST.equals(event.getCommand()))
 				&& !getIdentity().getKey().equals(event.getFromId())
-				&& Objects.equals(resSubPath, event.getResSubPath()) && Objects.equals(channel, event.getChannel())) {
+				&& Objects.equals(resSubPath, event.getResSubPath())) {
 			processInstantMessageTextEvent(event);
 		} else if (InstantMessagingEvent.PARTICIPANT.equals(event.getCommand())
 				&& event.getFromId() != null
@@ -693,8 +699,12 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	private void processInstantMessageTextEvent(InstantMessagingEvent event) {
 		Long messageId = event.getMessageId();
-		InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
-		boolean appended = appendToMessageHistory(message, false);
+		
+		boolean appended = false;
+		if(Objects.equals(channel, event.getChannel())) {
+			InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
+			appended = appendToMessageHistory(message, false);
+		}
 		
 		if(supervisorRosterCtrl != null && StringHelper.containsNonWhitespace(event.getChannel())) {
 			supervisorRosterCtrl.activateChannel(event.getChannel());
@@ -702,13 +712,16 @@ public class ChatController extends BasicController implements GenericEventListe
 				updateSendMessageForm();
 			}
 		} else if(buddyList != null
-				&& (message.getType() == InstantMessageTypeEnum.accept || message.getType() == InstantMessageTypeEnum.join)) {
+				&& (event.getMessageType() == InstantMessageTypeEnum.accept || event.getMessageType() == InstantMessageTypeEnum.join)) {
 			Long identityKey = event.getFromId();
 			if(!buddyList.contains(identityKey)) {
 				updateRosterList(identityKey, event.getName(), event.isAnonym(), event.isVip());
 			}
 		}
 		
+		if(event.getMessageType() == InstantMessageTypeEnum.join) {
+			updateRosterList(event.getFromId(), event.getName(), event.isAnonym(), event.isVip());
+		}
 		if(appended) {
 			imService.updateLastSeen(getIdentity(), ores, resSubPath, channel);
 		}
@@ -868,6 +881,12 @@ public class ChatController extends BasicController implements GenericEventListe
 				entry.setName(name);
 			}
 			rosterCtrl.updateModel();
+		}
+		
+		if(supervisorRosterCtrl != null) {
+			int totalOfEntries = supervisorRosterCtrl.loadTotalEntries(channel);
+			String i18nNum = totalOfEntries <= 1 ? "num.of.entry" : "num.of.entries";
+			mainVC.contextPut("numOfAllEntriesMsg", translate(i18nNum, Integer.toString(totalOfEntries)));
 		}
 	}
 }

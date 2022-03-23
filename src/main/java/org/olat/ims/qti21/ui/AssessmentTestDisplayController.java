@@ -2169,7 +2169,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			chatButton.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
 			chatButton.setTitle(translate("assessment.test.chat.test.explanation"));
 			chatButton.setElementCssClass("o_sel_chat_test");
-			chatButton.setVisible(deliveryOptions.isChatCoaches() || deliveryOptions.isChatOwners());
+			chatButton.setVisible(deliveryOptions.isCanStartChat());
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 			final ResourceLocator inputResourceLocator = 

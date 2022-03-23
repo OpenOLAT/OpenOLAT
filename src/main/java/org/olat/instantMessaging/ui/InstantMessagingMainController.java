@@ -109,6 +109,8 @@ public class InstantMessagingMainController extends BasicController implements G
 	public InstantMessagingMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		main.setVisible(imModule.isEnabled());
+		
 		//	checks with the given intervall if dirty components are available to rerender
 		jsc = new JSAndCSSComponent("intervall", this.getClass(), 5000);
 		main.put("updatecontrol", jsc);

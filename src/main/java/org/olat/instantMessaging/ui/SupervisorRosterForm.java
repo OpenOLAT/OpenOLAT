@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -146,27 +147,33 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		return container;
 	}
 	
-	protected List<RosterEntry> getRosterEntries(String channel) {
-		List<RosterEntry> entries = findRosterEntries(channel, activeRosters);
-		if(entries == null || entries.isEmpty()) {
-			entries = findRosterEntries(channel, completedRosters);
-			if(entries == null || entries.isEmpty()) {
-				entries = findRosterEntries(channel, requestedRosters);
+	protected SupervisedRoster getRoster(String channel) {
+		SupervisedRoster roster = findRoster(channel, activeRosters);
+		if(roster == null) {
+			roster = findRoster(channel, completedRosters);
+			if(roster == null) {
+				roster = findRoster(channel, requestedRosters);
 			}
 		}
-		return entries == null ? new ArrayList<>() : entries;
+		return roster;
 	}
 	
-	private List<RosterEntry> findRosterEntries(String channel, List<SupervisedRoster> rosters) {
-		for(SupervisedRoster roster:rosters) {
-			if(channel.equals(roster.getChannel())) {
-				return roster.getRosterEntries().stream()
-						.map(SupervisedRosterEntry::getEntry)
-						.collect(Collectors.toList());
-			}
-			
+	protected List<RosterEntry> getRosterEntries(String channel) {
+		SupervisedRoster roster = getRoster(channel);
+		if(roster != null) {
+			return roster.getRosterEntries().stream()
+					.map(SupervisedRosterEntry::getEntry)
+					.collect(Collectors.toList());
 		}
-		return new ArrayList<>(1);
+		return List.of();
+	}
+	
+	protected int getTotalOfEntries(String channel) {
+		SupervisedRoster roster = getRoster(channel);
+		if(roster != null) {
+			return roster.getTotalEntries();
+		}
+		return 0;
 	}
 	
 	private SupervisedRoster findRoster(String channel, List<SupervisedRoster> rosters) {
@@ -178,6 +185,16 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		return null;
 	}
 	
+	protected int loadTotalEntries(String channel) {
+		SupervisedRoster roster = getRoster(channel);
+		if(roster != null) {
+			RosterChannelInfos rosterInfos = imService.getRoster(chatResource, resSubPath, channel, getIdentity());
+			roster.setTotalEntries(rosterInfos.getEntries().size());
+			return roster.getTotalEntries();
+		}
+		return 0;
+	}
+	
 	protected void loadModel() {
 		final List<RosterChannelInfos> rosterInfos = imService.getRosters(chatResource, resSubPath, getIdentity(), true);
 		final List<SupervisedRoster> actives = new ArrayList<>(rosterInfos.size());
@@ -186,10 +203,10 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		
 		for(RosterChannelInfos rosterInfo:rosterInfos) {
 			List<SupervisedRosterEntry> rosterEntries = rosterInfo.getNonVipEntries().stream()
-					.map(this::forgeEntryRow)
+					.map(entry -> forgeEntryRow(entry, rosterInfo))
 					.collect(Collectors.toList());
 
-			SupervisedRoster sRoster = new SupervisedRoster(rosterInfo, rosterEntries);
+			SupervisedRoster sRoster = new SupervisedRoster(rosterInfo, rosterEntries, rosterInfo.getEntries().size());
 			RosterStatus status = rosterInfo.getRosterStatus();
 			if(status == RosterStatus.request) {
 				requested.add(sRoster);
@@ -217,11 +234,12 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		updateSelectedChannel();
 	}
 	
-	private SupervisedRosterEntry forgeEntryRow(RosterEntry entry) {
+	private SupervisedRosterEntry forgeEntryRow(RosterEntry entry, RosterChannelInfos infos) {
 		String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
 		FormLink link = uifactory.addFormLink("entry_" + (++count), "entry", name, null, null, Link.LINK | Link.NONTRANSLATED);
 		setOnlineStatus(entry.getIdentityKey(), link);
-		return new SupervisedRosterEntry(entry, link);
+		long unreadMessages = infos.getUnreadMessages() == null ? 0l : infos.getUnreadMessages().longValue();
+		return new SupervisedRosterEntry(entry, link, unreadMessages);
 	}
 	
 	private void setOnlineStatus(Long identityKey, FormLink entryLink) {
@@ -275,7 +293,20 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 				completeChannel(event.getChannel());
 			} else if(messageType == InstantMessageTypeEnum.accept || messageType == InstantMessageTypeEnum.join) {
 				activateChannel(event.getChannel());
+			} else if((messageType == InstantMessageTypeEnum.text || messageType == InstantMessageTypeEnum.meeting)
+					&& !Objects.equals(selectedChannel, event.getChannel())) {
+				processUnreadMessages(event.getChannel(), event.getFromId());
 			}
+		}
+	}
+	
+	private void processUnreadMessages(String channel, Long identityKey) {
+		SupervisedRoster roster = getRoster(channel);
+		if(roster == null) return;
+		
+		SupervisedRosterEntry entry = roster.getRosterEntry(identityKey);
+		if(entry != null) {
+			entry.incrementUnreadMessages();
 		}
 	}
 	
@@ -333,6 +364,11 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 			} else {
 				loadModel();
 			}
+		} else if(requestedRoster != null) {
+			requestedRosters.remove(requestedRoster);
+			activeRosters.add(requestedRoster);
+			Collections.sort(activeRosters, rosterComparator);
+			reloadContainers();
 		}
 	}
 	
@@ -365,6 +401,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		if(roster != null ) {
 			activeRosters.remove(roster);
 			requestedRosters.remove(roster);
+			completedRosters.add(roster);
 			Collections.sort(completedRosters, rosterComparator);
 			reloadContainers();
 		}
@@ -404,6 +441,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 				String css ;
 				if(selectedChannel != null && selectedChannel.equals(entry.getEntry().getChannel())) {
 					css = "active";
+					entry.resetUnreadMessages();
 				} else {
 					css = "";
 				}	
@@ -428,13 +466,15 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	
 	public static class SupervisedRoster {
 		
+		private int totalEntries;
 		private final RosterChannelInfos roster;
 		private List<SupervisedRosterEntry> rosterEntries;
 		private final String cachedNames;
 		
-		public SupervisedRoster(RosterChannelInfos roster, List<SupervisedRosterEntry> rosterEntries) {
+		public SupervisedRoster(RosterChannelInfos roster, List<SupervisedRosterEntry> rosterEntries, int totalEntries) {
 			this.roster = roster;
 			this.rosterEntries = rosterEntries;
+			this.totalEntries = totalEntries;
 			cachedNames = RosterEntryWithUnreadCellRenderer.getName(roster, false);
 		}
 		
@@ -446,8 +486,27 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 			return roster.getChannel();
 		}
 		
+		public int getTotalEntries() {
+			return totalEntries;
+		}
+		
+		public void setTotalEntries(int totalEntries) {
+			this.totalEntries = totalEntries;
+		}
+		
 		public List<SupervisedRosterEntry> getRosterEntries() {
 			return rosterEntries;
+		}
+		
+		public SupervisedRosterEntry getRosterEntry(Long identityKey) {
+			if(rosterEntries == null || identityKey == null) return null;
+			
+			for(SupervisedRosterEntry entry:rosterEntries) {
+				if(identityKey.equals(entry.getEntry().getIdentityKey())) {
+					return entry;
+				}
+			}
+			return null;
 		}
 	}
 	
@@ -483,10 +542,12 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		
 		private final RosterEntry entry;
 		private final FormLink entryLink;
+		private long unreadMessages = 0l;
 		
-		public SupervisedRosterEntry(RosterEntry entry, FormLink entryLink) {
+		public SupervisedRosterEntry(RosterEntry entry, FormLink entryLink, long unreadMessages) {
 			this.entry = entry;
 			this.entryLink = entryLink;
+			this.unreadMessages = unreadMessages;
 			entryLink.setUserObject(this);
 		}
 		
@@ -504,6 +565,21 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		
 		public FormLink getEntryLink() {
 			return entryLink;
+		}
+
+		public long getUnreadMessages() {
+			return unreadMessages;
+		}
+
+		public long incrementUnreadMessages() {
+			++unreadMessages;
+			entryLink.getComponent().setCustomDisplayText(getName() + " <strong>( " + unreadMessages + " <i class='o_icon o_icon_mail'> </i> )</strong>");
+			return unreadMessages;
+		}
+		
+		public void resetUnreadMessages() {
+			unreadMessages = 0l;
+			entryLink.getComponent().setCustomDisplayText(getName()); // reset unread message
 		}
 	}
 }
