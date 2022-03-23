@@ -66,9 +66,9 @@ public interface FormManager {
 
 	public Form loadForm(EvaluationFormSurvey survey);
 
-	public File getFormFile(EvaluationFormSurvey survey);
+	public File getFormFile(RepositoryEntry formEntry);
 
-	public DataStorage loadStorage(EvaluationFormSurvey survey);
+	public DataStorage loadStorage(RepositoryEntry formEntry);
 
 	public EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity identity);
 

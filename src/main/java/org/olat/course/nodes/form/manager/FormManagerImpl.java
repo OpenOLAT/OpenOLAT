@@ -151,8 +151,7 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public File getFormFile(EvaluationFormSurvey survey) {
-		RepositoryEntry formEntry = survey.getFormEntry();
+	public File getFormFile(RepositoryEntry formEntry) {
 		File repositoryDir = new File(
 				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
 				FileResourceManager.ZIPDIR);
@@ -160,8 +159,7 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public DataStorage loadStorage(EvaluationFormSurvey survey) {
-		RepositoryEntry formEntry = survey.getFormEntry();
+	public DataStorage loadStorage(RepositoryEntry formEntry) {
 		return evaluationFormManager.loadStorage(formEntry);
 	}
 
