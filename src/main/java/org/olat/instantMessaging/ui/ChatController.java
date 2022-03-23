@@ -740,9 +740,11 @@ public class ChatController extends BasicController implements GenericEventListe
 			String id = "meet" + message.getKey();
 			link = (Link)mainVC.getComponent(id);
 			if(link == null) {
-				link = LinkFactory.createLink(id, id, "meeting", "meeting.invitation", getTranslator(), chatMsgFieldContent, this, Link.LINK);
+				link = LinkFactory.createLink(id, id, "meeting", "meeting.invitation.long", getTranslator(), chatMsgFieldContent, this, Link.LINK);
 				link.setIconLeftCSS("o_icon o_icon-fw o_livestream_icon");
+				link.setIconRightCSS("o_icon o_icon-fw o_icon_external_link");
 				link.setNewWindow(true, true);
+				link.setTarget("chat_video");
 			}
 		} else if(StringHelper.containsNonWhitespace(message.getBody())) {
 			m = message.getBody().replace("<br>\n", "\r\n");

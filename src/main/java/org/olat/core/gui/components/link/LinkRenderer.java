@@ -352,9 +352,12 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		} else if(link.isNewWindow()) {
 			if(link.isNewWindowAfterDispatchUrl()) {
 				AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled() && link.getTarget() == null;
+				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled();
+				String target = StringHelper.containsNonWhitespace(link.getTarget()) ? link.getTarget() : "_blank";	
 				ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
-						new NameValuePair(VelocityContainer.COMMAND_ID, command), new NameValuePair("oo-opennewwindow-oo", "true"));
+						new NameValuePair(VelocityContainer.COMMAND_ID, command),
+						new NameValuePair("oo-opennewwindow-oo", "true"),
+						new NameValuePair("oo-opennewwindow-target", target));
 			} else {
 				try(StringOutput href = new StringOutput()) {
 					ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
@@ -377,11 +380,13 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		String elementId = link.getElementId();
 		if(flexiLink.isNewWindow()) {
 			if(flexiLink.isNewWindowAfterDispatchUrl()) {
+				String target = StringHelper.containsNonWhitespace(link.getTarget()) ? link.getTarget() : "_blank";	
 				boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
 				String href = hasUrl ? link.getUrl() : "javascript:;";
 				sb.append("href=\"").append(href).append("\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(flexiLink, false, false, flexiLink.isNewWindowWithSubmit(),
-						  new NameValuePair("oo-opennewwindow-oo", "true")))
+						  new NameValuePair("oo-opennewwindow-oo", "true"),
+						  new NameValuePair("oo-opennewwindow-target", target)))
 				  .append("; return false;\"");
 			} else {
 				String dispatchUri = flexiLink.getFormDispatchId();

@@ -1589,6 +1589,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	}
 	
 	var openInNewWindow = false;
+	var openInNewWindowTarget = "_blank";
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
 	if(arguments.length > 8) {
@@ -1598,6 +1599,8 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 				data[arguments[j]] = arguments[j+1];
 				if(arguments[j] == "oo-opennewwindow-oo") {
 					openInNewWindow = true;
+				} else if(arguments[i] == "oo-opennewwindow-target") {
+					openInNewWindowTarget = arguments[i+1];
 				}
 			}
 		}
@@ -1605,7 +1608,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	
 	var newTargetWindow = null;
 	if(openInNewWindow) {
-		newTargetWindow = window.open("","_blank");
+		newTargetWindow = window.open("",openInNewWindowTarget);
 		newTargetWindow.blur();
 	}
 	
@@ -1733,6 +1736,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 
 	var data = new Object();
 	var openInNewWindow = false;
+	var openInNewWindowTarget = "_blank";
 	if(arguments.length > 3) {
 		var argLength = arguments.length;
 		for(var i=3; i<argLength; i=i+2) {
@@ -1740,6 +1744,8 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 				data[arguments[i]] = arguments[i+1];
 				if(arguments[i] == "oo-opennewwindow-oo") {
 					openInNewWindow = true;
+				} else if(arguments[i] == "oo-opennewwindow-target") {
+					openInNewWindowTarget = arguments[i+1];
 				}
 			}
 		}
@@ -1747,7 +1753,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	
 	var targetWindow = null;
 	if(openInNewWindow) {
-		targetWindow = window.open("","_blank");
+		targetWindow = window.open("", openInNewWindowTarget);
 		targetWindow.blur();
 	} else {
 		targetWindow = window;

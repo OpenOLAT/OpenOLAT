@@ -211,6 +211,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.body = body;
 	}
 
+	@Override
 	public BigBlueButtonMeeting getBbbMeeting() {
 		return bbbMeeting;
 	}
@@ -219,6 +220,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.bbbMeeting = bbbMeeting;
 	}
 
+	@Override
 	public TeamsMeeting getTeamsMeeting() {
 		return teamsMeeting;
 	}
