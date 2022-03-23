@@ -3,9 +3,10 @@
 #set($minStrings = $r.getMinStrings($interaction))
 #set($maxStrings = $r.getMaxStrings($interaction))
 #set($numOfWords = $r.getWordCount($interaction))
+#set($isRichText = $r.hasCssClass($interaction, "essay-richtext"))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<div class="$localName">
+<div class="$localName #if($isRichText)o_richtext_mce#end">
 	#if($interaction.getPrompt())
 	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end

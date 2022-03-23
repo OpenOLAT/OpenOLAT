@@ -34,7 +34,6 @@
 	    	var text = e.clipboardData.getData('text');
 	    	if(normalizeText(text) !== normalizeText(allowedText)) {
 	    		e.preventDefault();
-	    		console.log('Msg', settings.errorMessage);
 	    		showMessageBox('warn', settings.errorHeader, settings.errorMessage);
 	    	}
     		return true;
