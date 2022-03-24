@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.admin.user.UserSearchFlexiTableModel;
 import org.olat.admin.user.UserTableDataModel;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -246,7 +247,7 @@ public class CoachesStep extends BasicStep {
 		}
 		
 		private void showUserSelector(UserRequest ureq) {
-			userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), null, true);
+			userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), (GroupRoles)null, true);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchController.getInitialComponent(), true);
 			
 			listenTo(userSearchController);

@@ -33,6 +33,7 @@ import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.admin.user.UserSearchFlexiTableModel;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -214,7 +215,7 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 	}
 	
 	private void doAddCommissioners(UserRequest ureq) {
-		userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), null, true);
+		userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), (GroupRoles)null, true);
 		listenTo(userSearchController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), userSearchController.getInitialComponent(), true, translate("commissioners.add"));

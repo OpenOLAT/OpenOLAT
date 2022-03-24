@@ -117,8 +117,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private boolean multiSelection;
 	private boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userSearchFormPropertyHandlers;
-	private List<Organisation> searchableOrganisations;
-	private GroupRoles repositoryEntryRole;
+
+	private UserSearchProvider search;
 
 	@Autowired
 	private UserManager userManager;
@@ -139,7 +139,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		
-		init(ureq, repositoryEntryRole, multiSelection, showSelectButton);
+		init(ureq, null, repositoryEntryRole, multiSelection, showSelectButton);
 
 		initForm(ureq);
 	}
@@ -147,16 +147,24 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, repositoryEntryRole, multiSelection, true);
+		init(ureq, null, repositoryEntryRole, multiSelection, true);
 		
 		initForm(ureq);
 	}
 	
-	private void init(UserRequest ureq, GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, UserSearchProvider searchProvider, boolean multiSelection) {
+		super(ureq, wControl, "usersearchext");
+		init(ureq, searchProvider, null, multiSelection, true);
+		
+		initForm(ureq);
+	}
+	
+	private void init(UserRequest ureq, UserSearchProvider searchProvider, GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
 		this.multiSelection = multiSelection;
+		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		List<UserPropertyHandler> allSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
@@ -164,12 +172,15 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 				.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))// admin. has the login search field
 				.collect(Collectors.toList());
 		
-		searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.valuesWithoutGuestAndInvitee());
-		this.repositoryEntryRole = repositoryEntryRole;
-
-		ListProvider provider = new UserSearchListProvider(searchableOrganisations, repositoryEntryRole);
-		setListProvider(provider);
+		if(searchProvider != null) {
+			search = searchProvider;
+			setListProvider(searchProvider);
+		} else {
+			List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.valuesWithoutGuestAndInvitee());
+			search = new UserSearchQueries(searchableOrganisations, repositoryEntryRole);
+			setListProvider(search);
+		}
 		setAllowNewValues(false);
 		
 		this.showSelectUsersButton = showSelectButton;
@@ -414,7 +425,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 				userProperties.put(UserConstants.FIRSTNAME, searchValue);
 				userProperties.put(UserConstants.LASTNAME, searchValue);
 				userProperties.put(UserConstants.EMAIL, searchValue);
-				List<Identity> res = searchUsers(searchValue,	userProperties, false);
+				List<Identity> res = search.searchUsers(searchValue, userProperties, false);
 				if(res.size() == 1) {
 					//do select
 					Identity chosenIdent = res.get(0);
@@ -447,6 +458,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		Map<String, String> userPropertiesSearch = new HashMap<>();				
 		for (UserPropertyHandler userPropertyHandler : userSearchFormPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
+			
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());
 			String uiValue = userPropertyHandler.getStringValue(ui);
 			if(userPropertyHandler.getName().startsWith("genericCheckboxProperty")) {
@@ -463,7 +475,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 		tableEl.reset();
 		
-		List<Identity> users = searchUsers(login, userPropertiesSearch, true);
+		List<Identity> users = search.searchUsers(login, userPropertiesSearch, true);
 		if (!users.isEmpty()) {
 			userTableModel.setObjects(users);
 			flc.contextPut("showButton","true");
@@ -472,18 +484,31 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		}
 	}
 
-	/**
-	 * Can be overwritten by subclassen to search other users or filter users.
-	 * @param login
-	 * @param userPropertiesSearch
-	 * @return
-	 */
-	private List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
-		SearchIdentityParams params = new SearchIdentityParams(login,
-				userPropertiesSearch, userPropertiesAsIntersectionSearch, null, null,
-				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		params.setOrganisations(searchableOrganisations);
-		params.setRepositoryEntryRole(repositoryEntryRole, false);
-		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
+	private class UserSearchQueries extends UserSearchListProvider implements UserSearchProvider {
+		
+		public UserSearchQueries(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole) {
+			super(searchableOrganisations, repositoryEntryRole);
+		}
+		
+		/**
+		 * Can be overwritten by subclassen to search other users or filter users.
+		 * @param login
+		 * @param userPropertiesSearch
+		 * @return
+		 */
+		@Override
+		public List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
+			SearchIdentityParams params = new SearchIdentityParams(login,
+					userPropertiesSearch, userPropertiesAsIntersectionSearch, null, null,
+					null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+			params.setOrganisations(getSearchableOrganisations());
+			params.setRepositoryEntryRole(getRepositoryEntryRole(), false);
+			return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
+		}
+	}
+	
+	public interface UserSearchProvider extends ListProvider {
+		
+		public List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch);
 	}
 }

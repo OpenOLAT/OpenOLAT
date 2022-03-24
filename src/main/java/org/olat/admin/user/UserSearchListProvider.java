@@ -59,6 +59,14 @@ public class UserSearchListProvider implements ListProvider {
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 	
+	public List<Organisation> getSearchableOrganisations() {
+		return searchableOrganisations;
+	}
+
+	public GroupRoles getRepositoryEntryRole() {
+		return repositoryEntryRole;
+	}
+
 	@Override
 	public int getMaxEntries() {
 		return MAX_ENTRIES;

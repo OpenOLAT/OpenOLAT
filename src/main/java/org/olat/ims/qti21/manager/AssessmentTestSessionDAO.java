@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
@@ -34,6 +35,8 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -487,6 +490,52 @@ public class AssessmentTestSessionDAO {
 				.setMaxResults(1)
 				.getResultList();
 		return sessions.isEmpty() ? null : sessions.get(0);
+	}
+	
+	public List<Identity> getRunningTestSessionIdentities(RepositoryEntryRef entry, String courseSubIdent,
+			Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assessedIdentity from qtiassessmenttestsession session")
+		  .append(" inner join session.identity assessedIdentity")
+		  .append(" inner join assessedIdentity.user assessedUser")
+		  .where().append("session.repositoryEntry.key=:repositoryEntryKey and session.finishTime is null and session.terminationTime is null");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.and().append("session.subIdent=:subIdent");
+		} else {
+			sb.and().append("session.subIdent is null");
+		}
+		
+		if(userPropertiesSearch != null && !userPropertiesSearch.isEmpty()) {
+			sb.and().append(" (");
+			
+			boolean append = false;
+			for(Map.Entry<String,String> userProperty: userPropertiesSearch.entrySet()) {
+				if(append) {
+					sb.append(" and ", " or ", userPropertiesAsIntersectionSearch);
+				} else {
+					append = true;
+				}
+				String prop = userProperty.getKey();
+				sb.appendFuzzyLike("assessedUser." + prop, "uprop" + prop);
+			}
+			sb.append(")");
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("repositoryEntryKey", entry.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		
+		if(userPropertiesSearch != null && !userPropertiesSearch.isEmpty()) {
+			for(Map.Entry<String, String> userProperty:userPropertiesSearch.entrySet()) {
+				String fuzzyValue = PersistenceHelper.makeFuzzyQueryString(userProperty.getValue());
+				query.setParameter("uprop" + userProperty.getKey(), fuzzyValue);
+			}
+		}
+		
+		return query.getResultList();
 	}
 	
 	public List<Long> getRunningTestSessionIdentitiesKey(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {

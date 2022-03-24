@@ -22,6 +22,7 @@ package org.olat.modules.immunityproof.ui;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -59,7 +60,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 		
 		setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
 		
-		userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), null, false);
+		userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), (GroupRoles)null, false);
 		listenTo(userSearchController);
 		
 		mainVC = createVelocityContainer("immunity_proof_commissioner");
@@ -71,7 +72,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if (userSearchController == null) {
-			userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), null, false);
+			userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), (GroupRoles)null, false);
 			listenTo(userSearchController);
 		}
 		
