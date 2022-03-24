@@ -74,7 +74,7 @@ public class TinyConfig {
 		veryMinimalisticConfig = new TinyConfig(plugins, null, tools1);
 	}
 	static {
-		String plugins = "contextmenu,colorpicker,textcolor,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		String plugins = "colorpicker,textcolor,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
 		String tools1 = "bold italic underline | image olatmatheditor | link unlink";
 		veryMinimalisticWithLinksConfig = new TinyConfig(plugins, null, tools1);
 	}
@@ -100,7 +100,7 @@ public class TinyConfig {
 	}
 	//file profile
 	static {
-		String plugins = "advlist,lists,hr,link,charmap,image,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,contextmenu,anchor,olatmatheditor,olatmovieviewer,searchreplace,emoticons,paste,media";
+		String plugins = "advlist,lists,hr,link,charmap,image,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,anchor,olatmatheditor,olatmovieviewer,searchreplace,emoticons,paste,media";
 		String[] menu = {
 			  "edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap anchor insertdatetime emoticons'}",

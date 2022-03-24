@@ -4,33 +4,13 @@
  * Florian Gnägi, www.frentix.com
  */
 var BTinyHelper = {
-	// Tiny on-change handler that delegates the change event to the 
-	// flexi form text area on-change handler
-	triggerOnChangeOnFormElement : function (tinyObj) {
-		var domID = tinyObj.id;
-		var domElem = jQuery('#' + domID);
-		if (domElem && domElem.onchange) domElem.onchange();
-	},
 	
-	triggerOnChange : function (domID) {
-		var domElem = jQuery('#' + domID);
-		if (domElem && domElem.onchange) {
-			domElem.onchange();
-		}
-	},
-	
-	// contains uris to open the media popup window
-	editorMediaUris : new Hashtable(),
 	// Current media browser callback field
-	currentField : null,
-	currentFieldId: null,
 	currentCallback: null,
 	
 	// Open link browser in new window. Only one browser window is supported at any time
 	openLinkBrowser : function (editorId, callback, value, meta) {
 		if(callback != null) {
-			BTinyHelper.currentField = meta.fieldname;	
-			BTinyHelper.currentFieldId = meta.fieldname;
 			BTinyHelper.currentCallback = callback;
 			var ffxhrevent = tinymce.activeEditor.settings.ffxhrevent;
 			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, 'browser', meta.filetype);
@@ -85,55 +65,5 @@ var BTinyHelper = {
 		}
 
 		return url;
-	},
-
-	// Current form dirty observers
-	formDirtyObservers : new Hashtable(),
-
-	// Stop form dirty observers that exist for this form and element
-	stopFormDirtyObserver : function(formId, elementId) {
-		var observerKey = formId + '-' + elementId;
-		var existingExecutor = BTinyHelper.formDirtyObservers.get(observerKey);
-		if (existingExecutor != null) {
-			existingExecutor.cancel();
-			BTinyHelper.formDirtyObservers.remove(observerKey);
-		}
-	},	
-	
-	// The rich text element needs some special code to find out when the field is dirty. 
-	// For this purpose an exector checks every second if the tiny editor is dirty. If so, 
-	// the flexi form is triggered to be dirty.	
-	// Make sure you called stopFormDirtyObserver() first to remove any old observers
-	startFormDirtyObserver : function(formId, elementId) {
-		var observerKey = formId + '-' + elementId;
-		if(BTinyHelper.formDirtyObservers.containsKey(observerKey)) return;
-		
-		// Check for dirtyness and mark buttons accordingly, each second
-		var newExecutor = jQuery.periodic({period: 500, decay:1.0, max_period: Number.MAX_VALUE}, function() {
-			// first check if the html editor still exists on this page, otherwhise stop executing this code
-			var elem = jQuery('#' + elementId);
-			if (elem.length == 0) {
-				newExecutor.cancel();
-				BTinyHelper.formDirtyObservers.remove(observerKey);
-			} else if (tinymce != null && tinymce.activeEditor != null && tinymce.activeEditor.initialized) {
-				if (tinymce.activeEditor.isDirty()) {
-					setFlexiFormDirty(formId);
-				}
-			}		
-			elem = null; // help GC
-		});	
-		BTinyHelper.formDirtyObservers.put(observerKey, newExecutor);
-	},
-	
-	// Remove the editor instance for the given DOM node ID if such an editor exists.
-	// Remove all event handlers and release the memory
-	removeEditorInstance : function (elementId, cmd) {
-		if (tinymce) {
-			try {
-				tinymce.remove('#' + elementId);
-			} catch(e) {
-				// IE (of course) has some issues here, need to silently catch those 
-			}
-		}
 	}
 }

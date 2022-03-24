@@ -128,9 +128,6 @@ public class RichTextConfiguration implements Disposable {
 	private static final String VALUE_FALSE = "false";
 
 	// Callbacks
-	private static final String ONCHANGE_CALLBACK = "onchange_callback";
-	private static final String ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE = "BTinyHelper.triggerOnChangeOnFormElement";
-
 	private static final String FILE_BROWSER_CALLBACK = "file_picker_callback";
 	private static final String FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER = "BTinyHelper.openLinkBrowser";
 	private static final String URLCONVERTER_CALLBACK = "urlconverter_callback";
@@ -194,8 +191,6 @@ public class RichTextConfiguration implements Disposable {
 		this.domID = domID;
 		this.locale = locale;
 		setQuotedConfigValue(SELECTOR, "#".concat(domID));
-		// set the on change handler to delegate to flexi element on change handler
-		setQuotedConfigValue(ONCHANGE_CALLBACK, ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE);
 		// set custom url converter to deal with framework and content urls properly
 		setNonQuotedConfigValue(URLCONVERTER_CALLBACK, URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER);
 		setNonQuotedConfigValue("allow_script_urls", "true");

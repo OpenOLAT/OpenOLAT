@@ -205,7 +205,7 @@ var BFormatter = {
 	// process element with given dom id using MathJax
 	formatLatexFormulas : function(domId) {
 		try {
-			if(typeof window.MathJax !== undefined && typeof window.MathJax.typeset !== undefined) {
+			if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
 				MathJax.typeset();
 			} else {
 				o_mathjax();
@@ -681,7 +681,7 @@ function o_ainvoke(r) {
 			
 			if(o_info.latexit) {
 				try {
-					if(window.MathJax !== undefined && window.MathJax.typeset !== undefined) {
+					if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
 						window.MathJax.typeset();
 						o_info.latexit = false;
 					} else {
@@ -807,6 +807,8 @@ function o_openTab(url) {
 }
 
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
+
+	console.log('Upload', fileInputElement, fakeInputElement, saveButton);
 
 	fileInputElement.setCustomValidity('');
 

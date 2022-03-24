@@ -228,10 +228,6 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
 		sb.append("<script>\n");
-		//file browser url
-		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
-		ubu.buildURI(sb, null, null);
-		sb.append("');\n");
 		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl).append("',\n")
@@ -249,13 +245,26 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		sb.append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
-		  .append("        BTinyHelper.startFormDirtyObserver('").append(te.getRootForm().getDispatchFieldId()).append("','").append(domID).append("');\n");
+		  .append("        var updateDirty = function() {\n")
+		  .append("          if(ed.isDirty()) {\n")
+		  .append("            setFlexiFormDirty('").append(form.getDispatchFieldId()).append("', false);\n")
+		  .append("          }\n")
+		  .append("        }\n")
+		  
+		  .append("        var global = tinymce.util.Tools.resolve('tinymce.util.Delay');\n")
+		  .append("        var debouncedUpdate = global.debounce(function () {\n")
+		  .append("          return updateDirty();\n")
+		  .append("        }, 300);\n")
+		  .append("        ed.on('SetContent BeforeAddUndo Undo Redo ViewUpdate keyup', debouncedUpdate);\n");
 		for (String initFunction:onInit) {
 			sb.append("        ").append(initFunction.replace(".curry(", "(")).append(";\n");
 		}
 		sb.append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
-		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")
+		  .append("        var domElem = jQuery('#").append(domID).append("');\n")
+		  .append("        if (domElem && domElem.onchange) {\n")
+		  .append("          domElem.onchange();\n")
+		  .append("        };\n")
 		  .append("      });\n")
 		  .append("      ed.on('ResizeEditor', function(e) {\n")
 		  .append("        try {\n")
