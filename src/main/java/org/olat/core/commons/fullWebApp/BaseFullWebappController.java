@@ -990,6 +990,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				bodyCssClasses.remove(getScreenMode().getFullScreenBodyClass());
 			}
 		}
+
+		// Reset logo infos
+		LayoutModule layoutModule = CoreSpringFactory.getImpl(LayoutModule.class);
+		LandingPagesModule landingPagesModule = CoreSpringFactory.getImpl(LandingPagesModule.class);
+		LogoInformations logoInfos = new LogoInformations(ureq, layoutModule, landingPagesModule);
+		mainVc.contextPut("logoInfos", logoInfos);
+		mainVc.setDirty(false); // prevent endless reloads
 		
 		boolean r = reload != null && reload.booleanValue();
 		if(erase && reload != null) {
