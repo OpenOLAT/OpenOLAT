@@ -46,7 +46,9 @@ public class AdministrationMessagesPage {
 		
 		By saveBy = By.cssSelector(".o_sel_maintenance_msg_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		By textBy = By.xpath("//div[@id='o_main_center_content_inner']//div[@id='o_msg_sticky_preview']/p[text()[contains(.,'" + text + "')]]");
+		OOGraphene.waitElement(textBy, browser);
+		OOGraphene.scrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
