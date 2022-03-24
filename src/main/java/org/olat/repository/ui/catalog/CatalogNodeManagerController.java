@@ -992,7 +992,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				CatalogEntryRow row = (CatalogEntryRow)dialogDeleteLink.getUserObject();
 				catalogManager.deleteCatalogEntry(row, catalogEntry);
 				loadResources(ureq);
-				fireEvent(ureq, Event.BACK_EVENT);
 			}
 		} else if(entryResourceMoveCtrl == source) {
 			CatalogEntry moveMe = entryResourceMoveCtrl.getMoveMe();
