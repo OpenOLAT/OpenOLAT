@@ -1433,8 +1433,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("      });\n")
 		  
 		  .append("      var updateCountDirty = function() {\n")
-		  .append("        var richText = ed.getContent({format: 'text'});\n")
-		  .append("        counter.count(richText);\n")
+		  .append("        var richText = ed.getContent();\n")
+		  .append("        counter.countHtml(richText);\n")
 		  .append("        if(ed.isDirty()) {\n")
 		  .append("          setFlexiFormDirty('").append(form.getDispatchFieldId()).append("', false);\n")
 		  .append("        }\n")
