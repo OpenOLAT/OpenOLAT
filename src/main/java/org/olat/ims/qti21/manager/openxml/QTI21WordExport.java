@@ -1541,16 +1541,6 @@ public class QTI21WordExport implements MediaResource {
 			Node wrapEl = document.wrapInParagraph(responseEl);
 			checkboxCell.appendChild(wrapEl);
 		}
-	
-		@Override
-		protected void setImage(String path) {
-			if(itemFile != null) {
-				// path is relative to this
-				setImage(new File(itemFile.getParentFile(), path));
-			} else {
-				super.setImage(path);
-			}
-		}
 
 		private void setObject(Object object) {
 			if(object != null && StringHelper.containsNonWhitespace(object.getData())) {

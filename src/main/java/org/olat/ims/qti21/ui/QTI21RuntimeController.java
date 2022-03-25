@@ -360,7 +360,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		RepositoryEntry testEntry = getRepositoryEntry();
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		VFSContainer unzippedContRoot = frm.getFileResourceRootImpl(testEntry.getOlatResource());
+		VFSContainer unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, fUnzippedDirRoot, getLocale());
