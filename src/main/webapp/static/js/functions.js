@@ -2118,6 +2118,25 @@ function showMessageBox(type, title, message, buttonCallback) {
 	}
 }
 
+function o_extraTinyDirty(editor) {
+	var dirty = editor.isDirty();
+	function o_extraTinyDirtyToggle(elm) {
+		if(dirty) {
+			jQuery(elm).addClass('o_button_dirty');
+		} else {
+			jQuery(elm).removeClass('o_button_dirty');
+		}
+	}
+	jQuery('#o_save #o_button_save a').each(function(index,el) {
+		if (jQuery(el).hasClass('o_button_dirty') != dirty) {
+			o_extraTinyDirtyToggle(el);
+			jQuery('#o_save #o_button_saveclose a').each(function(index2, el2) {
+				o_extraTinyDirtyToggle(el2);
+			});
+		}
+	});
+}
+
 /*
  * For flexi tables 
  */

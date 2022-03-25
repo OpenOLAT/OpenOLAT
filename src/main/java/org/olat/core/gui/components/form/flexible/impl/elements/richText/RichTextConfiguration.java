@@ -91,7 +91,6 @@ public class RichTextConfiguration implements Disposable {
 	private static final String IMPORTCSS_SELECTOR_FILTER = "importcss_selector_filter";
 	private static final String IMPORTCSS_GROUPS = "importcss_groups";
 	private static final String IMPORTCSS_GROUPS_VALUE_MENU = "[{title: 'Paragraph', filter: /^(p)\\./},{title: 'Div', filter: /^(div|p)\\./},{title: 'Table', filter: /^(table|th|td|tr)\\./},{title: 'Url', filter: /^(a)\\./},{title: 'Style'}]";
-	private static final String HEIGHT = "height";
 	// Window appearance
 	private static final String DIALOG_TYPE = "dialog_type";
 	private static final String DIALOG_TYPE_VALUE_MODAL = "modal";
@@ -135,7 +134,6 @@ public class RichTextConfiguration implements Disposable {
 
 	private Map<String, String> quotedConfigValues = new HashMap<>();
 	private Map<String, String> nonQuotedConfigValues = new HashMap<>();
-	private List<String> onInit = new ArrayList<>();
 
 	// Supported image and media suffixes
 	private static final String[] IMAGE_SUFFIXES_VALUES = { "jpg", "gif", "jpeg", "png" };
@@ -153,6 +151,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
 	private boolean pathInStatusBar = true;
+	private boolean statusBar = true;
 	private boolean figCaption = true;
 	private boolean allowCustomMediaFactory = true;
 	private boolean sendOnBlur;
@@ -162,6 +161,7 @@ public class RichTextConfiguration implements Disposable {
 	private CustomLinkTreeModel toolLinkTreeModel;
 	// DOM ID of the flexi form element
 	private String domID;
+	private String height;
 
 	private String mapperUri;
 	private MapperKey contentMapperKey;
@@ -462,6 +462,19 @@ public class RichTextConfiguration implements Disposable {
 		this.pathInStatusBar = pathInStatusBar;
 	}
 
+	public boolean isStatusBar() {
+		return statusBar;
+	}
+
+	/**
+	 * Don't use this too often, we need the show the "Powered by Tiny".
+	 * 
+	 * @param statusBar
+	 */
+	public void setStatusBar(boolean statusBar) {
+		this.statusBar = statusBar;
+	}
+
 	public boolean isReadOnly() {
 		return readOnly;
 	}
@@ -492,24 +505,6 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setAdditionalConfiguration(RichTextConfigurationDelegate additionalConfiguration) {
 		this.additionalConfiguration = additionalConfiguration;
-	}
-
-	/**
-	 * Add a function name that has to be executed after initialization. <br>
-	 * E.g: myFunctionName, (alert('loading successfull')) <br>
-	 * Don't add something like this: function() {alert('loading successfull')}, use
-	 * the following notation instead: (alert('loading successfull'))
-	 * 
-	 * @param functionName
-	 */
-	public void addOnInitCallbackFunction(String functionName) {
-		if (functionName != null) {
-			onInit.add(functionName);
-		}
-	}
-
-	protected List<String> getOnInit() {
-		return onInit;
 	}
 
 	/**
@@ -938,9 +933,13 @@ public class RichTextConfiguration implements Disposable {
 		// add or overwrite new value
 		nonQuotedConfigValues.put(key, value);
 	}
+	
+	public String getEditorHeight() {
+		return height;
+	}
 
-	public void enableEditorHeight() {
-		setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
+	public void setEditorHeight(String height) {
+		this.height = height;
 	}
 
 	/**
@@ -1098,7 +1097,7 @@ public class RichTextConfiguration implements Disposable {
 			.append("image_title:true,\n")
 			.append("relative_urls:").append(isRelativeUrls()).append(",\n")
 			.append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
-			.append("statusbar:").append(true).append(",\n")
+			.append("statusbar:").append(isStatusBar()).append(",\n")
 			.append("resize:").append(true).append(",\n")
 			.append("menubar:").append(tinyConfig.hasMenu()).append(",\n")
 			.append("fontsize_formats:").append("'").append(tinyMceConfig.getFontSizes()).append("',\n")

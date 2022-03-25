@@ -5,9 +5,10 @@
 			$r.render("closeIcon")
 		#end
 		#if ($title)
-			<h4 id="$r.getId('o_md_')">$!title</h4>
+			<h4 id="$r.getId('o_md_')">$!title #if($off_chelp_url) $r.contextHelpWithWrapper("$off_chelp_url") #end</h4>
+		#elseif($off_chelp_url)
+			$r.contextHelpWithWrapper("$off_chelp_url")
 		#end
-		#if($off_chelp_url) $r.contextHelpWithWrapper("$off_chelp_url") #end
 	</div>
 	<div class="modal-body $!cssClass">
 		$r.render("guimessage")

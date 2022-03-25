@@ -194,7 +194,6 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
 		te.setRenderingMode(TextMode.formatted);
 		RichTextConfiguration config = te.getEditorConfiguration();
-		List<String> onInit = config.getOnInit();
 
 		StringOutput configurations = new StringOutput();
 		config.appendConfigToTinyJSArray(configurations, translator);
@@ -225,10 +224,16 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		Integer currentHeight = teC.getCurrentHeight();
 		String uploadUrl = getImageUploadURL(renderer, teC, ubu);
+		String height = config.getEditorHeight();
 		
 		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
 		sb.append("<script>\n");
-		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
+		sb.append(" setTimeout(function() {");
+		if("full".equals(height)) {
+			sb.append("  var oTop = jQuery('#").append(domID).append("_diw").append("').offset().top;\n")
+			  .append("  var cssHeight = 'calc(100vh - ' + (oTop + 53) + 'px)';\n");
+		}
+		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl).append("',\n")
 		  .append("    icons_url: '").append(iconsUrl).append("',\n")
@@ -236,16 +241,21 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		if(uploadUrl != null) {
 			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n");
 		}
-		if(currentHeight != null && currentHeight.intValue() > 20) {
+		if("full".equals(height)) {
+			sb.append("    height: cssHeight,\n");
+		} else if(StringHelper.containsNonWhitespace(height)) {
+			sb.append("    height: '").append(config.getEditorHeight()).append("',\n");
+		} else if(currentHeight != null && currentHeight.intValue() > 20) {
 			sb.append("    height: ").append(currentHeight).append(",\n");
 		} else if(teC.getRows() > 0) {
-			int height = teC.getRows() * 40;
-			sb.append("    height: '").append(height).append("px',\n");
+			int heightInPx = teC.getRows() * 40;
+			sb.append("    height: '").append(heightInPx).append("px',\n");
 		}
 		
 		sb.append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
 		  .append("        var updateDirty = function() {\n")
+		  .append("          o_extraTinyDirty(ed);")
 		  .append("          if(ed.isDirty()) {\n")
 		  .append("            setFlexiFormDirty('").append(form.getDispatchFieldId()).append("', false);\n")
 		  .append("          }\n")
@@ -256,9 +266,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("          return updateDirty();\n")
 		  .append("        }, 300);\n")
 		  .append("        ed.on('SetContent BeforeAddUndo Undo Redo ViewUpdate keyup', debouncedUpdate);\n");
-		for (String initFunction:onInit) {
-			sb.append("        ").append(initFunction.replace(".curry(", "(")).append(";\n");
-		}
+		
 		sb.append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
 		  .append("        var domElem = jQuery('#").append(domID).append("');\n")

@@ -71,9 +71,8 @@ public class GlossaryDefinitionController extends BasicController {
 				String glossDef = wCtrl.getHTMLContent();
 				glossDef = glossDef.replaceAll(System.getProperty("line.separator"), "");
 				glossaryItem.setGlossDef(glossDef); 
-			} else if (event == Event.CANCELLED_EVENT){
-				//nothing to do, editor handles this itself. changes aren't persisted without clicking "save"
-//				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			} else if(event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		}
 	}

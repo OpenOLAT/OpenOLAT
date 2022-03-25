@@ -985,6 +985,7 @@ public class FormUIFactory {
 		rte.getEditorConfiguration().disableTinyMedia();
 		rte.getEditorConfiguration().setFilenameUriValidation(true);
 		rte.getEditorConfiguration().setFigCaption(false);
+		rte.getEditorConfiguration().setStatusBar(false);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
