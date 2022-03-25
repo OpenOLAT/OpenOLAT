@@ -1347,7 +1347,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append("</textarea>");
 			
 			if(richText) {
-				renderExtendedRichTextSetup(sb, "oo_".concat(responseUniqueId), responseUniqueId, copyPasteDisabled, component, translator);
+				renderExtendedRichTextSetup(sb, "oo_".concat(responseUniqueId), responseUniqueId, expectedLines, copyPasteDisabled, component, translator);
 			} else {
 				FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
 				sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
@@ -1387,7 +1387,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	private void renderExtendedRichTextSetup(StringOutput sb, String domID, String responseUniqueId, boolean copyPasteDisabled,
+	private void renderExtendedRichTextSetup(StringOutput sb, String domID, String responseUniqueId, int expectedLines, boolean copyPasteDisabled,
 			AssessmentObjectComponent component, Translator translator) {
 		String baseUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/tinymce/tinymce.min.js");
 		String iconsUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/BTinyIcons.js");
@@ -1411,16 +1411,20 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("  menubar: false,")
 		  .append("  toolbar1: 'bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmatheditor charmap',\n")
 		  .append("  removed_menuitems: 'newdocument',\n")
-		  .append("  statusbar: false,\n")
 		  .append("  elementpath: false,\n");
+		
+		String height = Integer.toString((expectedLines * 40) + 60);
+		sb.append("  height: ").append(height).append(",\n");
 		if(copyPasteDisabled) {
 			String errorHeader = StringHelper.escapeJavaScript(translator.translate("essay.copypaste.disabled.header"));
 			String errorMessage = StringHelper.escapeJavaScript(translator.translate("essay.copypaste.disabled"));
 			sb.append("    paste_preprocess: function(plugin, args) {\n")
-			  .append("     args.stopImmediatePropagation();\n")
-			  .append("     args.stopPropagation();\n")
-			  .append("     args.preventDefault();\n")
-			  .append("     showMessageBox('warn', '").append(errorHeader).append("', '").append(errorMessage).append("');\n")
+			  .append("      if(!args.internal) {\n")
+			  .append("        args.stopImmediatePropagation();\n")
+			  .append("        args.stopPropagation();\n")
+			  .append("        args.preventDefault();\n")
+			  .append("        showMessageBox('warn', '").append(errorHeader).append("', '").append(errorMessage).append("');\n")
+			  .append("      }\n")
 			  .append("    },\n");
 		}
 		//setup the word counter
