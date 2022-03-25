@@ -748,7 +748,7 @@ public class BinderPageListController extends AbstractPageListController {
 			return layoutCtr;				
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	protected void doOpenRow(UserRequest ureq, Page page) {

@@ -32,5 +32,5 @@ import org.olat.core.gui.control.ChiefController;
  * @author patrickb
  */
 public interface PopupBrowserWindowController extends PopupBrowserWindow, ChiefController {
-	//
+	
 }

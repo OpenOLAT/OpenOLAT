@@ -307,7 +307,7 @@ public class MembersListDisplayRunController extends BasicController {
 			courseLink.append(Settings.getServerContextPathURI())
 				.append("/url/RepositoryEntry/").append(entry.getKey());
 			// the ext-ref and location are not in default mail template, but used by some instances
-			return translate("email.body.template", new String[]{courseName, courseLink.toString(), entry.getExternalRef(), entry.getLocation()});		
+			return translate("email.body.template", courseName, courseLink.toString(), entry.getExternalRef(), entry.getLocation());		
 		}
 	}
 	
@@ -327,7 +327,7 @@ public class MembersListDisplayRunController extends BasicController {
 					participants, waiting, curriculumInfos, showOwners, showCoaches, showParticipants, showWaiting, deduplicateList, title);
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	private List<Member> convertIdentitiesToMembers(List<Identity> identities) {

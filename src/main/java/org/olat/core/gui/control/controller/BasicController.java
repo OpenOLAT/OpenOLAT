@@ -413,11 +413,12 @@ public abstract class BasicController extends DefaultController {
 	 *            a creator which is used to create the windows content
 	 */
 	protected PopupBrowserWindow openInNewBrowserWindow(UserRequest ureq,
-			ControllerCreator windowContentCreator) {
+			ControllerCreator windowContentCreator, boolean forPrint) {
 		// open in new browser window
 		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice()
 				.getWindowManager().createNewPopupBrowserWindowFor(ureq,
 						windowContentCreator);
+		pbw.setForPrint(forPrint);
 		pbw.open(ureq);
 		return pbw;
 	}

@@ -730,7 +730,7 @@ public class PageRunController extends BasicController implements TooledControll
 			return layoutCtr;
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	private void openImportPageSelection(UserRequest ureq) {

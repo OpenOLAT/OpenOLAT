@@ -1113,7 +1113,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			return layoutCtr;				
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	public class PageRow {

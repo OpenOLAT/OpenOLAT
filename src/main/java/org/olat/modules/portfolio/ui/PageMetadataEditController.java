@@ -831,7 +831,7 @@ public class PageMetadataEditController extends FormBasicController {
 				return new CompetenceBrowserController(lureq, lwControl);				
 			};
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
-			openInNewBrowserWindow(ureq, layoutCtrlr);
+			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof File) {
@@ -856,7 +856,7 @@ public class PageMetadataEditController extends FormBasicController {
 			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
 					if (taxonomyLevel.getType() != null) {
-						if(taxonomyLevel.getType().isAllowedAsCompetence() == false) {
+						if(!taxonomyLevel.getType().isAllowedAsCompetence()) {
 							// Do not list items, which are not marked as available for competences
 							continue;
 						}

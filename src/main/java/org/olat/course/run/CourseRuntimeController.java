@@ -2531,7 +2531,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//wrap the content controller into a full header layout
 		ControllerCreator popupLayoutCtr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
 		//open in new browser window
-		openInNewBrowserWindow(ureq, popupLayoutCtr);
+		openInNewBrowserWindow(ureq, popupLayoutCtr, false);
 	}
 	
 	private void launchGlossary(UserRequest ureq) {
@@ -2568,7 +2568,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
 			// open in new browser window
-			openInNewBrowserWindow(ureq, layoutCtrlr);
+			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		}
 	}
 	

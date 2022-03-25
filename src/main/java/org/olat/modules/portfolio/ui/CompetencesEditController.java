@@ -179,7 +179,7 @@ public class CompetencesEditController extends FormBasicController {
 				return new CompetenceBrowserController(lureq, lwControl);				
 			};
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
-			openInNewBrowserWindow(ureq, layoutCtrlr);
+			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		}
 	}
 	

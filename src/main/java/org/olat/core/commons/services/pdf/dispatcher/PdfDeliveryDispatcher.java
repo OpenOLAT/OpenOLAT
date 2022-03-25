@@ -123,6 +123,7 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 		if(delivery.getWindow() == null) {
 			PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
 					.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
+			pbw.setForPrint(true);
 			window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
 			delivery.setWindow(window);
 			delivery.setBrowserWindow(pbw);

@@ -622,6 +622,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			mainVc.setDirty(true);
 		}
 	}
+
+	protected void setForPrint(boolean forPrint) {
+		mainVc.contextPut("forPrint", Boolean.valueOf(forPrint));
+		mainVc.setDirty(true);
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

@@ -169,7 +169,7 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(getControllerCreator());
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	private void doExportPdf(UserRequest ureq) {
@@ -177,8 +177,7 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 			showWarning("report.pdf.warning.disabled");
 			return;
 		}
-		String title = "report";
-		MediaResource resource = pdfService.convert(title, getIdentity(), getControllerCreator(), getWindowControl());
+		MediaResource resource = pdfService.convert("report", getIdentity(), getControllerCreator(), getWindowControl());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	

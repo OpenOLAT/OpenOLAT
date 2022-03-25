@@ -43,6 +43,7 @@ o_info.edusharing_enabled = true;
 o_info.zseed = 0;
 o_info.newWindow=null;
 o_info.submit=null;
+o_info.latexit=false;
 #if($enforceTopFrame)
 if (top!=self){top.location=self.location+"?o_winrndo=1";}
 #end
@@ -56,46 +57,7 @@ function o_start() {
 	o_info.initialPageLoadFinished = true;
 }
 
-o_info.latexit=false;
-function o_mathjax(fct_success) {
-	if(window.MathJax === undefined) {
-		window.MathJax = {
-			tex: {
-				inlineMath: [['$', '$'], ['\\(', '\\)']]
-			},
-			options: {
-				enableMenu: false,
-				processHtmlClass: 'tex2jax_process',
-				renderActions: {
-					findScripts: [11, function (doc) {
-						var nodes = document.querySelectorAll('.math');
-						for (var i=0; i<nodes.length; i++) {
-							var node = nodes[i];
-							var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
-							var text = document.createTextNode('');
-							node.parentNode.replaceChild(text, node);
-							math.start = {node: text, delim: '', n: 0};
-							math.end = {node: text, delim: '', n: 0};
-							doc.math.push(math);
-						}
-					}, '']
-				}
-			}
-		}
 
-		jQuery.ajax("${r.mathJaxCdn()}tex-mml-chtml.js", {
-			cache: true,
-			dataType: "script",
-			crossDomain: true,
-			success: function() {
-		    	if(typeof fct_success !== "undefined") {
-		    		fct_success();
-		    	}
-				o_info.latexit = false;
-			}
-		});
-	}
-}
 ## Analytics code, if available
 $!analytics
 ##
@@ -111,6 +73,33 @@ try{
 	}
 } catch(e) { }
 </script>
+
+#if($r.isTrue($forPrint))
+<script>
+$r.mathJaxJavascriptConfig();
+</script>
+<script src='${r.mathJaxCdn()}tex-mml-chtml.js'></script>
+#else
+<script>
+function o_mathjax(fct_success) {
+	if(window.MathJax === undefined) {
+		$r.mathJaxJavascriptConfig();
+		jQuery.ajax("${r.mathJaxCdn()}tex-mml-chtml.js", {
+			cache: true,
+			dataType: "script",
+			crossDomain: true,
+			success: function() {
+		    	if(typeof fct_success !== "undefined") {
+		    		fct_success();
+		    	}
+				o_info.latexit = false;
+			}
+		});
+	}
+}
+</script>
+#end
+
 ## jQuery libraries
 <script src='$r.staticLink("js/jquery/jquery-3.6.0.min.js")'></script>
 #if ($r.available("guidebug"))

@@ -297,7 +297,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private void printPages(UserRequest ureq) {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> new QTI21PrintController(lureq, lwControl, resourceResult);
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	private void doDownloadRawData(UserRequest ureq) {

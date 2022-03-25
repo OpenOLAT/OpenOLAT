@@ -275,20 +275,17 @@ public class GoToMeetingController extends BasicController {
 				errorMessage = translate("error.code.unkown");
 			}
 			
-			ControllerCreator creator =  BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-				@Override
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					// Wrap in column layout, popup window needs a layout controller
-					String title = "";
-					String text = errorMessage;
-					Controller ctr = MessageUIFactory.createErrorMessage(lureq, lwControl, title, text);
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-					layoutCtr.addDisposableChildController(ctr);
-					return layoutCtr;
-				}
+			ControllerCreator creator =  BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, (lureq, lwControl) -> {
+				// Wrap in column layout, popup window needs a layout controller
+				String title = "";
+				String text = errorMessage;
+				Controller ctr = MessageUIFactory.createErrorMessage(lureq, lwControl, title, text);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
+				layoutCtr.addDisposableChildController(ctr);
+				return layoutCtr;
 			});
 	
-			openInNewBrowserWindow(ureq, creator);
+			openInNewBrowserWindow(ureq, creator, false);
 		}
 		updateButtons();
 	}
