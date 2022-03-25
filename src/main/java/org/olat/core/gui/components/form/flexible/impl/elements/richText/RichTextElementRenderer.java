@@ -237,9 +237,11 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl).append("',\n")
 		  .append("    icons_url: '").append(iconsUrl).append("',\n")
+		  .append("    image_uploadtab: false,\n")
 		  .append("    icons: 'openolat',\n");
 		if(uploadUrl != null) {
-			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n");
+			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n")
+			  .append("    automatic_uploads: true,\n");
 		}
 		if("full".equals(height)) {
 			sb.append("    height: cssHeight,\n");

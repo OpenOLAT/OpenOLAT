@@ -746,8 +746,9 @@ public class RichTextConfiguration implements Disposable {
 			CustomLinkTreeModel toolLinkTreeModel, String[] supportedImageSuffixes, String[] supportedMediaSuffixes,
 			String[] supportedFlashPlayerSuffixes) {
 		// Add dom ID variable using prototype curry method
-		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK,
-				FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue("block_unsupported_drop", "false");
+		
 		linkBrowserImageSuffixes = supportedImageSuffixes;
 		linkBrowserMediaSuffixes = supportedMediaSuffixes;
 		linkBrowserFlashPlayerSuffixes = supportedFlashPlayerSuffixes;
@@ -764,6 +765,7 @@ public class RichTextConfiguration implements Disposable {
 		linkBrowserCustomTreeModel = null;
 		toolLinkTreeModel = null;
 		nonQuotedConfigValues.remove(FILE_BROWSER_CALLBACK);
+		nonQuotedConfigValues.put("block_unsupported_drop", "false");
 	}
 
 	/**
