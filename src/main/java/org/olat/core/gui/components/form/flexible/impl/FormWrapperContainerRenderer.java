@@ -32,6 +32,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -125,7 +127,8 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 			/*
 			 * Set Form focus to error or last focused element 
 			 */
-			FormJSHelper.setFormFocus(sb, formC.getFormName(), null, true);
+			Command focus = CommandFactory.createFlexiFocus(formC.getFormName(), null);
+			formC.getWindowControl().getWindowBackOffice().sendCommandTo(focus);
 		}
 	}
 

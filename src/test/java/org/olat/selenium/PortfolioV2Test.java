@@ -695,7 +695,8 @@ public class PortfolioV2Test extends Deployments {
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
 			.selectConfiguration()
-			.setScoreAuto(0.0f, 10.0f, 5.0f);
+			.setScoreAuto(0.0f, 10.0f, 5.0f)
+			.saveAssessmentOptions();
 		courseEditor
 			.publish()
 			.quickPublish(UserAccess.membersOnly);

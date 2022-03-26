@@ -132,7 +132,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
 			if (obligationFilter != null) {
 				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
-				if (!filterValues.isEmpty()) {
+				if (filterValues != null && !filterValues.isEmpty()) {
 					obligations = filterValues.stream()
 							.map(AssessmentObligation::valueOf)
 							.collect(Collectors.toList());

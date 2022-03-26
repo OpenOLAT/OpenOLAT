@@ -46,8 +46,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.JSCommand;
-import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
@@ -210,7 +210,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			// submit and let current unsaved step do its work
 			flc.getRootForm().submitAndNext(ureq);
 			getWindowControl().getWindowBackOffice()
-				.sendCommandTo(new ScrollTopCommand());
+				.sendCommandTo(CommandFactory.createScrollTop());
 			// the current step decides whether to proceed to the next step or
 			// not.
 		} else if (source == finishButton) {
@@ -218,7 +218,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			finishCycle = true;
 			flc.getRootForm().submitAndFinish(ureq);
 			getWindowControl().getWindowBackOffice()
-				.sendCommandTo(new ScrollTopCommand());
+				.sendCommandTo(CommandFactory.createScrollTop());
 			// the current step decides whether to proceed or not
 			// an end step will fire FINISH
 			// a intermediate step will fire NEXT .. but NEXT && FINISHCYCLE

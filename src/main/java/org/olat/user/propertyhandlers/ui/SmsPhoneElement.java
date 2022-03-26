@@ -41,7 +41,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.id.User;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
@@ -106,7 +106,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 				setPhone(smsPhoneCtrl.getPhone());
 				hasChanged = true;
 				component.setDirty(true);
-				JSCommand dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+				Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
 				smsPhoneCtrl.getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
 			}
 			cmc.deactivate();

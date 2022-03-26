@@ -28,6 +28,7 @@ package org.olat.core.gui.control.winmgr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -128,6 +129,48 @@ public class CommandFactory {
 			throw new AssertException("wrong data put into json object", e);
 		}
 		Command c = new Command(5);
+		c.setSubJSON(root);
+		return c;
+	}
+	
+	/**
+	 * @param res
+	 * @return
+	 */
+	public static Command createScrollTop() {
+		JSONObject root = new JSONObject();
+		try {
+			root.put("rscroll", "top");
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(9);
+		c.setSubJSON(root);
+		return c;
+	}
+	
+	public static Command createDirtyForm(Form form) {
+		JSONObject root = new JSONObject();
+		try {
+			root.put("dispatchFieldId", form.getDispatchFieldId());
+			root.put("hideDirtyMarking", form.isHideDirtyMarkingMessage());
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(10);
+		c.setSubJSON(root);
+		return c;
+	}
+	
+	public static Command createFlexiFocus(String formName, String formItemId) {
+		JSONObject root = new JSONObject();
+		try {
+			root.put("formName", formName);
+			root.put("formItemId", formItemId);
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(11);
 		c.setSubJSON(root);
 		return c;
 	}

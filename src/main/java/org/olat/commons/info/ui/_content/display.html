@@ -3,14 +3,14 @@ function o_activateInfoNode(nodeid) {
 	if (!o_info.linkbusy) {
 		window.focus();
 		$f.openFfXHREvent(false, false, true), 'activateCourseNode', nodeid);
-		o_scrollToElement('#o_top');
+		o_scrollTop();
 	}
 }
 function o_activateInfoTool(toolname) {
 	if (!o_info.linkbusy) {
 		window.focus();
 		$f.openFfXHREvent(false, false, true), 'activateCourseTool', toolname);
-		o_scrollToElement('#o_top');
+		o_scrollTop();
 	}
 }
 </script>
