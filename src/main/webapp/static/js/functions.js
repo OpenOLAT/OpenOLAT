@@ -8,12 +8,9 @@ OPOL = {};
 
 //used to mark form dirty and warn user to save first.
 var o2c=0;
-var o3c=new Array();//array holds flexi.form id's
 var o2cExclusions=new Array();
 // o_info is a global object that contains global variables
-o_info.guibusy = false;
 o_info.linkbusy = false;
-o_info.made_dirty = { dispatchFieldId: null, hideDirtyMarking: true };
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
 // o_info.drake is supervised and linked to .o_drake DOM element
@@ -321,20 +318,31 @@ function o_beforeserver() {
 	} else if (window.olatonunload) {
 		olatonunload();
 	}
-	
-	o_info.made_dirty.dispatchFieldId = null;
-	o_info.made_dirty.hideDirtyMarking = false;
 }
 
-function o_afterserver() {
+function o_afterserver(responseData) {
 	o2c = 0;
 	o_info.linkbusy = false;
 	removeAjaxBusy();
 	
-	if(o_info.made_dirty.dispatchFieldId != null && o_info.made_dirty.dispatchFieldId !== "") {
-		o2c = 1;
-		o_info.dirty_form = true;
-		setFlexiFormDirty(o_info.made_dirty.dispatchFieldId, o_info.made_dirty.hideDirtyMarking);
+	try {
+		if(responseData) {
+			var cmdcnt = responseData["cmdcnt"];
+			if (cmdcnt > 0) {
+				var cs = responseData["cmds"];
+				for (var i=0; i<cmdcnt; i++) {
+					var acmd = cs[i];
+					var co = acmd["cmd"];
+					if(co == 10) {
+						o2c = 1;
+						o_info.dirty_form = true;
+						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
+					}
+				}
+			}
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
 	}
 }
 
@@ -374,21 +382,6 @@ function o2cl_noDirtyCheck() {
 	} else {
 		o_beforeserver();
 		return true;
-	}
-}
-
-function o3cl(formId) {
-	if (o_info.linkbusy) {
-		return false;
-	} else {
-		//detect if another flexi form on the screen is dirty too
-		var isRegistered = o3c1.indexOf(formId) > -1;
-		var flexiformdirty = (isRegistered && o3c1.length > 1) || o3c1.length > 0;
-		//check if no other flexi form is dirty
-		//otherwise ask if changes should be discarded.
-		var doreq = ( !flexiformdirty || confirm(o_info.dirty_form));
-		if (doreq) o_beforeserver();
-		return doreq;
 	}
 }
 
@@ -516,6 +509,9 @@ function o_ainvoke(r) {
 	if(r == undefined) {
 		return;
 	}
+	
+	var scrollTop = false;
+	var focus = { formName: null, formItemId: null };
 	
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
@@ -679,7 +675,18 @@ function o_ainvoke(r) {
 							if (jQuery.type(url) === "string") BLoader.loadJS(url, enc, true);
 							if (o_info.debug) o_log("c7: add js: "+url);
 						}	
-						break;	
+						break;
+					case 8: // new window / close window, executed in o_postInvoke
+						break;
+					case 9:
+						scrollTop = true;
+						break;
+					case 10: // dirty form, executed in o_afterserver
+						break;
+					case 11:
+						focus.formName = cda.formName;
+						focus.formItemId = cda.formItemId;
+						break;
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
 						break;
@@ -691,6 +698,13 @@ function o_ainvoke(r) {
 
 		// let everybody know dom replacement has finished
 		jQuery(document).trigger("oo.dom.replacement.after");
+	}
+	
+	if(focus.formName != null) {
+		o_ffSetFocus(focus.formName, focus.formItemId);
+	}
+	if(scrollTop) {
+		o_scrollTop();
 	}
 	
 /* minimalistic debugger / profiler	
@@ -1108,6 +1122,18 @@ function o_scrollToElement(elem) {
 	}
 }
 
+function o_scrollTop() {
+	try {
+		if(window.scrollTo) {
+			window.scrollTo({ top: 0, left:0, behavior:"smooth"});
+		} else {
+			o_scrollToElement('#o_top');
+		}
+	} catch (e) {
+		//console.log(e);
+	}
+}
+
 function o_popover(id, contentId, loc) {
 	if(typeof(loc)==='undefined') loc = 'bottom';
 	
@@ -1516,7 +1542,7 @@ function o_onXHRSuccess (data, textStatus, jqXHR) {
 	} catch(e) {
 		if(window.console) console.log(e);
 	} finally {
-		o_afterserver();
+		o_afterserver(data);
 	}
 }
 
@@ -1627,7 +1653,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
-				o_afterserver();
+				o_afterserver(responseData);
 			}
 		},
 		error: o_onXHRError
@@ -1696,7 +1722,7 @@ function o_XHRScormEvent(targetUrl) {
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
-				o_afterserver();
+				o_afterserver(responseData);
 			}
 		},
 		error: o_onXHRError
@@ -1774,7 +1800,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
-				o_afterserver();
+				o_afterserver(responseData);
 			}
 		},
 		error: o_onXHRError
@@ -1950,10 +1976,6 @@ function setFlexiFormDirtyByListener(e){
 }
 
 function setFlexiFormDirty(formId, hideMessage){
-	var isRegistered = o3c.indexOf(formId) > -1;
-	if(!isRegistered){
-		o3c.push(formId);
-	}
 	jQuery('#'+formId).each(function() {
 		var submitId = jQuery(this).data('FlexiSubmit');
 		if(submitId != null) {
@@ -2018,12 +2040,17 @@ function o_ffSetFocus(formId, formItemId){
 		var lastEl = jQuery('#' + o_info.lastFormFocusEl);
 		if (lastEl.length > 0) {
 			var jLastEl = jQuery(lastEl[0]);
-			if(jLastEl.hasClass('hasDatepicker')) {
-				jLastEl.datepicker('option', 'showOn', '');
-				jLastEl.focus();
-				jLastEl.datepicker('option', 'showOn', 'focus');
+			var tagName = lastEl[0].tagName;
+			if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
+				if(jLastEl.hasClass('hasDatepicker')) {
+					jLastEl.datepicker('option', 'showOn', '');
+					jLastEl.focus();
+					jLastEl.datepicker('option', 'showOn', 'focus');
+				} else {
+					jLastEl.focus();
+				}
 			} else {
-				jLastEl.focus();
+				o_info.lastFormFocusEl = 0;
 			}
 		} else {
 			o_info.lastFormFocusEl = 0;

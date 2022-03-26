@@ -61,7 +61,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.control.winmgr.ScrollTopCommand;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -873,7 +873,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		stackPanel.popController(pageCtrl);
 		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
 		doOpenPage(ureq, reloadedPage);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	protected void doNextPage(UserRequest ureq, Page currentPage) {
@@ -891,12 +891,12 @@ public class TableOfContentController extends BasicController implements TooledC
 		stackPanel.popController(pageCtrl);
 		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
 		doOpenPage(ureq, reloadedPage);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	protected void doAllPages() {
 		stackPanel.popController(pageCtrl);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	private PageRunController doOpenPage(UserRequest ureq, Page page) {

@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -937,11 +938,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void doScrollTop() {
-		String srollToTopJS = "try {o_scrollToElement('#o_top');}catch(e){}";
-		JSCommand jsc = new JSCommand(srollToTopJS);
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
-			wControl.getWindowBackOffice().sendCommandTo(jsc);
+			wControl.getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 	
