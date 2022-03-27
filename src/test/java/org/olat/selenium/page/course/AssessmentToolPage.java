@@ -237,12 +237,13 @@ public class AssessmentToolPage {
 	
 	public AssessmentToolPage generateCertificate() {
 		By userLinksBy = By.className("o_sel_certificate_generate");
+		OOGraphene.waitElement(userLinksBy, browser);
 		browser.findElement(userLinksBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 
 		By certificateBy = By.cssSelector("ul.o_certificates a>i.o_icon.o_filetype_pdf");
-		OOGraphene.waitElement(certificateBy, 15, browser);
+		OOGraphene.waitElementSlowly(certificateBy, 15, browser);
 		return this;
 	}
 	

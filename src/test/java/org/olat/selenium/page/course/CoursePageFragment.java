@@ -235,8 +235,9 @@ public class CoursePageFragment {
 		
 		By reminderBy = By.cssSelector("a.o_sel_course_settings");
 		browser.findElement(reminderBy).click();
-		OOGraphene.waitBusy(browser);
-
+		By settingsBy = By.className("o_sel_edit_repositoryentry");
+		OOGraphene.waitElement(settingsBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return new CourseSettingsPage(browser);
 	}
 	
