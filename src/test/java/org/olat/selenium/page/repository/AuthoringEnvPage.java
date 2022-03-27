@@ -29,6 +29,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * Page to control the author environnment.
@@ -259,9 +260,21 @@ public class AuthoringEnvPage {
 	}
 	
 	public void editResource(String title) {
-		By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@onclick,'edit')]");
-		OOGraphene.waitElement(editBy, browser);
-		browser.findElement(editBy).click();
+		if(browser instanceof FirefoxDriver) {
+			By toolsMenuCaretBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td[contains(@class,'o_col_action')]/a[i[contains(@class,'o_icon_actions')]]");
+			OOGraphene.waitElement(toolsMenuCaretBy, browser);
+			browser.findElement(toolsMenuCaretBy).click();
+			By toolsMenu = By.cssSelector("ul.o_sel_authoring_tools");
+			OOGraphene.waitElement(toolsMenu, browser);
+			
+			By editBy = By.xpath("//ul[contains(@class,'o_sel_authoring_tools')]/li/a[contains(@onclick,'edit')][i[contains(@class,'o_icon_edit')]]");
+			browser.findElement(editBy).click();
+		} else {
+			By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@onclick,'edit')]");
+			OOGraphene.waitElement(editBy, browser);
+			browser.findElement(editBy).click();
+		}
+		// can be warning in edition or edit mode
 		OOGraphene.waitBusy(browser);
 	}
 	

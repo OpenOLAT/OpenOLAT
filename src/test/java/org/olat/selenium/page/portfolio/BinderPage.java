@@ -225,7 +225,7 @@ public class BinderPage {
 		By toolsMenuCaretBy = By.cssSelector("a.o_sel_pf_section_tools");
 		By toolsMenu = By.cssSelector("ul.o_sel_pf_section_tools");
 		browser.findElement(toolsMenuCaretBy).click();
-		OOGraphene.waitElement(toolsMenu, 5, browser);
+		OOGraphene.waitElement(toolsMenu, browser);
 		
 		By deleteBy = By.cssSelector("ul.o_sel_pf_section_tools a.o_sel_pf_delete_section");
 		browser.findElement(deleteBy).click();

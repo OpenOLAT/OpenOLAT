@@ -704,13 +704,12 @@ function o_ainvoke(r) {
 		jQuery(document).trigger("oo.dom.replacement.after");
 	}
 	
-	if(focus.formName != null) {
-		o_ffSetFocus(focus.formName, focus.formItemId);
-	}
+	// Scroll or focus, but not both to prevent jumping up and down
 	if(scrollTop) {
 		o_scrollTop();
+	} else if(focus.formName != null) {
+ 		o_ffSetFocus(focus.formName, focus.formItemId);
 	}
-	
 /* minimalistic debugger / profiler	
 	BDebugger.logDOMCount();
 	BDebugger.logGlobalObjCount();
@@ -1130,11 +1129,7 @@ function o_scrollToElement(elem) {
 
 function o_scrollTop() {
 	try {
-		if(window.scrollTo) {
-			window.scrollTo({ top: 0, left:0, behavior:"smooth"});
-		} else {
-			o_scrollToElement('#o_top');
-		}
+		jQuery('html, body').animate({ scrollTop : 0 }, 300);
 	} catch (e) {
 		//console.log(e);
 	}
