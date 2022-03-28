@@ -147,6 +147,12 @@ body .modal #o_link_chooser .container-fluid {
 	@include container-fixed;
 }
 
+.tox .tox-form .tox-listboxfield .tox-listbox--select:focus,
+.tox .tox-form .tox-textarea:focus,
+.tox .tox-form .tox-textfield:focus {
+	@include form-control-focus;
+}
+
 // Show ok / cancel button on very small devices
 @media (max-width: 470px) {
 	.mce-foot {
@@ -206,12 +212,3 @@ figure.image {
 		font-style: italic;
 	}
 }
-
-
-/* MathLive z-index of keyboard over Tiny */
-.ML__keyboard {
-    --keyboard-zindex: 3400;
-}
-
-
-

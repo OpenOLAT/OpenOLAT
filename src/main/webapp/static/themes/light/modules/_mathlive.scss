@@ -1,0 +1,16 @@
+/* MathLive z-index of keyboard over Tiny */
+.ML__keyboard {
+    --keyboard-zindex: 3400;
+}
+
+math-field,
+.tox .tox-form math-field {
+	padding: $padding-base-vertical $padding-base-horizontal;
+	border: 1px solid $input-border;
+	border-radius: $input-border-radius;
+}
+
+math-field:focus-within,
+.tox .tox-form math-field:focus-within {
+	@include form-control-focus;
+}
