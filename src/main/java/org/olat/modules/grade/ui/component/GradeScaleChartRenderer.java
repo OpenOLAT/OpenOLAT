@@ -63,8 +63,8 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 		
 		boolean numeric = GradeSystemType.numeric == gradeSystem.getType();
 		String data = numeric ? getNumericData(ranges, breakpoints): getTextData(ranges);
-		int xMin = numeric ? gradeSystem.getBestGrade().intValue(): ranges.first().getBestToLowest();
-		int xMax = numeric ? gradeSystem.getLowestGrade().intValue(): ranges.last().getBestToLowest();
+		String xMin = numeric ? gradeSystem.getBestGrade().toString(): String.valueOf(ranges.first().getBestToLowest() - 0.5);
+		String xMax = numeric ? gradeSystem.getLowestGrade().toString(): String.valueOf(ranges.last().getBestToLowest() + 0.5);
 		String yMax = THREE_DIGITS.format(ranges.first().getUpperBound());
 		String yMin = THREE_DIGITS.format(ranges.last().getLowerBound());
 		PassedInfo passedInfo = numeric ? getNumericPassedInfo(gradeSystem, ranges): getTextPassedInfo(ranges);
@@ -147,14 +147,14 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 	private String getTextData(NavigableSet<GradeScoreRange> ranges) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("[").append(ranges.first().getBestToLowest()).append(",").append(THREE_DIGITS.format(ranges.first().getUpperBound())).append("],");
+		sb.append("[").append(ranges.first().getBestToLowest() - 0.5).append(",").append(THREE_DIGITS.format(ranges.first().getUpperBound())).append("],");
 		Iterator<GradeScoreRange> rangeIterator = ranges.iterator();
 		while(rangeIterator.hasNext()) {
 			GradeScoreRange range = rangeIterator.next();
 			if (rangeIterator.hasNext()) {
 				sb.append("[").append(range.getBestToLowest() + 0.5).append(",").append(THREE_DIGITS.format(range.getLowerBound())).append("],");
 			} else {
-				sb.append("[").append(range.getBestToLowest()).append(",").append(THREE_DIGITS.format(range.getLowerBound())).append("]");
+				sb.append("[").append(range.getBestToLowest() + 0.5).append(",").append(THREE_DIGITS.format(range.getLowerBound())).append("]");
 			}
 		}
 		return sb.toString();

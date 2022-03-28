@@ -269,8 +269,8 @@ public class GradeServiceImpl implements GradeService {
 		return gradeCalculator
 				.createNumericalRanges(
 						new BigDecimal(performanceClasses.get(performanceClasses.size() - 1).getBestToLowest()),
-						new BigDecimal(performanceClasses.get(0).getBestToLowest()), NumericResolution.whole,
-						Rounding.nearest, null, minScore, maxScore)
+						new BigDecimal(performanceClasses.get(0).getBestToLowest() -1), NumericResolution.whole,
+						Rounding.down, null, minScore, maxScore)
 				.stream()
 				.collect(Collectors.toMap(range -> Integer.valueOf(range.getGrade()), GradeScoreRange::getLowerBound));
 	}
