@@ -284,6 +284,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 					lengthError = true;
 				}
 			} else if (value.length() > notLongerLength || value.getBytes("UTF-8").length > notLongerLength) {
+				// fancy UTF-8 check due to Oracle handling of characters
 				lengthError = true;
 			} 
 		} catch (UnsupportedEncodingException e) {
