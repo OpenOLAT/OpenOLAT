@@ -1412,7 +1412,7 @@ create table o_as_entry (
    a_status varchar(16) default null,
    a_date_done timestamp,
    a_details varchar(1024) default null,
-   a_user_visibility bool default true,
+   a_user_visibility bool,
    a_fully_assessed bool default null,
    a_date_fully_assessed timestamp,
    a_assessment_id int8 default null,

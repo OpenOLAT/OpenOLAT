@@ -236,6 +236,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 			startPage.contextPut("attempts", assessmentEval.getAttempts());
 			
 			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
+			
 			if(resultsVisible && assessmentConfig.hasComment()) {
 				StringBuilder comment = Formatter
 						.stripTabsAndReturns(courseAssessmentService.getUserComment(scormNode, userCourseEnv));

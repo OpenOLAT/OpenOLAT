@@ -753,7 +753,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		if(config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
 			if (assignedTask != null && (assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded)) {
 				AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(gtaNode, getAssessedUserCourseEnvironment());
-				isVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
+				isVisible = eval.getUserVisible() != null && eval.getUserVisible().booleanValue();
 			}
 		} else {
 			isVisible = true;

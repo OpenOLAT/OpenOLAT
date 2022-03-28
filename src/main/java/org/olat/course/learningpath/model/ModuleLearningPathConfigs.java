@@ -264,7 +264,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_SCORE.equals(fullyAssessedTrigger)) {
 			Integer scoreCut = toInteger(moduleConfiguration.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE));
-			boolean fullyAssessed = Boolean.TRUE.equals(userVisibility) && score != null && scoreCut != null
+			boolean fullyAssessed = userVisibility != null && userVisibility.booleanValue() && score != null && scoreCut != null
 					&& score >= scoreCut.intValue();
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
 		}
@@ -275,7 +275,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed, Boolean userVisibility) {
 		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_PASSED.equals(fullyAssessedTrigger)) {
-			boolean fullyAssessed = Boolean.TRUE.equals(passed) && Boolean.TRUE.equals(userVisibility);
+			boolean fullyAssessed = Boolean.TRUE.equals(passed) && userVisibility != null && userVisibility.booleanValue();
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();

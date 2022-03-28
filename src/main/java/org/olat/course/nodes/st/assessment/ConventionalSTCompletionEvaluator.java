@@ -64,7 +64,7 @@ public class ConventionalSTCompletionEvaluator implements CompletionEvaluator {
 
 	private boolean isNodePassed(AssessmentEvaluation assessmentEvaluation) {
 		return Boolean.TRUE.equals(assessmentEvaluation.getPassed())
-				&& Boolean.TRUE.equals(assessmentEvaluation.getUserVisible());
+				&& assessmentEvaluation.getUserVisible() != null && assessmentEvaluation.getUserVisible().booleanValue();
 	}
 
 	private boolean isPassedConfigurated(AssessmentConfig assessmentConfig) {

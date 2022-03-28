@@ -588,7 +588,7 @@ class GTANotifications {
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			AssessmentEntry assessment = courseNodeAssessmentDao.loadAssessmentEntry(assessedIdentity, courseEntry, gtaNode.getIdent());
 			boolean resultsVisible = assessment != null
-					&& (assessment.getUserVisibility() == null || assessment.getUserVisibility().booleanValue());
+					&& assessment.getUserVisibility() != null && assessment.getUserVisibility().booleanValue();
 			if(resultsVisible) {
 				String score = null;
 				String status = null;

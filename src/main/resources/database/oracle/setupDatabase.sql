@@ -1445,7 +1445,7 @@ create table o_as_entry (
    a_status varchar2(16 char) default null,
    a_date_done date,
    a_details varchar2(1024 char) default null,
-   a_user_visibility number default 1,
+   a_user_visibility number,
    a_fully_assessed number default null,
    a_date_fully_assessed date,
    a_assessment_id number(20) default null,

@@ -396,7 +396,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		Float score = row.getScore();
 		if (score == null) return;
 		
-		if (row.isIgnoreInCourseAssessment() || (row.getUserVisibility() != null && !row.getUserVisibility().booleanValue())) {
+		if (row.isIgnoreInCourseAssessment() || row.getUserVisibility() == null || !row.getUserVisibility().booleanValue()) {
 			String linkText = translate("score.not.summed", new String[] {AssessmentHelper.getRoundedScore(score) });
 			linkText += " <i class='o_icon o_icon_info'> </i>";
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
@@ -490,7 +490,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (courseNode == null || isRoot(courseNode)) return;
 		
 		ScoreEvaluation scoreEval = userCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode);
-		if (userVisibility.equals(scoreEval.getUserVisible())) return; // nothing to change
+		if (Objects.equals(userVisibility, scoreEval.getUserVisible())) return; // nothing to change
 		
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
 				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
@@ -509,7 +509,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		String text = "";
 		if (nodeData.isIgnoreInCourseAssessment()) {
 			text = translate("score.not.summed.ignore");
-		} else if (nodeData.getUserVisibility() != null && !nodeData.getUserVisibility()) {
+		} else if (nodeData.getUserVisibility() == null || !nodeData.getUserVisibility()) {
 			text = translate("score.not.summed.hidden");
 		}
 		scoreDescCtrl = new SimpleMessageController(ureq, getWindowControl(), text, null);

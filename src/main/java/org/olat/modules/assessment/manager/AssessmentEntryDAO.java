@@ -76,7 +76,6 @@ public class AssessmentEntryDAO {
 		data.setSubIdent(subIdent);
 		data.setEntryRoot(entryRoot);
 		data.setReferenceEntry(referenceEntry);
-		data.setUserVisibility(Boolean.TRUE);
 		dbInstance.getCurrentEntityManager().persist(data);
 		return data;
 	}

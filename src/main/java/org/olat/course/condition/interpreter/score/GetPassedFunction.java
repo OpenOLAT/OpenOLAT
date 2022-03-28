@@ -110,7 +110,7 @@ public class GetPassedFunction extends AbstractFunction {
 			return Boolean.FALSE;
 		}
 		// check if the results are visible
-		if(se.getUserVisible() != null && !se.getUserVisible().booleanValue()) {
+		if(se.getUserVisible() == null || !se.getUserVisible().booleanValue()) {
 			return Boolean.FALSE;
 		}
 		Boolean passed = se.getPassed();

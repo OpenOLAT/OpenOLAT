@@ -1213,30 +1213,37 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId1.setScore(null);
+		nodeAssessmentId1.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId1);
 		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId2.setScore(BigDecimal.valueOf(0));
+		nodeAssessmentId2.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId2);
 		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
 				null, null, entry);
 		nodeAssessmentId3.setScore(BigDecimal.valueOf(2));
+		nodeAssessmentId3.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId3);
 		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, refEntry,
 				subIdent, null, refEntry);
 		nodeAssessmentId4.setScore(BigDecimal.valueOf(5));
+		nodeAssessmentId4.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId4);
 		AssessmentEntry nodeAssessmentId5 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId5.setScore(BigDecimal.valueOf(1));
+		nodeAssessmentId5.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId5);
 		AssessmentEntry nodeAssessmentId6 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId6.setScore(BigDecimal.valueOf(3.2));
+		nodeAssessmentId6.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId6);
 		AssessmentEntry nodeAssessmentId7 = assessmentEntryDao.createAssessmentEntry(assessedIdentity5, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId7.setScore(BigDecimal.valueOf(99));
+		nodeAssessmentId7.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId7);
 		dbInstance.commitAndCloseSession();
 		// load with our subIdent above

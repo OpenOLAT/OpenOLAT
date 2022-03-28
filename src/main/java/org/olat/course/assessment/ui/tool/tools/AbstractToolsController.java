@@ -186,7 +186,7 @@ public abstract class AbstractToolsController extends BasicController {
 			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
 					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 			if (canChangeUserVisibility) {
-				if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
+				if(scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
 					notVisibleLink = addLink("tool.set.hidden", "tool.set.hidden", "o_icon o_icon-fw o_icon_results_hidden");
 				} else {
 					visibleLink = addLink("tool.set.visible", "tool.set.visible", "o_icon o_icon-fw o_icon_results_visible");

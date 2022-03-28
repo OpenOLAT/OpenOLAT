@@ -4,6 +4,9 @@ alter table o_as_mode_course add column a_safeexambrowserconfig_plist text;
 alter table o_as_mode_course add column a_safeexambrowserconfig_pkey varchar(255);
 alter table o_as_mode_course add column a_safeexambrowserconfig_dload bool default true not null;
 
+-- Assessment
+alter table  o_as_entry alter column a_user_visibility drop default;
+
 -- VFS metadata
 alter table o_vfs_metadata add column f_expiration_date timestamp default null;
 create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);

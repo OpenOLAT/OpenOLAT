@@ -1390,7 +1390,7 @@ create table o_as_entry (
    a_status varchar(16) default null,
    a_date_done datetime,
    a_details varchar(1024) default null,
-   a_user_visibility bit default 1,
+   a_user_visibility bit,
    a_fully_assessed bit default null,
    a_date_fully_assessed datetime,
    a_assessment_id bigint default null,

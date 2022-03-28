@@ -792,8 +792,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private boolean matchesUserVisibilityFilter(SearchAssessedIdentityParams params, AssessmentEntry entry) {
 		if (hasUserVisibilityFilter(params)) {
-			return (params.getUserVisibility().booleanValue() && entry.getUserVisibility().booleanValue())
-					|| (!params.getUserVisibility().booleanValue() && !entry.getUserVisibility().booleanValue());
+			return (params.getUserVisibility().booleanValue() && entry.getUserVisibility() != null && entry.getUserVisibility().booleanValue())
+					|| (!params.getUserVisibility().booleanValue() && (entry.getUserVisibility() == null || !entry.getUserVisibility().booleanValue()));
 		}
 		return true;
 	}

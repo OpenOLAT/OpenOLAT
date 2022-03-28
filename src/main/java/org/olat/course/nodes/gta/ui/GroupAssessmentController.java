@@ -559,7 +559,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(withScore || withPassed) {
 				Boolean userVisible = scoreEval.getUserVisible();
 				if(userVisible == null) {
-					userVisible = Boolean.TRUE;
+					userVisible = Boolean.FALSE;
 				}
 				
 				if(count == 0) {
