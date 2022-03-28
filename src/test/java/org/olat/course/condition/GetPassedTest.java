@@ -164,6 +164,7 @@ public class GetPassedTest extends OlatTestCase {
 	private void setPassed(Identity identity, RepositoryEntry entry, CourseNode courseNode) {
 		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(identity, entry, courseNode.getIdent());
 		assessmentEntry.setPassed(Boolean.TRUE);
+		assessmentEntry.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 		dbInstance.commitAndCloseSession();
 	}

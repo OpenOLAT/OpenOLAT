@@ -43,6 +43,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	private Float evaluatedScore;
 	private Float evaluatedMaxScore;
 	private Overridable<Boolean> evaluatedPassedOverridable;
+	private Boolean evaluatedUserVisible;
 	private Double evaluatedCompletion;
 	private AssessmentEntryStatus evaluatedStatus;
 	private Boolean evaluatedFullyAssessed;
@@ -59,6 +60,7 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedScore = origin.getScore();
 		this.evaluatedMaxScore = origin.getMaxScore();
 		this.evaluatedPassedOverridable = origin.getPassedOverridable().clone();
+		this.evaluatedUserVisible = origin.getUserVisible();
 		this.evaluatedCompletion = origin.getCompletion();
 		this.evaluatedStatus = origin.getAssessmentStatus();
 		this.evaluatedFullyAssessed = origin.getFullyAssessed();
@@ -135,6 +137,15 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	@Override
+	public Boolean getUserVisible() {
+		return evaluatedUserVisible;
+	}
+
+	public void setUserVisible(Boolean userVisible) {
+		this.evaluatedUserVisible = userVisible;
+	}
+
+	@Override
 	public Double getCompletion() {
 		return evaluatedCompletion;
 	}
@@ -193,6 +204,7 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getObligation().getModDate(), evaluatedObligation.getModDate())
 				|| !Objects.equals(origin.getPassedOverridable().getCurrent(), evaluatedPassedOverridable.getCurrent())
 				|| !Objects.equals(origin.getPassedOverridable().getOriginal(), evaluatedPassedOverridable.getOriginal())
+				|| !Objects.equals(origin.getUserVisible(), evaluatedUserVisible)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)
 				|| !Objects.equals(origin.getMaxScore(), evaluatedMaxScore)
 				|| !Objects.equals(origin.getFullyAssessed(), evaluatedFullyAssessed)

@@ -261,6 +261,13 @@ public class AssessmentAccounting implements ScoreAccounting {
 			result.getPassedOverridable().setCurrent(rootPassed);
 		}
 		
+		// STCourseNode may have a calculated score.
+		if (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null)) {
+			boolean done = result.getAssessmentStatus() != null && AssessmentEntryStatus.done == result.getAssessmentStatus();
+			Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(courseNode).getInitialUserVisibility(done, false);
+			result.setUserVisible(initialUserVisibility);
+		}
+		
 		if (result.hasChanges()) {
 			update(courseNode, result);
 		}
@@ -279,6 +286,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
 		entry.setMaxScore(maxScore);
 		entry.setPassedOverridable(result.getPassedOverridable());
+		entry.setUserVisibility(result.getUserVisible());
 		entry.setCompletion(result.getCompletion());
 		entry.setDuration(result.getDuration());
 		entry.setLastUserModified(result.getLastUserModified());
@@ -286,13 +294,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setDuration(result.getDuration());
 		entry.setAssessmentStatus(result.getAssessmentStatus());
 		entry.setFullyAssessed(result.getFullyAssessed());
-		
-		// STCourseNode may have a calculated score.
-		if (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null)) {
-			boolean done = result.getAssessmentStatus() != null && AssessmentEntryStatus.done == result.getAssessmentStatus();
-			Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(courseNode).getInitialUserVisibility(done, false);
-			entry.setUserVisibility(initialUserVisibility);
-		}
 		
 		entry = getAssessmentManager().updateAssessmentEntry(entry);
 		
