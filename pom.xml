@@ -71,12 +71,12 @@
 		<org.slf4j>1.7.32</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.7.Final</io.undertow>
-		<jackson.version>2.12.3</jackson.version>
+		<jackson.version>2.13.2</jackson.version>
 		<org.mysql.version>8.0.27</org.mysql.version>
 		<org.postgresql.version>42.3.3</org.postgresql.version>
 		<org.infinispan.version>12.1.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.1.1</version.selenium>
+		<version.selenium>4.1.3</version.selenium>
 		<version.drone>3.0.0-alpha.2</version.drone>
 		<activemq.version>5.16.2</activemq.version>
 		<qtiworks.version>1.0.26</qtiworks.version>
@@ -105,7 +105,7 @@
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.firefox.version>v0.30.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>98.0.4758.102</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>99.0.4844.51</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
@@ -2445,7 +2445,7 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson.version}.1</version>
         </dependency>
         <dependency>
         	<groupId>com.fasterxml.jackson.datatype</groupId>
@@ -2586,12 +2586,6 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-support</artifactId>
-			<version>${version.selenium}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-leg-rc</artifactId>
 			<version>${version.selenium}</version>
 			<scope>test</scope>
 		</dependency>

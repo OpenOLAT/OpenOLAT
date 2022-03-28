@@ -35,7 +35,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
-import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
@@ -728,7 +727,7 @@ public class OOGraphene {
 					} catch(Exception e2) {
 						//e.printStackTrace();
 					}
-				} catch(ElementNotVisibleException e1) {
+				} catch(Exception e1) {
 					try {
 						waitingALittleLonger();
 						clickCloseButton(browser, closeButton);
@@ -769,8 +768,8 @@ public class OOGraphene {
 		try {
 			closeButton.click();
 			waitModalDialogDisappears(browser);
-		} catch (ElementNotVisibleException e) {
-			//e.printStackTrace();
+		} catch (Exception e) {
+			log.warn("", e);
 		}
 	}
 	
