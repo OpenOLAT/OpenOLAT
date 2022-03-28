@@ -93,6 +93,7 @@
 				.o_title {
 					margin: 0.2em 0 0.1em 0; /* box moves down otherwise, replaced with padding */
 					position: relative;
+					line-height: 1.2;
 					a {
 						@extend %o_undecorated;
 						@include text-overflow();
@@ -106,7 +107,9 @@
 				.o_educational_type {
 					font-size: 70%;
 				}
-				
+				.o_teaser {
+					font-size: 85%;
+				}
 				.o_author{
 					font-size: 85%;
 					color: $o-coursesite-meta-author-color;
@@ -162,6 +165,12 @@
 					}
 				}
 				
+				
+				@media (max-width: $screen-md-max) { 
+					.o_teaser {
+						display: none;
+					}	
+				}
 				@media (max-width: $screen-xs-max) { 
 					.o_title {
 						line-height: $o-coursesite-rowelem-height-xs;
@@ -171,7 +180,7 @@
 							@include text-overflow();
 						}
 					}
-					.o_educational_type, .o_author, .o_closed, .o_lifecycle, .o_desc, .o_taxonomy_levels, .o_bookmark {
+					.o_educational_type, .o_teaser, .o_author, .o_closed, .o_lifecycle, .o_desc, .o_taxonomy_levels, .o_bookmark {
 						display: none;
 					}	
 					.o_ext_ref {

@@ -149,7 +149,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			externalRef.setHelpUrlForManualPage("manual_user/authoring/Set_up_info_page/");
 		}
 		
-		teaser = uifactory.addTextElement("cif.teaser", "cif.teaser", 200, repositoryEntry.getTeaser(), formLayout);
+		teaser = uifactory.addTextElement("cif.teaser", "cif.teaser", 160, repositoryEntry.getTeaser(), formLayout);
 		teaser.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.teaser) && !readOnly);
 		
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
@@ -248,7 +248,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		allOk &= RepositoyUIFactory.validateTextElement(requirements, false, 2000);
 		allOk &= RepositoyUIFactory.validateTextElement(credits, false, 2000);
 		allOk &= RepositoyUIFactory.validateTextElement(externalRef, false, 255);
-		allOk &= RepositoyUIFactory.validateTextElement(teaser, false, 200);
+		allOk &= RepositoyUIFactory.validateTextElement(teaser, false, 150);
 
 		return allOk;
 	}
