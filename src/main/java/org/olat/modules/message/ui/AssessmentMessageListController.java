@@ -73,6 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentMessageListController extends FormBasicController implements GenericEventListener {
 	
 	private FormLink bulkDeleteButton;
+	private FormLink bulkWithdrawButton;
 	private FormLink addMessageButton;
 	private FlexiTableElement tableEl;
 	private AssessmentMessageListDataModel tableModel;
@@ -87,6 +88,7 @@ public class AssessmentMessageListController extends FormBasicController impleme
 	private AssessmentMessageEditController editCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmDeleteMessagesController confirmDeleteCtrl;
+	private ConfirmWithdrawMessagesController confirmWithdrawCtrl;
 	
 	@Autowired
 	private Coordinator coordinator;
@@ -122,6 +124,7 @@ public class AssessmentMessageListController extends FormBasicController impleme
 		addMessageButton.setElementCssClass("o_sel_add_message");
 		addMessageButton.setIconLeftCSS("o_icon o_icon_add");
 		bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+		bulkWithdrawButton = uifactory.addFormLink("withdraw", formLayout, Link.BUTTON);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MessagesCols.message));
@@ -144,6 +147,7 @@ public class AssessmentMessageListController extends FormBasicController impleme
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "messages", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.addBatchButton(bulkDeleteButton);
+		tableEl.addBatchButton(bulkWithdrawButton);
 		tableEl.setEmptyTableSettings("table.nomessage", null, "o_icon_chat");
 		tableEl.setElementCssClass("o_as_messages_list");
 		tableEl.setSelectAllEnable(true);
@@ -234,14 +238,15 @@ public class AssessmentMessageListController extends FormBasicController impleme
 		}
 		
 		if(AssessmentMessageEvent.READ.equals(event.getCommand())
-				|| AssessmentMessageEvent.PUBLISHED.equals(event.getCommand())) {
+				|| AssessmentMessageEvent.PUBLISHED.equals(event.getCommand())
+				|| AssessmentMessageEvent.EXPIRED.equals(event.getCommand())) {
 			loadModel(new SyntheticUserRequest(getIdentity(), getLocale()), event.getMessageKey());
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editCtrl == source || confirmDeleteCtrl == source) {
+		if(editCtrl == source || confirmDeleteCtrl == source || confirmWithdrawCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
@@ -259,11 +264,13 @@ public class AssessmentMessageListController extends FormBasicController impleme
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmWithdrawCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmWithdrawCtrl = null;
 		confirmDeleteCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
@@ -281,6 +288,8 @@ public class AssessmentMessageListController extends FormBasicController impleme
 			doNewMessage(ureq);
 		} else if(bulkDeleteButton == source) {
 			doDeleteMessages(ureq, getSelectedRows());
+		} else if(bulkWithdrawButton == source) {
+			doWithdrawMessages(ureq, getSelectedRows());
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("tools".equals(link.getCmd()) && link.getUserObject() instanceof AssessmentMessageRow) {
@@ -337,19 +346,54 @@ public class AssessmentMessageListController extends FormBasicController impleme
 	}
 
 	private void doDeleteMessages(UserRequest ureq, List<AssessmentMessageRow> rows) {
-		if(guardModalController(editCtrl)) return;
+		if(guardModalController(confirmDeleteCtrl)) return;
 		
-		List<AssessmentMessage> messages = rows.stream()
-				.map(AssessmentMessageRow::getMessage)
-				.collect(Collectors.toList());
-		confirmDeleteCtrl = new ConfirmDeleteMessagesController(ureq, getWindowControl(), messages);
-		listenTo(confirmDeleteCtrl);
+		rows = rows.stream()
+			.filter( row -> row.getStatus() == AssessmentMessageStatusEnum.planned)
+			.filter(row -> admin || getIdentity().getKey().equals(row.getMessage().getAuthor().getKey()))
+			.collect(Collectors.toList());
 		
-		String title = rows.size() <= 1 ? "confirm.delete.title" : "confirm.delete.title.plural";
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
-				true, translate(title));
-		listenTo(cmc);
-		cmc.activate();	
+		if(rows.isEmpty()) {
+			showWarning("warning.selectatleastone.can.delete");
+		} else {
+			List<AssessmentMessage> messages = rows.stream()
+					.map(AssessmentMessageRow::getMessage)
+					.collect(Collectors.toList());
+			confirmDeleteCtrl = new ConfirmDeleteMessagesController(ureq, getWindowControl(), messages);
+			listenTo(confirmDeleteCtrl);
+			
+			String title = rows.size() <= 1 ? "confirm.delete.title" : "confirm.delete.title.plural";
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
+					true, translate(title));
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doWithdrawMessages(UserRequest ureq, List<AssessmentMessageRow> rows) {
+		if(guardModalController(confirmWithdrawCtrl)) return;
+		
+		rows = rows.stream()
+			.filter( row -> row.getStatus() == AssessmentMessageStatusEnum.published)
+			.filter(row -> admin || getIdentity().getKey().equals(row.getMessage().getAuthor().getKey()))
+			.collect(Collectors.toList());
+		
+		if(rows.isEmpty()) {
+			showWarning("warning.selectatleastone.can.withdraw");
+		} else {
+		
+			List<AssessmentMessage> messages = rows.stream()
+					.map(AssessmentMessageRow::getMessage)
+					.collect(Collectors.toList());
+			confirmWithdrawCtrl = new ConfirmWithdrawMessagesController(ureq, getWindowControl(), messages);
+			listenTo(confirmWithdrawCtrl);
+			
+			String title = rows.size() <= 1 ? "confirm.withdraw.title" : "confirm.withdraw.title.plural";
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmWithdrawCtrl.getInitialComponent(),
+					true, translate(title));
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doOpenTools(UserRequest ureq, FormLink link, AssessmentMessageRow row) {
@@ -366,6 +410,7 @@ public class AssessmentMessageListController extends FormBasicController impleme
 
 		private Link editLink;
 		private Link deleteLink;
+		private Link withdrawLink;
 		private final VelocityContainer mainVC;
 		
 		private final AssessmentMessageRow row;
@@ -375,12 +420,23 @@ public class AssessmentMessageListController extends FormBasicController impleme
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
-			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			mainVC.put("tool.edit", editLink);
-			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
-			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-			mainVC.put("tool.delete", deleteLink);
+			
+			AssessmentMessageStatusEnum status = row.getStatus();
+			if(status == AssessmentMessageStatusEnum.planned || status == AssessmentMessageStatusEnum.published) {
+				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
+				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				mainVC.put("tool.edit", editLink);
+			}
+			
+			if(status == AssessmentMessageStatusEnum.planned) {
+				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+				mainVC.put("tool.delete", deleteLink);
+			} else if(status == AssessmentMessageStatusEnum.published) {
+				withdrawLink = LinkFactory.createLink("withdraw", "withdraw", getTranslator(), mainVC, this, Link.LINK);
+				withdrawLink.setIconLeftCSS("o_icon o_icon-fw o_icon_deactivate");
+				mainVC.put("tool.withdraw", withdrawLink);
+			}
 
 			putInitialPanel(mainVC);
 		}
@@ -392,6 +448,8 @@ public class AssessmentMessageListController extends FormBasicController impleme
 				doEditMessage(ureq, row);
 			} else if(deleteLink == source) {
 				doDeleteMessages(ureq, List.of(row));
+			} else if(withdrawLink == source) {
+				doWithdrawMessages(ureq, List.of(row));
 			}
 		}
 	}

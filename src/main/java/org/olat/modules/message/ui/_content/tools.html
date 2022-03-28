@@ -1,8 +1,11 @@
-<ul class="o_dropdown list-unstyled">
+<ul class="o_dropdown list-unstyled o_sel_assessment_message_tools">
 	#if($r.available("tool.edit"))
 	<li>$r.render("tool.edit")</li>
 	#end
 	#if($r.available("tool.delete"))
 	<li>$r.render("tool.delete")</li>
+	#end
+	#if($r.available("tool.withdraw"))
+	<li>$r.render("tool.withdraw")</li>
 	#end
 </ul>

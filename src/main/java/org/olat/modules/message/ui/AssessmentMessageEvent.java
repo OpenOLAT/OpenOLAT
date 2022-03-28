@@ -34,6 +34,7 @@ public class AssessmentMessageEvent extends MultiUserEvent {
 	public static final String READ = "message-read";
 	public static final String PUBLISHED = "message-published";
 	public static final String DELETED = "message-deleted";
+	public static final String EXPIRED = "message-expired";
 	
 	private Long messageKey;
 	private String resSubPath;

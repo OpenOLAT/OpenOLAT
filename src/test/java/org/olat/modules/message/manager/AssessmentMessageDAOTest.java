@@ -19,6 +19,8 @@
  */
 package org.olat.modules.message.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Date;
 import java.util.List;
 
@@ -37,7 +39,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * 
  * Initial date: 14 mars 2022<br>
@@ -134,6 +135,48 @@ public class AssessmentMessageDAOTest extends OlatTestCase {
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(message, infos.getMessage());
 		Assert.assertEquals(1l, infos.getNumOfRead());
+	}
+	
+	@Test
+	public void getMessages() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("scheduled-msg-3-singula");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date now = new Date();
+		AssessmentMessage messageNow = assessmentMessageDao.createMessage("Hello",
+				DateUtils.addMinutes(now, -5), DateUtils.addMinutes(now, 5),
+				AssessmentMessagePublicationEnum.asap, entry, "load-single-message-infos", id);
+		
+		AssessmentMessage messageScheduled = assessmentMessageDao.createMessage("Hello",
+				DateUtils.addMinutes(now, 5), DateUtils.addMinutes(now, 10),
+				AssessmentMessagePublicationEnum.asap, entry, "load-single-message-infos", id);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentMessage> messages = assessmentMessageDao.getMessages(now);
+		assertThat(messages)
+			.containsAnyOf(messageNow)
+			.doesNotContain(messageScheduled);
+	}
+	
+	@Test
+	public void getExpiredMessages() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("scheduled-msg-3-singula");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date now = new Date();
+		AssessmentMessage currentMessage = assessmentMessageDao.createMessage("Hello",
+				DateUtils.addMinutes(now, -2), DateUtils.addMinutes(now, 2),
+				AssessmentMessagePublicationEnum.asap, entry, "load-single-message-infos", id);
+		
+		AssessmentMessage expiredMessage = assessmentMessageDao.createMessage("Hello",
+				DateUtils.addMinutes(now, -5), DateUtils.addMinutes(now, -2),
+				AssessmentMessagePublicationEnum.asap, entry, "load-single-message-infos", id);
+		dbInstance.commitAndCloseSession();
+		
+		Date start = DateUtils.addMinutes(now, -5);
+		Date end = DateUtils.addMinutes(now, 0);
+		List<AssessmentMessage> messages = assessmentMessageDao.getExpiredMessages(start, end);
+		assertThat(messages)
+			.containsAnyOf(expiredMessage)
+			.doesNotContain(currentMessage);
 	}
 	
 	@Test

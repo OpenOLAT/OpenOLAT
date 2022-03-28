@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.resource.OresHelper;
@@ -91,10 +93,21 @@ public class AssessmentMessageServiceImpl implements AssessmentMessageService {
 	}
 
 	public void publishMessage() {
-		List<AssessmentMessage> messages = assessmentMessageDao.getMessages(new Date());
+		Date now = new Date();
+		List<AssessmentMessage> messages = assessmentMessageDao.getMessages(now);
 		for(AssessmentMessage message:messages) {
 			OLATResourceable messageOres = getEventResourceable(message.getEntry(), message.getResSubPath());
 			AssessmentMessageEvent event = new AssessmentMessageEvent(AssessmentMessageEvent.PUBLISHED,
+					message.getKey(), message.getEntry().getKey(), message.getResSubPath(), null);
+			coordinator.getEventBus().fireEventToListenersOf(event, messageOres);
+		}
+		
+		// Send expiration events during five minutes after the effective expiration
+		Date expirationWindowStart = DateUtils.addMinutes(now, -5);
+		List<AssessmentMessage> expiredMessages = assessmentMessageDao.getExpiredMessages(expirationWindowStart, now);
+		for(AssessmentMessage message:expiredMessages) {
+			OLATResourceable messageOres = getEventResourceable(message.getEntry(), message.getResSubPath());
+			AssessmentMessageEvent event = new AssessmentMessageEvent(AssessmentMessageEvent.EXPIRED,
 					message.getKey(), message.getEntry().getKey(), message.getResSubPath(), null);
 			coordinator.getEventBus().fireEventToListenersOf(event, messageOres);
 		}
@@ -103,6 +116,23 @@ public class AssessmentMessageServiceImpl implements AssessmentMessageService {
 	@Override
 	public AssessmentMessage getAssessmentMessage(Long messageKey) {
 		return assessmentMessageDao.loadByKey(messageKey);
+	}
+
+	@Override
+	public void withdrawMessage(AssessmentMessage message) {
+		if(message == null || message.getKey() == null) return;
+		
+		AssessmentMessage reloadedMessage = assessmentMessageDao.loadByKey(message.getKey());
+		if(reloadedMessage != null) {
+			reloadedMessage.setExpirationDate(CalendarUtils.removeSeconds(new Date()));
+			dbInstance.commit();
+			
+			OLATResourceable messageOres = getEventResourceable(reloadedMessage.getEntry(), reloadedMessage.getResSubPath());
+			AssessmentMessageEvent event = new AssessmentMessageEvent(AssessmentMessageEvent.EXPIRED,
+					message.getKey(), message.getEntry().getKey(), message.getResSubPath(), null);
+			coordinator.getEventBus().fireEventToListenersOf(event, messageOres);
+		}
+		
 	}
 
 	@Override

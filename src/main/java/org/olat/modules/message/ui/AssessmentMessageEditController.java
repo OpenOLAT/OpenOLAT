@@ -102,7 +102,7 @@ public class AssessmentMessageEditController extends FormBasicController {
 			publicationEl.select(AssessmentMessagePublicationEnum.scheduled.name(), true);
 		}
 		
-		Date publicationDate = message == null ? CalendarUtils.startOfDay(ureq.getRequestTimestamp()) : message.getPublicationDate();
+		Date publicationDate = message == null ? CalendarUtils.removeSeconds(ureq.getRequestTimestamp()) : message.getPublicationDate();
 		publicationDateEl = uifactory.addDateChooser("publication.date", "publication.date", publicationDate, formLayout);
 		publicationDateEl.setEnabled(status == AssessmentMessageStatusEnum.planned);
 		publicationDateEl.setDateChooserTimeEnabled(true);
@@ -157,6 +157,12 @@ public class AssessmentMessageEditController extends FormBasicController {
 			
 			if(expirationDateEl.getDate() == null) {
 				expirationDateEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			if(message == null && publicationDateEl.getDate() != null
+					&& publicationDateEl.getDate().before(CalendarUtils.removeSeconds(ureq.getRequestTimestamp()))) {
+				publicationDateEl.setErrorKey("error.publication.date.futre.only", null);
 				allOk &= false;
 			}
 			

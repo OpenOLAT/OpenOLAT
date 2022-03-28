@@ -159,7 +159,8 @@ public class AssessmentMessageDisplayController extends FormBasicController impl
 			if(messagesList.size() != messageSize) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if(AssessmentMessageEvent.DELETED.equals(event.getCommand()) && isInList(event.getMessageKey())) {
+		} else if((AssessmentMessageEvent.DELETED.equals(event.getCommand()) || AssessmentMessageEvent.EXPIRED.equals(event.getCommand()))
+				&& isInList(event.getMessageKey())) {
 			SyntheticUserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
 			removeMessage(event.getMessageKey());
 			fireEvent(ureq, Event.CHANGED_EVENT);

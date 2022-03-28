@@ -102,6 +102,19 @@ public class AssessmentMessageDAO {
 			.getResultList();
 	}
 	
+	public List<AssessmentMessage> getExpiredMessages(Date startExpiration, Date endExpiration) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select msg from assessmentmessage as msg")
+		  .append(" inner join fetch msg.entry as v")
+		  .where().append(" msg.expirationDate>=:startExpiration and msg.expirationDate<=:endExpiration");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentMessage.class)
+			.setParameter("startExpiration", startExpiration, TemporalType.TIMESTAMP)
+			.setParameter("endExpiration", endExpiration, TemporalType.TIMESTAMP)
+			.getResultList();
+	}
+	
 	public boolean hasMessages(RepositoryEntry entry, String resSubPath, Date date) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select msg.key from assessmentmessage as msg")

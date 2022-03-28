@@ -66,6 +66,8 @@ public interface AssessmentMessageService {
 	
 	public void deleteMessage(AssessmentMessage message);
 	
+	public void withdrawMessage(AssessmentMessage message);
+	
 	/**
 	 * To listen to new messages.
 	 * 
