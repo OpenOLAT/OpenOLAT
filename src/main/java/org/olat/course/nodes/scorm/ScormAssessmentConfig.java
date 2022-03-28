@@ -102,6 +102,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
+	}
+	
+	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;
 	}

@@ -1,0 +1,7 @@
+#if($r.available("digital.signature.download.link"))
+	<tr>
+		<th scope="row">$r.translate("digital.signature.download")</th>
+		<td>$r.render("digital.signature.download.link")
+		#if($r.isNotNull($signatureIssueDate)) $r.translate("digital.signature.download.date", $signatureIssueDate)#end</td>
+	</tr>
+#end

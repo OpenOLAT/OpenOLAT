@@ -58,6 +58,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -69,12 +70,10 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.nodes.ms.DocumentsMapper;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,12 +86,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2 {
 	
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
+	
 	private final Date dueDate;
-	private final boolean withScore;
-	private final boolean withPassed;
 	private final boolean preview;
 	private final Boolean closeAfterDueDate;
 	private final CheckboxList checkboxList;
+	private final AssessmentConfig assessmentConfig;
 	
 	private static final String[] onKeys = new String[]{ "on" };
 
@@ -105,16 +105,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 	private CheckboxManager checkboxManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private GradeModule gradeModule;
 	
-	/**
-	 * Use this constructor to launch the checklist.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param courseNode
-	 */
+	
 	public CheckListRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean preview) {
 		super(ureq, wControl, "run", Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
@@ -124,6 +116,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.userCourseEnv = userCourseEnv;
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		config = courseNode.getModuleConfiguration();
 		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
@@ -139,11 +132,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 		} else {
 			dueDate = null;
 		}
-		
-		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		withScore = (hasScore == null || hasScore.booleanValue());
-		Boolean hasPassed = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-		withPassed = (hasPassed == null || hasPassed.booleanValue());
 
 		initForm(ureq);
 	}
@@ -161,7 +149,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 					layoutCont.contextPut("afterDueDate", Boolean.TRUE);
 				}
 			}
-			layoutCont.contextPut("withScore", Boolean.valueOf(withScore));
 			
 			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(),
@@ -193,79 +180,46 @@ public class CheckListRunController extends FormBasicController implements Contr
 			}
 			layoutCont.contextPut("checkboxList", wrappers);
 			
-			if(withScore || withPassed) {
-				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
-				exposeConfigToVC(ureq, layoutCont);
-				exposeUserDataToVC(ureq, layoutCont);
-			} else {
-				layoutCont.contextPut("enableScoreInfo", Boolean.FALSE);
-			}
+			exposeUserDataToVC(ureq, layoutCont);
 		}
-	}
-	
-	private void exposeConfigToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		
-		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
-		
-		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
-		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
-		layoutCont.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
-		
-		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
-		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
-	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
-	    	layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-	    	layoutCont.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
-	    }
-	    
-		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
-		if (hasPassed && !hasGrade) {
-			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
-		}
-		
-	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
-	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
 	private void exposeUserDataToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
-		AssessmentEntry scoreEval = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-		if(scoreEval == null || preview) {
-			layoutCont.contextPut("score", null);
-			layoutCont.contextPut("hasPassedValue", Boolean.FALSE);
-			layoutCont.contextPut("passed", null);
+		AssessmentEvaluation assessmentEval = preview
+				? AssessmentEvaluation.EMPTY_EVAL
+				: courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		
+		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+		listenTo(assessmentParticipantViewCtrl);
+		layoutCont.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+		
+		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
+		if(resultsVisible) {
+			if(assessmentConfig.hasComment()) {
+				StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEval.getComment());
+				layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+				layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
+			}
+			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
+				List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+				String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+				layoutCont.contextPut("docsMapperUri", mapperUri);
+				layoutCont.contextPut("docs", docs);
+				layoutCont.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+			}
+		} else {
 			layoutCont.contextPut("comment", null);
 			layoutCont.contextPut("docs", null);
-		} else {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
-			layoutCont.contextPut("resultsVisible", resultsVisible);
-			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-			layoutCont.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
-					scoreEval.getPerformanceClassIdent(), scoreEval.getGrade()));
-			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-			layoutCont.contextPut("passed", scoreEval.getPassed());
-			layoutCont.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
-			if(resultsVisible) {
-				if(assessmentConfig.hasComment()) {
-					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
-					layoutCont.contextPut("comment", StringHelper.xssScan(comment));
-					layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
-				}
-				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
-					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-					layoutCont.contextPut("docsMapperUri", mapperUri);
-					layoutCont.contextPut("docs", docs);
-					layoutCont.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
-				}
-			} else {
-				layoutCont.contextPut("comment", null);
-				layoutCont.contextPut("docs", null);
-			}
 		}
-
+		
+		layoutCont.contextPut("withScore", Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode()));
+		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
+		if(StringHelper.containsNonWhitespace(infoTextUser)) {
+			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+			layoutCont.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
+		}
+		
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		String userLog = preview ? "" : am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
 		layoutCont.contextPut("log", StringHelper.escapeHtml(userLog));

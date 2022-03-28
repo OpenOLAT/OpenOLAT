@@ -48,22 +48,18 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
-import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
@@ -94,16 +90,17 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private FormLayoutContainer infosContainer, assessmentInfosContainer;
 
 	private DialogBoxController restoreBinderCtrl;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
 	private Formatter formatter;
 	private final UserCourseEnvironment userCourseEnv;
+	private final AssessmentConfig assessmentConfig;
+	private AssessmentEvaluation assessmentEval;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private GradeModule gradeModule;
 	
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			PortfolioCourseNode courseNode) {
@@ -113,8 +110,10 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		formatter = Formatter.getInstance(getLocale());
+		
 		
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
@@ -138,6 +137,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		formLayout.add(assessmentInfosContainer);
 		
 		VelocityContainer mainVC = ((FormLayoutContainer) formLayout).getFormItemComponent();
+		
 		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv,
 					courseNode, this.mainForm);
@@ -276,53 +276,23 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		if(userCourseEnv.isParticipant() && (returnDate != null || copyBinder != null)) {
 			String rDate = formatter.formatDateAndTime(returnDate);
 			uifactory.addStaticTextElement("map.returnDate", rDate, infosContainer);
-
-			// Fetch all score and passed and calculate score accounting for the entire course
-			ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
-			scoreAccounting.evaluateAll();			
-			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 			
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			
-			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
-			assessmentInfosContainer.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
-			assessmentInfosContainer.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
-			//score
-			Boolean hasScore = Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode());
-			Boolean hasPassed = Boolean.valueOf(Mode.none != assessmentConfig.getPassedMode());
-			assessmentInfosContainer.contextPut("hasScoreField", hasScore);
-			if(hasScore.booleanValue()) {
-				Float score = scoreEval.getScore();
-				Float minScore = assessmentConfig.getMinScore();
-				Float maxScore = assessmentConfig.getMaxScore();
-				assessmentInfosContainer.contextPut("scoreMin", AssessmentHelper.getRoundedScore(minScore));
-				assessmentInfosContainer.contextPut("scoreMax", AssessmentHelper.getRoundedScore(maxScore));
-				assessmentInfosContainer.contextPut("score", AssessmentHelper.getRoundedScore(score));
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			assessmentParticipantViewCtrl = null;
+			if (Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode()) {
+				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+				listenTo(assessmentParticipantViewCtrl);
+				assessmentInfosContainer.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			}
 			
-			// grade
-			boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
-			assessmentInfosContainer.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
-			assessmentInfosContainer.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
-					scoreEval.getPerformanceClassIdent(), scoreEval.getGrade()));
-			
-			//passed
-			assessmentInfosContainer.contextPut("hasPassedField", hasPassed);
-			if(hasPassed.booleanValue()) {
-				Boolean passed = scoreEval.getPassed();
-				assessmentInfosContainer.contextPut("passed", passed);
-				assessmentInfosContainer.contextPut("hasPassedValue", Boolean.valueOf(passed != null));
-				if (!hasGrade) {
-					Float cutValue = assessmentConfig.getCutValue();
-					assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
-				}
-			}
-
+			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
+		
 			// get comment
 			if(resultsVisible) {
 				if(assessmentConfig.hasComment()) {
-					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-					String comment = am.getNodeComment(courseNode, getIdentity());
+					String comment = assessmentEval.getComment();
 					assessmentInfosContainer.contextPut("comment", comment);
 					assessmentInfosContainer.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
@@ -415,9 +385,9 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(PortfolioCourseNodeRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+			guiPrefs.putAndSave(PortfolioCourseNodeRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
-		flc.getFormItemComponent().contextPut("in-" + panelId, new Boolean(newValue));
+		flc.getFormItemComponent().contextPut("in-" + panelId, Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {

@@ -287,6 +287,13 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setAssessmentStatus(result.getAssessmentStatus());
 		entry.setFullyAssessed(result.getFullyAssessed());
 		
+		// STCourseNode may have a calculated score.
+		if (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null)) {
+			boolean done = result.getAssessmentStatus() != null && AssessmentEntryStatus.done == result.getAssessmentStatus();
+			Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(courseNode).getInitialUserVisibility(done, false);
+			entry.setUserVisibility(initialUserVisibility);
+		}
+		
 		entry = getAssessmentManager().updateAssessmentEntry(entry);
 		
 		identToEntry.put(courseNode.getIdent(), entry);

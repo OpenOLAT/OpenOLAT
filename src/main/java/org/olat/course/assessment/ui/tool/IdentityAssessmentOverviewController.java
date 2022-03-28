@@ -399,7 +399,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (row.isIgnoreInCourseAssessment() || (row.getUserVisibility() != null && !row.getUserVisibility().booleanValue())) {
 			String linkText = translate("score.not.summed", new String[] {AssessmentHelper.getRoundedScore(score) });
 			linkText += " <i class='o_icon o_icon_info'> </i>";
-			FormLink formLink = uifactory.addFormLink("o_sd:" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
 			row.setScoreDesc(formLink);
 		}

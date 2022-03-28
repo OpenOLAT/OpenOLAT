@@ -307,8 +307,8 @@ public abstract class AbstractToolsController extends BasicController {
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
 		if (scoreEval != null) {
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-					scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.done, visible,
-					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+					scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
+					Boolean.valueOf(visible), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);

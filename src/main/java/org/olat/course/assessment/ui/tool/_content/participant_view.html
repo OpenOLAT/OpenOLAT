@@ -1,0 +1,82 @@
+<div class="panel panel-default o_personal">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("personal.title")</h4>
+		#if($hasStatusField)
+			<div>
+				<span class='o_labeled_light $statusLabelCss'><i class='o_icon o_icon-fw $statusIconCss'> </i> $statusText</span>
+			</div>
+		#end
+	</div>
+	<table class="table">
+	<tbody>
+		#if($hasAttemptsField)
+			<tr class="o_attempts">
+				<th scope="row">$r.translate("attempts.yourattempts")</th>
+				<td>
+					$attempts
+					#if ($maxAttempts && $maxAttempts > 0)
+						<span class="small">$r.translate("attempts.of.max", $maxAttempts)</span>
+					#end
+				</td>
+			</tr> 
+		#end
+		
+		#if($hasScoreField)
+		#if($scoreMin)
+			<tr>
+				<th>$r.translate("score.min.max")</th>
+				<td>$r.translate("score.min.max.value", $scoreMin, $scoreMax)</td>
+			</tr>
+		#end
+		<tr class="o_score">
+			<th>$r.translate("score.yourscore")</th>
+			<td>
+				#if($resultsVisible && $score)
+					$score
+				#else
+					$r.translate("assessment.value.not.visible")
+				#end
+			</td>
+		</tr>
+		#end 
+		
+		#if($hasGradeField)
+		<tr class="o_grade">
+			<th>$r.translate("grade.yourgrade")</th>
+			<td>
+				#if($resultsVisible && $grade)
+					$grade
+				#else
+					$r.translate("assessment.value.not.visible")
+				#end
+			</td>
+		</tr>
+		#end 
+		
+		#if($hasPassedField)
+			#if($passedCutValue)
+				<tr class="o_cutval">
+					<th>$r.translate("passed.cut")</th>
+					<td>$passedCutValue</td>
+				</tr>
+			#end
+		<tr>
+			<th>$r.translate("passed.yourpassed")</th>
+			<td>
+				#if($resultsVisible && $hasPassedValue && $passed)
+					<div class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</div>
+				#elseif($resultsVisible && $hasPassedValue && !$passed)
+					<div class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")</div>
+				#else
+					<div class="o_noinfo"><i class="o_icon o_icon_passed_undefined"> </i> $r.translate("passed.nopassed")</div>
+				#end
+			</td>
+		</tr>
+		#end
+		
+		#if($r.available("customFields"))
+			$r.render("customFields")
+		#end
+	</tbody>
+	</table>
+</div>

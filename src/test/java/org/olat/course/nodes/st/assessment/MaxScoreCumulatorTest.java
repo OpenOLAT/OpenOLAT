@@ -182,6 +182,11 @@ public class MaxScoreCumulatorTest {
 		public boolean isPassedOverridable() {
 			return false;
 		}
+		
+		@Override
+		public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+			return Boolean.FALSE;
+		}
 
 		@Override
 		public Mode getCompletionMode() {

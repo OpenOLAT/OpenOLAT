@@ -101,6 +101,11 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return Boolean.TRUE;
+	}
+	
+	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;
 	}

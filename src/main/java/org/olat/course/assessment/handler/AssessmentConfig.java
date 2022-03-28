@@ -95,6 +95,13 @@ public interface AssessmentConfig {
 	public boolean isPassedOverridable();
 	
 	/**
+	 * @param done Is the assessment done?
+	 * @param coachCanNotEdit Can the coach edit the user visibility?
+	 * @return Returns the initial user visibility.
+	 */
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit);
+	
+	/**
 	 * @return if this course node can produces a completion variable for the learner
 	 */
 	public Mode getCompletionMode();

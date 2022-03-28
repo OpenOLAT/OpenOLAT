@@ -45,19 +45,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.CourseModule;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,21 +67,21 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 
 	private final VelocityContainer myContent;
 	private DisplayOrDownloadComponent download;
+	private final AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	private Controller detailsCtrl;
 	
 	private String mapperUri;
 	private final boolean showLog;
-	private boolean hasScore, hasPassed, hasComment;
+	private boolean hasComment;
 	private final UserCourseEnvironment userCourseEnv;
-	private final boolean overrideUserResultsVisiblity;
 	private final CourseNode courseNode;
+	private final AssessmentConfig assessmentConfig;
+	private final AssessmentEvaluation assessmentEval;
 	
 	@Autowired
 	private CourseModule courseModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private GradeModule gradeModule;
 
 	/**
 	 * Constructor for a manual scoring course run controller
@@ -119,30 +117,31 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		this.showLog = showLog;
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
-		this.overrideUserResultsVisiblity = overrideUserResultsVisiblity;
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		
+		if (overrideUserResultsVisiblity) {
+			assessmentEval = new AssessmentEvaluation(courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv), Boolean.TRUE);
+		} else {
+			assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		}
 		myContent = createVelocityContainer("run");
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval, assessmentConfig);
+		listenTo(assessmentParticipantViewCtrl);
+		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+		
 		if (Mode.none != assessmentConfig.getScoreMode()) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
+			listenTo(highScoreCtr);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
 				myContent.put("highScore", highScoreComponent);
 			}
 		}
-				
-		myContent.contextPut("displayNodeInfo", Boolean.valueOf(displayNodeInfo));
-		if (displayNodeInfo) {
-			// push title and learning objectives, only visible on intro page
-			myContent.contextPut("menuTitle", courseNode.getShortTitle());
-			myContent.contextPut("displayTitle", courseNode.getLongTitle());
-		} 
 		
 		//admin setting whether to show change log or not
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 
-		// Push variables to velocity page
-		exposeConfigToVC(ureq);		
 		exposeUserDataToVC(ureq);
 		putInitialPanel(myContent);
 	}
@@ -151,14 +150,14 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	 * @return true if the assessed user has a score
 	 */
 	public boolean hasScore() {
-		return hasScore;
+		return assessmentEval.getScore() != null;
 	}
 	
 	/**
 	 * @return true if the assessed user has passed or failed.
 	 */
 	public boolean hasPassed() {
-		return hasPassed;
+		return assessmentEval.getPassed() != null;
 	}
 	
 	/**
@@ -191,84 +190,44 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		}
 	}
 	
-	private void exposeConfigToVC(UserRequest ureq) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+	private void exposeUserDataToVC(UserRequest ureq) {
+		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
+		String rawComment = assessmentEval.getComment();
+		hasComment = assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment);
+		if(resultsVisible) {
+			if(hasComment) {
+				StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
+				myContent.contextPut("comment", StringHelper.xssScan(comment));
+				myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
+			}
+			
+			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
+				List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode,
+						userCourseEnv);
+				mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+				myContent.contextPut("docsMapperUri", mapperUri);
+				myContent.contextPut("docs", docs);
+				myContent.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+				if(download == null) {
+					download = new DisplayOrDownloadComponent("", null);
+					myContent.put("download", download);
+				}
+			}
+			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
+				detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode);
+				listenTo(detailsCtrl);
+				myContent.put("details", detailsCtrl.getInitialComponent());
+			}
+		}
+		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
-		myContent.contextPut("hasScoreField", Boolean.valueOf(hasScore));
-		if (hasScore) {
-			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
-			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
-		}
-		
-		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
-		myContent.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
-		
-		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
-		myContent.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
-		if (hasPassed && !hasGrade) {
-			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
-		}
-		
 		myContent.contextPut("hasCommentField", assessmentConfig.hasComment());
 		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		if(StringHelper.containsNonWhitespace(infoTextUser)) {
 				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
 				myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
 		}
-	}
 	
-	private void exposeUserDataToVC(UserRequest ureq) {
-		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-		if(assessmentEntry == null) {
-			myContent.contextPut("hasPassedValue", Boolean.FALSE);
-			myContent.contextPut("passed", Boolean.FALSE);
-			hasPassed = hasScore = hasComment = false;
-		} else {
-			String rawComment = assessmentEntry.getComment();
-			hasPassed = assessmentEntry.getPassed() != null;
-			hasScore = assessmentEntry.getScore() != null;
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			hasComment = assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment);
-		
-			boolean resultsVisible = overrideUserResultsVisiblity
-					|| assessmentEntry.getUserVisibility() == null
-					|| assessmentEntry.getUserVisibility().booleanValue();
-			myContent.contextPut("resultsVisible", resultsVisible);
-			myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
-			myContent.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
-					assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
-			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-			myContent.contextPut("passed", assessmentEntry.getPassed());
-			myContent.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
-			
-			if(resultsVisible) {
-				if(hasComment) {
-					StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
-					myContent.contextPut("comment", StringHelper.xssScan(comment));
-					myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
-				}
-				
-				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode,
-							userCourseEnv);
-					mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-					myContent.contextPut("docsMapperUri", mapperUri);
-					myContent.contextPut("docs", docs);
-					myContent.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
-					if(download == null) {
-						download = new DisplayOrDownloadComponent("", null);
-						myContent.put("download", download);
-					}
-				}
-				if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
-					detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode);
-					listenTo(detailsCtrl);
-					myContent.put("details", detailsCtrl.getInitialComponent());
-				}
-			}
-		}
-
 		if(showLog) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
@@ -285,9 +244,9 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(MSCourseNodeRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+			guiPrefs.putAndSave(MSCourseNodeRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
-		myContent.contextPut("in-" + panelId, new Boolean(newValue));
+		myContent.contextPut("in-" + panelId, Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {

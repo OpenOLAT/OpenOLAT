@@ -55,6 +55,7 @@ public class AssessmentRow {
 	private String translatedGrade;
 	private Boolean passed;
 	private String comment;
+	private Boolean userVisibility;
 	
 	public AssessmentRow(Identity identity, boolean duplicate) {
 		this.identity = identity;
@@ -171,4 +172,13 @@ public class AssessmentRow {
 	public void setPassedEl(MultipleSelectionElement passedEl) {
 		this.passedEl = passedEl;
 	}
+
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	public void setUserVisibility(Boolean userVisibility) {
+		this.userVisibility = userVisibility;
+	}
+	
 }

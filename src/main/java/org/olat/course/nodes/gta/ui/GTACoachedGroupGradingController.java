@@ -377,7 +377,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		removeAsListenerAndDispose(assessmentCtrl);
 		
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), courseEntry, gtaNode, assessedGroup);
+		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), courseEntry, gtaNode, assessedGroup, coachCourseEnv);
 		listenTo(assessmentCtrl);
 		
 		String title = translate("grading");

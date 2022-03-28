@@ -49,21 +49,20 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
@@ -90,6 +89,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private VelocityContainer startPage;
 
 	private ScormAPIandDisplayController scormDispC;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	private ScormCourseNode scormNode;
 
 	// for external menu representation
@@ -102,6 +102,8 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private String assessableType;
 	private DeliveryOptions deliveryOptions;
 	private final UserSession userSession;//need for high score
+	private AssessmentConfig assessmentConfig;
+	private AssessmentEvaluation assessmentEval;
 	
 	@Autowired
 	private ScormMainManager scormMainManager;
@@ -145,6 +147,11 @@ public class ScormRunController extends BasicController implements GenericEventL
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
+			assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
+			assessmentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+			listenTo(assessmentParticipantViewCtrl);
+			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		}
 
 		// <OLATCE-289>
@@ -225,30 +232,15 @@ public class ScormRunController extends BasicController implements GenericEventL
 	}
 
 	private void doStartPage(UserRequest ureq) {
-
-		// push title and learning objectives, only visible on intro page
-		startPage.contextPut("menuTitle", scormNode.getShortTitle());
-		startPage.contextPut("displayTitle", scormNode.getLongTitle());
-
 		if (isAssessable) {
-			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-			Float score = scoreEval.getScore();
-			if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
-				startPage.contextPut("score", score != null ? AssessmentHelper.getRoundedScore(score) : "0");
-			}
-			startPage.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-			startPage.contextPut("passed", scoreEval.getPassed());
-			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
-			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
-			startPage.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
+			startPage.contextPut("attempts", assessmentEval.getAttempts());
+			
+			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 			if(resultsVisible && assessmentConfig.hasComment()) {
 				StringBuilder comment = Formatter
 						.stripTabsAndReturns(courseAssessmentService.getUserComment(scormNode, userCourseEnv));
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}
-			startPage.contextPut("attempts", courseAssessmentService.getAttempts(scormNode, userCourseEnv));
-			startPage.contextPut("attemptsConfig", config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0));
 			
 			if(ureq == null) {// High score need one
 				ureq = new SyntheticUserRequest(getIdentity(), getLocale(), userSession);

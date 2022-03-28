@@ -41,13 +41,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIModule;
@@ -56,7 +57,6 @@ import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -77,12 +77,14 @@ public class LTIRunController extends BasicController {
 	
 	private boolean fullScreen;
 	private ChiefController thebaseChief;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
 	private final LTIDisplayOptions display;
 	private final BasicLTICourseNode courseNode;
 	private final ModuleConfiguration config;
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment userCourseEnv;
+	private final AssessmentConfig assessmentConfig;
 	
 	private LTIDisplayContentController ltiCtrl;
 	private LTIDataExchangeDisclaimerController disclaimerCtrl;
@@ -110,6 +112,7 @@ public class LTIRunController extends BasicController {
 		this.courseEnv = courseEnv;
 		this.userCourseEnv = userCourseEnv;
 		display = LTIDisplayOptions.iframe;
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		ltiCtrl = new LTI10DisplayController(ureq, getWindowControl(), courseNode, userCourseEnv, courseEnv, display);
 		listenTo(ltiCtrl);
@@ -135,6 +138,7 @@ public class LTIRunController extends BasicController {
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		String displayStr = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		display = LTIDisplayOptions.valueOfOrDefault(displayStr); 
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		ltiCtrl = new LTI10DisplayController(ureq, getWindowControl(), courseNode, userCourseEnv, courseEnv, display);
 		listenTo(ltiCtrl);
@@ -151,6 +155,7 @@ public class LTIRunController extends BasicController {
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
@@ -223,7 +228,8 @@ public class LTIRunController extends BasicController {
 		startPage.contextPut("menuTitle", courseNode.getShortTitle());
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
 		
-		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false)){
+		boolean hasScore = AssessmentConfig.Mode.none != assessmentConfig.getScoreMode();
+		if (hasScore){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -234,25 +240,18 @@ public class LTIRunController extends BasicController {
 		startButton = LinkFactory.createButton("start", startPage, this);
 		startButton.setPrimary(true);
 
-		boolean assessable = config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false)
-				&& userCourseEnv.isParticipant();
-		if(assessable) {
-			startPage.contextPut("isassessable", assessable);
-	    
-			Integer attempts = courseAssessmentService.getAttempts(courseNode, userCourseEnv);
-			startPage.contextPut("attempts", attempts);
-	    
-			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
-			Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-			if(cutValue != null) {
-				startPage.contextPut("hasPassedValue", Boolean.TRUE);
-				startPage.contextPut("passed", eval.getPassed());
-			}
-			startPage.contextPut("score", eval.getScore());
-			startPage.contextPut("hasScore", Boolean.TRUE);
-			boolean resultsVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
-			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
-			startPage.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == eval.getAssessmentStatus()));
+		boolean assessable = hasScore && userCourseEnv.isParticipant();
+		if(hasScore && userCourseEnv.isParticipant()) {
+			startPage.contextPut("isassessable", Boolean.valueOf(assessable));
+			
+			AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+			startPage.contextPut("attempts", assessmentEval.getAttempts());
+			
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+			listenTo(assessmentParticipantViewCtrl);
+			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+
 			mainPanel.setContent(startPage);
 		}
 		

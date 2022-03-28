@@ -78,6 +78,11 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
+	}
+
+	@Override
 	public boolean isAssessedBusinessGroups() {
 		return GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
 	}

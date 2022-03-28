@@ -114,6 +114,16 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				eval.getEndDate(), eval.getObligation(), eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
 	}
 	
+	public AssessmentEvaluation(AssessmentEvaluation eval, Boolean userVisibility) {
+		this(eval.getScore(), eval.getMaxScore(), eval.getGrade(), eval.getPerformanceClassIdent(), eval.getPassed(),
+				eval.getPassedOverridable(), eval.getAttempts(), eval.getLastAttempt(), eval.getCompletion(),
+				eval.getAssessmentStatus(), userVisibility, eval.getFullyAssessed(), eval.getFullyAssessedDate(),
+				eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),
+				eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1, eval.getLastModified(),
+				eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(), eval.getStartDate(),
+				eval.getEndDate(), eval.getObligation(), eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
+	}
+	
 	public Float getMaxScore() {
 		return maxScore;
 	}

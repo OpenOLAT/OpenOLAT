@@ -37,9 +37,7 @@ public class UserVisibilityOverviewCellRenderer extends UserVisibilityCellRender
 	protected Boolean getUserVisibility(Object val) {
 		if (val instanceof AssessmentNodeData) {
 			AssessmentNodeData nodeData = (AssessmentNodeData)val;
-			if (nodeData.getRecursionLevel() > 0) { // Root has no user visibility!
-				return nodeData.getUserVisibility();
-			}
+			return nodeData.getUserVisibility();
 		}
 		return null;
 	}

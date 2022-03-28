@@ -83,7 +83,12 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	public boolean isPassedOverridable() {
 		return false;
 	}
-
+	
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return null;
+	}
+	
 	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;

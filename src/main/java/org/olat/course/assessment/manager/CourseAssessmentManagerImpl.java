@@ -63,6 +63,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -163,6 +164,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
+		initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, by);
 		if(by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
 		} else if(by == Role.user) {
@@ -194,6 +196,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
+		initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, Role.coach);
 		nodeAssessment.setComment(comment);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
@@ -233,6 +236,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			Boolean entryRoot = isEntryRoot(course, courseNode);
 			AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
+			initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, Role.coach);
 			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
@@ -356,27 +360,6 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				getClass(), 
 				LoggingResourceable.wrap(assessedIdentity), 
 				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));
-	}
-
-	@Override
-	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv) {
-		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
-		
-		Boolean entryRoot = isEntryRoot(course, courseNode);
-		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
-		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
-		nodeAssessment.setAttempts(attempts);
-		assessmentService.updateAssessmentEntry(nodeAssessment);
-		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if(assessmentConfig.isAssessable()) {
-			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
-		}
-		
-		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED,
-				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 	}
 	
 	@Override
@@ -523,8 +506,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				assessmentEntry.setAssessmentDoneBy(null);
 			}
 		}
-		if(scoreEvaluation.getUserVisible() != null) {
-			assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());
+		assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());
+		if(assessmentEntry.getScore() != null || assessmentEntry.getPassed() != null) {
+			initUserVisibility(assessmentEntry, courseEnv, courseNode, identity, by);
 		}
 		if(scoreEvaluation.getCurrentRunCompletion() != null) {
 			assessmentEntry.setCurrentRunCompletion(scoreEvaluation.getCurrentRunCompletion());
@@ -873,6 +857,22 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	private Boolean isEntryRoot(ICourse course, CourseNode courseNode) {
 		return course.getCourseEnvironment().getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
+	}
+	
+	/**
+	 * The userVisibility is set when assessment data are set the first time.
+	 * Assessment data is: score (and grade), passed, user comment, documents.
+	 */
+	public void initUserVisibility(AssessmentEntry assessmentEntry, CourseEnvironment courseEnv, CourseNode courseNode, Identity coach, Role by) {
+		if (assessmentEntry.getUserVisibility() != null) return;
+		
+		boolean done = assessmentEntry.getAssessmentStatus() != null &&  AssessmentEntryStatus.done == assessmentEntry.getAssessmentStatus();
+		boolean coachCanNotEdit = Role.coach == by
+				&& !courseEnv.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY)
+				&& !cgm.isIdentityAnyCourseAdministrator(coach);
+		
+		Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(courseNode).getInitialUserVisibility(done, coachCanNotEdit);
+		assessmentEntry.setUserVisibility(initialUserVisibility);
 	}
 	
 }

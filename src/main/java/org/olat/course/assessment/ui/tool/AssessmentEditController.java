@@ -67,8 +67,4 @@ public class AssessmentEditController extends BasicController {
 		//
 	}
 
-	public void reloadData() {
-		assessmentForm.reloadData();
-	}
-
 }

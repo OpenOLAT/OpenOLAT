@@ -58,7 +58,7 @@ import org.olat.course.nodes.iq.IQDueDateConfig;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
@@ -70,6 +70,7 @@ import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -289,9 +290,9 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	}
 	
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(final UserCourseEnvironment userCourseEnv) {
+	public AssessmentEvaluation getAssessmentEvaluation(final UserCourseEnvironment userCourseEnv) {
 		// read score from properties save score, passed and attempts information
-		ScoreEvaluation scoreEvaluation = null;
+		AssessmentEvaluation assessmentEvaluation = null;
 		RepositoryEntry referencedRepositoryEntry = getReferencedRepositoryEntry();
 		if(referencedRepositoryEntry != null && ImsQTI21Resource.TYPE_NAME.equals(referencedRepositoryEntry.getOlatResource().getResourceableTypeName())) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -300,17 +301,18 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity);
 			if(testSession != null) {
 				Float score = testSession.getScore() == null ? null : testSession.getScore().floatValue();
-				return new ScoreEvaluation(score, null, null, testSession.getPassed(), null, null, null, null, null, testSession.getKey());
+				
+				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+				Integer attempts = am.getNodeAttempts(this, identity);
+				
+				return new AssessmentEvaluation(score, null, null, null, testSession.getPassed(),
+						Overridable.of(testSession.getPassed()), attempts, null, null, null, Boolean.TRUE, null, null,
+						null, null, null, testSession.getKey(), null, null, 0, null, null, null, null, null, null, null,
+						null, null, null);
 			}
 		}
-		return scoreEvaluation;
-	}
-	
-	@Override
-	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeAttempts(this, mySelf);
+		return assessmentEvaluation;
 	}
 
 	@Override

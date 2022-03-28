@@ -550,7 +550,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		AssessmentEntryStatus finalStatus = entryStatus == null ? scoreEval.getAssessmentStatus() : entryStatus;
 		Boolean userVisible = scoreEval.getUserVisible();
-		if(finalStatus == AssessmentEntryStatus.done) {
+		if(userVisible == null && finalStatus == AssessmentEntryStatus.done) {
 			userVisible = Boolean.valueOf(courseNode.isScoreVisibleAfterCorrection());
 		}
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,

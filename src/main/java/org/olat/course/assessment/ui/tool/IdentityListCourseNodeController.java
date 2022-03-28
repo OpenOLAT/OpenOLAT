@@ -1333,7 +1333,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status, null,
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status, scoreEval.getUserVisible(),
 				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, doneEval, assessedUserCourseEnv,

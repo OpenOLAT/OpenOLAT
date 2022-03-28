@@ -17,51 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.portfolio;
+package org.olat.course.nodes.iq;
 
-import org.olat.course.assessment.handler.ModuleAssessmentConfig;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentConfig;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 
 /**
+ * Just a wrapper to get the same display as before.
  * 
- * Initial date: 19 Aug 2019<br>
+ * Initial date: 27 Mar 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
+public class IQSELFRunAssessmentConfig extends LearningPathOnlyAssessmentConfig {
+	
+	private AssessmentEvaluation assessmentEval;
 
-	public PortfolioAssessmentConfig(ModuleConfiguration config) {
-		super(config);
+	public IQSELFRunAssessmentConfig(AssessmentEvaluation assessmentEval) {
+		this.assessmentEval = assessmentEval;
+	}
+
+	@Override
+	public Mode getScoreMode() {
+		return Mode.setByNode;
+	}
+
+	@Override
+	public Mode getPassedMode() {
+		return assessmentEval.getPassed() == null ? Mode.none : Mode.setByNode;
 	}
 
 	@Override
 	public boolean hasAttempts() {
-		return false;
+		return true;
 	}
 	
-	@Override
-	public boolean hasStatus() {
-		return true;
-	}
-
-	@Override
-	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
-		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
-	}
-
-	@Override
-	public boolean isEditable() {
-		return true;
-	}
-
-	@Override
-	public boolean isBulkEditable() {
-		return false;
-	}
-
-	@Override
-	public boolean hasEditableDetails() {
-		return true;
-	}
+	
 
 }

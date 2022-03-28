@@ -87,23 +87,27 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			sb.append(value);
 		} else {
-			sb.append("<div");
-			String cssClass = getCssClass(val);
-			if (StringHelper.containsNonWhitespace(cssClass)) {
-				sb.append(" class=\"");
-				sb.appendHtmlEscaped(cssClass);
-				sb.append("\"");
-			}
-			sb.append(" style='white-space: nowrap;'><i class='").append(blankIfNull(getIconCssClass(val))).append("'> </i> <span");
-			String hoverText = getHoverText(val);
-			if (StringHelper.containsNonWhitespace(hoverText)) {
-				sb.append(" title=\"");
-				sb.appendHtmlEscaped(hoverText);
-			}
-			sb.append("\">");
-			sb.append(blankIfNull(getCellValue(val)));
-			sb.append("</span></div>");
+			render(sb, val);
 		}
+	}
+
+	protected void render(StringOutput sb, Object val) {
+		sb.append("<div");
+		String cssClass = getCssClass(val);
+		if (StringHelper.containsNonWhitespace(cssClass)) {
+			sb.append(" class=\"");
+			sb.appendHtmlEscaped(cssClass);
+			sb.append("\"");
+		}
+		sb.append(" style='white-space: nowrap;'><i class='").append(blankIfNull(getIconCssClass(val))).append("'> </i> <span");
+		String hoverText = getHoverText(val);
+		if (StringHelper.containsNonWhitespace(hoverText)) {
+			sb.append(" title=\"");
+			sb.appendHtmlEscaped(hoverText);
+		}
+		sb.append("\">");
+		sb.append(blankIfNull(getCellValue(val)));
+		sb.append("</span></div>");
 	}
 	
 	

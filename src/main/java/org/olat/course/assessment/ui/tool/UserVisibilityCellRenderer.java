@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import org.olat.core.gui.components.table.LabelCellRenderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -35,12 +36,18 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 	public UserVisibilityCellRenderer(boolean showText) {
 		this.showText = showText;
 	}
+	
+	public String render(Boolean userVisibility, Translator translator) {
+		StringOutput target = new StringOutput();
+		render(target, translator, userVisibility);
+		return target.toString();
+	}
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
 		Boolean userVisibility = getUserVisibility(val);
-		if (showText && userVisibility != null) {
-			return userVisibility.booleanValue()
+		if (showText) {
+			return userVisibility != null && userVisibility.booleanValue()
 					? translator.translate("user.visibility.visible")
 					: translator.translate("user.visibility.hidden");
 		}
@@ -50,41 +57,39 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 	@Override
 	protected String getIconCssClass(Object val) {
 		Boolean userVisibility = getUserVisibility(val);
-		if (userVisibility != null) {
-			return userVisibility.booleanValue()? "o_icon_results_visible": "o_icon_results_hidden";
+		if (userVisibility == null) {
+			return "o_icon_results_hidden o_no_user_visibility";
+		} else if (userVisibility.booleanValue()) {
+			return "o_icon_results_visible";
 		}
-		return null;
+		return "o_icon_results_hidden";
 	}
 
 	@Override
 	protected String getElementCssClass(Object val) {
 		Boolean userVisibility = getUserVisibility(val);
-		if (userVisibility != null) {
-			return userVisibility.booleanValue()? "o_results_visible": "o_results_hidden";
+		if (userVisibility == null) {
+			return "o_results_hidden o_no_user_visibility";
+		} else if (userVisibility.booleanValue()) {
+			return "o_results_visible";
 		}
-		return null;
+		return "o_results_hidden";
 	}
 	
 	@Override
 	protected String getTitle(Object val, Translator translator) {
 		Boolean userVisibility = getUserVisibility(val);
-		if (userVisibility != null) {
-			return userVisibility.booleanValue()
-					? translator.translate("user.visibility.visible.tooltip")
-					: translator.translate("user.visibility.hidden.tooltip");
-		}
-		return null;
+		return userVisibility != null && userVisibility.booleanValue()
+				? translator.translate("user.visibility.visible.tooltip")
+				: translator.translate("user.visibility.hidden.tooltip");
 	}
 
 	@Override
 	protected String getExportValue(Object val, Translator translator) {
 		Boolean userVisibility = getUserVisibility(val);
-		if (userVisibility != null) {
-			return userVisibility.booleanValue()
-					? translator.translate("yes")
-					: translator.translate("no");
-		}
-		return null;
+		return userVisibility != null && userVisibility.booleanValue()
+				? translator.translate("yes")
+				: translator.translate("no");
 	}
 	
 	protected Boolean getUserVisibility(Object val) {

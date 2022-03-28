@@ -110,6 +110,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	public boolean isPassedOverridable() {
 		return false;
 	}
+
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
+	}
 	
 	@Override
 	public Mode getCompletionMode() {

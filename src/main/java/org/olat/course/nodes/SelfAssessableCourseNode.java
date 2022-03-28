@@ -24,7 +24,7 @@
 */
 package org.olat.course.nodes;
 
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 
@@ -40,18 +40,12 @@ import org.olat.modules.assessment.Role;
 public interface SelfAssessableCourseNode {
 
 	/**
-	 * Provides the ScoreEvaluation for this course node.
+	 * Provides the AssessmentEvaluation for this course node.
 	 * Returns null if no scoring stored yet (that is no selftest finished yet).
 	 * @param userCourseEnv
-	 * @return Returns the ScoreEvaluation.
+	 * @return Returns the AssessmentEvaluation.
 	 */
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
-	
-	/**
-	 * @param userCourseEnvironment
-	 * @return The users attempts of this node
-	 */
-	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public AssessmentEvaluation getAssessmentEvaluation(UserCourseEnvironment userCourseEnv);
 	
 	/**
 	 * Increments the users attempts for this node and this user + 1. 

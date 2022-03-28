@@ -64,11 +64,11 @@ import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -89,12 +89,10 @@ import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
@@ -166,6 +164,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private AssessmentTestDisplayController displayCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private QTI21AssessmentMainLayoutController displayContainerController;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	private AssessmentMessageDisplayCalloutController messageDisplayCalloutCtrl;
 	
 	@Autowired
@@ -289,22 +288,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private void initAssessment(UserRequest ureq) {
-	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", Boolean.valueOf(enableScoreInfo));
 		
-		boolean hasGrade = enableScoreInfo && assessmentConfig.hasGrade() && gradeModule.isEnabled();
-		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
-		
-		mainVC.contextPut("showPassed", getPassedType() != PassedType.none);
-		
-	    // configuration data
 		int maxAttempts = deliveryOptions.getMaxAttempts();
 		if(maxAttempts > 0) {
 			mainVC.contextPut("attemptsConfig", Integer.valueOf(maxAttempts));
 		} else {
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
+		
 		// configure date period
 		boolean blockedBasedOnDate = blockedBasedOnDate(ureq);
 		mainVC.contextPut("blockDate", Boolean.valueOf(blockedBasedOnDate));
@@ -321,41 +314,29 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		}
 		
-	    // user data
+		// user data
 		if (courseNode instanceof SelfAssessableCourseNode) {
 			SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
-			ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
-			Integer attempts = acn.getUserAttempts(null, userCourseEnv);
-			if (scoreEval != null) {
-				mainVC.contextPut("resultsVisible", Boolean.TRUE);
-				mainVC.contextPut("hasResults", Boolean.TRUE);
-				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-				mainVC.contextPut("passed", scoreEval.getPassed());
-				mainVC.contextPut("attempts", attempts); //at least one attempt
+			AssessmentEvaluation assessmentEval = acn.getAssessmentEvaluation(userCourseEnv);
+			if (assessmentEval != null) {
+				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+						assessmentEval, new IQSELFRunAssessmentConfig(assessmentEval));
+				listenTo(assessmentParticipantViewCtrl);
+				mainVC.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+				mainVC.contextPut("attempts", assessmentEval.getAttempts());
 				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
-				exposeResults(ureq, true, scoreEval.getPassed() != null && scoreEval.getPassed().booleanValue(), AssessmentEntryStatus.done);
+				exposeResults(ureq, true, assessmentEval.getPassed() != null && assessmentEval.getPassed().booleanValue(), AssessmentEntryStatus.done);
 			} else {
 				exposeResults(ureq, false, false, AssessmentEntryStatus.notStarted);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-			AssessmentEntry assessmentEntry = userCourseEnv.isParticipant()
-					? courseAssessmentService.getAssessmentEntry(testCourseNode, userCourseEnv)
-					: null;
-			if(assessmentEntry == null) {
-				mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
-				mainVC.contextPut("score", null);
-				mainVC.contextPut("hasPassedValue", Boolean.FALSE);
-				mainVC.contextPut("passed", Boolean.FALSE);
-				mainVC.contextPut("comment", null);
-				mainVC.contextPut("attempts", 0);
-				mainVC.contextPut("showChangeLog", Boolean.FALSE);
-				if (!userCourseEnv.isParticipant()) {
-					mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
-				}
+			if (!userCourseEnv.isParticipant()) {
+				mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
 			} else {
-				boolean passed = assessmentEntry.getPassed() != null && assessmentEntry.getPassed().booleanValue();
+				AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(testCourseNode, userCourseEnv);
+				boolean passed = assessmentEval.getPassed() != null && assessmentEval.getPassed().booleanValue();
 				//block if test passed (and config set to check it)
 				Boolean blocked = Boolean.FALSE;
 				boolean blockAfterSuccess = deliveryOptions.isBlockAfterSuccess();
@@ -364,15 +345,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				mainVC.contextPut("blockAfterSuccess", blocked);
 				
-				boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
-				mainVC.contextPut("resultsVisible", resultsVisible);
-				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
-				mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
-						assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
-				mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-				mainVC.contextPut("passed", passed);
-				mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
+				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+				listenTo(assessmentParticipantViewCtrl);
+				mainVC.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 				
+				boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 				if(resultsVisible) {
 					if(assessmentConfig.hasComment()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(
@@ -392,29 +370,34 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						mainVC.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 					}
 				}
-				Integer attempts = assessmentEntry.getAttempts();
+				
+				Integer attempts = assessmentEval.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
-				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(passed, assessmentEntry.getAssessmentStatus()));
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(passed, assessmentEval.getAssessmentStatus()));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
-					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEval.getAssessmentID());
 					if(session != null) {
 						File signature = qtiService.getAssessmentResultSignature(session);
 						if(signature != null && signature.exists()) {
-							signatureDownloadLink = LinkFactory.createLink("digital.signature.download.link", mainVC, this);
+							VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
+							
+							signatureDownloadLink = LinkFactory.createLink("digital.signature.download.link", customCont, this);
 							signatureDownloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 							signatureDownloadLink.setTarget("_blank");
 							
 							Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
 							if(issueDate != null) {
-								mainVC.contextPut("signatureIssueDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
+								customCont.contextPut("signatureIssueDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
 							}
+							
+							assessmentParticipantViewCtrl.setCustomFields(customCont);
 						}
 					}
 				}
 
-				exposeResults(ureq, resultsVisible, passed, assessmentEntry.getAssessmentStatus());
+				exposeResults(ureq, resultsVisible, passed, assessmentEval.getAssessmentStatus());
 			}
 		}
 	}
@@ -931,17 +914,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			return assessmentTest.getTimeLimits().getMaximum().longValue();
 		}
 		return null;
-	}
-	
-	private PassedType getPassedType() {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		
-		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-		QTI21DeliveryOptions testDeliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		return testDeliveryOptions.getPassedType(cutValue);
 	}
 	
 	private QTI21DeliveryOptions getDeliveryOptions() {

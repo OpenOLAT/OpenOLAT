@@ -607,7 +607,6 @@
 	}
 }
 
-
 .o_labeled_light {
 	&.o_results_visible {
 		border-color: 		$o-course-results-visible-color;
@@ -639,17 +638,15 @@
 	.o_table_part {
 		background-color: $o-course-assessment-table-part-bg-color;
 	}
-	a.o_button_results_visible,
-	button.o_button_results_visible.btn-default.dropdown-toggle {
-		border-color: 		$o-course-results-visible-color;
-		color: 				$o-course-results-visible-color;
-		background-color: 	$o-course-results-visible-bg-color;
-	}
-	a.o_button_results_hidden,
-	button.o_button_results_hidden.btn-default.dropdown-toggle {
-		border-color: 		$o-course-results-hidden-color;
-		color: 				$o-course-results-hidden-color;
-		background-color: 	$o-course-results-hidden-bg-color;
+}
+
+.o_personal {
+	.panel-heading {
+		display: flex;
+		align-items: center;
+		:nth-child(2) {
+			margin-left: auto;
+		}
 	}
 }
 
@@ -668,10 +665,6 @@
 	}	
 	.o_no_scoreinfo {
 		@extend %o_important;
-	}
-	.o_in_review, .o_in_release {
-		font-style: italic;
-		position: relative;
 	}
 	
 	@if not $o-course-show-icon-title {

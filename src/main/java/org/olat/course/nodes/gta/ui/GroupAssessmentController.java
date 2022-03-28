@@ -77,6 +77,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -128,6 +129,7 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
+	private final UserCourseEnvironment coachCourseEnv;
 	private Float cutValue;
 	private final boolean withScore, withGrade, withAutoGrade, withPassed, withDocs, withComment;
 	private final GTACourseNode gtaNode;
@@ -153,14 +155,15 @@ public class GroupAssessmentController extends FormBasicController {
 	@Autowired
 	private GradeService gradeService;
 	
-	public GroupAssessmentController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry courseEntry, GTACourseNode courseNode, BusinessGroup assessedGroup) {
+	public GroupAssessmentController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			GTACourseNode courseNode, BusinessGroup assessedGroup, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, "assessment_per_group");
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.gtaNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
+		this.coachCourseEnv = coachCourseEnv;
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
@@ -236,7 +239,10 @@ public class GroupAssessmentController extends FormBasicController {
 			groupCommentEl.setElementCssClass("o_sel_course_gta_group_comment");
 		}
 		
-		if(withPassed || withScore || withComment || withDocs) {
+		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		
+		if(canChangeUserVisibility && (withPassed || withScore || withComment || withDocs)) {
 			SelectionValues visibilitySV = new SelectionValues();
 			visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("user.visibility.hidden"), translate("user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
 			visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("user.visibility.visible"), translate("user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
@@ -562,6 +568,9 @@ public class GroupAssessmentController extends FormBasicController {
 					same = false;
 				}
 			}
+			if (entry != null) {
+				row.setUserVisibility(entry.getUserVisibility());
+			}
 			
 			count++;
 		}
@@ -736,7 +745,10 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private void applyChanges(boolean setAsDone) {
 		List<AssessmentRow> rows = model.getObjects();
-		boolean userVisible = userVisibilityEl.isOneSelected() && userVisibilityEl.isKeySelected(KEY_VISIBLE);
+		Boolean userVisible = null;
+		if (userVisibilityEl != null) {
+			userVisible = Boolean.valueOf(userVisibilityEl.isOneSelected() && userVisibilityEl.isKeySelected(KEY_VISIBLE));
+		}
 		if(applyToAllEl.isAtLeastSelected(1)) {
 			applyChangesForTheWholeGroup(rows, setAsDone, userVisible);
 		} else {
@@ -744,7 +756,7 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 	}
 	
-	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
+	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, Boolean userVisible) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
@@ -785,11 +797,12 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
+			Boolean newUserVisible = userVisible != null? userVisible: row.getUserVisibility();
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, userVisible, null, null,null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null,null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
@@ -802,7 +815,7 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 	}
 	
-	private void applyChangesForTheWholeGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
+	private void applyChangesForTheWholeGroup(List<AssessmentRow> rows, boolean setAsDone, Boolean userVisible) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		Float score = null;
@@ -842,12 +855,13 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
+			Boolean newUserVisible = userVisible != null? userVisible: row.getUserVisibility();
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}

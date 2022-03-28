@@ -215,6 +215,41 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		boolean auto = false;
+		
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		if (config.has(IQEditController.CONFIG_CORRECTION_MODE)) {
+			String correctionMode = config.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+			auto = IQEditController.CORRECTION_AUTO.equals(correctionMode);
+		} else if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+					|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			// Legacy: Set userVisibility to TRUE
+			auto = true;
+		} else {
+			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
+			if (testEntry != null) {
+				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+					if(assessmentTest != null) {
+						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+						auto = !qti21Service.needManualCorrection(testEntry);
+					}
+				}
+			}
+		}
+		
+		// Do not set the user visibility automatically if the test needs manual correction
+		if (auto) {
+			return Boolean.TRUE;
+		} else if (done && config.has(IQEditController.CONFIG_CORRECTION_MODE)) {
+			return courseNode.isScoreVisibleAfterCorrection();
+		}
+		
+		return null;
+	}
+	
+	@Override
 	public Mode getCompletionMode() {
 		return IQEditController.CONFIG_VALUE_QTI21.equals(courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI))
 				? Mode.setByNode

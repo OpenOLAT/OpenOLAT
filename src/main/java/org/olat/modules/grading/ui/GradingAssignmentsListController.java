@@ -664,7 +664,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
 			userVisible = scoreEval.getUserVisible();
-			if(finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
+			if(userVisible == null && finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
 				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
 			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
