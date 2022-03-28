@@ -119,7 +119,7 @@ public class CPFileImportController extends FormBasicController {
 		
 		Long uploadLimitKb = getUploadLimitKb();
 		if(uploadLimitKb != null) {
-			Long uploadLimitMb =  new Long(uploadLimitKb / 1024);
+			Long uploadLimitMb = Long.valueOf(uploadLimitKb / 1024);
 			file.setMaxUploadSizeKB(uploadLimitKb.intValue(), "cpfileuploadcontroller.tooBig", new String[]{ uploadLimitMb.toString() });
 		}
 
@@ -293,11 +293,6 @@ public class CPFileImportController extends FormBasicController {
 		item.rename(newName);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == cancelButton && event.wasTriggerdBy(FormEvent.ONCLICK)) {

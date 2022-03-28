@@ -52,9 +52,10 @@ import org.olat.core.util.tree.Visitor;
  */
 public class CPSelectPrintPagesController extends FormBasicController {
 
-	private final  CPManifestTreeModel ctm;
+	private final CPManifestTreeModel ctm;
 	
-	private FormLink selectAll, deselectAll;
+	private FormLink selectAll;
+	private FormLink deselectAll;
 	private FormSubmit submit;
 	private MenuTreeItem cpTree;
 	
@@ -81,6 +82,7 @@ public class CPSelectPrintPagesController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		buttonLayout.setRootForm(mainForm);
 		submit = uifactory.addFormSubmitButton("print-button", "print.node", buttonLayout);
+		submit.setNewWindowAfterDispatchUrl(true);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	

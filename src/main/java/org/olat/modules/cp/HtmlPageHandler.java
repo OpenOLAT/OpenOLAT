@@ -150,12 +150,11 @@ public class HtmlPageHandler extends DefaultHandler {
 		}
 		
 		String contextPath = WebappHelper.getServletContextPath();
-		if(uri.startsWith(contextPath)) {
+		if(StringHelper.containsNonWhitespace(contextPath) && uri.startsWith(contextPath)) {
 			return uri;//absolute within olat
 		}
 		
 		if(uri.startsWith("..")) {
-			
 			VFSContainer startDir;
 			if(relativePath == null) {
 				startDir = rootContainer;

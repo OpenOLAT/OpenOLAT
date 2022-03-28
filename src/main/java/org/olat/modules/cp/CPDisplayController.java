@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
@@ -44,6 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
@@ -97,8 +100,10 @@ public class CPDisplayController extends BasicController implements Activateable
 	private HtmlStaticPageComponent cpComponent;
 	private IFrameDisplayController cpContentCtr;
 	private SearchInputController searchCtrl;
-	private Link nextLink, previousLink;
+	private Link pdfLink;
 	private Link printLink;
+	private Link nextLink;
+	private Link previousLink;
 	private String mapperBaseURL;
 	private CPPrintMapper printMapper;
 	
@@ -107,6 +112,10 @@ public class CPDisplayController extends BasicController implements Activateable
 
 	private final CPAssessmentProvider cpAssessmentProvider;
 	
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	@Autowired
 	private SearchModule searchModule;
 	
@@ -173,6 +182,14 @@ public class CPDisplayController extends BasicController implements Activateable
 			printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_print o_icon-lg");
 			printLink.setCustomEnabledLinkCSS("o_print");
 			printLink.setTitle(translate("print.node"));
+			
+			if(pdfModule.isEnabled()) {
+				pdfLink = LinkFactory.createCustomLink("pdf", "pdf", null, Link.LINK + Link.NONTRANSLATED, myContent, this);
+				pdfLink.setCustomDisplayText("");
+				pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tool_pdf o_icon-lg");
+				pdfLink.setCustomEnabledLinkCSS("o_pdf");
+				pdfLink.setTitle(translate("pdf.node"));
+			}
 			
 			String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 			printMapper = new CPPrintMapper(ctm, rootContainer, themeBaseUri);
@@ -318,6 +335,8 @@ public class CPDisplayController extends BasicController implements Activateable
 			fireEvent(ureq, new TreeNodeEvent(previousUri));
 		} else if (source == printLink) {
 			selectPagesToPrint(ureq);
+		} else if (source == pdfLink) {
+			exportPagesToPdf(ureq);
 		}
 	}
 	
@@ -334,22 +353,22 @@ public class CPDisplayController extends BasicController implements Activateable
 			}// else ignore (e.g. misplaced olatcmd event (inner olat link found in a
 				// contentpackaging file)
 		} else if (source == printPopup) {
-			removeAsListenerAndDispose(printPopup);
-			removeAsListenerAndDispose(printController);
-			printController = null;
-			printPopup = null;
+			cleanUp();
 		} else if (source == printController) {
 			if(Event.DONE_EVENT == event) {
 				List<String> nodeToPrint = printController.getSelectedNodeIdentifiers();
 				printPages(nodeToPrint);
 			}
-			
 			printPopup.deactivate();
-			removeAsListenerAndDispose(printPopup);
-			removeAsListenerAndDispose(printController);
-			printController = null;
-			printPopup = null;
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(printPopup);
+		removeAsListenerAndDispose(printController);
+		printController = null;
+		printPopup = null;
 	}
 	
 	@Override
@@ -388,6 +407,14 @@ public class CPDisplayController extends BasicController implements Activateable
 		printPopup = new CloseableModalController(getWindowControl(), "cancel", printController.getInitialComponent(), true, translate("print.node.list.title"));
 		listenTo(printPopup);
 		printPopup.activate();
+	}
+	
+	private void exportPagesToPdf(UserRequest ureq) {
+		ControllerCreator pdfControllerCreator = (lureq, lwcontrol) -> {
+			return new CPPrintController(lureq, lwcontrol, ctm, rootContainer);
+		};
+		MediaResource resource = pdfService.convert("toPdf", getIdentity(), pdfControllerCreator, getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 
 	/**

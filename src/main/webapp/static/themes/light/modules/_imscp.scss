@@ -1,0 +1,22 @@
+.o_offline_cp_footer {
+	position:fixed;
+	bottom: 0;
+	width:100%;
+	height:32px
+}
+
+.o_offline_cp_header {
+	display: none;
+}
+
+/* Example of header which works in AthenaPDF */
+/*
+.o_offline_cp_header {
+	position:fixed;
+	top: 0;
+	left: 0;
+	bottom: calc(1vh - 32px);
+	width:100%;
+	height:32px
+}
+*/

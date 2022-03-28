@@ -66,7 +66,8 @@ public class CPContentController extends BasicController {
 	private CPMetadataEditController editMetadataCtr;
 	private CloseableModalController dialogCtr;
 	private LayoutMain3ColsPreviewController previewCtr;
-	private Link editMetadataLink, previewLink;
+	private Link editMetadataLink;
+	private Link previewLink;
 	private Component helpLink;
 	private DeliveryOptions deliveryOptions;
 	private StackedPanel mainPanel;
@@ -269,23 +270,12 @@ public class CPContentController extends BasicController {
 				// save but do not close
 				fireEvent(ureq, new NewCPPageEvent("Page Saved", editMetadataCtr.getPage()));
 			}
-		} else if (source == dialogCtr) {
-			if (event.getCommand().equals("CLOSE_MODAL_EVENT")) {
-				// close (x) button clicked in modal dialog
-				// System.out.println("modal dialog closed (x)");
-			}
-		} else if (source == mceCtr) {
-			if (event.getCommand().equals("CLOSE_MODAL_EVENT")) {
-				// close (x) button clicked in modal dialog
-				// System.out.println("modal dialog closed (x)");
-			}
 		} else if (source == iframeCtr) {
 			if (event instanceof NewIframeUriEvent) {
 				// html link clicked in content (iframe)
 				fireEvent(ureq, event);
 			}
 		}
-
 	}
 
 	/**
