@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -462,6 +463,13 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		return ret;
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if (fiSrc != gradeScaleEditLink) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -504,7 +512,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 				updateGradeVisibility();
-				flc.setDirty(true);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

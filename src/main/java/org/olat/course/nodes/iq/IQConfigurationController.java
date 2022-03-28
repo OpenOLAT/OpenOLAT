@@ -291,6 +291,8 @@ public class IQConfigurationController extends BasicController {
 		} else if (source == mod21ConfigForm) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(urequest, event);
 			}
 		} else if(source == previewQTI21Ctrl) {
 			if(event instanceof RestartEvent) {

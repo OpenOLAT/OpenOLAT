@@ -110,7 +110,7 @@ public class GradeServiceImpl implements GradeService {
 	}
 
 	@Override
-	public boolean isInUse(GradeSystemRef gradeSystem) {
+	public boolean hasGradeScale(GradeSystemRef gradeSystem) {
 		if (gradeSystem == null) return false;
 		
 		List<GradeScaleStats> stats = gradeScaleDAO.loadStats(gradeSystem);

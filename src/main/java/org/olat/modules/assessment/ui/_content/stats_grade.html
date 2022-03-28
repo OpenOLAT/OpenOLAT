@@ -26,14 +26,8 @@
 				#end
 				#if($r.isNotEmpty($minScore))
 					<tr>
-						<th scope="row">$r.translate("grade.scale.score.min")</th>
-						<td>$minScore</td>
-					</tr>
-				#end
-				#if($r.isNotEmpty($maxScore))
-					<tr>
-						<th scope="row">$r.translate("grade.scale.score.max")</th>
-						<td>$maxScore</td>
+						<th>$r.translate("score.min.max")</th>
+						<td>$r.translate("score.min.max.value", $minScore, $maxScore)</td>
 					</tr>
 				#end
 				#if($r.isNotEmpty($passedWith))

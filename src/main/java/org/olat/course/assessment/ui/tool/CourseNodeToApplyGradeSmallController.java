@@ -60,7 +60,7 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 	
 	@Override
 	protected String getIconCssClass() {
-		return "o_icon_empty_objects";
+		return "o_icon_grade";
 	}
 
 	@Override

@@ -102,7 +102,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 			switch(COLS[col]) {
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();
-				case score: return row.getScore();
+				case score: return row;
 				case min: return minScore;
 				case max: return getMaxScore(row);
 				case cut: return cutValue;

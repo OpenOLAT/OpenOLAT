@@ -41,6 +41,9 @@ import org.olat.modules.grade.Rounding;
 public class GradeUIFactory {
 	
 	public static final DecimalFormat THREE_DIGITS = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
+	private static final BigDecimal HALF = new BigDecimal("0.5");
+	private static final BigDecimal QUARTER = new BigDecimal("0.25");
+	private static final BigDecimal TENTH = new BigDecimal("0.1");
 	
 	public static String translateResolution(Translator translator, NumericResolution resolution) {
 		return translator.translate("grade.system.resolution." + resolution.name());
@@ -150,6 +153,62 @@ public class GradeUIFactory {
 		if (s == null || s.length() == 0) return false;
 		
 		return s.matches("^[a-z0-9\\.]*$");
+	}
+	
+
+	
+	public static boolean validateCutValue(TextElement el, NumericResolution resolution) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			String val = el.getValue();
+			if (StringHelper.containsNonWhitespace(val)) {
+				if (NumericResolution.whole == resolution) {
+					try {
+						Integer.parseInt(val);
+					} catch (NumberFormatException e) {
+						el.setErrorKey("integer.element.int.error", null);
+						allOk = false;
+					}
+				} else {
+					try {
+						String value = THREE_DIGITS.format(Double.parseDouble(val));
+						if (!validateCutValue(value, resolution)) {
+							el.setErrorKey("error.digits", null);
+							allOk = false;
+						}
+					} catch (NumberFormatException e) {
+						el.setErrorKey("error.double", null);
+						allOk = false;
+					}
+				}
+			}
+		}
+		return allOk;
+	}
+
+	private static boolean validateCutValue(String value, NumericResolution resolution) {
+		BigDecimal divisor = null;
+		
+		switch (resolution) {
+		case half:
+			divisor = HALF;
+			break;
+		case quarter:
+			divisor = QUARTER;
+			break;
+		case tenth:
+			divisor = TENTH;
+			break;
+		default:
+			break;
+		}
+		
+		if (divisor != null) {
+			return new BigDecimal(value).remainder(divisor).compareTo(BigDecimal.ZERO) == 0;
+		}
+		
+		return true;
 	}
 
 }

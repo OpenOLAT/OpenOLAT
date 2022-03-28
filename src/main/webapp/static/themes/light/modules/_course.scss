@@ -520,6 +520,14 @@
 .o_noinfo {
 	color: $text-muted;
 }
+.o_passed_cell {
+	&.o_cell_passed {
+		color: $o-course-state-passed-color;
+	}
+	&.o_cell_failed {
+		color: $o-course-state-failed-color;
+	}
+}
 .o_assessment_stats {
 	.o_overview {
 		display: flex;

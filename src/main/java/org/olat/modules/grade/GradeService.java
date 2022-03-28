@@ -47,7 +47,7 @@ public interface GradeService {
 
 	public GradeSystem getGradeSystem(RepositoryEntry repositoryEntry, String subIdent);
 	
-	public boolean isInUse(GradeSystemRef gradeSystem);
+	public boolean hasGradeScale(GradeSystemRef gradeSystem);
 	
 	public PerformanceClass createPerformanceClass(GradeSystem gradeSystem, String identifier);
 	

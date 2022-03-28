@@ -157,6 +157,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 				listenTo(workflowCtrl);
 				myTabbedPane.replaceTab(workflowPos, workflowCtrl.getInitialComponent());
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if(assignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {

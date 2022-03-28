@@ -1231,14 +1231,6 @@ body {
 		}
 	}
 }
-.o_gr_cell {
-	&.o_gr_passed {
-		color: $o-course-state-passed-color;
-	}
-	&.o_gr_failed {
-		color: $o-course-state-failed-color;
-	}
-}
 .o_gr_scale_chart_line {
 	stroke-width: 2;
 	stroke: $o-d3chart-default;
@@ -1246,11 +1238,6 @@ body {
 }
 .o_gr_scale_chart_passed {
 	fill: $o-course-state-passed-color;
-}
-.o_gr_ass_cont.form-inline {
-	:first-child {
-		display: inline-block;
-	}
 }
 
 /* MathLive */

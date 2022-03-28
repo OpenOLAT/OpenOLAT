@@ -19,52 +19,38 @@
  */
 package org.olat.modules.assessment.ui.component;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
- * Initial date: 4 Mar 2022<br>
+ * Initial date: 28 Mar 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GradeCellRenderer extends PassedDependentRenderer implements FlexiCellRenderer {
-
-	private final Translator gradeTanslator;
-
-	public GradeCellRenderer(Locale locale) {
-		gradeTanslator = Util.createPackageTranslator(GradeUIFactory.class, locale);
-	}
+public class ColorizedScoreCellRenderer extends PassedDependentRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof AssessedIdentityElementRow) {
 			AssessedIdentityElementRow assessmentRow = (AssessedIdentityElementRow)cellValue;
-			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed());
+			append(target, assessmentRow.getPassed(), AssessmentHelper.getRoundedScore(assessmentRow.getScore()));
 		} else if (cellValue instanceof AssessmentNodeData) {
 			AssessmentNodeData assessmentRow = (AssessmentNodeData)cellValue;
-			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed());
+			append(target, assessmentRow.getPassed(), AssessmentHelper.getRoundedScore(assessmentRow.getScore()));
 		} else if (cellValue instanceof EfficiencyStatementEntry) {
 			EfficiencyStatementEntry assessmentRow = (EfficiencyStatementEntry)cellValue;
-			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed());
+			append(target, assessmentRow.getPassed(), AssessmentHelper.getRoundedScore(assessmentRow.getScore()));
 		}
-	}
-
-	private void appendGrade(StringOutput target, String performanceClassident, String grade, Boolean passed) {
-		String gradeStr = GradeUIFactory.translatePerformanceClass(gradeTanslator, performanceClassident, grade);
-		append(target, passed, gradeStr);
 	}
 
 }

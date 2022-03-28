@@ -243,7 +243,7 @@ public class GradeSystemListController extends FormBasicController {
 	}
 
 	private void doDeleteGradeSystem(GradeSystem gradeSystem) {
-		if (!gradeService.isInUse(gradeSystem)) {
+		if (!gradeService.hasGradeScale(gradeSystem)) {
 			gradeService.deleteGradeSystem(gradeSystem);
 		}
 		loadModel();

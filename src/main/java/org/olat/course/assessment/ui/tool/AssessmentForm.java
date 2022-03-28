@@ -620,7 +620,7 @@ public class AssessmentForm extends FormBasicController {
 		
 		if (hasGrade) {
 			gradeCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
-			gradeCont.setElementCssClass("o_gr_ass_cont");
+			gradeCont.setElementCssClass("o_inline_cont");
 			gradeCont.setLabel("grade", null);
 			gradeCont.setRootForm(mainForm);
 			assessmentCont.add(gradeCont);

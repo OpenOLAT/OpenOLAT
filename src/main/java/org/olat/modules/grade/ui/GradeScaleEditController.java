@@ -211,8 +211,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
 		cutValueEl = uifactory.addStaticTextElement("grade.system.cut.value", "", generalCont);
-		uifactory.addStaticTextElement("grade.scale.score.min", THREE_DIGITS.format(minScore), generalCont);
-		uifactory.addStaticTextElement("grade.scale.score.max", THREE_DIGITS.format(maxScore), generalCont);
+		String scoreMinMax = translate("grade.system.score.min.max.value", THREE_DIGITS.format(minScore), THREE_DIGITS.format(maxScore));
+		uifactory.addStaticTextElement("grade.system.score.min.max", scoreMinMax, generalCont);
 		
 		
 		// Scale

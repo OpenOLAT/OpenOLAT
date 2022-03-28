@@ -128,6 +128,7 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.ColorizedScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.CompletionItem;
 import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
@@ -593,7 +594,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 
 	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, new ColorizedScoreCellRenderer()));
 	}
 	
 	protected void initStatusColumns(FlexiTableColumnModel columnsModel) {
@@ -646,7 +647,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
 				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", formLayout, Link.BUTTON);
 				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
-				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw");
+				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
 				bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 				tableEl.addBatchButton(bulkApplyGradeButton);
 			}
@@ -680,6 +681,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initGradeScaleEditButton(FormLayoutContainer formLayout) {
 		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade()) {
 			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
+			gradeScaleButton.setIconLeftCSS("o_icon o_icon_grade");
 			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}

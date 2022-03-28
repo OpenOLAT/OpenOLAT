@@ -120,6 +120,8 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				checkboxListEditCtrl.dispatchEvent(ureq, configurationCtrl, event);
 				updateHighscoreTab();
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if(source == checkboxListEditCtrl) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

@@ -116,6 +116,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 			updateHighscoreTab();
 		} else if (source == highScoreNodeConfigController){

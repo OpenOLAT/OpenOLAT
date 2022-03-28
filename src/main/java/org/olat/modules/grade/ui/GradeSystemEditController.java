@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -77,6 +78,7 @@ public class GradeSystemEditController extends FormBasicController {
 	private static final String CMD_DELETE = "delete";
 	
 	private TextElement identifierEl;
+	private StaticTextElement systemNameEl;
 	private FormLink systemNameLink;
 	private SingleSelection typeEl;
 	private MultipleSelectionElement enabledEl;
@@ -104,7 +106,7 @@ public class GradeSystemEditController extends FormBasicController {
 	public GradeSystemEditController(UserRequest ureq, WindowControl wControl, GradeSystem gradeSystem) {
 		super(ureq, wControl);
 		this.gradeSystem = gradeSystem;
-		hasScale = gradeService.isInUse(gradeSystem);
+		hasScale = gradeService.hasGradeScale(gradeSystem);
 		
 		initForm(ureq);
 		loadPerformanceClasses();
@@ -120,9 +122,16 @@ public class GradeSystemEditController extends FormBasicController {
 			uifactory.addStaticTextElement("grade.system.identifier", gradeSystem.getIdentifier(), formLayout);
 		}
 		
-		systemNameLink = uifactory.addFormLink("grade.system.name", CMD_TRANSLATE_NAME, "",
-				translate("grade.system.name"), formLayout, Link.NONTRANSLATED);
-		systemNameLink.setI18nKey(GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
+		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
+		nameCont.setLabel("grade.system.name", null);
+		nameCont.setElementCssClass("o_inline_cont");
+		nameCont.setRootForm(mainForm);
+		formLayout.add(nameCont);
+		
+		String translateGradeSystem = GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem);
+		systemNameEl = uifactory.addStaticTextElement("grade.system.name", null, translateGradeSystem, nameCont);
+		
+		systemNameLink = uifactory.addFormLink("grade.system.name.edit", nameCont);
 		
 		SelectionValues typeSV = new SelectionValues();
 		typeSV.add(entry(GradeSystemType.numeric.name(), translate("grade.system.type.numeric")));
@@ -226,7 +235,7 @@ public class GradeSystemEditController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == systemTranslatorCtrl) {
-			systemNameLink.setI18nKey(GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
+			systemNameEl.setValue(GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == translatorCtrl) {
@@ -297,7 +306,13 @@ public class GradeSystemEditController extends FormBasicController {
 		
 		allOk &= GradeUIFactory.validateInteger(bestGradeEl);
 		allOk &= GradeUIFactory.validateInteger(lowestGradeEl);
-		allOk &= GradeUIFactory.validateDouble(cutValueEl, false);
+		
+		cutValueEl.clearError();
+		if (GradeSystemType.numeric == GradeSystemType.valueOf(typeEl.getSelectedKey())) {
+			NumericResolution resolution = NumericResolution.valueOf(resolutionEl.getSelectedKey());
+			allOk &= GradeUIFactory.validateCutValue(cutValueEl, resolution);
+			
+		}
 		
 		tableEl.clearError();
 		if (performanceClassCont.isVisible() && performanceClassRows.isEmpty()) {
@@ -313,7 +328,7 @@ public class GradeSystemEditController extends FormBasicController {
 		if (gradeSystem == null) {
 			gradeSystem = gradeService.createGradeSystem(identifierEl.getValue(), GradeSystemType.valueOf(typeEl.getSelectedKey()));
 		} else {
-			hasScale = gradeService.isInUse(gradeSystem);
+			hasScale = gradeService.hasGradeScale(gradeSystem);
 		}
 		gradeSystem.setEnabled(enabledEl.isAtLeastSelected(1));
 		
@@ -378,7 +393,7 @@ public class GradeSystemEditController extends FormBasicController {
 		Collections.sort(performanceClasses);
 		performanceClassRows = new ArrayList<>(performanceClasses.size());
 		for (PerformanceClass performanceClass : performanceClasses) {
-			PerformanceClassRow row = createRow(performanceClass, performanceClass.getBestToLowest() + 1,
+			PerformanceClassRow row = createRow(performanceClass, performanceClass.getBestToLowest(),
 					performanceClass.isPassed());
 			performanceClassRows.add(row);
 		}
@@ -418,7 +433,6 @@ public class GradeSystemEditController extends FormBasicController {
 		
 		MultipleSelectionElement markPassedEl = uifactory.addCheckboxesHorizontal(
 				"passed_" + row.getPosition(), null, performanceClassCont, onKeys, onValues);
-		markPassedEl.setAjaxOnly(true);
 		markPassedEl.setDomReplacementWrapperRequired(false);
 		markPassedEl.select(onKeys[0], passed);
 		row.setMarkPassedEl(markPassedEl);
@@ -438,6 +452,7 @@ public class GradeSystemEditController extends FormBasicController {
 			
 			performanceClass.setBestToLowest(row.getPosition());
 			performanceClass.setPassed(row.getMarkPassedEl().isAtLeastSelected(1));
+			gradeService.updatePerformanceClass(performanceClass);
 		}
 		
 		performanceClassToDelete.forEach(gradeService::deletePerformanceClass);

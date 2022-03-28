@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -309,7 +310,7 @@ public class MSEditFormController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 				update(ureq);
-				flc.setDirty(true);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -325,9 +326,16 @@ public class MSEditFormController extends FormBasicController {
 		gradeScaleCtrl = null;
 		cmc = null;
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if (fiSrc != gradeScaleEditLink) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
 
 	@Override
-	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
 		} else {

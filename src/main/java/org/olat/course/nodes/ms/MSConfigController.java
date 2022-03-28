@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -393,6 +394,14 @@ public class MSConfigController extends FormBasicController {
 		ignoreInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 	}
 
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if (fiSrc != gradeScaleEditLink) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == evaluationFormEnabledEl) {
@@ -435,7 +444,7 @@ public class MSConfigController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				gradeScale = gradeService.getGradeScale(ores, nodeIdent);
 				updateUI();
-				flc.setDirty(true);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

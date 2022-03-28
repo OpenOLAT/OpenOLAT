@@ -169,7 +169,7 @@ public abstract class AbstractToolsController extends BasicController {
 				&& scoreEval.getScore() != null
 				&& !StringHelper.containsNonWhitespace(scoreEval.getGrade());
 		if (canApplyGrade) {
-			applyGradeLink = addLink("tool.grade.apply", "tool.grade.apply", "o_icon o_icon-fw ");
+			applyGradeLink = addLink("tool.grade.apply", "tool.grade.apply", "o_icon o_icon-fw o_icon_grade");
 		}
 	}
 	

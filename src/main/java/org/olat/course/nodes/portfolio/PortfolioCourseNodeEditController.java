@@ -119,6 +119,8 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				textForm.loadMapOrBinder();
 				textForm.updateUI();
 				configContent.setDirty(true);
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == textForm) {
 			if (event == Event.DONE_EVENT) {

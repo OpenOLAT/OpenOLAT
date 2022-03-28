@@ -55,6 +55,7 @@ import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -264,7 +265,7 @@ public class QTI21EditForm extends FormBasicController {
 		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
 		maxScoreEl.setVisible(false);
 		
-		if (gradeModule.isEnabled() && !wizard) {
+		if (gradeModule.isEnabled() && !wizard && !selfAssessment) {
 			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
@@ -502,7 +503,7 @@ public class QTI21EditForm extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 				updateGradeUI();
-				flc.setDirty(true);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -584,6 +585,13 @@ public class QTI21EditForm extends FormBasicController {
 		}
 		
 		return allOk;
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if (fiSrc != gradeScaleEditLink) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
 	}
 
 	@Override
