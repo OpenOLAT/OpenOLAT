@@ -40,16 +40,18 @@ import org.olat.core.util.StringHelper;
 public class PropertyValueCellRenderer implements FlexiCellRenderer{
 	
 	private static final String[] protectedKeys = {
-		"ldap.trustStorePwd",
-		"smtp.pwd",
-		"ldap.ldapUserPassordAttribute",
-		"opencast.api.password",
-		"paypal.security.password",
-		"websms.password",
 		"db.pass",
 		"instanceIdentifyer",
+		"ldap.trustStorePwd",
+		"onlyoffice.jwt.secret",
+		"opencast.api.password",
+		"paypal.security.password",
 		"secret_key",
-		"onlyoffice.jwt.secret"
+		"smtp.pwd",
+		"vc.adobe.adminpassword",
+		"vc.openmeetings.adminpassword",
+		"vc.vitero.adminpassword",
+		"websms.password"
 	};
 
 	@Override
