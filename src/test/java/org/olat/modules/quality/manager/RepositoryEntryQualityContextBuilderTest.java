@@ -106,7 +106,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 	public void shouldInitParticipantContextWithAllRelations() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String location = "Kaiserslautern";
-		repositoryManager.setDescriptionAndName(entry, "", null, location, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(entry, "", null, null, location, null, null, null, null, null);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
@@ -204,7 +204,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 	public void shouldInitCoachContextWithAllRelations() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String location = "Frankfurt";
-		repositoryManager.setDescriptionAndName(entry, "", null, location, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(entry, "", null, null, location, null, null, null, null, null);
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
@@ -346,7 +346,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		curriculumService.addMember(curriculumElement3, executor, CurriculumRoles.participant);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		
-		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null,
+		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null,
 				null, Collections.singletonList(organisationRepositoreyOnly), null, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -394,7 +394,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		curriculumService.addMember(curriculumElement3, executor, CurriculumRoles.participant);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		
-		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null,
+		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null, null,
 				Arrays.asList(organisationUserAndRepository, organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -430,7 +430,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager);
 		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
 
-		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null,
+		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null, null,
 				Arrays.asList(organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null, null);
 		dbInstance.commitAndCloseSession();
 		

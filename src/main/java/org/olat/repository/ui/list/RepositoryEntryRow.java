@@ -56,10 +56,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private final String name;
 	private final String authors;
 	private final String location;
+	private final String teaser;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private String thumbnailRelPath;
-	private final String shortenedDescription;
 	private final RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
 	private final boolean guests;
@@ -101,7 +101,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		externalId = entry.getExternalId();
 		externalRef = entry.getExternalRef();
 		name = entry.getDisplayname();
-		shortenedDescription = StringHelper.truncateText(entry.getDescription());
+		teaser = entry.getTeaser();
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 		authors = entry.getAuthors();
 		location = entry.getLocation();
@@ -181,10 +181,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public String getDisplayName() {
 		return name;
-	}
-
-	public String getShortenedDescription() {
-		return shortenedDescription;
 	}
 
 	/**
@@ -373,6 +369,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public String getAuthors() {
 		return authors;
+	}
+	
+	public String getTeaser() {
+		return teaser;
 	}
 	
 	public String getLocation() {

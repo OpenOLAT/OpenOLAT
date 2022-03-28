@@ -12,6 +12,9 @@ create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);
 alter table o_ex_task add e_progress decimal default null;
 alter table o_ex_task add e_checkpoint varchar(255) default null;
 
+-- Repository entry
+alter table o_repositoryentry add teaser varchar2(255) default null;
+
 -- IM
 alter table o_im_roster_entry add r_ressubpath varchar(255) default null;
 alter table o_im_roster_entry add r_channel varchar(255) default null;

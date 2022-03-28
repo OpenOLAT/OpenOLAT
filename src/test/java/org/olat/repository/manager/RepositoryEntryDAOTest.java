@@ -213,7 +213,7 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		String externalId = UUID.randomUUID().toString();
 		String externalRef = UUID.randomUUID().toString();
-		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, externalId, externalRef, null, null);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, externalId, externalRef, null, null);
 		dbInstance.commitAndCloseSession();
 
 		//by primary key
@@ -438,12 +438,12 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	public void removeEducationalType() {
 		RepositoryEntryEducationalType educationalType1 = repositoryEntryEducationalTypeDAO.create(random());
 		RepositoryEntry entry11 = repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(),
-				null, random(), random(), null, null, null, null, null, null, null, null, null, educationalType1);
+				null, random(), random(), null, null, null, null, null, null, null, null, null, null, educationalType1);
 		RepositoryEntry entry12 = repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(),
-				null, random(), random(), null, null, null, null, null, null, null, null, null, educationalType1);
+				null, random(), random(), null, null, null, null, null, null, null, null, null, null, educationalType1);
 		RepositoryEntryEducationalType educationalType2 = repositoryEntryEducationalTypeDAO.create(random());
 		RepositoryEntry entry2 = repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(),
-				null, random(), random(), null, null, null, null, null, null, null, null, null, educationalType2);
+				null, random(), random(), null, null, null, null, null, null, null, null, null, null, educationalType2);
 		dbInstance.commitAndCloseSession();
 		
 		entry11 = repositoryEntryDao.loadByKey(entry11.getKey());

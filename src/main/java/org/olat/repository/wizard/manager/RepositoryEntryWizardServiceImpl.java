@@ -132,7 +132,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 		}
 		
 		return repositoryManager.setDescriptionAndName(entry, entry.getDisplayname(), entry.getExternalRef(),
-				entry.getAuthors(), entry.getDescription(), entry.getObjectives(), entry.getRequirements(),
+				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
 				entry.getLifecycle(), null, taxonomyLevels, educationalType);
 	}

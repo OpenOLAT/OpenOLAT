@@ -149,12 +149,12 @@ public class RepositoryEntryEducationalTypeDAOTest extends OlatTestCase {
 	public void shouldGetStats() {
 		RepositoryEntryEducationalType educationalType1 = sut.create(random());
 		repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(), null, random(), random(),
-				null, null, null, null, null, null, null, null, null, educationalType1);
+				null, null, null, null, null, null, null, null, null, null, educationalType1);
 		RepositoryEntryEducationalType educationalType2 = sut.create(random());
 		repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(), null, random(), random(),
-				null, null, null, null, null, null, null, null, null, educationalType2);
+				null, null, null, null, null, null, null, null, null, null, educationalType2);
 		repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(), null, random(), random(),
-				null, null, null, null, null, null, null, null, null, educationalType2);
+				null, null, null, null, null, null, null, null, null, null, educationalType2);
 		RepositoryEntryEducationalType educationalType3 = sut.create(random());
 
 		List<RepositoryEntryEducationalTypeStat> stats = sut.loadStats();

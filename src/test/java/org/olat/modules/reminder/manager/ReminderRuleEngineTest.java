@@ -717,7 +717,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		Date validTo = cal.getTime();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("Cycle 1", "Cycle soft 1", false, validFrom, validTo);
-		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, cycle);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, null, cycle);
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
@@ -801,7 +801,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		Date validTo = cal.getTime();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("Cycle 2", "Cycle soft 2", false, validFrom, validTo);
-		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, cycle);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, null, cycle);
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());

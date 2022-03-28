@@ -500,6 +500,7 @@ create table o_repositoryentry (
    fk_lifecycle int8,
    fk_olatresource int8 unique,
    description text,
+   teaser varchar(255),
    initialauthor varchar(128) not null,
    allowtoleave varchar(16),
    candownload bool not null,

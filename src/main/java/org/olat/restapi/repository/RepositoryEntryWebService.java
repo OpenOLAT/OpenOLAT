@@ -639,7 +639,7 @@ public class RepositoryEntryWebService {
 
 		RepositoryEntryLifecycle lifecycle = updateLifecycle(vo.getLifecycle());
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
-				vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
+				vo.getTeaser(), vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
 				lifecycle);
 		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
 		return Response.ok(rvo).build();
@@ -707,6 +707,7 @@ public class RepositoryEntryWebService {
 			String location = reader.getValue("location");
 			String authors = reader.getValue("authors");
 			String description = reader.getValue("description");
+			String teaser = reader.getValue("teaser");
 			String externalId = reader.getValue("externalId");
 			String externalRef = reader.getValue("externalRef");
 			String managedFlags = reader.getValue("managedFlags");
@@ -714,7 +715,7 @@ public class RepositoryEntryWebService {
 			Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
 			RepositoryEntry replacedRe;
 			if (tmpFile == null) {
-				replacedRe = repositoryManager.setDescriptionAndName(entry, displayname, description, location, authors,
+				replacedRe = repositoryManager.setDescriptionAndName(entry, displayname, description, teaser, location, authors,
 						externalId, externalRef, managedFlags, entry.getLifecycle());
 			} else {
 				long length = tmpFile.length();
@@ -725,7 +726,7 @@ public class RepositoryEntryWebService {
 				if (replacedRe == null) {
 					return Response.serverError().status(Status.NOT_FOUND).build();
 				} else {
-					replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description, location,
+					replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description, teaser, location,
 							authors, externalId, externalRef, managedFlags, replacedRe.getLifecycle());
 				}
 			}
@@ -935,7 +936,7 @@ public class RepositoryEntryWebService {
 			educationalType = educationalTypeDao.loadByKey(metadataVo.getEducationalType().getKey());
 		}
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
-				metadataVo.getDescription(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
+				metadataVo.getDescription(), metadataVo.getTeaser(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
 				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
 		
 		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();

@@ -551,6 +551,7 @@ CREATE TABLE o_repositoryentry (
   fk_lifecycle number(20),
   fk_olatresource number(20),
   description varchar2(4000),
+  varchar2(255),
   initialauthor varchar2(128 char) NOT NULL,
   status varchar(16) default 'preparation' not null,
   allusers number default 0 not null,

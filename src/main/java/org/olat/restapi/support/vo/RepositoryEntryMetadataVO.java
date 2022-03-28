@@ -44,6 +44,7 @@ public class RepositoryEntryMetadataVO {
 	private String resourcename;
 	private String displayname;
 	private String description;
+	private String teaser;
 
 	private String mainLanguage;
 	private String objectives;
@@ -77,7 +78,7 @@ public class RepositoryEntryMetadataVO {
 		vo.setResourcename(entry.getResourcename());
 		vo.setDisplayname(entry.getDisplayname());
 		vo.setDescription(entry.getDescription());
-		
+		vo.setTeaser(entry.getTeaser());
 		vo.setCredits(entry.getCredits());
 		vo.setObjectives(entry.getObjectives());
 		vo.setRequirements(entry.getRequirements());
@@ -149,6 +150,14 @@ public class RepositoryEntryMetadataVO {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
 	}
 
 	public String getMainLanguage() {

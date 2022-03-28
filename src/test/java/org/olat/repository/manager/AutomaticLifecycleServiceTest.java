@@ -205,7 +205,7 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		Date start = DateUtils.addDays(new Date(), startDays);
 		Date end = DateUtils.addDays(new Date(), endDays);
 		RepositoryEntryLifecycle cycle = repositoryEntryLifecycleDao.create("Sem.", null, true, start, end);
-		entry = repositoryManager.setDescriptionAndName(entry, displayName, "Fake course to close", null, null, null, null, null, cycle);
+		entry = repositoryManager.setDescriptionAndName(entry, displayName, "Fake course to close", null, null, null, null, null, null, cycle);
 		dbInstance.commitAndCloseSession();
 		return entry;
 	}

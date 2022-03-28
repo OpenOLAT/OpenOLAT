@@ -90,6 +90,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private FileElement movieUpload;
 	private TextElement externalRef;
 	private TextElement displayName;
+	private TextElement teaser;
 	private RichTextElement description;
 	private RichTextElement objectives;
 	private RichTextElement requirements;
@@ -147,7 +148,10 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			externalRef.setHelpText(translate("cif.externalref.hover"));
 			externalRef.setHelpUrlForManualPage("manual_user/authoring/Set_up_info_page/");
 		}
-
+		
+		teaser = uifactory.addTextElement("cif.teaser", "cif.teaser", 200, repositoryEntry.getTeaser(), formLayout);
+		teaser.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.teaser) && !readOnly);
+		
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
 		mediaContainer = handler.getMediaContainer(repositoryEntry);
 		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
@@ -244,6 +248,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		allOk &= RepositoyUIFactory.validateTextElement(requirements, false, 2000);
 		allOk &= RepositoyUIFactory.validateTextElement(credits, false, 2000);
 		allOk &= RepositoyUIFactory.validateTextElement(externalRef, false, 255);
+		allOk &= RepositoyUIFactory.validateTextElement(teaser, false, 200);
 
 		return allOk;
 	}
@@ -325,6 +330,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			repositoryEntry.setExternalRef(ref);
 		}
 		
+		repositoryEntry.setTeaser(teaser.getValue());
+		
 		String desc = description.getValue().trim();
 		repositoryEntry.setDescription(desc);
 
@@ -343,9 +350,10 @@ public class RepositoryEntryInfoController extends FormBasicController {
 
 		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
 				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
-				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, null, repositoryEntry.getEducationalType());
+				repositoryEntry.getDescription(), repositoryEntry.getTeaser(), repositoryEntry.getObjectives(),
+				repositoryEntry.getRequirements(), repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(),
+				repositoryEntry.getLocation(), repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(),
+				null, null, repositoryEntry.getEducationalType());
 		if(repositoryEntry == null) {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);

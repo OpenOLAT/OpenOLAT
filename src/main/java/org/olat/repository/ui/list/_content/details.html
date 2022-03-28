@@ -1,12 +1,10 @@
 <div class="o_repo_details o_block_large_bottom  #if($educationalTypeClass) $educationalTypeClass #end ">
 <script>
-/* <![CDATA[ */
 #if($oInfoCourse)
 	o_info.course=$oInfoCourse;
 #else
 	delete o_info.course;
 #end
-/* ]]> */ 
 </script>
 	<div class="o_lead">					
 		#if($r.available("thumbnail"))
@@ -22,9 +20,13 @@
 			</div>
 			#end
 			<h2>
-				<i class="o_icon $cssClass o_icon-lg"></i>
+				<i class="o_icon $cssClass o_icon-lg"> </i>
 				$r.escapeHtml($v.displayname)
 			</h2>
+			
+			#if($r.isNotEmpty($v.teaser))
+				<p class="o_teaser">$r.escapeHtml($v.teaser)</p>
+			#end
 						
 			#if($educationalType)
 			<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
@@ -234,8 +236,6 @@
 			#end
 		</div>
 		#end
-
-	
 	
 		<div class="o_extlink clearfix o_block_large_bottom">
 			<h4>$r.translate("details.extlinkheader")</h4>
@@ -243,11 +243,9 @@
 				<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 				<input type="text" value="$extlink" onclick="this.select()"/>
 				<script>
-				/* <![CDATA[ */
-					jQuery(function() {
-						o_QRCodePopup('o_extlink', '$extlink', 'right');
-					});
-				/* ]]> */
+				jQuery(function() {
+					o_QRCodePopup('o_extlink', '$extlink', 'right');
+				});
 				</script>
 			</div>
 			#if ($isGuestAllowed)
@@ -255,11 +253,9 @@
 				<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 				<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>
 				<script>
-				/* <![CDATA[ */
-					jQuery(function() {
-						o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
-					});
-				/* ]]> */
+				jQuery(function() {
+					o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
+				});
 				</script>
 			</div>
 			#end
@@ -275,28 +271,28 @@
 			</div>
 			<div id="collapseInfo" class="panel-collapse collapse">
 				<table class="table table-condensed table-striped"><tbody>
-					<tr><th>$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
+					<tr><th scope="row">$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
 					#if ($roles.isAdministrator() || $roles.isLearnResourceManager())		
-					<tr><th>$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
-					<tr><th>$r.translate("cif.softkey")</th><td>$r.escapeHtml($v.getSoftkey())</td></tr>
+					<tr><th scope="row">$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
+					<tr><th scope="row">$r.translate("cif.softkey")</th><td>$r.escapeHtml($v.getSoftkey())</td></tr>
 					#end
 					#if($v.getExternalId())
-					<tr><th>$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
+					<tr><th scope="row">$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
 					#end
 					#if($v.getExternalRef())
-					<tr><th>$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
+					<tr><th scope="row">$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
 					#end
-					<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
-					<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
+					<tr><th scope="row">$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
+					<tr><th scope="row">$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
 					
 					#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
 					#if ($r.isNotEmpty($technicalType))
-						<tr><th>$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
+						<tr><th scope="row">$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
 					#end
-					<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
-					<tr><th>$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
+					<tr><th scope="row">$r.translate("cif.access")</th><td>$accessI18n</td></tr>
+					<tr><th scope="row">$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
 					<tr>
-						<th>$r.translate("cif.owners")</th>
+						<th scope="row">$r.translate("cif.owners")</th>
 						<td><ul class="list-unstyled">
 							#foreach($authorlinkname in $authorlinknames)
 								<li>$r.render($authorlinkname)</li>
@@ -306,13 +302,13 @@
 					#end
 					#if($r.isNotEmpty($organisations))
 					<tr>
-						<th>$r.translate("cif.organisations")</th>
+						<th scope="row">$r.translate("cif.organisations")</th>
 						<td>$organisations</td>
 					</tr>
 					#end
 					#if($r.isNotEmpty($curriculums))
 					<tr>
-						<th>$r.translate("cif.curriculums")</th>
+						<th scope="row">$r.translate("cif.curriculums")</th>
 						<td><ul class="list-unstyled">
 							#foreach($curriculum in $curriculums)
 								<li>$curriculum</li>
@@ -325,16 +321,13 @@
 			</div>
 		</div>			
 		<script>
-			/* <![CDATA[ */
-				jQuery('#collapseInfo').on('hide.bs.collapse', function () {
-						jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#collapseInfo').on('show.bs.collapse', function () {
-						jQuery('#collapseInfoToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-				})
-			/* ]]> */
+		jQuery('#collapseInfo').on('hide.bs.collapse', function () {
+			jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseInfo').on('show.bs.collapse', function () {
+			jQuery('#collapseInfoToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
 		</script>
-
 
 		#if (($referenceLinks && $referenceLinks.size() > 0))
 		<div class="panel panel-default o_usagepanel">
@@ -349,30 +342,28 @@
 			<div id="collapseUsage" class="panel-collapse collapse">
 				<table class="table table-condensed table-striped"><tbody>
 					<tr>
-						<th>$r.translate("details.referenceinfo")</th>
+						<th scope="row">$r.translate("details.referenceinfo")</th>
 						<td>$r.translate("details.referenceinfo.txt")
 							#foreach($referenceLink in $referenceLinks)
 								#if($foreach.count != 1), #end$r.render($referenceLink)
 							#end
 						</td>
 					</tr>
-					<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
-					<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
-					<tr><th>$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
-					<tr><th>$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
+					<tr><th scope="row">$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
+					<tr><th scope="row">$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
+					<tr><th scope="row">$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
+					<tr><th scope="row">$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
 				</tbody></table>
 			</div>
 			#end
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#collapseUsage').on('hide.bs.collapse', function () {
-						jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#collapseUsage').on('show.bs.collapse', function () {
-						jQuery('#collapseUsageToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-				})
-			/* ]]> */
+		jQuery('#collapseUsage').on('hide.bs.collapse', function () {
+			jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseUsage').on('show.bs.collapse', function () {
+			jQuery('#collapseUsageToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
 		</script>			
 		#end
 
@@ -398,14 +389,12 @@
 			</div>
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#collapseManaged').on('hide.bs.collapse', function () {
-						jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#collapseManaged').on('show.bs.collapse', function () {
-						jQuery('#collapseManagedToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-				})
-			/* ]]> */
+		jQuery('#collapseManaged').on('hide.bs.collapse', function () {
+			jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseManaged').on('show.bs.collapse', function () {
+			jQuery('#collapseManagedToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
 		</script>
 		#end
 	</div>

@@ -43,6 +43,7 @@ public class CourseVO {
 	private String softKey;
 	private String displayName;
 	private String description;
+	private String teaser;
 	private Long repoEntryKey;
 	@XmlAttribute(name="organisationKey", required=false)
 	private Long organisationKey;
@@ -214,6 +215,14 @@ public class CourseVO {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
 	}
 
 	public String getEditorRootNodeId() {

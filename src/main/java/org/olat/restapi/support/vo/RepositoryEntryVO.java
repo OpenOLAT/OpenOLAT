@@ -44,6 +44,7 @@ public class RepositoryEntryVO {
 	private String resourcename;
 	private String displayname;
 	private String description;
+	private String teaser;
 	@XmlAttribute(name="authors",required=false)
 	private String authors;
 	@XmlAttribute(name="location",required=false)
@@ -99,6 +100,7 @@ public class RepositoryEntryVO {
 		vo.setResourcename(entry.getResourcename());
 		vo.setDisplayname(entry.getDisplayname());
 		vo.setDescription(entry.getDescription());
+		vo.setTeaser(entry.getTeaser());
 		vo.setAuthors(entry.getAuthors());
 		vo.setLocation(entry.getLocation());
 		vo.setResourceableId(entry.getResourceableId());
@@ -156,6 +158,14 @@ public class RepositoryEntryVO {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
 	}
 
 	public String getAuthors() {

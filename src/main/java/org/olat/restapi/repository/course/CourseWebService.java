@@ -388,8 +388,8 @@ public class CourseWebService {
 			educationalType = educationalTypeDao.loadByKey(metadataVo.getEducationalType().getKey());
 		}
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(courseRe, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
-				metadataVo.getDescription(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
-				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
+				metadataVo.getDescription(), metadataVo.getTeaser(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(),
+				metadataVo.getMainLanguage(), metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
 		
 		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
 	}

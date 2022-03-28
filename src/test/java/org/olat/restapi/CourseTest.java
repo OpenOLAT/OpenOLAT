@@ -605,7 +605,7 @@ public class CourseTest extends OlatRestTestCase {
 		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
 		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
 		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, courseEntry.getDisplayname(), "Course ref.", "Course authors",
-				"Course description", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
+				"Course description", "Course teaser", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
 				null, null, null, educationalType);
 		dbInstance.commitAndCloseSession();
 		course.getCourseEnvironment().updateCourseEntry(courseEntry);
@@ -629,6 +629,7 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertEquals("Course ref.", metadataVo.getExternalRef());
 		Assert.assertEquals("Course authors", metadataVo.getAuthors());
 		Assert.assertEquals("Course description", metadataVo.getDescription());
+		Assert.assertEquals("Course teaser", metadataVo.getTeaser());
 		Assert.assertEquals("Course objectives", metadataVo.getObjectives());
 		Assert.assertEquals("Course requirements", metadataVo.getRequirements());
 		Assert.assertEquals("Course credits", metadataVo.getCredits());

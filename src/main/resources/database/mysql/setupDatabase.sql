@@ -506,6 +506,7 @@ create table if not exists o_repositoryentry (
    fk_lifecycle bigint,
    fk_olatresource bigint unique,
    description longtext,
+   teaser varchar(255),
    initialauthor varchar(128) not null,
    status varchar(16) default 'preparation' not null,
    allusers bit default 0 not null,

@@ -531,7 +531,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
 		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
 		re = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), "Ext-REF", "Auth",
-				"RE description", "RE objectives", "RE requirements", "RE credits", "DE", "Zurich", "3 days",
+				"RE description", "RE teaser", "RE objectives", "RE requirements", "RE credits", "DE", "Zurich", "3 days",
 				null, null, null, educationalType);
 		dbInstance.commitAndCloseSession();
 
@@ -554,6 +554,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Ext-REF", metadataVo.getExternalRef());
 		Assert.assertEquals("Auth", metadataVo.getAuthors());
 		Assert.assertEquals("RE description", metadataVo.getDescription());
+		Assert.assertEquals("RE teaser", metadataVo.getTeaser());
 		Assert.assertEquals("RE objectives", metadataVo.getObjectives());
 		Assert.assertEquals("RE requirements", metadataVo.getRequirements());
 		Assert.assertEquals("RE credits", metadataVo.getCredits());

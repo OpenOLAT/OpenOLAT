@@ -45,6 +45,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public String getDescription();
 	
+	public String getTeaser();
+	
 	public Date getCreationDate();
 	
 	public String getAuthors();

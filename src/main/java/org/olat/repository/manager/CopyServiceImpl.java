@@ -244,11 +244,10 @@ public class CopyServiceImpl implements CopyService {
 				LoggingResourceable.wrap(target, OlatResourceableType.genRepoEntry));
 
 		target = repositoryManager.setDescriptionAndName(target,
-				target.getDisplayname(), target.getExternalRef(), target.getAuthors(),
-				target.getDescription(), target.getObjectives(), target.getRequirements(),
-				target.getCredits(), target.getMainLanguage(), target.getLocation(),
-				target.getExpenditureOfWork(), target.getLifecycle(), null, null,
-				target.getEducationalType());
+				target.getDisplayname(), target.getExternalRef(), target.getAuthors(), target.getDescription(),
+				target.getTeaser(), target.getObjectives(), target.getRequirements(), target.getCredits(),
+				target.getMainLanguage(), target.getLocation(), target.getExpenditureOfWork(), target.getLifecycle(),
+				null, null, target.getEducationalType());
 		
 		// Open course editing session
 		OLATResourceable targetCourseOres = target.getOlatResource();

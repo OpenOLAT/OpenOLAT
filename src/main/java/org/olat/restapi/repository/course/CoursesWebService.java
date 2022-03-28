@@ -264,10 +264,10 @@ public class CoursesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
 			@QueryParam("displayName") String displayName, @QueryParam("description") String description,
-			@QueryParam("objectives") String objectives, @QueryParam("requirements") String requirements,
-			@QueryParam("credits") String credits, @QueryParam("expenditureOfWork") String expenditureOfWork,
-			@QueryParam("softKey") String softKey, @QueryParam("status") String status,
-			@QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
+			@QueryParam("teaser") String teaser, @QueryParam("objectives") String objectives,
+			@QueryParam("requirements") String requirements, @QueryParam("credits") String credits,
+			@QueryParam("expenditureOfWork") String expenditureOfWork, @QueryParam("softKey") String softKey,
+			@QueryParam("status") String status, @QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
 			@QueryParam("authors") String authors, @QueryParam("location") String location,
@@ -317,11 +317,11 @@ public class CoursesWebService {
 
 		if(copyFrom != null) {
 			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description,
-					objectives, requirements, credits, expenditureOfWork,
+					teaser, objectives, requirements, credits, expenditureOfWork,
 					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
 					authors, location, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(id, shortTitle, title, displayName, description,
+			course = createEmptyCourse(id, shortTitle, title, displayName, description, teaser,
 					objectives, requirements, credits, expenditureOfWork,
 					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
 					authors, location, externalId, externalRef, managedFlags, nodeAccessType, 
@@ -358,7 +358,7 @@ public class CoursesWebService {
 
 		CourseConfigVO configVO = new CourseConfigVO();
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
-				null, courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), null, null, null, null,
+				null, courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), courseVo.getTeaser(), null, null, null, null,
 				courseVo.getSoftKey(), RepositoryEntryStatusEnum.preparation, false, false, courseVo.getOrganisationKey(),
 				courseVo.getAuthors(), courseVo.getLocation(), courseVo.getExternalId(), courseVo.getExternalRef(), 
 				courseVo.getManagedFlags(), courseVo.getNodeAccessType(), configVO);
@@ -501,7 +501,7 @@ public class CoursesWebService {
 	}
 
 	private ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle, String longTitle, String displayName,
-			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
+			String description, String teaser, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
 			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Long organisationKey,
 			String authors, String location, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 
@@ -561,6 +561,11 @@ public class CoursesWebService {
 			}
 			if(StringHelper.containsNonWhitespace(externalRef)) {
 				preparedEntry.setExternalRef(externalRef);
+			}
+			if(StringHelper.containsNonWhitespace(teaser)) {
+				preparedEntry.setTeaser(teaser);
+			} else {
+				preparedEntry.setTeaser(src.getTeaser());
 			}
 			if(StringHelper.containsNonWhitespace(authors)) {
 				preparedEntry.setAuthors(authors);
@@ -631,8 +636,8 @@ public class CoursesWebService {
 	 * @return
 	 */
 	private ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
-			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
+			String description, String teaser, String objectives, String requirements, String credits, String expenditureOfWork,
+			String softKey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
 			Long organisationKey, String authors, String location, String externalId, String externalRef,
 			String managedFlags, String nodeAccessType, CourseConfigVO courseConfigVO) {
 
@@ -666,6 +671,7 @@ public class CoursesWebService {
 			addedEntry.setExternalRef(externalRef);
 			addedEntry.setManagedFlagsString(managedFlags);
 			addedEntry.setDescription(description);
+			addedEntry.setTeaser(teaser);
 			addedEntry.setObjectives(objectives);
 			addedEntry.setRequirements(requirements);
 			addedEntry.setCredits(credits);

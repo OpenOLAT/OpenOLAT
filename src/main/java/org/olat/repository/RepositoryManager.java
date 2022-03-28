@@ -881,7 +881,7 @@ public class RepositoryManager {
 	 * @return
 	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description,
-			String location, String authors, String externalId, String externalRef, String managedFlags,
+			String teaser, String location, String authors, String externalId, String externalRef, String managedFlags,
 			RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
@@ -893,6 +893,9 @@ public class RepositoryManager {
 		}
 		if(StringHelper.containsNonWhitespace(description)) {
 			reloadedRe.setDescription(description);
+		}
+		if(StringHelper.containsNonWhitespace(teaser)) {
+			reloadedRe.setTeaser(teaser);
 		}
 		if(StringHelper.containsNonWhitespace(authors)) {
 			reloadedRe.setAuthors(authors);
@@ -973,7 +976,7 @@ public class RepositoryManager {
 	 * @return
 	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re,
-			String displayName, String externalRef, String authors, String description,
+			String displayName, String externalRef, String authors, String description, String teaser,
 			String objectives, String requirements, String credits, String mainLanguage,
 			String location, String expenditureOfWork, RepositoryEntryLifecycle cycle,
 			List<Organisation> organisations, Set<TaxonomyLevel> taxonomyLevels, 
@@ -985,6 +988,7 @@ public class RepositoryManager {
 		reloadedRe.setDisplayname(displayName);
 		reloadedRe.setAuthors(authors);
 		reloadedRe.setDescription(description);
+		reloadedRe.setTeaser(teaser);
 		reloadedRe.setExternalRef(externalRef);
 		reloadedRe.setObjectives(objectives);
 		reloadedRe.setRequirements(requirements);

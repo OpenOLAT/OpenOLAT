@@ -139,6 +139,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private String displayname; // mandatory
 	@Column(name="description", nullable=true, insertable=true, updatable=true)
 	private String description; // mandatory
+	@Column(name="teaser", nullable=true, insertable=true, updatable=true)
+	private String teaser; // mandatory
 	@Column(name="initialauthor", nullable=false, insertable=true, updatable=true)
 	private String initialAuthor; // mandatory // login of the author of the first version
 	@Column(name="authors", nullable=true, insertable=true, updatable=true)
@@ -246,6 +248,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.description = description;
 	}
 	
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
+	}
+
 	public String getMainLanguage() {
 		return mainLanguage;
 	}

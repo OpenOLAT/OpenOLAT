@@ -184,7 +184,6 @@ public class CopyCourseGeneralStep extends BasicStep {
 			
 			// Metadata
 			formLayout.add("metaData", metadataController.getInitialFormItem());
-			metadataController.loadFromContext(context);
 			
 			// Spacer
 			uifactory.addSpacerElement("space_3", formLayout, false);

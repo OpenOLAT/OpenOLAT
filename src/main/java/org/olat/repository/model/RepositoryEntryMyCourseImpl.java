@@ -49,6 +49,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String externalRef;
 	private final String displayname;
 	private final String description;
+	private final String teaser;
 	private final String authors;
 	private final String location;
 	private final RepositoryEntryEducationalType educationalType;
@@ -87,6 +88,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		lastModified = re.getLastModified();
 		displayname = re.getDisplayname();
 		description = re.getDescription();
+		teaser = re.getTeaser();
 		authors = re.getAuthors();
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
@@ -186,6 +188,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public String getDescription() {
 		return description;
+	}
+
+	@Override
+	public String getTeaser() {
+		return teaser;
 	}
 
 	@Override

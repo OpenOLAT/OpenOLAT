@@ -39,6 +39,7 @@ public enum RepositoryEntryManagedFlag {
     details(all),//details tab
       title(details,all),
       description(details,all),
+      teaser(details,all),
       objectives(details,all),
       requirements(details,all),
       credits(details,all),

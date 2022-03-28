@@ -325,7 +325,7 @@ public class RepositoryEntryImportExport {
 		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
 		
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
-				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
+				repositoryProperties.getAuthors(), repositoryProperties.getDescription(), repositoryProperties.getTeaser(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
 				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null, null, null,
@@ -494,6 +494,7 @@ public class RepositoryEntryImportExport {
 		private String resourcename;
 		private String displayname;
 		private String description;
+		private String teaser;
 		private String initialAuthor;
 		
 		private String authors;
@@ -523,6 +524,7 @@ public class RepositoryEntryImportExport {
 			resourcename = re.getResourcename();
 			displayname = re.getDisplayname();
 			description = re.getDescription();
+			teaser = re.getTeaser();
 			initialAuthor = re.getInitialAuthor();
 			
 			authors = re.getAuthors();
@@ -589,6 +591,14 @@ public class RepositoryEntryImportExport {
 			this.description = description;
 		}
 		
+		public String getTeaser() {
+			return teaser;
+		}
+
+		public void setTeaser(String teaser) {
+			this.teaser = teaser;
+		}
+
 		public String getInitialAuthor() {
 			return initialAuthor;
 		}

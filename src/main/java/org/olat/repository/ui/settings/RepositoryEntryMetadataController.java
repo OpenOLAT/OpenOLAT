@@ -415,10 +415,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	
 			repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
 					repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
-					repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, taxonomyLevels,
-					repositoryEntry.getEducationalType());
+					repositoryEntry.getDescription(), repositoryEntry.getTeaser(), repositoryEntry.getObjectives(),
+					repositoryEntry.getRequirements(), repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(),
+					repositoryEntry.getLocation(), repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(),
+					null, taxonomyLevels, repositoryEntry.getEducationalType());
 			if(repositoryEntry == null) {
 				showWarning("repositoryentry.not.existing");
 				fireEvent(ureq, Event.CLOSE_EVENT);
@@ -473,10 +473,6 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		} else {
 			return false;
 		}
-	}
-	
-	public void loadFromContext(CopyCourseContext context) {
-		
 	}
 
 	@Override
