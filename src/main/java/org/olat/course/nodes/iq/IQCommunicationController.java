@@ -98,6 +98,7 @@ public class IQCommunicationController extends BasicController implements Activa
 		mainVC.put("messages", assessmentMessagesCtrl.getInitialComponent());
 		
 		addParticipantLink = LinkFactory.createButton("add.participant", mainVC, this);
+		addParticipantLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		
 		ChatViewConfig viewConfig = new ChatViewConfig();
 		viewConfig.setRoomName(translate("im.title"));

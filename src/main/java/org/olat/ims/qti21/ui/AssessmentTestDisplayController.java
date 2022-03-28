@@ -2230,7 +2230,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			messagesButton.setDomReplacementWrapperRequired(true);
 			messagesButton.getComponent().setSpanAsDomReplaceable(true);
 			messagesButton.setIconLeftCSS("o_icon o_icon-fw o_infomsg_icon");
-			messagesButton.setTitle(translate("assessment.test.chat.test.explanation"));
+			messagesButton.setTitle(translate("assessment.test.message.explanation"));
 			messagesButton.setElementCssClass("o_sel_assessment_messages_test");
 			messagesButton.setVisible(messageDisplayCtrl.hasMessages());
 			
