@@ -215,6 +215,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 				SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 				params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
 				params.setExactSearch(true);
+				params.setCanCopy(true);
 				
 				if (textElement == displayNameEl) {
 					String displayName = textElement.getValue();

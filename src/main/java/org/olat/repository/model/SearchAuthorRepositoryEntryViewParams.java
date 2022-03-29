@@ -44,6 +44,10 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private ResourceUsage resourceUsage = ResourceUsage.all;
 	private RepositoryEntryStatusEnum[] status;
 	
+	private boolean canCopy = false;
+	private boolean canDownload = false;
+	private boolean canReference = false;
+	
 	private String idAndRefs;
 	private String idRefsAndTitle;
 	private String author;
@@ -130,6 +134,30 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public boolean isCanCopy() {
+		return canCopy;
+	}
+
+	public void setCanCopy(boolean canCopy) {
+		this.canCopy = canCopy;
+	}
+
+	public boolean isCanDownload() {
+		return canDownload;
+	}
+
+	public void setCanDownload(boolean canDownload) {
+		this.canDownload = canDownload;
+	}
+
+	public boolean isCanReference() {
+		return canReference;
+	}
+
+	public void setCanReference(boolean canReference) {
+		this.canReference = canReference;
 	}
 
 	public OrderBy getOrderBy() {

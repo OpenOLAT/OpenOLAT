@@ -439,7 +439,8 @@ public class RepositoryEntryAuthorQueries {
 				
 				sb.append(" )");
 				  
-				if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))) {
+				if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))
+						&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
 					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
 					  .append("   and v.status ");
 					if(params.hasStatus()) {
@@ -447,7 +448,23 @@ public class RepositoryEntryAuthorQueries {
 					} else {
 						sb.in(RepositoryEntryStatusEnum.reviewToClosed());
 					}
-					sb.append(" and (v.canCopy=true or v.canReference=true or v.canDownload=true))");
+					sb.append(" and (");
+					if(params.isCanCopy()) {
+						sb.append(" v.canCopy=true");	
+					}
+					if(params.isCanReference()) {
+						if(params.isCanCopy()) {
+							sb.append(" or");
+						}
+						sb.append(" v.canReference=true");	
+					}
+					if(params.isCanDownload()) {
+						if(params.isCanCopy() || params.isCanReference()) {
+							sb.append(" or");
+						}
+						sb.append(" v.canDownload=true");	
+					}
+					sb.append("))");
 				}
 				sb.append(" ))");
 			}
