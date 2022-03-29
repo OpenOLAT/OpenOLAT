@@ -184,6 +184,9 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setCanCopy(true);
+		params.setCanDownload(true);
+		params.setCanReference(true);
 
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertTrue(contains(reOwner, results));
@@ -223,7 +226,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * and the entries have the flags copy allowed set.
 	 */
 	@Test
-	public void searchViews_status_asAuthor_withCopy() {
+	public void searchViews_statusAsAuthorCanCopy() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4-");
 		
 		// a set of entries with every possible status
@@ -252,6 +255,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setCanCopy(true);
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertFalse(contains(rePreparation, results));
@@ -268,7 +272,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * with no flags copy / download / reference set.
 	 */
 	@Test
-	public void searchViews_status_asAuthor() {
+	public void searchViews_statusAsAuthorNoReferenceable() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4-");
 		
 		// a set of entries with every possible status
@@ -295,6 +299,48 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		Assert.assertFalse(contains(rePreparation, results));
 		Assert.assertFalse(contains(reReview, results));
 		Assert.assertFalse(contains(reCoachPublished, results));
+		Assert.assertFalse(contains(rePublished, results));
+		Assert.assertFalse(contains(reClosed, results));
+		Assert.assertFalse(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
+	}
+	
+	@Test
+	public void searchViews_statusAsAuthorCanDownload() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4b-");
+		
+		// a set of entries with every possible status
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, false, false);
+		rePreparation = repositoryManager.setAccess(rePreparation, false, false, true);
+		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, false, false);
+		reReview = repositoryManager.setAccess(reReview, false, false, true);
+		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, false, false);
+		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, false, true);
+		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, false, false);
+		rePublished = repositoryManager.setAccess(rePublished, false, false, true);
+		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, false, false);
+		reClosed = repositoryManager.setAccess(reClosed, false, false, true);
+		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, false, false);
+		reTrash = repositoryManager.setAccess(reTrash, false, false, true);
+		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, false, false);
+		reDeleted = repositoryManager.setAccess(reDeleted, false, false, true);
+		
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setCanDownload(true);
+		
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertFalse(contains(rePreparation, results));
+		Assert.assertTrue(contains(reReview, results));
+		Assert.assertTrue(contains(reCoachPublished, results));
 		Assert.assertTrue(contains(rePublished, results));
 		Assert.assertTrue(contains(reClosed, results));
 		Assert.assertFalse(contains(reTrash, results));
@@ -306,7 +352,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * with no flags copy / download / reference set.
 	 */
 	@Test
-	public void searchViews_status_asAuthor_deleted() {
+	public void searchViews_status_asAuthorDeleted() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4-");
 		
 		// a set of entries with every possible status
@@ -451,7 +497,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * Check the visibility of entries with different status as an administrator.
 	 */
 	@Test
-	public void searchViews_status_asAdministrator_searchDeleted() {
+	public void searchViews_status_asAdministratorSearchDeleted() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("view-4-");
 		
 		// a set of entries with every possible status

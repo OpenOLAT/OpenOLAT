@@ -971,7 +971,7 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getCurriculumElement() != null) {
 			sb.and().append(" exists (select curEl.key from curriculumelement as curEl")
-			  .append("  where curEl.group.key=bGroup.key")
+			  .append("  where curEl.group.key=bGroup.key and curEl.key=:curriculumElementKey")
 			  .append(")");
 		}
 		
@@ -1015,6 +1015,9 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getRepositoryEntry() != null) {
 			query.setParameter("repositoryEntryKey", searchParams.getRepositoryEntry().getKey());
+		}
+		if(searchParams.getCurriculumElement() != null) {
+			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
 		}
 		
 		return query.getResultList();
