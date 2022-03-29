@@ -413,17 +413,19 @@ public class RepositoryEntryAuthorQueries {
 				sb.in(params.getStatus());
 			} else {
 				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-			}
+			}			
 		} else {
 			Roles roles = params.getRoles();
 			if(roles == null) {
-				sb.append(" and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
-				  .append(") and (v.allUsers=true or v.bookable=true) and v.status ");
-				if(params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.publishedAndClosed())) {
+				sb.append(" and membership.role ").in( GroupRoles.owner)
+				  .append("   and v.status ");
+				if(params.hasStatus()) {
 					sb.in(params.getStatus());
 				} else {
-					sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
-				}
+					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+				} 
+				sb.append(" )");
+				
 			} else {
 				sb.append(" and (")
 				  // owner, principal, learn resource manager and administrator which can see all
@@ -436,18 +438,6 @@ public class RepositoryEntryAuthorQueries {
 				} 
 				
 				sb.append(" )");
-				
-				// standard users are limited to published and closed
-				if(!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.publishedAndClosed()))) {
-					sb.append("     or (membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
-					  .append("       and (v.allUsers=true or v.bookable=true) and v.status ");
-					if(params.hasStatus()) {
-						sb.in(params.getStatus());
-					} else {
-						sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
-					} 
-					sb.append(" )");
-				}
 				  
 				if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))) {
 					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
