@@ -65,6 +65,10 @@ public class SendMessageForm extends FormBasicController {
 		this.chatViewConfig = chatViewConfig;
 		initForm(ureq);
 	}
+	
+	public FormLink getCloseChatLink() {
+		return closeChatLink;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -83,7 +87,12 @@ public class SendMessageForm extends FormBasicController {
 		meetingLink = uifactory.addFormLink("start.meeting", formLayout, Link.LINK);
 		meetingLink.setIconLeftCSS("o_icon o_icon-fw o_livestream_icon");
 		meetingLink.setVisible(chatViewConfig.isCanMeeting());
-		closeChatLink = uifactory.addFormLink("close.chat", formLayout, Link.LINK);
+
+		String closeLabel = "close.chat";
+		if(chatViewConfig.isCanClose() && chatViewConfig.getRosterDisplay() != RosterFormDisplay.supervisor) {
+			closeLabel = "close.chat.close";
+		}
+		closeChatLink = uifactory.addFormLink("close.chat", closeLabel, null, formLayout, Link.LINK);
 		closeChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check_on");
 		closeChatLink.setVisible(chatViewConfig.isCanClose());
 		reactivateChatLink = uifactory.addFormLink("reactivate.chat", formLayout, Link.LINK);

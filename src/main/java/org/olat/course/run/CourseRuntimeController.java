@@ -75,7 +75,6 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
@@ -188,7 +187,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseRuntimeController extends RepositoryEntryRuntimeController implements GenericEventListener, VetoableCloseController  {
+public class CourseRuntimeController extends RepositoryEntryRuntimeController implements VetoableCloseController  {
 	
 	private static final String JOINED = "joined";
 	private static final String LEFT   = "left";
@@ -2258,8 +2257,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void launchChat(UserRequest ureq) {
 		boolean vip = reSecurity.isCoach() || reSecurity.isEntryAdmin();
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-
-		OpenInstantMessageEvent event = new OpenInstantMessageEvent(course, null, null, ChatViewConfig.room(course.getCourseTitle()), vip, false, RosterFormDisplay.left);
+		ChatViewConfig viewConfig = ChatViewConfig.room(course.getCourseTitle(), RosterFormDisplay.left);
+		OpenInstantMessageEvent event = new OpenInstantMessageEvent(course, null, null, viewConfig, vip, false);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	

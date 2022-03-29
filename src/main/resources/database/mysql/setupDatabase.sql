@@ -1764,7 +1764,7 @@ create table if not exists o_im_message (
    msg_resid bigint not null,
    msg_ressubpath varchar(255),
    msg_channel varchar(255),
-   msg_type varchar(8) not null default 'text',
+   msg_type varchar(16) not null default 'text',
    msg_anonym bit default 0,
    msg_from varchar(255) not null,
    msg_body longtext,

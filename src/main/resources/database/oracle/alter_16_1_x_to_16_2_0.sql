@@ -29,7 +29,7 @@ create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressu
 
 alter table o_im_message add msg_ressubpath varchar(255) default null;
 alter table o_im_message add msg_channel varchar(255) default null;
-alter table o_im_message add msg_type varchar(8) default 'text' not null;
+alter table o_im_message add msg_type varchar(16) default 'text' not null;
 alter table o_im_message add fk_meeting_id number(20);
 alter table o_im_message add fk_teams_id number(20);
 

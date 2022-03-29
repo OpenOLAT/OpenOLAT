@@ -30,13 +30,15 @@ public enum InstantMessageTypeEnum {
 	text,
 	request,// special text
 	accept,
+	reactivate,
 	join,
 	close,
 	end,
-	meeting;
+	meeting,
+	error;
 	
 	public boolean isStatus() {
-		return this == accept || this == join || this == close || this == end;
+		return this == accept || this == reactivate || this == join || this == close || this == end || this == error;
 	}
 	
 

@@ -218,6 +218,9 @@ public class InstantMessagingMainController extends BasicController implements G
 				CloseInstantMessagingEvent close = (CloseInstantMessagingEvent)event;
 				cleanUp(new ChatReferenceKey(close.getOres(), close.getResSubPath(), close.getChannel()));
 				cleanUp(new ChatReferenceKey(close.getOres(), close.getResSubPath(), null));
+			} else if(event == Event.CLOSE_EVENT) {
+				ChatController chatCtrl = (ChatController)source;
+				closeChat(chatCtrl.getOlatResourceable(), chatCtrl.getResSubPath(), chatCtrl.getChannel());
 			}
 			//forward event also to main controller
 			fireEvent(ureq, event);
@@ -354,7 +357,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else if(event.getOres() != null) {
 			//open a group/course chat
 			createChat(ureq, event.getOres(), event.getResSubPath(), event.getChannel(),
-					event.getViewConfig(), event.isVip(), event.isPersistent(), event.getRosterDisplay());
+					event.getViewConfig(), event.isVip(), event.isPersistent());
 		}
 	}
 	
@@ -410,7 +413,8 @@ public class InstantMessagingMainController extends BasicController implements G
 		
 		OLATResourceable ores = imService.getPrivateChatResource(getIdentity().getKey(), buddy.getIdentityKey());
 		String roomName = translate("im.chat.with") + ": " + buddy.getName();
-		createChat(ureq, ores, null, null, buddy.getIdentityKey(), ChatViewConfig.room(roomName), false, false, RosterFormDisplay.none, 400, 320);
+		ChatViewConfig viewConfig = ChatViewConfig.room(roomName, RosterFormDisplay.none);
+		createChat(ureq, ores, null, null, buddy.getIdentityKey(), viewConfig, false, false, 400, 320);
 	}
 
 	/**
@@ -424,15 +428,15 @@ public class InstantMessagingMainController extends BasicController implements G
 	 * @param vip If the identity is VIP
 	 */
 	public void createChat(UserRequest ureq, OLATResourceable ores, String resSubPath, String channel,
-			ChatViewConfig config, boolean vip, boolean persistent, RosterFormDisplay rosterDisplay) {
-		createChat(ureq, ores, resSubPath, channel, null, config, vip, persistent, rosterDisplay, config.getWidth(), config.getHeight());
+			ChatViewConfig config, boolean vip, boolean persistent) {
+		createChat(ureq, ores, resSubPath, channel, null, config, vip, persistent, config.getWidth(), config.getHeight());
 	}
 	
 	private void createChat(UserRequest ureq, OLATResourceable ores, String resSubPath, String channel, Long privateReceiverKey,
-			ChatViewConfig config, boolean vip, boolean persistent, RosterFormDisplay rosterDisplay, int width, int height) {
+			ChatViewConfig config, boolean vip, boolean persistent, int width, int height) {
 		if (ores == null) return;
 		
-		String refChannel = rosterDisplay == RosterFormDisplay.supervisor ? null : channel;
+		String refChannel = config.getRosterDisplay() == RosterFormDisplay.supervisor ? null : channel;
 		ChatReferenceKey key = new ChatReferenceKey(ores, resSubPath, refChannel);
 		// chat with this resource is already ongoing
 		if(chats.containsKey(key)) {
@@ -445,7 +449,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		int offsetX = 100 + (chats.size() * 10);
 		int offsetY = 100 + (chats.size() * 5);
 		ChatController chat = new ChatController(ureq, getWindowControl(), ores, resSubPath, channel,
-				config, privateReceiverKey, vip, persistent, rosterDisplay, width, height, offsetX, offsetY);
+				config, privateReceiverKey, vip, persistent, width, height, offsetX, offsetY);
 		listenTo(chat);
 		
 		Component chatCmp = chat.getInitialComponent();

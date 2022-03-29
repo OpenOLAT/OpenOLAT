@@ -149,12 +149,20 @@
 		display: none;
 	}
 	
-	&.o_im_message_join, &.o_im_message_accept, &.o_im_message_close {
+	&.o_im_message_join, &.o_im_message_accept, &.o_im_message_close, &.o_im_message_reactivate {
 		padding: 0 7px;
 		min-height: 12px;
 		margin: 3px 3px;
 		border-radius: $o-im-chat-message-border-radius;
 		background-color: $o-im-chat-message-bg-status;
+	}
+	
+	&.o_im_message_error {
+		padding: 0 7px;
+		min-height: 12px;
+		margin: 3px 3px;
+		border-radius: $o-im-chat-message-border-radius;
+		background-color: $o-im-chat-message-bg-error;
 	}
 	
 	&.o_im_message_me {

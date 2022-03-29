@@ -623,6 +623,12 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
+	public void clearChannel(OLATResourceable chatResource, String resSubPath, String channel) {
+		rosterDao.deleteVIPEntries(chatResource, resSubPath, channel);
+		dbInstance.commit();
+	}
+
+	@Override
 	public void endChannel(Identity identity, OLATResourceable chatResource, String resSubPath, String channel) {
 		RosterChannelInfos channelInfos = getRoster(chatResource, resSubPath, channel, identity);
 		if(channelInfos == null || (channelInfos.getLastStatusMessage() == null && channelInfos.getLastTextMessage() == null)) {
@@ -644,7 +650,6 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		
 		// delete all notifications
 		notificationDao.deleteNotification(null, chatResource, resSubPath, channel);
-		rosterDao.deleteVIPEntries(chatResource, resSubPath, channel);
 		dbInstance.commit();
 
 		// Notify all users with roster entry

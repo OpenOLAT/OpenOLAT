@@ -735,6 +735,7 @@ $o-im-chat-message-bg-alt		: #F4F4F4 !default;
 $o-im-chat-message-border			: #eee !default;
 $o-im-chat-message-bg-me			: $gray-lighter !default;
 $o-im-chat-message-bg-status		: $state-warning-bg !default;
+$o-im-chat-message-bg-error			: $state-danger-bg !default;
 $o-im-chat-message-border-radius	: $border-radius-base !default;
 $o-im-chat-roster-bg				: lighten($gray-lighter, 5%) !default;
 $o-im-chat-border				: $gray-lighter !default;

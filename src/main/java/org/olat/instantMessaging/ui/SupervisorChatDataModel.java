@@ -106,7 +106,7 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 					.collect(Collectors.toList());
 		} else if("Completed".equals(id)) {
 			filteredRows = backups.stream()
-					.filter(r -> r.getRosterStatus() == RosterStatus.completed)
+					.filter(r -> (r.getRosterStatus() == RosterStatus.completed || r.getRosterStatus() == RosterStatus.ended))
 					.collect(Collectors.toList());
 		} else if("Requested".equals(id)) {
 			filteredRows = backups.stream()

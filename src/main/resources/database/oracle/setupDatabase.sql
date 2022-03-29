@@ -1819,7 +1819,7 @@ create table o_im_message (
    msg_resid number(20) not null,
    msg_ressubpath varchar(255),
    msg_channel varchar(255),
-   msg_type varchar(8) default 'text' not null,
+   msg_type varchar(16) default 'text' not null,
    msg_anonym number default 0,
    msg_from varchar2(255 char) not null,
    msg_body clob,

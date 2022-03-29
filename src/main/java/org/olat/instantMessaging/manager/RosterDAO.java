@@ -233,7 +233,7 @@ public class RosterDAO {
 		  .append(" )")
 		  .append(" left join instantmessage lastStatusMessage on (entry.resourceTypeName=lastStatusMessage.resourceTypeName and entry.resourceId=lastStatusMessage.resourceId")
 		  .append("  and entry.resSubPath=lastStatusMessage.resSubPath and entry.channel=lastStatusMessage.channel")
-		  .append("  and lastStatusMessage.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
+		  .append("  and lastStatusMessage.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.reactivate, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
 		  .append(" )")
 		  .where().append(" entry.resourceId=:resid and entry.resourceTypeName=:resname");
 		if(resSubPath != null) {
@@ -255,7 +255,7 @@ public class RosterDAO {
 		sb.and().append("(lastStatusMessage.creationDate is null or lastStatusMessage.creationDate = (select max(status.creationDate) from instantmessage status where")
 		  .append(" entry.resourceTypeName=status.resourceTypeName and entry.resourceId=status.resourceId")
 		  .append(" and entry.resSubPath=status.resSubPath and entry.channel=status.channel")
-		  .append(" and status.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
+		  .append(" and status.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.reactivate, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
 		  .append("))");
 		
 		// order by channel
@@ -324,7 +324,7 @@ public class RosterDAO {
 	}
 	
 
-	public void deleteVIPEntries(OLATResourceable ores, String resSubPath, String channel) {
+	public int deleteVIPEntries(OLATResourceable ores, String resSubPath, String channel) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from imrosterentry entry ")
 		  .where().append(" entry.vip=true and entry.resourceId=:resid and entry.resourceTypeName=:resname");
@@ -349,7 +349,7 @@ public class RosterDAO {
 		if(channel != null) {
 			query.setParameter("channel", channel);
 		}
-		query.executeUpdate();
+		return query.executeUpdate();
 	}
 	
 	public static class RosterEntryAndMessage {

@@ -24,7 +24,6 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.ui.ChatViewConfig;
-import org.olat.instantMessaging.ui.RosterFormDisplay;
 
 /**
  * 
@@ -49,7 +48,6 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	private String channel;
 	
 	private ChatViewConfig viewConfig;
-	private RosterFormDisplay rosterDisplay;
 
 	public OpenInstantMessageEvent() {
 		super("openim");
@@ -61,7 +59,7 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	}
 	
 	public OpenInstantMessageEvent(OLATResourceable ores, String resSubPath, String channel,
-			ChatViewConfig viewConfig, boolean vip, boolean persistent, RosterFormDisplay rosterDisplay) {
+			ChatViewConfig viewConfig, boolean vip, boolean persistent) {
 		this();
 		this.ores = OresHelper.clone(ores);
 		this.resSubPath = resSubPath;
@@ -69,7 +67,6 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 		this.viewConfig = viewConfig;
 		this.vip = vip;
 		this.persistent = persistent;
-		this.rosterDisplay = rosterDisplay;
 	}
 
 	public Buddy getBuddy() {
@@ -98,9 +95,5 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 
 	public boolean isPersistent() {
 		return persistent;
-	}
-
-	public RosterFormDisplay getRosterDisplay() {
-		return rosterDisplay;
 	}
 }

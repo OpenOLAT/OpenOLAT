@@ -291,9 +291,12 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 			InstantMessageTypeEnum messageType = event.getMessageType();
 			if(messageType == InstantMessageTypeEnum.close || messageType == InstantMessageTypeEnum.end) {
 				completeChannel(event.getChannel());
-			} else if(messageType == InstantMessageTypeEnum.accept || messageType == InstantMessageTypeEnum.join) {
+			} else if(messageType == InstantMessageTypeEnum.accept
+					|| messageType == InstantMessageTypeEnum.reactivate
+					|| messageType == InstantMessageTypeEnum.join) {
 				activateChannel(event.getChannel());
-			} else if((messageType == InstantMessageTypeEnum.text || messageType == InstantMessageTypeEnum.meeting)
+			} else if((messageType == InstantMessageTypeEnum.text
+					|| messageType == InstantMessageTypeEnum.meeting)
 					&& !Objects.equals(selectedChannel, event.getChannel())) {
 				processUnreadMessages(event.getChannel(), event.getFromId());
 			}
@@ -375,7 +378,6 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	protected void requestChannel(String channel) {
 		SupervisedRoster requestedRoster = findRoster(channel, requestedRosters);
 		if(requestedRoster == null) {
-
 			SupervisedRoster currentRoster = findRoster(channel, activeRosters);
 			if(currentRoster != null) {
 				activeRosters.remove(currentRoster);

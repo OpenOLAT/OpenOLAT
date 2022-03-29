@@ -139,10 +139,6 @@ public class ChatMessage {
 	}
 	
 	public boolean isTypeStatus() {
-		return type == InstantMessageTypeEnum.accept
-				|| type == InstantMessageTypeEnum.join
-				|| type == InstantMessageTypeEnum.close;
+		return type.isStatus();
 	}
-	
-	
 }

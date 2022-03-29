@@ -507,8 +507,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		}
 		
 		ChatViewConfig viewConfig = ChatViewConfig.valueOf(basisViewConfig);
-		OpenInstantMessageEvent event = new OpenInstantMessageEvent(chatResource, resSubPath, channel,
-				viewConfig, true, false, RosterFormDisplay.supervisor);
+		viewConfig.setRosterDisplay(RosterFormDisplay.supervisor);
+		OpenInstantMessageEvent event = new OpenInstantMessageEvent(chatResource, resSubPath, channel, viewConfig, true, false);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	

@@ -28,6 +28,7 @@ package org.olat.instantMessaging.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
@@ -73,6 +74,9 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.LeaveChatEvent;
 import org.olat.instantMessaging.RosterEntry;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.InstantMessageImpl;
+import org.olat.instantMessaging.model.Presence;
+import org.olat.instantMessaging.ui.component.InstantMessageComparator;
 import org.olat.instantMessaging.ui.event.SelectChannelEvent;
 import org.olat.instantMessaging.ui.event.StartMeetingEvent;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
@@ -134,7 +138,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private boolean rosterEntry = false;
 	private final boolean persistent;
 	private final Long privateReceiverKey;
-	private final RosterFormDisplay rosterDisplay;
+	private InstantMessage errorMessage;
 
 	@Autowired
 	private UserManager userManager;
@@ -160,7 +164,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	protected ChatController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable ores, String resSubPath, String channel, ChatViewConfig chatViewConfig,
 			Long privateReceiverKey, boolean highlightVip, boolean persistent,
-			RosterFormDisplay rosterDisplay, int width, int height, int offsetX, int offsetY) {
+			int width, int height, int offsetX, int offsetY) {
 		super(ureq, wControl);
 		formatter = Formatter.getInstance(getLocale());
 		this.ores = ores;
@@ -170,7 +174,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.highlightVip = highlightVip;
 		this.persistent = persistent;
 		this.chatViewConfig = chatViewConfig;
-		this.rosterDisplay = rosterDisplay;
 		setToday();
 
 		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
@@ -226,12 +229,28 @@ public class ChatController extends BasicController implements GenericEventListe
 		mainVC.put("sendMessageForm", sendMessageForm.getInitialComponent());
 		mainVC.contextPut("panelName", pn);
 		
+		initInstanceMessage();
 		initMainPanel();
 		initChatMessageField(pn);
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
 		if(rosterCtrl != null && chatViewConfig.isCreateRosterEntry()) {
 			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
+		}
+	}
+	
+	private void initInstanceMessage() {
+		if(StringHelper.containsNonWhitespace(chatViewConfig.getErrorMessage())) {
+			String message = chatViewConfig.getErrorMessage();
+			InstantMessageImpl error = new InstantMessageImpl();
+			error.setKey(Long.valueOf(-1l));
+			error.setCreationDate(new Date());
+			error.setBody(message);
+			error.setType(InstantMessageTypeEnum.error);
+			error.setFromKey(Long.valueOf(-1l));
+			error.setFromNickName("");
+			error.setAnonym(true);
+			errorMessage = error;
 		}
 	}
 	
@@ -264,6 +283,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 		
 	private void initRoster(UserRequest ureq, boolean defaultAnonym, boolean offerAnonymMode) {
+		RosterFormDisplay rosterDisplay = chatViewConfig.getRosterDisplay();
 		if(rosterDisplay == RosterFormDisplay.none) return;
 
 		String nickName;
@@ -346,7 +366,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			if(event == Event.DONE_EVENT) {
 				doSendMessage();
 			} else if(event == Event.CLOSE_EVENT) {
-				doCloseChat();
+				doCloseChat(ureq);
 			} else if(event == Event.BACK_EVENT) {
 				doReactivateChat();
 			} else if(event instanceof StartMeetingEvent) {
@@ -391,6 +411,7 @@ public class ChatController extends BasicController implements GenericEventListe
 					// make sure the channel is active after texting
 					supervisorRosterCtrl.activateChannel(channel);
 				}
+				updateSendMessageForm();
 			}
 		} else {
 			//ignore empty manObjectessage entry and refocus on entry field
@@ -469,21 +490,23 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 	}
 	
-	private void doCloseChat() {
+	private void doCloseChat(UserRequest ureq) {
 		boolean anonym = isAnonym();
 		String fromName = getFromName();
 		imService.sendStatusMessage(getIdentity(), fromName, anonym, InstantMessageTypeEnum.close, ores, resSubPath, channel);
-		loadModel(currentDateFrom, currentMaxResults);
 		
 		if(supervisorRosterCtrl != null) {
+			loadModel(currentDateFrom, currentMaxResults);
 			supervisorRosterCtrl.loadModel();
+		} else {
+			fireEvent(ureq, Event.CLOSE_EVENT);
 		}
 	}
 	
 	private void doReactivateChat() {
 		boolean anonym = isAnonym();
 		String fromName = getFromName();
-		imService.sendStatusMessage(getIdentity(), fromName, anonym, InstantMessageTypeEnum.accept, ores, resSubPath, channel);
+		imService.sendStatusMessage(getIdentity(), fromName, anonym, InstantMessageTypeEnum.reactivate, ores, resSubPath, channel);
 		loadModel(currentDateFrom, currentMaxResults);
 		
 		if(supervisorRosterCtrl != null) {
@@ -530,6 +553,11 @@ public class ChatController extends BasicController implements GenericEventListe
 		messageHistory.clear();
 		List<InstantMessage> lastMessages = imService
 				.getMessages(getIdentity(), getOlatResourceable(), resSubPath, channel, from, 0, maxResults, true);
+		if(errorMessage != null) {
+			lastMessages.add(errorMessage);
+		}
+		Collections.sort(lastMessages, new InstantMessageComparator());
+		
 		for(int i=lastMessages.size(); i-->0; ) {
 			appendToMessageHistory(lastMessages.get(i), false);
 		}
@@ -555,7 +583,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			if(!messageHistory.isEmpty() && messageHistory.getLast().getTypeEnum() == InstantMessageTypeEnum.close) {
 				sendMessageForm.setCloseableChat(!chatViewConfig.isCanReactivate(), false, true);
 			} else if(!messageHistory.isEmpty() && messageHistory.getLast().getTypeEnum() == InstantMessageTypeEnum.end) {
-				sendMessageForm.setCloseableChat(!chatViewConfig.isCanReactivate(), false, false);
+				sendMessageForm.setCloseableChat(!chatViewConfig.isCanReactivate(), false, true);
 			} else {
 				sendMessageForm.setCloseableChat(true, true, false);
 			}
@@ -701,7 +729,16 @@ public class ChatController extends BasicController implements GenericEventListe
 			Long identityKey = event.getIdentityKey();
 			if(buddyList.contains(identityKey)) {
 				Buddy entry = buddyList.get(identityKey);
-				buddyList.remove(entry);
+				if(persistent) {
+					boolean online = imService.isOnline(new IdentityRefImpl(identityKey));
+					if(online) {
+						entry.setStatus(Presence.available.name());
+					} else {
+						entry.setStatus(Presence.unavailable.name());
+					}
+				} else {
+					buddyList.remove(entry);
+				}
 			}
 			rosterCtrl.updateModel();
 		}
@@ -722,7 +759,9 @@ public class ChatController extends BasicController implements GenericEventListe
 				updateSendMessageForm();
 			}
 		} else if(buddyList != null
-				&& (event.getMessageType() == InstantMessageTypeEnum.accept || event.getMessageType() == InstantMessageTypeEnum.join)) {
+				&& (event.getMessageType() == InstantMessageTypeEnum.accept
+					|| event.getMessageType() == InstantMessageTypeEnum.reactivate
+					|| event.getMessageType() == InstantMessageTypeEnum.join)) {
 			Long identityKey = event.getFromId();
 			if(!buddyList.contains(identityKey)) {
 				updateRosterList(identityKey, event.getName(), event.isAnonym(), event.isVip());
@@ -819,6 +858,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			i18nKey = "chat.join";
 		} else if (message.getType() == InstantMessageTypeEnum.accept) {
 			i18nKey = "chat.accept";
+		} else if (message.getType() == InstantMessageTypeEnum.reactivate) {
+			i18nKey = "chat.reactivate";
 		} else if (message.getType() == InstantMessageTypeEnum.close) {
 			i18nKey = "chat.close";
 		} else if (message.getType() == InstantMessageTypeEnum.end) {

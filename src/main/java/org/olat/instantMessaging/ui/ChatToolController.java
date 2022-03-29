@@ -70,8 +70,8 @@ public class ChatToolController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(openChatLink == source) {
-			OpenInstantMessageEvent e = new OpenInstantMessageEvent(resource, null, null, ChatViewConfig.room(resource.getName()),
-					isAdmin, false, RosterFormDisplay.left);
+			ChatViewConfig viewConfig = ChatViewConfig.room(resource.getName(), RosterFormDisplay.left);
+			OpenInstantMessageEvent e = new OpenInstantMessageEvent(resource, null, null, viewConfig, isAdmin, false);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		} else if(logLink == source) {
 			downloadChatLog(ureq);

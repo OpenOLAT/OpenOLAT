@@ -37,6 +37,8 @@ public class ChatViewConfig {
 	private String resourceInfos;
 	private String resourceIconCssClass;
 	
+	private String errorMessage;
+	
 	private String sendMessagePlaceholder;
 
 	private boolean canClose = false;
@@ -50,6 +52,7 @@ public class ChatViewConfig {
 	
 	private int width = 550;
 	private int height = 380;
+	private RosterFormDisplay rosterDisplay;
 	
 	public ChatViewConfig() {
 		//
@@ -62,6 +65,7 @@ public class ChatViewConfig {
 		copy.welcomeFrom = original.welcomeFrom;
 		copy.resourceInfos = original.resourceInfos;
 		copy.resourceIconCssClass = original.resourceIconCssClass;
+		copy.errorMessage = original.errorMessage;
 		copy.sendMessagePlaceholder = original.sendMessagePlaceholder;
 		copy.toNotifyRequests = original.toNotifyRequests == null ? null : List.copyOf(original.toNotifyRequests);
 		copy.canClose = original.canClose;
@@ -70,12 +74,14 @@ public class ChatViewConfig {
 		copy.createRosterEntry = original.createRosterEntry;
 		copy.width = original.width;
 		copy.height = original.height;
+		copy.rosterDisplay = original.rosterDisplay;
 		return copy;
 	}
 	
-	public static ChatViewConfig room(String roomName) {
+	public static ChatViewConfig room(String roomName, RosterFormDisplay rosterDisplay) {
 		ChatViewConfig cvc = new ChatViewConfig();
 		cvc.setRoomName(roomName);
+		cvc.setRosterDisplay(rosterDisplay);
 		return cvc;
 	}
 
@@ -183,11 +189,27 @@ public class ChatViewConfig {
 		this.height = height;
 	}
 
+	public RosterFormDisplay getRosterDisplay() {
+		return rosterDisplay;
+	}
+
+	public void setRosterDisplay(RosterFormDisplay rosterDisplay) {
+		this.rosterDisplay = rosterDisplay;
+	}
+
 	public boolean isCreateRosterEntry() {
 		return createRosterEntry;
 	}
 
 	public void setCreateRosterEntry(boolean createRosterEntry) {
 		this.createRosterEntry = createRosterEntry;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 }

@@ -109,6 +109,8 @@ public interface InstantMessagingService {
 	 */
 	public void endChannel(Identity identity, OLATResourceable chatResource, String resSubPath, String channel);
 	
+	public void clearChannel(OLATResourceable chatResource, String resSubPath, String channel);
+	
 	/**
 	 * Factory method to build the OLATResourceable for private chat
 	 * @param identityKey1

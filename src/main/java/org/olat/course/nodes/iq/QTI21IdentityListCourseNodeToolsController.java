@@ -512,8 +512,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				|| (teamsModule.isEnabled() && teamsModule.isChatExamsEnabled()));
 		viewConfig.setWidth(620);
 		viewConfig.setHeight(480);
-		OpenInstantMessageEvent event = new OpenInstantMessageEvent(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel,
-				viewConfig, true, false, RosterFormDisplay.supervisor);
+		viewConfig.setRosterDisplay(RosterFormDisplay.supervisor);
+		OpenInstantMessageEvent event = new OpenInstantMessageEvent(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, viewConfig, true, false);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	

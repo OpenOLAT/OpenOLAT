@@ -1786,7 +1786,7 @@ create table o_im_message (
    msg_resid int8 not null,
    msg_ressubpath varchar(255),
    msg_channel varchar(255),
-   msg_type varchar(8) not null default 'text',
+   msg_type varchar(16) not null default 'text',
    msg_anonym bool default false,
    msg_from varchar(255) not null,
    msg_body text,

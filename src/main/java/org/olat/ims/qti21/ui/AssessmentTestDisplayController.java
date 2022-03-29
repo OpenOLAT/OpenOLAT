@@ -421,6 +421,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				entry, subIdent, testEntry, compensationTime, authorMode);
 		candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
 		testSessionController = enterSession(ureq);
+		
+		// Clear the channel
+		imService.clearChannel(entry.getOlatResource(), subIdent, getIdentity().getKey().toString());
 	}
 	
 	/**
@@ -2354,7 +2357,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					&& !getIdentity().getKey().equals(event.getFromId())
 					&& entry.getOlatResource().getResourceableTypeName().equals(event.getChatResource().getResourceableTypeName())
 					&& entry.getOlatResource().getResourceableId().equals(event.getChatResource().getResourceableId())) {
-				doOpenChatWindow(null);
+				doOpenChatWindow(null, null);
 			}
 		}
 
@@ -2545,16 +2548,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				coachingStaff.addAll(owners);
 			}
 			
-			doOpenChatWindow(List.copyOf(coachingStaff));
-			
+			String errorMessage = null;
 			long onlineCoaches = coachingStaff.stream()
-				.filter(id -> imService.isOnline(id)).count();
+					.filter(id -> imService.isOnline(id)).count();
 			if(onlineCoaches == 0l) {
-				showWarning("warning.no.coach.to.chat.with");
+				errorMessage = translate("warning.no.coach.to.chat.with");
 			}
+			doOpenChatWindow(List.copyOf(coachingStaff), errorMessage);
 		}
 		
-		private void doOpenChatWindow(List<IdentityRef> toNotifyRequests) {
+		private void doOpenChatWindow(List<IdentityRef> toNotifyRequests, String errorMessage) {
 			ChatViewConfig  viewConfig = new ChatViewConfig();
 			viewConfig.setRoomName(translate("assessment.test.chat.test.title"));
 			viewConfig.setWelcome(translate("assessment.test.chat.welcome"));
@@ -2564,9 +2567,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			viewConfig.setCanClose(true);
 			viewConfig.setCanReactivate(false);
 			viewConfig.setCreateRosterEntry(false);
+			viewConfig.setRosterDisplay(RosterFormDisplay.supervised);
+			viewConfig.setErrorMessage(errorMessage);
 			
-			OpenInstantMessageEvent event = new OpenInstantMessageEvent(entry.getOlatResource(), subIdent, getIdentity().getKey().toString(),
-					viewConfig, false, true, RosterFormDisplay.supervised);
+			String channel = getIdentity().getKey().toString();
+			OpenInstantMessageEvent event = new OpenInstantMessageEvent(entry.getOlatResource(), subIdent, channel, viewConfig, false, true);
 			singleUserEventBus.fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 		}
 		
