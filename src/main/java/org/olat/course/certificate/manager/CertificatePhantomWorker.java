@@ -219,6 +219,7 @@ public class CertificatePhantomWorker {
 		String authors = entry.getAuthors();
 		context.put("authors", authors);
 		String expenditureOfWorks = entry.getExpenditureOfWork();
+		context.put("expenditureOfWork", expenditureOfWorks);
 		context.put("expenditureOfWorks", expenditureOfWorks);
 		String mainLanguage = entry.getMainLanguage();
 		context.put("mainLanguage", mainLanguage);
