@@ -68,6 +68,7 @@ How to add a new job:
             <ref bean="vfsStatisticsTrigger" />
             <ref bean="vfsExpiredTrigger" />
             <ref bean="maintenanceMessageTrigger" />
+            <ref bean="temporaryKeyCleanUpTrigger" />
         </list>
     </property>
 </bean>
