@@ -158,7 +158,7 @@ public class AssessmentToolPage {
 	public AssessmentToolPage setAssessmentScore(float score) {
 		By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
-		return closeAssessment();
+		return this;
 	}
 	
 	public AssessmentToolPage setAssessmentPassed(Boolean passed) {
@@ -168,14 +168,7 @@ public class AssessmentToolPage {
 		return this;
 	}
 	
-	public AssessmentToolPage setAssessmentVisibility(boolean visible) {
-		String val = visible ? "visible" : "hidden";
-		By visibleBy = By.cssSelector(".o_sel_assessment_form_visibility input[type='radio'][value='" + val + "']");
-		browser.findElement(visibleBy).click();
-		return this;
-	}
-	
-	public AssessmentToolPage closeAssessment() {
+	public AssessmentToolPage closeAndPublishAssessment() {
 		By saveBy = By.cssSelector("a.btn.o_sel_assessment_form_save_and_done");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);

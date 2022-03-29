@@ -493,6 +493,7 @@ public class PortfolioV2Test extends Deployments {
 			.selectUser(ryomou)
 			.selectUsersCourseNode(assessmentNodeTitle)
 			.setAssessmentScore(4.5f)
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
 		//Ryomou login

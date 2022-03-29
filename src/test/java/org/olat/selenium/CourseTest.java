@@ -1542,6 +1542,7 @@ public class CourseTest extends Deployments {
 			.selectUser(rei)
 			.selectUsersCourseNode(msTitle.substring(0, 20))
 			.setAssessmentScore(5.5f)
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(msTitle.substring(0, 20));
 		
 		//student can see info

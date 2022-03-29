@@ -805,6 +805,7 @@ public class AssessmentTest extends Deployments {
 			.selectUser(ryomou)
 			.selectUsersCourseNode(assessmentNodeTitle)
 			.setAssessmentScore(8.0f)
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
 		//Ryomou login
@@ -1630,10 +1631,14 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(assessmentNodeTitle);
 		
 		//Ryomou -> passed
-		WebElement passedEl = ryomouBrowser.findElement(By.cssSelector("tr.o_state.o_passed"));
+		By passedBy = By.cssSelector("div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, ryomouBrowser);
+		WebElement passedEl = ryomouBrowser.findElement(passedBy);
 		Assert.assertTrue(passedEl.isDisplayed());
 		//Kanu -> failed
-		WebElement failedEl = kanuBrowser.findElement(By.cssSelector("tr.o_state.o_failed"));
+		By failedBy = By.cssSelector("div.o_state.o_failed");
+		OOGraphene.waitElement(failedBy, kanuBrowser);
+		WebElement failedEl = kanuBrowser.findElement(failedBy);
 		Assert.assertTrue(failedEl.isDisplayed());
 	}
 	

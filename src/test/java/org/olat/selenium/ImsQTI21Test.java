@@ -1446,8 +1446,7 @@ public class ImsQTI21Test extends Deployments {
 			.selectUsersCourseNode(testNodeTitle)
 			.reopenAssessment()
 			.setAssessmentPassed(Boolean.TRUE)
-			.setAssessmentVisibility(true)
-			.closeAssessment()
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(testNodeTitle);
 		
 		// participant checks its result
@@ -1634,8 +1633,7 @@ public class ImsQTI21Test extends Deployments {
 			.selectUsersCourseNode(testNodeTitle)
 			.reopenAssessment()
 			.setAssessmentPassed(Boolean.TRUE)
-			.setAssessmentVisibility(true)
-			.closeAssessment()
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(testNodeTitle);
 		
 		// participant checks its result

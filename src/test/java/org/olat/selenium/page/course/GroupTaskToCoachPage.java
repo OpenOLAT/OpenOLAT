@@ -197,7 +197,7 @@ public class GroupTaskToCoachPage {
 		
 		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form a.btn.o_sel_assessment_form_save_and_done");
 		OOGraphene.click(saveAndCloseBy, browser);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -254,7 +254,7 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage assertPassed() {
-		By passedBy = By.cssSelector("#o_step_grading_content table tr.o_state.o_passed");
+		By passedBy = By.cssSelector("#o_step_grading_content table div.o_state.o_passed");
 		List<WebElement> passedEls = browser.findElements(passedBy);
 		Assert.assertFalse(passedEls.isEmpty());
 		return this;

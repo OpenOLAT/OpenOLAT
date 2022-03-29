@@ -24,12 +24,12 @@
 		#if($hasScoreField)
 		#if($scoreMin)
 			<tr>
-				<th>$r.translate("score.min.max")</th>
+				<th scope="row">$r.translate("score.min.max")</th>
 				<td>$r.translate("score.min.max.value", $scoreMin, $scoreMax)</td>
 			</tr>
 		#end
 		<tr class="o_score">
-			<th>$r.translate("score.yourscore")</th>
+			<th scope="row">$r.translate("score.yourscore")</th>
 			<td>
 				#if($resultsVisible && $score)
 					$score
@@ -42,7 +42,7 @@
 		
 		#if($hasGradeField)
 		<tr class="o_grade">
-			<th>$r.translate("grade.yourgrade")</th>
+			<th scope="row">$r.translate("grade.yourgrade")</th>
 			<td>
 				#if($resultsVisible && $grade)
 					$grade
@@ -56,12 +56,12 @@
 		#if($hasPassedField)
 			#if($passedCutValue)
 				<tr class="o_cutval">
-					<th>$r.translate("passed.cut")</th>
+					<th scope="row">$r.translate("passed.cut")</th>
 					<td>$passedCutValue</td>
 				</tr>
 			#end
 		<tr>
-			<th>$r.translate("passed.yourpassed")</th>
+			<th scope="row">$r.translate("passed.yourpassed")</th>
 			<td>
 				#if($resultsVisible && $hasPassedValue && $passed)
 					<div class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</div>

@@ -553,7 +553,6 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_assessment_form");
 		
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval == null) {
@@ -573,6 +572,7 @@ public class AssessmentForm extends FormBasicController {
 		userVisibilityEl.setDomWrapperElement(DomWrapperElement.div);
 		
 		FormLayoutContainer assessmentCont = FormLayoutContainer.createDefaultFormLayout("assessment", getTranslator());
+		assessmentCont.setElementCssClass("o_sel_assessment_form");
 		assessmentCont.setFormTitle(translate("personal.title"));
 		assessmentCont.setRootForm(mainForm);
 		formLayout.add("assessment", assessmentCont);
