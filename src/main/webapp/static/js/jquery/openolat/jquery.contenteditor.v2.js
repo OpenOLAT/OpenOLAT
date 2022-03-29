@@ -136,6 +136,13 @@
 		return null;
 	}
 	
+	function closeMathLive() {
+		var mf = document.getElementById('mathlive');
+		if(mf) {
+			mf.executeCommand("hideVirtualKeyboard");
+		}
+	}
+	
 	function initWindowListener(settings) {
 		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
 			o_info.contentEditorWindowListener = function(e) {
@@ -163,8 +170,10 @@
 						if(parts.length == 1) {
 							var element = jQuery(parts.get(0));
 							var elementUrl = element.data("oo-content-editor-url");
+							closeMathLive();
 							o_XHREvent(elementUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
 						} else if(!edited) {
+							closeMathLive();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment');
 						}
 					}
