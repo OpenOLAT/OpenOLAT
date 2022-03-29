@@ -1,5 +1,6 @@
 /* HELP, context sensitive */
-a.o_chelp {
+a.o_chelp,
+.tox .tox-dialog .tox-form a.o_chelp {
 	display: inline-block;
 	padding: 1px 3px;
 	text-align: center;
@@ -273,6 +274,9 @@ ul.o_dropdown {
 		}
 	}
 }
+
+.tox-form .o_chelp_wrapper a {
+} 
 
 /* File download */
 .o_file_upload {

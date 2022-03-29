@@ -86,7 +86,7 @@ label.mce-label {
 	}
 }
 
-i.mce-ico.mce-i-help, i.mce-ico.mce-i-edit {
+i.mce-ico.mce-i-help {
 	display: inline-block;
 	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
@@ -94,25 +94,14 @@ i.mce-ico.mce-i-help, i.mce-ico.mce-i-edit {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
-}
-
-i.mce-ico.mce-i-edit:before {
-	content: $fa-var-edit;
-}
-
-i.mce-ico.mce-i-help {
 	width: 9px;
 	height: 9px;
-	padding-top:1px;
+	margin-top:-4px;
 }
+
 i.mce-ico.mce-i-help:before {
 	content: $fa-var-question-circle;
 	color: white;
-}
-
-.mce-tabs span.o_chelp_wrapper {
-	float:right;
-	margin:5px;
 }
 
 .tox .tox-statusbar {

@@ -23,6 +23,8 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugin
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 
@@ -58,6 +60,13 @@ public class OlatMathEditorPlugin extends TinyMCECustomPlugin {
 		if (!params.containsKey(PARAM_TRANSPARENT_IMAGE)) {
 			// Get static URI for transparent GIF.
 			params.put(PARAM_TRANSPARENT_IMAGE, StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
+		}
+		
+		
+		String helpKey = "helpUrl" + locale.getLanguage();
+		if(!params.containsKey(helpKey)) {
+			String url = CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/personal/Math_formula");
+			params.put(helpKey, url);
 		}
 		return params;
 	}
