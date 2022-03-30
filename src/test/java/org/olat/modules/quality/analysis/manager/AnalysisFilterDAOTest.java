@@ -75,6 +75,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -98,6 +99,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 	
 	@Autowired
 	private AnalysisFilterDAO sut;
@@ -296,7 +299,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	public void shouldGetAvailableAttributeForTopicOrganisation() {
 		QualityDataCollection dataCollection = createFinishedDataCollection();
 		Organisation organisation = qualityTestHelper.createOrganisation();
-		dataCollection.setTopicOrganisation(organisation);;
+		dataCollection.setTopicOrganisation(organisation);
 		qualityService.updateDataCollection(dataCollection);
 		dbInstance.commitAndCloseSession();
 		
@@ -1336,6 +1339,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsUser("i1");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsUser("i2");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsUser("io");
+		Identity deletedIdentity = JunitTestHelper.createAndPersistIdentityAsUser("do");
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		dc1.setTopicIdentity(identity1);
 		qualityService.updateDataCollection(dc1);
@@ -1348,18 +1352,23 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.updateDataCollection(dcOther);
 		dcOther.setTopicIdentity(otherIdentity);
+		QualityDataCollection dcDeleted = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.updateDataCollection(dcDeleted);
+		dcDeleted.setTopicIdentity(deletedIdentity);
 		QualityDataCollection dcNoIdentity = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
-		finish(asList(dc1, dc2, dc3, dcOther, dcNoIdentity));
+		finish(asList(dc1, dc2, dc3, dcOther, dcDeleted, dcNoIdentity));
+		dbInstance.commitAndCloseSession();
+		userLifecycleManager.deleteIdentity(deletedIdentity, otherIdentity);
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		searchParams.setTopicIdentityRefs(asList(identity1, identity2));
+		searchParams.setTopicIdentityRefs(asList(identity1, identity2, deletedIdentity));
 		List<Long> keys = sut.loadTopicIdentityKeys(searchParams);
 		
 		assertThat(keys)
 				.doesNotContainNull()
 				.containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey())
-				.doesNotContain(otherIdentity.getKey());
+				.doesNotContain(deletedIdentity.getKey(), otherIdentity.getKey());
 	}
 	
 	@Test
@@ -1837,7 +1846,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		CurriculumElement element2 = curriculumService.createCurriculumElement("el", "Element",
 				CurriculumElementStatus.active, null, null, null, type, disabled, CurriculumLectures.disabled,
 				CurriculumLearningProgress.disabled, curriculum);
-		;
+		
 		CurriculumElement elementNull = curriculumService.createCurriculumElement("el", "Element",
 				CurriculumElementStatus.active, null, null, null, null, disabled, CurriculumLectures.disabled,
 				CurriculumLearningProgress.disabled, curriculum);
