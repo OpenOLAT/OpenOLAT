@@ -171,6 +171,11 @@ body.o_dmz {
 		.form-group {
 			margin-bottom: 5px;
 		}
+		.has-feedback label~.form-control-feedback {
+			/* height of label + inner padding input field + half input field text height - border input field */
+			top: ($line-height-computed + $padding-base-vertical + $line-height-computed * 0.5 - 1);
+		}
+		
 		/* the login button */
 		.btn-primary {
 			width: 100%;
