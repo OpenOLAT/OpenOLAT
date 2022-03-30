@@ -140,9 +140,9 @@ public class CPPrintMapper implements Mapper {
 		}
 		injectJavascriptAndCss(sb);
 		
-		sb.append("</head><body onload='window.focus();window.print()'>");
+		sb.append("</head><body onload='window.focus();window.print()'><div class='o_offline_cp'>");
 		printPagesList(sb, parsedPages);
-		sb.append("</body></html>");
+		sb.append("</div></body></html>");
 
 		return prepareMediaResource(request, sb.toString(), gEncoding, "text/html");
 	}
@@ -179,7 +179,8 @@ public class CPPrintMapper implements Mapper {
 			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-3.6.0.min.js");
 			sb.append("\")'></script>");
 			output.append(sb.toString());
-			output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" />\n");
+			output.append("<link href=\"").append(themeBaseUri).append("content.css\" rel=\"stylesheet\" />\n");
+			output.append("<link href=\"").append(themeBaseUri).append("theme.css\" rel=\"stylesheet\" />\n");
 		} catch(IOException e) {
 			log.error("", e);
 		}

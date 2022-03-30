@@ -1,3 +1,10 @@
+@media print {
+	div.o_offline_cp, div.o_offline_cp * {
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
+	}
+}
+
 .o_offline_cp_footer {
 	position:fixed;
 	bottom: 0;
