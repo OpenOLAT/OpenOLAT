@@ -60,6 +60,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -80,6 +81,7 @@ import org.olat.instantMessaging.ui.component.RosterEntryStatusCellRenderer;
 import org.olat.instantMessaging.ui.component.RosterEntryWithUnreadCellRenderer;
 import org.olat.instantMessaging.ui.component.RosterStatusCellRenderer;
 import org.olat.instantMessaging.ui.component.UserAvatarCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,12 +98,13 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	
 	private FormLink bulkSendMessageButton;
 	private FormLink bulkCompleteButton;
-	private FlexiTableElement tableEl;
-	private SupervisorChatDataModel tableModel;
+	protected FlexiTableElement tableEl;
+	protected SupervisorChatDataModel tableModel;
 	
 	private final String fromMe;
+	protected RepositoryEntry entry;
 	private final OLATResourceable chatResource;
-	private final String resSubPath;
+	protected final String resSubPath;
 	private final MapperKey avatarMapperKey;
 	private final ChatViewConfig basisViewConfig;
 	private final OLATResourceable personalEventOres;
@@ -127,16 +130,28 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	@Autowired
 	private UserSessionManager sessionManager;
 	
+	public SupervisorChatController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String resSubPath,
+			ChatViewConfig basisViewConfig) {
+		this(ureq, wControl, entry, null, resSubPath, basisViewConfig);
+	}
+	
 	public SupervisorChatController(UserRequest ureq, WindowControl wControl, OLATResourceable chatResource, String resSubPath,
 			ChatViewConfig basisViewConfig) {
+		this(ureq, wControl, null, chatResource, resSubPath, basisViewConfig);
+	}
+	
+	private SupervisorChatController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, OLATResourceable chatOres, String resSubPath,
+			ChatViewConfig basisViewConfig) {
 		super(ureq, wControl, "supervised_chat");
-		this.chatResource = chatResource;
+		setTranslator(Util.createPackageTranslator(SupervisorChatController.class, getLocale(), getTranslator()));
+		this.entry = entry;
+		this.chatResource = chatOres == null ? entry.getOlatResource() : chatOres;
 		this.resSubPath = resSubPath;
 		this.basisViewConfig = basisViewConfig;
 		fromMe = userManager.getUserDisplayName(getIdentity());
 		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
 		
-		coordinator.getEventBus().registerFor(this, getIdentity(), chatResource);
+		coordinator.getEventBus().registerFor(this, getIdentity(), this.chatResource);
 		personalEventOres = OresHelper.createOLATResourceableInstance(InstantMessagingService.PERSONAL_EVENT_ORES_NAME, getIdentity().getKey());
 		coordinator.getEventBus().registerFor(this, getIdentity(), personalEventOres);
 		coordinator.getEventBus().registerFor(this, getIdentity(), UserSessionManager.ORES_USERSESSION);
@@ -222,7 +237,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		loadModel(false);
 	}
 	
-	private void reloadModel(RosterRow row) {
+	protected RosterRow reloadModel(RosterRow row) {
 		RosterChannelInfos infos = imService.getRoster(chatResource, resSubPath, row.getChannel(), getIdentity());	
 		RosterRow currentRow = tableModel.getObjectByChannel(row.getChannel());
 		if(currentRow != null) {
@@ -232,10 +247,12 @@ public class SupervisorChatController extends FormBasicController implements Gen
 			updateLastActivity();
 		} else {
 			loadModel(false);
+			currentRow = tableModel.getObjectByChannel(row.getChannel());
 		}
+		return currentRow;
 	}
 	
-	private void loadModel(boolean reset) {
+	protected List<RosterRow> loadModel(boolean reset) {
 		List<RosterChannelInfos> rosterInfos = imService.getRosters(chatResource, resSubPath, getIdentity(), false);
 		List<RosterRow> rows = new ArrayList<>(rosterInfos.size());
 		for(RosterChannelInfos roster:rosterInfos) {
@@ -246,6 +263,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		tableModel.setObjects(rows);
 		tableEl.reset(reset, reset, true);
 		updateLastActivity();
+		return rows;
 	}
 	
 	private void updateLastActivity() {
@@ -275,11 +293,14 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		String joinId = "join_".concat(roster.getChannel());
 		FormLink joinLink = (FormLink)tableEl.getFormComponent(joinId);
 		if(joinLink == null) {
-			joinLink = uifactory.addFormLink(joinId, "im", joinI18nKey, tableEl, Link.LINK);	
+			joinLink = uifactory.addFormLink(joinId, "im", joinI18nKey, tableEl, Link.LINK);
+			joinLink.setDomReplacementWrapperRequired(false);
 		} else {
+			joinLink.setTranslator(getTranslator());
 			joinLink.setI18nKey(joinI18nKey);
 		}
 		joinLink.setUserObject(row);
+		joinLink.setRootForm(mainForm);
 		row.setJoinLink(joinLink);
 
 		String toolId = "tool_".concat(roster.getChannel());

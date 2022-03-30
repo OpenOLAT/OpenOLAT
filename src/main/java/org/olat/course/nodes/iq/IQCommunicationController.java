@@ -50,7 +50,6 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.instantMessaging.ui.ChatViewConfig;
-import org.olat.instantMessaging.ui.SupervisorChatController;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.message.ui.AssessmentMessageListController;
 import org.olat.modules.teams.TeamsModule;
@@ -73,7 +72,7 @@ public class IQCommunicationController extends BasicController implements Activa
 	
 	private CloseableModalController cmc;
 	private UserSearchFlexiController userSearchCtrl;
-	private final SupervisorChatController supervisedChatsCtrl;
+	private final IQSupervisorChatController supervisedChatsCtrl;
 	private final AssessmentMessageListController assessmentMessagesCtrl;
 
 	@Autowired
@@ -113,7 +112,9 @@ public class IQCommunicationController extends BasicController implements Activa
 		viewConfig.setWidth(620);
 		viewConfig.setHeight(480);
 		
-		supervisedChatsCtrl = new SupervisorChatController(ureq, getWindowControl(), entry.getOlatResource(), courseNode.getIdent(), viewConfig);
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		supervisedChatsCtrl = new IQSupervisorChatController(ureq, getWindowControl(),
+				entry, courseNode.getIdent(), testEntry, viewConfig);
 		listenTo(supervisedChatsCtrl);
 		mainVC.put("chats", supervisedChatsCtrl.getInitialComponent());
 

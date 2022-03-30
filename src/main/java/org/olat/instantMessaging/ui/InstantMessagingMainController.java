@@ -233,6 +233,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			ChatController chatCtr = refs.getController();
 			getWindowControl().removeInstanteMessagePanel(refs.getInitialComponent());
 			imService.unlistenChat(getIdentity(), chatCtr.getOlatResourceable(), chatCtr.getResSubPath(), chatCtr.getChannel(), chatCtr);
+			removeAsListenerAndDispose(chatCtr);
 		}
 	}
 
@@ -396,8 +397,10 @@ public class InstantMessagingMainController extends BasicController implements G
 	private void closeChat(ChatReferenceKey chatKey) {
 		ChatReference ref = chats.get(chatKey);
 		if(ref != null) {
-			ref.getController().closeChat();
+			ChatController chatCtrl = ref.getController();
+			chatCtrl.closeChat();
 			getWindowControl().removeInstanteMessagePanel(ref.getInitialComponent());
+			removeAsListenerAndDispose(chatCtrl);
 		}
 		chats.remove(chatKey);
 	}

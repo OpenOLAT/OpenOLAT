@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -138,10 +139,17 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 			case supervisor: return RosterEntryWithUnreadCellRenderer.getName(row.getRoster(), true);
 			case status: return row.getRosterStatus();
 			case lastActivity: return row.getLastActivity();
-			case join: return row.getJoinLink();
+			case join: return getJoinLink(row);
 			case tools: return row.getToolLink();
 			default: return "ERROR";
 		}
+	}
+	
+	private FormLink getJoinLink(RosterRow row) {
+		if(row.isCanOpenChat()) {
+			return row.getJoinLink();
+		}
+		return null;
 	}
 	
 	private String getMessage(RosterRow row) {

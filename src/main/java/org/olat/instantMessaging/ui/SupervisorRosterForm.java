@@ -257,6 +257,12 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		container.setVisible(visible);
 		link.setVisible(visible);
 		
+		for(FormItem item : container.getFormComponents().values()) {
+			if(item != link) {
+				container.remove(item);
+			}
+		}
+		
 		for(SupervisedRoster roster:rosters) {
 			for(SupervisedRosterEntry entry:roster.getRosterEntries()) {
 				container.add(entry.getEntryLink());
@@ -295,6 +301,8 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 					|| messageType == InstantMessageTypeEnum.reactivate
 					|| messageType == InstantMessageTypeEnum.join) {
 				activateChannel(event.getChannel());
+			} else if(messageType == InstantMessageTypeEnum.request) {
+				requestChannel(event.getChannel());
 			} else if((messageType == InstantMessageTypeEnum.text
 					|| messageType == InstantMessageTypeEnum.meeting)
 					&& !Objects.equals(selectedChannel, event.getChannel())) {
@@ -415,6 +423,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		loadContainer(requestedContainer, toggleRequestedLink, requestedRosters, identities);
 		loadContainer(completedContainer, toggleCompletedLink, completedRosters, identities);
 		identityKeys = identities;
+		flc.setDirty(true);
 	}
 	
 	protected void switchChannel(String newChannel) {
@@ -469,14 +478,14 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	public static class SupervisedRoster {
 		
 		private int totalEntries;
-		private final RosterChannelInfos roster;
+		private final String channel;
 		private List<SupervisedRosterEntry> rosterEntries;
 		private final String cachedNames;
 		
 		public SupervisedRoster(RosterChannelInfos roster, List<SupervisedRosterEntry> rosterEntries, int totalEntries) {
-			this.roster = roster;
 			this.rosterEntries = rosterEntries;
 			this.totalEntries = totalEntries;
+			channel = roster.getChannel();
 			cachedNames = RosterEntryWithUnreadCellRenderer.getName(roster, false);
 		}
 		
@@ -485,7 +494,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		}
 		
 		public String getChannel() {
-			return roster.getChannel();
+			return channel;
 		}
 		
 		public int getTotalEntries() {
@@ -509,6 +518,23 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 				}
 			}
 			return null;
+		}
+
+		@Override
+		public int hashCode() {
+			return channel == null ? 5735786 : channel.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof SupervisedRoster) {
+				SupervisedRoster sr = (SupervisedRoster)obj;
+				return channel != null && channel.equals(sr.channel);
+			}
+			return false;
 		}
 	}
 	

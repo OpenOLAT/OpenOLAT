@@ -754,7 +754,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		
 		if(supervisorRosterCtrl != null && StringHelper.containsNonWhitespace(event.getChannel())) {
-			supervisorRosterCtrl.activateChannel(event.getChannel());
 			if(channel != null && channel.equals(event.getChannel())) {
 				updateSendMessageForm();
 			}

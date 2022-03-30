@@ -246,6 +246,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			}
 		}
 		//if enabled or not must be set now in case it was set during construction time
+		component.setVisible(isVisible());
 		component.setEnabled(isEnabled());
 		component.setTranslator(getTranslator());
 		component.setIconLeftCSS(iconLeftCSS);

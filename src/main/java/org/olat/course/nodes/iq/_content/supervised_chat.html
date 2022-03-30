@@ -1,0 +1,9 @@
+$r.render("chats")
+
+#if($r.isNotNull($lastActivity))
+<script>
+setTimeout(function() {
+	$f.ffXHREvent("last","activity")
+}, $lastActivity);
+</script>
+#end

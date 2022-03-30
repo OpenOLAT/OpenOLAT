@@ -37,6 +37,7 @@ public class RosterRow {
 	
 	private RosterChannelInfos roster;
 	private String onlineStatus;
+	private boolean canOpenChat = true;
 	
 	private FormLink joinLink;
 	private FormLink toolLink;
@@ -87,6 +88,14 @@ public class RosterRow {
 
 	public void setOnlineStatus(String onlineStatus) {
 		this.onlineStatus = onlineStatus;
+	}
+
+	public boolean isCanOpenChat() {
+		return canOpenChat;
+	}
+
+	public void setCanOpenChat(boolean canOpenChat) {
+		this.canOpenChat = canOpenChat;
 	}
 
 	public FormLink getJoinLink() {
