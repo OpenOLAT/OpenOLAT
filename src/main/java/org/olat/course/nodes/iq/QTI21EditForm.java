@@ -940,7 +940,7 @@ public class QTI21EditForm extends FormBasicController {
 		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
 
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				Float.valueOf(minScoreEl.getValue()), Float.valueOf(maxScoreEl.getValue()), defautGradesystemKey);
+				Float.valueOf(minScoreEl.getValue()), Float.valueOf(maxScoreEl.getValue()), defautGradesystemKey, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

@@ -573,7 +573,7 @@ public class MSEditFormController extends FormBasicController {
 		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
 
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minScore, maxScore, defautGradesystemKey);
+				minScore, maxScore, defautGradesystemKey, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

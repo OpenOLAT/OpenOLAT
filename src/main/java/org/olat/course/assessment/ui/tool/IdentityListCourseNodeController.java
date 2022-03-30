@@ -102,6 +102,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
@@ -117,6 +118,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -141,6 +143,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
@@ -209,6 +212,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ContactFormController contactCtrl;
 	private StepsMainRunController gradeScaleEditCtrl;
+	private GradeScaleEditController gradeScaleViewCtrl;
 	
 	@Autowired
 	protected DB dbInstance;
@@ -228,6 +232,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private GradeModule gradeModuel;
 	@Autowired
@@ -1030,6 +1036,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 				}
 				cleanUp();
 			}
+		} else if (source == gradeScaleViewCtrl) {
+			if(cmc != null) {
+				cmc.deactivate();
+			}
+			cleanUp();
 		} else if(bulkToolsList != null && bulkToolsList.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
 				reload(ureq);
@@ -1064,11 +1075,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void cleanUp() {
+		removeAsListenerAndDispose(gradeScaleViewCtrl);
 		removeAsListenerAndDispose(gradeScaleEditCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(cmc);
+		gradeScaleViewCtrl = null;
 		gradeScaleEditCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
@@ -1423,12 +1436,34 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {
-		GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade());
-		StepRunnerCallback finish = new GradeScaleAdjustCallback(coachCourseEnv, getLocale());
-		
 		removeAsListenerAndDispose(gradeScaleEditCtrl);
-		gradeScaleEditCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, translate("tool.grade.scale"), "");
-		listenTo(gradeScaleEditCtrl);
-		getWindowControl().pushAsModalDialog(gradeScaleEditCtrl.getInitialComponent());
+		removeAsListenerAndDispose(gradeScaleViewCtrl);
+		if (assessmentCallback.isAdmin() || !invisibleGradesExist()) {
+			GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade());
+			StepRunnerCallback finish = new GradeScaleAdjustCallback(coachCourseEnv, getLocale());
+			
+			gradeScaleEditCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, translate("tool.grade.scale"), "");
+			listenTo(gradeScaleEditCtrl);
+			getWindowControl().pushAsModalDialog(gradeScaleEditCtrl.getInitialComponent());
+		} else {
+			gradeScaleViewCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry,
+					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), null, false);
+			listenTo(gradeScaleViewCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					gradeScaleViewCtrl.getInitialComponent(), true, translate("tool.grade.scale"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
+	
+	private boolean invisibleGradesExist() {
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+		AssessmentStatistics statistics = assessmentToolManager.getStatistics(getIdentity(), params);
+		Long gradeCount = assessmentService.getGradeCount(courseEntry, courseNode.getIdent());
+		// User which the coach does not see have grades.
+		// Total assessment entries with grade is higher than visible assessment entries.
+		return gradeCount.intValue() > statistics.getCountGrade();
+	}
+	
 }

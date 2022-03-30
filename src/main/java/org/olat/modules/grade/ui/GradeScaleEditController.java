@@ -122,7 +122,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private AssessmentService assessmentService;
 	
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey) {
+			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey, boolean courseEditor) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.wizard = false;
 		this.courseEntry = courseEntry;
@@ -148,7 +148,11 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		
 		if (assessmentService.hasGrades(courseEntry, subIdent)) {
 			setReadOnly();
-			messageCont.setFormWarning(translate("error.grades.exist"));
+			if (courseEditor) {
+				messageCont.setFormWarning(translate("error.grades.exist.editor"));
+			} else {
+				messageCont.setFormWarning(translate("error.grades.exist"));
+			}
 		} else {
 			messageCont.setFormWarning(translate("message.no.publication"));
 		}
@@ -390,6 +394,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				formItem.setEnabled(false);
 			}
 		}
+		refreshNumericalLink.setVisible(false);
+		refreshTextLink.setVisible(false);
 		submitButton.setVisible(false);
 	}
 

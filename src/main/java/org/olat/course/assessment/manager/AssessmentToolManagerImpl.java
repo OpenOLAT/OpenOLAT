@@ -191,6 +191,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
 		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
 		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
+		  .append(" sum(case when aentry.grade=null then 0 else 1 end) as numOfGrades,")
 		  .append(" v.key as repoKey")
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
@@ -260,6 +261,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			Long numOfUndefined = (Long)result[4];
 			Long numDone = (Long)result[5];
 			Long numNotDone = (Long)result[6];
+			Long numNotGrades = (Long)result[7];
 			
 			entry.setAverageScore(averageScore);
 			entry.setMaxScore(maxScore);
@@ -269,6 +271,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			entry.setCountTotal(entry.getCountPassed() + entry.getCountFailed() + entry.getCountUndefined());
 			entry.setCountDone(numDone == null ? 0 : numDone.intValue());
 			entry.setCountNotDone(numNotDone == null ? 0 : numNotDone.intValue());
+			entry.setCountGrade(numNotGrades== null ? 0 : numNotGrades.intValue());
 		}
 		return entry;
 	}

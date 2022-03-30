@@ -732,7 +732,7 @@ public class MSConfigController extends FormBasicController {
 		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
 
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent,
-				minScore, maxScore, defautGradesystemKey);
+				minScore, maxScore, defautGradesystemKey, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

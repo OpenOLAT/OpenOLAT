@@ -35,6 +35,7 @@ public class AssessmentStatistics {
 	private int countUndefined;
 	private int countDone;
 	private int countNotDone;
+	private int countGrade;
 	private Double averageScore;
 	private BigDecimal maxScore;
 	
@@ -84,6 +85,14 @@ public class AssessmentStatistics {
 
 	public void setCountNotDone(int countNotDone) {
 		this.countNotDone = countNotDone;
+	}
+
+	public int getCountGrade() {
+		return countGrade;
+	}
+
+	public void setCountGrade(int countGrade) {
+		this.countGrade = countGrade;
 	}
 
 	public Double getAverageScore() {

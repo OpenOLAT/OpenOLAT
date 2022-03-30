@@ -244,7 +244,25 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(assessmentEntryDao.hasGrades(entry, subIdent)).isTrue();
+	}
+	
+	@Test
+	public void shouldGetGradeCount() {
+		// No Grade
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.getGradeCount(entry, subIdent)).isEqualTo(0);
+		
+		// Grade
+		ae.setGrade("Grade A");
 		assessmentEntryDao.updateAssessmentEntry(ae);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.getGradeCount(entry, subIdent)).isEqualTo(1);
 	}
 	
 	@Test

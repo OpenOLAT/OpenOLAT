@@ -212,6 +212,21 @@ public class AssessmentEntryDAO {
 				.isEmpty();
 	}
 	
+	public Long getGradeCount(RepositoryEntryRef remositoryEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(data.key)");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+		sb.and().append(" data.subIdent=:subIdent");
+		sb.and().append(" data.grade is not null");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", remositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getSingleResult();
+	}
+	
 	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
 		nodeAssessment.setScore(null);
 		nodeAssessment.setAttempts(0);

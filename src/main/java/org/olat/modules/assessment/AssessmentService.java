@@ -106,10 +106,14 @@ public interface AssessmentService {
 	public boolean hasAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry);
 	
 	/**
-	 * Checks whether at least one assessment entry has a grade.
-	 * 
+	 * @return whether at least one assessment entry has a grade.
 	 */
 	public boolean hasGrades(RepositoryEntryRef remositoryEntry, String subIdent);
+	
+	/**
+	 * @return the number of assessment entries with a grade
+	 */
+	public Long getGradeCount(RepositoryEntryRef remositoryEntry, String subIdent);
 
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
 
