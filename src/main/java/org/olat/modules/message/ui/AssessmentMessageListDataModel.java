@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -110,7 +111,7 @@ implements SortableFlexiTableDataModel<AssessmentMessageRow> {
 			case expirationDate: return row.getExpirationDate();
 			case author: return row.getAuthorFullName();
 			case read: return Long.valueOf(row.getNumOfRead());
-			case tools: return row.getToolLink();
+			case tools: return getTools(row);
 			default: return "ERROR";
 		}
 	}
@@ -120,6 +121,14 @@ implements SortableFlexiTableDataModel<AssessmentMessageRow> {
 			text = Formatter.truncate(text, 64);
 		}
 		return text;
+	}
+	
+	private FormLink getTools(AssessmentMessageRow row) {
+		AssessmentMessageStatusEnum status = row.getStatus();
+		if(status == AssessmentMessageStatusEnum.planned || status == AssessmentMessageStatusEnum.published) {
+			return row.getToolLink();
+		}
+		return null;
 	}
 	
 	@Override

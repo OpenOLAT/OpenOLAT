@@ -217,8 +217,10 @@ public class AssessmentMessageListController extends FormBasicController impleme
 		FormLink toolLink = (FormLink)flc.getFormComponent(toolId);
 		if(toolLink == null) {
 			toolLink = uifactory.addFormLink(toolId, "tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
+			toolLink.setTranslator(getTranslator());
 			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolLink.setTitle(translate("table.header.actions"));
+			toolLink.setRootForm(mainForm);
 		}
 		toolLink.setUserObject(row);
 		row.setToolLink(toolLink);
