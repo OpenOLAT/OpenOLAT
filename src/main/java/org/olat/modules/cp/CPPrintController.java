@@ -44,7 +44,7 @@ public class CPPrintController extends BasicController {
 		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 		CPPrintMapper printMapper = new CPPrintMapper(ctm, rootContainer, themeBaseUri);
 		String mapperBaseURL = registerMapper(ureq, printMapper);
-		printMapper.setBaseUri(Settings.getServerContextPathURI() + mapperBaseURL);
+		printMapper.setBaseUri(Settings.createServerURI() + mapperBaseURL);
 		String pages = printMapper.pagesToHtml();
 		mainVC.contextPut("content", pages);
 		mainVC.contextPut("title", ctm.getRootNode().getTitle());
