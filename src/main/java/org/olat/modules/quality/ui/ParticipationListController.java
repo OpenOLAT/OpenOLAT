@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -139,7 +140,7 @@ public class ParticipationListController extends FormBasicController implements 
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
-		tableEl.setEmptyTableMessageKey("participation.empty.table");
+		tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.user.add.user", "o_icon_qual_part_user_add_course", false);
 		if (secCallback.canRevomeParticipation()) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
@@ -151,6 +152,13 @@ public class ParticipationListController extends FormBasicController implements 
 			flc.add("buttons", buttons);
 			buttons.setElementCssClass("o_button_group");
 			removeUsersLink = uifactory.addFormLink("participation.remove", buttons, Link.BUTTON);
+		}
+		updateUI();
+	}
+
+	private void updateUI() {
+		if (removeUsersLink != null) {
+			removeUsersLink.setVisible(!dataModel.getObjects().isEmpty());
 		}
 	}
 
@@ -178,7 +186,11 @@ public class ParticipationListController extends FormBasicController implements 
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
+		if(source == tableEl) {
+			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doAddUsers(ureq);
+			}
+		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink) source;
 			if (link == removeUsersLink) {
 				List<QualityContextRef> contextRefs = getSelectedContextRefs();
@@ -207,6 +219,7 @@ public class ParticipationListController extends FormBasicController implements 
 				getWindowControl().pop();
 				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					tableEl.reset(true, false, true);
+					updateUI();
 				}
 				cleanUp();
 			}
@@ -326,6 +339,7 @@ public class ParticipationListController extends FormBasicController implements 
 	private void doRemove(List<QualityContextRef> contextRefs) {
 		qualityService.deleteContextsAndParticipations(contextRefs);
 		tableEl.reset(true, true, true);
+		updateUI();
 	}
 
 	@Override
