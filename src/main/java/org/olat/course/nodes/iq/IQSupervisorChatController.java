@@ -64,6 +64,13 @@ public class IQSupervisorChatController extends SupervisorChatController {
 	}
 	
 	@Override
+	protected void doDispose() {
+		coordinatorManager.getCoordinator().getEventBus()
+			.deregisterFor(this, entry.getOlatResource());
+		super.doDispose();
+	}
+	
+	@Override
 	public void event(Event event) {
 		if(event instanceof CompletionEvent) {
 			processCompletionEvent((CompletionEvent)event);
@@ -77,7 +84,7 @@ public class IQSupervisorChatController extends SupervisorChatController {
 		String channel = ce.getIdentityKey().toString();
 		RosterRow row = tableModel.getObjectByChannel(channel);
 		boolean running = ce.getStatus() == AssessmentRunStatus.running;
-		if(row.isCanOpenChat() != running) {
+		if(row != null && row.isCanOpenChat() != running) {
 			row.setCanOpenChat(running);
 			tableEl.reset(false, false, true);
 		}

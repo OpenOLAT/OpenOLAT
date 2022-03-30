@@ -93,7 +93,7 @@ public class SendMessageForm extends FormBasicController {
 			closeLabel = "close.chat.close";
 		}
 		closeChatLink = uifactory.addFormLink("close.chat", closeLabel, null, formLayout, Link.LINK);
-		closeChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check_on");
+		closeChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
 		closeChatLink.setVisible(chatViewConfig.isCanClose());
 		reactivateChatLink = uifactory.addFormLink("reactivate.chat", formLayout, Link.LINK);
 		reactivateChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reactivate");

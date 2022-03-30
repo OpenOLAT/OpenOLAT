@@ -215,7 +215,7 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 		Date lastActivity = row.getLastActivity();
 		if((status == RosterStatus.request || status == RosterStatus.active)
 				&& (lastActivity != null && (now.getTime() - lastActivity.getTime()) > FIVE_MINUTES_MS)
-				&& (!roster.hasActiveVipEntries() || (roster.inRoster(identity) && roster.hasUnreadMessages()))) {
+				&& (!roster.hasVipEntries() || (roster.inRoster(identity) && roster.hasUnreadMessages()))) {
 			return "o_im_danger";
 		}
 		if(status == RosterStatus.request) {

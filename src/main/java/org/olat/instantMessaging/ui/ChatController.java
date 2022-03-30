@@ -60,7 +60,9 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -101,7 +103,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  13.07.2007 <br />
  * @author guido
  */
-public class ChatController extends BasicController implements GenericEventListener{
+public class ChatController extends BasicController implements GenericEventListener {
 
 	private RosterForm rosterCtrl;
 	private SupervisorRosterForm supervisorRosterCtrl;
@@ -140,6 +142,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final Long privateReceiverKey;
 	private InstantMessage errorMessage;
 
+	@Autowired
+	private Coordinator coordinator;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -234,8 +238,11 @@ public class ChatController extends BasicController implements GenericEventListe
 		initChatMessageField(pn);
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
-		if(rosterCtrl != null && chatViewConfig.isCreateRosterEntry()) {
-			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
+		if(rosterCtrl != null) {
+			if(chatViewConfig.isCreateRosterEntry()) {
+				doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
+			}
+			coordinator.getEventBus().registerFor(this, getIdentity(), UserSessionManager.ORES_USERSESSION);
 		}
 	}
 	
@@ -353,6 +360,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	protected void doDispose() {
 		allChats.remove(Integer.toString(hashCode()));
 		imService.unlistenChat(getIdentity(), getOlatResourceable(), resSubPath, channel, this);
+		coordinator.getEventBus().deregisterFor(this, UserSessionManager.ORES_USERSESSION);
         super.doDispose();
 	}
 
@@ -627,6 +635,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			processInstantMessageEvent((InstantMessagingEvent)event);
 		} else if(event instanceof LeaveChatEvent) {
 			processInstantMessageEvent((LeaveChatEvent)event);
+		} else if(event instanceof SignOnOffEvent) {
+			processUserSessionEvent((SignOnOffEvent)event);
 		}
 	}
 	
@@ -726,22 +736,25 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	private void processInstantMessageEvent(LeaveChatEvent event) {
 		if(buddyList != null && rosterCtrl != null && event.sameOres(ores)) {
-			Long identityKey = event.getIdentityKey();
-			if(buddyList.contains(identityKey)) {
-				Buddy entry = buddyList.get(identityKey);
-				if(persistent) {
-					boolean online = imService.isOnline(new IdentityRefImpl(identityKey));
-					if(online) {
-						entry.setStatus(Presence.available.name());
-					} else {
-						entry.setStatus(Presence.unavailable.name());
-					}
-				} else {
-					buddyList.remove(entry);
-				}
-			}
-			rosterCtrl.updateModel();
+			processStatusUpdate(event.getIdentityKey());
 		}
+	}
+	
+	private void processStatusUpdate(Long identityKey) {
+		if(buddyList.contains(identityKey)) {
+			Buddy entry = buddyList.get(identityKey);
+			if(persistent) {
+				boolean online = imService.isOnline(new IdentityRefImpl(identityKey));
+				if(online) {
+					entry.setStatus(Presence.available.name());
+				} else {
+					entry.setStatus(Presence.unavailable.name());
+				}
+			} else {
+				buddyList.remove(entry);
+			}
+		}
+		rosterCtrl.updateModel();
 	}
 	
 	private void processInstantMessageTextEvent(InstantMessagingEvent event) {
@@ -772,6 +785,13 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		if(appended) {
 			imService.updateLastSeen(getIdentity(), ores, resSubPath, channel);
+		}
+	}
+	
+	private void processUserSessionEvent(SignOnOffEvent event) {
+		Long identityKey = event.getIdentityKey();
+		if(rosterCtrl != null && buddyList != null && buddyList.contains(identityKey)) {
+			processStatusUpdate(identityKey);
 		}
 	}
 	

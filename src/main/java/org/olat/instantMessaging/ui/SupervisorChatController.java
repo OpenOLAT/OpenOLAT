@@ -383,6 +383,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 					&& currentRow.inRoster(getIdentity())
 					&& (currentRow.getRosterStatus() == RosterStatus.active || currentRow.getRosterStatus() == RosterStatus.request)) {
 				reloadModel(currentRow);
+			} else if(InstantMessagingEvent.PARTICIPANT.equals(command)) {
+				reloadModel(currentRow);
 			}
 		}
 	}

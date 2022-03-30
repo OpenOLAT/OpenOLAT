@@ -65,6 +65,11 @@ public class RosterChannelInfos {
 				.count() > 0;
 	}
 	
+	public boolean hasVipEntries() {
+		return entries.stream()
+				.anyMatch(RosterEntry::isVip);
+	}
+	
 	public boolean inRoster(IdentityRef ref) {
 		for(RosterEntry entry:entries) {
 			if(ref.getKey().equals(entry.getIdentityKey())) {
