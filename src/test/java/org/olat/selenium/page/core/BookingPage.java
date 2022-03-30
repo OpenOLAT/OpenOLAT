@@ -74,7 +74,7 @@ public class BookingPage {
 		OOGraphene.waitElement(addMenuBy, browser);
 		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[i[contains(@class,'" + iconClassname + "')]]");
 		browser.findElement(addMethodBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
@@ -86,7 +86,7 @@ public class BookingPage {
 
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_token_form button.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -135,7 +135,7 @@ public class BookingPage {
 		
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_free_form button.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

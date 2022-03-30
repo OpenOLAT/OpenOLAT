@@ -92,7 +92,7 @@ public class BinderPage {
 	 */
 	public BinderPage assertOnPage(String title) {
 		By metaTitleBy = By.xpath("//div[contains(@class,'o_page_lead')]//h2[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(metaTitleBy, 5, browser);
+		OOGraphene.waitElement(metaTitleBy, browser);
 		return this;
 	}
 	
@@ -110,6 +110,12 @@ public class BinderPage {
 	public BinderPage assertOnAssignmentInEntries(String title) {
 		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElementPresence(assignmentTitleBy, 5, browser);
+		return this;
+	}
+	
+	public BinderPage assertOnTimeline() {
+		By timelineBy = By.xpath("//div[contains(@class,'o_portfolio_timeline')]//*[local-name() = 'svg']");
+		OOGraphene.waitElement(timelineBy, browser);
 		return this;
 	}
 	
@@ -302,8 +308,8 @@ public class BinderPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_assignment_form button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitTopModalDialogDisappears(browser);
+		OOGraphene.click(submitBy, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

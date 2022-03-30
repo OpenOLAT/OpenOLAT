@@ -572,6 +572,7 @@ public class PortfolioV2Test extends Deployments {
 			.createEntry("2. Page")
 			.assertOnPage("2. Page")
 			.selectEntries()
+			.assertOnTimeline()
 			.createEntry("3. Page", 1)
 			.assertOnPage("3. Page");
 		
@@ -586,7 +587,7 @@ public class PortfolioV2Test extends Deployments {
 		binderPublish
 			.save();
 		
-		//invitee come to see the bidner
+		//invitee come to see the binder
 		inviteeBrowser.get(url);
 		BinderPage invitee = new BinderPage(inviteeBrowser);
 		invitee.assertOnBinder()
@@ -603,6 +604,7 @@ public class PortfolioV2Test extends Deployments {
 		invitee
 			.selectTableOfContent()
 			.selectEntries()
+			.assertOnTimeline()
 			.assertOnPageInEntries("3. Page")
 			.selectEntryInEntries("3. Page")
 			.assertOnPage("3. Page");

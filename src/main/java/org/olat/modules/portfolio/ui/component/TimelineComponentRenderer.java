@@ -45,7 +45,6 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 		String dispatchId = cmp.getDispatchID();
 		sb.append("<div id='timeline_").append(dispatchId).append("'></div>");
 		sb.append("<script>\n")
-		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#timeline_").append(dispatchId).append("').timeline({")
 		  .append("   parentContainerId: '").append(cmp.getContainerId()).append("',\n");
@@ -79,7 +78,6 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 		sb.append("]\n")
 		  .append("  });\n");
 		sb.append("});\n")
-		  .append("/* ]]> */\n")
 		  .append("</script>\n");	
 	}
 }
