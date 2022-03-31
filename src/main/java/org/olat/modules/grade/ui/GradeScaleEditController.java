@@ -220,8 +220,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
 		cutValueEl = uifactory.addStaticTextElement("grade.system.cut.value", "", generalCont);
-		Float min = gradeScale.getMinScore() != null? Float.valueOf(gradeScale.getMinScore().floatValue()): null;
-		Float max = gradeScale.getMaxScore() != null? Float.valueOf(gradeScale.getMaxScore().floatValue()): null;
+		Float min = minScore != null? Float.valueOf(minScore.floatValue()): null;
+		Float max = maxScore != null? Float.valueOf(maxScore.floatValue()): null;
 		String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
 		if (scoreMinMax != null) {
 			uifactory.addStaticTextElement("score.min.max", scoreMinMax, generalCont);
@@ -231,6 +231,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		// Scale
 		scaleCont = FormLayoutContainer.createDefaultFormLayout("scale", getTranslator());
 		scaleCont.setFormTitle(translate("grade.scale"));
+		scaleCont.setFormContextHelp("manual_user/course_operation/Assessment_translate_points_in_grades");
 		scaleCont.setRootForm(mainForm);
 		formLayout.add(scaleCont);
 		

@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.grade.Breakpoint;
@@ -63,44 +66,50 @@ import org.springframework.stereotype.Service;
 public class GradeServiceImpl implements GradeService {
 	
 	@Autowired
-	private GradeSystemDAO gradeSystemDAO;
+	private DB dbInstance;
 	@Autowired
-	private PerformanceClassDAO performanceClassDAO;
+	private GradeSystemDAO gradeSystemDao;
 	@Autowired
-	private GradeScaleDAO gradeScaleDAO;
+	private PerformanceClassDAO performanceClassDao;
 	@Autowired
-	private BreakpointDAO breakpointDAO;
+	private GradeScaleDAO gradeScaleDao;
+	@Autowired
+	private BreakpointDAO breakpointDao;
 	@Autowired
 	private GradeCalculator gradeCalculator;
 	
+	@PostConstruct
+	public void initPredefinedSystems() {
+		new PredefinedGradeSystemsInitializer(dbInstance, this, gradeSystemDao).init();
+	}
 	
 	@Override
 	public boolean isGradeServiceIdentifierAvailable(String identifier) {
 		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
 		searchParams.setIdentifier(identifier);
-		List<GradeSystem> gradeSystems = gradeSystemDAO.load(searchParams);
+		List<GradeSystem> gradeSystems = gradeSystemDao.load(searchParams);
 		return gradeSystems.isEmpty();
 	}
 	
 	@Override
 	public GradeSystem createGradeSystem(String identifier, GradeSystemType type) {
-		return gradeSystemDAO.create(identifier, type);
+		return gradeSystemDao.create(identifier, type);
 	}
 
 	@Override
 	public GradeSystem updateGradeSystem(GradeSystem gradeSystem) {
-		return gradeSystemDAO.save(gradeSystem);
+		return gradeSystemDao.save(gradeSystem);
 	}
 
 	@Override
 	public void deleteGradeSystem(GradeSystemRef gradeSystem) {
-		performanceClassDAO.delete(gradeSystem);
-		gradeSystemDAO.delete(gradeSystem);
+		performanceClassDao.delete(gradeSystem);
+		gradeSystemDao.delete(gradeSystem);
 	}
 
 	@Override
 	public List<GradeSystem> getGradeSystems(GradeSystemSearchParams searchParams) {
-		return gradeSystemDAO.load(searchParams);
+		return gradeSystemDao.load(searchParams);
 	}
 	
 	@Override
@@ -113,48 +122,48 @@ public class GradeServiceImpl implements GradeService {
 	public boolean hasGradeScale(GradeSystemRef gradeSystem) {
 		if (gradeSystem == null) return false;
 		
-		List<GradeScaleStats> stats = gradeScaleDAO.loadStats(gradeSystem);
+		List<GradeScaleStats> stats = gradeScaleDao.loadStats(gradeSystem);
 		return stats != null && !stats.isEmpty() && stats.get(0).getCount().longValue() > 0;
 	}
 
 	@Override
 	public PerformanceClass createPerformanceClass(GradeSystem gradeSystem, String identifier) {
-		return performanceClassDAO.create(gradeSystem, identifier);
+		return performanceClassDao.create(gradeSystem, identifier);
 	}
 
 	@Override
 	public PerformanceClass updatePerformanceClass(PerformanceClass performanceClass) {
-		return performanceClassDAO.save(performanceClass);
+		return performanceClassDao.save(performanceClass);
 	}
 
 	@Override
 	public void deletePerformanceClass(PerformanceClass performanceClass) {
-		performanceClassDAO.delete(performanceClass);
+		performanceClassDao.delete(performanceClass);
 	}
 
 	@Override
 	public void deletePerformanceClasses(GradeSystemRef gradeSystem) {
-		performanceClassDAO.delete(gradeSystem);
+		performanceClassDao.delete(gradeSystem);
 	}
 
 	@Override
 	public List<PerformanceClass> getPerformanceClasses(GradeSystemRef gradeSystem) {
-		return performanceClassDAO.load(gradeSystem);
+		return performanceClassDao.load(gradeSystem);
 	}
 	
 	@Override
 	public GradeScale updateGradeScale(GradeScale gradeScale) {
-		return gradeScaleDAO.save(gradeScale);
+		return gradeScaleDao.save(gradeScale);
 	}
 	
 	@Override
 	public GradeScale updateOrCreateGradeScale(RepositoryEntry repositoryEntry, String subIdent, GradeScale gradeScale) {
 		GradeScale currentGradeScale = getGradeScale(repositoryEntry, subIdent);
 		if (currentGradeScale == null) {
-			currentGradeScale = gradeScaleDAO.create(repositoryEntry, subIdent);
+			currentGradeScale = gradeScaleDao.create(repositoryEntry, subIdent);
 		}
 		copyAttributes(gradeScale, currentGradeScale);
-		return gradeScaleDAO.save(currentGradeScale);
+		return gradeScaleDao.save(currentGradeScale);
 	}
 
 	@Override
@@ -165,9 +174,9 @@ public class GradeServiceImpl implements GradeService {
 		GradeScale targetGradeScale = getGradeScale(targetEntry, targetIdent);
 		if (targetGradeScale != null) return;
 		
-		targetGradeScale = gradeScaleDAO.create(targetEntry, targetIdent);
+		targetGradeScale = gradeScaleDao.create(targetEntry, targetIdent);
 		copyAttributes(sourceGradeScale, targetGradeScale);
-		targetGradeScale = gradeScaleDAO.save(targetGradeScale);
+		targetGradeScale = gradeScaleDao.save(targetGradeScale);
 		
 		List<Breakpoint> breakpoints = getBreakpoints(sourceGradeScale);
 		updateOrCreateBreakpoints(targetGradeScale, breakpoints);
@@ -181,8 +190,8 @@ public class GradeServiceImpl implements GradeService {
 
 	@Override
 	public void deleteGradeScale(RepositoryEntry repositoryEntry, String subIdent) {
-		breakpointDAO.delete(repositoryEntry, subIdent);
-		gradeScaleDAO.delete(repositoryEntry, subIdent);
+		breakpointDao.delete(repositoryEntry, subIdent);
+		gradeScaleDao.delete(repositoryEntry, subIdent);
 	}
 	
 	@Override
@@ -190,30 +199,30 @@ public class GradeServiceImpl implements GradeService {
 		GradeScaleSearchParams searchParams = new GradeScaleSearchParams();
 		searchParams.setRepositoryEntry(repositoryEntry);
 		searchParams.setSubIdent(subIdent);
-		List<GradeScale> gradeScales = gradeScaleDAO.load(searchParams);
+		List<GradeScale> gradeScales = gradeScaleDao.load(searchParams);
 		return !gradeScales.isEmpty()? gradeScales.get(0): null;
 	}
 
 	@Override
 	public List<GradeScaleStats> getGradeScaleStats() {
-		return gradeScaleDAO.loadStats(null);
+		return gradeScaleDao.loadStats(null);
 	}
 
 	@Override
 	public Breakpoint createBreakpoint(GradeScale gradeScale) {
-		return breakpointDAO.create(gradeScale);
+		return breakpointDao.create(gradeScale);
 	}
 
 	@Override
 	public Breakpoint updateBreakpoint(Breakpoint breakpoint) {
-		return breakpointDAO.save(breakpoint);
+		return breakpointDao.save(breakpoint);
 	}
 	
 	@Override
 	public void updateOrCreateBreakpoints(GradeScale gradeScale, List<Breakpoint> breakpoints) {
 		GradeSystemType gradeSystemType = gradeScale.getGradeSystem().getType();
 		
-		List<Breakpoint> currentBreakpoints = breakpointDAO.load(gradeScale);
+		List<Breakpoint> currentBreakpoints = breakpointDao.load(gradeScale);
 		Map<Object, Breakpoint> identToBreakpoint = currentBreakpoints.stream()
 				.filter(bp -> getIdent(bp, gradeSystemType) != null)
 				.collect(Collectors.toMap(bp -> getIdent(bp, gradeSystemType), Function.identity()));
@@ -226,7 +235,7 @@ public class GradeServiceImpl implements GradeService {
 			
 			Breakpoint currentBreakpoint = identToBreakpoint.get(ident);
 			if (currentBreakpoint == null) {
-				currentBreakpoint = breakpointDAO.create(gradeScale);
+				currentBreakpoint = breakpointDao.create(gradeScale);
 			}
 			if ((breakpoint.getScore() != null && currentBreakpoint.getScore() == null)
 					|| (breakpoint.getScore() == null && currentBreakpoint.getScore() != null)
@@ -236,7 +245,7 @@ public class GradeServiceImpl implements GradeService {
 				currentBreakpoint.setScore(breakpoint.getScore());
 				currentBreakpoint.setGrade(breakpoint.getGrade());
 				currentBreakpoint.setBestToLowest(breakpoint.getBestToLowest());
-				breakpointDAO.save(currentBreakpoint);
+				breakpointDao.save(currentBreakpoint);
 			}
 		}
 		
@@ -245,7 +254,7 @@ public class GradeServiceImpl implements GradeService {
 				.filter(bp -> !idents.contains(getIdent(bp, gradeSystemType)))
 				.map(Breakpoint::getKey)
 				.collect(Collectors.toList());
-		breakpointDAO.delete(keyToDelete);
+		breakpointDao.delete(keyToDelete);
 		
 	}
 	
@@ -255,17 +264,17 @@ public class GradeServiceImpl implements GradeService {
 
 	@Override
 	public void deleteBreakpoint(Breakpoint breakpoint) {
-		breakpointDAO.delete(Collections.singletonList(breakpoint.getKey()));
+		breakpointDao.delete(Collections.singletonList(breakpoint.getKey()));
 	}
 	
 	@Override
 	public void deleteBreakpoints(GradeScale gradeScale) {
-		breakpointDAO.delete(gradeScale);
+		breakpointDao.delete(gradeScale);
 	}
 
 	@Override
 	public List<Breakpoint> getBreakpoints(GradeScaleRef gradeScale) {
-		return breakpointDAO.load(gradeScale);
+		return breakpointDao.load(gradeScale);
 	}
 	
 	@Override

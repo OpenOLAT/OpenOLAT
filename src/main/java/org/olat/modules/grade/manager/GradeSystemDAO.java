@@ -51,7 +51,7 @@ public class GradeSystemDAO {
 		return create(identifier, type, false);
 	}
 	
-	private GradeSystem create(String identifier, GradeSystemType type, boolean predefined) {
+	GradeSystem create(String identifier, GradeSystemType type, boolean predefined) {
 		GradeSystemImpl gradeSystem = new GradeSystemImpl();
 		gradeSystem.setCreationDate(new Date());
 		gradeSystem.setLastModified(gradeSystem.getCreationDate());

@@ -77,11 +77,10 @@ public class GradeSystemEditController extends FormBasicController {
 	private static final String CMD_TRANSLATE_NAME = "translate";
 	private static final String CMD_DELETE = "delete";
 	
-	private TextElement identifierEl;
 	private StaticTextElement systemNameEl;
 	private FormLink systemNameLink;
-	private SingleSelection typeEl;
 	private MultipleSelectionElement enabledEl;
+	private SingleSelection typeEl;
 	private SingleSelection resolutionEl;
 	private SingleSelection roundingEl;
 	private TextElement bestGradeEl;
@@ -98,6 +97,7 @@ public class GradeSystemEditController extends FormBasicController {
 	
 	private GradeSystem gradeSystem;
 	private boolean hasScale;
+	private final boolean predefined;
 	private List<PerformanceClassRow> performanceClassRows;
 	
 	@Autowired
@@ -107,6 +107,7 @@ public class GradeSystemEditController extends FormBasicController {
 		super(ureq, wControl);
 		this.gradeSystem = gradeSystem;
 		hasScale = gradeService.hasGradeScale(gradeSystem);
+		predefined = gradeSystem.isPredefined();
 		
 		initForm(ureq);
 		loadPerformanceClasses();
@@ -115,12 +116,7 @@ public class GradeSystemEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (gradeSystem == null) {
-			identifierEl = uifactory.addTextElement("grade.system.identifier", 128, null, formLayout);
-			identifierEl.setMandatory(true);
-		} else {
-			uifactory.addStaticTextElement("grade.system.identifier", gradeSystem.getIdentifier(), formLayout);
-		}
+		uifactory.addStaticTextElement("grade.system.identifier", gradeSystem.getIdentifier(), formLayout);
 		
 		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
 		nameCont.setLabel("grade.system.name", null);
@@ -131,7 +127,13 @@ public class GradeSystemEditController extends FormBasicController {
 		String translateGradeSystem = GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem);
 		systemNameEl = uifactory.addStaticTextElement("grade.system.name", null, translateGradeSystem, nameCont);
 		
-		systemNameLink = uifactory.addFormLink("grade.system.name.edit", nameCont);
+		if (!predefined) {
+			systemNameLink = uifactory.addFormLink("grade.system.name.edit", nameCont);
+		}
+		
+		String[] onValues = new String[]{ translate("on") };
+		enabledEl = uifactory.addCheckboxesHorizontal("grade.system.enabled", formLayout, onKeys, onValues);
+		enabledEl.select(onKeys[0], gradeSystem == null || gradeSystem.isEnabled());
 		
 		SelectionValues typeSV = new SelectionValues();
 		typeSV.add(entry(GradeSystemType.numeric.name(), translate("grade.system.type.numeric")));
@@ -143,11 +145,7 @@ public class GradeSystemEditController extends FormBasicController {
 				? gradeSystem.getType().name()
 				: GradeSystemType.numeric.name();
 		typeEl.select(typeKey, true);
-		typeEl.setEnabled(!hasScale);
-		
-		String[] onValues = new String[]{ translate("on") };
-		enabledEl = uifactory.addCheckboxesHorizontal("grade.system.enabled", formLayout, onKeys, onValues);
-		enabledEl.select(onKeys[0], gradeSystem == null || gradeSystem.isEnabled());
+		typeEl.setEnabled(!hasScale && !predefined);
 		
 		SelectionValues resolutionSV = new SelectionValues();
 		resolutionSV.add(entry(NumericResolution.whole.name(), translateResolution(getTranslator(), NumericResolution.whole)));
@@ -160,7 +158,7 @@ public class GradeSystemEditController extends FormBasicController {
 				? gradeSystem.getResolution().name()
 				: NumericResolution.half.name();
 		resolutionEl.select(resolutionKey, true);
-		resolutionEl.setEnabled(!hasScale);
+		resolutionEl.setEnabled(!hasScale && !predefined);
 		
 		SelectionValues roundingSV = new SelectionValues();
 		roundingSV.add(entry(Rounding.nearest.name(), translateRounding(getTranslator(), Rounding.nearest)));
@@ -172,7 +170,7 @@ public class GradeSystemEditController extends FormBasicController {
 				? gradeSystem.getRounding().name()
 				: Rounding.nearest.name();
 		roundingEl.select(roundingKey, true);
-		roundingEl.setEnabled(!hasScale);
+		roundingEl.setEnabled(!hasScale && !predefined);
 		
 		String bestGrade = gradeSystem != null && gradeSystem.getBestGrade() != null? THREE_DIGITS.format(gradeSystem.getBestGrade()): null;
 		bestGradeEl = uifactory.addTextElement("grade.system.best.grade", 10, bestGrade, formLayout);
@@ -197,7 +195,7 @@ public class GradeSystemEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.position));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.markPassed));
-		if (!hasScale) {
+		if (!hasScale && !predefined) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_DELETE, -1, CMD_DELETE,
 				new StaticFlexiCellRenderer(translate("performance.class.delete"), CMD_DELETE, "", "", null)));
 		}
@@ -215,20 +213,22 @@ public class GradeSystemEditController extends FormBasicController {
 
 	private void updateUI() {
 		boolean numeric = GradeSystemType.numeric == GradeSystemType.valueOf(typeEl.getSelectedKey());
-		resolutionEl.setEnabled(!hasScale);
+		resolutionEl.setEnabled(!hasScale && !predefined);
 		resolutionEl.setVisible(numeric);
-		roundingEl.setEnabled(!hasScale);
+		roundingEl.setEnabled(!hasScale && !predefined);
 		roundingEl.setVisible(numeric);
-		bestGradeEl.setEnabled(!hasScale);
+		bestGradeEl.setEnabled(!hasScale && !predefined);
 		bestGradeEl.setVisible(numeric);
-		lowestGradeEl.setEnabled(!hasScale);
+		lowestGradeEl.setEnabled(!hasScale && !predefined);
 		lowestGradeEl.setVisible(numeric);
-		cutValueEl.setEnabled(!hasScale);
+		cutValueEl.setEnabled(!hasScale && !predefined);
 		cutValueEl.setVisible(numeric);
 		
 		performanceClassCont.setVisible(!numeric);
+		addButton.setVisible(numeric && !predefined);
 		for (PerformanceClassRow row : performanceClassRows) {
-			row.getMarkPassedEl().setEnabled(!hasScale);
+			row.getMarkPassedEl().setEnabled(!hasScale && !predefined);
+			row.getNameLink().setEnabled(!predefined);
 		}
 	}
 	
@@ -289,21 +289,6 @@ public class GradeSystemEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if (identifierEl != null) {
-			identifierEl.clearError();
-			String identifier = identifierEl.getValue();
-			if (!StringHelper.containsNonWhitespace(identifier)) {
-				identifierEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if (GradeUIFactory.validateIdentifierChars(identifier)) {
-				identifierEl.setErrorKey("error.identifier.invalid.chars", null);
-				allOk &= false;
-			} else if (!gradeService.isGradeServiceIdentifierAvailable(identifier)) {
-				identifierEl.setErrorKey("error.identifier.not.available", null);
-				allOk &= false;
-			}
-		}
-		
 		allOk &= GradeUIFactory.validateInteger(bestGradeEl);
 		allOk &= GradeUIFactory.validateInteger(lowestGradeEl);
 		
@@ -325,14 +310,11 @@ public class GradeSystemEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (gradeSystem == null) {
-			gradeSystem = gradeService.createGradeSystem(identifierEl.getValue(), GradeSystemType.valueOf(typeEl.getSelectedKey()));
-		} else {
-			hasScale = gradeService.hasGradeScale(gradeSystem);
-		}
+		hasScale = gradeService.hasGradeScale(gradeSystem);
+		
 		gradeSystem.setEnabled(enabledEl.isAtLeastSelected(1));
 		
-		if (!hasScale) {
+		if (!hasScale && !predefined) {
 			GradeSystemType gradeSystemType = GradeSystemType.valueOf(typeEl.getSelectedKey());
 			gradeSystem.setType(gradeSystemType);
 			boolean numeric = GradeSystemType.numeric == gradeSystemType;

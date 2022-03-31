@@ -54,7 +54,7 @@ public class GradeUIFactory {
 	}
 	
 	public static String getGradeSystemI18nKey(GradeSystem gradeSystem) {
-		return "grade.system." + gradeSystem.getIdentifier();
+		return "grade.system.id." + gradeSystem.getIdentifier();
 	}
 
 	public static String translateGradeSystem(Translator translator, GradeSystem gradeSystem) {
