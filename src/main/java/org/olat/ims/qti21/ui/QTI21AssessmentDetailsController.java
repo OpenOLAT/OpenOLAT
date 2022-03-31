@@ -71,6 +71,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -141,6 +142,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private final boolean readOnly;
 	private final IQTESTCourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 
 	private ToolsController toolsCtrl;
@@ -190,6 +192,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		entry = assessableEntry;
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
@@ -217,6 +220,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		subIdent = null;
 		readOnly = false;
 		courseNode = null;
+		coachCourseEnv = null;
 		assessedUserCourseEnv = null;
 		this.stackPanel = stackPanel;
 		this.assessedIdentity = assessedIdentity;
@@ -551,7 +555,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		AssessmentEntryStatus finalStatus = entryStatus == null ? scoreEval.getAssessmentStatus() : entryStatus;
 		Boolean userVisible = scoreEval.getUserVisible();
 		if(userVisible == null && finalStatus == AssessmentEntryStatus.done) {
-			userVisible = Boolean.valueOf(courseNode.isScoreVisibleAfterCorrection());
+			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+			userVisible = canChangeUserVisibility
+					? courseNode.isScoreVisibleAfterCorrection()
+					: Boolean.FALSE;
 		}
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
 				finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(), 

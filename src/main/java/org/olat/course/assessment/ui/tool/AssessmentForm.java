@@ -699,18 +699,14 @@ public class AssessmentForm extends FormBasicController {
 		String intermediateSaveIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
 		String cmdIntermediate = CMD_INTERMEDIATE_HIDDEN;
 		String toggleUserVisibility = "save.intermediate.set.visible";
-		String intermediateSaveUserVisivilityIconCSS = "o_icon o_icon-fw o_icon_results_visible";
+		String intermediateSaveUserVisibilityIconCSS = "o_icon o_icon-fw o_icon_results_visible";
 		String cmdIntermediateToggle = CMD_INTERMEDIATE_VISIBLE;
 		if (scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
 			intermediateSaveIconCSS = "o_icon o_icon-fw o_icon_results_visible";
 			cmdIntermediate = CMD_INTERMEDIATE_VISIBLE;
-			intermediateSaveUserVisivilityIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+			intermediateSaveUserVisibilityIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
 			cmdIntermediateToggle = CMD_INTERMEDIATE_HIDDEN;
 			toggleUserVisibility = "save.intermediate.set.hidden";
-		} else if (!canChangeUserVisibility && scoreEval.getUserVisible() == null && userVisibilityValue.booleanValue()) {
-			intermediateName = "save.intermediate.set.visible";
-			intermediateSaveIconCSS = "o_icon o_icon-fw o_icon_results_visible";
-			cmdIntermediate = CMD_INTERMEDIATE_VISIBLE;
 		}
 		
 		intermediateSaveLink = uifactory.addFormLink("save.intermediate", cmdIntermediate, intermediateName, null, buttonGroupLayout, Link.BUTTON);
@@ -722,7 +718,7 @@ public class AssessmentForm extends FormBasicController {
 			intermediateSaveDropdown.setOrientation(DropdownOrientation.right);
 			
 			intermediateSaveUserVisibilityLink = uifactory.addFormLink(toggleUserVisibility, cmdIntermediateToggle, toggleUserVisibility, null, buttonGroupLayout, Link.LINK);
-			intermediateSaveUserVisibilityLink.setIconLeftCSS(intermediateSaveUserVisivilityIconCSS);
+			intermediateSaveUserVisibilityLink.setIconLeftCSS(intermediateSaveUserVisibilityIconCSS);
 			intermediateSaveDropdown.addElement(intermediateSaveUserVisibilityLink);
 		}
 		
@@ -732,15 +728,17 @@ public class AssessmentForm extends FormBasicController {
 		String doneAddName = "assessment.set.status.done";
 		String donAddIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
 		String doneAddCmd = CMD_DONE_HIDDEN;
-		if (scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
+		if (!canChangeUserVisibility) {
 			doneName = "assessment.set.status.done";
-			doneAddName = "assessment.set.status.done.hidden";
-		} else if (scoreEval.getUserVisible() != null && !scoreEval.getUserVisible().booleanValue() && !canChangeUserVisibility) {
-			doneName = "assessment.set.status.done";
-			doneIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
-			doneCmd = CMD_DONE_HIDDEN;
-		} else if (scoreEval.getUserVisible() == null) {
-			if (!userVisibilityValue.booleanValue()) {
+			if (scoreEval.getUserVisible() == null || !scoreEval.getUserVisible().booleanValue()) {
+				doneIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+				doneCmd = CMD_DONE_HIDDEN;
+			}
+		} else {
+			 if (scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
+				doneName = "assessment.set.status.done";
+				doneAddName = "assessment.set.status.done.hidden";
+			} else if (scoreEval.getUserVisible() == null && !userVisibilityValue.booleanValue()) {
 				doneName = "assessment.set.status.done";
 				doneIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
 				doneCmd = CMD_DONE_HIDDEN;

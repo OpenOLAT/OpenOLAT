@@ -70,6 +70,7 @@ import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.Ident
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -654,8 +655,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
-		boolean userVisibleAfter = ((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection();
-
+		
+		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		boolean userVisibleAfter = canChangeUserVisibility
+				? ((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection()
+				: false;
+		
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
