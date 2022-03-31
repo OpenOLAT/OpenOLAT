@@ -660,16 +660,18 @@ public class ChatController extends BasicController implements GenericEventListe
 		if(privateReceiverKey == null) {
 			InstantMessageTypeEnum msgType = InstantMessageTypeEnum.text;
 			List<IdentityRef> toNotifyRequests = null;
-			InstantMessageTypeEnum stopperStatus = stopper();
-			// Status null is equivalent to messages queue empty
-			if(stopperStatus == null || stopperStatus == InstantMessageTypeEnum.end) {
-				msgType = InstantMessageTypeEnum.request;
-				toNotifyRequests = chatViewConfig.getToNotifyRequests();
-			} else if(stopperStatus == InstantMessageTypeEnum.close) {
-				msgType = InstantMessageTypeEnum.request;
-				toNotifyRequests = getRequestToNotifiyTo();
+			// VIP cannot start a request
+			if(!highlightVip) {
+				InstantMessageTypeEnum stopperStatus = stopper();
+				// Status null is equivalent to messages queue empty
+				if(stopperStatus == null || stopperStatus == InstantMessageTypeEnum.end) {
+					msgType = InstantMessageTypeEnum.request;
+					toNotifyRequests = chatViewConfig.getToNotifyRequests();
+				} else if(stopperStatus == InstantMessageTypeEnum.close) {
+					msgType = InstantMessageTypeEnum.request;
+					toNotifyRequests = getRequestToNotifiyTo();
+				}
 			}
-			
 			message = imService.sendMessage(getIdentity(), fromName, anonym, text, msgType, getOlatResourceable(), resSubPath, channel, toNotifyRequests);
 		} else {
 			message = imService.sendPrivateMessage(getIdentity(), privateReceiverKey, text, getOlatResourceable());
@@ -678,8 +680,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private InstantMessageTypeEnum stopper() {
-		if(highlightVip) return null;
-		
 		if(messageHistory.isEmpty()) {
 			return null;
 		}
