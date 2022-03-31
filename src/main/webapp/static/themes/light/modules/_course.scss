@@ -115,6 +115,7 @@
 			Otherwise the hole line has the background color.
 		*/
 		.o_text_block {
+			@include clearfix; 
 			display: flex;
 			> div > h5 {
 				padding-bottom: 10px;
