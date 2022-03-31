@@ -20,7 +20,6 @@
 package org.olat.restapi.support.vo;
 
 import java.util.Date;
-import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -39,10 +38,27 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AssessableResultsVO {
 	
 	private Long identityKey;
+	private String nodeIdent;
+	
 	private Float score;
 	private Boolean passed;
-	private Map<Long, String> results;
+	private Float maxScore;
+
+	private String grade;
+	private String performanceClassIdent;
+	
+	private Double completion;
+	private Integer attempts;
+	private String assessmentStatus;
+	
 	private Date lastModifiedDate;
+	private Date lastUserModified;
+	private Date lastCoachModified;
+	private Date assessmentDone;
+	private Boolean fullyAssessed;
+	private Date fullyAssessedDate;
+	private Date firstVisit;
+	private Date lastVisit;
 
 	public AssessableResultsVO() {
 	//make jaxb happy
@@ -54,6 +70,14 @@ public class AssessableResultsVO {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public String getNodeIdent() {
+		return nodeIdent;
+	}
+
+	public void setNodeIdent(String nodeIdent) {
+		this.nodeIdent = nodeIdent;
 	}
 
 	public Boolean getPassed() {
@@ -72,6 +96,54 @@ public class AssessableResultsVO {
 		this.score = score;
 	}
 	
+	public Float getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(Float maxScore) {
+		this.maxScore = maxScore;
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
+	}
+
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
+
+	public Integer getAttempts() {
+		return attempts;
+	}
+
+	public void setAttempts(Integer attempts) {
+		this.attempts = attempts;
+	}
+
+	public String getAssessmentStatus() {
+		return assessmentStatus;
+	}
+
+	public void setAssessmentStatus(String assessmentStatus) {
+		this.assessmentStatus = assessmentStatus;
+	}
+
 	public Date getLastModifiedDate() {
 		return lastModifiedDate;
 	}
@@ -80,11 +152,59 @@ public class AssessableResultsVO {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
-	public Map<Long, String> getResults() {
-		return results;
+	public Date getLastUserModified() {
+		return lastUserModified;
 	}
 
-	public void setResults(Map<Long, String> results) {
-		this.results = results;
+	public void setLastUserModified(Date lastUserModified) {
+		this.lastUserModified = lastUserModified;
+	}
+
+	public Date getLastCoachModified() {
+		return lastCoachModified;
+	}
+
+	public void setLastCoachModified(Date lastCoachModified) {
+		this.lastCoachModified = lastCoachModified;
+	}
+
+	public Date getAssessmentDone() {
+		return assessmentDone;
+	}
+
+	public void setAssessmentDone(Date assessmentDone) {
+		this.assessmentDone = assessmentDone;
+	}
+
+	public Boolean getFullyAssessed() {
+		return fullyAssessed;
+	}
+
+	public void setFullyAssessed(Boolean fullyAssessed) {
+		this.fullyAssessed = fullyAssessed;
+	}
+
+	public Date getFullyAssessedDate() {
+		return fullyAssessedDate;
+	}
+
+	public void setFullyAssessedDate(Date fullyAssessedDate) {
+		this.fullyAssessedDate = fullyAssessedDate;
+	}
+
+	public Date getFirstVisit() {
+		return firstVisit;
+	}
+
+	public void setFirstVisit(Date firstVisit) {
+		this.firstVisit = firstVisit;
+	}
+
+	public Date getLastVisit() {
+		return lastVisit;
+	}
+
+	public void setLastVisit(Date lastVisit) {
+		this.lastVisit = lastVisit;
 	}
 }

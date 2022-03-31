@@ -33,12 +33,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -54,6 +52,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -90,18 +89,13 @@ public class CourseAssessmentWebService {
 	
 	private static final String VERSION  = "1.0";
 	
-	private static final CacheControl cc = new CacheControl();
-	static {
-		cc.setMaxAge(-1);
-	}
-	
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
 	/**
-	 * Retireves the version of the Course Assessment Web Service.
+	 * Retrieves the version of the Course Assessment Web Service.
 	 * 
 	 * @return
 	 */
@@ -115,7 +109,7 @@ public class CourseAssessmentWebService {
 	}
 	
 	/**
-	 * Returns the results of the course.
+	 * Returns the results of the course (the root node).
 	 * 
 	 * @param courseId The course resourceable's id
 	 * @param httpRequest The HTTP request
@@ -123,20 +117,20 @@ public class CourseAssessmentWebService {
 	 * @return
 	 */
 	@GET
-	@Operation(summary = "Returns the results of the course", description = "Returns the results of the course")
-	@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
+	@Operation(summary = "Returns the results of the course (the root node)", description = "Returns the results of the course (the root node)")
+	@ApiResponse(responseCode = "200", description = "Array of results all participants of the course", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCourseResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
+	public Response getCourseRootResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		List<Identity> courseUsers = loadAllParticipants(course);
@@ -152,13 +146,6 @@ public class CourseAssessmentWebService {
 			results[i++] = result;
 		}
 		
-		if(lastModified != null) {
-			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-			if(response != null) {
-				return response.build();
-			}
-			return Response.ok(results).lastModified(lastModified).cacheControl(cc).build();
-		}
 		return Response.ok(results).build();
 	}
 	
@@ -173,20 +160,20 @@ public class CourseAssessmentWebService {
 	 */
 	@GET
 	@Path("users/{identityKey}")
-	@Operation(summary = "Returns the results of the course", description = "Returns the results of the course")
-	@ApiResponse(responseCode = "200", description = "The result of the course", content = {
+	@Operation(summary = "Returns the results of the course by participant id", description = "Returns the results of the course by participant id")
+	@ApiResponse(responseCode = "200", description = "The result of the course for the specified participant", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCourseResultsOf(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest, @Context Request request) {
+	public Response getCourseRootResultsOf(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Identity userIdentity = securityManager.loadIdentityByKey(identityKey, false);
@@ -195,18 +182,7 @@ public class CourseAssessmentWebService {
 		}
 			
 		AssessableResultsVO results = getRootResult(userIdentity, course);
-		if(results.getLastModifiedDate() != null) {
-			Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
-			if (response != null) {
-				return response.build();
-		  }
-		}
-
-		ResponseBuilder response = Response.ok(results);
-		if(results.getLastModifiedDate() != null) {
-			response = response.lastModified(results.getLastModifiedDate()).cacheControl(cc);
-		}
-		return response.build();
+		return Response.ok(results).build();
 	}
 	
 	/**
@@ -224,17 +200,17 @@ public class CourseAssessmentWebService {
 	@ApiResponse(responseCode = "200", description = "Export all results of all user of the course", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response getAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId,
+	public Response getCourseNodeResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if (!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Identity> courseUsers = loadAllParticipants(course);
@@ -247,14 +223,6 @@ public class CourseAssessmentWebService {
 				lastModified = result.getLastModifiedDate();
 			}
 			results[i++] = result;
-		}
-		
-		if(lastModified != null) {
-			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-			if(response != null) {
-				return response.build();
-			}
-			return Response.ok(results).lastModified(lastModified).cacheControl(cc).build();
 		}
 		
 		return Response.ok(results).build();
@@ -271,11 +239,11 @@ public class CourseAssessmentWebService {
 	 */
 	@POST
 	@Path("{nodeId}")
-	@Operation(summary = "Import results", description = "Imports results for an assessable course node for the authenticated student")
+	@Operation(summary = "Import results (NOT TESTED, USE WITH CAUTIOUS)", description = "Imports results for an assessable course node for the authenticated student")
 	@ApiResponse(responseCode = "200", description = "A result to import", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response postAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -285,7 +253,7 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
@@ -343,17 +311,17 @@ public class CourseAssessmentWebService {
 	@ApiResponse(responseCode = "200", description = "The result of a user at a specific node", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCourseNodeResultsForNode(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId, @PathParam("identityKey") Long identityKey,
+	public Response getCourseNodeResultsOf(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity userIdentity = securityManager.loadIdentityByKey(identityKey, false);
@@ -362,29 +330,23 @@ public class CourseAssessmentWebService {
 		}
 
 		AssessableResultsVO results = getNodeResult(userIdentity, course, nodeId);
-		if(results.getLastModifiedDate() != null) {
-			Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
-			if(response != null) {
-				return response.build();
-			}
-			return Response.ok(results).lastModified(results.getLastModifiedDate()).cacheControl(cc).build();
-		}
 		return Response.ok(results).build();
 	}
 	
 	private AssessableResultsVO getRootResult(Identity identity, ICourse course) {
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		return getRootResult(identity, course, rootNode);
+		return getResults(identity, course, rootNode);
 	}
 	
 	private AssessableResultsVO getNodeResult(Identity identity, ICourse course, Long nodeId) {
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId.toString());
-		return getRootResult(identity, course, courseNode);
+		return getResults(identity, course, courseNode);
 	}
 	
-	private AssessableResultsVO getRootResult(Identity identity, ICourse course, CourseNode courseNode) {
+	private AssessableResultsVO getResults(Identity identity, ICourse course, CourseNode courseNode) {
 		AssessableResultsVO results = new AssessableResultsVO();
 		results.setIdentityKey(identity.getKey());
+		results.setNodeIdent(courseNode.getIdent());
 		
 		// create an identenv with no roles, no attributes, no locale
 		IdentityEnvironment ienv = new IdentityEnvironment();
@@ -395,10 +357,27 @@ public class CourseAssessmentWebService {
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll();
 		
-		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
+		AssessmentEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 		results.setScore(scoreEval.getScore());
+		results.setMaxScore(scoreEval.getMaxScore());
 		results.setPassed(scoreEval.getPassed());
+		results.setGrade(scoreEval.getGrade());
+		results.setPerformanceClassIdent(scoreEval.getPerformanceClassIdent());
+		results.setCompletion(scoreEval.getCompletion());
+		results.setAttempts(scoreEval.getAttempts());
+		if(scoreEval.getAssessmentStatus() != null) {
+			results.setAssessmentStatus(scoreEval.getAssessmentStatus().name());
+		}
+		
 		results.setLastModifiedDate(getLastModificationDate(identity, course, courseNode));
+		results.setLastUserModified(scoreEval.getLastUserModified());
+		results.setLastCoachModified(scoreEval.getLastCoachModified());
+		results.setFirstVisit(scoreEval.getFirstVisit());
+		results.setLastVisit(scoreEval.getLastVisit());
+		results.setAssessmentDone(scoreEval.getAssessmentDone());
+		
+		results.setFullyAssessed(scoreEval.getFullyAssessed());
+		results.setFullyAssessedDate(scoreEval.getFullyAssessedDate());
 		
 		return results;
 	}
