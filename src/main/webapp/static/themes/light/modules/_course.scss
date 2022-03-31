@@ -110,12 +110,14 @@
 			min-height: $o-cn-style-image-height;
 		}
 	}
+	.o_text_block {
+		@include clearfix; 
+	}	
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.
 			Otherwise the hole line has the background color.
 		*/
 		.o_text_block {
-			@include clearfix; 
 			display: flex;
 			> div > h5 {
 				padding-bottom: 10px;
