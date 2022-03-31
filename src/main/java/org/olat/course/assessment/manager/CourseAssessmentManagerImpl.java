@@ -540,9 +540,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		// node log
+		UserNodeAuditManager am = courseEnv.getAuditManager();
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "score set to: " + String.valueOf(scoreEvaluation.getScore()), by);
+		if (StringHelper.containsNonWhitespace(scoreEvaluation.getGrade())) {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "grade set to: " + String.valueOf(scoreEvaluation.getGrade()), by);
+		}
 		logAuditPassed(courseNode, identity, by, userCourseEnv, scoreEvaluation.getPassed());
 		if(scoreEvaluation.getAssessmentID()!=null) {
-			UserNodeAuditManager am = courseEnv.getAuditManager();
 			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString(), by);
 		}
 		
@@ -566,6 +570,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiGrade, "", String.valueOf(scoreEvaluation.getGrade())));
 		}
 		if (incrementUserAttempts && attempts!=null) {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + attempts, by);
 			if(identity != null) {
 				ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
 						getClass(), 
