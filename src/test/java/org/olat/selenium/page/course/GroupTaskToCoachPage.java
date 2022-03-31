@@ -224,8 +224,9 @@ public class GroupTaskToCoachPage {
 	 * @return
 	 */
 	public GroupTaskToCoachPage groupAssessment(Boolean passed, Float score) {
+		OOGraphene.waitModalDialog(browser);
 		By groupAssessmentPopupBy = By.cssSelector(".modal-body .o_sel_course_gta_group_assessment_form");
-		OOGraphene.waitElement(groupAssessmentPopupBy, 5, browser);
+		OOGraphene.waitElement(groupAssessmentPopupBy, browser);
 		
 		By applyToAllCheckBy = By.xpath("//div[contains(@class,'o_sel_course_gta_group_assessment_form')]//div[contains(@class,'o_sel_course_gta_apply_to_all')]//input[@type='checkbox']");
 		WebElement applyToAllCheckEl = browser.findElement(applyToAllCheckBy);
@@ -247,9 +248,9 @@ public class GroupTaskToCoachPage {
 			OOGraphene.waitBusy(browser);
 		}
 		
-		By saveBy = By.cssSelector(".o_sel_course_gta_group_assessment_form button.btn-primary");
+		By saveBy = By.cssSelector(".o_sel_course_gta_group_assessment_form a.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
