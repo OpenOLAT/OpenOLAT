@@ -170,5 +170,47 @@ public class GradeServiceTest extends OlatTestCase {
 		assertThat(positionToBreakpoint.get(Integer.valueOf(1)).getScore()).isEqualByComparingTo(new BigDecimal(11));
 		assertThat(positionToBreakpoint.get(Integer.valueOf(3)).getScore()).isEqualByComparingTo(new BigDecimal(23));
 	}
+	
+	@Test
+	public void shouldCloneGradeScale() {
+		// Create a grade scale
+		RepositoryEntry sourceEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String sourceIdent = random();
+		GradeSystem gradeSystem = sut.createGradeSystem(random(), GradeSystemType.text);
+		GradeScaleWrapper gradeScaleWrapper = new GradeScaleWrapper();
+		gradeScaleWrapper.setGradeSystem(gradeSystem);
+		gradeScaleWrapper.setMinScore(new BigDecimal("5.1"));
+		gradeScaleWrapper.setMaxScore(new BigDecimal("1.1"));
+		GradeScale gradeScale = sut.updateOrCreateGradeScale(sourceEntry, sourceIdent, gradeScaleWrapper);
+		dbInstance.commitAndCloseSession();
+		
+		// Create 2 breakpoints
+		BreakpointWrapper breakpoint11 = new BreakpointWrapper();
+		breakpoint11.setBestToLowest(Integer.valueOf(1));
+		breakpoint11.setScore(new BigDecimal(11));
+		BreakpointWrapper breakpoint12 = new BreakpointWrapper();
+		breakpoint12.setBestToLowest(Integer.valueOf(2));
+		breakpoint12.setScore(new BigDecimal(12));
+		sut.updateOrCreateBreakpoints(gradeScale, List.of(breakpoint11, breakpoint12));
+		dbInstance.commitAndCloseSession();
+		
+		// Clone
+		RepositoryEntry targetEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String targetIdent = random();
+		sut.cloneGradeScale(sourceEntry, sourceIdent, targetEntry, targetIdent);
+		dbInstance.commitAndCloseSession();
+		
+		// Check
+		GradeScale targetGradeScale = sut.getGradeScale(targetEntry, targetIdent);
+		assertThat(targetGradeScale.getGradeSystem()).isEqualTo(gradeScaleWrapper.getGradeSystem());
+		assertThat(targetGradeScale.getMinScore()).isEqualByComparingTo(gradeScaleWrapper.getMinScore());
+		assertThat(targetGradeScale.getMaxScore()).isEqualByComparingTo(gradeScaleWrapper.getMaxScore());
+		
+		Map<Integer, Breakpoint> positionToBreakpoint = sut.getBreakpoints(targetGradeScale).stream()
+				.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
+		assertThat(positionToBreakpoint).hasSize(2);
+		assertThat(positionToBreakpoint.get(Integer.valueOf(1)).getScore()).isEqualByComparingTo(new BigDecimal(11));
+		assertThat(positionToBreakpoint.get(Integer.valueOf(2)).getScore()).isEqualByComparingTo(new BigDecimal(12));
+	}
 
 }

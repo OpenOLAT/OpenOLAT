@@ -153,10 +153,30 @@ public class GradeServiceImpl implements GradeService {
 		if (currentGradeScale == null) {
 			currentGradeScale = gradeScaleDAO.create(repositoryEntry, subIdent);
 		}
-		currentGradeScale.setGradeSystem(gradeScale.getGradeSystem());
-		currentGradeScale.setMinScore(gradeScale.getMinScore());
-		currentGradeScale.setMaxScore(gradeScale.getMaxScore());
+		copyAttributes(gradeScale, currentGradeScale);
 		return gradeScaleDAO.save(currentGradeScale);
+	}
+
+	@Override
+	public void cloneGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry,
+			String targetIdent) {
+		GradeScale sourceGradeScale = getGradeScale(sourceEntry, sourceIdent);
+		if (sourceGradeScale == null) return;
+		GradeScale targetGradeScale = getGradeScale(targetEntry, targetIdent);
+		if (targetGradeScale != null) return;
+		
+		targetGradeScale = gradeScaleDAO.create(targetEntry, targetIdent);
+		copyAttributes(sourceGradeScale, targetGradeScale);
+		targetGradeScale = gradeScaleDAO.save(targetGradeScale);
+		
+		List<Breakpoint> breakpoints = getBreakpoints(sourceGradeScale);
+		updateOrCreateBreakpoints(targetGradeScale, breakpoints);
+	}
+
+	private void copyAttributes(GradeScale sourceGradeScale, GradeScale targetGradeScale) {
+		targetGradeScale.setGradeSystem(sourceGradeScale.getGradeSystem());
+		targetGradeScale.setMinScore(sourceGradeScale.getMinScore());
+		targetGradeScale.setMaxScore(sourceGradeScale.getMaxScore());
 	}
 
 	@Override

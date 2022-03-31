@@ -54,6 +54,7 @@ import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
@@ -92,6 +93,8 @@ import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -462,6 +465,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
+		postCopyGradeScale(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent(),
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
 		
 		if (context != null) {
 			ModuleConfiguration config = getModuleConfiguration();
@@ -515,6 +520,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			}
 		}
 	}
+
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		postImportCopyConditions(envMapper);
@@ -666,7 +672,18 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			}
 			copyInstance.setLongTitle("Copy of " + getLongTitle());
 		}
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		postCopyGradeScale(courseEntry, getIdent(), courseEntry, copyInstance.getIdent());
+		
 		return copyInstance;
+	}
+	
+	private void postCopyGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry, String targetIdent) {
+		if (CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentConfig(this).hasGrade()) {
+			GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+			gradeService.cloneGradeScale(sourceEntry, sourceIdent, targetEntry, targetIdent);
+		}
 	}
 
 	@Override

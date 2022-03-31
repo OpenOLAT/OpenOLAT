@@ -62,6 +62,9 @@ public interface GradeService {
 	public GradeScale updateGradeScale(GradeScale gradeScale);
 	
 	public GradeScale updateOrCreateGradeScale(RepositoryEntry repositoryEntry, String subIdent, GradeScale gradeScale);
+	
+	public void cloneGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry,
+			String targetIdent);
 
 	public void deleteGradeScale(RepositoryEntry repositoryEntry, String subIdent);
 	
