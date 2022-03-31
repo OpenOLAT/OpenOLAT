@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.7</org.springframework.version>
+		<org.springframework.version>5.3.18</org.springframework.version>
 		<org.hibernate.version>5.4.31.Final</org.hibernate.version>
 		<apache.cxf>3.4.3</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
@@ -2445,7 +2445,7 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}.1</version>
+            <version>${jackson.version}.2</version>
         </dependency>
         <dependency>
         	<groupId>com.fasterxml.jackson.datatype</groupId>
