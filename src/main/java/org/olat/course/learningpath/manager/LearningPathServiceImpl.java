@@ -192,6 +192,9 @@ public class LearningPathServiceImpl implements LearningPathService, GenericEven
 	@Override
 	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity) {
 		String displayname = courseEntry.getDisplayname() + " (copy)";
+		if (displayname.length() > 100) {
+			displayname = displayname.substring(0, 100);
+		}
 		RepositoryEntry lpEntry = respositoryService.copy(courseEntry, identity, displayname);
 		lpEntry = repositoryManager.setTechnicalType(lpEntry, LearningPathNodeAccessProvider.TYPE);
 		

@@ -78,7 +78,7 @@ public class CmdDownloadZip implements FolderCommand {
 		
 		if(selection.getFiles().isEmpty()) {
 			status = FolderCommandStatus.STATUS_FAILED;
-			wControl.setWarning(trans.translate("warning.file.selection.empty22"));
+			wControl.setWarning(trans.translate("warning.file.selection.empty"));
 			return null;
 		}
 		
