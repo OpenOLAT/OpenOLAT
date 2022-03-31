@@ -2,7 +2,7 @@ LICENSE CONCERNING THIS DISTRIBUTION
 
 Licensed under the Apache License, Version 2.0 (the "License")
 
-OpenOlat (http://www.openolat.org) is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+OpenOlat (https://www.openolat.org) is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
 OF ANY KIND, either expressed or implied. See the License for the specific language governing 
 permissions and limitations under the License. 
 
@@ -55,7 +55,7 @@ University of Zurich [http://www.uzh.ch], Switzerland.
 
 Contributors olat.org codebase 1999 - 2011: (in alphabetical order)
 -----------------------------------------------------------------------
-- frentix GmbH, Switzerland [http://www.frentix.com]
+- frentix GmbH, Switzerland [https://www.frentix.com]
   Florian Gnägi, Roman Haag, Maurus Rohrer, Gregor Wassmann, Stéphane Rossé, Timo Würsch
 - JGS goodsolutions GmbH, Switzerland [http://www.goodsolutions.ch]:
   Florian Gnägi, Felix Jost, Mike Stock
@@ -140,6 +140,7 @@ This product uses software based on the MIT License
 * tabOverride (MIT License) [https://github.com/wjbryant/taboverride]
 * scorm-again (MIT License) [https://github.com/jcputney/scorm-again]
 * fabric.js (MIT License) [https://github.com/fabricjs/fabric.js]
+* CortexJS (MIT License) [https://cortexjs.io/]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
