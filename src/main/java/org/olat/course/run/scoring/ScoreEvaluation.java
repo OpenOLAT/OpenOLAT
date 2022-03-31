@@ -36,7 +36,7 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  */
 public class ScoreEvaluation {
 	//works because it's immutable
-	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation(null, null);
+	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation(null, null, null, null, null, null, null, null, null, null);
 	
 	private final Float score;
 	private final String grade;
@@ -59,10 +59,6 @@ public class ScoreEvaluation {
 		this(scoreEval.getScore(), scoreEval.getGrade(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-	}
-
-	public ScoreEvaluation(Float score, Boolean passed) {
-		this(score, null, null, passed, null, null, null, null, null, null);
 	}
 	
 	public ScoreEvaluation(Float score, String grade, String performanceClassIdent, Boolean passed, AssessmentEntryStatus assessmentStatus,

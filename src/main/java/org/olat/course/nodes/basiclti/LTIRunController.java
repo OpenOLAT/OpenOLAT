@@ -49,6 +49,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIModule;
@@ -57,6 +58,7 @@ import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -271,7 +273,6 @@ public class LTIRunController extends BasicController {
 			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
-				courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 				openBasicLTIContent(ureq);
 			} else {
 				// or show the start button
@@ -283,6 +284,8 @@ public class LTIRunController extends BasicController {
 	}
 	
 	private void openBasicLTIContent(UserRequest ureq) {
+		updateAssessmentData();
+		
 		// container is "run", "runFullscreen" or "runPopup" depending in configuration
 		ltiCtrl.openLtiContent(ureq);
 		if (display == LTIDisplayOptions.fullscreen) {
@@ -296,6 +299,25 @@ public class LTIRunController extends BasicController {
 			getWindowControl().pushToMainArea(ltiCtrl.getInitialComponent());
 		} else {
 			mainPanel.setContent(ltiCtrl.getInitialComponent());
+		}
+	}
+	
+	private void updateAssessmentData() {
+		// No preview? Data are stores as coach, author as well.
+		
+		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
+		
+		// Set status in Progress
+		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		if (currentEval.getAssessmentStatus() == null
+				|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
+				|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
+			ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getGrade(),
+					currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
+					AssessmentEntryStatus.inProgress, currentEval.getUserVisible(),
+					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+			courseAssessmentService.saveScoreEvaluation(courseNode, getIdentity(), scoreEval, userCourseEnv, false, Role.user);
 		}
 	}
 	
@@ -322,7 +344,6 @@ public class LTIRunController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
-			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 			openBasicLTIContent(ureq);
 		}  else if(source == back) {
 			closeBasicLTI();

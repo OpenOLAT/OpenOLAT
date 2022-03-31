@@ -394,9 +394,14 @@ public class LTIManagerImpl implements LTIManager {
 				}
 			}
 			
-			ScoreEvaluation eval = new ScoreEvaluation(scaledScore, passed);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
-			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
+			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
+			ScoreEvaluation scoreEval = new ScoreEvaluation(scaledScore, currentEval.getGrade(),
+					currentEval.getPerformanceClassIdent(), passed, currentEval.getAssessmentStatus(),
+					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
+					currentEval.getAssessmentID());
+			courseAssessmentService.updateScoreEvaluation(node, scoreEval, userCourseEnv, assessedId, false, Role.user);
 		}
 	}
 	

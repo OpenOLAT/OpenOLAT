@@ -98,7 +98,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		if(node instanceof BasicLTICourseNode) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			Identity assessedId = getIdentity();
-			ScoreEvaluation eval = new ScoreEvaluation(0.0f, false);
+			ScoreEvaluation eval = ScoreEvaluation.EMPTY_EVALUATION;
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
 			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
 		}
