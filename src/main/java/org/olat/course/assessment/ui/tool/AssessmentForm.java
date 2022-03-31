@@ -462,7 +462,7 @@ public class AssessmentForm extends FormBasicController {
 					AssessmentEntryStatus.done, userVisibilityValue, null, null, null, null);
 		} else {
 			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent, updatedPassed,
-					AssessmentEntryStatus.inReview, userVisibilityValue, null, null, null, null);
+					null, userVisibilityValue, null, null, null, null);
 		}
 		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
