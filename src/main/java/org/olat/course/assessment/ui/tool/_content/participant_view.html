@@ -22,10 +22,10 @@
 		#end
 		
 		#if($hasScoreField)
-		#if($scoreMin)
+		#if($scoreMinMax)
 			<tr>
-				<th scope="row">$r.translate("score.min.max")</th>
-				<td>$r.translate("score.min.max.value", $scoreMin, $scoreMax)</td>
+				<th>$r.translate("score.min.max")</th>
+				<td>$scoreMinMax</td>
 			</tr>
 		#end
 		<tr class="o_score">
@@ -63,13 +63,18 @@
 		<tr>
 			<th scope="row">$r.translate("passed.yourpassed")</th>
 			<td>
-				#if($resultsVisible && $hasPassedValue && $passed)
-					<div class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</div>
-				#elseif($resultsVisible && $hasPassedValue && !$passed)
-					<div class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")</div>
+				#if($resultsVisible)
+					#if($hasPassedValue && $passed)
+						<div class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</div>
+					#elseif($resultsVisible && $hasPassedValue && !$passed)
+						<div class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")</div>
+					#else
+						<div class="o_noinfo"><i class="o_icon o_icon_passed_undefined"> </i> $r.translate("passed.nopassed")</div>
+					#end
 				#else
-					<div class="o_noinfo"><i class="o_icon o_icon_passed_undefined"> </i> $r.translate("passed.nopassed")</div>
+					$r.translate("assessment.value.not.visible")
 				#end
+				
 			</td>
 		</tr>
 		#end

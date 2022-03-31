@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.ui.component.GradeChart;
@@ -83,8 +84,12 @@ public class AssessmentGradeStatsController extends BasicController {
 			mainVC.contextPut("rounding", GradeUIFactory.translateRounding(getTranslator(), gradeSystem.getRounding()));
 		}
 		
-		mainVC.contextPut("minScore", THREE_DIGITS.format(gradeScale.getMinScore()));
-		mainVC.contextPut("maxScore", THREE_DIGITS.format(gradeScale.getMaxScore()));
+		Float min = gradeScale.getMinScore() != null? Float.valueOf(gradeScale.getMinScore().floatValue()): null;
+		Float max = gradeScale.getMaxScore() != null? Float.valueOf(gradeScale.getMaxScore().floatValue()): null;
+		String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
+		if (scoreMinMax != null) {
+			mainVC.contextPut("scoreMinMax", scoreMinMax);
+		}
 		
 		Optional<GradeScoreRange> minPassed = getMinPassed(gradeScoreRanges);
 		if (minPassed.isPresent()) {

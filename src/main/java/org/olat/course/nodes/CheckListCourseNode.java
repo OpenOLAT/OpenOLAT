@@ -95,6 +95,7 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -465,12 +466,13 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			passed = Boolean.valueOf(gradeScoreRange.isPassed());
 		}
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 		
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), grade, performanceClassIdent, passed, null, null, null, null, null, null);
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), grade, performanceClassIdent, passed, status, null, null, null, null, null);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
-	
+
 	private void doUpdateAssessment(Float cutValue, Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
@@ -486,7 +488,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			boolean aboveCutValue = score >= cutValue.floatValue();
 			passed = Boolean.valueOf(aboveCutValue);
 		}
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, passed, null, null, null, null, null, null);
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, passed, status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -515,8 +519,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				}
 			}
 		}
-
-		ScoreEvaluation sceval = new ScoreEvaluation(score, null, null, Boolean.valueOf(passed), null, null, null, null, null, null);
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
+		
+		ScoreEvaluation sceval = new ScoreEvaluation(score, null, null, Boolean.valueOf(passed), status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -531,15 +537,25 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		if(maxScore != null && maxScore.floatValue() < score) {
 			score = maxScore.floatValue();
 		}
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
-				currentEval.getPerformanceClassIdent(), currentEval.getPassed(), currentEval.getAssessmentStatus(),
+				currentEval.getPerformanceClassIdent(), currentEval.getPassed(), status,
 				currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
 				currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
 				currentEval.getAssessmentID());
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
+	}
+	
+	private AssessmentEntryStatus getStartedStatus(ScoreEvaluation scoreEval) {
+		return scoreEval.getAssessmentStatus() == null
+				|| scoreEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
+				|| scoreEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted
+				? AssessmentEntryStatus.inProgress
+				: scoreEval.getAssessmentStatus();
 	}
 	
 	@Override

@@ -53,6 +53,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.append(" btn-xs", dropdown.getButtonSize() == ButtonSize.extraSmall);
 			sb.append(" btn-sm", dropdown.getButtonSize() == ButtonSize.small);
 			sb.append(" btn-lg", dropdown.getButtonSize() == ButtonSize.large);
+			sb.append(" btn-primary", dropdown.isPrimary());
 		} else {
 			sb.append("<a href='#' class='dropdown-toggle");
 		}

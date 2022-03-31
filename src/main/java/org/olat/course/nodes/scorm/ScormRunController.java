@@ -57,12 +57,14 @@ import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
@@ -103,7 +105,6 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private DeliveryOptions deliveryOptions;
 	private final UserSession userSession;//need for high score
 	private AssessmentConfig assessmentConfig;
-	private AssessmentEvaluation assessmentEval;
 	
 	@Autowired
 	private ScormMainManager scormMainManager;
@@ -148,10 +149,6 @@ public class ScormRunController extends BasicController implements GenericEventL
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
 			assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
-			assessmentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
-			listenTo(assessmentParticipantViewCtrl);
-			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		}
 
 		// <OLATCE-289>
@@ -208,10 +205,10 @@ public class ScormRunController extends BasicController implements GenericEventL
 				}
 				doStartPage(ureq);
 			} else if(Event.CLOSE_EVENT == event) {
-				doStartPage(null);
+				doStartPage(ureq);
 				scormDispC.close();
 			} else if(event instanceof FinishEvent) {
-				doStartPage(null);
+				doStartPage(ureq);
 				if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
 					scormDispC.close();
 				}
@@ -233,6 +230,12 @@ public class ScormRunController extends BasicController implements GenericEventL
 
 	private void doStartPage(UserRequest ureq) {
 		if (isAssessable) {
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+			listenTo(assessmentParticipantViewCtrl);
+			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+			
 			startPage.contextPut("attempts", assessmentEval.getAttempts());
 			
 			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
@@ -299,6 +302,18 @@ public class ScormRunController extends BasicController implements GenericEventL
 					null, doActivate, fullWindow, true, deliveryOptions);
 		} else {
 			if (userCourseEnv.isParticipant()) {
+				// Set status in Progress
+				ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+				if (currentEval.getAssessmentStatus() == null
+						|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
+						|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
+					ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getGrade(),
+							currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
+							AssessmentEntryStatus.inProgress, currentEval.getUserVisible(),
+							currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+							currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+					courseAssessmentService.saveScoreEvaluation(scormNode, getIdentity(), scoreEval, userCourseEnv, false, Role.user);
+				}
 				//increment user attempts only once!
 				if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 						|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {

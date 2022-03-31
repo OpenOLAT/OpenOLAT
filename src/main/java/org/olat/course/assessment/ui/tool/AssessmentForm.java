@@ -74,6 +74,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -163,6 +164,7 @@ public class AssessmentForm extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		hasAttempts = assessmentConfig.hasAttempts();
@@ -459,8 +461,8 @@ public class AssessmentForm extends FormBasicController {
 			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent, updatedPassed,
 					AssessmentEntryStatus.done, userVisibilityValue, null, null, null, null);
 		} else {
-			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent, updatedPassed, null,
-					userVisibilityValue, null, null, null, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent, updatedPassed,
+					AssessmentEntryStatus.inReview, userVisibilityValue, null, null, null, null);
 		}
 		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
@@ -597,9 +599,9 @@ public class AssessmentForm extends FormBasicController {
 				cut = assessmentConfig.getCutValue();
 			}
 			
-			if (min != null) {
-				String scoreMinMax = translate("form.min.max.value", AssessmentHelper.getRoundedScore(min), AssessmentHelper.getRoundedScore(max));
-				uifactory.addStaticTextElement("form.min.max", scoreMinMax, assessmentCont);
+			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
+			if (scoreMinMax != null) {
+				uifactory.addStaticTextElement("score.min.max", scoreMinMax, assessmentCont);
 			}
 			
 			// Use init variables from wrapper, already loaded from db
@@ -733,6 +735,10 @@ public class AssessmentForm extends FormBasicController {
 		if (scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
 			doneName = "assessment.set.status.done";
 			doneAddName = "assessment.set.status.done.hidden";
+		} else if (scoreEval.getUserVisible() != null && !scoreEval.getUserVisible().booleanValue() && !canChangeUserVisibility) {
+			doneName = "assessment.set.status.done";
+			doneIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+			doneCmd = CMD_DONE_HIDDEN;
 		} else if (scoreEval.getUserVisible() == null) {
 			if (!userVisibilityValue.booleanValue()) {
 				doneName = "assessment.set.status.done";
@@ -751,6 +757,7 @@ public class AssessmentForm extends FormBasicController {
 		if (canChangeUserVisibility) {
 			saveAndDoneDropdown = uifactory.addDropdownMenu("save.done.more", null, buttonGroupLayout, getTranslator());
 			saveAndDoneDropdown.setOrientation(DropdownOrientation.right);
+			saveAndDoneDropdown.setPrimary(true);
 			
 			saveAndDoneAdditionalLink = uifactory.addFormLink("save.done.add", doneAddCmd, doneAddName, null, buttonGroupLayout, Link.LINK);
 			saveAndDoneAdditionalLink.setIconLeftCSS(donAddIconCSS);

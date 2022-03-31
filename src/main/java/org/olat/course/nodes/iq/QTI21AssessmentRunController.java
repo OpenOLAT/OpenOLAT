@@ -1123,7 +1123,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 			if(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
-				visibility = Boolean.FALSE;
+				visibility = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getUserVisible();
 			} else {
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;

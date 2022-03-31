@@ -33,6 +33,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,11 +56,12 @@ public class AssessmentParticipantViewController extends BasicController {
 
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl, AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig) {
 		super(ureq, wControl);
-		this.assessmentEval = assessmentEval;
-		this.assessmentConfig = assessmentConfig;
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
+		this.assessmentEval = assessmentEval;
+		this.assessmentConfig = assessmentConfig;
 		
 		mainVC = createVelocityContainer("participant_view");
 		
@@ -93,8 +95,11 @@ public class AssessmentParticipantViewController extends BasicController {
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		mainVC.contextPut("hasScoreField", Boolean.valueOf(hasScore));
 		if (hasScore) {
-			mainVC.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
-			mainVC.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
+			Float minScore = assessmentConfig.getMinScore();
+			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), minScore, assessmentConfig.getMaxScore());
+			if (scoreMinMax != null) {
+				mainVC.contextPut("scoreMinMax", scoreMinMax);
+			}
 			mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEval.getScore()));
 		}
 		
@@ -136,7 +141,7 @@ public class AssessmentParticipantViewController extends BasicController {
 					statusLabelCss = "o_results_hidden";
 				}
 			} else {
-				statusText = translate("assessment.status.inReview");
+				statusText = translate("in.review");
 				statusIconCss = "o_icon_status_in_review";
 				statusLabelCss = "o_results_hidden";
 			}

@@ -49,6 +49,7 @@ public class AssessmentRow {
 	private FormLink assessmentDocsTooltipLink;
 	private FormLink assessmentDocsEditLink;
 	private FormLink commentTooltipLink, commentEditLink;
+	private MultipleSelectionElement userVisibilityEl;
 	
 	private String score;
 	private String grade;
@@ -179,6 +180,14 @@ public class AssessmentRow {
 
 	public void setUserVisibility(Boolean userVisibility) {
 		this.userVisibility = userVisibility;
+	}
+
+	public MultipleSelectionElement getUserVisibilityEl() {
+		return userVisibilityEl;
+	}
+
+	public void setUserVisibilityEl(MultipleSelectionElement userVisibilityEl) {
+		this.userVisibilityEl = userVisibilityEl;
 	}
 	
 }

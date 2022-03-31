@@ -48,6 +48,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,6 +83,7 @@ public class AssessmentViewController extends BasicController {
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		mainVC = createVelocityContainer("assessment_view");
@@ -124,8 +126,10 @@ public class AssessmentViewController extends BasicController {
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		mainVC.contextPut("hasScoreField", Boolean.valueOf(hasScore));
 		if (hasScore) {
-			mainVC.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
-			mainVC.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
+			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore());
+			if (scoreMinMax != null) {
+				mainVC.contextPut("scoreMinMax", scoreMinMax);
+			}
 		}
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		mainVC.contextPut("hasPassedField", Boolean.valueOf(hasPassed));

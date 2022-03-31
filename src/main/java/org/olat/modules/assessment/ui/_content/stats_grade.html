@@ -24,10 +24,10 @@
 						<td>$rounding</td>
 					</tr>
 				#end
-				#if($r.isNotEmpty($minScore))
+				#if($r.isNotEmpty($scoreMinMax))
 					<tr>
 						<th>$r.translate("score.min.max")</th>
-						<td>$r.translate("score.min.max.value", $minScore, $maxScore)</td>
+						<td>$scoreMinMax</td>
 					</tr>
 				#end
 				#if($r.isNotEmpty($passedWith))

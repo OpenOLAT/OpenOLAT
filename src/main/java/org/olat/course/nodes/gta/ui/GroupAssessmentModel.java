@@ -75,6 +75,8 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 			return row.getAssessmentDocsTooltipLink();
 		} else if(col == Cols.commentVal.ordinal()) {
 			return row.getCommentTooltipLink();
+		} else if(col == Cols.userVisibilityEl.ordinal()) {
+			return row.getUserVisibilityEl();
 		} else if(col == Cols.scoreEl.ordinal()) {
 			return row.getScoreEl();
 		} else if(col == Cols.applyGradeEl.ordinal()) {
@@ -99,6 +101,7 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 		gradeVal("table.header.grade"),
 		assessmentDocsVal("table.header.assessment.docs"),
 		commentVal("table.header.comment"),
+		userVisibilityEl("table.header.userVisibility"),
 		passedEl("table.header.passed"),
 		applyGradeEl("table.header.grade.apply"),
 		scoreEl("table.header.score"),

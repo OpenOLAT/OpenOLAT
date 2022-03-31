@@ -39,6 +39,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
@@ -284,6 +285,20 @@ public class AssessmentHelper {
 				return null;
 			}
 		}
+	}
+	
+	/**
+	 * @param translator Package translator org.olat.modules.assessment.ui e.g. translator
+	 * @param minScore
+	 * @param maxScore
+	 */
+	public static String getMinMax(Translator translator, Float minScore, Float maxScore) {
+		if (minScore != null || maxScore != null) {
+			String min = minScore != null? getRoundedScore(minScore): translator.translate("assessment.value.not.visible");
+			String max = maxScore != null? getRoundedScore(maxScore): translator.translate("assessment.value.not.visible");
+			return translator.translate("score.min.max.value", min, max);
+		}
+		return null;
 	}
 	
 	public static TreeModel assessmentTreeModel(ICourse course, Locale locale) {

@@ -55,7 +55,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -124,6 +127,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey, boolean courseEditor) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = false;
 		this.courseEntry = courseEntry;
 		this.subIdent = subIdent;
@@ -161,6 +165,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, Form form, RepositoryEntry courseEntry,
 			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, form);
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = true;
 		this.courseEntry = courseEntry;
 		this.subIdent = subIdent;
@@ -215,8 +220,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
 		cutValueEl = uifactory.addStaticTextElement("grade.system.cut.value", "", generalCont);
-		String scoreMinMax = translate("grade.system.score.min.max.value", THREE_DIGITS.format(minScore), THREE_DIGITS.format(maxScore));
-		uifactory.addStaticTextElement("grade.system.score.min.max", scoreMinMax, generalCont);
+		Float min = gradeScale.getMinScore() != null? Float.valueOf(gradeScale.getMinScore().floatValue()): null;
+		Float max = gradeScale.getMaxScore() != null? Float.valueOf(gradeScale.getMaxScore().floatValue()): null;
+		String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
+		if (scoreMinMax != null) {
+			uifactory.addStaticTextElement("score.min.max", scoreMinMax, generalCont);
+		}
 		
 		
 		// Scale

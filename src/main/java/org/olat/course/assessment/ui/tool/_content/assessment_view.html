@@ -40,10 +40,10 @@
 		#end
 		
 		#if ($hasScoreField)
-			#if($scoreMin)
+			#if($scoreMinMax)
 				<tr>
 					<th>$r.translate("score.min.max")</th>
-					<td>$r.translate("score.min.max.value", $scoreMin, $scoreMax)</td>
+					<td>$scoreMinMax</td>
 				</tr>
 			#end
 			<tr class="o_score">

@@ -76,7 +76,7 @@ public class CLLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	private ModuleLearningPathConfigs getLearningPathConfigs(CourseNode courseNode, boolean newNode) {
 		ModuleLearningPathConfigs configs = new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), true);
-		configs.updateDefaults(newNode, FullyAssessedTrigger.statusDone);
+		configs.updateDefaults(newNode, FullyAssessedTrigger.passed);
 		return configs;
 	}
 

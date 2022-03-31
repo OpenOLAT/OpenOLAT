@@ -114,6 +114,7 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private FlexiTableElement table;
 	private GroupAssessmentModel model;
+	private FormLink intermediateSaveButton;
 	private FormLink saveAndDoneButton;
 	private TextElement groupScoreEl, groupCommentEl;
 	private MultipleSelectionElement groupApplyGradeEl;
@@ -129,7 +130,6 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
-	private final UserCourseEnvironment coachCourseEnv;
 	private Float cutValue;
 	private final boolean withScore, withGrade, withAutoGrade, withPassed, withDocs, withComment;
 	private final GTACourseNode gtaNode;
@@ -138,6 +138,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private File assessmentDocsTmpDir;
 	private int counter = 0;
 	private final List<Long> duplicateMemberKeys;
+	private final boolean canChangeUserVisibility;
 	
 	
 	@Autowired
@@ -163,7 +164,6 @@ public class GroupAssessmentController extends FormBasicController {
 		this.gtaNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
-		this.coachCourseEnv = coachCourseEnv;
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
@@ -189,6 +189,9 @@ public class GroupAssessmentController extends FormBasicController {
 		for(IdentityRef duplicate:duplicates) {
 			duplicateMemberKeys.add(duplicate.getKey());
 		}
+		
+		canChangeUserVisibility = coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 		
 		initForm(ureq);
 		ModelInfos modelInfos = loadModel();
@@ -239,15 +242,13 @@ public class GroupAssessmentController extends FormBasicController {
 			groupCommentEl.setElementCssClass("o_sel_course_gta_group_comment");
 		}
 		
-		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
-				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		
 		if(canChangeUserVisibility && (withPassed || withScore || withComment || withDocs)) {
 			SelectionValues visibilitySV = new SelectionValues();
 			visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("user.visibility.hidden"), translate("user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
 			visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("user.visibility.visible"), translate("user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
 			userVisibilityEl = uifactory.addCardSingleSelectHorizontal("user.visibility.release", groupGradingCont, visibilitySV.keys(),
 					visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
+			userVisibilityEl.select(userVisibilityEl.getKey(0), true);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -271,6 +272,10 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 				columnsModel.addFlexiColumnModel(col);
 			}
+		}
+		
+		if(canChangeUserVisibility && (withPassed || withScore || withComment || withDocs)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.userVisibilityEl.i18nKey(), Cols.userVisibilityEl.ordinal()));
 		}
 		
 		if(withScore) {
@@ -301,8 +306,9 @@ public class GroupAssessmentController extends FormBasicController {
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		saveAndDoneButton = uifactory.addFormLink("save.done", buttonsCont, Link.BUTTON);
+		intermediateSaveButton = uifactory.addFormLink("save.intermediate", buttonsCont, Link.BUTTON);
+		saveAndDoneButton = uifactory.addFormLink("assessment.set.status.done", buttonsCont, Link.BUTTON);
+		saveAndDoneButton.setPrimary(true);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -310,10 +316,17 @@ public class GroupAssessmentController extends FormBasicController {
 		if(modelInfos.isSame()) {
 			applyToAllEl.select(onKeys[0], true);
 			table.setVisible(false);
-			model.getObjects()
-				.stream()
-				.filter(row -> row.getPassedEl() != null)	
-				.forEach(row -> row.getPassedEl().setVisible(false));
+			for (AssessmentRow row: model.getObjects()) {
+				if (row.getUserVisibilityEl() != null) {
+					row.getUserVisibilityEl().setVisible(false);
+				}
+				if (row.getApplyGradeEl() != null) {
+					row.getApplyGradeEl().setVisible(false);
+				}
+				if (row.getPassedEl() != null) {
+					row.getPassedEl().setVisible(false);
+				}
+			}
 			
 			if(groupPassedEl != null) {
 				groupPassedEl.setEvaluationOnlyVisible(true);
@@ -365,10 +378,6 @@ public class GroupAssessmentController extends FormBasicController {
 		} else {
 			applyToAllEl.select(onKeys[0], false);
 			table.setVisible(true);
-			model.getObjects()
-				.stream()
-				.filter(row -> row.getPassedEl() != null)
-				.forEach(row -> row.getPassedEl().setVisible(true));
 			
 			if(groupPassedEl != null) {
 				groupPassedEl.setVisible(false);
@@ -452,12 +461,9 @@ public class GroupAssessmentController extends FormBasicController {
 		for(Identity identity:identities) {
 			AssessmentEntry entry = identityToEntryMap.get(identity);
 			
-			ScoreEvaluation scoreEval = null;
-			if(withScore || withGrade || withPassed) {
-				scoreEval = courseAssessmentService.toAssessmentEvaluation(entry, gtaNode);
-				if (scoreEval == null) {
-					scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
-				}
+			ScoreEvaluation scoreEval = courseAssessmentService.toAssessmentEvaluation(entry, gtaNode);
+			if (scoreEval == null) {
+				scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
 			}
 			
 			String comment = null;
@@ -473,6 +479,22 @@ public class GroupAssessmentController extends FormBasicController {
 
 			AssessmentRow row = new AssessmentRow(identity, duplicate);
 			rows.add(row);
+			
+			Boolean userVisibile = scoreEval.getUserVisible();
+			row.setUserVisibility(userVisibile);
+			if(canChangeUserVisibility && (withPassed || withScore || withComment || withDocs)) {
+				MultipleSelectionElement userVisibilityEl = uifactory.addCheckboxesHorizontal("ub" + count, null, flc, onKeys, onValues);
+				userVisibilityEl.setEvaluationOnlyVisible(true);
+				if(userVisibile != null && userVisibile.booleanValue()) {
+					userVisibilityEl.select(onKeys[0], userVisibile.booleanValue());
+				}
+				row.setUserVisibilityEl(userVisibilityEl);
+				if(count == 0) {
+					userVisibleRef = userVisibile;
+				} else if(!same(userVisibleRef, userVisibile)) {
+					same = false;
+				}
+			}
 			
 			if(withScore) {
 				Float score = scoreEval.getScore();
@@ -556,22 +578,6 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
-			if(withScore || withPassed) {
-				Boolean userVisible = scoreEval.getUserVisible();
-				if(userVisible == null) {
-					userVisible = Boolean.FALSE;
-				}
-				
-				if(count == 0) {
-					userVisibleRef = userVisible;
-				} else if(!same(userVisibleRef, userVisible)) {
-					same = false;
-				}
-			}
-			if (entry != null) {
-				row.setUserVisibility(entry.getUserVisibility());
-			}
-			
 			count++;
 		}
 		
@@ -645,10 +651,17 @@ public class GroupAssessmentController extends FormBasicController {
 		if(applyToAllEl == source) {
 			boolean allGroup = applyToAllEl.isAtLeastSelected(1);
 			table.setVisible(!allGroup);
-			model.getObjects()
-				.stream()
-				.filter(row -> row.getPassedEl() != null)	
-				.forEach(row -> row.getPassedEl().setVisible(!allGroup));
+			for (AssessmentRow row: model.getObjects()) {
+				if (row.getUserVisibilityEl() != null) {
+					row.getUserVisibilityEl().setVisible(!allGroup);
+				}
+				if (row.getApplyGradeEl() != null) {
+					row.getApplyGradeEl().setVisible(!allGroup);
+				}
+				if (row.getPassedEl() != null) {
+					row.getPassedEl().setVisible(!allGroup);
+				}
+			}
 			
 			if(groupPassedEl != null) {
 				groupPassedEl.setVisible(allGroup);
@@ -676,6 +689,11 @@ public class GroupAssessmentController extends FormBasicController {
 				groupUploadDocsEl.moveUploadFileTo(assessmentDocsTmpDir);
 				updateAssessmentDocsUI();
 				groupUploadDocsEl.reset();
+			}
+		} else if(source == intermediateSaveButton) {
+			if(validateFormLogic(ureq)) {
+				applyChanges(false);
+				fireEvent(ureq, Event.CLOSE_EVENT);
 			}
 		} else if(source == saveAndDoneButton) {
 			if(validateFormLogic(ureq)) {
@@ -739,8 +757,7 @@ public class GroupAssessmentController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		applyChanges(false);
-		fireEvent(ureq, Event.DONE_EVENT);
+		//
 	}
 	
 	private void applyChanges(boolean setAsDone) {
@@ -752,11 +769,11 @@ public class GroupAssessmentController extends FormBasicController {
 		if(applyToAllEl.isAtLeastSelected(1)) {
 			applyChangesForTheWholeGroup(rows, setAsDone, userVisible);
 		} else {
-			applyChangesForEveryMemberGroup(rows, setAsDone, userVisible);
+			applyChangesForEveryMemberGroup(rows, setAsDone);
 		}
 	}
 	
-	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, Boolean userVisible) {
+	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
@@ -797,7 +814,9 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
-			Boolean newUserVisible = userVisible != null? userVisible: row.getUserVisibility();
+			Boolean newUserVisible = row.getUserVisibilityEl() != null
+					? Boolean.valueOf(row.getUserVisibilityEl().isAtLeastSelected(1))
+					: row.getUserVisibility();
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
 				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null,null, null);
