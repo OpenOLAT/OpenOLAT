@@ -545,8 +545,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		calloutCtrl.activate();
 	}
 	
-	private void doActivate(RosterRow row) {
-		imService.sendStatusMessage(getIdentity(), fromMe, false, InstantMessageTypeEnum.accept,
+	private void doReactivate(RosterRow row) {
+		imService.sendStatusMessage(getIdentity(), fromMe, false, InstantMessageTypeEnum.reactivate,
 				chatResource, resSubPath, row.getChannel());
 		loadModel(true);
 	}
@@ -558,7 +558,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	
 	private class ToolsController extends BasicController {
 
-		private Link activateLink;
+		private Link reactivateLink;
 		private Link closeLink;
 		private Link exportLogLink;
 		private final RosterRow row;
@@ -571,8 +571,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 			
 			RosterChannelInfos lastInfos = imService.getRoster(chatResource, resSubPath, row.getChannel(), getIdentity());	
 			if(lastInfos.getRosterStatus() == RosterStatus.completed) {
-				activateLink = LinkFactory.createLink("tool.activate", "activate", getTranslator(), mainVC, this, Link.LINK);
-				mainVC.put("tool.activate", activateLink);
+				reactivateLink = LinkFactory.createLink("tool.reactivate", "activate", getTranslator(), mainVC, this, Link.LINK);
+				mainVC.put("tool.reactivate", reactivateLink);
 			} else if(lastInfos.getRosterStatus() == RosterStatus.active) {
 				closeLink = LinkFactory.createLink("tool.complete", "complete", getTranslator(), mainVC, this, Link.LINK);
 				mainVC.put("tool.complete", closeLink);
@@ -586,8 +586,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-			if(activateLink == source) {
-				doActivate(row);
+			if(reactivateLink == source) {
+				doReactivate(row);
 			} else if(closeLink == source) {
 				doClose(List.of(row));
 			} else if(exportLogLink == source) {

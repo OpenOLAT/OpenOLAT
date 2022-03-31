@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -660,7 +661,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			InstantMessageTypeEnum msgType = InstantMessageTypeEnum.text;
 			List<IdentityRef> toNotifyRequests = null;
 			InstantMessageTypeEnum stopperStatus = stopper();
-			if(messageHistory.isEmpty() || stopperStatus == InstantMessageTypeEnum.end) {
+			// Status null is equivalent to messages queue empty
+			if(stopperStatus == null || stopperStatus == InstantMessageTypeEnum.end) {
 				msgType = InstantMessageTypeEnum.request;
 				toNotifyRequests = chatViewConfig.getToNotifyRequests();
 			} else if(stopperStatus == InstantMessageTypeEnum.close) {
@@ -682,13 +684,16 @@ public class ChatController extends BasicController implements GenericEventListe
 			return null;
 		}
 		
-		ChatMessage lastMessage = messageHistory.peekLast();
-		if(lastMessage == null) {
-			return null;
+		ChatMessage lastMessage = null;
+		// Ignore virtual error message
+		for(Iterator<ChatMessage> reverseIt=messageHistory.descendingIterator(); reverseIt.hasNext(); ) {
+			ChatMessage message = reverseIt.next();
+			if(message.getMessageKey() != null && message.getMessageKey().longValue() > 0) {
+				lastMessage = message;
+				break;
+			}
 		}
-		
-		InstantMessageTypeEnum type = lastMessage.getTypeEnum();
-		return type == InstantMessageTypeEnum.close || type == InstantMessageTypeEnum.end ? type : null;
+		return lastMessage == null ? null : lastMessage.getTypeEnum();
 	}
 	
 	private List<IdentityRef> getRequestToNotifiyTo() {

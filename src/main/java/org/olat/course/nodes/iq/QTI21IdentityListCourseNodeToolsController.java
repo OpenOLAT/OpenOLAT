@@ -494,6 +494,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	private void doOpenChat(UserRequest ureq) {
 		final String channel = assessedIdentity.getKey().toString();
+		// Make sure the assessed used is in the roster
+		String assessedFullName = userManager.getUserDisplayName(assessedIdentity);
+		imService.addToRoster(assessedIdentity, courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, assessedFullName, false, false);
+		// Add the coach to the roster and go
 		final String from = userManager.getUserDisplayName(getIdentity());
 		imService.addToRoster(getIdentity(), courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, from, false, true);
 		imService.sendStatusMessage(getIdentity(), from, false, InstantMessageTypeEnum.join,
