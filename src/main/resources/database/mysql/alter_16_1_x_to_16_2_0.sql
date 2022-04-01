@@ -123,7 +123,7 @@ create table o_gr_breakpoint (
    g_best_to_lowest integer,
    fk_grade_scale bigint not null,
    primary key (id)
-;
+);
 alter table o_as_entry add a_grade varchar(100);
 alter table o_as_entry add a_performance_class_ident varchar(50);
 alter table o_as_eff_statement add grade varchar(100);
