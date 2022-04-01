@@ -80,6 +80,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
+import org.olat.course.nodes.gta.ui.events.IntermediateSaveEvent;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -693,7 +694,7 @@ public class GroupAssessmentController extends FormBasicController {
 		} else if(source == intermediateSaveButton) {
 			if(validateFormLogic(ureq)) {
 				applyChanges(false);
-				fireEvent(ureq, Event.CLOSE_EVENT);
+				fireEvent(ureq, new IntermediateSaveEvent());
 			}
 		} else if(source == saveAndDoneButton) {
 			if(validateFormLogic(ureq)) {

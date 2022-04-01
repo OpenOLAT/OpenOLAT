@@ -70,6 +70,7 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
+import org.olat.course.nodes.gta.ui.events.IntermediateSaveEvent;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -315,6 +316,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		if(assessmentCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadMembers();
+			} else if(event instanceof IntermediateSaveEvent) {
+				loadMembers();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CLOSE_EVENT) {
 				doGrading();
 				loadMembers();
