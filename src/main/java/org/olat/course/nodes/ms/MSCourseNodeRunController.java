@@ -218,6 +218,12 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 				listenTo(detailsCtrl);
 				myContent.put("details", detailsCtrl.getInitialComponent());
 			}
+			
+			if (showLog) {
+				UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+				String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
+				myContent.contextPut("log", StringHelper.escapeHtml(userLog));
+			}
 		}
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -226,12 +232,6 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		if(StringHelper.containsNonWhitespace(infoTextUser)) {
 				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
 				myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
-		}
-	
-		if(showLog) {
-			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-			String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
-			myContent.contextPut("log", StringHelper.escapeHtml(userLog));
 		}
 	}
 	
