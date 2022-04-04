@@ -126,7 +126,8 @@ public class OLATUpgrade_16_2_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(ADD_USER_TOOL_COACHING)) {
 			try {
 				String availableTools = userToolsModule.getAvailableUserTools();
-				if(StringHelper.containsNonWhitespace(availableTools) && !availableTools.contains(CoachingUserToolExtension.COACHING_USER_TOOL_ID)) {
+				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
+						&& !availableTools.contains(CoachingUserToolExtension.COACHING_USER_TOOL_ID)) {
 					availableTools += "," + CoachingUserToolExtension.COACHING_USER_TOOL_ID;
 				}
 				userToolsModule.setAvailableUserTools(availableTools);
