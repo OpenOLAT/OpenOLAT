@@ -47,7 +47,7 @@ public class FormSubmit extends FormButton implements Submit{
 	
 	private String i18nKey;
 	private String[] i18nArgs;
-	private FormButtonComponent component;
+	private final FormButtonComponent component;
 
 	public FormSubmit(String name, String i18nKey) {
 		this(null, name, i18nKey, null);
@@ -60,7 +60,9 @@ public class FormSubmit extends FormButton implements Submit{
 		}
 		this.i18nKey = i18nKey;
 		this.i18nArgs = i18nArgs;
-		this.action = FormEvent.ONCLICK;
+		action = FormEvent.ONCLICK;
+		String formItemId = getFormItemId();
+		component = new FormButtonComponent(formItemId, this, true);
 	}
 
 	public void setI18nKey(String i18nKey, String[] i18nArgs) {
@@ -70,9 +72,8 @@ public class FormSubmit extends FormButton implements Submit{
 	}
 
 	@Override
-	protected void rootFormAvailable(){
-		String formItemId = getFormItemId();
-		component = new FormButtonComponent(formItemId, this,true);
+	protected void rootFormAvailable() {
+		//
 	}
 	
 	@Override
@@ -94,7 +95,11 @@ public class FormSubmit extends FormButton implements Submit{
 		}
 
 		// no values with submit to be evaluated
-		getComponent().setDirty(true);
+		String dispatchuri = ureq.getParameter("dispatchuri");
+		if(dispatchuri != null
+				&& ("undefined".equals(dispatchuri) || dispatchuri.equals(getFormDispatchId()))) {
+			getComponent().setDirty(true);
+		}
 	}
 
 	@Override
