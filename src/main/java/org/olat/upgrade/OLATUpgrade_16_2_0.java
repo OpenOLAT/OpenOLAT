@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -125,9 +126,8 @@ public class OLATUpgrade_16_2_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(ADD_USER_TOOL_COACHING)) {
 			try {
 				String availableTools = userToolsModule.getAvailableUserTools();
-				if(availableTools == null) {
-					availableTools = CoachingUserToolExtension.COACHING_USER_TOOL_ID;
-				} else if(!availableTools.contains(CoachingUserToolExtension.COACHING_USER_TOOL_ID)) {
+				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
+						&& !availableTools.contains(CoachingUserToolExtension.COACHING_USER_TOOL_ID)) {
 					availableTools += "," + CoachingUserToolExtension.COACHING_USER_TOOL_ID;
 				}
 				userToolsModule.setAvailableUserTools(availableTools);
