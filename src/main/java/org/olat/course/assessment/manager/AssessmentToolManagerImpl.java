@@ -858,6 +858,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			return;
 		}
 		coachedEntry.setRepositoryEntryName(repositoryEntry.getDisplayname());
+		coachedEntry.setRepositoryEntryExternalId(repositoryEntry.getExternalId());
+		coachedEntry.setRepositoryEntryExternalRef(repositoryEntry.getExternalRef());
 		
 		if (params.isUserVisibilitySettable() && !canSetUserVisibility(coachedEntry, repoKeyToCoachUserVisibilitySettable)) {
 			return;

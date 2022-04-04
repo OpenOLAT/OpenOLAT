@@ -179,7 +179,10 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 			colPos++;
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseKey, CMD_OPEN_COURSE));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.course, CMD_OPEN_COURSE));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalId, CMD_OPEN_COURSE));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalRef, CMD_OPEN_COURSE));
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.courseNode, CMD_OPEN_COURSE_NODE, intendedNodeRenderer));
