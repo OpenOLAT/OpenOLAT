@@ -38,6 +38,10 @@ public interface CoachingAssessmentEntry {
 	Long getRepositoryEntryKey();
 
 	String getRepositoryEntryName();
+	
+	String getRepositoryEntryExternalId();
+	
+	String getRepositoryEntryExternalRef();
 
 	String getSubIdent();
 	

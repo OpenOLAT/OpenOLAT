@@ -150,9 +150,8 @@ public class GroupController extends FormBasicController implements Activateable
 		previousGroup.setEnabled(numOfGroups > 1);
 		stackPanel.addTool(previousGroup);
 		
-		String details = translate("students.details", new String[]{
-				StringHelper.escapeHtml(group.getName()), Integer.toString(index + 1), Integer.toString(numOfGroups)
-		});		
+		String details = translate("students.details", StringHelper.escapeHtml(group.getName()),
+				Integer.toString(index + 1), Integer.toString(numOfGroups));		
 		detailsGroupCmp = LinkFactory.createToolLink("details.group", details, this);
 		detailsGroupCmp.setIconLeftCSS("o_icon o_icon_group");
 		stackPanel.addTool(detailsGroupCmp);
@@ -182,7 +181,10 @@ public class GroupController extends FormBasicController implements Activateable
 					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoKey));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));

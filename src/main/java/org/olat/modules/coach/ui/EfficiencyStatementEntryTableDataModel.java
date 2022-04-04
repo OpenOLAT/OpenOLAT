@@ -33,7 +33,6 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -81,10 +80,10 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case repoName: {
-					RepositoryEntry re = entry.getCourse();
-					return re.getDisplayname();
-				}
+				case repoKey: return entry.getCourse().getKey(); 
+				case repoName: return entry.getCourse().getDisplayname();
+				case repoExternalId: return entry.getCourse().getExternalId();
+				case repoExternalRef: return entry.getCourse().getExternalRef();
 				case completion: return getCompletion(entry);
 				case score: return entry.getScore();
 				case grade: return entry;
@@ -194,7 +193,10 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
+		repoKey("table.header.course.key"),
 		repoName("table.header.course.name"),
+		repoExternalId("table.header.course.externalId"),
+		repoExternalRef("table.header.course.externalRef"),
 		completion("table.header.completion"),
 		score("table.header.score"),
 		grade("table.header.grade"),

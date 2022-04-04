@@ -39,6 +39,8 @@ public class AssessmentCoachingRow extends UserPropertiesRow implements Indented
 	
 	private final Long repositoryEntryKey;
 	private final String repositoryEntryName;
+	private final String repositoryEntryExternalId;
+	private final String repositoryEntryExternalRef;
 	private final String subIdent;
 	private final String type;
 	private final String shortTitle;
@@ -51,6 +53,8 @@ public class AssessmentCoachingRow extends UserPropertiesRow implements Indented
 		super(entry.getAssessedIdentity(), userPropertyHandlers, locale);
 		this.repositoryEntryKey = entry.getRepositoryEntryKey();
 		this.repositoryEntryName = entry.getRepositoryEntryName();
+		this.repositoryEntryExternalId = entry.getRepositoryEntryExternalId();
+		this.repositoryEntryExternalRef = entry.getRepositoryEntryExternalRef();
 		this.subIdent = entry.getSubIdent();
 		this.type = entry.getCourseElementType();
 		this.shortTitle = entry.getCourseElementShortTitle();
@@ -66,6 +70,14 @@ public class AssessmentCoachingRow extends UserPropertiesRow implements Indented
 
 	public String getRepositoryEntryName() {
 		return repositoryEntryName;
+	}
+
+	public String getRepositoryEntryExternalId() {
+		return repositoryEntryExternalId;
+	}
+
+	public String getRepositoryEntryExternalRef() {
+		return repositoryEntryExternalRef;
 	}
 
 	public String getSubIdent() {

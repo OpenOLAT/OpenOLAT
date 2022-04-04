@@ -39,6 +39,8 @@ import org.olat.modules.coach.ui.LightedValue.Light;
  */
 public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStatEntry>
 	implements SortableFlexiTableDataModel<CourseStatEntry> {
+	
+	private static final Columns[] COLS = Columns.values();
 
 	public CoursesTableDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -61,8 +63,11 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 
 	@Override
 	public Object getValueAt(CourseStatEntry row, int col) {
-		switch(Columns.getValueAt(col)) {
+		switch(COLS[col]) {
+			case key: return row.getRepoKey();
 			case name: return row.getRepoDisplayName();
+			case externalId: return row.getRepoExternalId();
+			case externalRef: return row.getRepoExternalRef();
 			case access: return row.getRepoStatus();
 			case countStudents: return Integer.valueOf(row.getCountStudents());
 			case initialLaunch: {
@@ -108,12 +113,15 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 				return new LightedValue(row.getCountPassed(), light);
 			}
 			case averageScore: return row.getAverageScore();
+			default: return "ERROR";
 		}
-		return null;
 	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
+		key("table.header.course.key"),
 		name("table.header.course.name"),
+		externalId("table.header.course.externalId"),
+		externalRef("table.header.course.externalRef"),
 		access("table.header.course.access"),
 		countStudents("table.header.countStudents"),
 		initialLaunch("table.header.login"),

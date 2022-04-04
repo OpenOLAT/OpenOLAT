@@ -459,7 +459,7 @@ public class CoachingDAO {
 
 	private boolean getCourses(IdentityRef coach, Map<Long,CourseStatEntry> map) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select v.key, v.displayname, v.status")
+		sb.append("select v.key, v.displayname, v.externalId, v.externalRef, v.status")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
@@ -478,7 +478,9 @@ public class CoachingDAO {
 			CourseStatEntry entry = new CourseStatEntry();
 			entry.setRepoKey(((Number)rawStat[0]).longValue());
 			entry.setRepoDisplayName((String)rawStat[1]);
-			entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[2]));
+			entry.setRepoExternalId((String)rawStat[2]);
+			entry.setRepoExternalRef((String)rawStat[3]);
+			entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[4]));
 			map.put(entry.getRepoKey(), entry);
 		}
 		return !rawList.isEmpty();

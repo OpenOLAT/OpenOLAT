@@ -37,6 +37,8 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 	private Identity assessedIdentity;
 	private final Long repositoryEntryKey;
 	private String repositoryEntryName;
+	private String repositoryEntryExternalId;
+	private String repositoryEntryExternalRef;
 	private final String subIdent;
 	private final String courseElementType;
 	private final String courseElementShortTitle;
@@ -95,6 +97,24 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 
 	public void setRepositoryEntryName(String repositoryEntryName) {
 		this.repositoryEntryName = repositoryEntryName;
+	}
+	
+	@Override
+	public String getRepositoryEntryExternalId() {
+		return repositoryEntryExternalId;
+	}
+
+	public void setRepositoryEntryExternalId(String repositoryEntryExternalId) {
+		this.repositoryEntryExternalId = repositoryEntryExternalId;
+	}
+
+	@Override
+	public String getRepositoryEntryExternalRef() {
+		return repositoryEntryExternalRef;
+	}
+
+	public void setRepositoryEntryExternalRef(String repositoryEntryExternalRef) {
+		this.repositoryEntryExternalRef = repositoryEntryExternalRef;
 	}
 
 	@Override

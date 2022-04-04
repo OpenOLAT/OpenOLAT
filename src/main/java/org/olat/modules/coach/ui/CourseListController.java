@@ -49,6 +49,7 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,9 +72,11 @@ public class CourseListController extends FormBasicController implements Activat
 	private CourseController courseCtrl;
 	
 	private boolean hasChanged = false;
-	
+
 	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
@@ -89,7 +92,12 @@ public class CourseListController extends FormBasicController implements Activat
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
+		if(repositoryModule.isManagedRepositoryEntries()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.externalId, "select"));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.externalRef, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.access, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countStudents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
