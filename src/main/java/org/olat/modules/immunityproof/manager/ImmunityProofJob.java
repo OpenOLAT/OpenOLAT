@@ -63,8 +63,14 @@ public class ImmunityProofJob extends JobWithDB {
 	
     @Override
     public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-    	log.info("Starting Covid Certificates Reminder Job");
-    	
+		ImmunityProofModule immunityProofModule = CoreSpringFactory.getImpl(ImmunityProofModule.class);
+		if(immunityProofModule.isEnabled()) {
+			log.info("Starting Covid Certificates Reminder Job");
+			checkCertificates();
+		}
+    }
+    
+    private void checkCertificates() {
     	// Get managers and service
 		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		ImmunityProofService immunityProofService = CoreSpringFactory.getImpl(ImmunityProofService.class);
@@ -115,7 +121,7 @@ public class ImmunityProofJob extends JobWithDB {
     		
     	}
     	
-    	log.info("Covid Certificates Reminder Job finshed. Sent " + successfulMails + " successful mails, unable to send " + badMails + " mails.");
+    	log.info("Covid Certificates Reminder Job finshed. Sent {} successful mails, unable to send {} mails.", successfulMails, badMails);
     }
     
     private boolean sendMail(Translator translator, MailManager mailManager, User user, Locale userLocale, String reminderPeriod) {
@@ -155,7 +161,7 @@ public class ImmunityProofJob extends JobWithDB {
         MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
         mailManager.sendMessage(msg, result);
         if (!result.isSuccessful()) {
-            log.error("Could not send COVID reminder message to " + recipientAddress);
+            log.error("Could not send COVID reminder message to {}", recipientAddress);
             return false;
         }
         
