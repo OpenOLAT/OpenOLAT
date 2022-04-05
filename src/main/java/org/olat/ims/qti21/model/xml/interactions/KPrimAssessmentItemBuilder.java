@@ -33,8 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.gui.render.StringOutput;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -48,9 +48,15 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ContainerSize;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Product;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Subtract;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
@@ -71,6 +77,8 @@ import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
 /**
@@ -374,6 +382,98 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 			incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
 			incorrectValue.setSingleValue(QTI21Constants.EMPTY_IDENTIFIER_VALUE);
 			incorrectOutcomeValue.setExpression(incorrectValue);
+		}
+		
+		// Not all choices selected
+		/*
+		<responseElseIf>
+			<not>
+				<equal toleranceMode="exact">
+					<containerSize>
+						<variable identifier="KPRIM_RESPONSE_1" />
+					</containerSize>
+					<baseValue baseType="float">4</baseValue>
+				</equal>
+			</not>
+			<setOutcomeValue identifier="SCORE">
+				<sum>
+					<mapResponse identifier="KPRIM_RESPONSE_1" />
+					<product>
+						<subtract>
+							<baseValue baseType="float">4</baseValue>
+							<containerSize>
+								<variable identifier="KPRIM_RESPONSE_1" />
+							</containerSize>
+						</subtract>
+						<baseValue baseType="float">-1</baseValue>
+					</product>
+				</sum>
+			</setOutcomeValue>
+		</responseElseIf>
+		*/
+		
+		ResponseElseIf responseElseIfNotAnswered = new ResponseElseIf(rule);
+		rule.getResponseElseIfs().add(responseElseIfNotAnswered);
+		
+		{ // container size match not the number of choices
+			Not not = new Not(responseElseIfNotAnswered);
+			responseElseIfNotAnswered.getExpressions().add(not);
+			Equal equal = new Equal(not);
+			equal.setToleranceMode(ToleranceMode.EXACT);
+			not.getExpressions().add(equal);
+			
+			ContainerSize responseSize = new ContainerSize(equal);
+			equal.getExpressions().add(responseSize);
+			Variable responseVariable = new Variable(responseSize);
+			responseVariable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+			responseSize.getExpressions().add(responseVariable);
+			
+			BaseValue numOfChoices = new BaseValue(equal);
+			numOfChoices.setBaseTypeAttrValue(BaseType.INTEGER);
+			numOfChoices.setSingleValue(new IntegerValue(associations.size()));
+			equal.getExpressions().add(numOfChoices);	
+		}
+		
+		{ // Outcome 
+			SetOutcomeValue scoreOutcomeValue = new SetOutcomeValue(responseElseIfNotAnswered);
+			scoreOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+			responseElseIfNotAnswered.getResponseRules().add(scoreOutcomeValue);
+			
+			Sum sum = new Sum(scoreOutcomeValue);
+			scoreOutcomeValue.getExpressions().add(sum);
+			
+			MapResponse mapResponse = new MapResponse(sum);
+			mapResponse.setIdentifier(responseIdentifier);
+			sum.getExpressions().add(mapResponse);
+			
+			Product product = new Product(sum);
+			sum.getExpressions().add(product);
+			
+			Subtract subtract = new Subtract(product);
+			product.getExpressions().add(subtract);
+			
+			BaseValue numOfChoices = new BaseValue(subtract);
+			numOfChoices.setBaseTypeAttrValue(BaseType.INTEGER);
+			numOfChoices.setSingleValue(new IntegerValue(associations.size()));
+			subtract.getExpressions().add(numOfChoices);	
+			
+			ContainerSize responseSize = new ContainerSize(subtract);
+			subtract.getExpressions().add(responseSize);
+			Variable responseVariable = new Variable(responseSize);
+			responseVariable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+			responseSize.getExpressions().add(responseVariable);
+			
+			// Remove the points
+			double maxScore = getMaxScoreBuilder().getScore();
+			double mappedValue = maxScore;
+			if(associations.size() > 0) {
+				mappedValue = maxScore / associations.size();
+			}
+			
+			BaseValue defaultMapVal = new BaseValue(product);
+			defaultMapVal.setBaseTypeAttrValue(BaseType.FLOAT);
+			defaultMapVal.setSingleValue(new FloatValue(-mappedValue));
+			product.getExpressions().add(defaultMapVal);	
 		}
 		
 		ResponseElseIf responseElseIf = new ResponseElseIf(rule);
