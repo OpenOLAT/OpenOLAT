@@ -346,6 +346,7 @@ public class CourseAssessmentWebService {
 	private AssessableResultsVO getResults(Identity identity, ICourse course, CourseNode courseNode) {
 		AssessableResultsVO results = new AssessableResultsVO();
 		results.setIdentityKey(identity.getKey());
+		results.setIdentityExternalId(identity.getExternalId());
 		results.setNodeIdent(courseNode.getIdent());
 		
 		// create an identenv with no roles, no attributes, no locale
@@ -365,6 +366,8 @@ public class CourseAssessmentWebService {
 		results.setPerformanceClassIdent(scoreEval.getPerformanceClassIdent());
 		results.setCompletion(scoreEval.getCompletion());
 		results.setAttempts(scoreEval.getAttempts());
+		results.setUserVisible(scoreEval.getUserVisible());
+
 		if(scoreEval.getAssessmentStatus() != null) {
 			results.setAssessmentStatus(scoreEval.getAssessmentStatus().name());
 		}

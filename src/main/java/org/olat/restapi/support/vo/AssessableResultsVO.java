@@ -38,11 +38,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AssessableResultsVO {
 	
 	private Long identityKey;
+	private String identityExternalId;
 	private String nodeIdent;
 	
 	private Float score;
 	private Boolean passed;
 	private Float maxScore;
+	
+	private Boolean userVisible;
 
 	private String grade;
 	private String performanceClassIdent;
@@ -70,6 +73,14 @@ public class AssessableResultsVO {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public String getIdentityExternalId() {
+		return identityExternalId;
+	}
+
+	public void setIdentityExternalId(String identityExternalId) {
+		this.identityExternalId = identityExternalId;
 	}
 
 	public String getNodeIdent() {
@@ -206,5 +217,13 @@ public class AssessableResultsVO {
 
 	public void setLastVisit(Date lastVisit) {
 		this.lastVisit = lastVisit;
+	}
+
+	public Boolean getUserVisible() {
+		return userVisible;
+	}
+
+	public void setUserVisible(Boolean userVisible) {
+		this.userVisible = userVisible;
 	}
 }
