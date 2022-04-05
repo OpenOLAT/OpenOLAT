@@ -1386,6 +1386,7 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<build>
+	<finalName>ROOT</finalName>
 		<!-- Useful maven commands: o mvn dependency:tree - check to see what other 
 			dependencies get downloaded by an artifact o Maven lifecycle: Each phase 
 			of the lifecycle can also be called independent - e.g. mvn process-resources 
