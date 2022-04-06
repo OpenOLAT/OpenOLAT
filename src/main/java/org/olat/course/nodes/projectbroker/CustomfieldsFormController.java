@@ -59,7 +59,7 @@ public class CustomfieldsFormController extends FormBasicController {
 
 	private ProjectBrokerModuleConfiguration config;
 	
-	private final String ADD_FIELD_LINK = "customfield.add.field.link";
+	private static final String ADD_FIELD_LINK = "customfield.add.field.link";
 
 	String[] keys   = new String[] {"customfield.table.enabled"};
 	String[] values = new String[] {translate("customfield.table.enabled")};
@@ -87,13 +87,6 @@ public class CustomfieldsFormController extends FormBasicController {
 		customFieldSpacerElementList    = new ArrayList<>();
 	  customFields = config.getCustomFields();
 		initForm(this.flc, this, ureq);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest, Identity)
-	 */
-	public boolean validate() {
-		return true;
 	}
 
 	/**
@@ -140,6 +133,7 @@ public class CustomfieldsFormController extends FormBasicController {
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 
 		if (source instanceof FormLink) {
@@ -158,13 +152,13 @@ public class CustomfieldsFormController extends FormBasicController {
 				}
 			} else {
 				int deleteElementNumber = ((Integer)link.getUserObject()).intValue();
-				getLogger().debug("remove customfield #=" + deleteElementNumber);
+				getLogger().debug("remove customfield #={}", deleteElementNumber);
 				customFields.remove(deleteElementNumber);
 				initFormElements(flc);
 			}
 		}
 
-		this.flc.setDirty(true);
+		flc.setDirty(true);
 	}
 
 	private void initFormElements(FormLayoutContainer flc) {
@@ -178,7 +172,7 @@ public class CustomfieldsFormController extends FormBasicController {
 		if (i == 0) nameElement.setExampleKey("customfield.example.name", null);
 		customFieldNameElementList.add(nameElement);
 		
-		TextElement valueElement = uifactory.addTextAreaElement("customfield_value_" + i, "-", 2500, 5, 2, true, false, customField.getValue(), formLayout);
+		TextElement valueElement = uifactory.addTextAreaElement("customfield_value_" + i, "-", 250, 3, 2, true, false, customField.getValue(), formLayout);
 		valueElement.setLabel("customfield.value.label", null);
 		if (i == 0)  valueElement.setExampleKey("customfield.example.value", null);
 		customFieldValueElementList.add(valueElement);
@@ -188,7 +182,7 @@ public class CustomfieldsFormController extends FormBasicController {
 		customFieldTableFlagElementList.add(tableEnabledElement);
 
 		FormLink deleteLink = uifactory.addFormLink("customfield.delete.link." + i, formLayout,Link.BUTTON_SMALL);
-		deleteLink.setUserObject(new Integer(i));
+		deleteLink.setUserObject(Integer.valueOf(i));
 		customFieldLinkElementList.add(deleteLink);
 		
 		SpacerElement spacerElement = uifactory.addSpacerElement("spacer" + i, formLayout, false);

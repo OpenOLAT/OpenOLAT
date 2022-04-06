@@ -245,6 +245,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				List<String> valueList = new ArrayList<>();
 				while (tok.hasMoreTokens()) {
 					String value = tok.nextToken();
+					if(value.length() > Project.MAX_CUSTOM_FIELD_VALUE_LENGTH) {
+						value = value.substring(0, Project.MAX_CUSTOM_FIELD_VALUE_LENGTH);
+					}
 					valueList.add(value);
 					getLogger().debug("valueList add: {}", value);
 				}
@@ -256,7 +259,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				arrayIndex++;
 				for (Iterator<String> iterator2 = valueList.iterator(); iterator2.hasNext();) {
 					String value = iterator2.next();
-					theValues[arrayIndex]=value;
+					theValues[arrayIndex] = value;
 					theKeys[arrayIndex]=Integer.toString(arrayIndex);
 					arrayIndex++;
 				}
@@ -268,7 +271,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 						String key = Integer.toString(valueList.indexOf(project.getCustomFieldValue(customFieldIndex)) + 1);// '+1' because no-selection at the beginning
 						selectionElement.select(key, true);
 					} else {
-						this.showInfo("warn.customfield.key.does.not.exist",project.getCustomFieldValue(customFieldIndex));
+						showInfo("warn.customfield.key.does.not.exist",project.getCustomFieldValue(customFieldIndex));
 					}
 				}
 				customfieldElementList.add(selectionElement);
@@ -284,13 +287,13 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				DateChooser dateChooserStart = uifactory.addDateChooser(eventType + "start", eventType.getI18nKey() + ".start.label", null, formLayout);
 				dateChooserStart.setDateChooserTimeEnabled(true);
 				dateChooserStart.setDisplaySize(CUSTOM_DATE_FORMAT.length());
-				getLogger().info("Event=" + eventType + ", startDate=" + projectEvent.getStartDate());
+				getLogger().info("Event={}, startDate={}", eventType, projectEvent.getStartDate());
 				dateChooserStart.setDate(projectEvent.getStartDate());
 				eventStartElementList.put(eventType, dateChooserStart);
 				DateChooser dateChooserEnd   = uifactory.addDateChooser(eventType + "end", eventType.getI18nKey() + ".end.label", null, formLayout);
 				dateChooserEnd.setDateChooserTimeEnabled(true);
 				dateChooserEnd.setDisplaySize(CUSTOM_DATE_FORMAT.length());
-				getLogger().debug("Event=" + eventType + ", endDate=" + projectEvent.getEndDate());
+				getLogger().debug("Event={}, endDate={}", eventType, projectEvent.getEndDate());
 				dateChooserEnd.setDate(projectEvent.getEndDate());
 				eventEndElementList.put(eventType, dateChooserEnd);
 				uifactory.addSpacerElement(eventType + "spacer", formLayout, false);
@@ -371,6 +374,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				} else {
 					value = "";
 				}
+			}
+			if(value.length() > Project.MAX_CUSTOM_FIELD_VALUE_LENGTH) {
+				value = value.substring(0, Project.MAX_CUSTOM_FIELD_VALUE_LENGTH);
 			}
 			String currentValue = project.getCustomFieldValue(index);
 			getLogger().debug("customfield index={} value={} project.getCustomFieldValue(index)={}", index, value, currentValue);
