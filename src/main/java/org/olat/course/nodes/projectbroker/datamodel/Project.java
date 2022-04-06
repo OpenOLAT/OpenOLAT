@@ -35,18 +35,20 @@ import org.olat.group.BusinessGroup;
 
 public interface Project extends CreateInfo,Persistable{
 
-	final public String STATE_ASSIGNED = "state_assigned";
+	public static final String STATE_ASSIGNED = "state_assigned";
 	// state values are used as translation-keys 
-	final public String STATE_NOT_ASSIGNED   = "state_not_assigned";
-	final public String STATE_FINAL_ENROLLED = "state_final_enrolled";
-	final public String STATE_PROV_ENROLLED  = "state_prov_enrolled";
-	final public String STATE_COMPLETE       = "state_complete";
-	final public String STATE_ENROLLED       = "state_enrolled";
-	public final String STATE_ASSIGNED_ACCOUNT_MANAGER     = "state_assigned.accountmanager";
-	public final String STATE_NOT_ASSIGNED_ACCOUNT_MANAGER = "state_not_assigned.accountmanager";
-	public final String STATE_NOT_ASSIGNED_ACCOUNT_MANAGER_NO_CANDIDATE = "state_not_assigned.accountmanager.no.candidate";
+	public static final String STATE_NOT_ASSIGNED   = "state_not_assigned";
+	public static final String STATE_FINAL_ENROLLED = "state_final_enrolled";
+	public static final String STATE_PROV_ENROLLED  = "state_prov_enrolled";
+	public static final String STATE_COMPLETE       = "state_complete";
+	public static final String STATE_ENROLLED       = "state_enrolled";
+	public static final String STATE_ASSIGNED_ACCOUNT_MANAGER     = "state_assigned.accountmanager";
+	public static final String STATE_NOT_ASSIGNED_ACCOUNT_MANAGER = "state_not_assigned.accountmanager";
+	public static final String STATE_NOT_ASSIGNED_ACCOUNT_MANAGER_NO_CANDIDATE = "state_not_assigned.accountmanager.no.candidate";
 
-	final public static int MAX_MEMBERS_UNLIMITED = -1;
+	public static final int MAX_MEMBERS_UNLIMITED = -1;
+	
+	public static final int MAX_CUSTOM_FIELD_VALUE_LENGTH = 250;
 
 	public enum EventType { ENROLLMENT_EVENT, HANDOUT_EVENT; // disabled events PRESENTATION_EVENT , OTHER_EVENT
 		public String getI18nKey() {
