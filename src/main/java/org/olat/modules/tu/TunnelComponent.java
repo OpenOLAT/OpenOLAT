@@ -25,7 +25,10 @@
 
 package org.olat.modules.tu;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,8 +43,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.Args;
+import org.apache.http.util.CharArrayBuffer;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -53,8 +60,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.tu.TUConfigForm;
@@ -67,6 +74,8 @@ import org.olat.modules.ModuleConfiguration;
 public class TunnelComponent extends AbstractComponent implements AsyncMediaResponsible {
 	private static final Logger log = Tracing.createLoggerFor(TunnelComponent.class);
 	private static final ComponentRenderer RENDERER = new TunnelRenderer();
+	
+	private static final int PAGE_MAX_SIZE = 4 * 1024 * 1024; // 4 MB
 
 	private String proto;
 	private String host;
@@ -144,21 +153,16 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 			if (mimeType != null && mimeType.startsWith("text/html")) {
 				// we have html content, let doDispatch handle it for
 				// inline rendering, update hreq for next content request
-				String body;
-				try {
-					body = EntityUtils.toString(response.getEntity());
-				} catch (IOException e) {
-					log.warn("Problems when tunneling URL::{}", tureq.getUri(), e);
-					htmlContent = "Error: cannot display inline :"+tureq.getUri()+": Unknown transfer problem '";
-					return;
+				String body = loadHtml(response.getEntity(), tureq);
+				if(body != null) {
+					SimpleHtmlParser parser = new SimpleHtmlParser(body);
+					if (!parser.isValidHtml()) { // this is not valid HTML, deliver
+						// asynchronuous
+					}
+					htmlHead = parser.getHtmlHead();
+					jsOnLoad = parser.getJsOnLoad();
+					htmlContent = parser.getHtmlContent();
 				}
-				SimpleHtmlParser parser = new SimpleHtmlParser(body);
-				if (!parser.isValidHtml()) { // this is not valid HTML, deliver
-					// asynchronuous
-				}
-				htmlHead = parser.getHtmlHead();
-				jsOnLoad = parser.getJsOnLoad();
-				htmlContent = parser.getHtmlContent();
 			} else {
 				htmlContent = "Error: cannot display inline :"+tureq.getUri()+": mime type was '" + mimeType + 
 					"' but expected 'text/html'. Response header was '" + responseHeader + "'.";
@@ -226,21 +230,17 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 		if (mimeType != null && mimeType.startsWith("text/html")) {
 			// we have html content, let doDispatch handle it for
 			// inline rendering, update hreq for next content request
-			String body;
-			try {
-				body = EntityUtils.toString(response.getEntity());
-			} catch (IOException e) {
-				log.warn("Problems when tunneling URL::{}", tureq.getUri(), e);
-				return null;
+			String body = loadHtml(response.getEntity(), tureq);
+			if(StringHelper.containsNonWhitespace(body)) {
+				SimpleHtmlParser parser = new SimpleHtmlParser(body);
+				if (!parser.isValidHtml()) {
+					// This is not valid HTML, deliver asynchronuous
+					return new HttpRequestMediaResource(response);
+				}
+				htmlHead = parser.getHtmlHead();
+				jsOnLoad = parser.getJsOnLoad();
+				htmlContent = parser.getHtmlContent();
 			}
-			SimpleHtmlParser parser = new SimpleHtmlParser(body);
-			if (!parser.isValidHtml()) { // this is not valid HTML, deliver
-				// asynchronuous
-				return new HttpRequestMediaResource(response);
-			}
-			htmlHead = parser.getHtmlHead();
-			jsOnLoad = parser.getJsOnLoad();
-			htmlContent = parser.getHtmlContent();
 			setDirty(true);
 		} else {
 			return new HttpRequestMediaResource(response); // this is a async browser
@@ -248,6 +248,46 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 		// refetch
 		return null;
 	}
+	
+	private String loadHtml(final HttpEntity entity, final TURequest tureq) {
+        try(InputStream inStream = entity.getContent()) {
+            Args.check(entity.getContentLength() <= Integer.MAX_VALUE, "HTTP entity too large to be buffered in memory");
+            
+            ContentType contentType = ContentType.get(entity);
+            int capacity = (int)entity.getContentLength();
+            if (capacity < 0) {
+                capacity = FileUtils.BSIZE;
+            }
+            Charset charset = null;
+            if (contentType != null) {
+                charset = contentType.getCharset();
+                if (charset == null) {
+                    final ContentType defaultContentType = ContentType.getByMimeType(contentType.getMimeType());
+                    charset = defaultContentType != null ? defaultContentType.getCharset() : null;
+                }
+            }
+            if (charset == null) {
+                charset = HTTP.DEF_CONTENT_CHARSET;
+            }
+            final Reader reader = new InputStreamReader(inStream, charset);
+            final CharArrayBuffer buffer = new CharArrayBuffer(capacity);
+            final char[] tmp = new char[1024];
+            int l;
+            int count = 0;
+            while((l = reader.read(tmp)) != -1) {
+            	count += l;
+            	if(count > PAGE_MAX_SIZE) {
+        			log.error("Problems when tunneling URL::{} too big", tureq.getUri());
+            		return "Too big";
+            	}
+                buffer.append(tmp, 0, l);
+            }
+            return buffer.toString();
+        } catch(Exception e) {
+			log.error("Problems when tunneling URL::{}", tureq.getUri(), e);
+        	return null;
+        }
+    }
 
 	private void setFetchError() {
 		// some fetch error - reset to generic error message
@@ -292,7 +332,7 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 				HttpPost pmeth = new HttpPost(builder.build());
 				List<BasicNameValuePair> pairs = new ArrayList<>();
 				for (String key: params.keySet()) {
-					String vals[] = params.get(key);
+					String[] vals = params.get(key);
 					for(String val:vals) {
 						pairs.add(new BasicNameValuePair(key, val));
 					}
@@ -321,16 +361,13 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 	// never called
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
+
+	@Override
 	public String getExtendedDebugInfo() {
 		return proto + ", " + host + ", " + port;
 	}
@@ -356,11 +393,7 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 		return jsOnLoad;
 	}
 	
-	
-	/**
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.render.ValidationResult)
-	 */
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		// browser uri: e.g null or
@@ -396,11 +429,9 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 			}
 			vr.setNewModuleURI(newUri);
 		}
-		return;
-		
-		
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
