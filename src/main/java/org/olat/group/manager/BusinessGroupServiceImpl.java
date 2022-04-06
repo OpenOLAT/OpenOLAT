@@ -56,6 +56,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
@@ -64,6 +65,7 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -293,8 +295,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		BusinessGroup mergedGroup = null;
 		if(reloadedBusinessGroup != null) {
 			reloadedBusinessGroup.setLastUsage(new Date());
-			if(identity != null) {
-				businessGroupRelationDAO.touchMembership(identity, group);
+			if(identity != null && businessGroupRelationDAO.touchMembership(identity, group)
+					&& reloadedBusinessGroup.getReactivationDate() != null
+					&& reloadedBusinessGroup.getGroupStatus() == BusinessGroupStatusEnum.active) {
+				((BusinessGroupImpl)reloadedBusinessGroup).setReactivationDate(null);
 			}
 			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
 		}

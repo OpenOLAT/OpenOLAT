@@ -281,7 +281,7 @@ public class BusinessGroupRelationDAO {
 		return count == null ? false : count.intValue() > 0;
 	}
 	
-	public void touchMembership(IdentityRef identity, BusinessGroupRef group) {
+	public boolean touchMembership(IdentityRef identity, BusinessGroupRef group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select membership from businessgroup as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
@@ -296,6 +296,7 @@ public class BusinessGroupRelationDAO {
 			membership.setLastModified(new Date());
 			dbInstance.getCurrentEntityManager().merge(membership);
 		}
+		return !memberships.isEmpty();
 	}
 	
 	public List<Identity> getMembers(BusinessGroupRef group, String... roles) {
