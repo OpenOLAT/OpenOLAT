@@ -34,17 +34,20 @@ public class GradeScoreRangeImpl implements GradeScoreRange {
 	private final int bestToLowest;
 	private final String grade;
 	private final String performanceClassIdent;
+	private final BigDecimal score;
 	private final BigDecimal upperBound;
 	private final boolean upperBoundInclusive;
 	private final BigDecimal lowerBound;
 	private final boolean lowerBoundInclusive;
 	private final boolean passed;
 	
-	public GradeScoreRangeImpl(int bestToLowest, String grade, String performanceClassIdent, BigDecimal upperBound,
-			boolean upperBoundInclusive, BigDecimal lowerBound, boolean lowerBoundInclusive, boolean passed) {
+	public GradeScoreRangeImpl(int bestToLowest, String grade, String performanceClassIdent, BigDecimal score,
+			BigDecimal upperBound, boolean upperBoundInclusive, BigDecimal lowerBound, boolean lowerBoundInclusive,
+			boolean passed) {
 		this.bestToLowest = bestToLowest;
 		this.grade = grade;
 		this.performanceClassIdent = performanceClassIdent;
+		this.score = score;
 		this.lowerBound = lowerBound;
 		this.lowerBoundInclusive = lowerBoundInclusive;
 		this.upperBound = upperBound;
@@ -65,6 +68,11 @@ public class GradeScoreRangeImpl implements GradeScoreRange {
 	@Override
 	public String getPerformanceClassIdent() {
 		return performanceClassIdent;
+	}
+
+	@Override
+	public BigDecimal getScore() {
+		return score;
 	}
 
 	@Override

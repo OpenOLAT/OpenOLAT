@@ -24,6 +24,7 @@ import static org.olat.modules.grade.ui.GradeUIFactory.THREE_DIGITS;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -57,8 +58,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
+import org.olat.modules.assessment.ui.component.GradeChart;
+import org.olat.modules.assessment.ui.component.GradeChart.GradeCount;
 import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -72,6 +76,7 @@ import org.olat.modules.grade.model.GradeScaleWrapper;
 import org.olat.modules.grade.ui.PerformanceClassBreakpointDataModel.PerformanceClassBreakpointCols;
 import org.olat.modules.grade.ui.component.GradeScaleChart;
 import org.olat.modules.grade.ui.component.GradeScoreRangeTable;
+import org.olat.modules.grade.ui.component.PostionCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -108,6 +113,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private PerformanceClassBreakpointDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private GradeScaleChart gradeScaleChart;
+	private GradeChart gradeCountChart;
 	private FormSubmit submitButton;
 	
 	private final boolean wizard;
@@ -115,6 +121,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private final String subIdent;
 	private final BigDecimal minScore;
 	private final BigDecimal maxScore;
+	private final Map<Integer, Long> scoreToCount;
 	private GradeScale gradeScale;
 	private GradeSystem gradeSystem;
 	private Map<Integer, Breakpoint> positionToBreakpoint;
@@ -133,6 +140,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		this.subIdent = subIdent;
 		this.minScore = new BigDecimal(minScore);
 		this.maxScore = new BigDecimal(maxScore);
+		this.scoreToCount = null;
 		
 		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
 		if (gradeScale != null) {
@@ -163,7 +171,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	}
 
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, Form form, RepositoryEntry courseEntry,
-			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey) {
+			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey,
+			List<AssessmentScoreStatistic> scoreStatistics) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, form);
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = true;
@@ -171,6 +180,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		this.subIdent = subIdent;
 		this.minScore = new BigDecimal(minScore);
 		this.maxScore = new BigDecimal(maxScore);
+		this.scoreToCount = scoreStatistics.stream()
+				.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
 		
 		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
 		if (gradeScale != null) {
@@ -336,7 +347,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		formLayout.add(textCont);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.position, new CssCellRenderer("o_gr_passed_cell")));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.position, new CssCellRenderer("o_gr_passed_cell", new PostionCellRenderer())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.name, new CssCellRenderer("o_gr_passed_cell")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.lowerBound));
 		dataModel = new PerformanceClassBreakpointDataModel(columnsModel);
@@ -349,8 +360,13 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			
 		gradeScaleChart = new GradeScaleChart("scale.chart");
 		gradeScaleChart.setDomReplacementWrapperRequired(false);
-		numericCont.put("chart", gradeScaleChart);
-		textCont.put("chart", gradeScaleChart);
+		numericCont.put("gradeScaleChart", gradeScaleChart);
+		textCont.put("gradeScaleChart", gradeScaleChart);
+		
+		gradeCountChart = new GradeChart("chart");
+		gradeCountChart.setGradeSystem(gradeSystem);
+		numericCont.put("gradeChart", gradeCountChart);
+		textCont.put("gradeChart", gradeCountChart);
 		
 		if (!wizard) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -704,9 +720,13 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			List<Breakpoint> breakpoints = getBreakpoints();
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints, minScore, maxScore, getLocale());
 			gradeScoreRangeTable.setGradeScoreRanges(gradeScoreRanges);
-			updateDiagramUI(breakpoints, gradeScoreRanges);
+			updateGradeScaleChartUI(breakpoints, gradeScoreRanges);
 			numericCont.setVisible(true);
-			gradeScaleChart.setVisible(true);
+			boolean hasScores = scoreToCount != null && ! scoreToCount.isEmpty();
+			if (hasScores) {
+				updateGradeCountChartUI(gradeScoreRanges);
+			}
+			gradeCountChart.setVisible(hasScores);
 		} else {
 			numericCont.setVisible(false);
 		}
@@ -757,6 +777,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			lowerBoundEl.setDisplaySize(10);
 			lowerBoundEl.setUserObject(row);
 			if (i == performanceClasses.size()-1) {
+				lowerBoundEl.setValue(THREE_DIGITS.format(minScore));
 				lowerBoundEl.setEnabled(false);
 			}
 			row.setLowerBoundEl(lowerBoundEl);
@@ -772,17 +793,46 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		if (validateTextBreakpoints()) {
 			List<Breakpoint> breakpoints = getBreakpoints();
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints, minScore, maxScore, getLocale());
-			updateDiagramUI(breakpoints, gradeScoreRanges);
+			updateGradeScaleChartUI(breakpoints, gradeScoreRanges);
 			gradeScaleChart.setVisible(true);
+			boolean hasScores = scoreToCount != null && ! scoreToCount.isEmpty();
+			if (hasScores) {
+				updateGradeCountChartUI(gradeScoreRanges);
+			}
+			gradeCountChart.setVisible(hasScores);
 		} else {
 			gradeScaleChart.setVisible(false);
+			gradeCountChart.setVisible(false);
 		}
 	}
 
-	private void updateDiagramUI(List<Breakpoint> breakpoints, NavigableSet<GradeScoreRange> gradeScoreRanges) {
+	private void updateGradeScaleChartUI(List<Breakpoint> breakpoints, NavigableSet<GradeScoreRange> gradeScoreRanges) {
 		gradeScaleChart.setGradeSystem(gradeSystem);
 		gradeScaleChart.setBreakpoints(breakpoints);
 		gradeScaleChart.setGradeScoreRanges(gradeScoreRanges);
+	}
+
+	private void updateGradeCountChartUI(NavigableSet<GradeScoreRange> gradeScoreRanges) {
+		List<GradeCount> gradeCounts = new ArrayList<>(gradeScoreRanges.size());
+		Iterator<GradeScoreRange> rangeIterator = gradeScoreRanges.iterator();
+		while(rangeIterator.hasNext()) {
+			GradeScoreRange range = rangeIterator.next();
+			gradeCounts.add(new GradeCount(range.getGrade(), Long.valueOf(0)));
+		}
+		Collections.reverse(gradeCounts);
+		
+		for (Map.Entry<Integer, Long> entry : scoreToCount.entrySet()) {
+			// Maybe rounding problems if decimal score rounded to integer. But it's only a overview chart.
+			GradeScoreRange range = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(entry.getKey().floatValue()));
+			GradeCount gradeCount = getGradeCount(gradeCounts, range.getGrade());
+			gradeCount.setCount(Long.valueOf(gradeCount.getCount().longValue() + entry.getValue().longValue()));
+		}
+		
+		gradeCountChart.setGradeCounts(gradeCounts);
+	}
+	
+	private GradeCount getGradeCount(List<GradeCount> gradeCounts, String grade) {
+		return gradeCounts.stream().filter(gc -> gc.getGrade().equals(grade)).findFirst().orElse(null);
 	}
 
 }

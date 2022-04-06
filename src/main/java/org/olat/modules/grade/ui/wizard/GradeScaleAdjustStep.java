@@ -19,6 +19,8 @@
  */
 package org.olat.modules.grade.ui.wizard;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -27,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -41,11 +44,14 @@ public class GradeScaleAdjustStep extends BasicStep {
 
 	private final RepositoryEntry courseEntry;
 	private final CourseNode courseNode;
+	private final List<AssessmentScoreStatistic> scoreStatistics;
 
-	public GradeScaleAdjustStep(UserRequest ureq, RepositoryEntry courseEntry, CourseNode courseNode, boolean autoGrade) {
+	public GradeScaleAdjustStep(UserRequest ureq, RepositoryEntry courseEntry, CourseNode courseNode, boolean autoGrade,
+			List<AssessmentScoreStatistic> scoreStatistics) {
 		super(ureq);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
+		this.scoreStatistics = scoreStatistics;
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale()));
 		setI18nTitleAndDescr("grade.scale.ajust.title", "grade.scale.ajust.title");
 		setNextStep(new GradeChangesStep(ureq, autoGrade));
@@ -60,7 +66,7 @@ public class GradeScaleAdjustStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put(GradeScaleAdjustCallback.KEY_COURSE_ENTRY, courseEntry);
 		runContext.put(GradeScaleAdjustCallback.KEY_COURSE_NODE, courseNode);
-		return new GradeScaleAdjustController(ureq, wControl, form, runContext);
+		return new GradeScaleAdjustController(ureq, wControl, form, runContext, scoreStatistics);
 	}
 
 }
