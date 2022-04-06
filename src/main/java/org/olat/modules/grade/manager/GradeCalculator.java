@@ -50,6 +50,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class GradeCalculator {
 	
+	private static final BigDecimal TWO = new BigDecimal("2");
+	
 	public NavigableSet<GradeScoreRange> createNumericalRanges(BigDecimal lowestGrade, BigDecimal bestGrade, NumericResolution resolution,
 			Rounding rounding, BigDecimal cutValue, BigDecimal minScore, BigDecimal maxScore, List<Breakpoint> breakpoints) {
 		if (breakpoints == null || breakpoints.isEmpty()) {
@@ -89,9 +91,10 @@ public class GradeCalculator {
 	private void addNextRanges(NavigableSet<GradeScoreRange> ranges, NavigableSet<GradeScoreRange> nextRanges) {
 		GradeScoreRange upperHalfRange = ranges.last();
 		GradeScoreRange lowerHalfRange = nextRanges.first();
-		GradeScoreRange mergedRange = new GradeScoreRangeImpl(upperHalfRange.getBestToLowest(), upperHalfRange.getGrade(),
-				upperHalfRange.getPerformanceClassIdent(), upperHalfRange.getUpperBound(), upperHalfRange.isUpperBoundInclusive(),
-				lowerHalfRange.getLowerBound(), lowerHalfRange.isLowerBoundInclusive(), upperHalfRange.isPassed());
+		GradeScoreRange mergedRange = new GradeScoreRangeImpl(upperHalfRange.getBestToLowest(),
+				upperHalfRange.getGrade(), upperHalfRange.getPerformanceClassIdent(), upperHalfRange.getLowerBound(),
+				upperHalfRange.getUpperBound(), upperHalfRange.isUpperBoundInclusive(), lowerHalfRange.getLowerBound(),
+				lowerHalfRange.isLowerBoundInclusive(), upperHalfRange.isPassed());
 		ranges.addAll(nextRanges);
 		// Add is optional, so first remove the half range one.
 		ranges.remove(mergedRange);
@@ -152,8 +155,11 @@ public class GradeCalculator {
 					passed = true;
 				}
 			}
+			
+			BigDecimal score = upperBound.add(lowerBound).divide(TWO);
+			
 			GradeScoreRange gradeScoreRange = new GradeScoreRangeImpl(i + bestToLowestOffset, THREE_DIGITS.format(grade), null,
-					upperBound, upperBoundInclusive, lowerBound, lowerBoundInclusive, passed);
+					score, upperBound, upperBoundInclusive, lowerBound, lowerBoundInclusive, passed);
 			ranges.add(gradeScoreRange);
 			
 			upperBound = lowerBound;
@@ -209,9 +215,11 @@ public class GradeCalculator {
 				lowerBoundInclusive = true;
 			}
 			
+			BigDecimal score = upperBound.add(lowerBound).divide(TWO);
+			
 			GradeScoreRange range = new GradeScoreRangeImpl(performanceClass.getBestToLowest(), grade,
-					performanceClass.getIdentifier(), upperBound, upperBoundInclusive, lowerBound,
-					lowerBoundInclusive, performanceClass.isPassed());
+					performanceClass.getIdentifier(), score, upperBound, upperBoundInclusive,
+					lowerBound, lowerBoundInclusive, performanceClass.isPassed());
 			ranges.add(range);
 			
 			upperBound = lowerBound;

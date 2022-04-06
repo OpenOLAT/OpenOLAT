@@ -107,6 +107,11 @@ public class RichTextConfiguration implements Disposable {
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
 	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
+	
+	private static final String SHORT_ENDED_ELEMENTS = "area base basefont br col frame hr img input isindex link"
+			+ " meta param embed source wbr track" // Copy from TinyMCE code
+			+ " textentryinteraction"; // Our own short ended tag
+	
 	private static final String INVALID_ELEMENTS = "invalid_elements";
 	private static final String INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
 	private static final String INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
@@ -888,6 +893,8 @@ public class RichTextConfiguration implements Disposable {
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
+		//TINYMCE6 void_elements
+		setQuotedConfigValue("short_ended_elements", SHORT_ENDED_ELEMENTS);
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*]");
 	}
 
@@ -1088,10 +1095,12 @@ public class RichTextConfiguration implements Disposable {
 		// new with menu
 		StringOutput tinyMenuSb = new StringOutput();
 		tinyMenuSb
-			//new tinyMCE 5
+			//new TinyMCE 5
 		    .append("theme: 'silver',\n")
 			.append("removed_menuitems: 'newdocument',\n")
 			.append("elementpath: false,\n")
+			.append("element_format: 'xhtml',\n") // it's the default
+			.append("deprecation_warnings: ").append(!Settings.isDebuging()).append(",\n")
 			// classic
 			.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
 			.append("image_advtab:true,\n")

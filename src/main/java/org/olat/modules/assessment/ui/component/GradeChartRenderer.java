@@ -109,6 +109,14 @@ public class GradeChartRenderer extends DefaultComponentRenderer {
 		sb.append("svg.append('g')\n")
 		  .append("    .attr('class', 'y axis')\n")
 		  .append("    .call(yAxis)\n");
+		sb.append("  .append('text')")
+		  .append("    .attr('transform', 'rotate(-90)')")
+		  .append("    .attr('y', 0 - margin.left / 2)")
+		  .append("    .attr('x', 0 - (height / 2))")
+		  .append("    .attr('dy', '1em')")
+		  .append("    .attr('fill', '#000')")
+		  .append("    .style('text-anchor', 'middle')")
+		  .append("    .text('").append(translator.translate("participants")).append("')");
 		sb.append(";\n");
 		
 		sb.append("svg.selectAll()\n");

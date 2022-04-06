@@ -10,8 +10,13 @@
 		#end
 	</div>
 	<div class="o_gr_chart">
-		#if($r.available("chart"))
-			$r.render("chart")
+		#if($r.available("gradeScaleChart"))
+			$r.render("gradeScaleChart")
+		#end
+	</div>
+		<div class="o_gr_grade_count_chart">
+		#if($r.available("gradeChart") && $r.visible("gradeChart") )
+			$r.render("gradeChart")
 		#end
 	</div>
 </div>

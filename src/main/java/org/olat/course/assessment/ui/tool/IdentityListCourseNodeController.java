@@ -102,6 +102,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
@@ -1438,8 +1439,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private void doEditGradeScale(UserRequest ureq) {
 		removeAsListenerAndDispose(gradeScaleEditCtrl);
 		removeAsListenerAndDispose(gradeScaleViewCtrl);
-		if (assessmentCallback.isAdmin() || !invisibleGradesExist()) {
-			GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade());
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+		if (assessmentCallback.isAdmin() || !invisibleGradesExist(params)) {
+			List<AssessmentScoreStatistic> scoreStatistics = assessmentToolManager.getScoreStatistics(getIdentity(), params);
+			GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade(), scoreStatistics);
 			StepRunnerCallback finish = new GradeScaleAdjustCallback(coachCourseEnv, getLocale());
 			
 			gradeScaleEditCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, translate("tool.grade.scale"), "");
@@ -1457,8 +1460,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 	
-	private boolean invisibleGradesExist() {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+	private boolean invisibleGradesExist(SearchAssessedIdentityParams params) {
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(getIdentity(), params);
 		Long gradeCount = assessmentService.getGradeCount(courseEntry, courseNode.getIdent());
 		// User which the coach does not see have grades.

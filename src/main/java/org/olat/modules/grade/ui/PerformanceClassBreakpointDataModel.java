@@ -46,7 +46,7 @@ public class PerformanceClassBreakpointDataModel extends DefaultFlexiTableDataMo
 
 	private Object getValueAt(PerformanceClassBreakpointRow row, int col) {
 		switch(COLS[col]) {
-			case position: return row.getPerformanceClass().getBestToLowest();
+			case position: return row.getPerformanceClass();
 			case name: return row.getTranslatedName();
 			case lowerBound: return row.getLowerBoundEl();
 			default: return null;

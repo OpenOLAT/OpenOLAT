@@ -1231,7 +1231,7 @@ body {
 			margin-right: 1em;
 		}
 		.o_gr_passed {
-			background-color: $o-course-state-passed-color;
+			background-color: rgba($o-course-state-passed-color, 0.5);
 		}
 	}
 }
@@ -1239,9 +1239,24 @@ body {
 	stroke-width: 2;
 	stroke: $o-d3chart-default;
 	fill: none;
-}
-.o_gr_scale_chart_passed {
-	fill: $o-course-state-passed-color;
+	&.o_gr_passed {
+		stroke: $o-course-state-passed-color;
+	}
+	&.o_gr_failed {
+		stroke: $o-course-state-failed-color;
+	}
+	&.o_gr_cut_value {
+		stroke: $o-course-state-passed-color;
+		stroke-width: 1;
+	}
+	&.o_gr_help_line {
+		stroke: $gray-light;
+		stroke-width: 1;
+		opacity: 0.5;
+		&.o_gr_dash {
+			stroke-dasharray: 3,3;
+		}
+	}
 }
 
 /* MathLive */
