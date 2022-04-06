@@ -1106,16 +1106,19 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			String grade = null;
 			String performanceClassIdent = null;
 			Boolean updatePass = pass;
-			if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()
-					&& (assessmentConfig.isAutoGrade() || isAssessmentWithGrade())) {
-				GradeScale gradeScale = gradeService.getGradeScale(
-						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-						courseNode.getIdent());
-				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
-				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
-				grade = gradeScoreRange.getGrade();
-				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-				updatePass = Boolean.valueOf(gradeScoreRange.isPassed());
+			if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()) {
+				if (assessmentConfig.isAutoGrade() || isAssessmentWithGrade()) {
+					GradeScale gradeScale = gradeService.getGradeScale(
+							userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+							courseNode.getIdent());
+					NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+					grade = gradeScoreRange.getGrade();
+					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+					updatePass = Boolean.valueOf(gradeScoreRange.isPassed());
+				} else {
+					updatePass = null;
+				}
 			}
 			
 			Boolean visibility;
