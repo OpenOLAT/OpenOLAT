@@ -88,11 +88,11 @@
 	    <!-- properties to define the testing environment -->
 	    <test.env>mysql</test.env>
 	    <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
-	    <test.env.db.name>olattest</test.env.db.name>
-	    <test.env.db.user>olat</test.env.db.user>
-	    <test.env.db.pass>olat</test.env.db.pass>
+	    <test.env.db.name>openolat</test.env.db.name>
+	    <test.env.db.user>openolat</test.env.db.user>
+	    <test.env.db.pass>openolat</test.env.db.pass>
 	    <test.env.db.host.port>3306</test.env.db.host.port>
-	    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
+	    <test.env.db.postgresql.user>openolat</test.env.db.postgresql.user>
 	    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
 	    <test.env.db.oracle.name>orcl</test.env.db.oracle.name>
