@@ -123,9 +123,21 @@
 	}
 	.progress-bar {
 		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
 		background-color: #000 !important;
-		/* fallback for non-webkit browsers */
-		border: 10px solid #000;
+		
+		&.progress-bar-success {
+			background-color: $progress-bar-success-bg !important;
+		}
+		&.progress-bar-info {
+			background-color: $progress-bar-info-bg !important;
+		}
+		&.progress-bar-warning {
+			background-color: $progress-bar-warning-bg !important;
+		}
+		&.progress-bar-danger {
+			background-color: $progress-bar-danger-bg !important;
+		}
 	}
 	
 	/* Print backgrounds on sliders */
