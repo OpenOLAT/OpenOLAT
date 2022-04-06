@@ -201,7 +201,7 @@ public class LecturesListController extends FormBasicController implements Expor
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		participantLecturesOverviewCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(),
-				assessedIdentity, filterByEntries, true, true, true, true, false, false);
+				assessedIdentity, filterByEntries, true, true, true, true, false, false, false);
 		listenTo(participantLecturesOverviewCtrl);
 		participantLecturesOverviewCtrl.setBreadcrumbPanel(toolbarPanel);
 		

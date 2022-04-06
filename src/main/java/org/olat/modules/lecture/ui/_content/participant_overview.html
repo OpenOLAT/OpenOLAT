@@ -44,3 +44,14 @@ function print() {
 	#end
 </ul>
 </fieldset>
+#if($r.isTrue($printCommand))
+<script>
+	// execute after radial score rendering
+	jQuery(function() {
+		setTimeout(function() {
+			window.focus();
+			window.print();
+		},500);
+	});
+</script>
+#end
