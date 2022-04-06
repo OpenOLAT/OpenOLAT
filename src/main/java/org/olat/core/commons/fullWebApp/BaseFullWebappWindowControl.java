@@ -116,6 +116,7 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setInfo(String info) {
 		webappCtrl.getGUIMessage().setInfo(info);
+		webappCtrl.getGUIMessage().setTitle(null);
 		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
 		msgVc.setDirty(true);
 		webappCtrl.getGUIMsgPanel().setContent(msgVc);
@@ -135,6 +136,7 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setError(String error) {
 		webappCtrl.getGUIMessage().setError(error);
+		webappCtrl.getGUIMessage().setTitle(null);
 		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
 		msgVc.setDirty(true);
 		webappCtrl.getGUIMsgPanel().setContent(msgVc);
@@ -143,6 +145,7 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setWarning(String warning) {
 		webappCtrl.getGUIMessage().setWarn(warning);
+		webappCtrl.getGUIMessage().setTitle(null);
 		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
 		msgVc.setDirty(true);
 		webappCtrl.getGUIMsgPanel().setContent(msgVc);
