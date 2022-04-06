@@ -667,10 +667,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_rollcall_free:before { content: $fa-var-circle; color: #969696; }
 .o_lectures_rollcall_notice:before { content: $fa-var-circle; color: #969696; }
 .o_lectures_rollcall_:before { content: $fa-var-clock-o; color: #b8b8b8; }
-.o_lectures_attended:before { content: $fa-var-circle; color: $brand-success; }
-.o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
-.o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
-.o_lectures_dispensed:before { content: $fa-var-circle; color: $brand-info; }
+.o_lectures_attended:before { content: $fa-var-circle; color: $brand-success !important; }
+.o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning !important; }
+.o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger !important; }
+.o_lectures_dispensed:before { content: $fa-var-circle; color: $brand-info !important; }
 .o_absences_col_warning:before { content: $fa-var-warning; }
 .o_absences_col_alert:before { content: $fa-var-exclamation-circle; }
 

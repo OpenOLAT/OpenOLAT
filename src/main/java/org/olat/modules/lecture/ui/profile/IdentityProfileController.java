@@ -134,7 +134,7 @@ public class IdentityProfileController extends BasicController implements Activa
 		// list of lectures
 		lecturesTab = tabPane.addTab(ureq, translate("user.overview.lectures"), uureq -> {
 			lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), profiledIdentity, null,
-					true, true, true, true, true, false);
+					true, true, true, true, true, false, false);
 			listenTo(lecturesCtrl);
 			BreadcrumbedStackedPanel lecturesPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
 			lecturesPanel.pushController(translate("user.overview.lectures"), lecturesCtrl);

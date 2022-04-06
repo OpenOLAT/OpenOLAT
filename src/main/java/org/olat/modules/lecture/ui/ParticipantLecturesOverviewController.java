@@ -104,6 +104,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final boolean withPrint;
 	private final boolean withTitle;
 	private final boolean withSelect;
+	private final boolean printCommand;
 	private final Identity assessedIdentity;
 	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
@@ -129,19 +130,20 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private CurriculumService curriculumService;
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl, boolean withTitle, boolean withCurriculumAggregation) {
-		this(ureq, wControl, ureq.getIdentity(), null, true, true, false, withTitle, withCurriculumAggregation, false);
+		this(ureq, wControl, ureq.getIdentity(), null, true, true, false, withTitle, withCurriculumAggregation, false, false);
 	}
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, List<RepositoryEntryRef> filterByEntries,
 			boolean withPrint, boolean withSelect, boolean withLog, boolean withTitle,
-			boolean withCurriculumAggregation, boolean openAll) {
+			boolean withCurriculumAggregation, boolean openAll, boolean printCommand) {
 		super(ureq, wControl, "participant_overview");
 		this.openAll = openAll;
 		this.withLog = withLog;
 		this.withPrint = withPrint;
 		this.withTitle = withTitle;
 		this.withSelect = withSelect;
+		this.printCommand = printCommand;
 		this.assessedIdentity = assessedIdentity;
 		this.filterByEntries = filterByEntries;
 		this.withCurriculumAggregation = withCurriculumAggregation;
@@ -187,6 +189,11 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			setFormTitle("lectures.print.title", new String[]{
 					StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))
 			});
+		}
+		
+		if( formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.getFormItemComponent().contextPut("printCommand", Boolean.valueOf(printCommand));
 		}
 		
 		if(withLog) {
@@ -435,7 +442,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
 			Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, filterByEntries,
-					false, false, false, true, withCurriculumAggregation, true);
+					false, false, false, true, withCurriculumAggregation, true, true);
 			listenTo(printCtrl);
 			return printCtrl;				
 		};
