@@ -225,7 +225,7 @@ public class GradeSystemEditController extends FormBasicController {
 		cutValueEl.setVisible(numeric);
 		
 		performanceClassCont.setVisible(!numeric);
-		addButton.setVisible(numeric && !predefined);
+		addButton.setVisible(!hasScale && !predefined);
 		for (PerformanceClassRow row : performanceClassRows) {
 			row.getMarkPassedEl().setEnabled(!hasScale && !predefined);
 			row.getNameLink().setEnabled(!predefined);
