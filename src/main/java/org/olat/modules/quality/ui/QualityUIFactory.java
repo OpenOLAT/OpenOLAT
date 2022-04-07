@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,7 @@ import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
@@ -94,22 +96,26 @@ public class QualityUIFactory {
 		return EMPTY_ARRAY;
 	}
 	
-	public static String formatTopic(QualityDataCollectionView dataCollectionView) {
+	public static String formatTopic(QualityDataCollectionView dataCollectionView, Locale locale) {
 		return formatTopic(dataCollectionView.getTopicType(), dataCollectionView.getTranslatedTopicType(),
-				dataCollectionView.getTopic());
+				dataCollectionView.getTopic(), locale);
 	}
 
-	public static String formatTopic(QualityExecutorParticipation qualityParticipation) {
+	public static String formatTopic(QualityExecutorParticipation qualityParticipation, Locale locale) {
 		return formatTopic(qualityParticipation.getTopicType(), qualityParticipation.getTranslatedTopicType(),
-				qualityParticipation.getTopic());
+				qualityParticipation.getTopic(), locale);
 	}
 
-	public static String formatTopic(QualityDataCollectionTopicType type, String translatedType, String topic) {
+	public static String formatTopic(QualityDataCollectionTopicType type, String translatedType, String topic, Locale locale) {
 		StringBuilder formatedTopic = new StringBuilder();
 		if (!CUSTOM.equals(type)) {
 			formatedTopic.append(translatedType).append(" ");
 		}
-		formatedTopic.append(topic);
+		if (StringHelper.containsNonWhitespace(topic)) {
+			formatedTopic.append(topic);
+		} else if (QualityDataCollectionTopicType.IDENTIY == type) {
+			formatedTopic.append(Util.createPackageTranslator(DataCollectionController.class, locale).translate("data.collection.topic.identity.unknown"));
+		}
 		return formatedTopic.toString();
 	}
 	

@@ -57,7 +57,7 @@ public class FiguresFactory {
 		Long participationCount = qualityService.getExecutorParticipationCount(countSearchParams);
 		builder.withNumberOfParticipations(participationCount);
 		builder.addCustomFigure(translator.translate("data.collection.figures.title"), dataCollectionView.getTitle());
-		builder.addCustomFigure(translator.translate("data.collection.figures.topic"), formatTopic(dataCollectionView));
+		builder.addCustomFigure(translator.translate("data.collection.figures.topic"), formatTopic(dataCollectionView, locale));
 		if (StringHelper.containsNonWhitespace(dataCollectionView.getPreviousTitle())) {
 			builder.addCustomFigure(translator.translate("data.collection.figures.previous.title"), dataCollectionView.getPreviousTitle());
 		}
