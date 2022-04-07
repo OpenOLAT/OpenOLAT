@@ -81,12 +81,11 @@ public class DBImpl implements DB, Destroyable {
 	 * [used by spring]
 	 */
 	public DBImpl(Properties databaseProperties) {
+		destroy();
 		if(INSTANCE == null) {
 			INSTANCE = this;
 			try {
-				if(emf == null) {
-					emf = Persistence.createEntityManagerFactory("default", databaseProperties);
-				}
+				emf = Persistence.createEntityManagerFactory("default", databaseProperties);
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("", e);
