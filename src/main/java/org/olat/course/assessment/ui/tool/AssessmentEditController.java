@@ -28,8 +28,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,7 +43,12 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class AssessmentEditController extends BasicController {
 	
+	private final AssessmentParticipantViewController assessmentParticipantViewCtrl;
+
 	private final AssessmentForm assessmentForm;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public AssessmentEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -50,6 +59,12 @@ public class AssessmentEditController extends BasicController {
 		assessmentForm = new AssessmentForm(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnv);
 		listenTo(assessmentForm);
 		mainVC.put("form", assessmentForm.getInitialComponent());
+		
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentEvaluation assessmentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
+		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),assessmentEval, assessmentConfig);
+		listenTo(assessmentParticipantViewCtrl);
+		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}

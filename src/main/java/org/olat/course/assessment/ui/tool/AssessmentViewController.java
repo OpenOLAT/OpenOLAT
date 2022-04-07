@@ -43,6 +43,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -50,6 +51,8 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,14 +68,19 @@ public class AssessmentViewController extends BasicController {
 	private Link reopenLink;
 	private Link userVisibilityVisibleLink;
 	private Link userVisibilityHiddenLink;
+	
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 
 	private final CourseNode courseNode;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final AssessmentConfig assessmentConfig;
+	private final AssessmentEntry assessmentEntry;
 
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
 
 	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -80,11 +88,13 @@ public class AssessmentViewController extends BasicController {
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
-		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		
 		mainVC = createVelocityContainer("assessment_view");
 		
@@ -95,6 +105,7 @@ public class AssessmentViewController extends BasicController {
 		
 		putConfigToVC();
 		putAssessmentDataToVC(ureq);
+		putParticipantViewToVC(ureq);
 		putInitialPanel(mainVC);
 	}
 	
@@ -131,9 +142,11 @@ public class AssessmentViewController extends BasicController {
 				mainVC.contextPut("scoreMinMax", scoreMinMax);
 			}
 		}
+		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		mainVC.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
-		if (hasPassed) {
+		if (hasPassed && !hasGrade) {
 			mainVC.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
 		}
 		mainVC.contextPut("hasCommentField", assessmentConfig.hasComment());
@@ -141,8 +154,6 @@ public class AssessmentViewController extends BasicController {
 	}
 
 	private void putAssessmentDataToVC(UserRequest ureq) {
-		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
-		
 		Integer attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
 		mainVC.contextPut("attempts", attemptsValue == null ? 0 : attemptsValue.intValue());
 		if (assessmentConfig.hasMaxAttempts()) {
@@ -150,6 +161,8 @@ public class AssessmentViewController extends BasicController {
 		}
 		
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+		mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
+				assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
 		mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		mainVC.contextPut("passed", assessmentEntry.getPassed());
 		mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
@@ -175,6 +188,13 @@ public class AssessmentViewController extends BasicController {
 			DisplayOrDownloadComponent download = new DisplayOrDownloadComponent("", null);
 			mainVC.put("download", download);
 		}
+	}
+
+	private void putParticipantViewToVC(UserRequest ureq) {
+		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig);
+		listenTo(assessmentParticipantViewCtrl);
+		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
 	}
 
 	@Override
