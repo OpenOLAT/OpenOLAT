@@ -374,7 +374,7 @@ public class EnrollmentManager implements GenericEventListener {
 			
 			int numOfParticipants = row[6] == null ? 0 : ((Number)row[6]).intValue();
 			int numOfReservations = row[7] == null ? 0 : ((Number)row[7]).intValue();
-			int numOfWaiters = row[8] == null ? 0 : ((Number)row[7]).intValue();
+			int numOfWaiters = row[8] == null ? 0 : ((Number)row[8]).intValue();
 			boolean participant = row[9] == null ? false : ((Number)row[9]).intValue() > 0;
 			boolean waiting = row[10] == null ? false : ((Number)row[10]).intValue() > 0;
 			
