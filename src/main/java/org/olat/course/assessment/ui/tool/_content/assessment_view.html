@@ -47,13 +47,24 @@
 				</tr>
 			#end
 			<tr class="o_score">
-				<th>$r.translate("score.yourscore")</th>
+				<th>$r.translate("form.score")</th>
 				<td>
 					#if($r.isNotEmpty($score))
 						$score
 					#end
 				</td>
 			</tr>
+		#end 
+		
+		#if($hasGradeField)
+		<tr class="o_grade">
+			<th scope="row">$r.translate("grade")</th>
+			<td>
+				#if($grade)
+					$grade
+				#end
+			</td>
+		</tr>
 		#end 
 		
 		#if ($hasPassedField)
@@ -127,3 +138,10 @@
 	</div>
 	
 </div>
+
+#if($r.available("participantView"))
+	<fieldset>
+		<legend>$r.translate("participant.view")</legend>
+		$r.render("participantView")
+	</fieldset>
+#end

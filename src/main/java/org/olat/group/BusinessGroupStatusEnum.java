@@ -63,6 +63,17 @@ public enum BusinessGroupStatusEnum {
 		return allOk;
 	}
 	
+	public static BusinessGroupStatusEnum secureValueOf(String string) {
+		if(StringHelper.containsNonWhitespace(string)) {
+			for(BusinessGroupStatusEnum status:values()) {
+				if(status.name().equals(string)) {
+					return status;
+				}
+			}
+		}
+		return BusinessGroupStatusEnum.active;
+	}
+	
 	public static List<BusinessGroupStatusEnum> toList(List<String> status) {
 		List<BusinessGroupStatusEnum> list = new ArrayList<>();
 		if(status != null && !status.isEmpty()) {

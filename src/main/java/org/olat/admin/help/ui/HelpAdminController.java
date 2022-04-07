@@ -182,9 +182,47 @@ public class HelpAdminController extends FormBasicController {
 		List<String> helpPlugins = helpModule.getHelpPluginList();
 		for (int i = 0; i < helpPlugins.size(); i++) {
 			String helpPlugin = helpPlugins.get(i);
-			HelpAdminTableContentRow tableRow;
+			HelpAdminTableContentRow tableRow = createRow(helpPlugin);
+			if(tableRow == null) {
+				continue;
+			}
 
-			switch (helpPlugin) {
+			if (helpPlugins.size() > 1) {
+				tableEl.setColumnModelVisible(upDownColumn, true);
+				UpDown upDown = UpDownFactory.createUpDown("up_down_" + helpPlugin, UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
+				upDown.setUserObject(tableRow);
+				if (i == 0) {
+					upDown.setTopmost(true);
+				} else if (i == helpPlugins.size() - 1) {
+					upDown.setLowermost(true);
+				} 
+				tableRow.setUpDown(upDown);
+			} else {
+				tableEl.setColumnModelVisible(upDownColumn, false);
+			}
+
+			FormLink editLink = uifactory.addFormLink("edit_" + counter.incrementAndGet(), "edit", "help.admin.edit", null, null, Link.LINK);
+			editLink.setUserObject(tableRow);
+
+			FormLink deleteLink = uifactory.addFormLink("delete_" + counter.incrementAndGet(), "delete", "help.admin.delete", null, null, Link.LINK);
+			deleteLink.setUserObject(tableRow);
+
+			tableRow.setEditLink(editLink);
+			tableRow.setDeleteLink(deleteLink);
+
+			tableRows.add(tableRow);
+		}
+	
+		tableModel.setObjects(tableRows);
+		tableEl.reset(true, true, true);
+		
+		// Save positions, necessary if new entries added
+		saveHelpPluginPositions(tableRows);
+	}
+	
+	private HelpAdminTableContentRow createRow(String helpPlugin) {
+		HelpAdminTableContentRow tableRow;
+		switch (helpPlugin) {
 			case HelpModule.ACADEMY_KEY:
 				tableRow = new HelpAdminTableContentRow(
 						HelpModule.ACADEMY, 
@@ -250,41 +288,11 @@ public class HelpAdminController extends FormBasicController {
 						helpModule.getSupportEnabled().contains(HelpModule.DMZ));
 				break;
 			default:
-				tableRow = new HelpAdminTableContentRow();
+				tableRow = null;
 				break;
-			}
-
-			if (helpPlugins.size() > 1) {
-				tableEl.setColumnModelVisible(upDownColumn, true);
-				UpDown upDown = UpDownFactory.createUpDown("up_down_" + helpPlugin, UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
-				upDown.setUserObject(tableRow);
-				if (i == 0) {
-					upDown.setTopmost(true);
-				} else if (i == helpPlugins.size() - 1) {
-					upDown.setLowermost(true);
-				} 
-				tableRow.setUpDown(upDown);
-			} else {
-				tableEl.setColumnModelVisible(upDownColumn, false);
-			}
-
-			FormLink editLink = uifactory.addFormLink("edit_" + counter.incrementAndGet(), "edit", "help.admin.edit", null, null, Link.LINK);
-			editLink.setUserObject(tableRow);
-
-			FormLink deleteLink = uifactory.addFormLink("delete_" + counter.incrementAndGet(), "delete", "help.admin.delete", null, null, Link.LINK);
-			deleteLink.setUserObject(tableRow);
-
-			tableRow.setEditLink(editLink);
-			tableRow.setDeleteLink(deleteLink);
-
-			tableRows.add(tableRow);
 		}
-
-		tableModel.setObjects(tableRows);
-		tableEl.reset(true, true, true);
 		
-		// Save positions, necessary if new entries added
-		saveHelpPluginPositions(tableRows);
+		return tableRow;
 	}
 
 	@Override
@@ -369,11 +377,17 @@ public class HelpAdminController extends FormBasicController {
 	private void doMoveHelpPlugin(UpDown upDown, Direction direction) {
 		List<HelpAdminTableContentRow> tableRows = tableModel.getObjects();
 
-		Integer index = tableRows.indexOf(upDown.getUserObject());
+		int index = tableRows.indexOf(upDown.getUserObject());
 		if (Direction.UP.equals(direction)) {
-			Collections.swap(tableRows, index - 1, index);
+			int upIndex = index - 1;
+			if(upIndex >= 0 && upIndex < tableRows.size()) {
+				Collections.swap(tableRows, upIndex, index);
+			}
 		} else {
-			Collections.swap(tableRows, index, index + 1);
+			int downIndex = index + 1;
+			if(downIndex >= 0 && downIndex < tableRows.size()) {
+				Collections.swap(tableRows, index, downIndex);
+			}
 		}
 		doDisableUpDowns(tableRows);
 

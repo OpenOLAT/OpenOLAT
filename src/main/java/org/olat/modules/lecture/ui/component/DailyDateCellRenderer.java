@@ -105,13 +105,13 @@ public class DailyDateCellRenderer implements FlexiCellRenderer {
 				if(startWholeDay) {
 					renderWholeDay(target, notice, lectures);
 				} else {
-					target.append(translator.translate("from", new String[] { format.formatTimeShort(startDate) }));
+					target.append(translator.translate("from", format.formatTimeShort(startDate)));
 				}
 			} else if(CalendarUtils.isSameDay(currentDate, endDate)) {
 				if(endWholeDay) {
 					renderWholeDay(target, notice, lectures);
 				} else {
-					target.append(translator.translate("upto", new String[] { format.formatTimeShort(endDate) }));
+					target.append(translator.translate("upto", format.formatTimeShort(endDate)));
 				}
 			} else if(startDate.before(currentDate) && endDate.after(currentDate)) {
 				renderWholeDay(target, notice, lectures);
