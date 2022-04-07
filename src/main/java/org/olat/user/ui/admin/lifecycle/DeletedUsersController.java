@@ -19,6 +19,7 @@
  */
 package org.olat.user.ui.admin.lifecycle;
 
+import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.model.DeletedIdentity;
@@ -76,6 +77,7 @@ public class DeletedUsersController extends FormBasicController {
 		super(ureq, wControl, "deleted_users");
 		Translator fallbackTrans =  Util.createPackageTranslator(UserSearchTableModel.class, getLocale(), getTranslator());
 		setTranslator(Util.createPackageTranslator(OrganisationUserManagementController.class, getLocale(), fallbackTrans));
+		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), fallbackTrans));
 
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
