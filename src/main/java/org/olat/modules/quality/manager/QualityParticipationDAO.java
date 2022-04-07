@@ -182,6 +182,7 @@ class QualityParticipationDAO {
 		sb.append("     , case collection.topicType");
 		sb.append("            when '").append(QualityDataCollectionTopicType.CUSTOM).append("'");
 		sb.append("            then collection.topicCustom");
+		sb.append("            when '").append(QualityDataCollectionTopicType.IDENTIY).append("'");
 		sb.append("              then case when collection.topicIdentity.status < ").append(Identity.STATUS_DELETED);
 		sb.append("                then concat(user.lastName, ' ', user.firstName) end");
 		sb.append("            when '").append(QualityDataCollectionTopicType.ORGANISATION).append("'");
