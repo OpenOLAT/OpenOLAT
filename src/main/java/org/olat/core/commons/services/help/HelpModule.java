@@ -60,31 +60,31 @@ public class HelpModule extends AbstractSpringModule {
 	
 	private static final Logger log = Tracing.createLoggerFor(HelpModule.class);
 
-	private final static String DELIMITER = ",";
+	private static final String DELIMITER = ",";
 
-	public final static String ACADEMY = "academy";
-	public final static String ACADEMY_KEY = "ooAcademyLinkHelp";
-	public final static String OODOCS = "ooDocs";
-	public final static String OODOCS_KEY = "ooDocsLinkHelp";
+	public static final String ACADEMY = "academy";
+	public static final String ACADEMY_KEY = "ooAcademyLinkHelp";
+	public static final String OODOCS = "ooDocs";
+	public static final String OODOCS_KEY = "ooDocsLinkHelp";
 	
-	public final static String OOTEACH_KEY = "ooTeachLinkHelp";
-	public final static String OOTEACH = "ooTeach";
-	public final static String SUPPORT = "support";
-	public final static String SUPPORT_KEY = "supportMailHelp";
-	public final static String COURSE = "course";
-	public final static String COURSE_KEY = "courseHelp";
-	public final static String CUSTOM_1 = "custom1";
-	public final static String CUSTOM_1_KEY = "customLink1Help";
-	public final static String CUSTOM_2 = "custom2";
-	public final static String CUSTOM_2_KEY = "customLink2Help";
-	public final static String CUSTOM_3 = "custom3";
-	public final static String CUSTOM_3_KEY = "customLink3Help";
+	public static final String OOTEACH_KEY = "ooTeachLinkHelp";
+	public static final String OOTEACH = "ooTeach";
+	public static final String SUPPORT = "support";
+	public static final String SUPPORT_KEY = "supportMailHelp";
+	public static final String COURSE = "course";
+	public static final String COURSE_KEY = "courseHelp";
+	public static final String CUSTOM_1 = "custom1";
+	public static final String CUSTOM_1_KEY = "customLink1Help";
+	public static final String CUSTOM_2 = "custom2";
+	public static final String CUSTOM_2_KEY = "customLink2Help";
+	public static final String CUSTOM_3 = "custom3";
+	public static final String CUSTOM_3_KEY = "customLink3Help";
 
-	public final static String AUTHORSITE = "authorsite";
-	public final static String USERTOOL = "usertool";
-	public final static String DMZ = "dmz";
+	public static final String AUTHORSITE = "authorsite";
+	public static final String USERTOOL = "usertool";
+	public static final String DMZ = "dmz";
 
-	public final static String DEFAULT_ICON = "o_icon_help";
+	public static final String DEFAULT_ICON = "o_icon_help";
 
 	private ListWrapper listWrapper;
 
@@ -486,40 +486,40 @@ public class HelpModule extends AbstractSpringModule {
 	// Saves the order position
 	public void setPosition(String helpPlugin, int position) {
 		switch (helpPlugin) {
-		case ACADEMY:
-			academyPos = position;
-			setIntProperty("help.academy.pos", position, true);
-			break;
-		case OOTEACH:
-			ooTeachPos = position;
-			setIntProperty("help.ooteach.pos", position, true);
-			break;
-		case OODOCS:
-			ooDocsPos = position;
-			setIntProperty("help.ooDocs.pos", position, true);
-			break;
-		case COURSE:
-			coursePos = position;
-			setIntProperty("help.course.pos", position, true);
-			break;
-		case CUSTOM_1:
-			custom1Pos = position;
-			setIntProperty("help.custom1.pos", position, true);
-			break;
-		case CUSTOM_2:
-			custom2Pos = position;
-			setIntProperty("help.custom2.pos", position, true);
-			break;
-		case CUSTOM_3:
-			custom3Pos = position;
-			setIntProperty("help.custom3.pos", position, true);
-			break;
-		case SUPPORT:
-			supportPos = position;
-			setIntProperty("help.support.pos", position, true);
-			break;
-		default:
-			break;
+			case ACADEMY:
+				academyPos = position;
+				setIntProperty("help.academy.pos", position, true);
+				break;
+			case OOTEACH:
+				ooTeachPos = position;
+				setIntProperty("help.ooteach.pos", position, true);
+				break;
+			case OODOCS:
+				ooDocsPos = position;
+				setIntProperty("help.ooDocs.pos", position, true);
+				break;
+			case COURSE:
+				coursePos = position;
+				setIntProperty("help.course.pos", position, true);
+				break;
+			case CUSTOM_1:
+				custom1Pos = position;
+				setIntProperty("help.custom1.pos", position, true);
+				break;
+			case CUSTOM_2:
+				custom2Pos = position;
+				setIntProperty("help.custom2.pos", position, true);
+				break;
+			case CUSTOM_3:
+				custom3Pos = position;
+				setIntProperty("help.custom3.pos", position, true);
+				break;
+			case SUPPORT:
+				supportPos = position;
+				setIntProperty("help.support.pos", position, true);
+				break;
+			default:
+				break;
 		}
 		
 		loadListWrapper(true);
