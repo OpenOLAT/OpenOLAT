@@ -84,7 +84,9 @@ public class DBImpl implements DB, Destroyable {
 		if(INSTANCE == null) {
 			INSTANCE = this;
 			try {
-				emf = Persistence.createEntityManagerFactory("default", databaseProperties);
+				if(emf == null) {
+					emf = Persistence.createEntityManagerFactory("default", databaseProperties);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("", e);
