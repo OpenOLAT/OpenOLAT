@@ -54,14 +54,14 @@ public interface AssessmentConfig {
 	public Mode getScoreMode();
 	
 	/**
-	 * @return Returns the maximal score that can be achieved on this node. Throws 
-	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
+	 * @return Returns the maximal score that can be achieved on this node. Return
+	 *         NULL if ScoreMode set to Mode.none, maxScore is undefined in this case
 	 */
 	public Float getMaxScore();
 
 	/**
-	 * @return Returns the minimal score that can be achieved on this node. Throws 
-	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
+	 * @return Returns the minimal score that can be achieved on this node. Return
+	 *         NULL if ScoreMode set to Mode.none, minScore is undefined in this case
 	 */
 	public Float getMinScore();
 	
