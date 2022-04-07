@@ -53,9 +53,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
 		String exDate = jsdcc.getExampleDateString();
 		int maxlength = exDate.length() + 4;
-		
+
 		//add pop js for date chooser, if componente is enabled
-		sb.append("<div class='o_date form-inline'>");
+		sb.append("<div");
+		if(!jsdcc.isDomReplacementWrapperRequired()) {
+			sb.append(" id='o_c").append(jsdcc.getDispatchID()).append("'");
+		}
+		sb.append(" class='o_date form-inline'>");
 		if (source.isEnabled()) {
 			renderDateElement(sb, jsdcc, maxlength, translator);
 		} else{
@@ -67,7 +71,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	private void renderDateElement(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength, Translator translator) {
 		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
 		if (!jsdcc.isTimeOnlyEnabled()) {
-			renderDateChooser(sb, jsdcc, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+			renderDateChooser(sb, jsdcc, receiverId, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
 		}
 		//input fields for hour and minute
 		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
@@ -89,7 +93,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				renderSeparator(sb, translator.translate(jsdcc.getSeparator()));
 			}
 			if(!jsdcc.isTimeOnlyEnabled() || jsdcc.isTimeOnlyEnabled()) {
-				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
+				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), receiverId, jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
 			}
 			if (jsdcc.isDateChooserTimeEnabled()) {
 				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms");
@@ -101,7 +105,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='form-group o_date_separator'>").append(sep).append("</div>");
 	}
 	
-	private void renderDateChooser(StringOutput sb, JSDateChooserComponent jsdcc, String receiverId, String value, String cssClass, int maxlength, Translator translator) {
+	private void renderDateChooser(StringOutput sb, JSDateChooserComponent jsdcc, String receiverId, String onChangeId,
+			String value, String cssClass, int maxlength, Translator translator) {
 		TextElementComponent teC = jsdcc.getTextElementComponent();
 		String format = jsdcc.getDateChooserDateFormat();
 		TextElementImpl te = teC.getTextElementImpl();
@@ -114,7 +119,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		sb.append("<div class='form-group ").append(cssClass).append("'><div class='input-group o_date_picker'>");
-		renderTextElement(sb, receiverId, value, teC, maxlength);
+		renderTextElement(sb, receiverId, onChangeId, value, teC, maxlength);
 		//date chooser button
 		sb.append("<span class='input-group-addon'>")
 		  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\"")
@@ -297,7 +302,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		return dc;
 	}
 	
-	private void renderTextElement(StringOutput sb, String receiverId, String value, TextElementComponent teC, int maxlength) {
+	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String value, TextElementComponent teC, int maxlength) {
 		TextElementImpl te = teC.getTextElementImpl();
 		
 		//display size cannot be bigger the maxlenght given by dateformat
@@ -309,7 +314,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" size=\"").append(te.displaySize)
 		  .append("\" maxlength=\"").append(maxlength)
 		  .append("\" value=\"").append(StringHelper.escapeHtml(value)).append("\" ")
-		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), receiverId, te.getAction()))
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()))
 		  .append("/>");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), receiverId);

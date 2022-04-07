@@ -577,7 +577,7 @@ public class LectureBlockDAO {
 		QueryBuilder sc = new QueryBuilder(2048);
 		sc.append("select block, coach, config, mode.key")
 		  .append(" from lectureblock block")
-		  .append(" inner join block.entry entry")
+		  .append(" inner join fetch block.entry entry")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity coach")

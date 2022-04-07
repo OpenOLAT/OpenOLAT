@@ -52,7 +52,9 @@ public class SortableFlexiTableModelDelegate<T> {
 		this.orderBy = orderBy;
 		if(orderBy != null && orderBy.getKey() != null) {
 			FlexiColumnModel colModel = getColumnModel(orderBy.getKey(), tableModel.getTableColumnModel());
-			columnIndex = colModel.getColumnIndex();
+			if(colModel != null) {
+				columnIndex = colModel.getColumnIndex();
+			}
 			asc = orderBy.isAsc();
 		} else {
 			columnIndex = 0;

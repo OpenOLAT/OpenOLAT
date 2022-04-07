@@ -133,6 +133,16 @@ public class Formatter {
 	}
 	
 	public String dayOfWeek(Date date) {
+		DayOfWeek dayOfWeek = getDayOfWeek(date);
+		return  dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale);
+	}
+	
+	public String dayOfWeekShort(Date date) {
+		DayOfWeek dayOfWeek = getDayOfWeek(date);
+		return  dayOfWeek.getDisplayName(TextStyle.SHORT_STANDALONE, locale);
+	}
+	
+	public static DayOfWeek getDayOfWeek(Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		DayOfWeek dayOfWeek;
@@ -146,7 +156,7 @@ public class Formatter {
 			case Calendar.SUNDAY: dayOfWeek = DayOfWeek.SUNDAY; break;
 			default: dayOfWeek = DayOfWeek.MONDAY;
 		}
-		return  dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale);
+		return  dayOfWeek;
 	}
 
 	/**
