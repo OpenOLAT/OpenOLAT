@@ -81,7 +81,6 @@ public class DBImpl implements DB, Destroyable {
 	 * [used by spring]
 	 */
 	public DBImpl(Properties databaseProperties) {
-		destroy();
 		if(INSTANCE == null) {
 			INSTANCE = this;
 			try {
