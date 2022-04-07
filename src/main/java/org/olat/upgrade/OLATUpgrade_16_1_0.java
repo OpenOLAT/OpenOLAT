@@ -198,7 +198,16 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		for (RepositoryEntry repositoryEntry : courseEntries) {
 			initCourseElements(repositoryEntry);
 			migrationCounter.incrementAndGet();
-			dbInstance.commitAndCloseSession();
+			try {
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				// Calling db.instance.commitAndCloseSession() can e.g. throw an
+				// org.olat.core.logging.DBRuntimeException: commit failed, rollback transaction
+				// -> Avoid that whole migration gets stopped!
+				log.error("Error in init course elements of course {} ({}).", repositoryEntry.getKey(),
+					repositoryEntry.getDisplayname());
+				log.error("", e);
+			}
 			if(migrationCounter.get() % 100 == 0) {
 				log.info("Init course elements: num. of courses migrated: {}", migrationCounter);
 			}

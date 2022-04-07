@@ -418,10 +418,11 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		List<Long> coachKeys = backup.getCoachKeys();
 		List<Identity> coaches = identityDao.loadByKeys(coachKeys);
 		for(Identity identityToAdd:coaches) {
-			businessGroupRelationDao.addRole(identityToAdd, businessGroup, GroupRoles.coach.name());
-			// notify currently active users of this business group
-			events.add(BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd));
-
+			if(!businessGroupRelationDao.hasRole(identityToAdd, businessGroup, GroupRoles.coach.name())) {
+				businessGroupRelationDao.addRole(identityToAdd, businessGroup, GroupRoles.coach.name());
+				// notify currently active users of this business group
+				events.add(BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd));
+			}
 			if((++count % 25) == 0) {
 				dbInstance.commitAndCloseSession();
 			}
@@ -430,10 +431,11 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		List<Long> participantKeys = backup.getParticipantKeys();
 		List<Identity> participants = identityDao.loadByKeys(participantKeys);
 		for(Identity identityToAdd:participants) {
-			businessGroupRelationDao.addRole(identityToAdd, businessGroup, GroupRoles.participant.name());
-			// notify currently active users of this business group
-			events.add(BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd));
-
+			if(!businessGroupRelationDao.hasRole(identityToAdd, businessGroup, GroupRoles.participant.name())) {
+				businessGroupRelationDao.addRole(identityToAdd, businessGroup, GroupRoles.participant.name());
+				// notify currently active users of this business group
+				events.add(BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd));
+			}
 			if((++count % 25) == 0) {
 				dbInstance.commitAndCloseSession();
 			}

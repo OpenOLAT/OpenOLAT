@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -45,11 +46,31 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 	@Override
 	protected void sort(List<AssessedIdentityElementRow> rows) {
 		int columnIndex = getColumnIndex();
-		if(columnIndex == IdentityCourseElementCols.currentCompletion.ordinal()) {
+		if(columnIndex == IdentityCourseElementCols.score.ordinal()) {
+			Collections.sort(rows, new ScoreComparator());
+		} else if(columnIndex == IdentityCourseElementCols.currentCompletion.ordinal()) {
 			Collections.sort(rows, new CurrentCompletionComparator());
 		} else {
 			super.sort(rows);
 		}
+	}
+	
+	private class ScoreComparator implements Comparator<AssessedIdentityElementRow> {
+		
+		@Override
+		public int compare(AssessedIdentityElementRow r1, AssessedIdentityElementRow r2) {
+			if(r1 == null || r2 == null) {
+				return compareNullObjects(r1, r2);
+			}
+			
+			BigDecimal s1 = r1.getScore();
+			BigDecimal s2 = r2.getScore();
+			if(s1 == null || s2 == null) {
+				return compareNullObjects(s1, s2);
+			}
+			return s1.compareTo(s2);
+		}
+		
 	}
 
 	private class CurrentCompletionComparator implements Comparator<AssessedIdentityElementRow> {

@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection.AutoCompletionSource;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.id.Identity;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 
@@ -60,6 +61,7 @@ public class TopicIdentitySource implements AutoCompletionSource {
 		SelectionValues selectionValues = new SelectionValues();
 		
 		analysisService.loadTopicIdentity(searchParams).stream()
+				.filter(identity -> identity.getStatus() < Identity.STATUS_DELETED)
 				.filter(identity -> keys.contains(identity.getKey().toString()))
 				.forEach(identity -> selectionValues.add(entry(identity.getKey().toString(), getDisplayName(identity))));
 		
@@ -69,6 +71,7 @@ public class TopicIdentitySource implements AutoCompletionSource {
 	@Override
 	public SearchResult getSearchResult(String searchText) {	
 		List<IdentityShort> filtered = analysisService.loadTopicIdentity(searchParams).stream()
+				.filter(identity -> identity.getStatus() < Identity.STATUS_DELETED)
 				.filter(identity -> identity.getLastName().toLowerCase().contains(searchText) || identity.getFirstName().toLowerCase().contains(searchText))
 				.sorted(identityComparator)
 				.collect(Collectors.toList());

@@ -32,7 +32,6 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -549,7 +548,6 @@ public class AnalysisFilterDAO {
 		sb.append("       inner join organisation dcOrganisation");
 		sb.append("              on dc2org.organisation.key = dcOrganisation.key");
 		sb.append("       left join collection.topicOrganisation topicOrganisation");
-		sb.append("       left join collection.topicIdentity topicIdentity");
 		sb.append("       left join qualitycontext context");
 		sb.append("              on context.dataCollection.key = collection.key");
 		sb.append("       left join contexttocurriculumelement contextToCurriculumElement");
@@ -600,7 +598,6 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDataCollectionRefs() != null && !searchParams.getDataCollectionRefs().isEmpty()) {
 			sb.and().append("collection.key in :dataCollectionKeys");
 		}
-		sb.and().append("(topicIdentity is null or topicIdentity.status <").append(Identity.STATUS_DELETED).append(")");
 		if (searchParams.getTopicIdentityRefs() != null && !searchParams.getTopicIdentityRefs().isEmpty()) {
 			sb.and().append("collection.topicIdentity.key in :topicIdentityKeys");
 		}

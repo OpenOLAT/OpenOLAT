@@ -75,7 +75,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -99,8 +98,6 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private UserLifecycleManager userLifecycleManager;
 	
 	@Autowired
 	private AnalysisFilterDAO sut;
@@ -1339,7 +1336,6 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsUser("i1");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsUser("i2");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsUser("io");
-		Identity deletedIdentity = JunitTestHelper.createAndPersistIdentityAsUser("do");
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		dc1.setTopicIdentity(identity1);
 		qualityService.updateDataCollection(dc1);
@@ -1352,23 +1348,18 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.updateDataCollection(dcOther);
 		dcOther.setTopicIdentity(otherIdentity);
-		QualityDataCollection dcDeleted = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
-		qualityService.updateDataCollection(dcDeleted);
-		dcDeleted.setTopicIdentity(deletedIdentity);
 		QualityDataCollection dcNoIdentity = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
-		finish(asList(dc1, dc2, dc3, dcOther, dcDeleted, dcNoIdentity));
-		dbInstance.commitAndCloseSession();
-		userLifecycleManager.deleteIdentity(deletedIdentity, otherIdentity);
+		finish(asList(dc1, dc2, dc3, dcOther, dcNoIdentity));
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		searchParams.setTopicIdentityRefs(asList(identity1, identity2, deletedIdentity));
+		searchParams.setTopicIdentityRefs(asList(identity1, identity2));
 		List<Long> keys = sut.loadTopicIdentityKeys(searchParams);
 		
 		assertThat(keys)
 				.doesNotContainNull()
 				.containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey())
-				.doesNotContain(deletedIdentity.getKey(), otherIdentity.getKey());
+				.doesNotContain(otherIdentity.getKey());
 	}
 	
 	@Test

@@ -125,7 +125,7 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 		KeyValue keyValue = null;
 		if (qualityParticipation.getTopic() != null) {
 			String key = translator.translate("executor.participation.topic.title");
-			String value = formatTopic(qualityParticipation);
+			String value = formatTopic(qualityParticipation, translator.getLocale());
 			keyValue = new KeyValue(key, value);
 		}
 		return keyValue;

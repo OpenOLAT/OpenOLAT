@@ -86,7 +86,7 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 		if (dataCollectionView != null) {
 			if (attributes.contains(Attribute.TOPIC)) {
 				String key = translator.translate("executor.participation.topic.title");
-				String value = formatTopic(dataCollectionView);
+				String value = formatTopic(dataCollectionView, translator.getLocale());
 				KeyValue keyValue = new KeyValue(key, value);
 				uiContext.add(keyValue);
 			}
@@ -223,7 +223,7 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
 				.distinct()
 				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(element -> getLevelName(element),
+				.collect(Collectors.groupingBy(this::getLevelName,
 					Collectors.mapping(TaxonomyLevel::getDisplayName, Collectors.joining(DELIMITER))));
 		
 		List<KeyValue> keyValues = new ArrayList<>(typesNamesToTaxonomyLevels.size());
