@@ -457,6 +457,7 @@ public class AssessmentHelper {
 						assessmentNodeData.setIgnoreInCourseAssessment(assessmentConfig.ignoreInCourseAssessment());
 					}
 					// passed
+					assessmentNodeData.setPassedMode(assessmentConfig.getPassedMode());
 					if (Mode.none != assessmentConfig.getPassedMode()) {
 						hasDisplayableValuesConfigured = true;
 						Boolean passed = scoreEvaluation.getPassed();

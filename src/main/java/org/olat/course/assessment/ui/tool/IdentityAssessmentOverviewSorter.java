@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -47,8 +48,35 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 		int columnIndex = getColumnIndex();
 		NodeCols column = NodeCols.values()[columnIndex];
 		switch(column) {
+			case score: Collections.sort(rows, new ScoreComparator()); break;
+			case passed: Collections.sort(rows, new PassedComparator()); break;
 			case minMax: Collections.sort(rows, new MinMaxComparator()); break;
+			case status: Collections.sort(rows, new StatusComparator()); break;
 			default: super.sort(rows); break;
+		}
+	}
+	
+	private class ScoreComparator implements Comparator<AssessmentNodeData> {
+		@Override
+		public int compare(AssessmentNodeData o1, AssessmentNodeData o2) {
+			Float s1 = o1.getScore();
+			Float s2 = o2.getScore();
+			if (s1 == null || s2 == null) {
+				return compareNullObjects(s1, s2);
+			}
+			return Float.compare(s1.floatValue(), s1.floatValue());
+		}
+	}
+	
+	private class PassedComparator implements Comparator<AssessmentNodeData> {
+		@Override
+		public int compare(AssessmentNodeData o1, AssessmentNodeData o2) {
+			Boolean passed1 = o1.getPassed();
+			Boolean passed2 = o2.getPassed();
+			if (passed1 == null || passed2 == null) {
+				return compareNullObjects(passed1, passed2);
+			}
+			return passed1.compareTo(passed2);
 		}
 	}
 	
@@ -61,6 +89,18 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 				return compareNullObjects(minScore1, minScore2);
 			}
 			return Float.compare(minScore1.floatValue(), minScore1.floatValue());
+		}
+	}
+	
+	private class StatusComparator implements Comparator<AssessmentNodeData> {
+		@Override
+		public int compare(AssessmentNodeData o1, AssessmentNodeData o2) {
+			AssessmentEntryStatus status1 = o1.getAssessmentStatus();
+			AssessmentEntryStatus status2 = o2.getAssessmentStatus();
+			if (status1 == null || status2 == null) {
+				return compareNullObjects(status1, status2);
+			}
+			return status1.compareTo(status2);
 		}
 	}
 

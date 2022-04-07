@@ -102,9 +102,9 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case passedOverriden: return nodeData.getPassedOverridable() == null
 					? Boolean.FALSE
 					: Boolean.valueOf(nodeData.getPassedOverridable().isOverridden());
-			case passed: return nodeData.getPassed();
+			case passed: return nodeData;
 			case minMax: return nodeData;
-			case status: return nodeData.getAssessmentStatus();
+			case status: return nodeData;
 			case numOfAssessmentDocs: {
 				if(nodeData.getNumOfAssessmentDocs() <= 0) {
 					return null;

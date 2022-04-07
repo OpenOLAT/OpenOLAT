@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -77,6 +78,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private String grade;
 	private String performanceClassIdent;
 	
+	private Mode passedMode;
 	private Boolean passed;
 	private Overridable<Boolean> passedOverridable;
 	
@@ -234,6 +236,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 
 	public void setPerformanceClassIdent(String performanceClassIdent) {
 		this.performanceClassIdent = performanceClassIdent;
+	}
+
+	public Mode getPassedMode() {
+		return passedMode;
+	}
+
+	public void setPassedMode(Mode passedMode) {
+		this.passedMode = passedMode;
 	}
 
 	public Boolean getPassed() {

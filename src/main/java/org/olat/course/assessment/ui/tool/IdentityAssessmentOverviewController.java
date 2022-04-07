@@ -71,6 +71,8 @@ import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
+import org.olat.course.assessment.ui.tool.component.IdentityAssessmentPassedCellRenderer;
+import org.olat.course.assessment.ui.tool.component.IdentityAssessmentStatusCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -78,7 +80,6 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.GradeCellRenderer;
-import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.grade.GradeModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -341,9 +342,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (hasPassedOverridable) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new PassedCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new IdentityAssessmentPassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.numOfAssessmentDocs));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new AssessmentStatusCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new IdentityAssessmentStatusCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.lastUserModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastCoachModified));
