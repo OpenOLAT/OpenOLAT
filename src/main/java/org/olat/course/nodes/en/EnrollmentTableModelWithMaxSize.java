@@ -127,6 +127,10 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 				return trans.translate("grouplist.table.state.notEnrolled");
 			case 6:
 				// Action enroll
+				if(!enrollmentRow.isActive()) {
+					// Only active groups can be enrolled
+					return Boolean.FALSE;
+				}
 				if (getEnrolCount() >= maxEnrolCount || isEnrolledIn(enrollmentRow)) {
 					// Already too much enrollments or already enrolled in the bg of the row => does not show action-link 'enroll'
 					return Boolean.FALSE;
