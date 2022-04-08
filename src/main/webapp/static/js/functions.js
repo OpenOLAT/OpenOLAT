@@ -821,8 +821,6 @@ function o_openTab(url) {
 
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
 
-	console.log('Upload', fileInputElement, fakeInputElement, saveButton);
-
 	fileInputElement.setCustomValidity('');
 
 	var fileSize = formInputFileSize(fileInputElement);
