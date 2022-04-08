@@ -86,9 +86,12 @@ public class UserProfilePage {
 	public UserProfilePage changeEmail(String newEmail) {
 		By emailBy = By.cssSelector(".o_user_profile_form .o_user_profil_email input[type='text']");
 		OOGraphene.waitElement(emailBy, browser);
-		WebElement emailEl = browser.findElement(emailBy);
-		emailEl.clear();
-		emailEl.sendKeys(newEmail);
+        browser.findElement(emailBy).clear();
+        // Make it reliable for Firefox (server)
+        OOGraphene.waitingALittleBit();
+        browser.findElement(emailBy).sendKeys("");
+        OOGraphene.waitingALittleBit();
+        browser.findElement(emailBy).sendKeys(newEmail);
 		return this;
 	}
 	

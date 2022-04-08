@@ -85,8 +85,13 @@ public class RepositoryAccessPage {
 	 * Click toolbar
 	 */
 	public void clickToolbarBack() {
-		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		try {
+			By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+			browser.findElement(toolbarBackBy).click();
+			OOGraphene.waitBusy(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Toolbar Back", browser);
+			throw e;
+		}
 	}
 }
