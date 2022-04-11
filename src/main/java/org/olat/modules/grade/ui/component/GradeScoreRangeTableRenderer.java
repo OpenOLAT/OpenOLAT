@@ -50,10 +50,11 @@ public class GradeScoreRangeTableRenderer extends DefaultComponentRenderer {
 		NavigableSet<GradeScoreRange> gradeScoreRanges = gadeScoreRangeTable.getGradeScoreRanges();
 		Iterator<GradeScoreRange> rangesIterator = gradeScoreRanges.iterator();
 		int numColumns = gadeScoreRangeTable.getNumColumns();
-		int numRows = (int)Math.floor((float)gradeScoreRanges.size() / numColumns) + 1;
 		
 		sb.append("<div class='o_gr_grade_scores'>");
+		int numRowsRendered = 0;
 		for (int columnIndex = 0; columnIndex < numColumns; columnIndex++) {
+			int numRows = (int)Math.ceil((float)(gradeScoreRanges.size() - numRowsRendered) / (numColumns - columnIndex));
 			int fromIndex = columnIndex * numRows;
 			int toIndex = (columnIndex + 1) * numRows;
 
@@ -76,6 +77,8 @@ public class GradeScoreRangeTableRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</tbody>");
 			sb.append("</table>");
+			
+			numRowsRendered += numRows;
 		}
 		sb.append("</div>");
 	}

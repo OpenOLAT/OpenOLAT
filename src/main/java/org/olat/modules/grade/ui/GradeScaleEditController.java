@@ -528,12 +528,18 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				if (allOk) {
 					BigDecimal lastValue = null;
 					for (PerformanceClassBreakpointRow row : dataModel.getObjects()) {
-						BigDecimal value = new BigDecimal(row.getLowerBoundEl().getValue());
-						if (lastValue != null && value.compareTo(lastValue) > 0) {
-							row.getLowerBoundEl().setErrorKey("error.performance.class.breakpoint.descending", null);
-							allOk &= false;
+						if (allOk) {
+							BigDecimal value = new BigDecimal(row.getLowerBoundEl().getValue());
+							if (allOk && value.compareTo(maxScore) > 0) {
+								row.getLowerBoundEl().setErrorKey("error.breakpoint.higher.max", null);
+								allOk &= false;
+							}
+							if (allOk && lastValue != null && value.compareTo(lastValue) > 0) {
+								row.getLowerBoundEl().setErrorKey("error.performance.class.breakpoint.descending", null);
+								allOk &= false;
+							}
+							lastValue = value;
 						}
-						lastValue = value;
 					}
 				}
 			}
