@@ -467,7 +467,6 @@ public class GradeCalculatorTest {
 				new BigDecimal(maxScore));
 	}
 	
-
 	@Test
 	public void shouldCreateNumericRanges_breakpointsStillLinear() {
 		List<Breakpoint> breakpoints = new ArrayList<>(1);
@@ -599,6 +598,64 @@ public class GradeCalculatorTest {
 		range = ranges.get(9);
 		assertThat(range.getGrade()).isEqualTo("10");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("0"));
+	}
+	
+	@Test
+	public void shouldCreateNumericRanges_breakpointEqualsMax() {
+		List<Breakpoint> breakpoints = new ArrayList<>(1);
+		BreakpointWrapper breakpoint = new BreakpointWrapper();
+		breakpoint.setGrade("6");
+		breakpoint.setScore(new BigDecimal(80));
+		breakpoints.add(breakpoint);
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 6, NumericResolution.half, Rounding.nearest, null, 0, 100, breakpoints)
+				.stream().collect(Collectors.toList());
+		
+		assertThat(ranges).hasSize(11);
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getGrade()).isEqualTo("6");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("100"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("76"));
+		range = ranges.get(1);
+		assertThat(range.getGrade()).isEqualTo("5.5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("76"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("68"));
+		range = ranges.get(2);
+		assertThat(range.getGrade()).isEqualTo("5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("68"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("60"));
+		range = ranges.get(3);
+		assertThat(range.getGrade()).isEqualTo("4.5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("60"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("52"));
+		range = ranges.get(4);
+		assertThat(range.getGrade()).isEqualTo("4");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("52"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("44"));
+		range = ranges.get(5);
+		assertThat(range.getGrade()).isEqualTo("3.5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("44"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("36"));
+		range = ranges.get(6);
+		assertThat(range.getGrade()).isEqualTo("3");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("36"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("28"));
+		range = ranges.get(7);
+		assertThat(range.getGrade()).isEqualTo("2.5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("28"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("20"));
+		range = ranges.get(8);
+		assertThat(range.getGrade()).isEqualTo("2");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("20"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("12"));
+		range = ranges.get(9);
+		assertThat(range.getGrade()).isEqualTo("1.5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("12"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("4"));
+		range = ranges.get(10);
+		assertThat(range.getGrade()).isEqualTo("1");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("4"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("0"));
 	}
 	

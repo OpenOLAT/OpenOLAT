@@ -406,7 +406,6 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		SelectionValues gradeSV = new SelectionValues();
 		List<String> grades = gradeService.getGrades(gradeSystem, minScore, maxScore);
 		if (grades.size() > 2) {
-			grades = grades.subList(1, grades.size()-2);
 			grades.forEach(g -> gradeSV.add(SelectionValues.entry(g, translate("grade.scale.breakpoint.grade", g))));
 		}
 		return gradeSV;
