@@ -132,7 +132,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	}
 
 	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, String grade,
-			String performanceClassIdent, Boolean passed, Identity identity, OLATResource resource) {
+			String gradeSystemIdent, String performanceClassIdent, Boolean passed, Identity identity, OLATResource resource) {
 		UserEfficiencyStatementImpl efficiencyProperty = new UserEfficiencyStatementImpl();
 		efficiencyProperty.setVersion(0);
 		if(creationDate == null) {
@@ -144,6 +144,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		}
 		efficiencyProperty.setScore(score);
 		efficiencyProperty.setGrade(grade);
+		efficiencyProperty.setGradeSystemIdent(gradeSystemIdent);
 		efficiencyProperty.setPerformanceClassIdent(performanceClassIdent);
 		efficiencyProperty.setPassed(passed);
 
@@ -165,8 +166,9 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	}
 	
 	public UserEfficiencyStatement createStandAloneUserEfficiencyStatement(Date creationDate, Float score, String grade,
-			String performanceClassIdent, Boolean passed, Integer totalNodes, Integer attemptedNodes,
-			Integer passedNodes, String statementXml, Identity identity, Long resourceKey, String courseTitle) {
+			String gradeSystemIdent, String performanceClassIdent, Boolean passed, Integer totalNodes,
+			Integer attemptedNodes, Integer passedNodes, String statementXml, Identity identity, Long resourceKey,
+			String courseTitle) {
 		UserEfficiencyStatementStandalone efficiencyProperty = new UserEfficiencyStatementStandalone();
 		if(creationDate != null) {
 			efficiencyProperty.setCreationDate(creationDate);
@@ -178,6 +180,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 
 		efficiencyProperty.setScore(score);
 		efficiencyProperty.setGrade(grade);
+		efficiencyProperty.setGradeSystemIdent(gradeSystemIdent);
 		efficiencyProperty.setPerformanceClassIdent(performanceClassIdent);
 		efficiencyProperty.setPassed(passed);
 
@@ -338,6 +341,11 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			Object grade = rootNode.get(AssessmentHelper.KEY_GRADE);
 			if(grade instanceof String) {
 				efficiencyProperty.setGrade((String)grade);
+			}
+			
+			Object gradeSystemIdent = rootNode.get(AssessmentHelper.KEY_GRADE_SYSTEM_IDENT);
+			if(gradeSystemIdent instanceof String) {
+				efficiencyProperty.setGradeSystemIdent((String)gradeSystemIdent);
 			}
 			
 			Object performanceClassIdent = rootNode.get(AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT);

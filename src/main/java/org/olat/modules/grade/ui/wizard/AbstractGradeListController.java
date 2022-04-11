@@ -28,6 +28,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -128,7 +130,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.score, new ScoreCellRenderer()));
 		if (isShowCurrentGrade()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.grade));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.grade, new TextFlexiCellRenderer(EscapeMode.none)));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.newGrade));
 		
@@ -151,7 +153,9 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 			if (filter(assessmentEntry)) {
 				GradeChangeRow row = new GradeChangeRow(assessmentEntry.getIdentity(), userPropertyHandlers, getLocale());
 				row.setScore(assessmentEntry.getScore());
-				row.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(), assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
+				row.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
+						assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade(),
+						assessmentEntry.getGradeSystemIdent()));
 				
 				GradeScoreRange range = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(assessmentEntry.getScore().floatValue()));
 				row.setNewGrade(range.getGrade());

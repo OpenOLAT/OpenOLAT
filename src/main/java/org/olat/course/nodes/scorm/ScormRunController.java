@@ -308,10 +308,10 @@ public class ScormRunController extends BasicController implements GenericEventL
 						|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
 						|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 					ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getGrade(),
-							currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
-							AssessmentEntryStatus.inProgress, currentEval.getUserVisible(),
-							currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
-							currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+							currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(),
+							currentEval.getPassed(), AssessmentEntryStatus.inProgress,
+							currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+							currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 					courseAssessmentService.saveScoreEvaluation(scormNode, getIdentity(), scoreEval, userCourseEnv, false, Role.user);
 				}
 				//increment user attempts only once!

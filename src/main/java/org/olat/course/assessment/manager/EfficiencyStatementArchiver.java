@@ -145,12 +145,17 @@ public class EfficiencyStatementArchiver {
 		Object gradeValue = nodeData.get(AssessmentHelper.KEY_GRADE);
 		if (gradeValue != null && (gradeValue instanceof String)) {
 			String grade = (String)gradeValue;
+			Object gradeSystemIdentValue = nodeData.get(AssessmentHelper.KEY_GRADE_SYSTEM_IDENT);
+			String gradeSystemIdent = null;
+			if (gradeSystemIdentValue != null && (gradeSystemIdentValue instanceof String)) {
+				gradeSystemIdent = (String) gradeSystemIdentValue;
+			}
 			Object performanceClassIdentValue = nodeData.get(AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT);
 			String performanceClassIdent = null;
 			if (performanceClassIdentValue != null && (performanceClassIdentValue instanceof String)) {
 				performanceClassIdent = (String) performanceClassIdentValue;
 			}
-			row.addCell(col, GradeUIFactory.translatePerformanceClass(translator, performanceClassIdent, grade));
+			row.addCell(col, GradeUIFactory.translatePerformanceClass(translator, performanceClassIdent, grade, gradeSystemIdent));
 		}
 	}
 

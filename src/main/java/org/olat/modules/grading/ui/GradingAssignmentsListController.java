@@ -644,6 +644,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			BigDecimal finalScore = testSessionsToComplete.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
 			String grade = scoreEval.getGrade();
+			String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 			String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 			Boolean passed = scoreEval.getPassed();
 			if(testSessionsToComplete.getManualScore() != null && finalScore != null) {
@@ -654,6 +655,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 						NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 						grade = gradeScoreRange.getGrade();
+						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 						passed = Boolean.valueOf(gradeScoreRange.isPassed());
 					}
@@ -667,9 +669,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			if(userVisible == null && finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
 				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
 			}
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
-					finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+					passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 

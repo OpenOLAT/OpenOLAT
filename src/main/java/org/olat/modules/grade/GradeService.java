@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -45,7 +46,7 @@ public interface GradeService {
 	
 	public List<GradeSystem> getGradeSystems(GradeSystemSearchParams searchParams);
 
-	public GradeSystem getGradeSystem(RepositoryEntry repositoryEntry, String subIdent);
+	public GradeSystem getGradeSystem(RepositoryEntryRef repositoryEntry, String subIdent);
 	
 	public boolean hasGradeScale(GradeSystemRef gradeSystem);
 	
@@ -63,12 +64,12 @@ public interface GradeService {
 	
 	public GradeScale updateOrCreateGradeScale(RepositoryEntry repositoryEntry, String subIdent, GradeScale gradeScale);
 	
-	public void cloneGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry,
+	public void cloneGradeScale(RepositoryEntryRef sourceEntry, String sourceIdent, RepositoryEntry targetEntry,
 			String targetIdent);
 
-	public void deleteGradeScale(RepositoryEntry repositoryEntry, String subIdent);
+	public void deleteGradeScale(RepositoryEntryRef repositoryEntry, String subIdent);
 	
-	public GradeScale getGradeScale(RepositoryEntry repositoryEntry, String subIdent);
+	public GradeScale getGradeScale(RepositoryEntryRef repositoryEntry, String subIdent);
 	
 	public List<GradeScaleStats> getGradeScaleStats();
 	

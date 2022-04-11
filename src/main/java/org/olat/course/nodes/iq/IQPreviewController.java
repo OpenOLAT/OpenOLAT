@@ -85,8 +85,8 @@ public class IQPreviewController extends BasicController {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cn);
 				Float cutValue = assessmentConfig.getCutValue();
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
-				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, Boolean.valueOf(passed),
-						null, null, null, null, null, null);
+				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, null,
+						Boolean.valueOf(passed), null, null, null, null, null, null);
 				
 				boolean incrementUserAttempts = true;
 				courseAssessmentService.updateScoreEvaluation(cn, sceval, userCourseEnv, ureq.getIdentity(),

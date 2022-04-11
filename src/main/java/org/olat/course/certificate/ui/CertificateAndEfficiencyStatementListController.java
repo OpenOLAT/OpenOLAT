@@ -606,7 +606,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setDisplayName(efficiencyStatement.getTitle());
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
-			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(), efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade()));
+			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
+					efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade(),
+					efficiencyStatement.getGradeSystemIdent()));
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
 			wrapper.setResourceKey(efficiencyStatement.getResourceKey());
 			wrapper.setLastModified(efficiencyStatement.getLastModified());

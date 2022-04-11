@@ -34,6 +34,8 @@ public interface GradeScoreRange extends Comparable<GradeScoreRange> {
 	
 	public String getGrade();
 	
+	public String getGradeSystemIdent();
+	
 	public String getPerformanceClassIdent();
 
 	public BigDecimal getScore();

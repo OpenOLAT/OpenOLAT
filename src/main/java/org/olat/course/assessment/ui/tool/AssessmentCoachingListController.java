@@ -454,15 +454,16 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 				String grade = gradeScoreRange.getGrade();
+				String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(courseNode).getPassedMode()
 						? Boolean.valueOf(gradeScoreRange.isPassed())
 						: null;
 				
 				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
-						performanceClassIdent, passed, scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-						scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-						scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+						gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
+						scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 				courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 						getIdentity(), false, Role.coach);
 				reload();
@@ -534,9 +535,9 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
-				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
 		dbInstance.commitAndCloseSession();

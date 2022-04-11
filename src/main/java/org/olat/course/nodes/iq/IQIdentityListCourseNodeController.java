@@ -670,6 +670,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
 			String grade = scoreEval.getGrade();
+			String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 			String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 			Boolean passed = scoreEval.getPassed();
 			if(testSession.getManualScore() != null && finalScore != null) {
@@ -682,6 +683,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(scoreEval.getGrade())) {
 						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 						grade = gradeScoreRange.getGrade();
+						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 						passed = Boolean.valueOf(gradeScoreRange.isPassed());
 					}
@@ -695,9 +697,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			if(userVisible == null && finalStatus == AssessmentEntryStatus.done) {
 				userVisible = Boolean.valueOf(userVisibleAfter);
 			}
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
-					finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), testSession.getKey());
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+					passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 			

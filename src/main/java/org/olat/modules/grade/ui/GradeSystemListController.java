@@ -278,7 +278,7 @@ public class GradeSystemListController extends FormBasicController {
 			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			
-			if (gradeSystemRow.getScaleCount() == 0) {
+			if (gradeSystemRow.getScaleCount() == 0 && !gradeSystemRow.getGradeSystem().isPredefined()) {
 				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
 				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			}

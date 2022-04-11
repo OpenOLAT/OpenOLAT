@@ -128,13 +128,14 @@ public class GradeScaleAdjustCallback implements StepRunnerCallback {
 			Boolean passed = null;
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 			String grade = gradeScoreRange.getGrade();
+			String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			passed = hasPassed ? Boolean.valueOf(gradeScoreRange.isPassed()) : null;
 			
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
-					performanceClassIdent, passed, scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
+					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(assessmentEntry.getIdentity(), coachUserCourseEnv.getCourseEnvironment());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,

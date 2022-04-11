@@ -345,9 +345,9 @@ public class AverageCompletionEvaluatorTest {
 	
 	private AssessmentEvaluation createAssessmentEvaluation(AssessmentObligation obligation, Integer duration,
 			Double completion, AssessmentEntryStatus status, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, completion, status, null,
-				fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null, null,
-				ObligationOverridable.of(obligation), duration, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, completion, status,
+				null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
+				null, ObligationOverridable.of(obligation), duration, null, null);
 	}
 
 }

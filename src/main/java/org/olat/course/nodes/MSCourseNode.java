@@ -439,10 +439,10 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		
 		// save
 		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(updateEval.getScore(), updateEval.getGrade(),
-				updateEval.getPerformanceClassIdent(), updateEval.getPassed(), currentEval.getAssessmentStatus(),
-				currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
-				currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
-				currentEval.getAssessmentID());
+				updateEval.getGradeSystemIdent(), updateEval.getPerformanceClassIdent(), updateEval.getPassed(),
+				currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+				currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+				currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, scoreEvaluation, assessedUserCourseEnv, false, by);
 	}
@@ -476,18 +476,20 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		Float updatedScore = getScore(msService, userCourseEnv, session);
 		ScoreEvaluation updateScoreEvaluation = getUpdateScoreEvaluation(userCourseEnv, locale, updatedScore);
 		String updateGrade = updateScoreEvaluation.getGrade();
+		String updateGradeSystemIdent = updateScoreEvaluation.getGradeSystemIdent();
 		String updatePerformanceClassIdent = updateScoreEvaluation.getPerformanceClassIdent();
 		Boolean updatedPassed = updateScoreEvaluation.getPassed();
 		
 		boolean needUpdate = !Objects.equals(updatedScore, currentEval.getScore())
 				|| !Objects.equals(updateGrade, currentEval.getGrade())
+				|| !Objects.equals(updateGradeSystemIdent, currentEval.getGradeSystemIdent())
 				|| !Objects.equals(updatePerformanceClassIdent, currentEval.getPerformanceClassIdent())
 				|| !Objects.equals(updatedPassed, currentEval.getPassed()) ;
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent,
-					updatedPassed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
-					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
-					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent,
+					updatePerformanceClassIdent, updatedPassed, currentEval.getAssessmentStatus(),
+					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 			courseAssessmentService.saveScoreEvaluation(this, coachIdentity, scoreEval, userCourseEnv, false, Role.coach);
 		}
 	}
@@ -527,6 +529,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	private ScoreEvaluation getUpdateScoreEvaluation(UserCourseEnvironment assessedUserCourseEnv, Locale locale, Float score) {
 		GradeScoreRange gradeScoreRange = null;
 		String grade = null;
+		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		Boolean passed = null;
 		ModuleConfiguration config = getModuleConfiguration();
@@ -545,6 +548,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 						NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 						gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 						grade = gradeScoreRange.getGrade();
+						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 						passed = Boolean.valueOf(gradeScoreRange.isPassed());
 					}
@@ -558,12 +562,13 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			} else {
 				ScoreEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
 				grade = currentEval.getGrade();
+				gradeSystemIdent = currentEval.getGradeSystemIdent();
 				performanceClassIdent = currentEval.getPerformanceClassIdent();
 				passed = currentEval.getPassed();
 			}
 			
 		}
-		return new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, null, null, null, null, null);
+		return new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, null, null, null, null, null, null);
 	}
 
 	@Override

@@ -306,7 +306,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 				Integer attempts = am.getNodeAttempts(this, identity);
 				
-				return new AssessmentEvaluation(score, null, null, null, testSession.getPassed(),
+				return new AssessmentEvaluation(score, null, null, null, null, testSession.getPassed(),
 						Overridable.of(testSession.getPassed()), attempts, null, null, null, Boolean.TRUE, null, null,
 						null, null, null, testSession.getKey(), null, null, 0, null, null, null, null, null, null, null,
 						null, null, null);

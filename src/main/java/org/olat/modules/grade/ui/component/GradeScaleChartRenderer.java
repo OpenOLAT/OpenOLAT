@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.Component;
@@ -49,6 +50,7 @@ import org.olat.modules.grade.GradeSystemType;
  */
 public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 
+	private static final BigDecimal TWELFE = new BigDecimal("12");
 	private static final BigDecimal TWO = new BigDecimal("2");
 
 	@Override
@@ -271,16 +273,19 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 	
 	private List<String> getNumericYLines(NavigableSet<GradeScoreRange> ranges) {
 		List<String> yLines = new ArrayList<>();
+		boolean diffLowerTwelfe = new BigDecimal(ranges.first().getGrade()).subtract(new BigDecimal(ranges.last().getGrade())).compareTo(TWELFE) < 0;
+		Predicate<String> filterNumericYLine = diffLowerTwelfe 
+				? grade -> grade.indexOf(".") < 1									// Only whole grades.
+				:  grade -> grade.indexOf(".") < 1 && grade.endsWith("0");			// Only tenth gardes.
 		for (GradeScoreRange range : ranges) {
-			// Only whole grades.
 			// Skip the lowest grade. It overlaps the x domain line.
-			if (range.getGrade().indexOf(".") < 1 && range != ranges.last()) {
+			if (filterNumericYLine.test(range.getGrade()) && range != ranges.last()) {
 				yLines.add(range.getGrade());
 			}
 		}
 		return yLines;
 	}
-	
+
 	private List<String> getTextYLines(NavigableSet<GradeScoreRange> ranges) {
 		List<String> yLines = new ArrayList<>();
 		for (GradeScoreRange range : ranges) {

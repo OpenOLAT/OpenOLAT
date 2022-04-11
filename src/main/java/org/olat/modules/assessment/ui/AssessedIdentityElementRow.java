@@ -47,6 +47,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private BigDecimal maxScore;
 	private BigDecimal entryMaxScore;
 	private String grade;
+	private String gradeSystemIdent;
 	private String performanceClassIdent;
 	private Boolean passed;
 	private Boolean passedOverriden;
@@ -80,6 +81,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			score = entry.getScore();
 			entryMaxScore = entry.getMaxScore();
 			grade = entry.getGrade();
+			gradeSystemIdent = entry.getGradeSystemIdent();
 			performanceClassIdent = entry.getPerformanceClassIdent();
 			passed = entry.getPassed();
 			passedOverriden = Boolean.valueOf(entry.getPassedOverridable().isOverridden());
@@ -95,6 +97,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			score = null;
 			entryMaxScore = null;
 			grade = null;
+			gradeSystemIdent = null;
 			performanceClassIdent = null;
 			passed = null;
 			userVisibility = null;
@@ -123,6 +126,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public String getGrade() {
 		return grade;
+	}
+
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
 	}
 
 	public String getPerformanceClassIdent() {

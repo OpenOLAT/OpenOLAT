@@ -281,9 +281,9 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	protected void reopenEvaluation() {
 		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.inReview,
-				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				AssessmentRunStatus.running, scoreEval.getAssessmentID());
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running, scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
@@ -297,9 +297,9 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	protected void doneEvalution() {
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.done,
-				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
 	}
@@ -307,9 +307,9 @@ public abstract class AbstractToolsController extends BasicController {
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
 		if (scoreEval != null) {
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-					scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
-					Boolean.valueOf(visible), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+					scoreEval.getAssessmentStatus(), Boolean.valueOf(visible), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}
@@ -349,15 +349,16 @@ public abstract class AbstractToolsController extends BasicController {
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 			String grade = gradeScoreRange.getGrade();
+			String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
 					? Boolean.valueOf(gradeScoreRange.isPassed())
 					: null;
 			
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
-					performanceClassIdent, passed, scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
+					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}

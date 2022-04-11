@@ -80,6 +80,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -386,9 +387,9 @@ public class AssessmentForm extends FormBasicController {
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval != null) {
 			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-					scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.inReview,
-					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 			updateStatus(reopenedEval);
@@ -412,6 +413,7 @@ public class AssessmentForm extends FormBasicController {
 		Float updatedScore = null;
 		GradeScoreRange gradeScoreRange = null;
 		String updateGrade = null;
+		String updateGradeSystemIdent = null;
 		String updatePerformanceClassIdent = null;
 		Boolean updatedPassed = null;
 
@@ -434,6 +436,7 @@ public class AssessmentForm extends FormBasicController {
 		if (hasGrade && gradeApplied && score != null) {
 			gradeScoreRange = gradeService.getGradeScoreRange(getGradeScoreRanges(), updatedScore);
 			updateGrade = gradeScoreRange.getGrade();
+			updateGradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			updatePerformanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 		}
 		
@@ -458,11 +461,11 @@ public class AssessmentForm extends FormBasicController {
 		// Update score,passed properties in db
 		ScoreEvaluation scoreEval;
 		if(setAsDone) {
-			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent, updatedPassed,
-					AssessmentEntryStatus.done, userVisibilityValue, null, null, null, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
+					updatedPassed, AssessmentEntryStatus.done, userVisibilityValue, null, null, null, null);
 		} else {
-			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent, updatedPassed,
-					null, userVisibilityValue, null, null, null, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
+					updatedPassed, null, userVisibilityValue, null, null, null, null);
 		}
 		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
@@ -809,8 +812,9 @@ public class AssessmentForm extends FormBasicController {
 	
 	private void setGradeValue(String grade, String performanceClassIdent) {
 		if (StringHelper.containsNonWhitespace(grade) && getGradeScale() != null) {
-			String translatedGrade = GradeUIFactory.translatePerformanceClass(getTranslator(), performanceClassIdent, grade);
-			String translateGradeSystem = GradeUIFactory.translateGradeSystem(getTranslator(), getGradeScale().getGradeSystem());
+			GradeSystem gradeSystem = getGradeScale().getGradeSystem();
+			String translatedGrade = GradeUIFactory.translatePerformanceClass(getTranslator(), performanceClassIdent, grade, gradeSystem.getIdentifier());
+			String translateGradeSystem = GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem);
 			String gradeValue = translate("grade.with.system", translatedGrade, translateGradeSystem);
 			if (!gradeApplied) {
 				gradeValue = translate("grade.not.applied", gradeValue);

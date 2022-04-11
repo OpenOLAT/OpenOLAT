@@ -81,6 +81,8 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 	private Float score;
 	@Column(name="grade", nullable=true, insertable=true, updatable=true)
 	private String grade;
+	@Column(name="grade_system_ident", nullable=true, insertable=true, updatable=true)
+	private String gradeSystemIdent;
 	@Column(name="performance_class_ident", nullable=true, insertable=true, updatable=true)
 	private String performanceClassIdent;
 	@Column(name="passed", nullable=true, insertable=true, updatable=true)
@@ -191,6 +193,15 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 
 	public void setGrade(String grade) {
 		this.grade = grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
 	}
 
 	@Override

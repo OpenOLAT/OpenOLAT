@@ -42,6 +42,7 @@ public class UserEfficiencyStatementVO {
 	
 	private Float score;
 	private String grade;
+	private String gradeSystemIdent;
 	private String perfromanceClassIdent;
 	private Boolean passed;
 	private Integer totalNodes;
@@ -65,6 +66,7 @@ public class UserEfficiencyStatementVO {
 		passed = efficiencyStatement.getPassed();
 		score = efficiencyStatement.getScore();
 		grade = efficiencyStatement.getGrade();
+		gradeSystemIdent = efficiencyStatement.getGradeSystemIdent();
 		perfromanceClassIdent = efficiencyStatement.getPerformanceClassIdent();
 		totalNodes = efficiencyStatement.getTotalNodes();
 		passedNodes = efficiencyStatement.getPassedNodes();
@@ -116,6 +118,14 @@ public class UserEfficiencyStatementVO {
 
 	public void setGrade(String grade) {
 		this.grade = grade;
+	}
+
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
 	}
 
 	public String getPerfromanceClassIdent() {

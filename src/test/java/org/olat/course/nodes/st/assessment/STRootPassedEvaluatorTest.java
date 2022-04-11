@@ -459,9 +459,9 @@ public class STRootPassedEvaluatorTest {
 		}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, final Boolean passed, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(score, null, null, null, passed, Overridable.of(passed), null, null, null, null, null,
-				fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null,
-				null, null, null);
+		return new AssessmentEvaluation(score, null, null, null, null, passed, Overridable.of(passed), null, null, null,
+				null, null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
+				null, null, null, null, null);
 	}
 	
 	private final static class CountsImpl implements Counts {

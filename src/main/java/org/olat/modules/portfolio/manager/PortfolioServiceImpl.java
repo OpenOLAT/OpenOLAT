@@ -1601,7 +1601,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
-			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), null, null, totalPassed, binderStatus, true, null, null, null, binder.getKey());
+			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), null, null, null, totalPassed, binderStatus, true, null, null, null, binder.getKey());
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
@@ -1655,7 +1655,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 			AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(pfNode, userCourseEnv);
 			
 			ScoreEvaluation scoreEval = new ScoreEvaluation(eval.getScore(), eval.getGrade(),
-					eval.getPerformanceClassIdent(), eval.getPassed(), status, true, null, null, null, binder.getKey());
+					eval.getGradeSystemIdent(), eval.getPerformanceClassIdent(), eval.getPassed(), status, true, null,
+					null, null, binder.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
 		} else {

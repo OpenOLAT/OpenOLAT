@@ -402,8 +402,8 @@ public class PassedExceptionalObligationHandlerTest {
 	}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, passed, null, null, null, null, null, userVisibility, null, null,
-				null, null, null, null, null, null, 1, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
+				null, null, null, null, null, null, null, 1, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

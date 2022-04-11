@@ -85,6 +85,17 @@ public class GradeUIFactory {
 		return translation;
 	}
 	
+	public static String translatePerformanceClass(Translator translator, String identifier, String fallback, String gradeSystemIdent) {
+		String translatePerformanceClass = translatePerformanceClass(translator, identifier, fallback);
+		if (!StringHelper.containsNonWhitespace(gradeSystemIdent)) return translatePerformanceClass;
+		
+		String cssClass = "o_grs_" + gradeSystemIdent.replace(".", "_").toLowerCase();
+		if (gradeSystemIdent.indexOf("percent") > 0) {
+			cssClass += " o_gr_percent";
+		}
+		return "<span class='" + cssClass + "'>" + translatePerformanceClass + "</span>";
+	}
+	
 	public static boolean validateInteger(TextElement el) {
 		boolean allOk = true;
 		el.clearError();
@@ -154,8 +165,6 @@ public class GradeUIFactory {
 		
 		return s.matches("^[a-z0-9\\.]*$");
 	}
-	
-
 	
 	public static boolean validateCutValue(TextElement el, NumericResolution resolution) {
 		boolean allOk = true;

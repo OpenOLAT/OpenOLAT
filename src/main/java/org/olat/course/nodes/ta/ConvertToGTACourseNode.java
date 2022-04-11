@@ -246,8 +246,8 @@ public class ConvertToGTACourseNode {
 			if(assessmentData.getPassed() != null || assessmentData.getScore() != null) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 				Float score = assessmentData.getScore() == null ? null : assessmentData.getScore().floatValue();
-				ScoreEvaluation scoreEval = new ScoreEvaluation(score, null, null, assessmentData.getPassed(), null,
-						null, null, null, null, null);
+				ScoreEvaluation scoreEval = new ScoreEvaluation(score, null, null, null, assessmentData.getPassed(),
+						null, null, null, null, null, null);
 				assessmentMgr.saveScoreEvaluation(gtaNode, null, assessedIdentity, scoreEval, userCourseEnv, false, Role.auto);
 				
 				//set graded

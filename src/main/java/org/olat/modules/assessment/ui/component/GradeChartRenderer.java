@@ -30,6 +30,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.assessment.ui.component.GradeChart.GradeCount;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.GradeSystemType;
 import org.olat.modules.grade.NumericResolution;
 
@@ -48,6 +49,7 @@ public class GradeChartRenderer extends DefaultComponentRenderer {
 		GradeChart gradeChart = (GradeChart)source;
 		String cmpId = gradeChart.getDispatchID();
 		
+		GradeSystem gradeSystem = gradeChart.getGradeSystem();
 		List<GradeCount> gradeCounts = gradeChart.getGradeCounts();
 		String data = getData(gradeCounts);
 		long yMax = getYMax(gradeCounts);
@@ -70,9 +72,11 @@ public class GradeChartRenderer extends DefaultComponentRenderer {
 		  .append("    .domain([0, ").append(yMax).append("])\n")
 		  .append("    .range([height, 0]);\n");
 		
-		if (GradeSystemType.numeric == gradeChart.getGradeSystem().getType()) {
-			if (NumericResolution.tenth == gradeChart.getGradeSystem().getResolution()) {
+		if (GradeSystemType.numeric == gradeSystem.getType()) {
+			if (NumericResolution.tenth == gradeSystem.getResolution()) {
 				sb.append("var xAxis = d3.axisBottom(xScale).tickValues(xScale.domain().filter(d => Number.isInteger(Number(d)) ));\n");
+			} else if (Math.abs(gradeSystem.getBestGrade() - gradeSystem.getLowestGrade()) > 12) {
+				sb.append("var xAxis = d3.axisBottom(xScale).tickValues(xScale.domain().filter(d => Number.isInteger(Number(d)) && d % 10 === 0));\n");
 			} else {
 				sb.append("var yLegend = xScale.domain().filter(d => Number.isInteger(Number(d)) );");
 				sb.append("var xAxis = d3.axisBottom(xScale).tickFormat(d => yLegend.includes(d)? d: '');\n");

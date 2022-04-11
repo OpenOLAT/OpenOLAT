@@ -76,6 +76,7 @@ public class CorrectionManagerImpl implements CorrectionManager {
 		BigDecimal finalScore = testSession.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		String grade = scoreEval.getGrade();
+		String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 		Boolean passed = scoreEval.getPassed();
 		if(testSession.getManualScore() != null && finalScore != null) {
@@ -86,6 +87,7 @@ public class CorrectionManagerImpl implements CorrectionManager {
 					NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 					passed = Boolean.valueOf(gradeScoreRange.isPassed());
 				}
@@ -95,10 +97,9 @@ public class CorrectionManagerImpl implements CorrectionManager {
 			}
 		}
 		
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
-				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), testSession.getKey());
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+				passed, scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				doer, false, Role.coach);
 	}

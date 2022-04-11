@@ -532,6 +532,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		String grade = scoreEval.getGrade();
+		String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 		Boolean passed = scoreEval.getPassed();
 		if(session.getManualScore() != null && finalScore != null) {
@@ -544,6 +545,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 					passed = Boolean.valueOf(gradeScoreRange.isPassed());
 				}
@@ -561,9 +563,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					? courseNode.isScoreVisibleAfterCorrection()
 					: Boolean.FALSE;
 		}
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
-				finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(), 
-				scoreEval.getCurrentRunStatus(), session.getKey());
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+				passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), 
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}

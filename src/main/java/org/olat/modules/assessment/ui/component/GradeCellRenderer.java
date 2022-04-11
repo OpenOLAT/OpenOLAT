@@ -52,18 +52,18 @@ public class GradeCellRenderer extends PassedDependentRenderer implements FlexiC
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof AssessedIdentityElementRow) {
 			AssessedIdentityElementRow assessmentRow = (AssessedIdentityElementRow)cellValue;
-			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed());
+			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed(), assessmentRow.getGradeSystemIdent());
 		} else if (cellValue instanceof AssessmentNodeData) {
 			AssessmentNodeData assessmentRow = (AssessmentNodeData)cellValue;
-			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed());
+			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed(), assessmentRow.getGradeSystemIdent());
 		} else if (cellValue instanceof EfficiencyStatementEntry) {
 			EfficiencyStatementEntry assessmentRow = (EfficiencyStatementEntry)cellValue;
-			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed());
+			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed(), assessmentRow.getGradeSystemIdent());
 		}
 	}
 
-	private void appendGrade(StringOutput target, String performanceClassident, String grade, Boolean passed) {
-		String gradeStr = GradeUIFactory.translatePerformanceClass(gradeTanslator, performanceClassident, grade);
+	private void appendGrade(StringOutput target, String performanceClassident, String grade, Boolean passed, String gradeSystemIdent) {
+		String gradeStr = GradeUIFactory.translatePerformanceClass(gradeTanslator, performanceClassident, grade, gradeSystemIdent);
 		append(target, passed, gradeStr);
 	}
 

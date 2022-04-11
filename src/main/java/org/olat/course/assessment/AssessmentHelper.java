@@ -86,6 +86,7 @@ public class AssessmentHelper {
 	public static final String KEY_SCORE = "score";
 	public static final String KEY_SCORE_F = "fscore";
 	public static final String KEY_GRADE = "grade";
+	public static final String KEY_GRADE_SYSTEM_IDENT = "gradeSystemIdent";
 	public static final String KEY_PERFORMANCE_CLASS_IDENT = "performanceClassIdent";
 	public static final String KEY_ATTEMPTS = "attempts";
 	public static final String KEY_DETAILS = "details";
@@ -453,6 +454,7 @@ public class AssessmentHelper {
 						if (assessmentConfig.hasGrade()) {
 							assessmentNodeData.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());
 							assessmentNodeData.setGrade(scoreEvaluation.getGrade());
+							assessmentNodeData.setGradeSystemIdent(scoreEvaluation.getGradeSystemIdent());
 						}
 						assessmentNodeData.setIgnoreInCourseAssessment(assessmentConfig.ignoreInCourseAssessment());
 					}

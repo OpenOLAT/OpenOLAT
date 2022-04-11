@@ -22,6 +22,7 @@ package org.olat.course.assessment.model;
 import static org.olat.course.assessment.AssessmentHelper.KEY_ATTEMPTS;
 import static org.olat.course.assessment.AssessmentHelper.KEY_DETAILS;
 import static org.olat.course.assessment.AssessmentHelper.KEY_GRADE;
+import static org.olat.course.assessment.AssessmentHelper.KEY_GRADE_SYSTEM_IDENT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_IDENTIFYER;
 import static org.olat.course.assessment.AssessmentHelper.KEY_INDENT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_LAST_COACH_MODIFIED;
@@ -76,6 +77,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private Float maxScore;
 	private Float minScore;
 	private String grade;
+	private String gradeSystemIdent;
 	private String performanceClassIdent;
 	
 	private Mode passedMode;
@@ -230,6 +232,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		this.grade = grade;
 	}
 
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
 	public String getPerformanceClassIdent() {
 		return performanceClassIdent;
 	}
@@ -345,6 +355,9 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		if(grade != null) {
 			nodeData.put(KEY_GRADE, grade);
 		}
+		if(gradeSystemIdent != null) {
+			nodeData.put(KEY_GRADE_SYSTEM_IDENT, grade);
+		}
 		if(performanceClassIdent != null) {
 			nodeData.put(KEY_PERFORMANCE_CLASS_IDENT, performanceClassIdent);
 		}
@@ -376,6 +389,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		maxScore = (Float)nodeData.get(KEY_MAX);
 		minScore = (Float)nodeData.get(KEY_MIN);
 		grade = (String)nodeData.get(KEY_GRADE);
+		gradeSystemIdent = (String)nodeData.get(KEY_GRADE_SYSTEM_IDENT);
 		performanceClassIdent = (String)nodeData.get(KEY_PERFORMANCE_CLASS_IDENT);
 		passed = (Boolean)nodeData.get(KEY_PASSED);
 		if(nodeData.get(KEY_SELECTABLE) instanceof Boolean) {

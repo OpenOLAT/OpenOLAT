@@ -91,7 +91,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "pc1", true, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 
 		//load the efficiency statements
@@ -110,6 +110,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertTrue(statementLight.getPassed());
 		Assert.assertEquals(6.0f, statementLight.getScore(), 0.00001);
 		Assert.assertEquals(statementLight.getGrade(), "g1");
+		Assert.assertEquals(statementLight.getGradeSystemIdent(), "gs1");
 		Assert.assertEquals(statementLight.getPerformanceClassIdent(), "pc1");
 	}
 	
@@ -201,7 +202,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		UserEfficiencyStatementLight reloadedStatement = effManager.getUserEfficiencyStatementLightByKey(statement.getKey());
@@ -216,6 +217,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertFalse(reloadedStatement.getPassed());
 		Assert.assertEquals(4.5f, reloadedStatement.getScore(), 0.00001);
 		Assert.assertEquals(reloadedStatement.getGrade(), "g1");
+		Assert.assertEquals(reloadedStatement.getGradeSystemIdent(), "gs1");
 		Assert.assertEquals(reloadedStatement.getPerformanceClassIdent(), "pc1");
 	}
 	
@@ -230,7 +232,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
 		
@@ -251,7 +253,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		UserEfficiencyStatementImpl fullStatement = effManager.getUserEfficiencyStatementFull(re, participant);
@@ -266,6 +268,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertFalse(fullStatement.getPassed());
 		Assert.assertEquals(3.75f, fullStatement.getScore(), 0.00001);
 		Assert.assertEquals(fullStatement.getGrade(), "g1");
+		Assert.assertEquals(fullStatement.getGradeSystemIdent(), "gs1");
 		Assert.assertEquals(fullStatement.getPerformanceClassIdent(), "pc1");
 	}
 	
@@ -280,7 +283,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(re, participant);
@@ -294,6 +297,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertFalse(lightStatement.getPassed());
 		Assert.assertEquals(3.75f, lightStatement.getScore(), 0.00001);
 		Assert.assertEquals(lightStatement.getGrade(), "g1");
+		Assert.assertEquals(lightStatement.getGradeSystemIdent(), "gs1");
 		Assert.assertEquals(lightStatement.getPerformanceClassIdent(), "pc1");
 	}
 	
@@ -308,7 +312,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatement> lightStatements = effManager.getUserEfficiencyStatementLight(participant, Collections.singletonList(re));
@@ -325,6 +329,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertFalse(lightStatement.getPassed());
 		Assert.assertEquals(3.75f, lightStatement.getScore(), 0.00001);
 		Assert.assertEquals(lightStatement.getGrade(), "g1");
+		Assert.assertEquals(lightStatement.getGradeSystemIdent(), "gs1");
 		Assert.assertEquals(lightStatement.getPerformanceClassIdent(), "pc1");
 	}
 	
@@ -338,7 +343,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatement> lightStatements = effManager.getUserEfficiencyStatementLight(participant);
@@ -361,7 +366,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatementForCoaching> lightStatements = effManager.getUserEfficiencyStatementForCoaching(re);
@@ -384,7 +389,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatementForCoaching> lightStatements = effManager.getUserEfficiencyStatementForCoaching(re);
@@ -424,11 +429,11 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement1 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantRe, re1.getOlatResource());
-		UserEfficiencyStatement statement2 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp1, re1.getOlatResource());
-		UserEfficiencyStatement statement3 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp2, re1.getOlatResource());
-		UserEfficiencyStatement statement4 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp3, re1.getOlatResource());
-		UserEfficiencyStatement statement5 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp1, re2.getOlatResource());
+		UserEfficiencyStatement statement1 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantRe, re1.getOlatResource());
+		UserEfficiencyStatement statement2 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp1, re1.getOlatResource());
+		UserEfficiencyStatement statement3 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp2, re1.getOlatResource());
+		UserEfficiencyStatement statement4 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp3, re1.getOlatResource());
+		UserEfficiencyStatement statement5 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp1, re2.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatementForCoaching> lightStatements = effManager.getUserEfficiencyStatementForCoaching(group);
@@ -493,16 +498,16 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement1 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantRe, re1.getOlatResource());
-		UserEfficiencyStatement statement2 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp1, re1.getOlatResource());
-		UserEfficiencyStatement statement3 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp2, re1.getOlatResource());
-		UserEfficiencyStatement statement4 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp3, re1.getOlatResource());
-		UserEfficiencyStatement statement5 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp1, re2.getOlatResource());
+		UserEfficiencyStatement statement1 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantRe, re1.getOlatResource());
+		UserEfficiencyStatement statement2 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp1, re1.getOlatResource());
+		UserEfficiencyStatement statement3 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp2, re1.getOlatResource());
+		UserEfficiencyStatement statement4 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp3, re1.getOlatResource());
+		UserEfficiencyStatement statement5 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp1, re2.getOlatResource());
 		// noise
-		UserEfficiencyStatement statement6 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp4, re1.getOlatResource());
-		UserEfficiencyStatement statement7 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp5, re1.getOlatResource());
-		UserEfficiencyStatement statement8 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp4, re2.getOlatResource());
-		UserEfficiencyStatement statement9 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participantGrp5, re2.getOlatResource());  
+		UserEfficiencyStatement statement6 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp4, re1.getOlatResource());
+		UserEfficiencyStatement statement7 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp5, re1.getOlatResource());
+		UserEfficiencyStatement statement8 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp4, re2.getOlatResource());
+		UserEfficiencyStatement statement9 = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participantGrp5, re2.getOlatResource());  
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatementForCoaching> lightStatements = effManager.getUserEfficiencyStatementForCoaching(group1);
@@ -532,7 +537,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		
 		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByResource(re.getOlatResource().getKey(), participant);
@@ -550,7 +555,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Long resourceKey = 725l;
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, "g1", "pc1", Boolean.TRUE, null, null, null, null, participant, resourceKey, "Hello");
+		UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, "g1", "gs1", "pc1", Boolean.TRUE, null, null, null, null, participant, resourceKey, "Hello");
 		dbInstance.commitAndCloseSession();
 		
 		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByResource(resourceKey, participant);
@@ -574,7 +579,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, "g1", "pc1", false, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, "g1", "gs1", "pc1", false, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
 			
@@ -596,7 +601,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Long resourceKey = 725l;
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, "g1", "pc1", Boolean.TRUE, null, null, null, null, participant, resourceKey, "Hello");
+		UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, "g1", "gs1", "pc1", Boolean.TRUE, null, null, null, null, participant, resourceKey, "Hello");
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatementLight> lightStatements = effManager.findEfficiencyStatementsLight(participant);
@@ -623,7 +628,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, "g1", "pc1", true, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, "g1", "gs1", "pc1", true, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		// this will reset score to 0 and passed to false
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
@@ -652,7 +657,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, "g1", "pc1", true, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, "g1", "gs1", "pc1", true, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		// this will reset score to 0 and passed to false
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
@@ -681,7 +686,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, "g1", "pc1", true, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, "g1", "gs1", "pc1", true, participant, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		// this will reset score to 0 and passed to false
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
@@ -708,10 +713,10 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//make statements
-		UserEfficiencyStatement statement1_1 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "pc1", true, participant1, re1.getOlatResource());
-		UserEfficiencyStatement statement1_2 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "pc1", true, participant1, re2.getOlatResource());
-		UserEfficiencyStatement statement2_1 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "pc1", true, participant2, re1.getOlatResource());
-		UserEfficiencyStatement statement2_2 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "pc1", true, participant2, re2.getOlatResource());
+		UserEfficiencyStatement statement1_1 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant1, re1.getOlatResource());
+		UserEfficiencyStatement statement1_2 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant1, re2.getOlatResource());
+		UserEfficiencyStatement statement2_1 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant2, re1.getOlatResource());
+		UserEfficiencyStatement statement2_2 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant2, re2.getOlatResource());
 		dbInstance.commitAndCloseSession();
 
 		//load the efficiency statements
@@ -758,7 +763,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commit();
 
 		//make statements
-		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "pc1", true, participant, re.getOlatResource());
+		UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant, re.getOlatResource());
 	    dbInstance.commitAndCloseSession();
 	    Assert.assertNotNull(statement);
 	    

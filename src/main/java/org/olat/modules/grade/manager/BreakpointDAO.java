@@ -33,7 +33,7 @@ import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScaleRef;
 import org.olat.modules.grade.model.BreakpointImpl;
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -101,7 +101,7 @@ public class BreakpointDAO {
 				.executeUpdate();
 	}
 
-	public void delete(RepositoryEntry repositoryEntry, String subIdent) {
+	public void delete(RepositoryEntryRef repositoryEntry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from gradebreakpoint bp");
 		sb.append(" where bp.gradeScale.key in (");

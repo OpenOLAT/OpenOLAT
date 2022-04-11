@@ -32,6 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
@@ -68,7 +69,8 @@ public class GradeScoreRangeTableRenderer extends DefaultComponentRenderer {
 				GradeScoreRange row = rangesIterator.next();
 				sb.append("<tr").append(" class='o_gr_passed'", row.isPassed()).append(">");
 				sb.append("<td>").append(THREE_DIGITS.format(row.getLowerBound())).append("-").append(THREE_DIGITS.format(row.getUpperBound())).append("</td>");
-				sb.append("<td>").append(row.getGrade()).append("</td>");
+				String grade = GradeUIFactory.translatePerformanceClass(translator, row.getPerformanceClassIdent(), row.getGrade(), row.getGradeSystemIdent());
+				sb.append("<td>").append(grade).append("</td>");
 				sb.append("</tr>");
 				rangeIndex++;
 			}

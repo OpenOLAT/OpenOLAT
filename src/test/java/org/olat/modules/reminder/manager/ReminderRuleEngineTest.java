@@ -1103,7 +1103,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	}
 	
 	private ScoreEvaluation createScoreEvaluation(float score, boolean passed) {
-		return new ScoreEvaluation(Float.valueOf(score), null, null, Boolean.valueOf(passed), null, null, null, null, null, null);
+		return new ScoreEvaluation(Float.valueOf(score), null, null, null, Boolean.valueOf(passed), null, null, null, null, null, null);
 	}
 	
 	@Test
