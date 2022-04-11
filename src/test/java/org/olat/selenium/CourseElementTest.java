@@ -1531,9 +1531,9 @@ public class CourseElementTest extends Deployments {
 			.replyToMessageNoWait("The best anime ever", null, kanuReply);
 	
 		//wait the responses
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitBusy(kanuBrowser);
-		OOGraphene.waitBusy(reiBrowser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitModalDialogDisappears(kanuBrowser);
+		OOGraphene.waitModalDialogDisappears(reiBrowser);
 		
 		//check own responses
 		authorForum.assertMessageBody(authorReply);

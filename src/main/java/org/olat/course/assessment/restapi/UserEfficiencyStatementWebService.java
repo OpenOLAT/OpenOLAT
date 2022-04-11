@@ -164,8 +164,8 @@ public class UserEfficiencyStatementWebService {
 				}
 				efficiencyStatementManager.createUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
 						efficiencyStatementVO.getScore(), efficiencyStatementVO.getGrade(),
-						efficiencyStatementVO.getPerfromanceClassIdent(), efficiencyStatementVO.getPassed(),
-						assessedIdentity, courseEntry.getOlatResource());
+						efficiencyStatementVO.getGradeSystemIdent(), efficiencyStatementVO.getPerfromanceClassIdent(),
+						efficiencyStatementVO.getPassed(), assessedIdentity, courseEntry.getOlatResource());
 			}
 		} else {
 			createStandalone(assessedIdentity, efficiencyStatementVO);
@@ -176,9 +176,10 @@ public class UserEfficiencyStatementWebService {
 	private void createStandalone(Identity assessedIdentity, UserEfficiencyStatementVO efficiencyStatementVO) {
 		efficiencyStatementManager.createStandAloneUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
 				efficiencyStatementVO.getScore(), efficiencyStatementVO.getGrade(),
-				efficiencyStatementVO.getPerfromanceClassIdent(), efficiencyStatementVO.getPassed(),
-				efficiencyStatementVO.getTotalNodes(), efficiencyStatementVO.getAttemptedNodes(),
-				efficiencyStatementVO.getPassedNodes(), efficiencyStatementVO.getStatementXml(), assessedIdentity, null,
+				efficiencyStatementVO.getGradeSystemIdent(), efficiencyStatementVO.getPerfromanceClassIdent(),
+				efficiencyStatementVO.getPassed(), efficiencyStatementVO.getTotalNodes(),
+				efficiencyStatementVO.getAttemptedNodes(), efficiencyStatementVO.getPassedNodes(),
+				efficiencyStatementVO.getStatementXml(), assessedIdentity, null,
 				efficiencyStatementVO.getCourseTitle());
 	}
 	

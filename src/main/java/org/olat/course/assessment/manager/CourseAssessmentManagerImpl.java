@@ -492,6 +492,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			assessmentEntry.setScore(new BigDecimal(Float.toString(score)));
 		}
 		assessmentEntry.setGrade(scoreEvaluation.getGrade());
+		assessmentEntry.setGradeSystemIdent(scoreEvaluation.getGradeSystemIdent());
 		assessmentEntry.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());
 		assessmentEntry.setPassed(passed);
 		if(assessmentId != null) {

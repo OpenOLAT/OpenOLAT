@@ -134,6 +134,30 @@ public class PredefinedGradeSystemsInitializer {
 			
 			dbInstance.commitAndCloseSession();
 		}
+		
+		if (gradeService.isGradeServiceIdentifierAvailable("oo.percent.80")) {
+			GradeSystem gradeSystem = gradeSystemDao.create("oo.percent.80", GradeSystemType.numeric, true);
+			gradeSystem.setEnabled(true);
+			gradeSystem.setResolution(NumericResolution.whole);
+			gradeSystem.setRounding(Rounding.nearest);
+			gradeSystem.setBestGrade(Integer.valueOf(100));
+			gradeSystem.setLowestGrade(Integer.valueOf(0));
+			gradeSystem.setCutValue(BigDecimal.valueOf(80));
+			gradeSystem = gradeService.updateGradeSystem(gradeSystem);
+			dbInstance.commitAndCloseSession();
+		}
+		
+		if (gradeService.isGradeServiceIdentifierAvailable("oo.percent.50")) {
+			GradeSystem gradeSystem = gradeSystemDao.create("oo.percent.50", GradeSystemType.numeric, true);
+			gradeSystem.setEnabled(true);
+			gradeSystem.setResolution(NumericResolution.whole);
+			gradeSystem.setRounding(Rounding.nearest);
+			gradeSystem.setBestGrade(Integer.valueOf(100));
+			gradeSystem.setLowestGrade(Integer.valueOf(0));
+			gradeSystem.setCutValue(BigDecimal.valueOf(50));
+			gradeSystem = gradeService.updateGradeSystem(gradeSystem);
+			dbInstance.commitAndCloseSession();
+		}
 	}
 
 }

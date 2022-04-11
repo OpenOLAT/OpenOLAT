@@ -49,6 +49,8 @@ public interface UserEfficiencyStatementShort {
 	
 	public String getGrade();
 	
+	public String getGradeSystemIdent();
+	
 	public String getPerformanceClassIdent();
 	
 	public Boolean getPassed();

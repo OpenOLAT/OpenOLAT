@@ -462,8 +462,9 @@ public class GradeCalculatorTest {
 	private NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade,
 			NumericResolution resolution, Rounding rounding, Double cutValue, int minScore,
 			int maxScore) {
-		return sut.createNumericalRanges(new BigDecimal(lowestGrade), new BigDecimal(bestGrade), resolution, rounding,
-				cutValue != null? BigDecimal.valueOf(cutValue): null, new BigDecimal(minScore), new BigDecimal(maxScore));
+		return sut.createNumericalRanges(null, new BigDecimal(lowestGrade), new BigDecimal(bestGrade), resolution,
+				rounding, cutValue != null ? BigDecimal.valueOf(cutValue) : null, new BigDecimal(minScore),
+				new BigDecimal(maxScore));
 	}
 	
 
@@ -642,8 +643,8 @@ public class GradeCalculatorTest {
 	private NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade,
 			NumericResolution resolution, Rounding rounding, Double cutValue, int minScore,
 			int maxScore, List<Breakpoint> breakpoints) {
-		return sut.createNumericalRanges(new BigDecimal(lowestGrade), new BigDecimal(bestGrade), resolution, rounding,
-				cutValue != null ? BigDecimal.valueOf(cutValue) : null, new BigDecimal(minScore),
+		return sut.createNumericalRanges(null, new BigDecimal(lowestGrade), new BigDecimal(bestGrade), resolution,
+				rounding, cutValue != null ? BigDecimal.valueOf(cutValue) : null, new BigDecimal(minScore),
 				new BigDecimal(maxScore), breakpoints);
 	}
 	
@@ -681,7 +682,7 @@ public class GradeCalculatorTest {
 		BigDecimal minScore = new BigDecimal(1);
 		BigDecimal maxScore = new BigDecimal(10);
 		
-		List<GradeScoreRange> ranges = sut.getTextGradeScoreRanges(performanceClasses, breakpoints, minScore, maxScore, new KeyTranslator(Locale.ENGLISH))
+		List<GradeScoreRange> ranges = sut.getTextGradeScoreRanges(null, performanceClasses, breakpoints, minScore, maxScore, new KeyTranslator(Locale.ENGLISH))
 				.stream().collect(Collectors.toList());
 		
 		GradeScoreRange range = ranges.get(0);
@@ -713,11 +714,11 @@ public class GradeCalculatorTest {
 	@Test
 	public void shouldGetGrade_lowerInclusive() {
 		TreeSet<GradeScoreRange> ranges = new TreeSet<>();
-		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), true, false);
+		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", null, "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), true, false);
 		ranges.add(range1);
-		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), true, false);
+		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", null, "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), true, false);
 		ranges.add(range2);
-		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), true, false);
+		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", null, "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), true, false);
 		ranges.add(range3);
 		
 		GradeScoreRange grade = sut.getGrade(ranges, Float.valueOf(4.0f));
@@ -728,11 +729,11 @@ public class GradeCalculatorTest {
 	@Test
 	public void shouldGetGrade_lowerNotInclusive() {
 		TreeSet<GradeScoreRange> ranges = new TreeSet<>();
-		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), false, false);
+		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", null, "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), false, false);
 		ranges.add(range1);
-		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), false, false);
+		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", null, "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), false, false);
 		ranges.add(range2);
-		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), false, false);
+		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", null, "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), false, false);
 		ranges.add(range3);
 		
 		GradeScoreRange grade = sut.getGrade(ranges, Float.valueOf(4.0f));
@@ -743,11 +744,11 @@ public class GradeCalculatorTest {
 	@Test
 	public void shouldGetGrade_scoreHigherThenUpperstBound() {
 		TreeSet<GradeScoreRange> ranges = new TreeSet<>();
-		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), true, false);
+		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", null, "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), true, false);
 		ranges.add(range1);
-		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), true, false);
+		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", null, "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), true, false);
 		ranges.add(range2);
-		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), true, false);
+		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", null, "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), true, false);
 		ranges.add(range3);
 		
 		GradeScoreRange grade = sut.getGrade(ranges, Float.valueOf(10.0f));
@@ -758,11 +759,11 @@ public class GradeCalculatorTest {
 	@Test
 	public void shouldGetGrade_scoreLowerThenLowerstBound() {
 		TreeSet<GradeScoreRange> ranges = new TreeSet<>();
-		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), true, false);
+		GradeScoreRangeImpl range1 = new GradeScoreRangeImpl(1, "1", null, "11", null, BigDecimal.valueOf(5), false, BigDecimal.valueOf(4), true, false);
 		ranges.add(range1);
-		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), true, false);
+		GradeScoreRangeImpl range2 = new GradeScoreRangeImpl(2, "2", null, "22", null, BigDecimal.valueOf(4), false, BigDecimal.valueOf(3), true, false);
 		ranges.add(range2);
-		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), true, false);
+		GradeScoreRangeImpl range3 = new GradeScoreRangeImpl(3, "3", null, "33", null, BigDecimal.valueOf(3), false, BigDecimal.valueOf(2), true, false);
 		ranges.add(range3);
 		
 		GradeScoreRange grade = sut.getGrade(ranges, Float.valueOf(1.0f));

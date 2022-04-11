@@ -20,12 +20,15 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.date.TimeElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
@@ -50,6 +53,8 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 			Collections.sort(rows, new ScoreComparator());
 		} else if(columnIndex == IdentityCourseElementCols.currentCompletion.ordinal()) {
 			Collections.sort(rows, new CurrentCompletionComparator());
+		}  else if(columnIndex == IdentityCourseElementCols.currentRunStart.ordinal()) {
+			Collections.sort(rows, new CurrentRunStartComparator());
 		} else {
 			super.sort(rows);
 		}
@@ -71,6 +76,52 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 			return s1.compareTo(s2);
 		}
 		
+	}
+	
+	private class CurrentRunStartComparator implements Comparator<AssessedIdentityElementRow> {
+		
+		private final Calendar cal = Calendar.getInstance();
+
+		@Override
+		public int compare(AssessedIdentityElementRow r1, AssessedIdentityElementRow r2) {
+			if(r1 == null || r2 == null) {
+				return compareNullObjects(r1, r2);
+			}
+			
+			TimeElement i1 = r1.getCurrentRunStart();
+			TimeElement i2 = r2.getCurrentRunStart();
+			if(i1 == null || i2 == null) {
+				return compareNullObjects(i1, i2);
+			}
+			
+			Date d1= i1.getDate();
+			Date d2 = i2.getDate();
+			if(d1 == null || d2 == null) {
+				return compareNullObjects(i1, i2);
+			}
+			
+			int c = compareTime(d1, d2);
+			if(c == 0) {
+				Long k1 = r1.getIdentityKey();
+				Long k2 = r2.getIdentityKey();
+				c = compareLongs(k1, k2);
+			}
+			return c;
+		}
+		
+		private int compareTime(Date i1, Date i2) {
+			Date d1 = normalize(i1);
+			Date d2 = normalize(i2);
+			return compareDateAndTimestamps(d1, d2);
+		}
+		
+		private Date normalize(Date d) {
+			cal.setTime(d);
+			cal.set(Calendar.YEAR, 2022);
+			cal.set(Calendar.MONTH, 4);
+			cal.set(Calendar.DATE, 5);
+			return cal.getTime();
+		}
 	}
 
 	private class CurrentCompletionComparator implements Comparator<AssessedIdentityElementRow> {

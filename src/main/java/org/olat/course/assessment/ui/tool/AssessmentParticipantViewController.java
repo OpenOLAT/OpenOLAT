@@ -107,8 +107,8 @@ public class AssessmentParticipantViewController extends BasicController {
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
 		if (hasGrade) {
-			mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
-					assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade()));
+			mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(), 
+					assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade(), assessmentEval.getGradeSystemIdent()));
 		}
 		
 		// Passed

@@ -162,7 +162,7 @@ public class AssessmentViewController extends BasicController {
 		
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 		mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
-				assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
+				assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade(), assessmentEntry.getGradeSystemIdent()));
 		mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		mainVC.contextPut("passed", assessmentEntry.getPassed());
 		mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
@@ -211,9 +211,9 @@ public class AssessmentViewController extends BasicController {
 	private void doSetUserVisibility(UserRequest ureq, Boolean userVisibility) {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
-				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		
 		updateUserVisibilityUI();
@@ -223,9 +223,9 @@ public class AssessmentViewController extends BasicController {
 	private void doReopen(UserRequest ureq) {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.inReview,
-				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));

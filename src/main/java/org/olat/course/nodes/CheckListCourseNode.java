@@ -454,6 +454,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		
 		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
 		String grade = null;
+		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		Boolean passed = null;
 		if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO) || (scoreEval != null && StringHelper.containsNonWhitespace(scoreEval.getGrade()))) {
@@ -463,12 +464,13 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 			grade = gradeScoreRange.getGrade();
+			gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			passed = Boolean.valueOf(gradeScoreRange.isPassed());
 		}
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 		
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), grade, performanceClassIdent, passed, status, null, null, null, null, null);
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), grade, gradeSystemIdent, performanceClassIdent, passed, status, null, null, null, null, null);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
@@ -490,7 +492,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, passed, status, null, null, null, null, null);
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, null, passed, status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -522,7 +524,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 		
-		ScoreEvaluation sceval = new ScoreEvaluation(score, null, null, Boolean.valueOf(passed), status, null, null, null, null, null);
+		ScoreEvaluation sceval = new ScoreEvaluation(score, null, null, null, Boolean.valueOf(passed), status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -543,8 +545,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
-				currentEval.getPerformanceClassIdent(), currentEval.getPassed(), status,
-				currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+				currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
+				status, currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
 				currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
 				currentEval.getAssessmentID());
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -667,18 +669,21 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		
 		Float currentScore = null;
 		String currentGrade = null;
+		String currentGradeSystemIdent = null;
 		String currentPerformanceClassIdent = null;
 		Boolean currentPassed = null;
 		AssessmentEntry ae = am.getAssessmentEntry(this, assessedIdentity);
 		if(ae != null) {
 			currentScore = ae.getScore() == null ? null : ae.getScore().floatValue();
 			currentGrade = ae.getGrade();
+			currentGradeSystemIdent = ae.getGradeSystemIdent();
 			currentPerformanceClassIdent = ae.getPerformanceClassIdent();
 			currentPassed = ae.getPassed();
 		}
 		
 		Float updatedScore = null;
 		String updateGrade = null;
+		String updateGradeSystemIdent = null;
 		String updatePerformanceClassIdent = null;
 		Boolean updatedPassed = null;
 
@@ -701,6 +706,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 					NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, updatedScore);
 					updateGrade = gradeScoreRange.getGrade();
+					updateGradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					updatePerformanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 					updatedPassed = Boolean.valueOf(gradeScoreRange.isPassed());
 				}
@@ -742,11 +748,12 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		
 		needUpdate = needUpdate
 				|| !Objects.equals(updateGrade, currentGrade)
+				|| !Objects.equals(updateGradeSystemIdent, currentGradeSystemIdent)
 				|| !Objects.equals(updatePerformanceClassIdent, currentPerformanceClassIdent);
 		
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent,
-					updatedPassed, null, null, null, null, null, null);
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent,
+					updatePerformanceClassIdent, updatedPassed, null, null, null, null, null, null);
 			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);

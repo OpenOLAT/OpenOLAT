@@ -173,8 +173,8 @@ public class CumulatingScoreEvaluatorTest {
 	}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(score, null, null, null, null, null, null, null, null, null, userVisibility, null, null, null,
-				null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
+		return new AssessmentEvaluation(score, null, null, null, null, null, null, null, null, null, null, userVisibility, null, null,
+				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

@@ -195,9 +195,9 @@ public class LearningPathNoAccessResolverTest {
 	
 	private AssessmentEvaluation ae(AssessmentObligation obligation, Boolean fullyAssessed,
 			AssessmentEntryStatus status, Date startDate) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, status, null,
-				fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, startDate, null,
-				ObligationOverridable.of(obligation), null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, status,
+				null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, startDate,
+				null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 	private Date inFuture() {

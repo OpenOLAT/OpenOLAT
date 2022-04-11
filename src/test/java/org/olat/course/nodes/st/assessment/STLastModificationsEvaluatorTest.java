@@ -103,7 +103,7 @@ public class STLastModificationsEvaluatorTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Date lastUserModified, Date lastCoachModified, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, null, 0, null, lastUserModified, lastCoachModified, null, null, null, ObligationOverridable.of(obligation), null, null, null);
+				null, null, null, null, null, 0, null, lastUserModified, lastCoachModified, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.grade.ui.component;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.NavigableSet;
 
@@ -40,8 +39,6 @@ public class GradeScaleChart extends DefaultD3Component {
 	private static final GradeScaleChartRenderer RENDERER = new GradeScaleChartRenderer();
 	
 	private GradeSystem gradeSystem;
-	private BigDecimal minScore;
-	private BigDecimal maxScore;
 	private List<Breakpoint> breakpoints;
 	private NavigableSet<GradeScoreRange> gradeScoreRanges;
 

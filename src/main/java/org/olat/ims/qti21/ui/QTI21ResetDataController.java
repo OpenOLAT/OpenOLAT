@@ -204,7 +204,7 @@ public class QTI21ResetDataController extends FormBasicController {
 			
 			qtiService.deleteAssessmentTestSession(identities, testEntry, courseEntry, courseNode.getIdent());
 			for(Identity identity:identities) {
-				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, null, null,
+				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, null, null, null,
 						AssessmentEntryStatus.notStarted, null, null, 0.0d, AssessmentRunStatus.notStarted, null);
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);

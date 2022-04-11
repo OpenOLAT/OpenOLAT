@@ -512,10 +512,10 @@ public class ScormSessionController {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
 				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), currentEval.getGrade(),
-						currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed), currentEval.getAssessmentStatus(),
-						currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
-						currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
-						currentEval.getAssessmentID());
+						currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
+						currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 				courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
@@ -534,10 +534,10 @@ public class ScormSessionController {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
 			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), currentEval.getGrade(),
-					currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed), currentEval.getAssessmentStatus(),
-					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
-					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
-					currentEval.getAssessmentID());
+					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
+					currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false,
 					Role.user);
 			if(increment) {
@@ -587,10 +587,10 @@ public class ScormSessionController {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
 				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
-						currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
-						currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
-						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
-						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+						currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(),
+						Boolean.valueOf(passed), currentEval.getAssessmentStatus(),
+						currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+						currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 				courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
@@ -614,10 +614,10 @@ public class ScormSessionController {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
 			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
-					currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed), currentEval.getAssessmentStatus(),
-					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
-					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
-					currentEval.getAssessmentID());
+					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
+					currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false, Role.user);
 			if(increment) {
 				attemptsIncremented = true;

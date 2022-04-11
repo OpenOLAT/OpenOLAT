@@ -796,10 +796,12 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			Boolean passed = null;
 			String grade = null;
+			String gradeSystemIdent = null;
 			String performanceClassIdent = null;
 			if(withGrade && score != null && (withAutoGrade || row.getApplyGradeEl().isAtLeastSelected(1))) {
 				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 				grade = gradeScoreRange.getGrade();
+				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				if (withPassed) {
 					passed = Boolean.valueOf(gradeScoreRange.isPassed());
@@ -820,9 +822,9 @@ public class GroupAssessmentController extends FormBasicController {
 					: row.getUserVisibility();
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null,null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null,null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
@@ -864,11 +866,13 @@ public class GroupAssessmentController extends FormBasicController {
 
 		for(AssessmentRow row:rows) {
 			String grade = null;
+			String gradeSystemIdent = null;
 			String performanceClassIdent = null;
 			Boolean passed = groupPassed;
 			if (withGrade && gradeScoreRange != null 
 					&& (withAutoGrade || groupApplyGradeEl.isAtLeastSelected(1) || StringHelper.containsNonWhitespace(row.getGrade()))) {
 				grade = gradeScoreRange.getGrade();
+				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				if (withPassed) {
 					groupPassed = Boolean.valueOf(gradeScoreRange.isPassed());
@@ -879,9 +883,9 @@ public class GroupAssessmentController extends FormBasicController {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}

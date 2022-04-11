@@ -1104,6 +1104,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		if(courseNode instanceof IQTESTCourseNode) {
 			String grade = null;
+			String gradeSystemIdent = null;
 			String performanceClassIdent = null;
 			Boolean updatePass = pass;
 			if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()) {
@@ -1114,6 +1115,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 					updatePass = Boolean.valueOf(gradeScoreRange.isPassed());
 				} else {
@@ -1132,8 +1134,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				visibility = Boolean.TRUE;
 			}
 			
-			ScoreEvaluation sceval = new ScoreEvaluation(score, grade, performanceClassIdent, updatePass,
-					assessmentStatus, visibility, start, completion, AssessmentRunStatus.done, assessmentId);
+			ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+					updatePass, assessmentStatus, visibility, start, completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
 			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),

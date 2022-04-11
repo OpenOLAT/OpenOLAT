@@ -167,8 +167,8 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 	
 	@Override
-	public Long getGradeCount(RepositoryEntryRef remositoryEntry, String subIdent) {
-		return assessmentEntryDao.getGradeCount(remositoryEntry, subIdent);
+	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent) {
+		return assessmentEntryDao.getScoreCount(remositoryEntry, subIdent);
 	}
 
 	@Override

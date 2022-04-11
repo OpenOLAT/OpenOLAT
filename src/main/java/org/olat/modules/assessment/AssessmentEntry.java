@@ -71,6 +71,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public void setGrade(String grade);
 
+	public String getGradeSystemIdent();
+	
+	public void setGradeSystemIdent(String gradeSystemIdent);
+
 	public String getPerformanceClassIdent();
 
 	public void setPerformanceClassIdent(String performanceClassIdent);

@@ -507,6 +507,7 @@ public class QTI21EditForm extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			markDirty();
 		} else if (cmc == source) {
 			cleanUp();
 			markDirty();

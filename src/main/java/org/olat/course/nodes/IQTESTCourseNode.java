@@ -594,6 +594,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		String grade = null;
+		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		Boolean passed = session.getPassed();
 		if(session.getManualScore() != null && finalScore != null) {
@@ -608,6 +609,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 					NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 					passed = Boolean.valueOf(gradeScoreRange.isPassed());
 				}
@@ -616,8 +618,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				passed = Boolean.valueOf(calculated);
 			}
 		}
-		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, assessmentStatus,
-				visibility, null, 1.0d, AssessmentRunStatus.done, session.getKey());
+		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
+				assessmentStatus, visibility, null, 1.0d, AssessmentRunStatus.done, session.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
 		
 		if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
@@ -634,6 +636,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		
 		Float score = null;
 		String grade = null;
+		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		Boolean passed = null;
 		if(updateScoring) {
@@ -655,6 +658,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 						NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 						grade = gradeScoreRange.getGrade();
+						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 						passed = Boolean.valueOf(gradeScoreRange.isPassed());
 					}
@@ -669,7 +673,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		}
 		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
-		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
+		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
+				null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
 	}
 	

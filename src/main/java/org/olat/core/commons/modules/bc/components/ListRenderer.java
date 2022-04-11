@@ -482,7 +482,15 @@ public class ListRenderer {
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
 						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
-				sb.append("\"><i class=\"o_icon o_icon-fw ").append(openIcon).append("\"></i></a>");
+//				sb.append("\"><i class=\"o_icon o_icon-fw ").append(openIcon).append("\"></i></a>");
+				   sb.append("\" class='bctn bxtn-default btn-xs'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");
+				   if ("o_icon_edit".equals(openIcon)) {
+					   sb.append(StringHelper.escapeHtml(translator.translate("edit")));					   
+				   } else {
+					   sb.append(StringHelper.escapeHtml(translator.translate("mf.open")));					   					   
+				   }
+				   
+				   sb.append("</span></a>");
 			}
 		}
 		sb.append("</td><td>");

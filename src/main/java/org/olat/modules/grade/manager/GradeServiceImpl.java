@@ -53,6 +53,7 @@ import org.olat.modules.grade.PerformanceClass;
 import org.olat.modules.grade.Rounding;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -113,7 +114,7 @@ public class GradeServiceImpl implements GradeService {
 	}
 	
 	@Override
-	public GradeSystem getGradeSystem(RepositoryEntry repositoryEntry, String subIdent) {
+	public GradeSystem getGradeSystem(RepositoryEntryRef repositoryEntry, String subIdent) {
 		GradeScale gradeScale = getGradeScale(repositoryEntry, subIdent);
 		return gradeScale != null? gradeScale.getGradeSystem(): null;
 	}
@@ -167,7 +168,7 @@ public class GradeServiceImpl implements GradeService {
 	}
 
 	@Override
-	public void cloneGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry,
+	public void cloneGradeScale(RepositoryEntryRef sourceEntry, String sourceIdent, RepositoryEntry targetEntry,
 			String targetIdent) {
 		GradeScale sourceGradeScale = getGradeScale(sourceEntry, sourceIdent);
 		if (sourceGradeScale == null) return;
@@ -189,13 +190,13 @@ public class GradeServiceImpl implements GradeService {
 	}
 
 	@Override
-	public void deleteGradeScale(RepositoryEntry repositoryEntry, String subIdent) {
+	public void deleteGradeScale(RepositoryEntryRef repositoryEntry, String subIdent) {
 		breakpointDao.delete(repositoryEntry, subIdent);
 		gradeScaleDao.delete(repositoryEntry, subIdent);
 	}
 	
 	@Override
-	public GradeScale getGradeScale(RepositoryEntry repositoryEntry, String subIdent) {
+	public GradeScale getGradeScale(RepositoryEntryRef repositoryEntry, String subIdent) {
 		GradeScaleSearchParams searchParams = new GradeScaleSearchParams();
 		searchParams.setRepositoryEntry(repositoryEntry);
 		searchParams.setSubIdent(subIdent);
@@ -282,12 +283,11 @@ public class GradeServiceImpl implements GradeService {
 		if (gradeSystem == null || GradeSystemType.numeric != gradeSystem.getType()) return Collections.emptyList();
 		
 		return gradeCalculator
-				.createNumericalRanges(new BigDecimal(gradeSystem.getLowestGrade().intValue()),
+				.createNumericalRanges(gradeSystem.getIdentifier(),
+						new BigDecimal(gradeSystem.getLowestGrade().intValue()),
 						new BigDecimal(gradeSystem.getBestGrade().intValue()), gradeSystem.getResolution(),
 						gradeSystem.getRounding(), null, minScore, maxScore)
-				.stream()
-				.map(GradeScoreRange::getGrade)
-				.collect(Collectors.toList());
+				.stream().map(GradeScoreRange::getGrade).collect(Collectors.toList());
 	}
 
 	@Override
@@ -296,10 +296,8 @@ public class GradeServiceImpl implements GradeService {
 		if (performanceClasses == null || performanceClasses.isEmpty()) return Collections.emptyMap();
 		
 		return gradeCalculator
-				.createNumericalRanges(
-						new BigDecimal(performanceClasses.get(performanceClasses.size() - 1).getBestToLowest()),
-						new BigDecimal(performanceClasses.get(0).getBestToLowest() -1), NumericResolution.whole,
-						Rounding.down, null, minScore, maxScore)
+				.createNumericalRanges(null, new BigDecimal(performanceClasses.get(performanceClasses.size() - 1).getBestToLowest()),
+						new BigDecimal(performanceClasses.get(0).getBestToLowest() -1), NumericResolution.whole, Rounding.down, null, minScore, maxScore)
 				.stream()
 				.collect(Collectors.toMap(range -> Integer.valueOf(range.getGrade()), GradeScoreRange::getLowerBound));
 	}
@@ -315,13 +313,14 @@ public class GradeServiceImpl implements GradeService {
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeSystem gradeSystem, List<Breakpoint> breakpoints,
 			BigDecimal minScore, BigDecimal maxScore, Locale locale) {
 		if (GradeSystemType.numeric == gradeSystem.getType()) {
-			return gradeCalculator.createNumericalRanges(new BigDecimal(gradeSystem.getLowestGrade().intValue()),
+			return gradeCalculator.createNumericalRanges(gradeSystem.getIdentifier(),
+					new BigDecimal(gradeSystem.getLowestGrade().intValue()),
 					new BigDecimal(gradeSystem.getBestGrade().intValue()), gradeSystem.getResolution(),
 					gradeSystem.getRounding(), gradeSystem.getCutValue(), minScore, maxScore, breakpoints);
 		} else if (GradeSystemType.text == gradeSystem.getType()) {
 			Translator translator = Util.createPackageTranslator(GradeUIFactory.class, locale);
-			return gradeCalculator.getTextGradeScoreRanges(getPerformanceClasses(gradeSystem), breakpoints, minScore,
-					maxScore, translator);
+			return gradeCalculator.getTextGradeScoreRanges(gradeSystem.getIdentifier(),
+					getPerformanceClasses(gradeSystem), breakpoints, minScore, maxScore, translator);
 		}
 		return Collections.emptyNavigableSet();
 	}

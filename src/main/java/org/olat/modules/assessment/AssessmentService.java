@@ -111,9 +111,9 @@ public interface AssessmentService {
 	public boolean hasGrades(RepositoryEntryRef remositoryEntry, String subIdent);
 	
 	/**
-	 * @return the number of assessment entries with a grade
+	 * @return the number of assessment entries with a score
 	 */
-	public Long getGradeCount(RepositoryEntryRef remositoryEntry, String subIdent);
+	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent);
 
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
 

@@ -45,6 +45,7 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 	private final Long efficiencyStatementKey;
 	private final Float score;
 	private final String grade;
+	private final String gradeSystemIdent;
 	private final String performanceClassIdent;
 	private final Boolean passed;
 	private final Integer totalNodes;
@@ -62,6 +63,7 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 			passed = null;
 			score = null;
 			grade = null;
+			gradeSystemIdent = null;
 			performanceClassIdent = null;
 			totalNodes = null;
 			attemptedNodes = null;
@@ -74,6 +76,7 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 			passed = efficiencyStatement.getPassed();
 			score = efficiencyStatement.getScore();
 			grade = efficiencyStatement.getGrade();
+			gradeSystemIdent = efficiencyStatement.getGradeSystemIdent();
 			performanceClassIdent = efficiencyStatement.getPerformanceClassIdent();
 			totalNodes = efficiencyStatement.getTotalNodes();
 			attemptedNodes = efficiencyStatement.getAttemptedNodes();
@@ -101,6 +104,10 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 	
 	public String getGrade() {
 		return grade;
+	}
+
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
 	}
 
 	public String getPerformanceClassIdent() {

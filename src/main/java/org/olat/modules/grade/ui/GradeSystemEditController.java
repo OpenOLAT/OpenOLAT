@@ -300,9 +300,33 @@ public class GradeSystemEditController extends FormBasicController {
 		}
 		
 		tableEl.clearError();
-		if (performanceClassCont.isVisible() && performanceClassRows.isEmpty()) {
-			tableEl.setErrorKey("error.performance.class.madatory", null);
-			allOk &= false;
+		if (performanceClassCont.isVisible()) {
+			if (performanceClassRows.isEmpty()) {
+				tableEl.setErrorKey("error.performance.class.madatory", null);
+				allOk &= false;
+			} else {
+				Boolean passed = null;
+				boolean firstPassed = true;
+				for (PerformanceClassRow row : performanceClassRows) {
+					if (allOk) {
+						Boolean rowPassed = Boolean.valueOf(row.getMarkPassedEl().isAtLeastSelected(1));
+						if (passed == null) {
+							passed = rowPassed;
+						} else {
+							if (passed.booleanValue() != rowPassed.booleanValue()) {
+								if (firstPassed) {
+									passed = rowPassed;
+									firstPassed = false;
+								} else {
+									tableEl.setErrorKey("error.passed.missmatch", null);
+									allOk &= false;
+								}
+							}
+						}
+					}
+					
+				}
+			}
 		}
 		
 		return allOk;

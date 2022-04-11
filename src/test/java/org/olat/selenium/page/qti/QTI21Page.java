@@ -67,8 +67,13 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnStart() {
-		By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
-		OOGraphene.waitElement(startBy, browser);
+		try {
+			By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
+			OOGraphene.waitElement(startBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Assert on start", browser);
+			throw e;
+		}
 		return this;
 	}
 	

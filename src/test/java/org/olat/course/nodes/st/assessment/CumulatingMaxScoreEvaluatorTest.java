@@ -168,7 +168,7 @@ public class CumulatingMaxScoreEvaluatorTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float maxScore, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, maxScore,  null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
+				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

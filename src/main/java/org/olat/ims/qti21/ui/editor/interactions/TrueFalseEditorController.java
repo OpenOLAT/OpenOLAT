@@ -251,7 +251,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		if(sourceWrappers.isEmpty()) {
 			answersCont.setErrorKey("error.atleast.one.answer", null);
 			allOk &= false;
-		} else {
+		} else if(!restrictedEdit) {
 			for(SourceWrapper sourceWrapper:sourceWrappers) {
 				sourceWrapper.setErrorSingleChoice(false);
 				List<String> answers = temporaryAssociations.get(sourceWrapper.getIdentifierString());

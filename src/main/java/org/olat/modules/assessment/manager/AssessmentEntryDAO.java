@@ -212,13 +212,13 @@ public class AssessmentEntryDAO {
 				.isEmpty();
 	}
 	
-	public Long getGradeCount(RepositoryEntryRef remositoryEntry, String subIdent) {
+	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(data.key)");
 		sb.append("  from assessmententry data");
 		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
 		sb.and().append(" data.subIdent=:subIdent");
-		sb.and().append(" data.grade is not null");
+		sb.and().append(" data.score is not null");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)

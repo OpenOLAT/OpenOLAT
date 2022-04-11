@@ -247,22 +247,22 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldGetGradeCount() {
-		// No Grade
+	public void shouldGetScoreCount() {
+		// No score
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = random();
 		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, null);
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(assessmentEntryDao.getGradeCount(entry, subIdent)).isEqualTo(0);
+		assertThat(assessmentEntryDao.getScoreCount(entry, subIdent)).isEqualTo(0);
 		
-		// Grade
-		ae.setGrade("Grade A");
+		// Score
+		ae.setScore(new BigDecimal("22"));
 		assessmentEntryDao.updateAssessmentEntry(ae);
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(assessmentEntryDao.getGradeCount(entry, subIdent)).isEqualTo(1);
+		assertThat(assessmentEntryDao.getScoreCount(entry, subIdent)).isEqualTo(1);
 	}
 	
 	@Test

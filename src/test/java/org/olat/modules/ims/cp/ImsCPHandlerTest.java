@@ -23,12 +23,15 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -67,14 +70,18 @@ public class ImsCPHandlerTest extends OlatTestCase {
 		Assert.assertTrue(page.exists());
 	}
 	
-	@Test(expected=OLATRuntimeException.class)
-	public void importImsCPSlide() throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("ims-cp-1");
+	@Test
+	public void copyResourceImsCPSlide() throws URISyntaxException {
 		URL imsCpUrl = ImsCPHandlerTest.class.getResource("imscp_alt.zip");
 		File imsCpFile = new File(imsCpUrl.toURI());
 		
-		RepositoryHandler cpHandler = handlerFactory.getRepositoryHandler(ImsCPFileResource.TYPE_NAME);	
-		cpHandler.importResource(author, null, "IMS CP", null, false, null, Locale.ENGLISH, imsCpFile, imsCpFile.getName());
+		boolean ok = true;
+        try {
+			File zipRoot = new File(WebappHelper.getTmpDir(), "imsCp" + UUID.randomUUID());
+			ok = FileResource.copyResource(imsCpFile, imsCpFile.getName(), zipRoot);
+		} catch (OLATRuntimeException e) {
+			ok = false;
+		}
+        Assert.assertFalse(ok);
 	}
-
 }

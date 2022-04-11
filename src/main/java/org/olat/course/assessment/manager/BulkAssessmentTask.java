@@ -404,6 +404,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 					boolean applyGrade = autoGrade;
 					GradeScoreRange gradeScoreRange = null;
 					String grade = null;
+					String gradeSystemIdent = null;
 					String performanceClassIdent = null;
 					Boolean passed = null;
 					if (hasGrade) {
@@ -414,6 +415,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 						if (applyGrade) {
 							gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 							grade = gradeScoreRange.getGrade();
+							gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 							performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 						}
 					}
@@ -426,7 +428,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 							 passed = score.floatValue() >= cut.floatValue() ? Boolean.TRUE : Boolean.FALSE;
 						}
 					}
-					ScoreEvaluation se = new ScoreEvaluation(score, grade, performanceClassIdent, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
+					ScoreEvaluation se = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 					
 					// Update score,passed properties in db, and the user's efficiency statement
 					courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, false, Role.auto);
@@ -437,7 +439,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			Boolean passed = row.getPassed();
 			if (hasPassed && passed != null && cut == null) { // Configuration of manual assessment --> Display passed/not passed: yes, Type of display: Manual by tutor
 				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), null, null, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
+				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), null, null, null, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
 				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
@@ -468,9 +470,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			if(!statusVisibilitySet && (datas.getStatus() != null || datas.getVisibility() != null)) {
 				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getGrade(),
-						seOld.getPerformanceClassIdent(), seOld.getPassed(), datas.getStatus(), datas.getVisibility(),
-						seOld.getCurrentRunStartDate(), seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(),
-						seOld.getAssessmentID());
+						seOld.getGradeSystemIdent(), seOld.getPerformanceClassIdent(), seOld.getPassed(),
+						datas.getStatus(), datas.getVisibility(), seOld.getCurrentRunStartDate(),
+						seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(), seOld.getAssessmentID());
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
 				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);

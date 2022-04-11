@@ -337,7 +337,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, statistics.getCountUndefined());
 		Assert.assertEquals(1, statistics.getCountDone());
 		Assert.assertEquals(8, statistics.getCountNotDone());
-		Assert.assertEquals(2, statistics.getCountGrade());
+		Assert.assertEquals(7, statistics.getCountScore());
 		
 		//check only the queries as the statistics need the course infos
 		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(admin, params, true);
