@@ -1069,6 +1069,7 @@ public class CourseTest extends Deployments {
 			.configureFreeBooking("It's free");
 		courseAccess
 			.save()
+			.cleanBlueBox()
 			.clickToolbarBack();
 		course
 			.publish();

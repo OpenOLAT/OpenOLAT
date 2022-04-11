@@ -80,6 +80,10 @@ public class RepositoryAccessPage {
 		return this;
 	}
 
+	public RepositoryAccessPage cleanBlueBox() {
+		OOGraphene.closeBlueMessageWindow(browser);
+		return this;
+	}
 	
 	/**
 	 * Click toolbar

@@ -763,7 +763,7 @@ public class OOGraphene {
 		closeBlueMessageWindow(browser);
 	}
 	
-	private static final void closeBlueMessageWindow(WebDriver browser) {
+	public static final void closeBlueMessageWindow(WebDriver browser) {
 		List<WebElement> closeButtons = browser.findElements(closeBlueBoxButtonBy);
 		for(WebElement closeButton:closeButtons) {
 			if(closeButton.isDisplayed()) {
