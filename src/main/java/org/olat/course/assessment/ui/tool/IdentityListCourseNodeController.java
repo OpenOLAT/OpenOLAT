@@ -1438,9 +1438,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private void doEditGradeScale(UserRequest ureq) {
 		removeAsListenerAndDispose(gradeScaleEditCtrl);
+		gradeScaleEditCtrl = null;
 		removeAsListenerAndDispose(gradeScaleViewCtrl);
+		gradeScaleViewCtrl = null;
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
-		if (assessmentCallback.isAdmin() || !invisibleGradesExist(params)) {
+		if (assessmentCallback.isAdmin() || !invisibleScoreExist(params)) {
 			List<AssessmentScoreStatistic> scoreStatistics = assessmentToolManager.getScoreStatistics(getIdentity(), params);
 			GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade(), scoreStatistics);
 			StepRunnerCallback finish = new GradeScaleAdjustCallback(coachCourseEnv, getLocale());
@@ -1460,12 +1462,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 	
-	private boolean invisibleGradesExist(SearchAssessedIdentityParams params) {
+	private boolean invisibleScoreExist(SearchAssessedIdentityParams params) {
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(getIdentity(), params);
-		Long gradeCount = assessmentService.getGradeCount(courseEntry, courseNode.getIdent());
-		// User which the coach does not see have grades.
-		// Total assessment entries with grade is higher than visible assessment entries.
-		return gradeCount.intValue() > statistics.getCountGrade();
+		Long scoreCount = assessmentService.getScoreCount(courseEntry, courseNode.getIdent());
+		// User which the coach does not see have a score
+		// Total assessment entries with score is higher than visible assessment entries.
+		return scoreCount.intValue() > statistics.getCountScore();
 	}
 	
 }
