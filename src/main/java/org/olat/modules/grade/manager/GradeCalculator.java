@@ -114,7 +114,7 @@ public class GradeCalculator {
 		
 		BigDecimal gradeRangeWidth = getGradeRangeWidth(resolution);
 		int numRanges = geNumOfRanges(lowestGrade.subtract(bestGrade).abs(), gradeRangeWidth);
-		if (numRanges < 2) {
+		if (numRanges < 1) {
 			return ranges;
 		}
 		
@@ -122,7 +122,9 @@ public class GradeCalculator {
 		BigDecimal widthDivisor = new BigDecimal(numRanges - 1);
 		gradeRangeWidth = lowestHigherBest? gradeRangeWidth.multiply(new BigDecimal(-1)): gradeRangeWidth;
 		BigDecimal scoreAbsRange = maxScore.subtract(minScore).abs();
-		BigDecimal scoreRangeWidth = scoreAbsRange.divide(widthDivisor, 5, RoundingMode.HALF_DOWN);
+		BigDecimal scoreRangeWidth = widthDivisor.compareTo(BigDecimal.ZERO) != 0
+				? scoreAbsRange.divide(widthDivisor, 5, RoundingMode.HALF_DOWN)
+				: BigDecimal.ZERO;
 		
 		BigDecimal grade = bestGrade;
 		BigDecimal upperBound = maxScore;

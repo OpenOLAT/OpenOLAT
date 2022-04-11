@@ -125,7 +125,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		}
 
 		List<String> cmds = new ArrayList<>();
-		cmds.add("/opt/homebrew/bin/convert");
+		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-auto-orient");
 		cmds.add("-thumbnail");
@@ -175,7 +175,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		}
 
 		List<String> cmds = new ArrayList<>();
-		cmds.add("/opt/homebrew/bin/convert");
+		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-crop");
 		
@@ -247,7 +247,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			if (exitValue == 0) {
 				rv = extractSizeFromOutput(thumbnailFile, output);
 				if (rv == null) {
-					// sometimes verbose info of /opt/homebrew/bin/convert is in stderr
+					// sometimes verbose info of convert is in stderr
 					rv = extractSizeFromOutput(thumbnailFile, errors);
 				}
 			}
@@ -356,7 +356,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 				size = executeProcess(thumbnailFile, process);
 				doneSignal.countDown();
 			} catch (IOException e) {
-				log.error ("Could not spawn /opt/homebrew/bin/convert sub process", e);
+				log.error ("Could not spawn convert sub process", e);
 				destroyProcess();
 			}
 		}

@@ -158,7 +158,7 @@ public class CourseNodeFactory implements PreWarm {
 		}
 		
 		try {
-			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "][Editor:0]";
+			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);
 			return true;
 		} catch (CorruptedCourseException e) {
