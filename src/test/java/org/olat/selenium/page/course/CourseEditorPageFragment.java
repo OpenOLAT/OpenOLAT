@@ -472,15 +472,6 @@ public class CourseEditorPageFragment {
 		return createResource(chooseFeedButton, resourceTitle, null);
 	}
 	
-	/**
-	 * Create a portfolio template
-	 * @param resourceTitle
-	 * @return
-	 */
-	public CourseEditorPageFragment createPortfolio(String resourceTitle) {
-		return createResource(choosePortfolioButton, resourceTitle, null);
-	}
-	
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {
 		browser.findElement(chooseButton).click();
 		OOGraphene.waitModalDialog(browser);
@@ -507,20 +498,14 @@ public class CourseEditorPageFragment {
 		} else {
 			browser.findElement(createResourceBy).click();	
 		}
-		OOGraphene.waitBusy(browser);
 
-		//fill the create form
-		return fillCreateForm(resourceTitle);
-	}
-	
-	private CourseEditorPageFragment fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		OOGraphene.waitElement(inputBy, browser);
-		browser.findElement(inputBy).sendKeys(displayName);
+		browser.findElement(inputBy).sendKeys(resourceTitle);
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -540,7 +525,7 @@ public class CourseEditorPageFragment {
 		//auto publish
 		By autoPublishBy = By.cssSelector("div.modal  a.o_sel_course_quickpublish_auto");
 		browser.findElement(autoPublishBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return new CoursePageFragment(browser);
 	}
@@ -568,7 +553,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitBusy(browser);
 		
 		By mainId = By.id("o_main");
-		OOGraphene.waitElement(mainId, 5, browser);
+		OOGraphene.waitElement(mainId, browser);
 		return new CoursePageFragment(browser);
 	}
 }

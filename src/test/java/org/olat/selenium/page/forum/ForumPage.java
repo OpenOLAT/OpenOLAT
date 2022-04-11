@@ -133,17 +133,17 @@ public class ForumPage {
 	
 	public ForumPage openThread(String title) {
 		By threadBy = By.xpath("//table[contains(@class,'table')]//tr//a[text()='" + title + "']");
-		OOGraphene.waitElement(threadBy, 5, browser);
+		OOGraphene.waitElement(threadBy, browser);
 		OOGraphene.click(threadBy, browser);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_forum_message"), browser);
 		return this;
 	}
 	
 	public ForumPage openThreadInPeekview(String title) {
 		By threadBy = By.xpath("//div[contains(@class,'o_forum_peekview_message')]//a[span[text()='" + title + "']]");
-		OOGraphene.waitElement(threadBy, 5, browser);
+		OOGraphene.waitElement(threadBy, browser);
 		browser.findElement(threadBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_forum_message"), browser);
 		return this;
 	}
 	
@@ -196,7 +196,7 @@ public class ForumPage {
 
 	public ForumPage replyToMessage(String reference, String title, String reply) {
 		replyToMessageNoWait(reference, title, reply);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
