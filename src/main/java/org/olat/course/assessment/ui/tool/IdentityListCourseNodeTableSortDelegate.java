@@ -84,23 +84,15 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 
 		@Override
 		public int compare(AssessedIdentityElementRow r1, AssessedIdentityElementRow r2) {
-			if(r1 == null || r2 == null) {
-				return compareNullObjects(r1, r2);
-			}
+			Date d1 = extractDate(r1);
+			Date d2 = extractDate(r2);
 			
-			TimeElement i1 = r1.getCurrentRunStart();
-			TimeElement i2 = r2.getCurrentRunStart();
-			if(i1 == null || i2 == null) {
-				return compareNullObjects(i1, i2);
-			}
-			
-			Date d1= i1.getDate();
-			Date d2 = i2.getDate();
+			int c = 0;
 			if(d1 == null || d2 == null) {
-				return compareNullObjects(i1, i2);
+				c = compareNullObjects(d1, d2);
+			} else {
+				c = compareTime(d1, d2);
 			}
-			
-			int c = compareTime(d1, d2);
 			if(c == 0) {
 				Long k1 = r1.getIdentityKey();
 				Long k2 = r2.getIdentityKey();
@@ -109,16 +101,24 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 			return c;
 		}
 		
-		private int compareTime(Date i1, Date i2) {
-			Date d1 = normalize(i1);
-			Date d2 = normalize(i2);
-			return compareDateAndTimestamps(d1, d2);
+		private Date extractDate(AssessedIdentityElementRow r) {
+			if(r == null) {
+				return null;
+			}
+			TimeElement t = r.getCurrentRunStart();
+			return t == null ? null : t.getDate();
+		}
+		
+		private int compareTime(Date d1, Date d2) {
+			Date nd1 = normalize(d1);
+			Date nd2 = normalize(d2);
+			return compareDateAndTimestamps(nd1, nd2);
 		}
 		
 		private Date normalize(Date d) {
 			cal.setTime(d);
 			cal.set(Calendar.YEAR, 2022);
-			cal.set(Calendar.MONTH, 4);
+			cal.set(Calendar.MONTH, 3);
 			cal.set(Calendar.DATE, 5);
 			return cal.getTime();
 		}

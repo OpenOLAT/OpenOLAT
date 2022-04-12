@@ -62,6 +62,13 @@ public class LectureBlockRollCallVO {
 		absenceAuthorized = rollCall.getAbsenceAuthorized();
 		absenceSupervisorNotificationDate = rollCall.getAbsenceSupervisorNotificationDate();
 		
+		if(rollCall.getLecturesAbsentNumber() > 0) {
+			lecturesAbsentNumber = Integer.valueOf(rollCall.getLecturesAbsentNumber());
+		}
+		if(rollCall.getLecturesAttendedNumber() > 0) {
+			lecturesAttendedNumber = Integer.valueOf(rollCall.getLecturesAttendedNumber());
+		}
+
 		identityKey = rollCall.getIdentity().getKey();
 		identityExternalId = rollCall.getIdentity().getExternalId();
 		lectureBlockKey = rollCall.getLectureBlock().getKey();		
