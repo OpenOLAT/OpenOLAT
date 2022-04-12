@@ -143,6 +143,7 @@ public class NavigationPage {
 	}
 	
 	private void navigate(By linkBy) {
+		OOGraphene.waitElementPresence(linkBy, 5, browser);
 		List<WebElement> links = browser.findElements(linkBy);
 		if(links.isEmpty() || !links.get(0).isDisplayed()) {
 			//try to open the more menu
