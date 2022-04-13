@@ -142,6 +142,11 @@ body .modal #o_link_chooser .container-fluid {
 	@include form-control-focus;
 }
 
+/* To make our file chooser useable with long list of files */
+body.tox-dialog__disable-scroll {
+	overflow: scroll !important;
+}
+
 // Show ok / cancel button on very small devices
 @media (max-width: 470px) {
 	.mce-foot {

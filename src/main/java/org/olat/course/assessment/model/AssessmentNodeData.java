@@ -356,7 +356,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 			nodeData.put(KEY_GRADE, grade);
 		}
 		if(gradeSystemIdent != null) {
-			nodeData.put(KEY_GRADE_SYSTEM_IDENT, grade);
+			nodeData.put(KEY_GRADE_SYSTEM_IDENT, gradeSystemIdent);
 		}
 		if(performanceClassIdent != null) {
 			nodeData.put(KEY_PERFORMANCE_CLASS_IDENT, performanceClassIdent);

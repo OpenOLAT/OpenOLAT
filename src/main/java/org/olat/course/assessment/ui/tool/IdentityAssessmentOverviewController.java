@@ -121,6 +121,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
+	private boolean hasStatus;
 	private boolean hasGrade;
 	private boolean hasPassedOverridable;
 	private int counter = 0;
@@ -156,6 +157,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.userCourseEnvironment = userCourseEnvironment;		
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
+		this.hasStatus = true;
 		this.hasGrade = hasGrade(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 		this.hasPassedOverridable = hasPassedOverridable(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
@@ -219,6 +221,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		loadNodesFromCourse = false;
 		followUserResultsVisibility = true;
 		preloadedNodesList = assessmentCourseNodes;
+		hasStatus = false;
 		hasGrade = true;
 	
 		initForm(ureq);
@@ -344,7 +347,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new IdentityAssessmentPassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.numOfAssessmentDocs));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new IdentityAssessmentStatusCellRenderer(getLocale())));
+		if (hasStatus) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new IdentityAssessmentStatusCellRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.lastUserModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastCoachModified));

@@ -75,7 +75,7 @@ public class AssessmentViewController extends BasicController {
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final AssessmentConfig assessmentConfig;
-	private final AssessmentEntry assessmentEntry;
+	private AssessmentEntry assessmentEntry;
 
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -110,8 +110,6 @@ public class AssessmentViewController extends BasicController {
 	}
 	
 	private void updateUserVisibilityUI() {
-		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
-		
 		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
 				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 		
@@ -168,7 +166,11 @@ public class AssessmentViewController extends BasicController {
 		mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
 		
 		mainVC.contextPut("status", new AssessmentStatusCellRenderer(getTranslator(), true).render(assessmentEntry.getAssessmentStatus()));
-		mainVC.contextPut("userVisibility", new UserVisibilityCellRenderer(true).render(assessmentEntry.getUserVisibility(), getTranslator()));
+		UserVisibilityCellRenderer userVisibilityCellRenderer = new UserVisibilityCellRenderer(true);
+		mainVC.contextPut("userVisibility", userVisibilityCellRenderer.render(assessmentEntry.getUserVisibility(), getTranslator()));
+		// Hack to avoid change of the column width when switching user visibility
+		Boolean userVisibilityInverted = assessmentEntry.getUserVisibility() != null && assessmentEntry.getUserVisibility().booleanValue()? Boolean.FALSE: Boolean.TRUE;
+		mainVC.contextPut("userVisibilityInverted", new UserVisibilityCellRenderer(true).render(userVisibilityInverted, getTranslator()));
 
 		String rawComment = assessmentEntry.getComment();
 		if (assessmentConfig.hasComment()) {
@@ -191,6 +193,7 @@ public class AssessmentViewController extends BasicController {
 	}
 
 	private void putParticipantViewToVC(UserRequest ureq) {
+		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
 				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig);
 		listenTo(assessmentParticipantViewCtrl);
@@ -215,8 +218,11 @@ public class AssessmentViewController extends BasicController {
 				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		
 		updateUserVisibilityUI();
+		putParticipantViewToVC(ureq);
+		
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
 	}
 

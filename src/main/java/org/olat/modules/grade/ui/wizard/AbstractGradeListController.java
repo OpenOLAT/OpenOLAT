@@ -147,7 +147,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 				breakpoints, BigDecimal.valueOf(assessmentConfig.getMinScore().doubleValue()),
 				BigDecimal.valueOf(assessmentConfig.getMaxScore().doubleValue()), getLocale());
 
-		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdentWithStatus(courseEntry, courseNode.getIdent(), null, true, false);
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdentWithStatus(courseEntry, courseNode.getIdent(), null, false, false);
 		List<GradeChangeRow> rows = new ArrayList<>(assessmentEntries.size());
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
 			if (filter(assessmentEntry)) {

@@ -105,7 +105,7 @@ public class GradeScaleAdjustCallback implements StepRunnerCallback {
 		
 		NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 		
-		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdentWithStatus(courseEntry, courseNode.getIdent(), null, true, false);
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdentWithStatus(courseEntry, courseNode.getIdent(), null, false, false);
 		
 		int count = 0;
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
