@@ -36,7 +36,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
@@ -54,6 +56,8 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
  * @author guido
  */
 public class WikiToZipUtils {
+	
+	private static final Logger log = Tracing.createLoggerFor(WikiToZipUtils.class);
 	
 	/**
 	 * creates an html page with the mappings between the pagename and the Base64
@@ -129,14 +133,22 @@ public class WikiToZipUtils {
 				VFSContainer folder = (VFSContainer) item;
 				List<VFSItem> items = folder.getItems();
 				String overviewPage = WikiToZipUtils.createIndexPageForExport(items);
-				if(overviewPage != null && !path.contains(overviewPage)) {
+				if(overviewPage != null && !path.contains(overviewPage) && !path.contains("index.html")) {
 					path.add(overviewPage);
-					exportStream.putNextEntry(new ZipEntry(currentPath + "/index.html"));
-					IOUtils.write(overviewPage, exportStream, StandardCharsets.UTF_8);
-					exportStream.closeEntry();
+					try {
+						exportStream.putNextEntry(new ZipEntry(currentPath + "/index.html"));
+						IOUtils.write(overviewPage, exportStream, StandardCharsets.UTF_8);
+						exportStream.closeEntry();
+					} catch (Exception e) {
+						log.error("", e);
+					}
 				}
 				for(VFSItem wikiItem:items) {
-					ZipUtil.addToZip(wikiItem, currentPath, exportStream, VFSAllItemsFilter.ACCEPT_ALL, false);
+					try {
+						ZipUtil.addToZip(wikiItem, currentPath, exportStream, VFSAllItemsFilter.ACCEPT_ALL, false);
+					} catch (Exception e) {
+						log.error("", e);
+					}
 				}
 			}
 		}

@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -213,9 +214,9 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		chooseCurriculumElementsButton.setEnabled(status != Status.end);
 		chooseCurriculumElementsButton.setVisible(curriculumEnabled);
 
-		selectBusinessGroups(assessmentMode.getGroups());
-		selectAreas(assessmentMode.getAreas());
-		selectCurriculumElements(assessmentMode.getCurriculumElements());
+		selectAssessmentModeToBusinessGroups(assessmentMode.getGroups());
+		selectAssessmentModeToAreas(assessmentMode.getAreas());
+		selectAssessmentModeToCurriculumElements(assessmentMode.getCurriculumElements());
 
 		forCoachEl = uifactory.addCheckboxesHorizontal("forcoach", "mode.for.coach", formLayout, onKeys, onValues);
 		forCoachEl.select(onKeys[0], assessmentMode.isApplySettingsForCoach());
@@ -229,33 +230,51 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		}
 	}
 	
-	protected void selectBusinessGroups(Set<AssessmentModeToGroup> assessmentModeToGroups) {
+	protected void selectAssessmentModeToBusinessGroups(Set<AssessmentModeToGroup> assessmentModeToGroups) {
+		Set<BusinessGroup> businessGroups = assessmentModeToGroups.stream()
+				.map(AssessmentModeToGroup::getBusinessGroup)
+				.collect(Collectors.toSet());
+		selectBusinessGroups(businessGroups);
+	}
+	
+	protected void selectBusinessGroups(Set<BusinessGroup> assessmentModeGroups) {
 		groupKeys = new ArrayList<>();
 		groupNames = new ArrayList<>();
-		for(AssessmentModeToGroup modeToGroup:assessmentModeToGroups) {
-			BusinessGroup group = modeToGroup.getBusinessGroup();
+		for(BusinessGroup group:assessmentModeGroups) {
 			groupKeys.add(group.getKey());
 			groupNames.add(StringHelper.escapeHtml(group.getName()));
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
 	}
 	
-	protected void selectAreas(Set<AssessmentModeToArea> assessmentModeToAreas) {
+	protected void selectAssessmentModeToAreas(Set<AssessmentModeToArea> assessmentModeToAreas) {
+		Set<BGArea> areas = assessmentModeToAreas.stream()
+				.map(AssessmentModeToArea::getArea)
+				.collect(Collectors.toSet());
+		selectAreas(areas);
+	}
+	
+	protected void selectAreas(Set<BGArea> assessmentModeAreas) {
 		areaKeys = new ArrayList<>();
 		areaNames = new ArrayList<>();
-		for(AssessmentModeToArea modeToArea: assessmentModeToAreas) {
-			BGArea area = modeToArea.getArea();
+		for(BGArea area: assessmentModeAreas) {
 			areaKeys.add(area.getKey());
 			areaNames.add(StringHelper.escapeHtml(area.getName()));
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
 	}
 	
-	protected void selectCurriculumElements(Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculumElements) {
+	protected void selectAssessmentModeToCurriculumElements(Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculumElements) {
+		Set<CurriculumElement> curriculumElements = assessmentModeToCurriculumElements.stream()
+				.map(AssessmentModeToCurriculumElement::getCurriculumElement)
+				.collect(Collectors.toSet());
+		selectCurriculumElements(curriculumElements);
+	}
+	
+	protected void selectCurriculumElements(Set<CurriculumElement> assessmentModeCurriculumElements) {
 		curriculumElementKeys = new ArrayList<>();
 		curriculumElementNames = new ArrayList<>();
-		for(AssessmentModeToCurriculumElement modeToElement: assessmentModeToCurriculumElements) {
-			CurriculumElement element = modeToElement.getCurriculumElement();
+		for(CurriculumElement element: assessmentModeCurriculumElements) {
 			curriculumElementKeys.add(element.getKey());
 			curriculumElementNames.add(StringHelper.escapeHtml(element.getDisplayName()));
 		}

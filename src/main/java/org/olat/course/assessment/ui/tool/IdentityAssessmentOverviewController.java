@@ -382,11 +382,14 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (loadNodesFromCourse) {
 			// get list of course node and user data and populate table data model 	
 			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, null, followUserResultsVisibility, discardEmptyNodes, true);
+			// In this case all course nodes are loaded, even if the assessment is not user visible yet.
+			// If the data are taken from the efficiency statement (else clause), only user visible data are present,
+			// but the information about the user visibility is always null.
+			nodesTableList.forEach(this::forgeScore);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = new ArrayList<>(preloadedNodesList);
 		}
-		nodesTableList.forEach(this::forgeScore);
 		tableModel.setObjects(nodesTableList);
 		tableEl.reset(true, true, true);
 	}

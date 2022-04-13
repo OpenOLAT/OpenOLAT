@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.mode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -57,10 +58,16 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.AssessmentModeToArea;
+import org.olat.course.assessment.AssessmentModeToCurriculumElement;
+import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeListModel.Cols;
 import org.olat.course.assessment.ui.tool.ConfirmStopAssessmentModeController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
+import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -333,9 +340,29 @@ public class AssessmentModeListController extends FormBasicController implements
 		newMode.setName(translate("copy.name", modeToCopy.getName()));
 		
 		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
-		modeEditCtrl.setBusinessGroups(modeToCopy.getGroups());
-		modeEditCtrl.setAreas(modeToCopy.getAreas());
-		modeEditCtrl.setCurriculumElements(modeToCopy.getCurriculumElements());
+		Set<AssessmentModeToGroup> assessmentModeToGroups = modeToCopy.getGroups();
+		if(assessmentModeToGroups != null) {
+			Set<BusinessGroup> businessGroups = assessmentModeToGroups.stream()
+					.map(AssessmentModeToGroup::getBusinessGroup)
+					.collect(Collectors.toSet());
+			modeEditCtrl.setBusinessGroups(businessGroups);
+		}
+		
+		Set<AssessmentModeToArea> assessmentModeToAreas = modeToCopy.getAreas();
+		if(assessmentModeToAreas != null) {
+			Set<BGArea> areas = assessmentModeToAreas.stream()
+					.map(AssessmentModeToArea::getArea)
+					.collect(Collectors.toSet());
+			modeEditCtrl.setAreas(areas);
+		}
+		
+		Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculums = modeToCopy.getCurriculumElements();
+		if(assessmentModeToCurriculums != null) {
+			Set<CurriculumElement> curriculumElements = assessmentModeToCurriculums.stream()
+					.map(AssessmentModeToCurriculumElement::getCurriculumElement)
+					.collect(Collectors.toSet());
+			modeEditCtrl.setCurriculumElements(curriculumElements);
+		}
 		
 		listenTo(modeEditCtrl);
 		toolbarPanel.pushController(newMode.getName(), modeEditCtrl);

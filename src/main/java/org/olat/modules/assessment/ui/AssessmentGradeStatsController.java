@@ -94,7 +94,10 @@ public class AssessmentGradeStatsController extends BasicController {
 		Optional<GradeScoreRange> minPassed = getMinPassed(gradeScoreRanges);
 		if (minPassed.isPresent()) {
 			GradeScoreRange minPassedRange = minPassed.get();
-			String passedWith = translate("grade.score.and.grade", THREE_DIGITS.format(minPassedRange.getLowerBound()), minPassedRange.getGrade());
+			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
+					minPassedRange.getPerformanceClassIdent(), minPassedRange.getGrade(),
+					minPassedRange.getGradeSystemIdent());
+			String passedWith = translate("grade.score.and.grade", THREE_DIGITS.format(minPassedRange.getLowerBound()), grade);
 			mainVC.contextPut("passedWith", passedWith);
 		}
 		
@@ -122,7 +125,10 @@ public class AssessmentGradeStatsController extends BasicController {
 		Double avgScore = statistics.getAverageScore();
 		if (avgScore != null) {
 			GradeScoreRange avgScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(avgScore.floatValue()));
-			String avgScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(avgScore), avgScoreRange.getGrade());
+			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
+					avgScoreRange.getPerformanceClassIdent(), avgScoreRange.getGrade(),
+					avgScoreRange.getGradeSystemIdent());
+			String avgScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(avgScore), grade);
 			mainVC.contextPut("avgScore", avgScoreText);
 		} else {
 			mainVC.contextRemove("avgScore");
@@ -131,7 +137,10 @@ public class AssessmentGradeStatsController extends BasicController {
 		BigDecimal bestScore = statistics.getMaxScore();
 		if (bestScore != null) {
 			GradeScoreRange bestScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(bestScore.floatValue()));
-			String bestScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(bestScore), bestScoreRange.getGrade());
+			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
+					bestScoreRange.getPerformanceClassIdent(), bestScoreRange.getGrade(),
+					bestScoreRange.getGradeSystemIdent());
+			String bestScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(bestScore), grade);
 			mainVC.contextPut("bestScore", bestScoreText);
 		} else {
 			mainVC.contextRemove("bestScore");
