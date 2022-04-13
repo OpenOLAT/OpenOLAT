@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.mode;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -35,9 +34,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeToArea;
-import org.olat.course.assessment.AssessmentModeToCurriculumElement;
-import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -63,9 +62,9 @@ public class AssessmentModeEditController extends BasicController {
 	
 	private RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
-	private Set<AssessmentModeToArea> assessmentModeToAreas;
-	private Set<AssessmentModeToGroup> assessmentModeToGroups;
-	private Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculumElements;
+	private Set<BGArea> assessmentModeAreas;
+	private Set<BusinessGroup> assessmentModeBusinessGroups;
+	private Set<CurriculumElement> assessmentModeCurriculumElements;
 
 	public AssessmentModeEditController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, AssessmentMode assessmentMode) {
@@ -94,14 +93,14 @@ public class AssessmentModeEditController extends BasicController {
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.access"), uureq -> {
 			accessCtrl = new AssessmentModeEditAccessController(uureq, getWindowControl(), entry, assessmentMode);
-			if(assessmentModeToAreas != null) {
-				accessCtrl.selectAreas(assessmentModeToAreas);
+			if(assessmentModeAreas != null) {
+				accessCtrl.selectAreas(assessmentModeAreas);
 			}
-			if(assessmentModeToGroups != null) {
-				accessCtrl.selectBusinessGroups(assessmentModeToGroups);
+			if(assessmentModeBusinessGroups != null) {
+				accessCtrl.selectBusinessGroups(assessmentModeBusinessGroups);
 			}
-			if(assessmentModeToCurriculumElements != null) {
-				accessCtrl.selectCurriculumElements(assessmentModeToCurriculumElements);
+			if(assessmentModeCurriculumElements != null) {
+				accessCtrl.selectCurriculumElements(assessmentModeCurriculumElements);
 			}
 			listenTo(accessCtrl);
 			return accessCtrl;
@@ -124,16 +123,16 @@ public class AssessmentModeEditController extends BasicController {
 		tabbedPane.setEnabled(3, persisted);
 	}
 	
-	protected void setBusinessGroups(Set<AssessmentModeToGroup> assessmentModeToGroups) {
-		this.assessmentModeToGroups = assessmentModeToGroups == null ? null : new HashSet<>(assessmentModeToGroups);
+	protected void setBusinessGroups(Set<BusinessGroup> assessmentModeBusinessGroups) {
+		this.assessmentModeBusinessGroups = assessmentModeBusinessGroups;
 	}
 	
-	protected void setAreas(Set<AssessmentModeToArea> assessmentModeToAreas) {
-		this.assessmentModeToAreas = assessmentModeToAreas == null ? null : new HashSet<>(assessmentModeToAreas);
+	protected void setAreas(Set<BGArea> assessmentModeToAreas) {
+		this.assessmentModeAreas = assessmentModeToAreas;
 	}
 	
-	protected void setCurriculumElements(Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculumElements) {
-		this.assessmentModeToCurriculumElements = assessmentModeToCurriculumElements == null ? null : new HashSet<>(assessmentModeToCurriculumElements);
+	protected void setCurriculumElements(Set<CurriculumElement> assessmentModeToCurriculumElements) {
+		this.assessmentModeCurriculumElements = assessmentModeToCurriculumElements;
 	}
 
 	@Override
@@ -200,14 +199,14 @@ public class AssessmentModeEditController extends BasicController {
 	private void doOpenAccess(UserRequest ureq) {
 		if(accessCtrl == null) {
 			accessCtrl = new AssessmentModeEditAccessController(ureq, getWindowControl(), entry, assessmentMode);
-			if(assessmentModeToAreas != null) {
-				accessCtrl.selectAreas(assessmentModeToAreas);
+			if(assessmentModeAreas != null) {
+				accessCtrl.selectAreas(assessmentModeAreas);
 			}
-			if(assessmentModeToGroups != null) {
-				accessCtrl.selectBusinessGroups(assessmentModeToGroups);
+			if(assessmentModeBusinessGroups != null) {
+				accessCtrl.selectBusinessGroups(assessmentModeBusinessGroups);
 			}
-			if(assessmentModeToCurriculumElements != null) {
-				accessCtrl.selectCurriculumElements(assessmentModeToCurriculumElements);
+			if(assessmentModeCurriculumElements != null) {
+				accessCtrl.selectCurriculumElements(assessmentModeCurriculumElements);
 			}
 			listenTo(accessCtrl);
 		}
