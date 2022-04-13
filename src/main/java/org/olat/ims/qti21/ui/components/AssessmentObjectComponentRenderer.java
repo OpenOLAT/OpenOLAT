@@ -1406,6 +1406,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		
 		sb.append("  theme: 'silver',\n")
+		  .append("  browser_spellcheck: true,\n")
 		  .append("  plugins: 'paste,advlist,lists,charmap,noneditable,olatmatheditor,hr',\n")
 		  .append("  menu:{},\n")
 		  .append("  menubar: false,")

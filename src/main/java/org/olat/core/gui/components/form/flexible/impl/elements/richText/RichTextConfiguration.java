@@ -1101,6 +1101,7 @@ public class RichTextConfiguration implements Disposable {
 			.append("elementpath: false,\n")
 			.append("element_format: 'xhtml',\n") // it's the default
 			.append("deprecation_warnings: ").append(!Settings.isDebuging()).append(",\n")
+			.append("browser_spellcheck: true,\n")
 			// classic
 			.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
 			.append("image_advtab:true,\n")
