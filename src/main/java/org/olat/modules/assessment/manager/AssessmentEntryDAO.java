@@ -378,17 +378,17 @@ public class AssessmentEntryDAO {
 	 * @param subIdent The subIdent (mandatory)
 	 * @param status The status of the assessment entry (optional)
 	 * @param excludeZeroScore disallow zero (0) scores
+	 * @param userVisibleOnly 
 	 * @return A list of assessment entries
 	 */
 	public List<AssessmentEntry> loadAssessmentEntryBySubIdentWithStatus(RepositoryEntryRef entry, String subIdent,
-			AssessmentEntryStatus status, boolean excludeZeroScore) {
+			AssessmentEntryStatus status, boolean excludeZeroScore, boolean userVisibleOnly) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data ")
 		   .append(" inner join fetch data.identity ident") 
 		   .append(" inner join fetch ident.user identuser")
 		   .append(" where data.repositoryEntry.key=:repositoryEntryKey")
 		   .append(" and data.subIdent=:subIdent")
-		   .append(" and data.userVisibility is true")
 		   .append(" and data.score is not null")
 		   .append(" and ident.key in ( select membership.identity.key from repoentrytogroup as rel, bgroupmember membership ")
 		   .append(" where rel.entry.key=:repositoryEntryKey and rel.group.key=membership.group.key and membership.role='")
@@ -400,6 +400,9 @@ public class AssessmentEntryDAO {
 		}		
 		if(excludeZeroScore) {
 			sb.append(" and data.score > 0");
+		}
+		if(userVisibleOnly) {
+			sb.append("and data.userVisibility is true");
 		}
 		
 		TypedQuery<AssessmentEntry> typedQuery = dbInstance.getCurrentEntityManager()
