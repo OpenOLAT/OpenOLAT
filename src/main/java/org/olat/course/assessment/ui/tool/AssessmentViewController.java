@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,6 +38,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentViewController extends BasicController {
+public class AssessmentViewController extends BasicController implements AssessmentDocumentsSupplier {
 
 	private final VelocityContainer mainVC;
 	private Link reopenLink;
@@ -187,17 +187,26 @@ public class AssessmentViewController extends BasicController {
 			String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 			mainVC.contextPut("docsMapperUri", mapperUri);
 			mainVC.contextPut("docs", docs);
-			DisplayOrDownloadComponent download = new DisplayOrDownloadComponent("", null);
-			mainVC.put("download", download);
 		}
 	}
 
 	private void putParticipantViewToVC(UserRequest ureq) {
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig);
+				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig, this,
+				AssessmentEditController.PANEL_INFO);
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
+	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
+	}
+
+	@Override
+	public boolean isDownloadEnabled() {
+		return false;
 	}
 
 	@Override

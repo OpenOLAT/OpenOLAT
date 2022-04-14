@@ -47,15 +47,15 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
-import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -76,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PortfolioCourseNodeRunController extends FormBasicController {
+public class PortfolioCourseNodeRunController extends FormBasicController implements AssessmentDocumentsSupplier {
 
 	private Binder copyBinder;
 	private Binder templateBinder;
@@ -96,6 +96,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private final UserCourseEnvironment userCourseEnv;
 	private final AssessmentConfig assessmentConfig;
 	private AssessmentEvaluation assessmentEval;
+	private PanelInfo panelInfo;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -123,6 +124,16 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		}
 
 		initForm(ureq);
+	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	}
+
+	@Override
+	public boolean isDownloadEnabled() {
+		return true;
 	}
 	
 	@Override
@@ -274,6 +285,11 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	
 	private void updateAssessmentInfos(UserRequest ureq, Date returnDate) {
 		if(userCourseEnv.isParticipant() && (returnDate != null || copyBinder != null)) {
+			if (panelInfo == null) {
+				panelInfo = new PanelInfo(PortfolioCourseNodeRunController.class,
+						"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
+			}
+			
 			String rDate = formatter.formatDateAndTime(returnDate);
 			uifactory.addStaticTextElement("map.returnDate", rDate, infosContainer);
 			
@@ -282,29 +298,12 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = null;
 			if (Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode()) {
-				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+						assessmentEval, assessmentConfig, this, panelInfo);
 				listenTo(assessmentParticipantViewCtrl);
 				assessmentInfosContainer.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			}
 			
-			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
-		
-			// get comment
-			if(resultsVisible) {
-				if(assessmentConfig.hasComment()) {
-					String comment = assessmentEval.getComment();
-					assessmentInfosContainer.contextPut("comment", comment);
-					assessmentInfosContainer.contextPut("incomment", isPanelOpen(ureq, "comment", true));
-				}
-				
-				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
-					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-					assessmentInfosContainer.contextPut("docsMapperUri", mapperUri);
-					assessmentInfosContainer.contextPut("docs", docs);
-					assessmentInfosContainer.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
-				}
-			}
 			assessmentInfosContainer.setVisible(true);
 		} else {
 			assessmentInfosContainer.setVisible(false);
@@ -360,12 +359,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		} else if("ONCLICK".equals(event.getCommand())) {
-			String cmd = ureq.getParameter("fcid");
-			String panelId = ureq.getParameter("panel");
-			if(StringHelper.containsNonWhitespace(cmd) && StringHelper.containsNonWhitespace(panelId)) {
-				saveOpenPanel(ureq, panelId, "show".equals(cmd));
-			}
 		}
 	}
 	
@@ -376,21 +369,4 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		showInfo("restore.binder.success");
 	}
 	
-	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(PortfolioCourseNodeRunController.class, getOpenPanelId(panelId));
-		return showConfig == null ? def : showConfig.booleanValue();
-	}
-	
-	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			guiPrefs.putAndSave(PortfolioCourseNodeRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
-		}
-		flc.getFormItemComponent().contextPut("in-" + panelId, Boolean.valueOf(newValue));
-	}
-	
-	private String getOpenPanelId(String panelId) {
-		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
-	}
 }

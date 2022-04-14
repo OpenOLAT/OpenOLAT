@@ -250,7 +250,7 @@ public class LTIRunController extends BasicController {
 			startPage.contextPut("attempts", assessmentEval.getAttempts());
 			
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
-			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig, null, null);
 			listenTo(assessmentParticipantViewCtrl);
 			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 

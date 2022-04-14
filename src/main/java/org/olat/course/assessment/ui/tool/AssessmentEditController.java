@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.io.File;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -30,6 +33,8 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -41,11 +46,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentEditController extends BasicController {
+public class AssessmentEditController extends BasicController implements AssessmentDocumentsSupplier {
+	
+	public static final PanelInfo PANEL_INFO = new PanelInfo(AssessmentEditController.class, "::assessment-tool");
 	
 	private final AssessmentParticipantViewController assessmentParticipantViewCtrl;
-
 	private final AssessmentForm assessmentForm;
+
+	private final CourseNode courseNode;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -53,6 +62,8 @@ public class AssessmentEditController extends BasicController {
 	public AssessmentEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
+		this.courseNode = courseNode;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("assessment_edit");
 		
@@ -62,11 +73,22 @@ public class AssessmentEditController extends BasicController {
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		AssessmentEvaluation assessmentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
-		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),assessmentEval, assessmentConfig);
+		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+				assessmentEval, assessmentConfig, this, PANEL_INFO);
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
+	}
+
+	@Override
+	public boolean isDownloadEnabled() {
+		return false;
 	}
 	
 	@Override
