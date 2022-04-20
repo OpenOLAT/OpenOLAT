@@ -411,8 +411,8 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 				String grade = gradeScoreRange.getGrade();
-				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(courseNode).getPassedMode()
-						? Boolean.valueOf(gradeScoreRange.isPassed())
+				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(repositoryEntry, courseNode).getPassedMode()
+						? gradeScoreRange.getPassed()
 						: null;
 				
 				String text = null;
@@ -456,8 +456,8 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				String grade = gradeScoreRange.getGrade();
 				String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(courseNode).getPassedMode()
-						? Boolean.valueOf(gradeScoreRange.isPassed())
+				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(repositoryEntry, courseNode).getPassedMode()
+						? gradeScoreRange.getPassed()
 						: null;
 				
 				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,

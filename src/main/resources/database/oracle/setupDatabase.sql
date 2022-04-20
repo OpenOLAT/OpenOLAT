@@ -1648,6 +1648,7 @@ create table o_gr_grade_system (
    lastmodified date not null,
    g_identifier varchar(64) not null,
    g_predefined number default 0 not null,
+   g_has_passed number default 1 not null,
    g_type varchar(32) not null,
    g_enabled number default 1 not null,
    g_resolution varchar(32),

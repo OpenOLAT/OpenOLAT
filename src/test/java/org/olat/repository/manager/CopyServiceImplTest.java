@@ -176,7 +176,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 			row.setEnd(learningPathConfigs.getEndDateConfig());
 			row.setLearningPathConfigs(learningPathConfigs);
 		}
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(source, courseNode);
 		row.setAssessmentConfig(assessmentConfig);
 		return row;
 	}

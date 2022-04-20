@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
@@ -55,7 +56,7 @@ public class VisibilityEditController extends BasicController {
 		
 		Condition visibilityCondition = courseNode.getPreConditionVisibility();
 		visibilityConditionCtrl = new ConditionEditController(ureq, getWindowControl(), userCourseEnvironment, visibilityCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+				AssessmentHelper.getAssessableNodes(new CourseEntryRef(userCourseEnvironment), editorModel, courseNode));
 		listenTo(visibilityConditionCtrl);
 		mainVc.put("visibilityCondition", visibilityConditionCtrl.getInitialComponent());
 		

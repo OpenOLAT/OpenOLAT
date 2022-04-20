@@ -115,7 +115,7 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 			}
 		}
 		
-		boolean bulkAssessability = BulkAssessmentTask.isBulkAssessable(courseNode);
+		boolean bulkAssessability = BulkAssessmentTask.isBulkAssessable(courseEntry, courseNode);
 
 		if (childrenData.size() > 0 || bulkAssessability) {
 			Node nodeData = new Node(courseNode, bulkAssessability, recursionLevel);

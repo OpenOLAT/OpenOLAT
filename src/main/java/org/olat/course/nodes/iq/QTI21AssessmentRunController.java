@@ -204,7 +204,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		anonym = userSession.getRoles().isGuestOnly();
 		config = courseNode.getModuleConfiguration();
 		testEntry = courseNode.getReferencedRepositoryEntry();
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		panelInfo = new PanelInfo(QTI21AssessmentRunController.class,
 				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
@@ -212,8 +213,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		mainVC.setDomReplaceable(false); // DOM ID set in velocity
 		
 		resourceList = userSession.getResourceList();
-		if(!resourceList.registerResourceable(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-				courseNode.getIdent(), getWindow())) {
+		if(!resourceList.registerResourceable(courseEntry, courseNode.getIdent(), getWindow())) {
 			showWarning("warning.multi.window");
 		}
 		
@@ -232,7 +232,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("type", "self");
 		}
 		
-		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		DisadvantageCompensation c = disadvantageCompensationService
 				.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
 		compensation = (c != null && c.getExtraTime() != null) ? c : null;
@@ -1113,7 +1112,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					grade = gradeScoreRange.getGrade();
 					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-					updatePass = Boolean.valueOf(gradeScoreRange.isPassed());
+					updatePass = gradeScoreRange.getPassed();
 				} else {
 					updatePass = null;
 				}

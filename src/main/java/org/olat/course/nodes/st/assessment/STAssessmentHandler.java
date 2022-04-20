@@ -59,6 +59,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.stereotype.Service;
 
 /**
@@ -92,12 +93,12 @@ public class STAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
 		if (courseNode instanceof STCourseNode) {
 			STCourseNode stCourseNode = (STCourseNode) courseNode;
 			STCourseNode root = getRoot(courseNode);
 			boolean isRoot = courseNode.getIdent().equals(root.getIdent());
-			return new STAssessmentConfig(stCourseNode, isRoot, root.getModuleConfiguration());
+			return new STAssessmentConfig(courseEntry, stCourseNode, isRoot, root.getModuleConfiguration());
 		}
 		return NonAssessmentConfig.create();
 	}

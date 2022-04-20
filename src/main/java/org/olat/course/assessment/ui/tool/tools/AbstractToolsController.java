@@ -118,7 +118,7 @@ public abstract class AbstractToolsController extends BasicController {
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
 		scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 	}
 	
 	public boolean isCourseReadonly() {
@@ -196,7 +196,7 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void initResetAttempts() {
-		if(courseAssessmentService.getAssessmentConfig(courseNode).hasAttempts()) {
+		if(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode).hasAttempts()) {
 			resetAttemptsButton = addLink("tool.reset.attempts", "reset.attempts", "o_icon o_icon-fw o_icon_reset");
 		}
 	}
@@ -325,7 +325,7 @@ public abstract class AbstractToolsController extends BasicController {
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 			String grade = gradeScoreRange.getGrade();
 			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
-					? Boolean.valueOf(gradeScoreRange.isPassed())
+					? gradeScoreRange.getPassed()
 					: null;
 			
 			String text = null;
@@ -352,7 +352,7 @@ public abstract class AbstractToolsController extends BasicController {
 			String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
-					? Boolean.valueOf(gradeScoreRange.isPassed())
+					? gradeScoreRange.getPassed()
 					: null;
 			
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,

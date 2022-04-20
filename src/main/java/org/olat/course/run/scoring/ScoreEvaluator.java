@@ -21,6 +21,7 @@ package org.olat.course.run.scoring;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -31,6 +32,6 @@ import org.olat.course.nodes.CourseNode;
 public interface ScoreEvaluator {
 
 	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter);
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter);
 
 }

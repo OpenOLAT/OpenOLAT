@@ -27,6 +27,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -46,12 +47,12 @@ class MaxScoreCumulator {
 	private CourseAssessmentService courseAssessmentService;
 	
 	// see CumulatingMaxScoreEvaluator
-	MaxScore getMaxScore(CourseNode courseNode) {
-		return getMaxScore(courseNode, courseAssessmentService());
+	MaxScore getMaxScore(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		return getMaxScore(courseEntry, courseNode, courseAssessmentService());
 	}
 	
-	MaxScore getMaxScore(CourseNode courseNode, CourseAssessmentService courseAssessmentService) {
-		ScoreVisitor visitor = new ScoreVisitor(courseNode, courseAssessmentService);
+	MaxScore getMaxScore(RepositoryEntryRef courseEntry, CourseNode courseNode, CourseAssessmentService courseAssessmentService) {
+		ScoreVisitor visitor = new ScoreVisitor(courseEntry, courseNode, courseAssessmentService);
 		TreeVisitor treeVisitor = new TreeVisitor(visitor, courseNode, true);
 		treeVisitor.visitAll();
 		return visitor;
@@ -66,6 +67,7 @@ class MaxScoreCumulator {
 	
 	private final static class ScoreVisitor implements MaxScore, Visitor {
 		
+		private final RepositoryEntryRef courseEntry;
 		private final CourseNode root;
 		private int count;
 		private float sum;
@@ -73,7 +75,8 @@ class MaxScoreCumulator {
 		
 		private final CourseAssessmentService courseAssessmentService;
 		
-		private ScoreVisitor(CourseNode root, CourseAssessmentService courseAssessmentService) {
+		private ScoreVisitor(RepositoryEntryRef courseEntry, CourseNode root, CourseAssessmentService courseAssessmentService) {
+			this.courseEntry = courseEntry;
 			this.root = root;
 			this.courseAssessmentService = courseAssessmentService;
 		}
@@ -94,7 +97,7 @@ class MaxScoreCumulator {
 			
 			if (node instanceof CourseNode) {
 				CourseNode courseNode = (CourseNode)node;
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					Float maxScore = assessmentConfig.getMaxScore();
 					if (maxScore != null) {

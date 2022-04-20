@@ -138,7 +138,7 @@ public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 			}
 			
 			Map<Long, Float> scores;
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 			if(Mode.none == assessmentConfig.getScoreMode()) {
 				// The rule is invalid if the curse node has no score (anymore). Send no reminder at all.
 				identities.clear();

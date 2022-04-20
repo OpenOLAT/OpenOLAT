@@ -436,8 +436,11 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		PerformanceClassBreakpointRow row = dataModel.getObject(pos);
-		return row.getPerformanceClass().isPassed() ? "o_gr_passed_row" : "o_gr_failed_row" ;
+		if (gradeSystem.hasPassed()) {
+			PerformanceClassBreakpointRow row = dataModel.getObject(pos);
+			return row.getPerformanceClass().isPassed() ? "o_gr_passed_row" : "o_gr_failed_row" ;
+		}
+		return null;
 	}
 
 	@Override
@@ -639,7 +642,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			resolutionEl.setValue(resolutionText);
 			String roundingText = GradeUIFactory.translateRounding(getTranslator(), gradeSystem.getRounding());
 			roundingEl.setValue(roundingText);
-			String cutValueText = gradeSystem.getCutValue() != null
+			String cutValueText = gradeSystem.hasPassed() && gradeSystem.getCutValue() != null
 					? THREE_DIGITS.format(gradeSystem.getCutValue())
 					: translate("grade.system.cut.value.no");
 			cutValueEl.setValue(cutValueText);

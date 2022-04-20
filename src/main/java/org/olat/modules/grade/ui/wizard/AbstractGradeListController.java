@@ -142,7 +142,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 	}
 
 	private void loadModel() {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale.getGradeSystem(),
 				breakpoints, BigDecimal.valueOf(assessmentConfig.getMinScore().doubleValue()),
 				BigDecimal.valueOf(assessmentConfig.getMaxScore().doubleValue()), getLocale());

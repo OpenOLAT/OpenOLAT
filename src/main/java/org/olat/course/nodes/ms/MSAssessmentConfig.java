@@ -19,10 +19,14 @@
  */
 package org.olat.course.nodes.ms;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -32,8 +36,13 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class MSAssessmentConfig extends ModuleAssessmentConfig {
 
-	public MSAssessmentConfig(ModuleConfiguration config) {
-		super(config);
+	private final RepositoryEntryRef courseEntry;
+	private final String nodeIdent;
+
+	public MSAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		super(courseNode.getModuleConfiguration());
+		this.courseEntry = courseEntry;
+		this.nodeIdent = courseNode.getIdent();
 	}
 
 	@Override
@@ -56,6 +65,18 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 			throw new OLATRuntimeException(MSAssessmentConfig.class, "getMinScore not defined when hasScoreConfigured set to false", null);
 		}
 		return MSCourseNode.getMinMax(config).getMin();
+	}
+
+	@Override
+	public Mode getPassedMode() {
+		if (hasGrade() && Mode.none != getScoreMode()) {
+			GradeScale gradeScale = CoreSpringFactory.getImpl(GradeService.class).getGradeScale(courseEntry, nodeIdent);
+			if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+				return Mode.setByNode;
+			}
+			return Mode.none;
+		}
+		return super.getPassedMode();
 	}
 
 	@Override

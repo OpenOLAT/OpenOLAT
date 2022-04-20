@@ -52,6 +52,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -91,6 +92,7 @@ import org.olat.modules.grade.GradeService;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -209,7 +211,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		MSCourseNodeEditController childTabCntrllr = new MSCourseNodeEditController(ureq, wControl, this, course, euce);
+		MSCourseNodeEditController childTabCntrllr = new MSCourseNodeEditController(ureq, wControl, this, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
@@ -286,16 +288,18 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(1);
 		
-		if (isFullyAssessedScoreConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		if (isFullyAssessedPassedConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		
 		if (cev != null) {
+			MSAssessmentConfig assessmentConfig = new MSAssessmentConfig(new CourseEntryRef(cev), this);
+			
+			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
 			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
@@ -309,8 +313,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		return sdList;
 	}
 	
-	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new MSAssessmentConfig(getModuleConfiguration()).getScoreMode();
+	private boolean isFullyAssessedScoreConfigError(MSAssessmentConfig assessmentConfig) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(MSLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -318,8 +322,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		return isScoreTrigger && !hasScore;
 	}
 	
-	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+	private boolean isFullyAssessedPassedConfigError(MSAssessmentConfig assessmentConfig) {
+		boolean hasPassed = assessmentConfig.getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(MSLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -550,7 +554,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 						grade = gradeScoreRange.getGrade();
 						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+						passed = gradeScoreRange.getPassed();
 					}
 				}
 			} else if (config.has(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)) {
@@ -572,8 +576,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new MSAssessmentConfig(getModuleConfiguration()));
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
+		return new AssessmentReminderProvider(getIdent(), new MSAssessmentConfig(courseEntry, this));
 	}
 	
 }

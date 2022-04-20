@@ -48,6 +48,6 @@ public interface GradeScoreRange extends Comparable<GradeScoreRange> {
 
 	public boolean isLowerBoundInclusive();
 	
-	public boolean isPassed();
+	public Boolean getPassed();
 
 }

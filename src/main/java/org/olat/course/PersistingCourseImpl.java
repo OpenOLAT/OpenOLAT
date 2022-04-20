@@ -48,7 +48,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithLazyQuotaCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -91,7 +90,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 
 	private Long resourceableId;
 	private Structure runStructure;
-	private boolean hasAssessableNodes = false;
 	private CourseEditorTreeModel editorTreeModel;
 	private CourseConfig courseConfig;
 	private final CourseEnvironmentImpl courseEnvironment;
@@ -360,7 +358,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		obj = readObject(RUNSTRUCTURE_XML);
 		if (!(obj instanceof Structure)) throw new AssertException("Error reading course run structure.");
 		runStructure = (Structure) obj;
-		initHasAssessableNodes();
 		
 		obj = readObject(EDITORTREEMODEL_XML);
 		if (!(obj instanceof CourseEditorTreeModel)) throw new AssertException("Error reading course editor tree model.");
@@ -435,7 +432,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 */
 	void setRunStructure(Structure runStructure) {
 		this.runStructure = runStructure;
-		initHasAssessableNodes();
 	}
 
 	/**
@@ -451,20 +447,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	@Override
 	public CourseConfig getCourseConfig() {
 		return courseConfig;
-	}
-		
-	/**
-	 * Sets information about there are assessable nodes or structure course nodes
-	 * (subtype of assessable node), which 'hasPassedConfigured' or 'hasScoreConfigured'
-	 * is true in the structure.
-	 */
-	void initHasAssessableNodes() {
-		this.hasAssessableNodes = AssessmentHelper.checkForAssessableNodes(runStructure.getRootNode());
-	}
-
-	@Override
-	public boolean hasAssessableNodes() {
-		return hasAssessableNodes;
 	}
 
 	@Override

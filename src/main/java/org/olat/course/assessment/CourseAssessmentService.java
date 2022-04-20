@@ -58,7 +58,7 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface CourseAssessmentService {
 	
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode);
 	
 	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig);
 

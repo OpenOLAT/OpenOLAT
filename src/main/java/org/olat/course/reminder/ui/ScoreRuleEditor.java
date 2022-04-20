@@ -174,7 +174,7 @@ public class ScoreRuleEditor extends RuleEditorFragment implements CourseNodeFra
 
 	private void addScoreableNode(List<CourseNode> nodes, CourseNode courseNode) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 		if (Mode.none != assessmentConfig.getScoreMode() && !nodes.contains(courseNode)) {
 			nodes.add(courseNode);
 		}

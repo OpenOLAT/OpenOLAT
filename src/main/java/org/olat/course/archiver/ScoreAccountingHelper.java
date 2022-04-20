@@ -58,6 +58,7 @@ import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -144,6 +145,7 @@ public class ScoreAccountingHelper {
 	}
 	
 	private static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<CourseNode> myNodes, ICourse course, Locale locale, OpenXMLWorkbook workbook) {
+		CourseEntryRef courseEntry = new CourseEntryRef(course);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
 		sheet.setHeaderRows(2);
@@ -191,7 +193,7 @@ public class ScoreAccountingHelper {
 			headerRow1.addCell(header1ColCnt++, acNode.getShortTitle());
 			header1ColCnt += acNode.getType().equals("ita") ? 1 : 0;
 			
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acNode);
 			boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
 			boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
@@ -215,7 +217,7 @@ public class ScoreAccountingHelper {
 				headerRow2.addCell(header2ColCnt++, submitted);
 			}
 			
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acNode);
 			boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
 			boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
@@ -280,7 +282,7 @@ public class ScoreAccountingHelper {
 			scoreAccount.evaluateAll();
 
 			for (CourseNode acnode:myNodes) {
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acnode);
 				boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
 				boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 				boolean attemptsOk = assessmentConfig.hasAttempts();
@@ -384,7 +386,7 @@ public class ScoreAccountingHelper {
 		//min. max. informations
 		boolean first = true;
 		for (CourseNode acnode:myNodes) {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acnode);
 			if (Mode.none == assessmentConfig.getScoreMode()) {
 				// only show min/max/cut legend when score configured
 				continue;
@@ -487,27 +489,29 @@ public class ScoreAccountingHelper {
 	 * @return The list of assessable nodes from this course
 	 */
 	public static List<CourseNode> loadAssessableNodes(CourseEnvironment courseEnv) {
+		CourseEntryRef courseEntry = new CourseEntryRef(courseEnv);
 		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
 		List<CourseNode> nodeList = new ArrayList<>();
-		collectAssessableCourseNodes(rootNode, nodeList);
+		collectAssessableCourseNodes(courseEntry, rootNode, nodeList);
 		return nodeList;
 	}
 
 	/**
 	 * Collects recursively all assessable course nodes
+	 * @param courseEntry 
 	 * 
 	 * @param node
 	 * @param nodeList
 	 */
-	private static void collectAssessableCourseNodes(CourseNode node, List<CourseNode> nodeList) {
+	private static void collectAssessableCourseNodes(CourseEntryRef courseEntry, CourseNode node, List<CourseNode> nodeList) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		if (courseAssessmentService.getAssessmentConfig(node).isAssessable()) {
+		if (courseAssessmentService.getAssessmentConfig(courseEntry, node).isAssessable()) {
 			nodeList.add(node);
 		}
 		int count = node.getChildCount();
 		for (int i = 0; i < count; i++) {
 			CourseNode cn = (CourseNode) node.getChildAt(i);
-			collectAssessableCourseNodes(cn, nodeList);
+			collectAssessableCourseNodes(courseEntry, cn, nodeList);
 		}
 	}
 	

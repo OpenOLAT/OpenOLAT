@@ -46,6 +46,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -191,7 +192,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(deliveryOptionsCtrl);
 
 		// Find assessable children nodes
-		assessableChildren = AssessmentHelper.getAssessableNodes(editorModel, stNode);
+		assessableChildren = AssessmentHelper.getAssessableNodes(new CourseEntryRef(euce), editorModel, stNode);
 		
 		// HighScore Controller
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode.getModuleConfiguration(), course);
@@ -442,7 +443,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(euce), stNode);
 		myTabbedPane.setEnabled(highScoreTabPos, Mode.none != assessmentConfig.getScoreMode());
 	}
 	

@@ -74,6 +74,7 @@ import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -183,7 +184,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	}
 	
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttemptsConfigured(RepositoryEntryRef courseEntry) {
 		return false;
 	}
 

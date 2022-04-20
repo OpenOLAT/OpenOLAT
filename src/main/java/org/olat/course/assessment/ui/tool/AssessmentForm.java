@@ -63,6 +63,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -167,7 +168,7 @@ public class AssessmentForm extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		hasAttempts = assessmentConfig.hasAttempts();
 		hasScore = Mode.none != assessmentConfig.getScoreMode();
 		hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
@@ -443,7 +444,7 @@ public class AssessmentForm extends FormBasicController {
 		if (isHasPassed()) {
 			if (hasGrade) {
 				if (gradeApplied && gradeScoreRange != null) {
-					updatedPassed = Boolean.valueOf(gradeScoreRange.isPassed());
+					updatedPassed = gradeScoreRange.getPassed();
 				}
 			} else if (getCut() != null && getScore() != null) {
 				updatedPassed = updatedScore.floatValue() >= getCut().floatValue() ? Boolean.TRUE : Boolean.FALSE;
@@ -800,9 +801,9 @@ public class AssessmentForm extends FormBasicController {
 		setGradeValue(grade, performanceClassIdent);
 		
 		if (passed != null) {
-			if (gradeScoreRange == null) {
+			if (gradeScoreRange == null || gradeScoreRange.getPassed() == null) {
 				passed.select("undefined", true);
-			} else if (gradeScoreRange.isPassed()) {
+			} else if (gradeScoreRange.getPassed().booleanValue()) {
 				passed.select("true", true);
 			} else {
 				passed.select("false", true);

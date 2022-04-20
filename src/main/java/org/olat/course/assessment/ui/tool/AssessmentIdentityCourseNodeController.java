@@ -126,7 +126,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			getWindowControl().setWarning(msg);
 		} else {
 			// Add the users details controller
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 			if (assessmentConfig.hasEditableDetails() && courseNodeDetails) {
 				detailsEditController = courseAssessmentService.getDetailsEditController(ureq, wControl, stackPanel,
 						courseNode, coachCourseEnv, assessedUserCourseEnvironment);

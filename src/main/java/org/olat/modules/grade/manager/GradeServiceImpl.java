@@ -313,13 +313,14 @@ public class GradeServiceImpl implements GradeService {
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeSystem gradeSystem, List<Breakpoint> breakpoints,
 			BigDecimal minScore, BigDecimal maxScore, Locale locale) {
 		if (GradeSystemType.numeric == gradeSystem.getType()) {
+			BigDecimal cutValue = gradeSystem.hasPassed()? gradeSystem.getCutValue(): null;
 			return gradeCalculator.createNumericalRanges(gradeSystem.getIdentifier(),
 					new BigDecimal(gradeSystem.getLowestGrade().intValue()),
 					new BigDecimal(gradeSystem.getBestGrade().intValue()), gradeSystem.getResolution(),
-					gradeSystem.getRounding(), gradeSystem.getCutValue(), minScore, maxScore, breakpoints);
+					gradeSystem.getRounding(), cutValue, minScore, maxScore, breakpoints);
 		} else if (GradeSystemType.text == gradeSystem.getType()) {
 			Translator translator = Util.createPackageTranslator(GradeUIFactory.class, locale);
-			return gradeCalculator.getTextGradeScoreRanges(gradeSystem.getIdentifier(),
+			return gradeCalculator.getTextGradeScoreRanges(gradeSystem.getIdentifier(), gradeSystem.hasPassed(),
 					getPerformanceClasses(gradeSystem), breakpoints, minScore, maxScore, translator);
 		}
 		return Collections.emptyNavigableSet();
@@ -337,7 +338,7 @@ public class GradeServiceImpl implements GradeService {
 			// Translated grade is not used. We can use any locale.
 			Optional<GradeScoreRange> minPassedRange = getGradeScoreRanges(gradeScale, Locale.ENGLISH).stream()
 					.sorted(Collections.reverseOrder())
-					.filter(GradeScoreRange::isPassed)
+					.filter(range -> range.getPassed() != null && range.getPassed().booleanValue())
 					.findFirst();
 			if (minPassedRange.isPresent()) {
 				GradeScoreRange range = minPassedRange.get();

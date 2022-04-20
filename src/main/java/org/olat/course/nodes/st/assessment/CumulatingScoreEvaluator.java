@@ -33,6 +33,7 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluator;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -59,13 +60,13 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 	
 	@Override
 	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter) {
-		Score score = getScore(courseNode, scoreAccounting, courseAssessmentService());
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter) {
+		Score score = getScore(courseNode, scoreAccounting, courseEntry, courseAssessmentService());
 		return average? score.getAverage(): score.getSum();
 	}
 	
-	Score getScore(CourseNode courseNode, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
-		ScoreVisitor visitor = new ScoreVisitor(courseNode, scoreAccounting, courseAssessmentService);
+	Score getScore(CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, CourseAssessmentService courseAssessmentService) {
+		ScoreVisitor visitor = new ScoreVisitor(courseNode, scoreAccounting, courseEntry, courseAssessmentService);
 		TreeVisitor treeVisitor = new TreeVisitor(visitor, courseNode, true);
 		treeVisitor.visitAll();
 		return visitor;
@@ -82,14 +83,16 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 		
 		private final CourseNode root;
 		private final ScoreAccounting scoreAccounting;
+		private final RepositoryEntryRef courseEntry;
 		private float sum;
 		private int count;
 		
 		private final CourseAssessmentService courseAssessmentService;
 		
-		private ScoreVisitor(CourseNode root, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
+		private ScoreVisitor(CourseNode root, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, CourseAssessmentService courseAssessmentService) {
 			this.root = root;
 			this.scoreAccounting = scoreAccounting;
+			this.courseEntry = courseEntry;
 			this.courseAssessmentService = courseAssessmentService;
 		}
 		
@@ -109,7 +112,7 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 			
 			if (node instanceof CourseNode) {
 				CourseNode courseNode = (CourseNode)node;
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
 					Boolean userVisible = assessmentEvaluation.getUserVisible();

@@ -27,6 +27,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluator;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -38,7 +39,7 @@ public class ConditionScoreEvaluator implements ScoreEvaluator {
 
 	@Override
 	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter) {
 		ScoreCalculator scoreCalculator = getScoreCalculator(courseNode);
 		if (scoreCalculator != null) {
 			String scoreExpression = scoreCalculator.getScoreExpression();

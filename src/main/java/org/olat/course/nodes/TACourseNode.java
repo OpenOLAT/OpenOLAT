@@ -99,6 +99,7 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 
 /**
@@ -790,7 +791,7 @@ public class TACourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new TAAssessmentConfig(getModuleConfiguration()));
 	}
 }

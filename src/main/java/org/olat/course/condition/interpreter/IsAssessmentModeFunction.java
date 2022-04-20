@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.tree.TreeHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -104,7 +105,7 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 			return Boolean.FALSE;
 		}
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig config = courseAssessmentService.getAssessmentConfig(foundNode);
+		AssessmentConfig config = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(getUserCourseEnv()), foundNode);
 		if(!config.isAssessable()) {
 			return Boolean.FALSE;
 		}
@@ -154,9 +155,10 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 			nodes.remove(stNode.getIdent());
 		}
 		
+		CourseEntryRef courseEntry = new CourseEntryRef(getUserCourseEnv());
 		for(String childIdent:nodes) {
 			CourseNode childNode = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(childIdent);
-			AssessmentConfig config = courseAssessmentService.getAssessmentConfig(childNode);
+			AssessmentConfig config = courseAssessmentService.getAssessmentConfig(courseEntry, childNode);
 			if(config.isAssessable() && !(childNode instanceof STCourseNode)) {
 				ScoreEvaluation se = sa.evalCourseNode(childNode);
 				if (isScoreUserVisible(se)) {

@@ -680,7 +680,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 	
 	private void postCopyGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry, String targetIdent) {
-		if (CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentConfig(this).hasGrade()) {
+		if (CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentConfig(sourceEntry, this).hasGrade()) {
 			GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 			gradeService.cloneGradeScale(sourceEntry, sourceIdent, targetEntry, targetIdent);
 		}

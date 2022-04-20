@@ -24,6 +24,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -36,8 +37,8 @@ public class ConfigMaxScoreEvaluator implements MaxScoreEvaluator {
 	private CourseAssessmentService courseAssessmentService;
 
 	@Override
-	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting) {
-		AssessmentConfig assessmentConfig = getCourseAssessmentService().getAssessmentConfig(courseNode);
+	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
+		AssessmentConfig assessmentConfig = getCourseAssessmentService().getAssessmentConfig(courseEntry, courseNode);
 		return Mode.none != assessmentConfig.getScoreMode()? assessmentConfig.getMaxScore(): null;
 	}
 	

@@ -79,6 +79,7 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -296,7 +297,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		return new FormReminderProvider(this);
 	}
 

@@ -43,6 +43,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -58,6 +59,8 @@ public class AverageCompletionEvaluatorTest {
 	private AssessmentConfig configEvaluated;
 	@Mock
 	private AssessmentConfig configNone;
+	@Mock
+	private RepositoryEntryRef courseEntry;
 
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
@@ -86,34 +89,34 @@ public class AverageCompletionEvaluatorTest {
 		parent.addChild(childUncalculated);
 		AssessmentEvaluation childUncalculatedEvaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.5), null, null);
 		scoreAccounting.put(childUncalculated, childUncalculatedEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childUncalculated)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childUncalculated)).thenReturn(configSetByNode);
 		// Child: Calculated
 		CourseNode childCalculated = new STCourseNode();
 		parent.addChild(childCalculated);
 		AssessmentEvaluation childCalculatedEvaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.1), null, null);
 		scoreAccounting.put(childCalculated, childCalculatedEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childCalculated)).thenReturn(configEvaluated);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childCalculated)).thenReturn(configEvaluated);
 		// Child: Calculated, fully assessed
 		CourseNode childCalculated2 = new STCourseNode();
 		parent.addChild(childCalculated2);
 		AssessmentEvaluation childCalculatedEvaluation2 = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.1), null, Boolean.TRUE);
 		scoreAccounting.put(childCalculated2, childCalculatedEvaluation2);
-		when(courseAssessmentService.getAssessmentConfig(childCalculated2)).thenReturn(configEvaluated);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childCalculated2)).thenReturn(configEvaluated);
 		// Child: Uncalculated, invisible
 		CourseNode childInvisible = new Card2BrainCourseNode();
 		parent.addChild(childInvisible);
 		AssessmentEvaluation childInvisibleEvaluation = createAssessmentEvaluation(excluded, null, Double.valueOf(0.1), null, Boolean.TRUE);
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInvisible)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
 		// Child level 2: calculated
 		CourseNode child2Uncalculated = new SPCourseNode();
 		childCalculated2.addChild(child2Uncalculated);
 		AssessmentEvaluation child2UncalculatedEvaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(1.0), null, null);
 		scoreAccounting.put(child2Uncalculated, child2UncalculatedEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(child2Uncalculated)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child2Uncalculated)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(0.75);
 	}
@@ -129,28 +132,28 @@ public class AverageCompletionEvaluatorTest {
 		parent.addChild(child1);
 		AssessmentEvaluation child1Evaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.0), null, null);
 		scoreAccounting.put(child1, child1Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child1)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child1)).thenReturn(configSetByNode);
 		// Child 2
 		CourseNode child2 = new Card2BrainCourseNode();
 		parent.addChild(child2);
 		AssessmentEvaluation child2Evaluation = createAssessmentEvaluation(mandatory, 2, Double.valueOf(0.5), null, null);
 		scoreAccounting.put(child2, child2Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child2)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child2)).thenReturn(configSetByNode);
 		// Child 3
 		CourseNode child3 = new Card2BrainCourseNode();
 		parent.addChild(child3);
 		AssessmentEvaluation child3Evaluation = createAssessmentEvaluation(mandatory, 3, Double.valueOf(1.0), null, null);
 		scoreAccounting.put(child3, child3Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child3)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child3)).thenReturn(configSetByNode);
 		// Child: Uncalculated, invisible
 		CourseNode childInvisible = new Card2BrainCourseNode();
 		parent.addChild(childInvisible);
 		AssessmentEvaluation childInvisibleEvaluation = createAssessmentEvaluation(excluded, null, Double.valueOf(0.1), null, Boolean.TRUE);
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInvisible)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 
 		AverageCompletionEvaluator weightedSut = new AverageCompletionEvaluator(courseAssessmentService, DURATION_WEIGHTED);
-		Double completion = weightedSut.getCompletion(null, parent, scoreAccounting);
+		Double completion = weightedSut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		double expected = (1 * 0.0 + 2 * 0.5 + 3 * 1.0) / 6;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
@@ -167,27 +170,27 @@ public class AverageCompletionEvaluatorTest {
 		parent.addChild(childMandatory);
 		AssessmentEvaluation childMandatoryEvaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.5), null, null);
 		scoreAccounting.put(childMandatory, childMandatoryEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childMandatory)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childMandatory)).thenReturn(configSetByNode);
 		// Child: optional
 		CourseNode childOptional = new Card2BrainCourseNode();
 		parent.addChild(childOptional);
 		AssessmentEvaluation childOptionalEvaluation = createAssessmentEvaluation(optional, null, Double.valueOf(0.6), null, null);
 		scoreAccounting.put(childOptional, childOptionalEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childOptional)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childOptional)).thenReturn(configSetByNode);
 		// Child: no obligation
 		CourseNode childNoObligation = new Card2BrainCourseNode();
 		parent.addChild(childNoObligation);
 		AssessmentEvaluation childNoObligationEvaluation = createAssessmentEvaluation(null, null, Double.valueOf(0.7), null, null);
 		scoreAccounting.put(childNoObligation, childNoObligationEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childNoObligation)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childNoObligation)).thenReturn(configSetByNode);
 		// Child: Uncalculated, invisible
 		CourseNode childInvisible = new Card2BrainCourseNode();
 		parent.addChild(childInvisible);
 		AssessmentEvaluation childInvisibleEvaluation = createAssessmentEvaluation(excluded, null, Double.valueOf(0.1), null, Boolean.TRUE);
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInvisible)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(0.5);
 	}
@@ -203,51 +206,51 @@ public class AverageCompletionEvaluatorTest {
 		parent.addChild(childFullyAssessed);
 		AssessmentEvaluation childFullyAssessedEvaluation = createAssessmentEvaluation(mandatory, null, null, null, Boolean.TRUE);
 		scoreAccounting.put(childFullyAssessed, childFullyAssessedEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childFullyAssessed)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childFullyAssessed)).thenReturn(configNone);
 		// Child: no status
 		CourseNode childNoStatus = new Card2BrainCourseNode();
 		parent.addChild(childNoStatus);
 		AssessmentEvaluation childNoStatusEvaluation = createAssessmentEvaluation(mandatory, null, null, null, null);
 		scoreAccounting.put(childNoStatus, childNoStatusEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childNoStatus)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childNoStatus)).thenReturn(configNone);
 		// Child: notReady
 		CourseNode childNotReady = new Card2BrainCourseNode();
 		parent.addChild(childNotReady);
 		AssessmentEvaluation childNotReadyEvaluation = createAssessmentEvaluation(mandatory, null, null, AssessmentEntryStatus.notReady, null);
 		scoreAccounting.put(childNotReady, childNotReadyEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childNotReady)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childNotReady)).thenReturn(configNone);
 		// Child: notStarted
 		CourseNode childNotStarted = new Card2BrainCourseNode();
 		parent.addChild(childNotStarted);
 		AssessmentEvaluation childNotStartedEvaluation = createAssessmentEvaluation(mandatory, null, null, AssessmentEntryStatus.notStarted, null);
 		scoreAccounting.put(childNotStarted, childNotStartedEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childNotStarted)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childNotStarted)).thenReturn(configNone);
 		// Child: inProgress
 		CourseNode childInProgress = new Card2BrainCourseNode();
 		parent.addChild(childInProgress);
 		AssessmentEvaluation childInProgressEvaluation = createAssessmentEvaluation(mandatory, null, null, AssessmentEntryStatus.inProgress, null);
 		scoreAccounting.put(childInProgress, childInProgressEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInProgress)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInProgress)).thenReturn(configNone);
 		// Child: inReview
 		CourseNode childInReview = new Card2BrainCourseNode();
 		parent.addChild(childInReview);
 		AssessmentEvaluation childInReviewEvaluation = createAssessmentEvaluation(mandatory, null, null, AssessmentEntryStatus.inReview, null);
 		scoreAccounting.put(childInReview, childInReviewEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInReview)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInReview)).thenReturn(configNone);
 		// Child: done
 		CourseNode childDone = new Card2BrainCourseNode();
 		parent.addChild(childDone);
 		AssessmentEvaluation childDoneEvaluation = createAssessmentEvaluation(mandatory, null, null, AssessmentEntryStatus.done, null);
 		scoreAccounting.put(childDone, childDoneEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childDone)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childDone)).thenReturn(configNone);
 		// Child: Uncalculated, invisible
 		CourseNode childInvisible = new Card2BrainCourseNode();
 		parent.addChild(childInvisible);
 		AssessmentEvaluation childInvisibleEvaluation = createAssessmentEvaluation(excluded, null, Double.valueOf(0.1), null, Boolean.TRUE);
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInvisible)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		double expected = (1.0 + 0.0 + 0.0 + 0.0 + 0.5 + 0.75 + 0.9) / 7;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
@@ -264,27 +267,27 @@ public class AverageCompletionEvaluatorTest {
 		parent.addChild(child1);
 		AssessmentEvaluation assessedEvaluation1 = createAssessmentEvaluation(mandatory, null, null, null, Boolean.TRUE);
 		scoreAccounting.put(child1, assessedEvaluation1);
-		when(courseAssessmentService.getAssessmentConfig(child1)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child1)).thenReturn(configNone);
 		// Child without own completion: not ready
 		CourseNode child2 = new Card2BrainCourseNode();
 		parent.addChild(child2);
 		AssessmentEvaluation assessedEvaluation2 = createAssessmentEvaluation(mandatory, null, null, AssessmentEntryStatus.notReady, Boolean.FALSE);
 		scoreAccounting.put(child2, assessedEvaluation2);
-		when(courseAssessmentService.getAssessmentConfig(child2)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child2)).thenReturn(configNone);
 		// Child with own completion: completion 0.5, fully assessed
 		CourseNode child3 = new Card2BrainCourseNode();
 		parent.addChild(child3);
 		AssessmentEvaluation childEvaluation3 = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.5), null, Boolean.TRUE);
 		scoreAccounting.put(child3, childEvaluation3);
-		when(courseAssessmentService.getAssessmentConfig(child3)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child3)).thenReturn(configSetByNode);
 		// Child with own completion: completion 0.5, not fully assessed
 		CourseNode child4 = new Card2BrainCourseNode();
 		parent.addChild(child4);
 		AssessmentEvaluation childEvaluation4 = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.5), null, null);
 		scoreAccounting.put(child4, childEvaluation4);
-		when(courseAssessmentService.getAssessmentConfig(child4)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child4)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		double expected = (1.0 + 0.0 + 1.0 + 0.5 ) / 4;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
@@ -295,7 +298,7 @@ public class AverageCompletionEvaluatorTest {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		CourseNode parent = new STCourseNode();
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(1.0);
 	}
@@ -311,33 +314,33 @@ public class AverageCompletionEvaluatorTest {
 		parent.addChild(child1);
 		AssessmentEvaluation assessedEvaluation1 = createAssessmentEvaluation(optional, null, null, null, Boolean.TRUE);
 		scoreAccounting.put(child1, assessedEvaluation1);
-		when(courseAssessmentService.getAssessmentConfig(child1)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child1)).thenReturn(configNone);
 		// Child without own completion: not ready
 		CourseNode child2 = new Card2BrainCourseNode();
 		parent.addChild(child2);
 		AssessmentEvaluation assessedEvaluation2 = createAssessmentEvaluation(optional, null, null, AssessmentEntryStatus.notReady, Boolean.FALSE);
 		scoreAccounting.put(child2, assessedEvaluation2);
-		when(courseAssessmentService.getAssessmentConfig(child2)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child2)).thenReturn(configNone);
 		// Child with own completion: completion 0.5, fully assessed
 		CourseNode child3 = new Card2BrainCourseNode();
 		parent.addChild(child3);
 		AssessmentEvaluation childEvaluation3 = createAssessmentEvaluation(optional, null, Double.valueOf(0.5), null, Boolean.TRUE);
 		scoreAccounting.put(child3, childEvaluation3);
-		when(courseAssessmentService.getAssessmentConfig(child3)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child3)).thenReturn(configSetByNode);
 		// Child with own completion: completion 0.5, not fully assessed
 		CourseNode child4 = new Card2BrainCourseNode();
 		parent.addChild(child4);
 		AssessmentEvaluation childEvaluation4 = createAssessmentEvaluation(optional, null, Double.valueOf(0.5), null, null);
 		scoreAccounting.put(child4, childEvaluation4);
-		when(courseAssessmentService.getAssessmentConfig(child4)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child4)).thenReturn(configSetByNode);
 		// Child: Uncalculated, invisible
 		CourseNode childInvisible = new Card2BrainCourseNode();
 		parent.addChild(childInvisible);
 		AssessmentEvaluation childInvisibleEvaluation = createAssessmentEvaluation(excluded, null, Double.valueOf(0.1), null, Boolean.TRUE);
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childInvisible)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(1.0);
 	}

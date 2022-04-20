@@ -71,6 +71,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -101,6 +102,7 @@ import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -132,7 +134,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			Long coachedIdentity, Locale coachLocale) {
 		this.courseRes = OresHelper.clone(courseRes);
 		this.courseNodeIdent = courseNode.getIdent();
-		this.settings = new BulkAssessmentSettings(courseNode);
+		this.settings = new BulkAssessmentSettings(courseNode, new CourseEntryRef(courseRes));
 		this.datas = datas;
 		this.coachedIdentity = coachedIdentity;
 		this.coachLocale = coachLocale;
@@ -295,14 +297,14 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		return sb.toString();
 	}
 	
-	public static boolean isBulkAssessable(CourseNode courseNode) {
+	public static boolean isBulkAssessable(RepositoryEntryRef courseEntry, CourseNode courseNode) {
 		boolean bulkAssessability = false;
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (assessmentConfig.isBulkEditable()) {
 			// Now a more fine granular check on bulk features. Only show wizard for nodes that have at least one
-			BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+			BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
 			if (settings.isHasPassed() || settings.isHasScore() || settings.isHasUserComment() || settings.isHasReturnFiles()) {
 				bulkAssessability = true;
 			}
@@ -324,7 +326,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final CourseNode courseNode = getCourseNode();
-		final AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		final AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseRes), courseNode);
 		
 		final boolean hasUserComment = assessmentConfig.hasComment();
 		final boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
@@ -422,7 +424,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 					if (hasPassed) {
 						if (hasGrade) {
 							if (applyGrade && gradeScoreRange != null) {
-								passed = Boolean.valueOf(gradeScoreRange.isPassed());
+								passed = gradeScoreRange.getPassed();
 							}
 						} else if (cut != null) {
 							 passed = score.floatValue() >= cut.floatValue() ? Boolean.TRUE : Boolean.FALSE;

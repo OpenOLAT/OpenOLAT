@@ -166,7 +166,7 @@ public class GroupAssessmentController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
 		withGrade = withScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		withAutoGrade = withGrade && assessmentConfig.isAutoGrade();
@@ -804,7 +804,7 @@ public class GroupAssessmentController extends FormBasicController {
 				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				if (withPassed) {
-					passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					passed = gradeScoreRange.getPassed();
 				}
 				
 			}
@@ -875,7 +875,7 @@ public class GroupAssessmentController extends FormBasicController {
 				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				if (withPassed) {
-					groupPassed = Boolean.valueOf(gradeScoreRange.isPassed());
+					groupPassed = gradeScoreRange.getPassed();
 				}
 			}
 			

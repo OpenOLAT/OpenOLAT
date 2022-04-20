@@ -47,6 +47,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -111,7 +112,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
-		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		
 		formatter = Formatter.getInstance(getLocale());
 		

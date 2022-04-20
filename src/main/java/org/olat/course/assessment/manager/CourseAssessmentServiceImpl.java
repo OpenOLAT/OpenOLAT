@@ -134,8 +134,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		return getAssessmentHandler(courseNode).getAssessmentConfig(courseNode);
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		return getAssessmentHandler(courseNode).getAssessmentConfig(courseEntry, courseNode);
 	}
 
 	@Override
@@ -155,7 +155,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Override
 	public AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry assessmentEntry, CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = getAssessmentConfig(courseNode);
+		RepositoryEntryRef courseEntry = () -> assessmentEntry.getRepositoryEntry().getKey();
+		AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
 		return toAssessmentEvaluation(assessmentEntry, assessmentConfig);
 	}
 

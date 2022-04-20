@@ -19,9 +19,13 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -31,12 +35,15 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 
+	private final RepositoryEntryRef courseEntry;
+	private final String nodeIdent;
 	private final boolean hasNoGrading;
 
-	public GTAAssessmentConfig(ModuleConfiguration config) {
-		super(config);
+	public GTAAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		super(courseNode.getModuleConfiguration());
+		this.courseEntry = courseEntry;
+		this.nodeIdent = courseNode.getIdent();
 		this.hasNoGrading = !config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
-		
 	}
 
 	@Override
@@ -50,6 +57,13 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	public Mode getPassedMode() {
 		if (hasNoGrading) return Mode.none;
 		
+		if (hasGrade() && Mode.none != getScoreMode()) {
+			GradeScale gradeScale = CoreSpringFactory.getImpl(GradeService.class).getGradeScale(courseEntry, nodeIdent);
+			if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+				return Mode.setByNode;
+			}
+			return Mode.none;
+		}
 		return super.getPassedMode();
 	}
 

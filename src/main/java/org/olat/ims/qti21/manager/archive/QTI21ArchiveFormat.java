@@ -332,7 +332,7 @@ public class QTI21ArchiveFormat {
 		}
 
 		// course node points and passed
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if(hasScore) {
@@ -410,7 +410,7 @@ public class QTI21ArchiveFormat {
 		}
 
 		// course node points and passed
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
 		}
@@ -542,7 +542,7 @@ public class QTI21ArchiveFormat {
 		}
 		
 		// course node points and passed
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			if(entry.getScore() != null) {
 				dataRow.addCell(col++, entry.getScore(), null);

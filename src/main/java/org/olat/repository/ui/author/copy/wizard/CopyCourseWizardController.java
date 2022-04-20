@@ -245,7 +245,7 @@ public class CopyCourseWizardController extends BasicController {
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 			row.setLearningPathConfigs(learningPathConfigs);
 		}
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(sourceEntry, courseNode);
 		row.setAssessmentConfig(assessmentConfig);
 		return row;
 	}

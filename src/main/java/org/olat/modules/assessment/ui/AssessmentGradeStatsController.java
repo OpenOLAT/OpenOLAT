@@ -111,7 +111,7 @@ public class AssessmentGradeStatsController extends BasicController {
 	private Optional<GradeScoreRange> getMinPassed(NavigableSet<GradeScoreRange> ranges) {
 		return ranges.stream()
 				.sorted(Comparator.reverseOrder())
-				.filter(GradeScoreRange::isPassed)
+				.filter(range -> range.getPassed() != null && range.getPassed().booleanValue())
 				.findFirst();
 	}
 

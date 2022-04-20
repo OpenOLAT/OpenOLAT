@@ -56,6 +56,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -156,7 +157,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentManager = courseEnv.getAssessmentManager();
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
 		withGrade = withScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		withPassed = Mode.none != assessmentConfig.getPassedMode();

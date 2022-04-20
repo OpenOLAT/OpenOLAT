@@ -260,7 +260,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			for(String element:elements.split("[,]")) {
 				CourseNode node = course.getRunStructure().getNode(element);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, node);
 				if(assessmentConfig.isAssessable() && !(node instanceof STCourseNode) && !(node instanceof PortfolioCourseNode)) {
 					String id = "element_" + (++count);
 					FormLink elementButton = uifactory.addFormLink(id, "element", node.getShortTitle(), null, flc, Link.LINK | Link.NONTRANSLATED);

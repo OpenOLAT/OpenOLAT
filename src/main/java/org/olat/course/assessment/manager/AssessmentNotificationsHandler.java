@@ -58,6 +58,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -78,6 +79,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.scorm.assessment.ScormAssessmentManager;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -265,7 +267,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 		Structure courseStruct = course.getRunStructure();
 		CourseNode rootNode = courseStruct.getRootNode();
 
-		getCourseTestNodes(rootNode, assessableNodes);
+		getCourseTestNodes(new CourseEntryRef(course), rootNode, assessableNodes);
 
 		return assessableNodes;
 	}
@@ -281,17 +283,17 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	 * 
 	 * @see #getCourseTestNodes(ICourse)
 	 */
-	private void getCourseTestNodes(INode node, List<CourseNode> result) {
+	private void getCourseTestNodes(RepositoryEntryRef courseEntry, INode node, List<CourseNode> result) {
 		if (node != null) {
 			CourseNode courseNode = (CourseNode)node;
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 			if (assessmentConfig.isAssessable() && (Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode())) {
 				result.add(courseNode);
 			}
 
 			for (int i = 0; i < node.getChildCount(); i++) {
-				getCourseTestNodes(node.getChildAt(i), result);
+				getCourseTestNodes(courseEntry, node.getChildAt(i), result);
 			}
 		}
 	}

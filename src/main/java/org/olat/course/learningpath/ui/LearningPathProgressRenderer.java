@@ -28,6 +28,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.StatusCompletionEvaluator;
 import org.olat.modules.assessment.ui.component.AbstractLearningProgressCellRenderer;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -39,15 +40,13 @@ public class LearningPathProgressRenderer extends AbstractLearningProgressCellRe
 	
 	private static final StatusCompletionEvaluator STATUS_COMPLETION_EVALUATOR = new StatusCompletionEvaluator();
 	
+	private final RepositoryEntry courseEntry;
+	
 	private CourseAssessmentService courseAssessmentService;
 	
-	public LearningPathProgressRenderer(Locale locale) {
-		super(locale);
-		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-	}
-	
-	public LearningPathProgressRenderer(Locale locale, boolean chartVisible, boolean labelVisible) {
+	public LearningPathProgressRenderer(RepositoryEntry courseEntry, Locale locale, boolean chartVisible, boolean labelVisible) {
 		super(locale, chartVisible, labelVisible);
+		this.courseEntry = courseEntry;
 		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 	}
 
@@ -65,7 +64,7 @@ public class LearningPathProgressRenderer extends AbstractLearningProgressCellRe
 		if (cellValue instanceof LearningPathTreeNode) {
 			LearningPathTreeNode learningPathTreeNode = (LearningPathTreeNode)cellValue;
 			float actual = 0.f;
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(learningPathTreeNode.getCourseNode());
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, learningPathTreeNode.getCourseNode());
 			boolean hasCompletion = !Mode.none.equals(assessmentConfig.getCompletionMode());
 			if (hasCompletion) {
 				actual = learningPathTreeNode.getCompletion() != null ? learningPathTreeNode.getCompletion().floatValue() : 0.0f;

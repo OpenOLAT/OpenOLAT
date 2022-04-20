@@ -46,6 +46,7 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -99,7 +100,7 @@ public class STCourseNodeRunController extends BasicController {
 		myContent = createVelocityContainer("run");
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stCourseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), stCourseNode);
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if (se != null && (hasScore || hasPassed)) {

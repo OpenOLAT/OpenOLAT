@@ -62,6 +62,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -109,6 +110,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
@@ -322,16 +324,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			addStatusErrorDescription("error.select.atleastonestep", GTAEditController.PANE_TAB_WORKLOW, sdList);
 		}
 		
-		LearningPathNodeHandler lpNodeHandler = getLearningPathNodeHandler();
-		if (isFullyAssessedScoreConfigError(lpNodeHandler)) {
-			addStatusErrorDescription("error.fully.assessed.score",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		if (isFullyAssessedPassedConfigError(lpNodeHandler)) {
-			addStatusErrorDescription("error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		
 		if(cev != null) {
 			//check assignment
 			GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
@@ -401,6 +393,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				sdList.add(sd);
 			}
 			
+			LearningPathNodeHandler lpNodeHandler = getLearningPathNodeHandler();
+			GTAAssessmentConfig assessmentConfig = new GTAAssessmentConfig(new CourseEntryRef(cev), this);
+			if (isFullyAssessedScoreConfigError(assessmentConfig, lpNodeHandler)) {
+				addStatusErrorDescription("error.fully.assessed.score",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			if (isFullyAssessedPassedConfigError(assessmentConfig, lpNodeHandler)) {
+				addStatusErrorDescription("error.fully.assessed.passed",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
 			// Grade
 			if (hasScoring) {
 				if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
@@ -416,8 +419,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		return sdList;
 	}
 	
-	private boolean isFullyAssessedScoreConfigError(LearningPathNodeHandler lpNodeHandler) {
-		boolean hasScore = new GTAAssessmentConfig(getModuleConfiguration()).getScoreMode() != Mode.none;
+	private boolean isFullyAssessedScoreConfigError(GTAAssessmentConfig assessmentConfig, LearningPathNodeHandler lpNodeHandler) {
+		boolean hasScore = assessmentConfig.getScoreMode() != Mode.none;
 		boolean isScoreTrigger = lpNodeHandler
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -425,8 +428,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		return isScoreTrigger && !hasScore;
 	}
 	
-	private boolean isFullyAssessedPassedConfigError(LearningPathNodeHandler lpNodeHandler) {
-		boolean hasPassed = new GTAAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+	private boolean isFullyAssessedPassedConfigError(GTAAssessmentConfig assessmentConfig, LearningPathNodeHandler lpNodeHandler) {
+		boolean hasPassed = assessmentConfig.getPassedMode() != Mode.none;
 		boolean isPassedTrigger = lpNodeHandler
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -995,8 +998,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
-		return new GTAReminderProvider(this);
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
+		return new GTAReminderProvider(courseEntry, this);
 	}
 	
 	@Override

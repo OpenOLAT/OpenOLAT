@@ -147,7 +147,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(false));
+			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
 				remindersLink = LinkFactory.createLink("segment.reminders", mainVC, this);

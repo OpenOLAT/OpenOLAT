@@ -184,7 +184,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initStatusColumns(FlexiTableColumnModel columnsModel) {
 		super.initStatusColumns(columnsModel);
 		IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if(testCourseNode != null && Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.currentRunStart,
 					new TimeFlexiCellRenderer(getLocale(), true)));
@@ -652,7 +652,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		
 		CourseEnvironment courseEnv = getCourseEnvironment();
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		
 		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
 		
@@ -685,7 +685,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 						grade = gradeScoreRange.getGrade();
 						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+						passed = gradeScoreRange.getPassed();
 					}
 				} else if (cutValue != null) {
 					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;

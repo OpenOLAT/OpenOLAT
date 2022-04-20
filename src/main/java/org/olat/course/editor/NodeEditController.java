@@ -163,7 +163,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		}
 		
 		boolean rootNode = course.getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
-		reminderProvider = courseNode.getReminderProvider(rootNode);
+		reminderProvider = courseNode.getReminderProvider(courseEntry, rootNode);
 		if (reminderProvider != null) {
 			reminderCtrl = new CourseNodeReminderController(ureq, wControl, stackPanel, courseEntry, reminderProvider, true);
 			listenTo(reminderCtrl);

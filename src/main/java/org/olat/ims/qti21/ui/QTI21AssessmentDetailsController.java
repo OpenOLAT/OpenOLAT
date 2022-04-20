@@ -197,9 +197,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		
-		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
+		reSecurity = repositoryManager.isAllowed(ureq, assessableEntry);
 
 		initForm(ureq);
 		updateModel();
@@ -527,7 +525,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest, AssessmentEntryStatus entryStatus) {
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
@@ -547,7 +545,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					grade = gradeScoreRange.getGrade();
 					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-					passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					passed = gradeScoreRange.getPassed();
 				}
 			} else if (cutValue != null) {
 				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;

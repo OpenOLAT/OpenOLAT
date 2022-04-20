@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
@@ -365,28 +366,28 @@ public class GradeCalculatorTest {
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("13.5"));
 		assertThat(range.isUpperBoundInclusive()).isTrue();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(1);
 		assertThat(range.getGrade()).isEqualTo("3");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("13.5"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("12.5"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(2);
 		assertThat(range.getGrade()).isEqualTo("2");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("12.5"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11.5"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
 		range = ranges.get(3);
 		assertThat(range.getGrade()).isEqualTo("1");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("11.5"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
 	}
 	
 	@Test
@@ -400,63 +401,63 @@ public class GradeCalculatorTest {
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("12.875"));
 		assertThat(range.isUpperBoundInclusive()).isTrue();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(1);
 		assertThat(range.getGrade()).isEqualTo("1.5");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("12.875"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("12.625"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(2);
 		assertThat(range.getGrade()).isEqualTo("2");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("12.625"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("12.375"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(3);
 		assertThat(range.getGrade()).isEqualTo("2.5");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("12.375"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("12.125"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(4);
 		assertThat(range.getGrade()).isEqualTo("3");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("12.125"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11.875"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(5);
 		assertThat(range.getGrade()).isEqualTo("3.5");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("11.875"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11.625"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
 		range = ranges.get(6);
 		assertThat(range.getGrade()).isEqualTo("4");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("11.625"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11.375"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
 		range = ranges.get(7);
 		assertThat(range.getGrade()).isEqualTo("4.5");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("11.375"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11.125"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
 		range = ranges.get(8);
 		assertThat(range.getGrade()).isEqualTo("5");
 		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("11.125"));
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("11"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
 	}
 	
 	private NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade,
@@ -697,6 +698,19 @@ public class GradeCalculatorTest {
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("0"));
 	}
 	
+	@Test
+	public void shouldCreateNumericRanges_noPassed() {
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 3, NumericResolution.whole, Rounding.nearest, null, 1, 3)
+				.stream().collect(Collectors.toList());
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getPassed()).isNull();
+		range = ranges.get(1);
+		assertThat(range.getPassed()).isNull();
+		range = ranges.get(1);
+		assertThat(range.getPassed()).isNull();
+	}
+	
 	private NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade,
 			NumericResolution resolution, Rounding rounding, Double cutValue, int minScore,
 			int maxScore, List<Breakpoint> breakpoints) {
@@ -739,8 +753,8 @@ public class GradeCalculatorTest {
 		BigDecimal minScore = new BigDecimal(1);
 		BigDecimal maxScore = new BigDecimal(10);
 		
-		List<GradeScoreRange> ranges = sut.getTextGradeScoreRanges(null, performanceClasses, breakpoints, minScore, maxScore, new KeyTranslator(Locale.ENGLISH))
-				.stream().collect(Collectors.toList());
+		List<GradeScoreRange> ranges = sut.getTextGradeScoreRanges(null, true, performanceClasses, breakpoints,
+				minScore, maxScore, new KeyTranslator(Locale.ENGLISH)).stream().collect(Collectors.toList());
 		
 		GradeScoreRange range = ranges.get(0);
 		assertThat(range.getGrade()).isEqualTo("1");
@@ -749,7 +763,7 @@ public class GradeCalculatorTest {
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("8"));
 		assertThat(range.isUpperBoundInclusive()).isTrue();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(1);
 		assertThat(range.getGrade()).isEqualTo("2");
 		assertThat(range.getPerformanceClassIdent()).isEqualTo(performanceClass2.getIdentifier());
@@ -757,7 +771,7 @@ public class GradeCalculatorTest {
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("5"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isTrue();
+		assertThat(range.getPassed()).isTrue();
 		range = ranges.get(2);
 		assertThat(range.getGrade()).isEqualTo("3");
 		assertThat(range.getPerformanceClassIdent()).isEqualTo(performanceClass3.getIdentifier());
@@ -765,7 +779,36 @@ public class GradeCalculatorTest {
 		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("1"));
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
-		assertThat(range.isPassed()).isFalse();
+		assertThat(range.getPassed()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetTextGradeScoreRanges_noPassed() {
+		List<PerformanceClass> performanceClasses = new ArrayList<>(3);
+		PerformanceClassImpl performanceClass1 = new PerformanceClassImpl();
+		performanceClass1.setBestToLowest(1);
+		performanceClass1.setIdentifier(random());
+		performanceClass1.setPassed(false);
+		performanceClasses.add(performanceClass1);
+		PerformanceClassImpl performanceClass2 = new PerformanceClassImpl();
+		performanceClass2.setBestToLowest(2);
+		performanceClass2.setIdentifier(random());
+		performanceClass2.setPassed(true);
+		performanceClasses.add(performanceClass2);
+		BreakpointImpl breakpoint = new BreakpointImpl();
+		breakpoint.setBestToLowest(Integer.valueOf(1));
+		breakpoint.setScore(new BigDecimal(8));
+		BigDecimal minScore = new BigDecimal(1);
+		BigDecimal maxScore = new BigDecimal(10);
+		
+		List<GradeScoreRange> ranges = sut.getTextGradeScoreRanges(null, false, performanceClasses,
+				Collections.singletonList(breakpoint), minScore, maxScore, new KeyTranslator(Locale.ENGLISH)).stream()
+				.collect(Collectors.toList());
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getPassed()).isNull();
+		range = ranges.get(1);
+		assertThat(range.getPassed()).isNull();
 	}
 	
 	@Test

@@ -345,7 +345,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		DBFactory.getInstance().commit();
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode);
 		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
@@ -377,7 +377,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode);
 		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
@@ -877,7 +877,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				&& !courseEnv.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY)
 				&& !cgm.isIdentityAnyCourseAdministrator(coach);
 		
-		Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(courseNode).getInitialUserVisibility(done, coachCanNotEdit);
+		Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode)
+				.getInitialUserVisibility(done, coachCanNotEdit);
 		assessmentEntry.setUserVisibility(initialUserVisibility);
 	}
 	

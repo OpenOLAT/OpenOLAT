@@ -62,7 +62,7 @@ public class GradeScaleAdjustController extends StepFormBasicController {
 		RepositoryEntry courseEntry = (RepositoryEntry)runContext.get(GradeScaleAdjustCallback.KEY_COURSE_ENTRY);
 		CourseNode courseNode = (CourseNode)runContext.get(GradeScaleAdjustCallback.KEY_COURSE_NODE);
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		String gradeSystemKey = courseNode.getModuleConfiguration().getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
 		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
 		gradeScaleEditCtrl = new GradeScaleEditController(ureq, wControl, form, courseEntry, courseNode.getIdent(),

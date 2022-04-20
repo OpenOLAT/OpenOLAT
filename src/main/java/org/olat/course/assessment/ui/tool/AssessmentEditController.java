@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -71,7 +72,7 @@ public class AssessmentEditController extends BasicController implements Assessm
 		listenTo(assessmentForm);
 		mainVC.put("form", assessmentForm.getInitialComponent());
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		AssessmentEvaluation assessmentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
 				assessmentEval, assessmentConfig, this, PANEL_INFO);

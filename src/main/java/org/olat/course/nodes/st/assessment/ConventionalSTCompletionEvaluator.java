@@ -27,6 +27,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -48,12 +49,12 @@ public class ConventionalSTCompletionEvaluator implements CompletionEvaluator {
 	
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
 		
 		Double completion = null;
 		
 		if (courseNode.getParent() == null) {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 			if (isPassedConfigurated(assessmentConfig)) {
 				completion = isNodePassed(currentEvaluation)? Double.valueOf(1.0): Double.valueOf(0.0);
 			}

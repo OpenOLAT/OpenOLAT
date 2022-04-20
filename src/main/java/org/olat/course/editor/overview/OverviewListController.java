@@ -49,6 +49,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
@@ -254,7 +255,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 			row.setEnd(learningPathConfigs.getEndDateConfig());
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 		}
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 		row.setAssessmentConfig(assessmentConfig);
 		return row;
 	}

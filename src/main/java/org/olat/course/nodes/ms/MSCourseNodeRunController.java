@@ -41,6 +41,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -114,7 +115,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		this.showLog = showLog;
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
-		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		this.panelInfo = new PanelInfo(MSCourseNodeRunController.class,
 				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 		

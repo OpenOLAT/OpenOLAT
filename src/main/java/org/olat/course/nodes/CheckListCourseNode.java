@@ -59,6 +59,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -101,6 +102,7 @@ import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -222,16 +224,18 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		
-		if (isFullyAssessedScoreConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.score",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		if (isFullyAssessedPassedConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		
 		if (cev != null) {
+			CheckListAssessmentConfig assessmentConfig = new CheckListAssessmentConfig(new CourseEntryRef(cev), this);
+			
+			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.score",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.passed",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
 			if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
@@ -244,8 +248,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		return sdList;
 	}
 	
-	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new CheckListAssessmentConfig(getModuleConfiguration()).getScoreMode();
+	private boolean isFullyAssessedScoreConfigError(CheckListAssessmentConfig assessmentConfig) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(CLLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -253,8 +257,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		return isScoreTrigger && !hasScore;
 	}
 	
-	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new CheckListAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+	private boolean isFullyAssessedPassedConfigError(CheckListAssessmentConfig assessmentConfig) {
+		boolean hasPassed = assessmentConfig.getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(CLLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -335,7 +339,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
 		
 		//assessment documents
-		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(getModuleConfiguration());
+		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(new CourseEntryRef(course), this);
 		if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 			List<AssessmentEntry> assessmentEntries = course.getCourseEnvironment()
 					.getAssessmentManager().getAssessmentEntries(this);
@@ -466,7 +470,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			grade = gradeScoreRange.getGrade();
 			gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-			passed = Boolean.valueOf(gradeScoreRange.isPassed());
+			passed = gradeScoreRange.getPassed();
 		}
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 		
@@ -708,7 +712,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 					updateGrade = gradeScoreRange.getGrade();
 					updateGradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					updatePerformanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-					updatedPassed = Boolean.valueOf(gradeScoreRange.isPassed());
+					updatedPassed = gradeScoreRange.getPassed();
 				}
 			} else if(sumCheckbox != null && sumCheckbox.booleanValue()) {
 				Integer minValue = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
@@ -779,8 +783,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(getModuleConfiguration()));
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
+		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(courseEntry, this));
 	}
 	
 	@Override

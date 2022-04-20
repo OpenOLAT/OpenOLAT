@@ -68,7 +68,7 @@ public class GradeScoreRangeTableRenderer extends DefaultComponentRenderer {
 			int rangeIndex = fromIndex;
 			while (rangeIndex < toIndex && rangesIterator.hasNext()) {
 				GradeScoreRange row = rangesIterator.next();
-				sb.append("<tr").append(" class='o_gr_passed'", row.isPassed()).append(">");
+				sb.append("<tr").append(" class='o_gr_passed'", row.getPassed() != null && row.getPassed().booleanValue()).append(">");
 				sb.append("<td>").append(THREE_DIGITS.format(row.getLowerBound())).append("-").append(THREE_DIGITS.format(row.getUpperBound())).append("</td>");
 				String grade = GradeUIFactory.translatePerformanceClass(translator, row.getPerformanceClassIdent(), row.getGrade(), row.getGradeSystemIdent());
 				sb.append("<td>").append(grade).append("</td>");

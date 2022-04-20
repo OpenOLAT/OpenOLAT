@@ -25,6 +25,7 @@ import java.util.NavigableSet;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -71,7 +72,7 @@ public class CorrectionManagerImpl implements CorrectionManager {
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 		
 		BigDecimal finalScore = testSession.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
@@ -89,7 +90,7 @@ public class CorrectionManagerImpl implements CorrectionManager {
 					grade = gradeScoreRange.getGrade();
 					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-					passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					passed = gradeScoreRange.getPassed();
 				}
 			} else if (cutValue != null) {
 				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;

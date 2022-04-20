@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.condition.Condition;
@@ -77,6 +78,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 
 
@@ -273,27 +275,22 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 	
-	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new PortfolioAssessmentConfig(getModuleConfiguration()).getScoreMode();
-		boolean isScoreTrigger = CoreSpringFactory.getImpl(PortfolioLearningPathNodeHandler.class)
-				.getConfigs(this)
-				.isFullyAssessedOnScore(null, null)
-				.isEnabled();
-		return isScoreTrigger && !hasScore;
-	}
-	
 	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(1);
 		
-		if (isFullyAssessedScoreConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		if (isFullyAssessedPassedConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
 		if (cev != null) {
+			PortfolioAssessmentConfig assessmentConfig = new PortfolioAssessmentConfig(new CourseEntryRef(cev), this);
+			
+			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
+			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
 			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
@@ -307,13 +304,22 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		return sdList;
 	}
 	
-	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = Mode.none != new PortfolioAssessmentConfig(getModuleConfiguration()).getPassedMode();
+	private boolean isFullyAssessedPassedConfigError(PortfolioAssessmentConfig assessmentConfig) {
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(PortfolioLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
 				.isEnabled();
 		return isPassedTrigger && !hasPassed;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError(PortfolioAssessmentConfig assessmentConfig) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(PortfolioLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
 	}
 	
 	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
@@ -367,7 +373,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new PortfolioAssessmentConfig(getModuleConfiguration()));
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
+		return new AssessmentReminderProvider(getIdent(), new PortfolioAssessmentConfig(courseEntry, this));
 	}
 }

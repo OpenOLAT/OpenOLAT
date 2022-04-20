@@ -54,6 +54,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -118,7 +119,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.userCourseEnv = userCourseEnv;
-		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		this.panelInfo = new PanelInfo(CheckListRunController.class,
 				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 		
@@ -325,7 +326,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		exposeUserDataToVC(ureq, flc);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		return Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode();
 	}
 	

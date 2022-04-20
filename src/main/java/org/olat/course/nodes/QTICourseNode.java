@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes;
 
+import org.olat.repository.RepositoryEntryRef;
+
 /**
  * 
  * Initial date: 04.06.2015<br>
@@ -27,6 +29,6 @@ package org.olat.course.nodes;
  */
 public interface QTICourseNode extends CourseNode {
 	
-	public boolean hasAttemptsConfigured();
+	public boolean hasAttemptsConfigured(RepositoryEntryRef courseEntry);
 
 }

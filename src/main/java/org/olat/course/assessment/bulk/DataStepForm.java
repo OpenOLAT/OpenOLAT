@@ -65,6 +65,7 @@ import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.RepositoryEntry;
 
 /**
  *
@@ -88,24 +89,28 @@ public class DataStepForm extends StepFormBasicController {
 
 	private VFSLeaf targetArchive;
 	private BulkAssessmentDatas savedDatas;
+	private final RepositoryEntry courseEntry;
 	private final CourseNode courseNode;
 	private final boolean canEditUserVisibility;
 	private VFSContainer bulkAssessmentTmpDir;
 
-	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
+	public DataStepForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
+		this.courseEntry = courseEntry;
 		this.canEditUserVisibility = canEditUserVisibility;
 		courseNode = (CourseNode)getFromRunContext("courseNode");
 
 		initForm(ureq);
 	}
 
-	public DataStepForm(UserRequest ureq, WindowControl wControl, CourseNode courseNode, BulkAssessmentDatas savedDatas,
+	public DataStepForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode, BulkAssessmentDatas savedDatas,
 			StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 		this.savedDatas = savedDatas;
+		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.canEditUserVisibility = canEditUserVisibility;
 		addToRunContext("courseNode", courseNode);
@@ -117,7 +122,7 @@ public class DataStepForm extends StepFormBasicController {
 		formLayout.setElementCssClass("o_sel_bulk_assessment_data");
 		
 		// hide data input field in case the element does not have any score, passed or comment field enabled
-		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
 		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());
 
 		setFormTitle("data.title");

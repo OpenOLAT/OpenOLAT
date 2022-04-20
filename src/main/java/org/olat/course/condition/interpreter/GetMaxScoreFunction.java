@@ -20,6 +20,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -90,7 +91,7 @@ public class GetMaxScoreFunction extends AbstractFunction {
 		} else {			
 			// node is known, read max score form assessment config
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(getUserCourseEnv()), node);
 			if (assessmentConfig == null) {
 				// should never happen, but to be on the save side
 				return defaultValue();			

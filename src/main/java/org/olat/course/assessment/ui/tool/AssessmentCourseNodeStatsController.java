@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -79,7 +80,7 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		PercentStat percentStat = null;
 		if (Mode.none != assessmentConfig.getPassedMode()) {
 			percentStat = PercentStat.passed;

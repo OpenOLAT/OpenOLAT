@@ -84,6 +84,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -600,12 +601,12 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		// Only supported on root nodes. The STAssessmentHandler needs the course node hierarchy.
 		// We do not have this hierarchy when we are in the editor or the hierarchy is different than
 		// the hierarchy in the run model.
 		if (rootNode) {
-			return new STReminderProvider(this);
+			return new STReminderProvider(courseEntry, this);
 		}
 		return null;
 	}

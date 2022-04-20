@@ -29,27 +29,31 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 16 Sep 2021<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class PasseableVisitor implements Visitor {
-	
+
+	private final RepositoryEntry courseEntry;
 	private final CourseNode excludeNode;
 	private final List<CourseNode> courseNodes = new ArrayList<>();
-	
+
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
-	public PasseableVisitor(CourseNode excludeNode) {
+
+	public PasseableVisitor(RepositoryEntry courseEntry, CourseNode excludeNode) {
+		this.courseEntry = courseEntry;
 		this.excludeNode = excludeNode;
 		CoreSpringFactory.autowireObject(this);
 	}
-	
+
 	public List<CourseNode> getCourseNodes() {
 		return courseNodes;
 	}
@@ -59,25 +63,25 @@ public class PasseableVisitor implements Visitor {
 		CourseEditorTreeNode editorNode = null;
 		CourseNode courseNode = null;
 		if (node instanceof CourseEditorTreeNode) {
-			editorNode = (CourseEditorTreeNode)node;
+			editorNode = (CourseEditorTreeNode) node;
 			courseNode = editorNode.getCourseNode();
 		} else if (node instanceof CourseNode) {
-			courseNode = (CourseNode)node;
+			courseNode = (CourseNode) node;
 		}
-		
+
 		if (courseNode == null) {
 			return;
 		}
-		
+
 		if (editorNode != null && editorNode.isDeleted()) {
 			return;
 		}
-		
+
 		if (excludeNode != null && excludeNode.getIdent().equals(courseNode.getIdent())) {
 			return;
 		}
-		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (Mode.none != assessmentConfig.getPassedMode()) {
 			courseNodes.add(courseNode);
 		}

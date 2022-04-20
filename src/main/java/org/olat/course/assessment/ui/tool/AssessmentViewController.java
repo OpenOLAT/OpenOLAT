@@ -33,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -93,7 +94,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		
 		mainVC = createVelocityContainer("assessment_view");

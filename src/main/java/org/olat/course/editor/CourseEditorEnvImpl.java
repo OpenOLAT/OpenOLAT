@@ -48,6 +48,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -143,7 +144,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		if (cen.isDeleted()) return false;
 		// node exists and is not marked as deleted, check the associated course
 		// node for assessability.
-		return AssessmentHelper.checkIfNodeIsAssessable(cen.getCourseNode());
+		return AssessmentHelper.checkIfNodeIsAssessable(new CourseEntryRef(cgm), cen.getCourseNode());
 	}
 
 	@Override

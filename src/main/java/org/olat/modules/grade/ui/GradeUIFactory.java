@@ -191,6 +191,9 @@ public class GradeUIFactory {
 						allOk = false;
 					}
 				}
+			} else {
+				el.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
 			}
 		}
 		return allOk;

@@ -39,6 +39,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -155,7 +156,7 @@ public class ScormSessionController {
 		
 		if(isAssessable()) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), scormNode);
 			if(Mode.none != assessmentConfig.getScoreMode()) {
 				currentScore = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv).getScore();
 			}
@@ -575,7 +576,7 @@ public class ScormSessionController {
 		}
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), scormNode);
 		float cutval = assessmentConfig.getCutValue().floatValue();
 		boolean passed = (score >= cutval);
 		// if advanceScore option is set update the score only if it is higher

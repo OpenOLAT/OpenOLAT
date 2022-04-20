@@ -49,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
@@ -148,7 +149,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
-			assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
+			assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), scormNode);
 		}
 
 		// <OLATCE-289>

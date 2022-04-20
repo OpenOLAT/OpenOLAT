@@ -30,6 +30,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -40,6 +41,7 @@ import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -83,23 +85,24 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 			editAccessVc.put("remove", conditionRemoveCtrl.getInitialComponent());
 			
 			// Accessibility precondition
+			RepositoryEntryRef courseEntry = new CourseEntryRef(euce);
 			Condition accessCondition = courseNode.getPreConditionAccess();
 			accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 			listenTo(accessCondContr);
 			editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
 			// read / write preconditions
 			Condition editCondition = courseNode.getPreConditionEdit();
 			editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition, AssessmentHelper
-					.getAssessableNodes(editorModel, courseNode));
+					.getAssessableNodes(courseEntry, editorModel, courseNode));
 			listenTo(editCondContr);
 			editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 			
 			// administration preconditions
 			Condition adminCondition = courseNode.getPreConditionAdmin();
 			adminCondContr = new ConditionEditController(ureq, getWindowControl(), euce, adminCondition, AssessmentHelper
-					.getAssessableNodes(editorModel, courseNode));
+					.getAssessableNodes(courseEntry, editorModel, courseNode));
 			listenTo(adminCondContr);
 			editAccessVc.put("adminCondition", adminCondContr.getInitialComponent());
 		}

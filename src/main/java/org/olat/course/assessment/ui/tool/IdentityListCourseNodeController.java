@@ -260,7 +260,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(courseEnv).getType());
 		canEditUserVisibility = coachCourseEnv.isAdmin()
 				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		
 		if(courseNode.needsReferenceToARepositoryEntry()) {
 			referenceEntry = courseNode.getReferencedRepositoryEntry();
@@ -382,7 +382,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		initExternalGradingColumns(columnsModel);
 		initCalloutColumns(columnsModel);
 
-		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseNode, getLocale()); 
+		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseEntry, courseNode, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_assessment_tool_table");
 		tableEl.setExportEnabled(true);

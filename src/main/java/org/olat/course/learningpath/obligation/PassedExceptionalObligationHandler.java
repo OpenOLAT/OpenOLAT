@@ -43,6 +43,7 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -172,7 +173,7 @@ public class PassedExceptionalObligationHandler implements ExceptionalObligation
 
 	@Override
 	public boolean matchesIdentity(ExceptionalObligation exceptionalObligation, Identity identity,
-			ObligationContext obligationContext, Structure runStructure, ScoreAccounting scoreAccounting) {
+			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
 		if (exceptionalObligation instanceof PassedExceptionalObligation) {
 			PassedExceptionalObligation passedExceptionalObligation = (PassedExceptionalObligation)exceptionalObligation;
 			
@@ -181,7 +182,7 @@ public class PassedExceptionalObligationHandler implements ExceptionalObligation
 				return false;
 			}
 			
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 			if (Mode.none == assessmentConfig.getPassedMode()) {
 				return false;
 			}
@@ -223,7 +224,7 @@ public class PassedExceptionalObligationHandler implements ExceptionalObligation
 	private List<CourseNode> getPasseableCourseNodes(RepositoryEntry courseEntry, CourseNode courseNode) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		if (course != null) {
-			PasseableVisitor visitor = new PasseableVisitor(courseNode);
+			PasseableVisitor visitor = new PasseableVisitor(courseEntry, courseNode);
 			TreeVisitor tv = new TreeVisitor(visitor, course.getEditorTreeModel().getRootNode(), false);
 			tv.visitAll();
 			return visitor.getCourseNodes();

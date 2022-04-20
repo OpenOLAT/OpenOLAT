@@ -111,7 +111,7 @@ public class ObligationEditController extends FormBasicController implements Con
 		
 		ExceptionalObligationEvaluator exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(
 				userCourseEnv.getIdentityEnvironment().getIdentity(),
-				userCourseEnv.getCourseEnvironment().getRunStructure(), userCourseEnv.getScoreAccounting());
+				courseEntry, userCourseEnv.getCourseEnvironment().getRunStructure(), userCourseEnv.getScoreAccounting());
 		exceptionalObligationEvaluator.setObligationContext(new SingleUserObligationContext());
 		this.exceptionalObligations = exceptionalObligationEvaluator.filterExceptionalObligations(
 				learningPathConfigs.getExceptionalObligations(),

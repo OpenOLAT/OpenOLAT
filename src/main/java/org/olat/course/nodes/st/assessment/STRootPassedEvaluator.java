@@ -91,7 +91,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		// Number passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
 			int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, Integer.MAX_VALUE);
-			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassed() >= cutValue) {
 				return Boolean.TRUE;
 			}
@@ -99,7 +99,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		
 		// All passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
-			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassable() > 0) {
 				if (counts.isAllAssessed() && counts.getPassable() == counts.getPassed()) {
 					return Boolean.TRUE;
@@ -111,7 +111,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		}
 	
 		if (currentPassed == null && getActivePassedConfigs(config) > 0) {
-			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassable() > 0) {
 				
 				// Failed if course is fully assessed

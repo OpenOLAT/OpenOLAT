@@ -60,6 +60,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
@@ -82,6 +83,7 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.grade.GradeModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -158,16 +160,17 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
 		this.hasStatus = true;
-		this.hasGrade = hasGrade(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
-		this.hasPassedOverridable = hasPassedOverridable(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
+		CourseEntryRef courseEntry = new CourseEntryRef(userCourseEnvironment);
+		this.hasGrade = hasGrade(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
+		this.hasPassedOverridable = hasPassedOverridable(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
 		initForm(ureq);
 		initMultiSelectionTools();
 		loadModel();
 	}
 
-	private boolean hasGrade(CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+	private boolean hasGrade(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (assessmentConfig.hasGrade()) {
 			return true;
 		} 
@@ -176,7 +179,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				if (hasGrade(childCourseNode)) {
+				if (hasGrade(courseEntry, childCourseNode)) {
 					return true;
 				}
 			}
@@ -184,8 +187,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		return false;
 	}
 
-	private boolean hasPassedOverridable(CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+	private boolean hasPassedOverridable(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (assessmentConfig.isPassedOverridable()) {
 			return true;
 		} 
@@ -194,7 +197,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				if(hasPassedOverridable(childCourseNode)) {
+				if(hasPassedOverridable(courseEntry, childCourseNode)) {
 					return true;
 				}
 			}
