@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes;
 
+import org.apache.commons.text.similarity.FuzzyScore;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -30,6 +32,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
  *
  */
 public class CourseNodeHelper {
+	private static final FuzzyScore fuzzyScore = new FuzzyScore(I18nModule.getDefaultLocale());
 	
 	/**
 	 * Gets the CourseNode from an iNode. If the iNode is a CourseNode, the node is
@@ -52,21 +55,25 @@ public class CourseNodeHelper {
 	}
 	
 	/**
-	 * Return the short title if the short title is not the same as the start of the long title.
+	 * Return the short title if the short title is not "about" the same as the long title (fuzzy).
 	 *
 	 * @param courseNode
 	 * @return
 	 */
-	public static String getDifferentlyStartingShortTitle(CourseNode courseNode) {
-		if (isDifferentlyStartingShortTitle(courseNode.getLongTitle(), courseNode.getShortTitle())) {
-			return courseNode.getShortTitle();
+	public static String getFuzzyDifferentShortTitle(CourseNode courseNode) {
+		try {
+			String shortTitle = courseNode.getShortTitle();
+			Integer score = fuzzyScore.fuzzyScore(courseNode.getLongTitle(), shortTitle);
+			// if the fuzzy score is greater then the fuzzy query, we accept it as "equal enough"
+			if (score.intValue() <= shortTitle.length()) {
+				return shortTitle;
+			}			
+		} catch (Exception e) {
+			// nothing to do, something was NULL, return null
 		}
 		return null;
 	}
 	
-	private static boolean isDifferentlyStartingShortTitle(String longTitle, String shortTitle) {
-		return !longTitle.equals(shortTitle) && !longTitle.startsWith(shortTitle);
-	}
 	
 	/**
 	 * Return the short title if the short title is different then the long title.

@@ -538,7 +538,7 @@ public class NodeLayoutController extends FormBasicController {
 			overviewBuilder.withNodeIdent(courseNode.getIdent());
 			overviewBuilder.withIconCss(iconCSSClass);
 			overviewBuilder.withTitle(courseNode.getLongTitle());
-			overviewBuilder.withSubTitle(CourseNodeHelper.getDifferentlyStartingShortTitle(courseNode));
+			overviewBuilder.withSubTitle(CourseNodeHelper.getFuzzyDifferentShortTitle(courseNode));
 			overviewBuilder.withDescription(courseNode.getDescription());
 			overviewBuilder.withColorCategoryCss(colorCategoryCss);
 			if (previewMapper != null) {
