@@ -41,6 +41,7 @@ public class SearchRepositoryEntryParameters {
 	private String author;
 	private String desc;
 	private String idRefsAndTitle;
+	private boolean idRefsOnly;
 	private List<String> resourceTypes;
 	private Identity identity;
 	private Roles roles;
@@ -85,7 +86,20 @@ public class SearchRepositoryEntryParameters {
 	}
 
 	public void setIdRefsAndTitle(String idRefsAndTitle) {
+		setIdRefsAndTitle(idRefsAndTitle, false);
+	}
+
+	public void setIdRefsAndTitle(String idRefsAndTitle, boolean idRefsOnly) {
 		this.idRefsAndTitle = idRefsAndTitle;
+		this.idRefsOnly = idRefsOnly;
+	}
+
+	public boolean isIdRefsOnly() {
+		return idRefsOnly;
+	}
+
+	public void setIdRefsOnly(boolean idRefsOnly) {
+		this.idRefsOnly = idRefsOnly;
 	}
 
 	public String getDisplayName() {

@@ -108,8 +108,6 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private RepositoryService repositoryService;
 
 	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
 			boolean withCancel, boolean multiSelect, String[] limitTypes, boolean organisationWildCard,
@@ -224,6 +222,9 @@ public class RepositorySearchController extends BasicController implements Activ
 
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(searchForm.getDisplayName(),
 				searchForm.getAuthor(), searchForm.getDescription(), restrictedTypes, getIdentity(), identityRoles);
+		if (searchForm.hasId()) {
+			params.setIdRefsAndTitle(searchForm.getId(), true);
+		}
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -252,9 +253,10 @@ public class RepositorySearchController extends BasicController implements Activ
 		String name = searchForm.getDisplayName();
 		String author = searchForm.getAuthor();
 		String desc = searchForm.getDescription();
+		String idAndRefs = searchForm.getId();
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(),
-				identityRoles,organisationWildCard, restrictedTypes, name, author, desc, asParticipant,
-				enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
+				identityRoles,organisationWildCard, restrictedTypes, name, author, desc, idAndRefs,
+				asParticipant, enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		if(updateFilters) {
@@ -282,7 +284,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		}
 		
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, organisationWildCard,
-				restrictedTypes, null, null, null, asParticipant, true, false);
+				restrictedTypes, null, null, null, null, asParticipant, true, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -307,7 +309,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, organisationWildCard,
-				restrictedTypes, null, null, null, asParticipant, false, true);
+				restrictedTypes, null, null, null, null, asParticipant, false, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -376,22 +378,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		tableCtr.setFilters(null, null);
 		tableCtr.modelChanged();
 		displaySearchResults(ureq);
-	}
-
-	private void doSearchById(String id, Collection<String> restrictedTypes) {
-		List<RepositoryEntry> entries = repositoryService.searchByIdAndRefs(id);
-		if(restrictedTypes != null && !restrictedTypes.isEmpty()) {
-			for(Iterator<RepositoryEntry> it=entries.iterator(); it.hasNext(); ) {
-				RepositoryEntry entry = it.next();
-				if(!restrictedTypes.contains(entry.getOlatResource().getResourceableTypeName())) {
-					it.remove();
-				}
-			}
-		}
-		filterRepositoryEntries(entries);
-		repoTableModel.setObjects(entries);
-		tableCtr.modelChanged();
-		displaySearchResults(null);
 	}
 	
 	protected void updateFilters(List<RepositoryEntry> entries, Identity owner) {
@@ -528,9 +514,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			}
 		}	else if (source == searchForm) { // process search form events
 			if (event == Event.DONE_EVENT) {
-				if (searchForm.hasId())	{
-					doSearchById(searchForm.getId(), searchForm.getRestrictedTypes());
-				} else if (enableSearchforAllInSearchForm != null) {
+				if (enableSearchforAllInSearchForm != null) {
 					doSearchAllReferencables(urequest, null, true);
 				} else {
 					doSearch(urequest, null, true);
