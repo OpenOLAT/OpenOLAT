@@ -22,7 +22,6 @@ package org.olat.course.nodes.portfolio;
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
 import org.olat.course.nodes.CourseNode;
-import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -46,8 +45,7 @@ public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
 	@Override
 	public Mode getPassedMode() {
 		if (hasGrade() && Mode.none != getScoreMode()) {
-			GradeScale gradeScale = CoreSpringFactory.getImpl(GradeService.class).getGradeScale(courseEntry, nodeIdent);
-			if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+			if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, nodeIdent)) {
 				return Mode.setByNode;
 			}
 			return Mode.none;

@@ -30,7 +30,6 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -168,8 +167,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 						QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
 						if (deliveryOptions != null) {
 							if (hasGrade() && Mode.none != getScoreMode()) {
-								GradeScale gradeScale = CoreSpringFactory.getImpl(GradeService.class).getGradeScale(courseEntry, courseNode.getIdent());
-								if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+								if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())) {
 									return Mode.setByNode;
 								}
 								return Mode.none;

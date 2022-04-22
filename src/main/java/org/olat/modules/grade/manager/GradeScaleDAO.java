@@ -131,4 +131,21 @@ public class GradeScaleDAO {
 		return query.getResultList();
 	}
 
+	public boolean hasPassed(RepositoryEntryRef courseEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select gsys.hasPassed");
+		sb.append("  from gradescale gs");
+		sb.append("       join gs.gradeSystem gsys");
+		sb.and().append("gs.repositoryEntry.key = :repoKey");
+		sb.and().append("gs.subIdent = :subIdent");
+		
+		List<Boolean> resultList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Boolean.class)
+				.setParameter("repoKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+		
+		return resultList != null && !resultList.isEmpty()? resultList.get(0).booleanValue(): false;
+	}
+
 }

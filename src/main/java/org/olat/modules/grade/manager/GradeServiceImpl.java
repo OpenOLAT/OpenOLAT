@@ -213,6 +213,11 @@ public class GradeServiceImpl implements GradeService {
 	public List<GradeScaleStats> getGradeScaleStats() {
 		return gradeScaleDao.loadStats(null);
 	}
+	
+	@Override
+	public boolean hasPassed(RepositoryEntryRef courseEntry, String subIdent) {
+		return gradeScaleDao.hasPassed(courseEntry, subIdent);
+	}
 
 	@Override
 	public Breakpoint createBreakpoint(GradeScale gradeScale) {
