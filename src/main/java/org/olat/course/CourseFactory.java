@@ -927,7 +927,6 @@ public class CourseFactory {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(theCourse, () -> {
 				final PersistingCourseImpl course = getCourseEditSession(resourceableId);
 				if(course != null && course.isReadAndWrite()) {
-					course.initHasAssessableNodes();
 					course.saveRunStructure();
 					course.saveEditorTreeModel();
 

@@ -43,6 +43,7 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,9 +109,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl,
-					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					courseNode.getReminderProvider(false));
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
 				remindersLink = LinkFactory.createLink("segment.reminders", mainVC, this);

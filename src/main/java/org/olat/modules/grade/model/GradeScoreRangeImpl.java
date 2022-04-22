@@ -40,11 +40,11 @@ public class GradeScoreRangeImpl implements GradeScoreRange {
 	private final boolean upperBoundInclusive;
 	private final BigDecimal lowerBound;
 	private final boolean lowerBoundInclusive;
-	private final boolean passed;
+	private final Boolean passed;
 	
 	public GradeScoreRangeImpl(int bestToLowest, String grade, String gradeSystemIdent, String performanceClassIdent,
 			BigDecimal score, BigDecimal upperBound, boolean upperBoundInclusive, BigDecimal lowerBound,
-			boolean lowerBoundInclusive, boolean passed) {
+			boolean lowerBoundInclusive, Boolean passed) {
 		this.bestToLowest = bestToLowest;
 		this.grade = grade;
 		this.gradeSystemIdent = gradeSystemIdent;
@@ -103,7 +103,7 @@ public class GradeScoreRangeImpl implements GradeScoreRange {
 	}
 
 	@Override
-	public boolean isPassed() {
+	public Boolean getPassed() {
 		return passed;
 	}
 

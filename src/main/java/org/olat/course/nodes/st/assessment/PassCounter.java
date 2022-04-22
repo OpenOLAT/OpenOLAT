@@ -31,6 +31,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -53,12 +54,12 @@ public class PassCounter {
 	
 	private CourseAssessmentService courseAssessmentService;
 	
-	public Counts getCounts(CourseNode courseNode, ScoreAccounting scoreAccounting) {
-		return getCounts(courseNode, scoreAccounting, getCourseAssessmentService());
+	public Counts getCounts(RepositoryEntryRef courseEntry, CourseNode courseNode, ScoreAccounting scoreAccounting) {
+		return getCounts(courseEntry, courseNode, scoreAccounting, getCourseAssessmentService());
 	}
 	
-	Counts getCounts(CourseNode courseNode, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
-		PassedCountVisitor visitor = new PassedCountVisitor(courseNode, scoreAccounting, courseAssessmentService);
+	Counts getCounts(RepositoryEntryRef courseEntry, CourseNode courseNode, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
+		PassedCountVisitor visitor = new PassedCountVisitor(courseEntry, courseNode, scoreAccounting, courseAssessmentService);
 		TreeVisitor treeVisitor = new TreeVisitor(visitor, courseNode, true);
 		treeVisitor.visitAll();
 		return visitor;
@@ -73,6 +74,7 @@ public class PassCounter {
 	
 	private final static class PassedCountVisitor implements Counts, Visitor {
 		
+		private final RepositoryEntryRef courseEntry;
 		private final CourseNode root;
 		private final ScoreAccounting scoreAccounting;
 		private int passable;
@@ -81,7 +83,8 @@ public class PassCounter {
 		
 		private final CourseAssessmentService courseAssessmentService;
 		
-		private PassedCountVisitor(CourseNode root, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
+		private PassedCountVisitor(RepositoryEntryRef courseEntry, CourseNode root, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
+			this.courseEntry = courseEntry;
 			this.root = root;
 			this.scoreAccounting = scoreAccounting;
 			this.courseAssessmentService = courseAssessmentService;
@@ -113,7 +116,7 @@ public class PassCounter {
 			
 			if (node instanceof CourseNode) {
 				CourseNode courseNode = (CourseNode)node;
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getPassedMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
 					if (isNotExcluded(assessmentEvaluation)) {

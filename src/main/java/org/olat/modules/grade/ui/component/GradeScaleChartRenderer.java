@@ -41,6 +41,7 @@ import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.GradeSystemType;
+import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
@@ -123,7 +124,7 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 		  .append("    .attr('dy', '1em')")
 		  .append("    .attr('fill', '#000')")
 		  .append("    .style('text-anchor', 'middle')")
-		  .append("    .text('").append(translator.translate("grade")).append("')");
+		  .append("    .text('").append(GradeUIFactory.translateGradeSystemLabel(translator, gradeSystem)).append("')");
 		sb.append(";\n");
 
 		sb.append("var line = d3.line()\n");
@@ -236,14 +237,20 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 		List<Line> lines = new ArrayList<>(2);
 		
 		StringBuilder sb = new StringBuilder();
-		String lineCss = ranges.last().isPassed()? "o_gr_passed": "o_gr_failed"; 
+		String lineCss = "";
+		if (ranges.last().getPassed() != null) {
+			lineCss = ranges.last().getPassed()? "o_gr_passed": "o_gr_failed"; 
+		}
 		
 		Iterator<GradeScoreRange> rangeIterator = ranges.descendingIterator();
 		while(rangeIterator.hasNext()) {
 			GradeScoreRange range = rangeIterator.next();
 			sb.append("[").append(THREE_DIGITS.format(range.getLowerBound())).append(",").append(range.getBestToLowest() + 0.5).append("]");
 				
-			String rangeLineCss = range.isPassed()? "o_gr_passed": "o_gr_failed"; 
+			String rangeLineCss = "";
+			if (range.getPassed() != null) {
+				rangeLineCss = range.getPassed()? "o_gr_passed": "o_gr_failed"; 
+			}
 			if (!rangeLineCss.equals(lineCss)) {
 				lines.add(new Line("o_gr_scale_chart_line " + lineCss, sb.toString()));
 				lineCss = rangeLineCss;
@@ -296,12 +303,12 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 
 
 	private PassedInfo getNumericPassedInfo(GradeSystem gradeSystem, NavigableSet<GradeScoreRange> ranges) {
-		if (gradeSystem.getCutValue() != null) {
+		if (gradeSystem.hasPassed() && gradeSystem.getCutValue() != null) {
 			GradeScoreRange previousRange = null;
 			Iterator<GradeScoreRange> rangeIterator = ranges.descendingIterator();
 			while(rangeIterator.hasNext()) {
 				GradeScoreRange range = rangeIterator.next();
-				if (range.isPassed()) {
+				if (range.getPassed() != null && range.getPassed().booleanValue()) {
 					BigDecimal boundGrade = previousRange == null
 							? new BigDecimal(range.getGrade())
 							: new BigDecimal(range.getGrade()).add(new BigDecimal(previousRange.getGrade())).divide(TWO);
@@ -320,7 +327,7 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 		GradeScoreRange previousRange = null;
 		for (int i = 0; i < reversedRanges.size(); i++) {
 			GradeScoreRange range = reversedRanges.get(i);
-			if (range.isPassed()) {
+			if (range.getPassed() != null && range.getPassed().booleanValue()) {
 				BigDecimal grade = previousRange == null
 						? new BigDecimal(range.getBestToLowest())
 						: new BigDecimal(range.getBestToLowest() + 0.5);

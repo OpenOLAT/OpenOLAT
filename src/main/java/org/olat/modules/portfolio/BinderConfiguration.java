@@ -151,7 +151,7 @@ public class BinderConfiguration {
 				CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
 				if(courseNode instanceof PortfolioCourseNode) {
 					CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-					AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+					AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 					withScore = Mode.none != assessmentConfig.getScoreMode();
 					if(withScore) {
 						maxScore = assessmentConfig.getMaxScore();

@@ -127,14 +127,6 @@ public interface ICourse extends OLATResourceable {
 	 * @return The course environment of this course
 	 */
 	public CourseEnvironment getCourseEnvironment();
-	
-		
-	/**
-	 * @return true: if the structure has assessable nodes or structure
-	 * course nodes (subtype of assessable node), which 'hasPassedConfigured' or 'hasScoreConfigured'
-	 * is true
-	 */
-	public boolean hasAssessableNodes();
 
 	/**
 	 * @return The course configuration

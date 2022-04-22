@@ -55,6 +55,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
@@ -87,9 +88,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GradeScaleEditController extends FormBasicController implements FlexiTableCssDelegate {
-
+	
 	private FormLayoutContainer messageCont;
-	private SingleSelection gradeSystemEl;
+	private FormLayoutContainer gradeSystemCont;
+	private StaticTextElement gradeSystemEl;
+	private FormLink gradeSystemEditLink;
 	private StaticTextElement resolutionEl;
 	private StaticTextElement roundingEl;
 	private StaticTextElement cutValueEl;
@@ -116,12 +119,16 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private GradeChart gradeCountChart;
 	private FormSubmit submitButton;
 	
+	private CloseableModalController cmc;
+	private GradeSystemSelectionController gradeSystemSelectionCtrl;
+	
 	private final boolean wizard;
 	private final RepositoryEntry courseEntry;
 	private final String subIdent;
 	private final BigDecimal minScore;
 	private final BigDecimal maxScore;
 	private final Map<Integer, Long> scoreToCount;
+	private final SelectionValues gradeSystemSV;
 	private GradeScale gradeScale;
 	private GradeSystem gradeSystem;
 	private Map<Integer, Breakpoint> positionToBreakpoint;
@@ -132,7 +139,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private AssessmentService assessmentService;
 	
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey, boolean courseEditor) {
+			String subIdent, Float minScore, Float maxScore, boolean courseEditor) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = false;
@@ -141,6 +148,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		this.minScore = new BigDecimal(minScore);
 		this.maxScore = new BigDecimal(maxScore);
 		this.scoreToCount = null;
+		this.gradeSystemSV = getGradeSystemSV();
 		
 		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
 		if (gradeScale != null) {
@@ -150,8 +158,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 						.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
 			}
 		}
-		if (gradeSystem == null && defaultGradeSystemKey != null) {
-			loadGradeSystem(defaultGradeSystemKey.toString());
+		if (gradeSystem == null) {
+			loadGradeSystem(gradeSystemSV.keys()[0]);
 		}
 		
 		initForm(ureq);
@@ -171,8 +179,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	}
 
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, Form form, RepositoryEntry courseEntry,
-			String subIdent, Float minScore, Float maxScore, Long defaultGradeSystemKey,
-			List<AssessmentScoreStatistic> scoreStatistics) {
+			String subIdent, Float minScore, Float maxScore, List<AssessmentScoreStatistic> scoreStatistics) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, form);
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = true;
@@ -182,6 +189,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		this.maxScore = new BigDecimal(maxScore);
 		this.scoreToCount = scoreStatistics.stream()
 				.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
+		this.gradeSystemSV = getGradeSystemSV();
 		
 		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
 		if (gradeScale != null) {
@@ -191,8 +199,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 						.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
 			}
 		}
-		if (gradeSystem == null && defaultGradeSystemKey != null) {
-			loadGradeSystem(defaultGradeSystemKey.toString());
+		if (gradeSystem == null) {
+			loadGradeSystem(gradeSystemSV.keys()[0]);
 		}
 		
 		initForm(ureq);
@@ -218,15 +226,14 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
-		SelectionValues gradeSystemSV = getGradeSystemSV();
-		gradeSystemEl = uifactory.addDropdownSingleselect("grade.system", generalCont, gradeSystemSV.keys(), gradeSystemSV.values());
-		gradeSystemEl.addActionListener(FormEvent.ONCHANGE);
-		if (gradeSystem != null && gradeSystemEl.containsKey(gradeSystem.getKey().toString())) {
-			gradeSystemEl.select(gradeSystem.getKey().toString(), true);
-		} else if (gradeSystemEl.getKeys().length > 0) {
-			gradeSystemEl.select(gradeSystemEl.getKey(0), true);
-			loadGradeSystem(gradeSystemEl.getSelectedKey());
-		}
+		gradeSystemCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
+		gradeSystemCont.setElementCssClass("o_inline_cont");
+		gradeSystemCont.setLabel("grade.system", null);
+		gradeSystemCont.setRootForm(mainForm);
+		generalCont.add(gradeSystemCont);
+		
+		gradeSystemEl = uifactory.addStaticTextElement("grade.system", "", gradeSystemCont);
+		gradeSystemEditLink = uifactory.addFormLink("grade.system.selection.button", gradeSystemCont, Link.BUTTON);
 		
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
@@ -385,7 +392,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		SelectionValues gradeSystemSV = new SelectionValues();
 		gradeSystems.forEach(gs -> gradeSystemSV.add(SelectionValues.entry(
 				gs.getKey().toString(),
-				GradeUIFactory.translateGradeSystem(getTranslator(), gs))));
+				GradeUIFactory.translateGradeSystemName(getTranslator(), gs))));
 		// Get current, but disabled grade system
 		if (gradeSystem != null && !gradeSystemSV.containsKey(gradeSystem.getKey().toString())) {
 			searchParams = new GradeSystemSearchParams();
@@ -395,7 +402,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			if (gradeSystem != null) {
 				gradeSystemSV.add(SelectionValues.entry(
 						gradeSystem.getKey().toString(),
-						translate("grade.system.disabled", GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem))));
+						translate("grade.system.disabled", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem))));
 			}
 		}
 		gradeSystemSV.sort(SelectionValues.VALUE_ASC);
@@ -403,10 +410,11 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	}
 
 	private SelectionValues getBreakpointGradeSV() {
+		String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
 		SelectionValues gradeSV = new SelectionValues();
 		List<String> grades = gradeService.getGrades(gradeSystem, minScore, maxScore);
 		if (grades.size() > 2) {
-			grades.forEach(g -> gradeSV.add(SelectionValues.entry(g, translate("grade.scale.breakpoint.grade", g))));
+			grades.forEach(grade -> gradeSV.add(SelectionValues.entry(grade, translate("grade.scale.breakpoint.grade", grade, gradeSystemLabel))));
 		}
 		return gradeSV;
 	}
@@ -436,17 +444,17 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		PerformanceClassBreakpointRow row = dataModel.getObject(pos);
-		return row.getPerformanceClass().isPassed() ? "o_gr_passed_row" : "o_gr_failed_row" ;
+		if (gradeSystem.hasPassed()) {
+			PerformanceClassBreakpointRow row = dataModel.getObject(pos);
+			return row.getPerformanceClass().isPassed() ? "o_gr_passed_row" : "o_gr_failed_row" ;
+		}
+		return null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == gradeSystemEl) {
-			loadGradeSystem(gradeSystemEl.getSelectedKey());
-			updateSystemUI();
-			updateNumericalBreakpointsUI();
-			updateScaleUI();
+		if (source == gradeSystemEditLink) {
+			doSelectGradeSystem(ureq);
 		} else if (source == breakpointCountEl) {
 			updateNumericalBreakpointsUI();
 		} else if (source == refreshNumericalLink) {
@@ -455,6 +463,31 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			updateTextDiagramlUI();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (gradeSystemSelectionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadGradeSystem(gradeSystemSelectionCtrl.getSelectedKey());
+				removeScaleSettings();
+				updateSystemUI();
+				updateNumericalBreakpointsUI();
+				updateScaleUI();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(gradeSystemSelectionCtrl);
+		removeAsListenerAndDispose(cmc);
+		gradeSystemSelectionCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -632,14 +665,35 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		gradeSystem = !gradeSystems.isEmpty()? gradeSystems.get(0): null;
 	}
 
+	private void doSelectGradeSystem(UserRequest ureq) {
+		if(guardModalController(gradeSystemSelectionCtrl)) return;
+		
+		gradeSystemSelectionCtrl = new GradeSystemSelectionController(ureq, getWindowControl(), gradeSystemSV, gradeSystem);
+		listenTo(gradeSystemSelectionCtrl);
+		
+		String title = translate("grade.system.selection.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", gradeSystemSelectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void removeScaleSettings() {
+		breakpointCountEl.select(breakpointCountEl.getKey(0), true);
+		
+		// text
+		positionToBreakpoint = Collections.emptyMap();
+	}
+
 	private void updateSystemUI() {
-		boolean numeric = gradeSystem != null && GradeSystemType.numeric == gradeSystem.getType();
+		gradeSystemEl.setValue(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+		
+		boolean numeric = GradeSystemType.numeric == gradeSystem.getType();
 		if (numeric) {
 			String resolutionText = GradeUIFactory.translateResolution(getTranslator(), gradeSystem.getResolution());
 			resolutionEl.setValue(resolutionText);
 			String roundingText = GradeUIFactory.translateRounding(getTranslator(), gradeSystem.getRounding());
 			roundingEl.setValue(roundingText);
-			String cutValueText = gradeSystem.getCutValue() != null
+			String cutValueText = gradeSystem.hasPassed() && gradeSystem.getCutValue() != null
 					? THREE_DIGITS.format(gradeSystem.getCutValue())
 					: translate("grade.system.cut.value.no");
 			cutValueEl.setValue(cutValueText);
@@ -647,12 +701,10 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		resolutionEl.setVisible(numeric);
 		roundingEl.setVisible(numeric);
 		cutValueEl.setVisible(numeric);
-		
-		scaleCont.setVisible(gradeSystem != null);
 	}
 
 	private void updateNumericalBreakpointsUI() {
-		boolean numeric = gradeSystem != null && GradeSystemType.numeric == gradeSystem.getType();
+		boolean numeric = GradeSystemType.numeric == gradeSystem.getType();
 		
 		if (numeric) {
 			SelectionValues gradeSV = getBreakpointGradeSV();
@@ -761,12 +813,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			row.setTranslatedName(translatedName);
 			
 			BigDecimal lowerBound = null;
-			PerformanceClassBreakpointRow currentRow = dataModel.getObject(i);
 			if (performanceClasses.size() == 1) {
 				lowerBound = minScore;
-			}
-			if (lowerBound == null && currentRow != null) {
-				lowerBound = new BigDecimal(currentRow.getLowerBoundEl().getValue());
 			}
 			if (lowerBound == null && !positionToBreakpoint.isEmpty() && breakpoint != null) {
 				lowerBound = breakpoint.getScore();

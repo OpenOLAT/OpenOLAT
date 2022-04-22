@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.NumericResolution;
 import org.olat.modules.grade.PerformanceClass;
@@ -53,19 +54,48 @@ public class GradeUIFactory {
 		return translator.translate("grade.system.rounding." + rounding.name());
 	}
 	
-	public static String getGradeSystemI18nKey(GradeSystem gradeSystem) {
+	public static String getGradeSystemNameI18nKey(GradeSystem gradeSystem) {
 		return "grade.system.id." + gradeSystem.getIdentifier();
 	}
 
-	public static String translateGradeSystem(Translator translator, GradeSystem gradeSystem) {
-		String i18nKey = getGradeSystemI18nKey(gradeSystem);
+	public static String translateGradeSystemName(Translator translator, GradeSystem gradeSystem) {
+		String i18nKey = getGradeSystemNameI18nKey(gradeSystem);
 		String translation = translator.translate(i18nKey);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			translation = String.valueOf(gradeSystem.getIdentifier());
 		}
 		return translation;
 	}
+	
+	public static String getGradeSystemLabelI18nKey(String gradeSystemIdent) {
+		return "grade.system.label.id." + gradeSystemIdent;
+	}
 
+	public static String translateGradeSystemLabel(Translator translator, GradeSystem gradeSystem) {
+		return translateGradeSystemLabel(translator, gradeSystem.getIdentifier());
+	}
+	
+	public static String translateGradeSystemLabel(Translator translator, String gradeSystemIdent) {
+		String i18nKey = getGradeSystemLabelI18nKey(gradeSystemIdent);
+		String translation = translator.translate(i18nKey);
+		if (i18nKey.equals(translation) || translation.length() > 256) {
+			translation = translateGradeSystemLabelFallback(translator);
+		}
+		return translation;
+	}
+	
+	public static String translateGradeSystemLabelFallback(Translator translator) {
+		return translator.translate("grade.system.label.fallback");
+	}
+	
+	public static String translateMinPassed(Translator translator, GradeScoreRange range) {
+		if (range == null) return null;
+		
+		String grade = translatePerformanceClass(translator, range.getPerformanceClassIdent(), range.getGrade(), range.getGradeSystemIdent());
+		String gradeSystemLabel = translateGradeSystemLabel(translator, range.getGradeSystemIdent());
+		return translator.translate("grade.score.passed.min", grade, gradeSystemLabel);
+	}
+	
 	public static String getPerformanceClassI18nKey(String identifier) {
 		return "performance.class." + identifier.toLowerCase();
 	}
@@ -191,6 +221,9 @@ public class GradeUIFactory {
 						allOk = false;
 					}
 				}
+			} else {
+				el.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
 			}
 		}
 		return allOk;

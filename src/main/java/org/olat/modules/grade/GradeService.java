@@ -71,7 +71,16 @@ public interface GradeService {
 	
 	public GradeScale getGradeScale(RepositoryEntryRef repositoryEntry, String subIdent);
 	
+	public List<GradeScale> getGradeScales(GradeScaleSearchParams searchParams);
+	
 	public List<GradeScaleStats> getGradeScaleStats();
+
+	/**
+	 * @param courseEntry
+	 * @param nodeIdent
+	 * @return true if a grade system with a passed is configured
+	 */
+	public boolean hasPassed(RepositoryEntryRef courseEntry, String subIdent);
 	
 	public Breakpoint createBreakpoint(GradeScale gradeScale);
 	
@@ -108,6 +117,8 @@ public interface GradeService {
 			BigDecimal minScore, BigDecimal maxScore, Locale locale);
 
 	public GradeScoreRange getGradeScoreRange(NavigableSet<GradeScoreRange> gradeScoreRanges, Float score);
+	
+	public GradeScoreRange getMinPassedGradeScoreRange(GradeScale gradeScale, Locale locale);
 
 	public BigDecimal getMinPassedScore(GradeScale gradeScale);
 

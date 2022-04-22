@@ -100,7 +100,7 @@ public class GradeScaleAdjustCallback implements StepRunnerCallback {
 	}
 	
 	private void updateGrades(RepositoryEntry courseEntry, CourseNode courseNode, GradeScale gradeScale, List<Long> applyGradeToIdentities) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		boolean autoGrade = assessmentConfig.isAutoGrade();
 		
 		NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
@@ -130,7 +130,7 @@ public class GradeScaleAdjustCallback implements StepRunnerCallback {
 			String grade = gradeScoreRange.getGrade();
 			String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-			passed = hasPassed ? Boolean.valueOf(gradeScoreRange.isPassed()) : null;
+			passed = hasPassed ? gradeScoreRange.getPassed() : null;
 			
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
 					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),

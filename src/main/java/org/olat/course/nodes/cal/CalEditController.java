@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -85,16 +86,17 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 			editAccessVc.put("remove", conditionRemoveCtrl.getInitialComponent());
 			
 			// Accessibility precondition
+			CourseEntryRef courseEntry = new CourseEntryRef(course);
 			Condition accessCondition = calCourseNode.getPreConditionAccess();
 			accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, calCourseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, calCourseNode));
 			this.listenTo(accessCondContr);
 			editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
 			// cal read / write preconditions
 			Condition editCondition = calCourseNode.getPreConditionEdit();
 			editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, calCourseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, calCourseNode));
 			listenTo(editCondContr);
 			editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 		}

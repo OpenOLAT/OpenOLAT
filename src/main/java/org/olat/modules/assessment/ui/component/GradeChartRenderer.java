@@ -33,6 +33,7 @@ import org.olat.modules.assessment.ui.component.GradeChart.GradeCount;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.GradeSystemType;
 import org.olat.modules.grade.NumericResolution;
+import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
@@ -107,7 +108,7 @@ public class GradeChartRenderer extends DefaultComponentRenderer {
 		  .append("    .attr('dy', '1em')\n")
 		  .append("    .attr('fill', '#000')\n")
 		  .append("    .style('text-anchor', 'middle')\n")
-		  .append("    .text('").append(translator.translate("grade")).append("')\n");
+		  .append("    .text('").append(GradeUIFactory.translateGradeSystemLabel(translator, gradeSystem)).append("')\n");
 		sb.append(";\n");
 		
 		sb.append("svg.append('g')\n")

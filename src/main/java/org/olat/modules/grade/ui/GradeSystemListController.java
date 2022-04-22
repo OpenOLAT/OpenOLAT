@@ -102,6 +102,7 @@ public class GradeSystemListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.label));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.usageCount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.enabled));
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(GradeSystemCols.tools);
@@ -122,7 +123,8 @@ public class GradeSystemListController extends FormBasicController {
 		for (GradeSystem gradeSystem : gradeSystems) {
 			GradeSystemRow row = new GradeSystemRow(gradeSystem);
 			
-			row.setName(GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
+			row.setName(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+			row.setLabel(GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem));
 			
 			int usageCount = gradeSystemKeyToCount.getOrDefault(gradeSystem.getKey(), Long.valueOf(0)).intValue();
 			row.setScaleCount(usageCount);
@@ -237,7 +239,7 @@ public class GradeSystemListController extends FormBasicController {
 	
 	private void doConfirmDelete(UserRequest ureq, GradeSystem gradeSystem) {
 		String title = translate("grade.system.delete.title");
-		String text = translate("grade.system.delete.text", GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
+		String text = translate("grade.system.delete.text", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
 		deleteCtrl = activateYesNoDialog(ureq, title, text, deleteCtrl);
 		deleteCtrl.setUserObject(gradeSystem);
 	}

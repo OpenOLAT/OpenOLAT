@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -40,16 +41,17 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	
 	private final Task task;
 	private final BulkAssessmentDatas savedDatas;
+	private final RepositoryEntry courseEntry;
 	private final CourseNode courseNode;
 	private final boolean canEditUserVisibility;
 	private boolean hasPreviousStep = true;
 
-	public BulkAssessment_2_DatasStep(UserRequest ureq, boolean canEditUserVisibility) {
-		this(ureq, null, null, null, canEditUserVisibility);
+	public BulkAssessment_2_DatasStep(UserRequest ureq, RepositoryEntry courseEntry, boolean canEditUserVisibility) {
+		this(ureq,courseEntry, null, null, null, canEditUserVisibility);
 	}
 	
-	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode, boolean canEditUserVisibility) {
-		this(ureq, courseNode, null, null, canEditUserVisibility);
+	public BulkAssessment_2_DatasStep(UserRequest ureq, RepositoryEntry courseEntry, CourseNode courseNode, boolean canEditUserVisibility) {
+		this(ureq, courseEntry, courseNode, null, null, canEditUserVisibility);
 	}
 	
 	/**
@@ -58,18 +60,19 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	 * @param courseNode
 	 * @param datas
 	 */
-	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode,
+	public BulkAssessment_2_DatasStep(UserRequest ureq, RepositoryEntry courseEntry, CourseNode courseNode,
 			BulkAssessmentDatas savedDatas, Task task, boolean canEditUserVisibility) {
 		super(ureq);
 		this.task = task;
 		this.savedDatas = savedDatas;
+		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.canEditUserVisibility = canEditUserVisibility;
 		setI18nTitleAndDescr("data.title", "data.title");
 		if(savedDatas == null) {
-			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq));
+			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq, courseEntry));
 		} else {
-			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq, savedDatas.getColumnsSettings()));
+			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq, courseEntry, savedDatas.getColumnsSettings()));
 		}
 		
 		hasPreviousStep = courseNode != null;
@@ -92,9 +95,9 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 		
 		DataStepForm ctrl;
 		if(savedDatas != null) {
-			ctrl = new DataStepForm(ureq, wControl, courseNode, savedDatas, context, canEditUserVisibility, form);
+			ctrl = new DataStepForm(ureq, wControl, courseEntry, courseNode, savedDatas, context, canEditUserVisibility, form);
 		} else {
-			ctrl = new DataStepForm(ureq, wControl, context, canEditUserVisibility, form);
+			ctrl = new DataStepForm(ureq, wControl, courseEntry, context, canEditUserVisibility, form);
 		}
 		return ctrl;
 	}

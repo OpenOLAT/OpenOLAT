@@ -58,6 +58,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -208,7 +209,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttemptsConfigured(RepositoryEntryRef courseEntry) {
 		return true;
 	}
 

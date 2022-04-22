@@ -115,7 +115,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			
 			if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 				swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Reminders"), null);
-				remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, entry, gtaNode.getReminderProvider(false));
+				remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, entry, gtaNode.getReminderProvider(entry, false));
 				listenTo(remindersCtrl);
 				if (remindersCtrl.hasDataOrActions()) {
 					remindersLink = LinkFactory.createLink("run.reminders", mainVC, this);

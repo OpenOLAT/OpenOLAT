@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -136,7 +137,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		
 		assertNotNull(course);
 		//find an assessableCourseNode
-		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), null);
+		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(new CourseEntryRef(course), course.getEditorTreeModel(), null);
 		Iterator<CourseNode> nodesIterator = assessableNodeList.iterator();
 		boolean testNodeFound = false; 
 		while(nodesIterator.hasNext()) {

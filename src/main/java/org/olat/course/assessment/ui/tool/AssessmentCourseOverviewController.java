@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -93,7 +94,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		mainVC = createVelocityContainer("course_overview");
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		boolean hasAssessableNodes = course.hasAssessableNodes();
+		boolean hasAssessableNodes = AssessmentHelper.checkForAssessableNodes(courseEntry, course.getRunStructure().getRootNode());
 		mainVC.contextPut("hasAssessableNodes", Boolean.valueOf(hasAssessableNodes));
 		
 		// assessment changes subscription
@@ -121,7 +122,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNode.getIdent(), null, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, rootNode);
 		PercentStat percentStat = null;
 		if (Mode.none != assessmentConfig.getPassedMode()) {
 			percentStat = PercentStat.passed;
@@ -154,7 +155,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		
 		if (coachUserEnv.isAdmin() || rootNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY)) {
 			List<String> manualGradeSubIdents = new ArrayList<>();
-			addManualGradeSubIdents(manualGradeSubIdents, coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode());
+			addManualGradeSubIdents(manualGradeSubIdents, courseEntry, coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode());
 			if (gradeModule.isEnabled() && !manualGradeSubIdents.isEmpty()) {
 				toApplyGradeCtrl = new CourseNodeToApplyGradeSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback, manualGradeSubIdents);
 				listenTo(toApplyGradeCtrl);
@@ -171,8 +172,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	private void addManualGradeSubIdents(List<String> manualGradeSubIdents, CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+	private void addManualGradeSubIdents(List<String> manualGradeSubIdents, RepositoryEntry courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade()) {
 			manualGradeSubIdents.add(courseNode.getIdent());
 		} 
@@ -181,7 +182,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode)child;
-				addManualGradeSubIdents(manualGradeSubIdents, childCourseNode);
+				addManualGradeSubIdents(manualGradeSubIdents, courseEntry, childCourseNode);
 			}
 		}
 	}

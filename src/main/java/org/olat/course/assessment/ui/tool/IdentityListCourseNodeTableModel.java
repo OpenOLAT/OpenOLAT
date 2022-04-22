@@ -38,6 +38,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -58,13 +59,13 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private Float cutValue;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
-	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, CourseNode courseNode, Locale locale) {
+	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, RepositoryEntry courseEntry, CourseNode courseNode, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	
 		if (courseNode != null) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 			if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 				maxScore = assessmentConfig.getMaxScore();
 				minScore = assessmentConfig.getMinScore();

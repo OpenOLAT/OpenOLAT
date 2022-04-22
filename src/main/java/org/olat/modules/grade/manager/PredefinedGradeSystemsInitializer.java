@@ -51,6 +51,7 @@ public class PredefinedGradeSystemsInitializer {
 		if (gradeService.isGradeServiceIdentifierAvailable("oo.grades.de")) {
 			GradeSystem gradeSystem = gradeSystemDao.create("oo.grades.de", GradeSystemType.numeric, true);
 			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(true);
 			gradeSystem.setResolution(NumericResolution.half);
 			gradeSystem.setRounding(Rounding.nearest);
 			gradeSystem.setBestGrade(Integer.valueOf(1));
@@ -63,6 +64,7 @@ public class PredefinedGradeSystemsInitializer {
 		if (gradeService.isGradeServiceIdentifierAvailable("oo.grades.ch")) {
 			GradeSystem gradeSystem = gradeSystemDao.create("oo.grades.ch", GradeSystemType.numeric, true);
 			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(true);
 			gradeSystem.setResolution(NumericResolution.half);
 			gradeSystem.setRounding(Rounding.nearest);
 			gradeSystem.setBestGrade(Integer.valueOf(6));
@@ -75,6 +77,7 @@ public class PredefinedGradeSystemsInitializer {
 		if (gradeService.isGradeServiceIdentifierAvailable("oo.levels.4")) {
 			GradeSystem gradeSystem = gradeSystemDao.create("oo.levels.4", GradeSystemType.text, true);
 			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(true);
 			gradeSystem = gradeService.updateGradeSystem(gradeSystem);
 			
 			int counter = 1;
@@ -104,6 +107,7 @@ public class PredefinedGradeSystemsInitializer {
 		if (gradeService.isGradeServiceIdentifierAvailable("oo.emojis.5")) {
 			GradeSystem gradeSystem = gradeSystemDao.create("oo.emojis.5", GradeSystemType.text, true);
 			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(true);
 			gradeSystem = gradeService.updateGradeSystem(gradeSystem);
 			
 			int counter = 1;
@@ -138,6 +142,7 @@ public class PredefinedGradeSystemsInitializer {
 		if (gradeService.isGradeServiceIdentifierAvailable("oo.percent.80")) {
 			GradeSystem gradeSystem = gradeSystemDao.create("oo.percent.80", GradeSystemType.numeric, true);
 			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(true);
 			gradeSystem.setResolution(NumericResolution.whole);
 			gradeSystem.setRounding(Rounding.nearest);
 			gradeSystem.setBestGrade(Integer.valueOf(100));
@@ -150,6 +155,7 @@ public class PredefinedGradeSystemsInitializer {
 		if (gradeService.isGradeServiceIdentifierAvailable("oo.percent.50")) {
 			GradeSystem gradeSystem = gradeSystemDao.create("oo.percent.50", GradeSystemType.numeric, true);
 			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(true);
 			gradeSystem.setResolution(NumericResolution.whole);
 			gradeSystem.setRounding(Rounding.nearest);
 			gradeSystem.setBestGrade(Integer.valueOf(100));

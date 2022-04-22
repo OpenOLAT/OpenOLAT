@@ -87,6 +87,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -142,6 +143,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	public AssessmentCoachingListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
 		this.translatedFormTitle = translatedFormTitle;
@@ -411,21 +413,22 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 				String grade = gradeScoreRange.getGrade();
-				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(courseNode).getPassedMode()
-						? Boolean.valueOf(gradeScoreRange.isPassed())
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeScoreRange.getGradeSystemIdent());
+				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(repositoryEntry, courseNode).getPassedMode()
+						? gradeScoreRange.getPassed()
 						: null;
 				
 				String text = null;
 				if (passed != null) {
 					if (passed.booleanValue()) {
-						text = translate("grade.apply.text.passed", grade);
+						text = translate("grade.apply.text.passed", grade, gradeSystemLabel);
 					} else {
-						text = translate("grade.apply.text.failed", grade);
+						text = translate("grade.apply.text.failed", grade, gradeSystemLabel);
 					}
 				} else {
-					text = translate("grade.apply.text", grade);
+					text = translate("grade.apply.text", grade, gradeSystemLabel);
 				}
-				String title = translate("grade.apply");
+				String title = translate("grade.apply.label", gradeSystemLabel);
 				applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
 				applyGradeCtrl.setUserObject(row);
 			}
@@ -456,8 +459,8 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				String grade = gradeScoreRange.getGrade();
 				String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(courseNode).getPassedMode()
-						? Boolean.valueOf(gradeScoreRange.isPassed())
+				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(repositoryEntry, courseNode).getPassedMode()
+						? gradeScoreRange.getPassed()
 						: null;
 				
 				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,

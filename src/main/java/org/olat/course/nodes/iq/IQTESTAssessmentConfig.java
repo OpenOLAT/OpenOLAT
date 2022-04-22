@@ -30,7 +30,9 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -43,9 +45,11 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class IQTESTAssessmentConfig implements AssessmentConfig {
 
+	private final RepositoryEntryRef courseEntry;
 	private final IQTESTCourseNode courseNode;
 
-	public IQTESTAssessmentConfig(IQTESTCourseNode courseNode) {
+	public IQTESTAssessmentConfig(RepositoryEntryRef courseEntry, IQTESTCourseNode courseNode) {
+		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 	}
 
@@ -162,8 +166,11 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 						QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
 						if (deliveryOptions != null) {
-							if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
-								mode = Mode.setByNode;
+							if (hasGrade() && Mode.none != getScoreMode()) {
+								if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())) {
+									return Mode.setByNode;
+								}
+								return Mode.none;
 							} else {
 								Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 								PassedType passedType = deliveryOptions.getPassedType(cutValue);

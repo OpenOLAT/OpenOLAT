@@ -47,6 +47,7 @@ import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,13 +66,16 @@ public class ValidationStepForm extends StepFormBasicController {
 	private FlexiTableElement validTableEl;
 	private FlexiTableElement invalidTableEl;
 
+	private RepositoryEntryRef courseEntry;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
-	
-	public ValidationStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
+
+	public ValidationStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm, RepositoryEntryRef courseEntry) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "validation");
+		this.courseEntry = courseEntry;
 		initForm(ureq);
 		doValidate();
 	}
@@ -79,7 +83,7 @@ public class ValidationStepForm extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		CourseNode courseNode = (CourseNode)getFromRunContext("courseNode");
-		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.identifier", Cols.identifier.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.lastName", Cols.lastName.ordinal()));

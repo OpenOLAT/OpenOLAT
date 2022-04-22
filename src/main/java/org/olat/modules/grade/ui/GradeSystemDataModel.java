@@ -63,6 +63,7 @@ implements SortableFlexiTableDataModel<GradeSystemRow> {
 		switch(COLS[col]) {
 			case identifier: return row.getGradeSystem().getIdentifier();
 			case name: return row.getName();
+			case label: return row.getLabel();
 			case usageCount: return row.getScaleCount();
 			case enabled: return Boolean.valueOf(row.getGradeSystem().isEnabled());
 			case tools: return row.getToolsLink();
@@ -73,6 +74,7 @@ implements SortableFlexiTableDataModel<GradeSystemRow> {
 	public enum GradeSystemCols implements FlexiSortableColumnDef {
 		identifier("grade.system.identifier"),
 		name("grade.system.name"),
+		label("grade.system.label"),
 		usageCount("grade.system.usage.count"),
 		enabled("grade.system.enabled"),
 		tools("table.header.actions");

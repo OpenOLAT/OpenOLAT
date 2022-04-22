@@ -28,6 +28,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -58,6 +59,8 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 
 	private TabbedPane myTabbedPane;
 	
+	private ICourse course;
+	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -67,6 +70,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 			ICourse course) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
+		this.course = course;
 		
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		int numOfChecks = checkboxManager.countChecks(course, courseNode.getIdent());
@@ -93,7 +97,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	}
 	
 	private void updateHighscoreTab() {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()),
 				Mode.none != assessmentConfig.getScoreMode());
 	}

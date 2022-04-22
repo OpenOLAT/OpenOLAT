@@ -164,7 +164,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	
 	private Float getMaxScoreSetting(QTICourseNode testNode) {
 		return testNode instanceof IQTESTCourseNode
-					? courseAssessmentService.getAssessmentConfig(courseNode).getMaxScore()
+					? courseAssessmentService.getAssessmentConfig(resourceResult.getCourseEntry(), courseNode).getMaxScore()
 					: null;
 	}
 	
@@ -181,7 +181,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 					cutValue = Float.valueOf(minPassedScore.floatValue());
 				}
 			} else {
-				cutValue = courseAssessmentService.getAssessmentConfig(courseNode).getCutValue();
+				cutValue = courseAssessmentService.getAssessmentConfig(resourceResult.getCourseEntry(), courseNode).getCutValue();
 			}
 		}
 		return cutValue;

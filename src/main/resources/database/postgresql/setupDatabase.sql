@@ -1615,6 +1615,7 @@ create table o_gr_grade_system (
    lastmodified timestamp not null,
    g_identifier varchar(64) not null,
    g_predefined bool not null default false,
+   g_has_passed bool not null default false,
    g_type varchar(32) not null,
    g_enabled bool not null default true,
    g_resolution varchar(32),

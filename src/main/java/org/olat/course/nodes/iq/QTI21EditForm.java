@@ -73,6 +73,7 @@ import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
@@ -795,12 +796,16 @@ public class QTI21EditForm extends FormBasicController {
 			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
-					: translate("node.grade.scale.available");
+					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
 			boolean hasGrade = gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1);
 			gradeScaleEl.setVisible(hasGrade);
 			gradeScaleButtonsCont.setVisible(hasGrade);
-			passedGradeEl.setVisible(hasGrade);
+			
+			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
+			passedGradeEl.setVisible(hasGrade && minRange != null);
+			passedGradeEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
+			
 			passedTypeEl.setVisible(!hasGrade);
 		}
 	}
@@ -937,11 +942,8 @@ public class QTI21EditForm extends FormBasicController {
 			return;
 		}
 		
-		String gradeSystemKey = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
-		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
-
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				Float.valueOf(minScoreEl.getValue()), Float.valueOf(maxScoreEl.getValue()), defautGradesystemKey, true);
+				Float.valueOf(minScoreEl.getValue()), Float.valueOf(maxScoreEl.getValue()), true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

@@ -38,6 +38,7 @@ import org.olat.course.learningpath.obligation.OrganisationExceptionalObligation
 import org.olat.course.learningpath.obligation.TestingObligationContext;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -47,15 +48,17 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class ExceptionalObligationEvaluatorTest {
 	
+	private RepositoryEntryRef courseEntry = () -> Long.valueOf(1);
+	
 	@Test
 	public void filterShouldIgnoreRegularObligations() {
 		Identity identity = new TransientIdentity();
-		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, null, null);
+		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, courseEntry, null, null);
 		TestingObligationContext obligationContext = new TestingObligationContext();
 		sut.setObligationContext(obligationContext);
 		LearningPathService learningPathService = mock(LearningPathService.class);
 		ExceptionalObligationHandler trueHandler = mock(ExceptionalObligationHandler.class);
-		when(trueHandler.matchesIdentity(any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
+		when(trueHandler.matchesIdentity(any(), any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
 		when(learningPathService.getExceptionalObligationHandler("trueType")).thenReturn(trueHandler);
 		sut.setLearningPathService(learningPathService);
 		
@@ -82,14 +85,14 @@ public class ExceptionalObligationEvaluatorTest {
 	@Test
 	public void filterShouldTestByHandler() {
 		Identity identity = new TransientIdentity();
-		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, null, null);
+		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, courseEntry, null, null);
 		TestingObligationContext obligationContext = new TestingObligationContext();
 		sut.setObligationContext(obligationContext);
 		LearningPathService learningPathService = mock(LearningPathService.class);
 		ExceptionalObligationHandler trueHandler = mock(ExceptionalObligationHandler.class);
 		ExceptionalObligationHandler falseHandler = mock(ExceptionalObligationHandler.class);
-		when(trueHandler.matchesIdentity(any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
-		when(falseHandler.matchesIdentity(any(), any(), any(), any(), any())).thenReturn(Boolean.FALSE);
+		when(trueHandler.matchesIdentity(any(), any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
+		when(falseHandler.matchesIdentity(any(), any(), any(), any(), any(), any())).thenReturn(Boolean.FALSE);
 		when(learningPathService.getExceptionalObligationHandler("trueType")).thenReturn(trueHandler);
 		when(learningPathService.getExceptionalObligationHandler("falseType")).thenReturn(falseHandler);
 		sut.setLearningPathService(learningPathService);
@@ -114,12 +117,12 @@ public class ExceptionalObligationEvaluatorTest {
 	@Test
 	public void filterShouldIgnoreIfNoHandler() {
 		Identity identity = new TransientIdentity();
-		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, null, null);
+		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, courseEntry, null, null);
 		TestingObligationContext obligationContext = new TestingObligationContext();
 		sut.setObligationContext(obligationContext);
 		LearningPathService learningPathService = mock(LearningPathService.class);
 		ExceptionalObligationHandler trueHandler = mock(ExceptionalObligationHandler.class);
-		when(trueHandler.matchesIdentity(any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
+		when(trueHandler.matchesIdentity(any(), any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
 		when(learningPathService.getExceptionalObligationHandler("trueType")).thenReturn(trueHandler);
 		sut.setLearningPathService(learningPathService);
 		

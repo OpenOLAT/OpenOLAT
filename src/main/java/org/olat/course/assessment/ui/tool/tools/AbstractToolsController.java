@@ -57,6 +57,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -104,6 +105,7 @@ public abstract class AbstractToolsController extends BasicController {
 			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		String velocityRoot = Util.getPackageVelocityRoot(AbstractToolsController.class);
 		String page = velocityRoot + "/tools.html";
@@ -118,7 +120,7 @@ public abstract class AbstractToolsController extends BasicController {
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
 		scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 	}
 	
 	public boolean isCourseReadonly() {
@@ -169,7 +171,12 @@ public abstract class AbstractToolsController extends BasicController {
 				&& scoreEval.getScore() != null
 				&& !StringHelper.containsNonWhitespace(scoreEval.getGrade());
 		if (canApplyGrade) {
-			applyGradeLink = addLink("tool.grade.apply", "tool.grade.apply", "o_icon o_icon-fw o_icon_grade");
+			applyGradeLink = LinkFactory.createLink("tool.grade.apply", "tool.grade.apply", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+			applyGradeLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_grade");
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
+			applyGradeLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+			mainVC.put("tool.grade.apply", applyGradeLink);
+			links.add("tool.grade.apply");
 		}
 	}
 	
@@ -196,7 +203,7 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void initResetAttempts() {
-		if(courseAssessmentService.getAssessmentConfig(courseNode).hasAttempts()) {
+		if(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode).hasAttempts()) {
 			resetAttemptsButton = addLink("tool.reset.attempts", "reset.attempts", "o_icon o_icon-fw o_icon_reset");
 		}
 	}
@@ -324,21 +331,22 @@ public abstract class AbstractToolsController extends BasicController {
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 			String grade = gradeScoreRange.getGrade();
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeScoreRange.getGradeSystemIdent());
 			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
-					? Boolean.valueOf(gradeScoreRange.isPassed())
+					? gradeScoreRange.getPassed()
 					: null;
 			
 			String text = null;
 			if (passed != null) {
 				if (passed.booleanValue()) {
-					text = translate("grade.apply.text.passed", grade);
+					text = translate("grade.apply.text.passed", grade, gradeSystemLabel);
 				} else {
-					text = translate("grade.apply.text.failed", grade);
+					text = translate("grade.apply.text.failed", grade, gradeSystemLabel);
 				}
 			} else {
-				text = translate("grade.apply.text", grade);
+				text = translate("grade.apply.text", grade, gradeSystemLabel);
 			}
-			String title = translate("grade.apply");
+			String title = translate("grade.apply.label", gradeSystemLabel);
 			applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
 		}
 	}
@@ -352,7 +360,7 @@ public abstract class AbstractToolsController extends BasicController {
 			String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
-					? Boolean.valueOf(gradeScoreRange.isPassed())
+					? gradeScoreRange.getPassed()
 					: null;
 			
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,

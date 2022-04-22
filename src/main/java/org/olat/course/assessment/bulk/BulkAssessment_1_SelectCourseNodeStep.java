@@ -42,7 +42,7 @@ public class BulkAssessment_1_SelectCourseNodeStep extends BasicStep {
 		super(ureq);
 		this.courseEntry = courseEntry;
 		setI18nTitleAndDescr("choose.node.title", "choose.node.title");
-		setNextStep(new BulkAssessment_2_DatasStep(ureq, canEditUserVisibility));
+		setNextStep(new BulkAssessment_2_DatasStep(ureq, courseEntry, canEditUserVisibility));
 	}
 
 	@Override

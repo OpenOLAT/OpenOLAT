@@ -28,6 +28,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -37,13 +38,15 @@ import org.olat.course.reminder.CourseNodeReminderProvider;
  */
 public class GTAReminderProvider implements CourseNodeReminderProvider {
 	
+	private final RepositoryEntryRef courseEntry;
 	private final GTACourseNode gtaNode;
 	private AssessmentReminderProvider assessmentReminderProvider;
 	private List<String> mainTypes;
 	
-	public GTAReminderProvider(GTACourseNode gtaNode) {
+	public GTAReminderProvider(RepositoryEntryRef courseEntry, GTACourseNode gtaNode) {
+		this.courseEntry = courseEntry;
 		this.gtaNode = gtaNode;
-		this.assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(gtaNode.getModuleConfiguration()));
+		this.assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(courseEntry, gtaNode));
 	}
 
 	@Override
@@ -86,7 +89,7 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 	
 	@Override
 	public void refresh() {
-		assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(gtaNode.getModuleConfiguration()));
+		assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(courseEntry, gtaNode));
 		mainTypes = null;
 	}
 	

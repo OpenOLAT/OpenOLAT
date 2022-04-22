@@ -203,10 +203,20 @@ public class GradeServiceImpl implements GradeService {
 		List<GradeScale> gradeScales = gradeScaleDao.load(searchParams);
 		return !gradeScales.isEmpty()? gradeScales.get(0): null;
 	}
+	
+	@Override
+	public List<GradeScale> getGradeScales(GradeScaleSearchParams searchParams) {
+		return gradeScaleDao.load(searchParams);
+	}
 
 	@Override
 	public List<GradeScaleStats> getGradeScaleStats() {
 		return gradeScaleDao.loadStats(null);
+	}
+	
+	@Override
+	public boolean hasPassed(RepositoryEntryRef courseEntry, String subIdent) {
+		return gradeScaleDao.hasPassed(courseEntry, subIdent);
 	}
 
 	@Override
@@ -313,13 +323,14 @@ public class GradeServiceImpl implements GradeService {
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeSystem gradeSystem, List<Breakpoint> breakpoints,
 			BigDecimal minScore, BigDecimal maxScore, Locale locale) {
 		if (GradeSystemType.numeric == gradeSystem.getType()) {
+			BigDecimal cutValue = gradeSystem.hasPassed()? gradeSystem.getCutValue(): null;
 			return gradeCalculator.createNumericalRanges(gradeSystem.getIdentifier(),
 					new BigDecimal(gradeSystem.getLowestGrade().intValue()),
 					new BigDecimal(gradeSystem.getBestGrade().intValue()), gradeSystem.getResolution(),
-					gradeSystem.getRounding(), gradeSystem.getCutValue(), minScore, maxScore, breakpoints);
+					gradeSystem.getRounding(), cutValue, minScore, maxScore, breakpoints);
 		} else if (GradeSystemType.text == gradeSystem.getType()) {
 			Translator translator = Util.createPackageTranslator(GradeUIFactory.class, locale);
-			return gradeCalculator.getTextGradeScoreRanges(gradeSystem.getIdentifier(),
+			return gradeCalculator.getTextGradeScoreRanges(gradeSystem.getIdentifier(), gradeSystem.hasPassed(),
 					getPerformanceClasses(gradeSystem), breakpoints, minScore, maxScore, translator);
 		}
 		return Collections.emptyNavigableSet();
@@ -329,23 +340,31 @@ public class GradeServiceImpl implements GradeService {
 	public GradeScoreRange getGradeScoreRange(NavigableSet<GradeScoreRange> gradeScoreRanges, Float score) {
 		return gradeCalculator.getGrade(gradeScoreRanges, score);
 	}
+	
+	@Override
+	public GradeScoreRange getMinPassedGradeScoreRange(GradeScale gradeScale, Locale locale) {
+		if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+			Optional<GradeScoreRange> minPassedRange = getGradeScoreRanges(gradeScale, locale).stream()
+					.sorted(Collections.reverseOrder())
+					.filter(range -> range.getPassed() != null && range.getPassed().booleanValue())
+					.findFirst();
+			if (minPassedRange.isPresent()) {
+				return minPassedRange.get();
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public BigDecimal getMinPassedScore(GradeScale gradeScale) {
 		BigDecimal minPassedScore = null;
-		if (gradeScale != null) {
-			// Translated grade is not used. We can use any locale.
-			Optional<GradeScoreRange> minPassedRange = getGradeScoreRanges(gradeScale, Locale.ENGLISH).stream()
-					.sorted(Collections.reverseOrder())
-					.filter(GradeScoreRange::isPassed)
-					.findFirst();
-			if (minPassedRange.isPresent()) {
-				GradeScoreRange range = minPassedRange.get();
-				if (range.isLowerBoundInclusive()) {
-					minPassedScore = range.getLowerBound();
-				} else {
-					minPassedScore = range.getLowerBound().add(new BigDecimal("0.001"));
-				}
+		// Translated grade is not used. We can use any locale.
+		GradeScoreRange range = getMinPassedGradeScoreRange(gradeScale, Locale.ENGLISH);
+		if (range != null) {
+			if (range.isLowerBoundInclusive()) {
+				minPassedScore = range.getLowerBound();
+			} else {
+				minPassedScore = range.getLowerBound().add(new BigDecimal("0.001"));
 			}
 		}
 		return minPassedScore;

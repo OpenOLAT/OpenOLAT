@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -45,7 +46,6 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,7 +58,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION };
 
-	private MSCourseNode msNode;
+	private final MSCourseNode msNode;
+	private final ICourse course;
 	private VelocityContainer configurationVC;
 	private MSConfigController configController;
 	private HighScoreEditController highScoreNodeConfigController;
@@ -78,10 +79,11 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @param msNode The manual scoring course node
 	 * @param course
 	 */
-	public MSCourseNodeEditController(UserRequest ureq, WindowControl wControl, MSCourseNode msNode, ICourse course, UserCourseEnvironment euce) {
+	public MSCourseNodeEditController(UserRequest ureq, WindowControl wControl, MSCourseNode msNode, ICourse course) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(HighScoreEditController.class, getLocale(), getTranslator()));
 		this.msNode = msNode;
+		this.course = course;
 		
 		configurationVC = createVelocityContainer("edit");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", configurationVC, this);
@@ -128,7 +130,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(msNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), msNode);
 		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()),
 				Mode.none != assessmentConfig.getScoreMode());
 	}

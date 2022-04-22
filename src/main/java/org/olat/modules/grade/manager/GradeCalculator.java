@@ -94,7 +94,7 @@ public class GradeCalculator {
 		GradeScoreRange mergedRange = new GradeScoreRangeImpl(upperHalfRange.getBestToLowest(),
 				upperHalfRange.getGrade(), upperHalfRange.getGradeSystemIdent(), upperHalfRange.getPerformanceClassIdent(),
 				upperHalfRange.getLowerBound(), upperHalfRange.getUpperBound(), upperHalfRange.isUpperBoundInclusive(),
-				lowerHalfRange.getLowerBound(), lowerHalfRange.isLowerBoundInclusive(), upperHalfRange.isPassed());
+				lowerHalfRange.getLowerBound(), lowerHalfRange.isLowerBoundInclusive(), upperHalfRange.getPassed());
 		ranges.addAll(nextRanges);
 		// Add is optional, so first remove the half range one.
 		ranges.remove(mergedRange);
@@ -149,12 +149,14 @@ public class GradeCalculator {
 			}
 			lowerBound = lowerBound.stripTrailingZeros();
 			
-			boolean passed = false;
+			Boolean passed = null;
 			if (cutValue != null) {
 				if (grade.compareTo(cutValue) == 0 
 						|| (lowestHigherBest && grade.compareTo(cutValue) < 0) 
 						|| (!lowestHigherBest && grade.compareTo(cutValue) > 0)) {
-					passed = true;
+					passed = Boolean.TRUE;
+				} else {
+					passed = Boolean.FALSE;
 				}
 			}
 			
@@ -193,8 +195,8 @@ public class GradeCalculator {
 	}
 
 	public NavigableSet<GradeScoreRange> getTextGradeScoreRanges(String gradeSystemIdent,
-			List<PerformanceClass> performanceClasses, List<Breakpoint> breakpoints, BigDecimal minScore,
-			BigDecimal maxScore, Translator translator) {
+			boolean hasPassed, List<PerformanceClass> performanceClasses, List<Breakpoint> breakpoints,
+			BigDecimal minScore, BigDecimal maxScore, Translator translator) {
 		Collections.sort(performanceClasses);
 		Map<Integer, BigDecimal> positionToLowerBound = breakpoints.stream()
 				.collect(Collectors.toMap(Breakpoint::getBestToLowest, Breakpoint::getScore));
@@ -219,10 +221,11 @@ public class GradeCalculator {
 			}
 			
 			BigDecimal score = upperBound.add(lowerBound).divide(TWO);
+			Boolean passed = hasPassed? Boolean.valueOf(performanceClass.isPassed()): null;
 			
 			GradeScoreRange range = new GradeScoreRangeImpl(performanceClass.getBestToLowest(), grade,
 					gradeSystemIdent, performanceClass.getIdentifier(), score, upperBound,
-					upperBoundInclusive, lowerBound, lowerBoundInclusive, performanceClass.isPassed());
+					upperBoundInclusive, lowerBound, lowerBoundInclusive, passed);
 			ranges.add(range);
 			
 			upperBound = lowerBound;

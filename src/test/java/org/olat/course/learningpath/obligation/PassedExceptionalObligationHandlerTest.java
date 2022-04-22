@@ -39,6 +39,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -50,6 +51,8 @@ public class PassedExceptionalObligationHandlerTest {
 	
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
+	@Mock
+	private RepositoryEntryRef courseEntry;
 	
 	@InjectMocks
 	private PassedExceptionalObligationHandler sut;
@@ -66,14 +69,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isTrue();
 	}
@@ -85,14 +88,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.none);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -104,14 +107,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.FALSE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -123,14 +126,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.excluded);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -142,14 +145,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -161,14 +164,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(null, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -180,14 +183,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedFailed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isTrue();
 	}
@@ -199,14 +202,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.none);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedPassed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -218,14 +221,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.FALSE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedFailed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -237,14 +240,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.excluded);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedFailed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -256,14 +259,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedFailed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -275,14 +278,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(null, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.gradedFailed.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -294,14 +297,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(null, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.notGraded.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isTrue();
 	}
@@ -313,14 +316,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.none);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(null, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.notGraded.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -332,14 +335,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(null, Boolean.FALSE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.notGraded.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isTrue();
 	}
@@ -351,14 +354,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(null, Boolean.TRUE, AssessmentObligation.excluded);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.notGraded.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -370,14 +373,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.notGraded.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}
@@ -389,14 +392,14 @@ public class PassedExceptionalObligationHandlerTest {
 		when(runStructure.getNode(any())).thenReturn(courseNode);
 		AssessmentConfig assessmentConfig = mock(AssessmentConfig.class);
 		when(assessmentConfig.getPassedMode()).thenReturn(Mode.setByNode);
-		when(courseAssessmentService.getAssessmentConfig(courseNode)).thenReturn(assessmentConfig);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode)).thenReturn(assessmentConfig);
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		AssessmentEvaluation evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(courseNode, evaluation);
 		PassedExceptionalObligation exceptionalObligation = new PassedExceptionalObligation();
 		exceptionalObligation.setStatus(Status.notGraded.name());
 		
-		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, runStructure, scoreAccounting);
+		boolean matchesIdentity = sut.matchesIdentity(exceptionalObligation, null, null, courseEntry, runStructure, scoreAccounting);
 		
 		assertThat(matchesIdentity).isFalse();
 	}

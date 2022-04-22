@@ -257,7 +257,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		if(nodes.size() > 1) {
 			start = new BulkAssessment_1_SelectCourseNodeStep(ureq, courseEntry, canEditUserVisibility);
 		} else if(nodes.size() == 1){
-			start = new BulkAssessment_2_DatasStep(ureq, nodes.get(0), canEditUserVisibility);
+			start = new BulkAssessment_2_DatasStep(ureq, courseEntry, nodes.get(0), canEditUserVisibility);
 		} else {
 			showWarning("bulk.action.no.coursenodes");
 			return;
@@ -296,7 +296,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			BulkAssessmentTask runnable = taskManager.getPersistedRunnableTask(editableTask, BulkAssessmentTask.class);
 			BulkAssessmentDatas datas = runnable.getDatas();
 			
-			Step start = new BulkAssessment_2_DatasStep(ureq, courseNode, datas, editableTask, canEditUserVisibility);
+			Step start = new BulkAssessment_2_DatasStep(ureq, courseEntry, courseNode, datas, editableTask, canEditUserVisibility);
 			StepRunnerCallback finish = new StepRunnerCallback() {
 				@Override
 				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -332,7 +332,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			collectBulkCourseNode((CourseNode)courseNode.getChildAt(i), nodes);
 		}
 		
-		if(BulkAssessmentTask.isBulkAssessable(courseNode)) {
+		if(BulkAssessmentTask.isBulkAssessable(courseEntry, courseNode)) {
 			nodes.add(courseNode);
 		}
 	}

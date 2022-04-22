@@ -144,7 +144,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean hasIndividualAsssessmentDocuments() {
-		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		return false;
 	}
 
 	@Override

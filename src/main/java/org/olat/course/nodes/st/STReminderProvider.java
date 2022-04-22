@@ -38,6 +38,7 @@ import org.olat.modules.reminder.rule.RepositoryEntryLifecycleAfterValidFromRule
 import org.olat.modules.reminder.rule.RepositoryEntryLifecycleAfterValidToRuleSPI;
 import org.olat.modules.reminder.rule.RepositoryEntryRoleRuleSPI;
 import org.olat.modules.reminder.rule.UserPropertyRuleSPI;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -51,10 +52,10 @@ public class STReminderProvider implements CourseNodeReminderProvider {
 	private final AssessmentReminderProvider assessmentReminderProvider;
 	private List<String> mainTypes;
 	
-	public STReminderProvider(STCourseNode courseNode) {
+	public STReminderProvider(RepositoryEntryRef courseEntry, STCourseNode courseNode) {
 		this.nodeIdent = courseNode.getIdent();
 		this.assessmentReminderProvider = new AssessmentReminderProvider(nodeIdent,
-				new STAssessmentConfig(courseNode, true, courseNode.getModuleConfiguration()));
+				new STAssessmentConfig(courseEntry, courseNode, true, courseNode.getModuleConfiguration()));
 	}
 
 	@Override

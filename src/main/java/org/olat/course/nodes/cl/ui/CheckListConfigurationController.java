@@ -55,6 +55,7 @@ import org.olat.course.nodes.cl.ui.wizard.GeneratorData;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
@@ -77,6 +78,7 @@ public class CheckListConfigurationController extends FormBasicController {
 	private TextElement minPointsEl, maxPointsEl, cutValueEl, titlePrefixEl;
 	private RichTextElement tipUserEl, tipCoachEl;
 	private DateChooser dueDateChooserEl;
+	private SpacerElement passedSpacer;
 	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private SpacerElement ignoreInCourseAssessmentSpacer;
 	private SpacerElement gradeSpacer;
@@ -85,6 +87,7 @@ public class CheckListConfigurationController extends FormBasicController {
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
+	private StaticTextElement gradePassedEl;
 	
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
@@ -215,9 +218,11 @@ public class CheckListConfigurationController extends FormBasicController {
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
 			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "config.passed", "", formLayout);
 		}
 		
-		uifactory.addSpacerElement("spacer-points", formLayout, false);
+		passedSpacer = uifactory.addSpacerElement("spacer-points", formLayout, false);
 		
 		//passed
 		Float cutVal = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
@@ -561,15 +566,21 @@ public class CheckListConfigurationController extends FormBasicController {
 			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
-					: translate("node.grade.scale.available");
+					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
 			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			
+			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
+			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1) && minRange != null);
+			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 	}
 
 	private void updatePassedAndOutputVisibilty() {
 		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
+		passedSpacer.setVisible(gradeDisable);
+		passedEl.setVisible(gradeDisable);
 		if(passedEl.isSelected(0) && gradeDisable) {
 			outputEl.setVisible(true);
 			String selectKey = outputEl.getSelectedKey();
@@ -608,11 +619,8 @@ public class CheckListConfigurationController extends FormBasicController {
 			return;
 		}
 		
-		String gradeSystemKey = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
-		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
-
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minScore, maxScore, defautGradesystemKey, true);
+				minScore, maxScore, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

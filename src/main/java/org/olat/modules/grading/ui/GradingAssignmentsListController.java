@@ -77,6 +77,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -635,7 +636,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
 			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(testSessionsToComplete.getIdentity(), courseEnv);
@@ -657,7 +658,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 						grade = gradeScoreRange.getGrade();
 						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+						passed = gradeScoreRange.getPassed();
 					}
 				} else if (cutValue != null) {
 					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;

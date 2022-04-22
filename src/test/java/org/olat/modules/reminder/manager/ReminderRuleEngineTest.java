@@ -1080,7 +1080,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	private String assessmentData(Identity tutor, Identity student, ScoreEvaluation scoreEval, RepositoryEntry re) {
 		//create user course infos
 		ICourse course = CourseFactory.loadCourse(re);
-		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), null);
+		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(re, course.getEditorTreeModel(), null);
 		CourseNode testNode = null; 
 		for(CourseNode currentNode: assessableNodeList) {	
 			if (currentNode.getType().equalsIgnoreCase("iqtest")) {
@@ -1089,7 +1089,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 			}
 		}
 		Assert.assertNotNull(testNode);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(testNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(re, testNode);
 		Assert.assertTrue(Mode.none != assessmentConfig.getScoreMode());
 		
 		IdentityEnvironment ienv = new IdentityEnvironment(); 

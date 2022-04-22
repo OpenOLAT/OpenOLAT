@@ -19,12 +19,13 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,11 +35,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
@@ -52,6 +55,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentViewController extends BasicController {
+public class AssessmentViewController extends BasicController implements AssessmentDocumentsSupplier {
 
 	private final VelocityContainer mainVC;
 	private Link reopenLink;
@@ -81,6 +85,8 @@ public class AssessmentViewController extends BasicController {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 
 	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -93,7 +99,7 @@ public class AssessmentViewController extends BasicController {
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		
 		mainVC = createVelocityContainer("assessment_view");
@@ -142,6 +148,12 @@ public class AssessmentViewController extends BasicController {
 		}
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
+		if (hasGrade) {
+			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEntry.getGradeSystemIdent())
+					? assessmentEntry.getGradeSystemIdent()
+					: gradeService.getGradeSystem(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent()).toString();
+			mainVC.contextPut("gradeLabel", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident));
+		}
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		mainVC.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
 		if (hasPassed && !hasGrade) {
@@ -187,17 +199,26 @@ public class AssessmentViewController extends BasicController {
 			String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 			mainVC.contextPut("docsMapperUri", mapperUri);
 			mainVC.contextPut("docs", docs);
-			DisplayOrDownloadComponent download = new DisplayOrDownloadComponent("", null);
-			mainVC.put("download", download);
 		}
 	}
 
 	private void putParticipantViewToVC(UserRequest ureq) {
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig);
+				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig, this,
+				gradeSystem(coachCourseEnv, courseNode), AssessmentEditController.PANEL_INFO);
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
+	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
+	}
+
+	@Override
+	public boolean isDownloadEnabled() {
+		return false;
 	}
 
 	@Override

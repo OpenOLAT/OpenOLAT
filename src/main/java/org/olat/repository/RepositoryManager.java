@@ -50,6 +50,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -1239,13 +1240,14 @@ public class RepositoryManager {
 	 * @param displayName
 	 * @param author
 	 * @param desc
+	 * @param idAndRefs TODO
 	 * @param checkCanReference
 	 * @param checkCanCopy
 	 * @return
 	 */
 	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, Roles roles, boolean organisationWildCard,
-			List<String> resourceTypes, String displayName, String author, String desc, IdentityRef asParticipant,
-			boolean checkCanReference, boolean checkCanCopy) {
+			List<String> resourceTypes, String displayName, String author, String desc, String idAndRefs,
+			IdentityRef asParticipant, boolean checkCanReference, boolean checkCanCopy) {
 		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isAdministrator() && !roles.isQualityManager()) {
 			return Collections.emptyList();
 		}
@@ -1326,6 +1328,26 @@ public class RepositoryManager {
 			desc = '%' + desc + '%';
 			sb.append(" and v.description like :desc");
 		}
+		// restrict on id and refs
+		Long quickId = null;
+		String quickRefs = null;
+		String quickText = null;
+		if(StringHelper.containsNonWhitespace(idAndRefs)) {
+			quickRefs = idAndRefs;
+			quickText = PersistenceHelper.makeFuzzyQueryString(idAndRefs);
+			sb.append(" and (v.externalId=:quickRef or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "quickText", dbInstance.getDbVendor());
+			sb.append(" or v.softkey=:quickRef ");
+			if(StringHelper.isLong(idAndRefs)) {
+				try {
+					quickId = Long.parseLong(idAndRefs);
+					sb.append(" or v.key=:quickVKey or res.resId=:quickVKey");
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			sb.append(")");	
+		}
 
 		// create query an set query data
 		TypedQuery<RepositoryEntry> dbquery = dbInstance.getCurrentEntityManager()
@@ -1339,6 +1361,15 @@ public class RepositoryManager {
 		}
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbquery.setParameter("desc", desc);
+		}
+		if(quickId != null) {
+			dbquery.setParameter("quickVKey", quickId);
+		}
+		if(quickRefs != null) {
+			dbquery.setParameter("quickRef", quickRefs);
+		}
+		if(quickText != null) {
+			dbquery.setParameter("quickText", quickText);
 		}
 		if (resourceTypes != null) {
 			dbquery.setParameter("resourcetypes", resourceTypes);

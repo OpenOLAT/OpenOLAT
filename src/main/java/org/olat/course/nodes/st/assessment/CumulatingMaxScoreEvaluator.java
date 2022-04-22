@@ -32,6 +32,7 @@ import org.olat.course.run.scoring.MaxScoreEvaluator;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -57,14 +58,14 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 	}
 	
 	@Override
-	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting) {
-		MaxScore score = getMaxScore(courseNode, scoreAccounting, courseAssessmentService());
+	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
+		MaxScore score = getMaxScore(courseNode, scoreAccounting, courseEntry, courseAssessmentService());
 		// see MaxScoreCumulator
 		return average? score.getAverage(): score.getSum();
 	}
 	
-	MaxScore getMaxScore(CourseNode courseNode, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
-		ScoreVisitor visitor = new ScoreVisitor(courseNode, scoreAccounting, courseAssessmentService);
+	MaxScore getMaxScore(CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, CourseAssessmentService courseAssessmentService) {
+		ScoreVisitor visitor = new ScoreVisitor(courseNode, scoreAccounting, courseEntry, courseAssessmentService);
 		TreeVisitor treeVisitor = new TreeVisitor(visitor, courseNode, true);
 		treeVisitor.visitAll();
 		return visitor;
@@ -82,15 +83,17 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 		
 		private final CourseNode root;
 		private final ScoreAccounting scoreAccounting;
+		private final RepositoryEntryRef courseEntry;
 		private int count;
 		private float sum;
 		private float max = 0;
 		
 		private final CourseAssessmentService courseAssessmentService;
 		
-		private ScoreVisitor(CourseNode root, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
+		private ScoreVisitor(CourseNode root, ScoreAccounting scoreAccounting,  RepositoryEntryRef courseEntry, CourseAssessmentService courseAssessmentService) {
 			this.root = root;
 			this.scoreAccounting = scoreAccounting;
+			this.courseEntry = courseEntry;
 			this.courseAssessmentService = courseAssessmentService;
 		}
 		
@@ -110,7 +113,7 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 			
 			if (node instanceof CourseNode) {
 				CourseNode courseNode = (CourseNode)node;
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
 					if (isNotExcluded(assessmentEvaluation)) {

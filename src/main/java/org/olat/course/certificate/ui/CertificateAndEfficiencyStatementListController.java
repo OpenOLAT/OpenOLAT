@@ -97,7 +97,6 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
-import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
@@ -175,8 +174,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private BaseSecurityManager baseSecurityManager;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private GradeModule gradeModule;
 	
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
@@ -329,9 +326,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
-		if (gradeModule.isEnabled()) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.grade));
-		}
+		// This column is hidden as long as no grade can be assigned in the course.
+//		if (gradeModule.isEnabled()) {
+//			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.grade));
+//		}
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));

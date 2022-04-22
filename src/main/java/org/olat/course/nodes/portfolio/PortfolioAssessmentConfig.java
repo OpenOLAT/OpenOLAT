@@ -19,8 +19,11 @@
  */
 package org.olat.course.nodes.portfolio;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.course.nodes.CourseNode;
+import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -29,9 +32,25 @@ import org.olat.modules.ModuleConfiguration;
  *
  */
 public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
+	
+	private final RepositoryEntryRef courseEntry;
+	private final String nodeIdent;
 
-	public PortfolioAssessmentConfig(ModuleConfiguration config) {
-		super(config);
+	public PortfolioAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		super(courseNode.getModuleConfiguration());
+		this.courseEntry = courseEntry;
+		this.nodeIdent = courseNode.getIdent();
+	}
+	
+	@Override
+	public Mode getPassedMode() {
+		if (hasGrade() && Mode.none != getScoreMode()) {
+			if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, nodeIdent)) {
+				return Mode.setByNode;
+			}
+			return Mode.none;
+		}
+		return super.getPassedMode();
 	}
 
 	@Override

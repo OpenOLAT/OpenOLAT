@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,11 +56,14 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -69,7 +74,6 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
-import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -84,7 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2 {
+public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2, AssessmentDocumentsSupplier {
 	
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
@@ -100,12 +104,13 @@ public class CheckListRunController extends FormBasicController implements Contr
 	private final CheckListCourseNode courseNode;
 	private final OLATResourceable courseOres;
 	private final UserCourseEnvironment userCourseEnv;
+	private final PanelInfo panelInfo;
 	
 	@Autowired
 	private CheckboxManager checkboxManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+
 	
 	public CheckListRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean preview) {
@@ -116,7 +121,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.userCourseEnv = userCourseEnv;
-		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
+		this.panelInfo = new PanelInfo(CheckListRunController.class,
+				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 		
 		config = courseNode.getModuleConfiguration();
 		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
@@ -134,6 +141,16 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 
 		initForm(ureq);
+	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	}
+
+	@Override
+	public boolean isDownloadEnabled() {
+		return false;
 	}
 
 	@Override
@@ -190,28 +207,10 @@ public class CheckListRunController extends FormBasicController implements Contr
 				: courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 		
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
-		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+				assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		layoutCont.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
-		
-		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
-		if(resultsVisible) {
-			if(assessmentConfig.hasComment()) {
-				StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEval.getComment());
-				layoutCont.contextPut("comment", StringHelper.xssScan(comment));
-				layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
-			}
-			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-				List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
-				String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-				layoutCont.contextPut("docsMapperUri", mapperUri);
-				layoutCont.contextPut("docs", docs);
-				layoutCont.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
-			}
-		} else {
-			layoutCont.contextPut("comment", null);
-			layoutCont.contextPut("docs", null);
-		}
 		
 		layoutCont.contextPut("withScore", Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode()));
 		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
@@ -329,7 +328,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		exposeUserDataToVC(ureq, flc);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		return Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode();
 	}
 	
@@ -345,22 +343,22 @@ public class CheckListRunController extends FormBasicController implements Contr
 	
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(CheckListRunController.class, getOpenPanelId(panelId));
+		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.getAttributedClass(), getOpenPanelId(panelId));
 		return showConfig == null ? def : showConfig.booleanValue();
 	}
 	
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.commit(CheckListRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
+			guiPrefs.commit(panelInfo.getAttributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
 		flc.getFormItemComponent().getContext().put("in-".concat(panelId), Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {
-		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
+		return panelId + panelInfo.getIdSuffix();
 	}
-	
+
 	public static class CheckboxWrapper {
 		
 		private final Checkbox checkbox;

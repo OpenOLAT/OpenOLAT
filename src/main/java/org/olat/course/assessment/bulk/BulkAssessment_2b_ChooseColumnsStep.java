@@ -29,6 +29,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -38,6 +40,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public class BulkAssessment_2b_ChooseColumnsStep extends BasicStep {
 	
+	private final RepositoryEntryRef courseEntry;
 	private final BulkAssessmentColumnSettings savedColumnsSettings;
 	
 	/**
@@ -46,21 +49,23 @@ public class BulkAssessment_2b_ChooseColumnsStep extends BasicStep {
 	 * @param courseNode
 	 * @param datas
 	 */
-	public BulkAssessment_2b_ChooseColumnsStep(UserRequest ureq) {
-		this(ureq, null);
+	public BulkAssessment_2b_ChooseColumnsStep(UserRequest ureq, RepositoryEntry courseEntry) {
+		this(ureq, courseEntry, null);
 	}
 
 	/**
 	 * This constructor start the edit the bulk update.
 	 * @param ureq
+	 * @param courseEntry 
 	 * @param courseNode
 	 * @param datas
 	 */
-	public BulkAssessment_2b_ChooseColumnsStep(UserRequest ureq, BulkAssessmentColumnSettings savedColumnsSettings) {
+	public BulkAssessment_2b_ChooseColumnsStep(UserRequest ureq, RepositoryEntry courseEntry, BulkAssessmentColumnSettings savedColumnsSettings) {
 		super(ureq);
+		this.courseEntry = courseEntry;
 		this.savedColumnsSettings = savedColumnsSettings;
 		setI18nTitleAndDescr("chooseColumns.title", "chooseColumns.title");
-		setNextStep(new BulkAssessment_3_ValidationStep(ureq));
+		setNextStep(new BulkAssessment_3_ValidationStep(ureq, courseEntry));
 	}
 
 	@Override
@@ -72,10 +77,10 @@ public class BulkAssessment_2b_ChooseColumnsStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
 		// Skip this step if it has only return files
 		CourseNode courseNode = (CourseNode)context.get("courseNode");
-		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
 		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());
 		return onlyReturnFiles
 				? new ChooseColumnsStepSkipForm(ureq, wControl, context, form)
-				: new ChooseColumnsStepForm(ureq, wControl, savedColumnsSettings, context, form);
+				: new ChooseColumnsStepForm(ureq, wControl, savedColumnsSettings, context, form, courseEntry);
 	}
 }

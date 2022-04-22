@@ -72,6 +72,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -109,6 +110,7 @@ public class DropboxScoringViewController extends BasicController {
 	private IFrameDisplayController iFrameCtr;
 	private DialogBoxController dialogBoxController;
 	private boolean hasNotification = false;
+	private final AssessmentConfig assessmentConfig;
 	
 	@Autowired
 	protected UserManager userManager;
@@ -116,6 +118,7 @@ public class DropboxScoringViewController extends BasicController {
 	private QuotaManager quotaManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+
 	
 	/**
 	 * Scoring view of the dropbox.
@@ -142,6 +145,7 @@ public class DropboxScoringViewController extends BasicController {
 		
 		this.node = node;
 		this.userCourseEnv = userCourseEnv;
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), node);
 		if (doInit) {
 			init(ureq);
 		}
@@ -203,7 +207,6 @@ public class DropboxScoringViewController extends BasicController {
 		// insert Status Pull-Down Menu depending on user role == author
 		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		boolean isTutor  = userCourseEnv.isCoach();
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
 		if (assessmentConfig.hasStatus() && (isAuthor || isTutor)) {
 			myContent.contextPut("hasStatusPullDown", Boolean.TRUE);
 			statusForm = new StatusForm(ureq, getWindowControl(), userCourseEnv.isCourseReadOnly());
@@ -293,7 +296,7 @@ public class DropboxScoringViewController extends BasicController {
 					Identity coach = ureq.getIdentity();
 					Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
 					
-					if(courseAssessmentService.getAssessmentConfig(node).isAssessable()) {
+					if(assessmentConfig.isAssessable()) {
 						AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 						if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 							eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
@@ -328,7 +331,7 @@ public class DropboxScoringViewController extends BasicController {
 					}
 				}
 			} else if(FolderCommand.FOLDERCOMMAND_FINISHED == event) {
-				if(courseAssessmentService.getAssessmentConfig(node).isAssessable()) {
+				if(assessmentConfig.isAssessable()) {
 					AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 					if (eval == null) {
 						eval = AssessmentEvaluation.EMPTY_EVAL;

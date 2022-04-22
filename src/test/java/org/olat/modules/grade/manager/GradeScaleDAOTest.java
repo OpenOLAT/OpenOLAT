@@ -191,5 +191,35 @@ public class GradeScaleDAOTest extends OlatTestCase {
 		assertThat(sut.loadStats(gradeSystem1).get(0).getCount()).isEqualTo(3);
 	}
 
+	@Test
+	public void shouldCheckIfHasPassed() {
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		GradeSystem gradeSystemHasNotPassed = gradeSystemDAO.create(random(), GradeSystemType.numeric);
+		gradeSystemHasNotPassed.setPassed(false);
+		gradeSystemHasNotPassed = gradeSystemDAO.save(gradeSystemHasNotPassed);
+		GradeSystem gradeSystemHasPassed = gradeSystemDAO.create(random(), GradeSystemType.numeric);
+		gradeSystemHasPassed.setPassed(true);
+		gradeSystemHasPassed = gradeSystemDAO.save(gradeSystemHasPassed);
+		dbInstance.commitAndCloseSession();
+		
+		// No grade scale
+		assertThat(sut.hasPassed(repositoryEntry, random())).isFalse();
+		
+		// Grade system has no passed
+		GradeScale gradeScale = sut.create(repositoryEntry, random());
+		gradeScale.setGradeSystem(gradeSystemHasNotPassed);
+		sut.save(gradeScale);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.hasPassed(repositoryEntry, gradeScale.getSubIdent())).isFalse();
+		
+		// Grade system has passed
+		gradeScale.setGradeSystem(gradeSystemHasPassed);
+		sut.save(gradeScale);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.hasPassed(repositoryEntry, gradeScale.getSubIdent())).isTrue();
+	}
 
 }

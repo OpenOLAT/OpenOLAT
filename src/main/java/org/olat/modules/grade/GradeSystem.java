@@ -40,6 +40,10 @@ public interface GradeSystem extends GradeSystemRef {
 	public boolean isEnabled();
 
 	public void setEnabled(boolean enabled);
+	
+	public boolean hasPassed();
+	
+	public void setPassed(boolean passed);
 
 	public NumericResolution getResolution();
 

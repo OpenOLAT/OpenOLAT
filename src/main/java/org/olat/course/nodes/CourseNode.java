@@ -65,6 +65,7 @@ import org.olat.course.style.ImageSource;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -444,12 +445,12 @@ public interface CourseNode extends INode, ShortName {
 	 * The rule provider controls the reminder tab in the course editor.
 	 * If a course node implements this methods, the Event NodeEditController.REMINDER_VISIBILITY_EVENT
 	 * should probably be fired when the configurations have been changed.
-	 * 
+	 * @param courseEntry 
 	 * @param rootNode
-	 *
+	 * 
 	 * @return
 	 */
-	public default CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
+	public default CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		return null;
 	}
 	

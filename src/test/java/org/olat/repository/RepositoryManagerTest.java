@@ -740,7 +740,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		List<String> resourceTypes = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
 		List<RepositoryEntry> entries = repositoryManager
-				.queryResourcesLimitType(id, Roles.authorRoles(), false, resourceTypes, "re-member", "me", "no", id, true, true);
+				.queryResourcesLimitType(id, Roles.authorRoles(), false, resourceTypes, "re-member", "me", "no", "123", id, true, true);
 		Assert.assertNotNull(entries);
 	}
 	
@@ -788,7 +788,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		// finally the search query
 		long startSearchReferencable = System.currentTimeMillis();
 		List<RepositoryEntry> results = repositoryManager.queryResourcesLimitType(id1, id1Roles, false, typelist,
-				null, null, null, null, true, false);
+				null, null, null, null, null, true, false);
 		long endSearchReferencable = System.currentTimeMillis();
 		log.info("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
 

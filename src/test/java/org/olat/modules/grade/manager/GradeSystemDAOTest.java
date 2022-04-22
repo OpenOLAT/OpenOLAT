@@ -65,6 +65,7 @@ public class GradeSystemDAOTest extends OlatTestCase {
 		softly.assertThat(((GradeSystemImpl)gradeSystem).getLastModified()).isNotNull();
 		softly.assertThat(gradeSystem.getIdentifier()).isEqualTo(identifier);
 		softly.assertThat(gradeSystem.isPredefined()).isFalse();
+		softly.assertThat(gradeSystem.hasPassed()).isFalse();
 		softly.assertThat(gradeSystem.getType()).isEqualTo(type);
 		softly.assertThat(gradeSystem.isEnabled()).isTrue();
 		softly.assertThat(gradeSystem.getResolution()).isNull();
@@ -81,6 +82,7 @@ public class GradeSystemDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		gradeSystem.setEnabled(false);
+		gradeSystem.setPassed(true);
 		NumericResolution resolution = NumericResolution.tenth;
 		gradeSystem.setResolution(resolution);
 		Rounding rounding = Rounding.down;
@@ -101,6 +103,7 @@ public class GradeSystemDAOTest extends OlatTestCase {
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(gradeSystem.isEnabled()).isFalse();
+		softly.assertThat(gradeSystem.hasPassed()).isTrue();
 		softly.assertThat(gradeSystem.getResolution()).isEqualTo(resolution);
 		softly.assertThat(gradeSystem.getRounding()).isEqualTo(rounding);
 		softly.assertThat(gradeSystem.getBestGrade()).isEqualTo(bestGrade);

@@ -42,7 +42,7 @@
 		
 		#if($hasGradeField)
 		<tr class="o_grade">
-			<th scope="row">$r.translate("grade.yourgrade")</th>
+			<th scope="row">$gradeLabel</th>
 			<td>
 				#if($resultsVisible && $grade)
 					$grade
@@ -85,3 +85,63 @@
 	</tbody>
 	</table>
 </div>
+
+#if ($r.isNotEmpty($comment))
+	<div class="panel panel-default o_comment">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+	  		<h4 class="panel-title">
+	  			<i id="collapseCommentToggler" class="o_icon o_icon-fw #if($r.isTrue($incomment)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+	  			$r.translate("comment.title")
+	  		</h4>
+	  	</div>
+		<div id="collapseComment" class="panel-collapse collapse #if($r.isTrue($incomment)) in #end"><div class="panel-body">
+			$comment
+  		</div></div>
+	</div>
+	<script>
+		/* <![CDATA[ */
+			jQuery('#collapseComment').on('hide.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$r.backgroundCommand("hide","panel","comment")
+			})
+			jQuery('#collapseComment').on('show.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$r.backgroundCommand("show","panel","comment")
+			})
+		/* ]]> */
+	</script>
+#end
+
+#if ($r.isNotEmpty($docs))
+	<div class="panel panel-default o_assessment_docs">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseAssessmentDocuments">
+	  		<h4 class="panel-title">
+	  			<i id="collapseAssessmentDocumentsToggler" class="o_icon o_icon-fw #if($r.isTrue($inassessmentDocuments)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+	  			$r.translate("assessment.documents.title")
+	  		</h4>
+	  	</div>
+		<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($inassessmentDocuments)) in #end"><div class="panel-body">
+			<ul class="list-unstyled">
+			#foreach($doc in $docs)
+				<li><a href="$docsMapperUri/$r.encodeUrl($doc.name)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
+			#end
+			</ul>
+  		</div></div>
+	</div>
+	<script>
+		/* <![CDATA[ */
+			jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
+				jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$r.backgroundCommand("hide","panel","assessmentDocuments")
+			})
+			jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
+				jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$r.backgroundCommand("show","panel","assessmentDocuments")
+			})
+		/* ]]> */
+	</script>
+#end
+
+#if($r.available("download"))
+	$r.render("download")
+#end

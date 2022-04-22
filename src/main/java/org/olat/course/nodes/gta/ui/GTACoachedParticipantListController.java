@@ -69,10 +69,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -139,6 +141,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private int count;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean markedOnly;
+	private final AssessmentConfig assessmentConfig;
 
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -172,7 +175,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.coachCourseEnv = coachCourseEnv;
 		this.markedOnly = markedOnly;
-
+		
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		assessableIdentities = getAssessableIdentities().stream()
 				.map(participant -> new UserPropertiesRow(participant, userPropertyHandlers, getLocale()))
 				.collect(Collectors.toList());
@@ -266,7 +270,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	protected void initBulkTools(@SuppressWarnings("unused") UserRequest ureq, FormItemContainer formLayout) {
-		if(courseAssessmentService.getAssessmentConfig(gtaNode).isAssessable()) {
+		if(assessmentConfig.isAssessable()) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
 			bulkDoneButton.setElementCssClass("o_sel_assessment_bulk_done");
 			bulkDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
@@ -611,7 +615,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		List<CoachedIdentityRow> rows = getSelectedRows(row -> row.getAssessmentStatus() != AssessmentEntryStatus.done);
 		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
-		} else if(courseAssessmentService.getAssessmentConfig(gtaNode).isAssessable()) {
+		} else if(assessmentConfig.isAssessable()) {
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
 			
 			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

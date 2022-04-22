@@ -77,8 +77,8 @@ public class GradeScaleDAO {
 		if (searchParams.getRepositoryEntry() != null) {
 			sb.and().append("gs.repositoryEntry.key = :repoKey");
 		}
-		if (StringHelper.containsNonWhitespace(searchParams.getSubIdent())) {
-			sb.and().append("gs.subIdent = :subIdent");
+		if (searchParams.getSubIdents() != null && !searchParams.getSubIdents().isEmpty()) {
+			sb.and().append("gs.subIdent in :subIdent");
 		}
 		
 		TypedQuery<GradeScale> query = dbInstance.getCurrentEntityManager()
@@ -86,8 +86,8 @@ public class GradeScaleDAO {
 		if (searchParams.getRepositoryEntry() != null) {
 			query.setParameter("repoKey", searchParams.getRepositoryEntry().getKey());
 		}
-		if (StringHelper.containsNonWhitespace(searchParams.getSubIdent())) {
-			query.setParameter("subIdent", searchParams.getSubIdent());
+		if (searchParams.getSubIdents() != null && !searchParams.getSubIdents().isEmpty()) {
+			query.setParameter("subIdent", searchParams.getSubIdents());
 		}
 		
 		return query.getResultList();
@@ -129,6 +129,23 @@ public class GradeScaleDAO {
 		}
 		
 		return query.getResultList();
+	}
+
+	public boolean hasPassed(RepositoryEntryRef courseEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select gsys.hasPassed");
+		sb.append("  from gradescale gs");
+		sb.append("       join gs.gradeSystem gsys");
+		sb.and().append("gs.repositoryEntry.key = :repoKey");
+		sb.and().append("gs.subIdent = :subIdent");
+		
+		List<Boolean> resultList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Boolean.class)
+				.setParameter("repoKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+		
+		return resultList != null && !resultList.isEmpty()? resultList.get(0).booleanValue(): false;
 	}
 
 }

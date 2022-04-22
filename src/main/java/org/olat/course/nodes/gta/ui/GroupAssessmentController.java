@@ -88,6 +88,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.AssessmentForm;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -162,11 +163,12 @@ public class GroupAssessmentController extends FormBasicController {
 		super(ureq, wControl, "assessment_per_group");
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.gtaNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
 		withGrade = withScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		withAutoGrade = withGrade && assessmentConfig.isAutoGrade();
@@ -217,7 +219,9 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if(withGrade && !withAutoGrade) {
-			groupApplyGradeEl = uifactory.addCheckboxesVertical("grade.apply", groupGradingCont, onKeys, onValues, 1);
+			groupApplyGradeEl = uifactory.addCheckboxesVertical("grade.apply", null, groupGradingCont, onKeys, onValues, 1);
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeScale(courseEntry, gtaNode.getIdent()).getGradeSystem());
+			groupApplyGradeEl.setLabel(translate("grade.apply.label", gradeSystemLabel), null, false);
 		}
 		
 		if(withPassed && cutValue == null && !withGrade) {
@@ -284,7 +288,10 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if (withGrade && !withAutoGrade) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.applyGradeEl.i18nKey(), Cols.applyGradeEl.ordinal()));
+			DefaultFlexiColumnModel applyColumn = new DefaultFlexiColumnModel(Cols.applyGradeEl.i18nKey(), Cols.applyGradeEl.ordinal());
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeScale(courseEntry, gtaNode.getIdent()).getGradeSystem());
+			applyColumn.setHeaderLabel(translate("grade.apply.label", gradeSystemLabel));
+			columnsModel.addFlexiColumnModel(applyColumn);
 		}
 		
 		if(withPassed && cutValue == null && !withGrade) {
@@ -804,7 +811,7 @@ public class GroupAssessmentController extends FormBasicController {
 				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				if (withPassed) {
-					passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					passed = gradeScoreRange.getPassed();
 				}
 				
 			}
@@ -875,7 +882,7 @@ public class GroupAssessmentController extends FormBasicController {
 				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				if (withPassed) {
-					groupPassed = Boolean.valueOf(gradeScoreRange.isPassed());
+					groupPassed = gradeScoreRange.getPassed();
 				}
 			}
 			

@@ -30,6 +30,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +130,7 @@ public class UserPropertyExceptionalObligationHandler implements ExceptionalObli
 
 	@Override
 	public boolean matchesIdentity(ExceptionalObligation exceptionalObligation, Identity identity,
-			ObligationContext obligationContext, Structure runStructure, ScoreAccounting scoreAccounting) {
+			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
 		if (exceptionalObligation instanceof UserPropertyExceptionalObligation) {
 			UserPropertyExceptionalObligation userPropertyExceptionalObligation = (UserPropertyExceptionalObligation)exceptionalObligation;
 			String propertyValue = identity.getUser().getProperty(userPropertyExceptionalObligation.getPropertyName());

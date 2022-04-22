@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
@@ -114,7 +115,7 @@ public class LTIRunController extends BasicController {
 		this.courseEnv = courseEnv;
 		this.userCourseEnv = userCourseEnv;
 		display = LTIDisplayOptions.iframe;
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 		
 		ltiCtrl = new LTI10DisplayController(ureq, getWindowControl(), courseNode, userCourseEnv, courseEnv, display);
 		listenTo(ltiCtrl);
@@ -140,7 +141,7 @@ public class LTIRunController extends BasicController {
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		String displayStr = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		display = LTIDisplayOptions.valueOfOrDefault(displayStr); 
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 		
 		ltiCtrl = new LTI10DisplayController(ureq, getWindowControl(), courseNode, userCourseEnv, courseEnv, display);
 		listenTo(ltiCtrl);
@@ -157,7 +158,7 @@ public class LTIRunController extends BasicController {
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
@@ -250,7 +251,7 @@ public class LTIRunController extends BasicController {
 			startPage.contextPut("attempts", assessmentEval.getAttempts());
 			
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
-			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig, null, null, null);
 			listenTo(assessmentParticipantViewCtrl);
 			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 

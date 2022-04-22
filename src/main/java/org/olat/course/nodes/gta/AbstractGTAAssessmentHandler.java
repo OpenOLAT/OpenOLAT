@@ -44,6 +44,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -54,8 +55,8 @@ import org.olat.repository.RepositoryEntry;
 public abstract class AbstractGTAAssessmentHandler implements AssessmentHandler {
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		return new GTAAssessmentConfig(courseNode.getModuleConfiguration());
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		return new GTAAssessmentConfig(courseEntry, courseNode);
 	}
 
 	@Override

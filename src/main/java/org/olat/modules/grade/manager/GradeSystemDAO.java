@@ -58,6 +58,7 @@ public class GradeSystemDAO {
 		gradeSystem.setIdentifier(identifier);
 		gradeSystem.setPredefined(predefined);
 		gradeSystem.setEnabled(true);
+		gradeSystem.setPassed(false);
 		gradeSystem.setType(type);
 		dbInstance.getCurrentEntityManager().persist(gradeSystem);
 		return gradeSystem;
