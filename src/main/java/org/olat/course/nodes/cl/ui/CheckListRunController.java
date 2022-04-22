@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -206,7 +208,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-				assessmentEval, assessmentConfig, this, panelInfo);
+				assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		layoutCont.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		

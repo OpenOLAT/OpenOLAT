@@ -124,7 +124,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	/** configuration: grade */
 	public static final String CONFIG_KEY_GRADE_ENABLED = "grade.enabled";
 	public static final String CONFIG_KEY_GRADE_AUTO = "grade.auto";
-	public static final String CONFIG_KEY_GRADE_SYSTEM = "grade.system";
 	/** configuration: passed can be set */
 	public static final String CONFIG_KEY_HAS_PASSED_FIELD = "hasPassedField";
 	/** configuration: passed set to when score higher than cut value */

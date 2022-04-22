@@ -19,6 +19,9 @@
  */
 package org.olat.modules.grade;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -30,7 +33,7 @@ import org.olat.repository.RepositoryEntryRef;
 public class GradeScaleSearchParams {
 	
 	private RepositoryEntryRef repositoryEntry;
-	private String subIdent;
+	private Collection<String> subIdents;
 	
 	public RepositoryEntryRef getRepositoryEntry() {
 		return repositoryEntry;
@@ -40,12 +43,16 @@ public class GradeScaleSearchParams {
 		this.repositoryEntry = repositoryEntry;
 	}
 	
-	public String getSubIdent() {
-		return subIdent;
+	public Collection<String> getSubIdents() {
+		return subIdents;
 	}
-	
+
+	public void setSubIdents(Collection<String> subIdents) {
+		this.subIdents = subIdents;
+	}
+
 	public void setSubIdent(String subIdent) {
-		this.subIdent = subIdent;
+		this.subIdents = Collections.singletonList(subIdent);
 	}
 	
 }

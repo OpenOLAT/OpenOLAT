@@ -77,8 +77,8 @@ public class GradeScaleDAO {
 		if (searchParams.getRepositoryEntry() != null) {
 			sb.and().append("gs.repositoryEntry.key = :repoKey");
 		}
-		if (StringHelper.containsNonWhitespace(searchParams.getSubIdent())) {
-			sb.and().append("gs.subIdent = :subIdent");
+		if (searchParams.getSubIdents() != null && !searchParams.getSubIdents().isEmpty()) {
+			sb.and().append("gs.subIdent in :subIdent");
 		}
 		
 		TypedQuery<GradeScale> query = dbInstance.getCurrentEntityManager()
@@ -86,8 +86,8 @@ public class GradeScaleDAO {
 		if (searchParams.getRepositoryEntry() != null) {
 			query.setParameter("repoKey", searchParams.getRepositoryEntry().getKey());
 		}
-		if (StringHelper.containsNonWhitespace(searchParams.getSubIdent())) {
-			query.setParameter("subIdent", searchParams.getSubIdent());
+		if (searchParams.getSubIdents() != null && !searchParams.getSubIdents().isEmpty()) {
+			query.setParameter("subIdent", searchParams.getSubIdents());
 		}
 		
 		return query.getResultList();

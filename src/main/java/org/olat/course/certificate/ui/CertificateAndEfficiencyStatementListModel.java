@@ -120,7 +120,7 @@ public class CertificateAndEfficiencyStatementListModel
 		displayName("table.header.course", true),
 		curriculumElIdent("table.header.curriculum.element", true),
 		score("table.header.score", true),
-		grade("table.header.grade", true),
+		grade("grade.system.labels.fallback", true),
 		passed("table.header.passed", true), 
 		completion("table.header.learning.progress", false),
 		lastModified("table.header.lastScoreDate", true), 

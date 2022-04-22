@@ -29,12 +29,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.model.GradeScaleWrapper;
 import org.olat.modules.grade.ui.GradeScaleEditController;
@@ -63,10 +61,8 @@ public class GradeScaleAdjustController extends StepFormBasicController {
 		CourseNode courseNode = (CourseNode)runContext.get(GradeScaleAdjustCallback.KEY_COURSE_NODE);
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
-		String gradeSystemKey = courseNode.getModuleConfiguration().getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
-		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
 		gradeScaleEditCtrl = new GradeScaleEditController(ureq, wControl, form, courseEntry, courseNode.getIdent(),
-				assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), defautGradesystemKey, scoreStatistics);
+				assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), scoreStatistics);
 		listenTo(gradeScaleEditCtrl);
 		
 		initForm(ureq);

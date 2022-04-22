@@ -65,6 +65,7 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
@@ -101,6 +102,8 @@ public class MSConfigController extends FormBasicController {
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
+	private StaticTextElement gradePassedEl;
+	private SpacerElement passedSpacer;
 	private MultipleSelectionElement passedEl;
 	private SingleSelection passedTypeEl;
 	private String[] trueFalseKeys;
@@ -246,9 +249,11 @@ public class MSConfigController extends FormBasicController {
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
 			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
 		}
 		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		passedSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
 		
 		// display passed / failed
 		passedEl = uifactory.addCheckboxesHorizontal("form.passed", formLayout, ENABLED_KEYS,
@@ -370,15 +375,21 @@ public class MSConfigController extends FormBasicController {
 			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
-					: translate("node.grade.scale.available");
+					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
 			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			
+			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
+			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1) && minRange != null);
+			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 		
 		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
 
 		// passed
+		passedSpacer.setVisible(gradeDisable);
+		passedEl.setVisible(gradeDisable);
 		boolean passedTypeVisible = scoreEnabled && gradeDisable && passedEl.isAtLeastSelected(1);
 		passedTypeEl.setVisible(passedTypeVisible);
 
@@ -728,11 +739,7 @@ public class MSConfigController extends FormBasicController {
 			return;
 		}
 		
-		String gradeSystemKey = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
-		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
-
-		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent,
-				minScore, maxScore, defautGradesystemKey, true);
+		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent, minScore, maxScore, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

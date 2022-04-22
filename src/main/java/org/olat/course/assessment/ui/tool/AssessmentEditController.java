@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.List;
 
@@ -75,7 +77,7 @@ public class AssessmentEditController extends BasicController implements Assessm
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		AssessmentEvaluation assessmentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-				assessmentEval, assessmentConfig, this, PANEL_INFO);
+				assessmentEval, assessmentConfig, this, gradeSystem(coachCourseEnv, courseNode), PANEL_INFO);
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
 		

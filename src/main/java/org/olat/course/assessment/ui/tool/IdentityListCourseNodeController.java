@@ -144,7 +144,9 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeScaleEditController;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
@@ -248,7 +250,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		setTranslator(Util.createPackageTranslator(ContactFormController.class, getLocale(), getTranslator()));		
+		setTranslator(Util.createPackageTranslator(ContactFormController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.courseNode = courseNode;
 		this.stackPanel = stackPanel;
@@ -585,7 +588,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 				}
 				initScoreColumns(columnsModel);
 				if(hasGrade) {
-					columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale())));
+					GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
+					String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+					DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale()));
+					gradeColumn.setHeaderLabel(gradeSystemLabel);
+					columnsModel.addFlexiColumnModel(gradeColumn);
 				}
 			}
 			if(assessmentConfig.isPassedOverridable()) {
@@ -652,9 +659,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 			
 			if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
 					&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
-				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", formLayout, Link.BUTTON);
+				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
 				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
+				bulkApplyGradeButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
 				bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 				tableEl.addBatchButton(bulkApplyGradeButton);
 			}
@@ -1452,7 +1461,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			getWindowControl().pushAsModalDialog(gradeScaleEditCtrl.getInitialComponent());
 		} else {
 			gradeScaleViewCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry,
-					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), null, false);
+					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), false);
 			listenTo(gradeScaleViewCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),

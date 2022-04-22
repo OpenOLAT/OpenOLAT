@@ -77,7 +77,8 @@ public class AssessmentGradeStatsController extends BasicController {
 		GradeSystem gradeSystem = gradeScale.getGradeSystem();
 		gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 		
-		mainVC.contextPut("gradeSystem", GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
+		mainVC.contextPut("title", translate("grade.stats.title", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem)));
+		mainVC.contextPut("gradeSystem", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
 		
 		if (GradeSystemType.numeric == gradeSystem.getType()) {
 			mainVC.contextPut("resolution", GradeUIFactory.translateResolution(getTranslator(), gradeSystem.getResolution()));
@@ -97,7 +98,8 @@ public class AssessmentGradeStatsController extends BasicController {
 			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
 					minPassedRange.getPerformanceClassIdent(), minPassedRange.getGrade(),
 					minPassedRange.getGradeSystemIdent());
-			String passedWith = translate("grade.score.and.grade", THREE_DIGITS.format(minPassedRange.getLowerBound()), grade);
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), minPassedRange.getGradeSystemIdent());
+			String passedWith = translate("grade.score.and.grade", THREE_DIGITS.format(minPassedRange.getLowerBound()), grade, gradeSystemLabel);
 			mainVC.contextPut("passedWith", passedWith);
 		}
 		
@@ -128,7 +130,8 @@ public class AssessmentGradeStatsController extends BasicController {
 			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
 					avgScoreRange.getPerformanceClassIdent(), avgScoreRange.getGrade(),
 					avgScoreRange.getGradeSystemIdent());
-			String avgScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(avgScore), grade);
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), avgScoreRange.getGradeSystemIdent());
+			String avgScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(avgScore), grade, gradeSystemLabel);
 			mainVC.contextPut("avgScore", avgScoreText);
 		} else {
 			mainVC.contextRemove("avgScore");
@@ -140,7 +143,8 @@ public class AssessmentGradeStatsController extends BasicController {
 			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
 					bestScoreRange.getPerformanceClassIdent(), bestScoreRange.getGrade(),
 					bestScoreRange.getGradeSystemIdent());
-			String bestScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(bestScore), grade);
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), bestScoreRange.getGradeSystemIdent());
+			String bestScoreText = translate("grade.score.and.grade", THREE_DIGITS.format(bestScore), grade, gradeSystemLabel);
 			mainVC.contextPut("bestScore", bestScoreText);
 		} else {
 			mainVC.contextRemove("bestScore");

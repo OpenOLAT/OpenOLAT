@@ -71,6 +71,13 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public void setGrade(String grade);
 
+	/**
+	 * The identifier of the grade system.
+	 * This value is part of the assessment entry to increase the performance minimally
+	 * and to store it in the efficiency statement which may have no reference to the course.
+	 *
+	 * @return
+	 */
 	public String getGradeSystemIdent();
 	
 	public void setGradeSystemIdent(String gradeSystemIdent);

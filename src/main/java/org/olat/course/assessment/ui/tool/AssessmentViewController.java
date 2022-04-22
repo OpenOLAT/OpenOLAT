@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.List;
 
@@ -53,6 +55,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,6 +85,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 
 	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -143,6 +148,12 @@ public class AssessmentViewController extends BasicController implements Assessm
 		}
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
+		if (hasGrade) {
+			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEntry.getGradeSystemIdent())
+					? assessmentEntry.getGradeSystemIdent()
+					: gradeService.getGradeSystem(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent()).toString();
+			mainVC.contextPut("gradeLabel", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident));
+		}
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		mainVC.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
 		if (hasPassed && !hasGrade) {
@@ -195,7 +206,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
 				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig, this,
-				AssessmentEditController.PANEL_INFO);
+				gradeSystem(coachCourseEnv, courseNode), AssessmentEditController.PANEL_INFO);
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
 	}

@@ -51,6 +51,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
@@ -77,6 +78,7 @@ public class MSEditFormController extends FormBasicController {
 	/** whether score will be awarded or not. */
 	private MultipleSelectionElement scoreGranted;
 
+	private SpacerElement passedSpacer;
 	/** Dropdown for choosing whether pass/fail will be displayed or not. */
 	private MultipleSelectionElement displayPassed;
 
@@ -104,6 +106,7 @@ public class MSEditFormController extends FormBasicController {
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
+	private StaticTextElement gradePassedEl;
 
 	/** Text input element for the passing score. */
 	private TextElement cutVal;
@@ -229,9 +232,11 @@ public class MSEditFormController extends FormBasicController {
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
 			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
 		}
 		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		passedSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
 
 		// Create the "display passed / failed"
 		displayPassed = uifactory.addCheckboxesHorizontal("form.passed", formLayout, new String[]{"xx"}, new String[]{null});
@@ -356,13 +361,20 @@ public class MSEditFormController extends FormBasicController {
 			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
-					: translate("node.grade.scale.available");
+					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
 			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			
+			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
+			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1) && minRange != null);
+			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 		
 		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
+		
+		passedSpacer.setVisible(gradeDisable);
+		displayPassed.setVisible(gradeDisable);
 		displayType.setVisible(displayPassed.isSelected(0) && gradeDisable);
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
@@ -569,11 +581,8 @@ public class MSEditFormController extends FormBasicController {
 			return;
 		}
 		
-		String gradeSystemKey = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
-		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
-
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minScore, maxScore, defautGradesystemKey, true);
+				minScore, maxScore, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

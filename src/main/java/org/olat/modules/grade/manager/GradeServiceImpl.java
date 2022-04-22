@@ -203,6 +203,11 @@ public class GradeServiceImpl implements GradeService {
 		List<GradeScale> gradeScales = gradeScaleDao.load(searchParams);
 		return !gradeScales.isEmpty()? gradeScales.get(0): null;
 	}
+	
+	@Override
+	public List<GradeScale> getGradeScales(GradeScaleSearchParams searchParams) {
+		return gradeScaleDao.load(searchParams);
+	}
 
 	@Override
 	public List<GradeScaleStats> getGradeScaleStats() {
@@ -330,23 +335,31 @@ public class GradeServiceImpl implements GradeService {
 	public GradeScoreRange getGradeScoreRange(NavigableSet<GradeScoreRange> gradeScoreRanges, Float score) {
 		return gradeCalculator.getGrade(gradeScoreRanges, score);
 	}
-
+	
 	@Override
-	public BigDecimal getMinPassedScore(GradeScale gradeScale) {
-		BigDecimal minPassedScore = null;
-		if (gradeScale != null) {
-			// Translated grade is not used. We can use any locale.
-			Optional<GradeScoreRange> minPassedRange = getGradeScoreRanges(gradeScale, Locale.ENGLISH).stream()
+	public GradeScoreRange getMinPassedGradeScoreRange(GradeScale gradeScale, Locale locale) {
+		if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+			Optional<GradeScoreRange> minPassedRange = getGradeScoreRanges(gradeScale, locale).stream()
 					.sorted(Collections.reverseOrder())
 					.filter(range -> range.getPassed() != null && range.getPassed().booleanValue())
 					.findFirst();
 			if (minPassedRange.isPresent()) {
-				GradeScoreRange range = minPassedRange.get();
-				if (range.isLowerBoundInclusive()) {
-					minPassedScore = range.getLowerBound();
-				} else {
-					minPassedScore = range.getLowerBound().add(new BigDecimal("0.001"));
-				}
+				return minPassedRange.get();
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public BigDecimal getMinPassedScore(GradeScale gradeScale) {
+		BigDecimal minPassedScore = null;
+		// Translated grade is not used. We can use any locale.
+		GradeScoreRange range = getMinPassedGradeScoreRange(gradeScale, Locale.ENGLISH);
+		if (range != null) {
+			if (range.isLowerBoundInclusive()) {
+				minPassedScore = range.getLowerBound();
+			} else {
+				minPassedScore = range.getLowerBound().add(new BigDecimal("0.001"));
 			}
 		}
 		return minPassedScore;

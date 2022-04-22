@@ -79,6 +79,8 @@ public class GradeSystemEditController extends FormBasicController {
 	
 	private StaticTextElement systemNameEl;
 	private FormLink systemNameLink;
+	private StaticTextElement systemLabelEl;
+	private FormLink systemLabelLink;
 	private MultipleSelectionElement enabledEl;
 	private SingleSelection typeEl;
 	private SingleSelection resolutionEl;
@@ -93,7 +95,8 @@ public class GradeSystemEditController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	
 	private CloseableModalController cmc;
-	private SingleKeyTranslatorController systemTranslatorCtrl;
+	private SingleKeyTranslatorController systemNameTranslatorCtrl;
+	private SingleKeyTranslatorController systemLabelTranslatorCtrl;
 	private SingleKeyTranslatorController translatorCtrl;
 	
 	private GradeSystem gradeSystem;
@@ -125,11 +128,24 @@ public class GradeSystemEditController extends FormBasicController {
 		nameCont.setRootForm(mainForm);
 		formLayout.add(nameCont);
 		
-		String translateGradeSystem = GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem);
+		String translateGradeSystem = GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem);
 		systemNameEl = uifactory.addStaticTextElement("grade.system.name", null, translateGradeSystem, nameCont);
 		
 		if (!predefined) {
 			systemNameLink = uifactory.addFormLink("grade.system.name.edit", nameCont);
+		}
+		
+		FormLayoutContainer labelCont = FormLayoutContainer.createButtonLayout("labelCont", getTranslator());
+		labelCont.setLabel("grade.system.label", null);
+		labelCont.setElementCssClass("o_inline_cont");
+		labelCont.setRootForm(mainForm);
+		formLayout.add(labelCont);
+		
+		String translateGradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+		systemLabelEl = uifactory.addStaticTextElement("grade.system.label", null, translateGradeSystemLabel, labelCont);
+		
+		if (!predefined) {
+			systemLabelLink = uifactory.addFormLink("grade.system.label.edit", labelCont);
 		}
 		
 		String[] onValues = new String[]{ translate("on") };
@@ -248,8 +264,12 @@ public class GradeSystemEditController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == systemTranslatorCtrl) {
-			systemNameEl.setValue(GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem));
+		if (source == systemNameTranslatorCtrl) {
+			systemNameEl.setValue(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == systemLabelTranslatorCtrl) {
+			systemLabelEl.setValue(GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem));
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == translatorCtrl) {
@@ -263,10 +283,12 @@ public class GradeSystemEditController extends FormBasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(systemTranslatorCtrl);
+		removeAsListenerAndDispose(systemLabelTranslatorCtrl);
+		removeAsListenerAndDispose(systemNameTranslatorCtrl);
 		removeAsListenerAndDispose(translatorCtrl);
 		removeAsListenerAndDispose(cmc);
-		systemTranslatorCtrl = null;
+		systemLabelTranslatorCtrl = null;
+		systemNameTranslatorCtrl = null;
 		translatorCtrl = null;
 		cmc = null;
 	}
@@ -276,7 +298,9 @@ public class GradeSystemEditController extends FormBasicController {
 		if (source == typeEl) {
 			updateUI();
 		} else if (source == systemNameLink) {
-			doTranslateGradeSystem(ureq);
+			doTranslateGradeSystemName(ureq);
+		} else if (source == systemLabelLink) {
+			doTranslateGradeSystemLabel(ureq);
 		} else if (source == passedEl) {
 			updateUI();
 		} else if (source == addButton) {
@@ -404,19 +428,34 @@ public class GradeSystemEditController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private void doTranslateGradeSystem(UserRequest ureq) {
-		if (guardModalController(systemTranslatorCtrl))
-			return;
+	private void doTranslateGradeSystemName(UserRequest ureq) {
+		if (guardModalController(systemNameTranslatorCtrl)) return;
 
-		String i18nKey = GradeUIFactory.getGradeSystemI18nKey(gradeSystem);
+		String i18nKey = GradeUIFactory.getGradeSystemNameI18nKey(gradeSystem);
 
-		systemTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey,
+		systemNameTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey,
 				GradeSystemEditController.class);
-		listenTo(systemTranslatorCtrl);
+		listenTo(systemNameTranslatorCtrl);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", systemTranslatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), "close", systemNameTranslatorCtrl.getInitialComponent(), true,
 				translate("grade.system.name"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doTranslateGradeSystemLabel(UserRequest ureq) {
+		if (guardModalController(systemLabelTranslatorCtrl)) return;
+		
+		String i18nKey = GradeUIFactory.getGradeSystemLabelI18nKey(gradeSystem.getIdentifier());
+		
+		systemLabelTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey,
+				GradeSystemEditController.class);
+		listenTo(systemLabelTranslatorCtrl);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), "close", systemLabelTranslatorCtrl.getInitialComponent(), true,
+				translate("grade.system.label"));
 		listenTo(cmc);
 		cmc.activate();
 	}

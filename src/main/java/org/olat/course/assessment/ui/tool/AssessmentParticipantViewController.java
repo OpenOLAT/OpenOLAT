@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
@@ -37,6 +38,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -44,10 +46,14 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,6 +70,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	private final AssessmentEvaluation assessmentEval;
 	private final AssessmentConfig assessmentConfig;
 	private final AssessmentDocumentsSupplier assessmentDocumentsSupplier;
+	private final GradeSystemSupplier gradeSystemSupplier;
 	private final PanelInfo panelInfo;
 	private String mapperUri;
 	
@@ -72,7 +79,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl,
 			AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig,
-			AssessmentDocumentsSupplier assessmentDocumentsSupplier, PanelInfo panelInfo) {
+			AssessmentDocumentsSupplier assessmentDocumentsSupplier, GradeSystemSupplier gradeSystemSupplier,
+			PanelInfo panelInfo) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
@@ -81,6 +89,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		this.assessmentEval = assessmentEval;
 		this.assessmentConfig = assessmentConfig;
 		this.assessmentDocumentsSupplier = assessmentDocumentsSupplier;
+		this.gradeSystemSupplier = gradeSystemSupplier;
 		this.panelInfo = panelInfo;
 		
 		mainVC = createVelocityContainer("participant_view");
@@ -125,6 +134,10 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
 		if (hasGrade) {
+			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEval.getGradeSystemIdent())
+					? assessmentEval.getGradeSystemIdent()
+					: gradeSystemSupplier.getGradeSystem().getIdentifier();
+			mainVC.contextPut("gradeLabel", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident));
 			mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(), 
 					assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade(), assessmentEval.getGradeSystemIdent()));
 		}
@@ -257,6 +270,33 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		
 		public String getIdSuffix() {
 			return idSuffix;
+		}
+		
+	}
+	
+	public interface GradeSystemSupplier {
+		
+		public GradeSystem getGradeSystem();
+		
+	}
+	
+	public static GradeSystemSupplier gradeSystem(UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
+		return new DefaultGradeSystemSupplier(userCourseEnv, courseNode);
+	}
+	
+	private static final class DefaultGradeSystemSupplier implements GradeSystemSupplier {
+		
+		private final RepositoryEntryRef courseEntry;
+		private final String subIdent;
+		
+		private DefaultGradeSystemSupplier(UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
+			this.courseEntry = new CourseEntryRef(userCourseEnv);
+			this.subIdent = courseNode.getIdent();
+		}
+
+		@Override
+		public GradeSystem getGradeSystem() {
+			return CoreSpringFactory.getImpl(GradeService.class).getGradeSystem(courseEntry, subIdent);
 		}
 		
 	}

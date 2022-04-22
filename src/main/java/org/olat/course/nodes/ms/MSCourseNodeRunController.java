@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.ms;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.List;
 
@@ -127,7 +129,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		myContent = createVelocityContainer("run");
 
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval,
-				assessmentConfig, this, panelInfo);
+				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		

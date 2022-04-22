@@ -62,7 +62,7 @@ public class GradeScoreRangeTableRenderer extends DefaultComponentRenderer {
 			sb.append("<tbody>");
 			sb.append("<tr>");
 			sb.append("<th>").append(translator.translate("grade.score.score")).append("</th>");
-			sb.append("<th>").append(translator.translate("grade.score.grade")).append("</th>");
+			sb.append("<th>").append(GradeUIFactory.translateGradeSystemLabel(translator, gradeScoreRanges.first().getGradeSystemIdent())).append("</th>");
 			sb.append("</tr>");
 			
 			int rangeIndex = fromIndex;

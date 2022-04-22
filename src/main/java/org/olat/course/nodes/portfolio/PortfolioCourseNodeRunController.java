@@ -20,6 +20,8 @@
 
 package org.olat.course.nodes.portfolio;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -300,7 +302,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			assessmentParticipantViewCtrl = null;
 			if (Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode()) {
 				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-						assessmentEval, assessmentConfig, this, panelInfo);
+						assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 				listenTo(assessmentParticipantViewCtrl);
 				assessmentInfosContainer.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			}

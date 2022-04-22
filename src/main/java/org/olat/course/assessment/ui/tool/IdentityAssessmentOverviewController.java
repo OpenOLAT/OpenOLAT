@@ -28,6 +28,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -58,6 +59,7 @@ import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
@@ -82,6 +84,11 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScaleSearchParams;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,6 +117,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private boolean discardEmptyNodes;
 	private boolean allowTableFiltering;
 
+	private DefaultFlexiColumnModel gradeColumn;
 	private FlexiTableElement tableEl;
 	private IdentityAssessmentOverviewTableModel tableModel;
 	private FormLink bulkVisibleButton;
@@ -136,6 +144,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	protected BaseSecurity securityManager;
 	@Autowired
 	private GradeModule gradeModul;
+	@Autowired
+	private GradeService gradeService;
 
 	/**
 	 * Constructor for the identity assessment overview controller to be used in the assessment tool or in the users
@@ -151,6 +161,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			boolean nodesSelectable, boolean discardEmptyNodes, boolean allowTableFiltering) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.runStructure = userCourseEnvironment.getCourseEnvironment().getRunStructure();
 		this.nodesSelectable = nodesSelectable;
@@ -215,6 +226,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		runStructure = null;
 		nodesSelectable = false;
@@ -343,7 +355,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.minMax, new ScoreMinMaxCellRenderer()));
 		if(gradeModul.isEnabled() && hasGrade) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.grade, new GradeCellRenderer(getLocale())));
+			gradeColumn = new DefaultFlexiColumnModel(NodeCols.grade, new GradeCellRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(gradeColumn);
 		}
 		if (hasPassedOverridable) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
@@ -398,12 +411,11 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			// use list from efficiency statement 
 			nodesTableList = new ArrayList<>(preloadedNodesList);
 		}
+		setGradeColumnLabel(nodesTableList);
 		tableModel.setObjects(nodesTableList);
 		tableEl.reset(true, true, true);
 	}
-	
 
-	
 	private void forgeScore(AssessmentNodeData row) {
 		Float score = row.getScore();
 		if (score == null) return;
@@ -415,6 +427,46 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			formLink.setUserObject(row);
 			row.setScoreDesc(formLink);
 		}
+	}
+	
+	private void setGradeColumnLabel(List<AssessmentNodeData> nodesTableList) {
+		if (gradeColumn == null) return;
+		
+		Set<String> gradeSystemIdents = null;
+		
+		if (userCourseEnvironment != null) {
+			Set<String> idents = nodesTableList.stream()
+					.map(AssessmentNodeData::getIdent)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+			GradeScaleSearchParams searchParams = new GradeScaleSearchParams();
+			searchParams.setRepositoryEntry(userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+			searchParams.setSubIdents(idents);
+			gradeSystemIdents = gradeService.getGradeScales(searchParams).stream()
+					.map(GradeScale::getGradeSystem)
+					.map(GradeSystem::getIdentifier)
+					.collect(Collectors.toSet());
+		} else {
+			gradeSystemIdents = nodesTableList.stream()
+					.map(AssessmentNodeData::getGradeSystemIdent)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+		}
+		
+		String headerGradeSystemLabel = null;
+		for (String gradeSystemIdent : gradeSystemIdents) {
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemIdent);
+			if (headerGradeSystemLabel == null) {
+				headerGradeSystemLabel = gradeSystemLabel;
+			} else if (!headerGradeSystemLabel.equals(gradeSystemLabel)) {
+				headerGradeSystemLabel = GradeUIFactory.translateGradeSystemLabelFallback(getTranslator());
+				break;
+			}
+		}
+		if (!StringHelper.containsNonWhitespace(headerGradeSystemLabel)) {
+			headerGradeSystemLabel = GradeUIFactory.translateGradeSystemLabelFallback(getTranslator());
+		}
+		gradeColumn.setHeaderLabel(headerGradeSystemLabel);
 	}
 
 	@Override

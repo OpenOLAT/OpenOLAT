@@ -151,7 +151,6 @@ public class AssessmentForm extends FormBasicController {
 	private GradeService gradeService;
 
 
-	
 	/**
 	 * Constructor for an assessment detail form. The form will be configured according
 	 * to the assessable course node parameters
@@ -627,14 +626,14 @@ public class AssessmentForm extends FormBasicController {
 		if (hasGrade) {
 			gradeCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
 			gradeCont.setElementCssClass("o_inline_cont");
-			gradeCont.setLabel("grade", null);
+			gradeCont.setLabel(GradeUIFactory.translateGradeSystemLabel(getTranslator(), getGradeScale().getGradeSystem()), null, false);
 			gradeCont.setRootForm(mainForm);
 			assessmentCont.add(gradeCont);
 			
 			gradeEl = uifactory.addStaticTextElement("grade", "", gradeCont);
 			gradeEl.setDomWrapperElement(DomWrapperElement.span);
 			
-			gradeApplyLink = uifactory.addFormLink("grade.apply", gradeCont, Link.BUTTON);
+			gradeApplyLink = uifactory.addFormLink("grade.apply.button", gradeCont, Link.BUTTON);
 			
 			if (!autoGrade) {
 				gradeApplied = StringHelper.containsNonWhitespace(scoreEval.getGrade());
@@ -815,7 +814,7 @@ public class AssessmentForm extends FormBasicController {
 		if (StringHelper.containsNonWhitespace(grade) && getGradeScale() != null) {
 			GradeSystem gradeSystem = getGradeScale().getGradeSystem();
 			String translatedGrade = GradeUIFactory.translatePerformanceClass(getTranslator(), performanceClassIdent, grade, gradeSystem.getIdentifier());
-			String translateGradeSystem = GradeUIFactory.translateGradeSystem(getTranslator(), gradeSystem);
+			String translateGradeSystem = GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem);
 			String gradeValue = translate("grade.with.system", translatedGrade, translateGradeSystem);
 			if (!gradeApplied) {
 				gradeValue = translate("grade.not.applied", gradeValue);

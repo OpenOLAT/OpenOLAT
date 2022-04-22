@@ -83,6 +83,8 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -142,6 +144,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
 	public GTACoachedGroupGradingController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseEnvironment courseEnv, GTACourseNode gtaNode,
@@ -231,8 +235,13 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreVal.i18nKey(), Cols.scoreVal.ordinal()));
 		}
 		if(withGrade) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.gradeVal.i18nKey(),
-					Cols.gradeVal.ordinal(), new TextFlexiCellRenderer(EscapeMode.none)));
+			GradeSystem gradeSystem = gradeService.getGradeSystem(
+					coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), gtaNode.getIdent());
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+			DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(Cols.gradeVal.i18nKey(),
+					Cols.gradeVal.ordinal(), new TextFlexiCellRenderer(EscapeMode.none));
+			gradeColumn.setHeaderLabel(gradeSystemLabel);
+			columnsModel.addFlexiColumnModel(gradeColumn);
 		}
 		if(withPassed) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedVal.i18nKey(), Cols.passedVal.ordinal(),

@@ -129,10 +129,17 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.score, new ScoreCellRenderer()));
+		
+		String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeScale.getGradeSystem());
 		if (isShowCurrentGrade()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.grade, new TextFlexiCellRenderer(EscapeMode.none)));
+			DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(GradeChangeCols.grade, new TextFlexiCellRenderer(EscapeMode.none));
+			gradeColumn.setHeaderLabel(gradeSystemLabel);
+			columnsModel.addFlexiColumnModel(gradeColumn);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.newGrade));
+		DefaultFlexiColumnModel newGradeModel = new DefaultFlexiColumnModel(GradeChangeCols.newGrade);
+		String newGradeSystemLabel = translate("table.header.grade.new.label", gradeSystemLabel);
+		newGradeModel.setHeaderLabel(newGradeSystemLabel);
+		columnsModel.addFlexiColumnModel(newGradeModel);
 		
 		dataModel = new GradeChangeTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);

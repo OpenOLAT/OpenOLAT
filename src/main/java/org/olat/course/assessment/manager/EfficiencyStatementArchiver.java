@@ -108,7 +108,7 @@ public class EfficiencyStatementArchiver {
 		row.addCell(counter++, translator.translate("table.header.attempts"));
 		row.addCell(counter++, translator.translate("table.header.score"));
 		if (withGrades) {
-			row.addCell(counter++, translator.translate("table.header.grade"));
+			row.addCell(counter++, translator.translate("grade.system.labels.fallback"));
 		}
 		row.addCell(counter++, translator.translate("table.header.passed"));
 	}

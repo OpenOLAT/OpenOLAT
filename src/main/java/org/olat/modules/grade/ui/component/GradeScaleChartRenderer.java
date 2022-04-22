@@ -41,6 +41,7 @@ import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.GradeSystemType;
+import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
@@ -123,7 +124,7 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 		  .append("    .attr('dy', '1em')")
 		  .append("    .attr('fill', '#000')")
 		  .append("    .style('text-anchor', 'middle')")
-		  .append("    .text('").append(translator.translate("grade")).append("')");
+		  .append("    .text('").append(GradeUIFactory.translateGradeSystemLabel(translator, gradeSystem)).append("')");
 		sb.append(";\n");
 
 		sb.append("var line = d3.line()\n");
