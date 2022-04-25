@@ -71,6 +71,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -162,6 +163,7 @@ public class QTI21EditForm extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
+	private DialogBoxController confirmGradeCtrl;
 	private DialogBoxController confirmTestDateCtrl;
 
 	@Autowired
@@ -176,6 +178,8 @@ public class QTI21EditForm extends FormBasicController {
 	private GradeModule gradeModule;
 	@Autowired
 	private GradeService gradeService;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode, NodeAccessType nodeAccessType,
@@ -500,6 +504,14 @@ public class QTI21EditForm extends FormBasicController {
 				testDateDependentEl.uncheckAll();
 			}
 			updateAssessmentModeVisibility();
+		} else if (confirmGradeCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				markDirty();
+			} else {
+				gradeEnabledEl.select(gradeEnabledEl.getKey(0), !gradeEnabledEl.isAtLeastSelected(1));
+			}
+			flc.setDirty(true);
+			updateGradeUI();
 		} else if (gradeScaleCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
@@ -617,8 +629,7 @@ public class QTI21EditForm extends FormBasicController {
 			updateAssessmentModeVisibility();
 			markDirty();
 		} else if (source == gradeEnabledEl) {
-			updateGradeUI();
-			markDirty();
+			doConfirmGrades(ureq);
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
 		}
@@ -931,6 +942,17 @@ public class QTI21EditForm extends FormBasicController {
 			assessmentModeDefaults.setLeadTime(leadTime);
 			int followupTime = followupTimeEl.getIntValue();
 			assessmentModeDefaults.setFollowUpTime(followupTime);
+		}
+	}
+	
+	private void doConfirmGrades(UserRequest ureq) {
+		if (assessmentService.getScoreCount(courseEntry, courseNode.getIdent()) > 0) {
+			String title = translate("node.grade.enabled");
+			String text = translate("qti.form.grade.confirm.text");
+			confirmGradeCtrl = activateOkCancelDialog(ureq, title, text, confirmGradeCtrl);
+		} else {
+			updateGradeUI();
+			markDirty();
 		}
 	}
 
