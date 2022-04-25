@@ -40,12 +40,16 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.Util;
 import org.olat.course.condition.Condition;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
@@ -55,6 +59,7 @@ import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.CoursePreviewAccounting;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -89,7 +94,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 	 * @param cenv
 	 */
 	public PreviewRunController(UserRequest ureq, WindowControl wControl, IdentityEnvironment identEnv, CourseEnvironment cenv, String role, LayoutMain3ColsController previewLayoutCtr) { 
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(RunMainController.class, ureq.getLocale()));
 		// set up the components
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);
@@ -156,7 +161,19 @@ public class PreviewRunController extends MainLayoutBasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == luTree) {
-			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
+			if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_EXPANDED)) {
+				TreeEvent tev = (TreeEvent)event;
+				TreeNode tn = treeModel.getNodeById(tev.getNodeId());
+				if(!tn.isAccessible() && tn instanceof CourseTreeNode) {
+					if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
+						currentNodeController.dispose();
+					}
+					MessageController msgController = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),	translate("course.noaccess.title"), translate("course.noaccess.text"));
+					Component nodeComp = msgController.getInitialComponent();
+					content.setContent(nodeComp);
+					updateCurrentDetails(((CourseTreeNode)tn).getCourseNode());
+				}
+			} else if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				TreeEvent tev = (TreeEvent)event;
 				
 				// goto node:
@@ -190,11 +207,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 				
 				CourseNode cn = nclr.getCalledCourseNode();
 				if(cn != null) {
-					Condition c = cn.getPreConditionVisibility();
-					String visibilityExpr = (c.getConditionExpression() == null? translate("details.visibility.none") : c.getConditionExpression());
-					detail.contextPut("visibilityExpr", visibilityExpr);
-					detail.contextPut("coursenode", cn);
-					currentCourseNode = cn;
+					updateCurrentDetails(cn);
 				}
 
 				Component nodeComp = currentNodeController.getInitialComponent();
@@ -204,7 +217,14 @@ public class PreviewRunController extends MainLayoutBasicController {
 			fireEvent(ureq, new Event("command.config"));
 		}
 	}
-
+	
+	private void updateCurrentDetails(CourseNode cn) {
+		Condition c = cn.getPreConditionVisibility();
+		String visibilityExpr = (c.getConditionExpression() == null? translate("details.visibility.none") : c.getConditionExpression());
+		detail.contextPut("visibilityExpr", visibilityExpr);
+		detail.contextPut("coursenode", cn);
+		currentCourseNode = cn;
+	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
