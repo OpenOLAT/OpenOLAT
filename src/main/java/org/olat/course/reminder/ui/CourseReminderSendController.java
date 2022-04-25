@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -84,6 +85,19 @@ public class CourseReminderSendController extends FormBasicController {
 
 	public CourseReminderSendController(UserRequest ureq, WindowControl wControl, Reminder reminder, boolean readonly) {
 		super(ureq, wControl, "send_reminders");
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.reminder = reminder;
+		this.readonly = readonly;
+		
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CourseReminderSendTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
+		
+		initForm(ureq);
+		loadModel();
+	}
+
+	public CourseReminderSendController(UserRequest ureq, WindowControl wControl, Form rootForm, Reminder reminder, boolean readonly) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "send_reminders", rootForm);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.reminder = reminder;
 		this.readonly = readonly;

@@ -39,6 +39,8 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<LectureBlockRow>
 	implements SortableFlexiTableDataModel<LectureBlockRow> {
 	
+	private static final TeachCols[] COLS = TeachCols.values();
+	
 	private final Locale locale;
 
 	public TeacherOverviewDataModel(FlexiTableColumnModel columnModel, Locale locale) {
@@ -60,7 +62,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 
 	@Override
 	public Object getValueAt(LectureBlockRow row, int col) {
-		switch(TeachCols.values()[col]) {
+		switch(COLS[col]) {
 			case date: return row.getLectureBlock().getStartDate();
 			case startTime: return row.getLectureBlock().getStartDate();
 			case endTime: return row.getLectureBlock().getEndDate();

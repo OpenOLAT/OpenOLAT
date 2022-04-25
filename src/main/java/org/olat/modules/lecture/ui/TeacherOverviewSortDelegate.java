@@ -19,11 +19,17 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 
 /**
  * 
@@ -37,5 +43,51 @@ public class TeacherOverviewSortDelegate extends SortableFlexiTableModelDelegate
 		super(orderBy, tableModel, locale);
 	}
 	
+	@Override
+	protected void sort(List<LectureBlockRow> rows) {
+		int columnIndex = getColumnIndex();
+		if(columnIndex == TeachCols.status.ordinal()) {
+			Collections.sort(rows, new StatusComparator());
+		} else {
+			super.sort(rows);
+		}
+	}
 	
+	private int compareLectureBlock(LectureBlock l1, LectureBlock l2) {
+		int c = compareString(l1.getTitle(), l2.getTitle());
+		if(c == 0) {
+			c = compareLongs(l1.getKey(), l2.getKey());
+		}
+		return c;
+	}
+
+	private class StatusComparator implements Comparator<LectureBlockRow> {
+
+		@Override
+		public int compare(LectureBlockRow o1, LectureBlockRow o2) {
+			if(o1 == null || o2 == null) {
+				return compareNullObjects(o1, o2);
+			}
+			
+			LectureBlock l1 = o1.getLectureBlock();
+			LectureBlock l2 = o2.getLectureBlock();
+			if(l1 == null || l2 == null) {
+				return compareNullObjects(l1, l2);
+			}
+
+			int c = 0;
+			LectureRollCallStatus s1 = l1.getRollCallStatus();
+			LectureRollCallStatus s2 = l2.getRollCallStatus();
+			if(s1 == null || s2 == null) {
+				c = compareNullObjects(s1, s2);
+			} else {
+				c = s1.compareTo(s2);
+			}
+			
+			if(c == 0) {
+				c = compareLectureBlock(l1, l2);
+			}
+			return c;
+		}
+	}
 }
