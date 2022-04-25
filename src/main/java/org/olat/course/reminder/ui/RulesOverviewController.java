@@ -42,7 +42,7 @@ public class RulesOverviewController extends StepFormBasicController {
 	public RulesOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		Reminder reminder = (Reminder)runContext.get(RulesEditStep.CONTEXT_KEY);
-		sendCtrl = new CourseReminderSendController(ureq, getWindowControl(), reminder, true);
+		sendCtrl = new CourseReminderSendController(ureq, getWindowControl(), rootForm, reminder, true);
 		listenTo(sendCtrl);
 		
 		initForm(ureq);
