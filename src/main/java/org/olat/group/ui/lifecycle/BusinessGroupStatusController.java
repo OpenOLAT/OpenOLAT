@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -320,7 +321,11 @@ public class BusinessGroupStatusController extends FormBasicController {
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT) {
 				businessGroup = businessGroupService.loadBusinessGroup(businessGroup);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				if(closeAfterStatusChanged(ureq)) {
+					fireEvent(ureq, Event.CLOSE_EVENT);
+				} else {
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			}
 			cleanUp();
 		} else if(confirmDefinitivelyDeleteCtrl == source) {
@@ -334,6 +339,12 @@ public class BusinessGroupStatusController extends FormBasicController {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private boolean closeAfterStatusChanged(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		return businessGroup.getGroupStatus() == BusinessGroupStatusEnum.trash
+				&& !roles.isAdministrator() && !roles.isGroupManager();
 	}
 	
 	private void cleanUp() {
@@ -374,7 +385,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 	
 	private void doConfirmChangeStatus(UserRequest ureq, BusinessGroupStatusEnum newStatus) {
 		confirmChangeStatusCtlr = new ConfirmBusinessGroupChangeStatusController(ureq, getWindowControl(),
-				List.of(businessGroup), newStatus );
+				List.of(businessGroup), newStatus);
 		listenTo(confirmChangeStatusCtlr);
 		
 		String key;
