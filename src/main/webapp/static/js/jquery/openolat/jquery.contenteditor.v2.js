@@ -161,6 +161,7 @@
 						|| jTarget.closest(".o_layered_panel .modal-dialog").length > 0
 						|| jTarget.closest(".o_evaluation_editor_form").length > 0
 						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
+						|| jTarget.closest(".tox-dialog-wrap__backdrop").length > 0
 						|| e.target.nodeName == 'BODY';
 					
 					if(!excludedEls) {	
