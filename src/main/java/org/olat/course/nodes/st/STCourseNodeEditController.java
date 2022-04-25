@@ -164,7 +164,16 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.euce = euce;
 		this.editorModel = course.getEditorTreeModel();
 		this.repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
-
+		
+		// Set the root as parent as a workaround for the STAssessmentHandler,
+		// because the root node has some informations about the assessment configs.
+		if (stNode.getParent() == null) {
+			CourseNode rootNode = editorModel.getCourseNode(editorModel.getRootNode().getIdent());
+			if (rootNode != null && !rootNode.getIdent().equals(stNode.getIdent())) {
+				stNode.setParent(rootNode);
+			}
+		}
+		
 		Translator fallback = Util.createPackageTranslator(Condition.class, getLocale());
 		Translator newTranslator = Util.createPackageTranslator(STCourseNodeEditController.class, getLocale(), fallback);
 		setTranslator(newTranslator);
