@@ -169,7 +169,7 @@ public class WikiManager {
 			Files.walkFileTree(path, EnumSet.noneOf(FileVisitOption.class), 16, new ImportVisitor(destDir));
 			PathUtils.closeSubsequentFS(path);
 			return true;
-		} catch (IOException e) {
+		} catch (IOException | OLATRuntimeException e) {
 			log.error("", e);
 			return false;
 		}
