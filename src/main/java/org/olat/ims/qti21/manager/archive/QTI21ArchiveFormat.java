@@ -580,7 +580,7 @@ public class QTI21ArchiveFormat {
 			col++;
 		}
 		if(anonymizerCallback == null) {
-			dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
+			dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		}
 		dataRow.addCell(col++, toDurationInMilliseconds(testSession.getDuration()), null);
 
