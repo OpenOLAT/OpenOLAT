@@ -62,7 +62,7 @@ public class MathJaxDirectiveProvider implements CSPDirectiveProvider {
 
 	@Override
 	public Collection<String> getMediaSrcUrls() {
-		return null;
+		return getUrls();
 	}
 
 	private Collection<String> getUrls() {
