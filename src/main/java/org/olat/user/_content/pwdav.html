@@ -6,13 +6,7 @@
 	<p class="o_desc">$r.translate("pwdav.description")</p>
 
 	#if($webdavhttps)
-		<p>
-			<code>$webdavhttps</code>
-		</p>
-		#if ($webdavhttp)
-			<p>$r.translate('webdav.link.http')</p>
-			<p><code>$webdavhttp</code></p>
-		#end
+		<p><code>$webdavhttps</code></p>
 	#else
 		<p><code>$webdavhttp</code></p>
 	#end		

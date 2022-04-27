@@ -16,16 +16,7 @@
 	#o_togglebox_start("o_briefcase_webdav_link" "$r.translate('webdav.link')")
 		<div class="pull-right">$r.contextHelpWithWrapper("manual_user/supported_tech/Using_WebDAV/")</div>
 		#if($webdavhttps)
-			<p>
-				<code>$webdavhttps</code>
-			</p>
-			#if ($webdavhttp)
-				<p >
-					$r.translate('webdav.link.http')
-					<br />
-					<code>$webdavhttp</code>
-				</p>
-			#end
+			<p><code>$webdavhttps</code></p>
 		#else
 			<p><code>$webdavhttp</code></p>
 		#end		

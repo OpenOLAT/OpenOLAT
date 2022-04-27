@@ -74,6 +74,7 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupMembershipImpl;
+import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.BusinessGroupQueryParams;
@@ -287,6 +288,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		dbInstance.commit();
 		return mergedGroup;
+	}
+
+	@Override
+	public BusinessGroupMembershipInfos getMembershipInfos(BusinessGroup businessGroup, IdentityRef identity) {
+		return this.businessGroupDAO.getMembershipInfos(businessGroup, identity);
 	}
 
 	@Override

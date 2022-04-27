@@ -52,14 +52,13 @@ public class CourseCalendarController extends DefaultController {
 	private CalSecurityCallback secCallback;
 	
 	private UserCourseEnvironment courseEnv;
-	private List<KalendarRenderWrapper> calendars;
 
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, CourseCalendars myCal,
 			UserCourseEnvironment courseEnv, CalSecurityCallback secCallback) {
 		super(wControl);
 		this.courseEnv = courseEnv;
 		this.secCallback = secCallback;
-		calendars = myCal.getCalendars();
+		List<KalendarRenderWrapper> calendars = myCal.getCalendars();
 		courseKalendarWrapper = myCal.getCourseKalendarWrapper();
 		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
 				courseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource(), false);
@@ -92,7 +91,7 @@ public class CourseCalendarController extends DefaultController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof CalendarGUIModifiedEvent) {
 			CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, secCallback);
-			calendars = myCal.getCalendars();
+			List<KalendarRenderWrapper> calendars = myCal.getCalendars();
 			courseKalendarWrapper = myCal.getCourseKalendarWrapper();
 			calendarController.setCalendars(calendars);
 		}

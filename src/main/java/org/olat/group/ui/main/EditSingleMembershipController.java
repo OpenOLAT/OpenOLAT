@@ -55,7 +55,7 @@ public class EditSingleMembershipController extends BasicController {
 		this.curriculumElement = null;
 		
 		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
-		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, withUserLinks);
+		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, group, withUserLinks);
 		listenTo(infoCtrl);
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		
@@ -74,7 +74,7 @@ public class EditSingleMembershipController extends BasicController {
 		this.curriculumElement = curriculumElement;
 		
 		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
-		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, withUserLinks);
+		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, null, withUserLinks);
 		listenTo(infoCtrl);
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		
