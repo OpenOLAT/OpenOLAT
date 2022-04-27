@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -109,6 +110,7 @@ import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExport;
+import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
@@ -729,12 +731,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				}
 			} else {
 				List<AssessmentTestSession> sessions = identityKeyToSessions.get(assessmentEntry.getIdentity().getKey());
-				if (sessions != null) {
-					if (sessions.stream().anyMatch(session -> session.getPassed().booleanValue())) {
-						passed = Boolean.TRUE;
-					} else if (sessions.stream().anyMatch(session -> !session.getPassed().booleanValue())) {
-						passed = Boolean.FALSE;
-					}
+				if (sessions != null && !sessions.isEmpty()) {
+					Collections.sort(sessions, new AssessmentTestSessionComparator());
+					passed = sessions.get(0).getPassed();
 				}
 			}
 			
