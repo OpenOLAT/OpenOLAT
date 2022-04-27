@@ -63,9 +63,17 @@ public class CourseNodeHelper {
 	public static String getFuzzyDifferentShortTitle(CourseNode courseNode) {
 		try {
 			String shortTitle = courseNode.getShortTitle();
-			Integer score = fuzzyScore.fuzzyScore(courseNode.getLongTitle(), shortTitle);
-			// if the fuzzy score is greater then the fuzzy query, we accept it as "equal enough"
-			if (score.intValue() <= shortTitle.length()) {
+			String longTitle = courseNode.getLongTitle();
+			// Simple case: Fully contained short titles
+			if (longTitle.indexOf(shortTitle) != -1) {
+				return null;				
+			}
+			// For fuzzy comparing of titles remove - and :
+			String longTitleOptimized = longTitle.replace("-", " ").replace(":", " ");
+			String shortTitleOptimized = shortTitle.replace("-", " ").replace(":", " ");
+			Integer score = fuzzyScore.fuzzyScore(longTitleOptimized, shortTitleOptimized);
+			// If the fuzzy score is greater then the fuzzy query, we accept it as "equal enough"
+			if (score.intValue() <= shortTitle.length() && longTitle.indexOf(shortTitle) == -1 ) {
 				return shortTitle;
 			}			
 		} catch (Exception e) {
