@@ -34,6 +34,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.LeaveOption;
@@ -124,7 +125,14 @@ public interface BusinessGroupService {
 			boolean download);
 	
 	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allowLeaving);
-
+	
+	/**
+	 * 
+	 * @param businessGroup The business group
+	 * @param identity The user
+	 * @return Some informations about membership or null if not member
+	 */
+	public BusinessGroupMembershipInfos getMembershipInfos(BusinessGroup businessGroup, IdentityRef identity);
 
 	/**
 	 * Set certain business-group as active (set last-usage and delete time stamp for

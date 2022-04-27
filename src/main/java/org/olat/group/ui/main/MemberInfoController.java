@@ -41,6 +41,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
@@ -53,12 +56,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MemberInfoController extends FormBasicController {
 	
-	private FormLink homeLink, contactLink, assessmentLink;
+	private FormLink homeLink;
+	private FormLink contactLink;
+	private FormLink assessmentLink;
 	private StaticTextElement membershipCreationEl;
 
 	private final Identity identity;
 	private Long repoEntryKey;
 	private UserCourseInformations courseInfos;
+	private BusinessGroupMembershipInfos businessGroupInfos;
 	
 	private final boolean withLinks;
 	
@@ -67,19 +73,23 @@ public class MemberInfoController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
 	private UserCourseInformationsManager userCourseInfosMgr;
 	
 	public MemberInfoController(UserRequest ureq, WindowControl wControl, Identity identity,
-			RepositoryEntry repoEntry, boolean withLinks) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean withLinks) {
 		super(ureq, wControl, "info_member");
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), getTranslator()));
 
 		this.identity = identity;
 		this.withLinks = withLinks;
 		
-		if(repoEntry != null){
+		if(repoEntry != null) {
 			repoEntryKey = repoEntry.getKey();
 			courseInfos = userCourseInfosMgr.getUserCourseInformations(repoEntry.getOlatResource(), identity);
+		} else if(businessGroup != null) {
+			businessGroupInfos = businessGroupService.getMembershipInfos(businessGroup, identity);
 		}
 		initForm(ureq);
 	}
@@ -112,26 +122,34 @@ public class MemberInfoController extends FormBasicController {
 			uifactory.addStaticTextElement("up_" + propName, key, value, userPropertiesContainer);
 		}
 
+		Formatter formatter = Formatter.getInstance(getLocale());
 		//course informations
-		FormLayoutContainer courseInfosContainer = FormLayoutContainer.createDefaultFormLayout_9_3("courseInfos", getTranslator());
-		formLayout.add("courseInfos", courseInfosContainer);
-		membershipCreationEl = uifactory.addStaticTextElement("firstTime", "course.membership.creation", "", courseInfosContainer);
+		FormLayoutContainer resourceInfosContainer = FormLayoutContainer.createDefaultFormLayout_9_3("courseInfos", getTranslator());
+		formLayout.add("resourceInfos", resourceInfosContainer);
+		if(courseInfos != null) {
+			String firstTime = formatter.formatDate(courseInfos.getInitialLaunch());
+			membershipCreationEl = uifactory.addStaticTextElement("firstTime", "course.membership.creation", firstTime, resourceInfosContainer);
+		} else if(businessGroupInfos != null) {
+			String creation = formatter.formatDate(businessGroupInfos.getCreationDate());
+			membershipCreationEl = uifactory.addStaticTextElement("firstTime", "group.membership.creation", creation, resourceInfosContainer);
+		}
 		
 		if(securityModule.isUserLastVisitVisible(ureq.getUserSession().getRoles())) {
-			Formatter formatter = Formatter.getInstance(getLocale());
-			
-			String lastVisit = "";
-			String numOfVisits = "0";
 			if(courseInfos != null) {
+				String lastVisit = "";
+				String numOfVisits = "0";
 				if(courseInfos.getRecentLaunch() != null) {
 					lastVisit = formatter.formatDate(courseInfos.getRecentLaunch());
 				}
 				if(courseInfos.getVisit() >= 0) {
 					numOfVisits = Integer.toString(courseInfos.getVisit());
-				}	
+				}
+				uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, resourceInfosContainer);
+				uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, resourceInfosContainer);
+			} else if(businessGroupInfos != null) {
+				String lastVisit = formatter.formatDate(businessGroupInfos.getLastModified());	
+				uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, resourceInfosContainer);
 			}
-			uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, courseInfosContainer);
-			uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, courseInfosContainer);
 		}
 		
 		//links
