@@ -317,9 +317,7 @@ public class WebDAVDispatcherImpl
 
         final String method = req.getMethod();
 
-        if (log.isDebugEnabled()) {
-            log.debug("[" + method + "] " + path);
-        }
+        log.debug("[{}] {}", method, path);
         
         if (method.equals(METHOD_PROPFIND)) {
             doPropfind(req, resp);
@@ -1064,15 +1062,13 @@ public class WebDAVDispatcherImpl
                 lockDurationStr = lockDurationStr.substring(0,commaPos);
             }
             if (lockDurationStr.startsWith("Second-")) {
-                lockDuration =
-                    (new Integer(lockDurationStr.substring(7))).intValue();
+                lockDuration = (Integer.valueOf(lockDurationStr.substring(7))).intValue();
             } else {
                 if (lockDurationStr.equalsIgnoreCase("infinity")) {
                     lockDuration = MAX_TIMEOUT;
                 } else {
                     try {
-                        lockDuration =
-                            (new Integer(lockDurationStr)).intValue();
+                        lockDuration = (Integer.valueOf(lockDurationStr)).intValue();
                     } catch (NumberFormatException e) {
                         lockDuration = MAX_TIMEOUT;
                     }
@@ -1531,7 +1527,7 @@ public class WebDAVDispatcherImpl
         UserSession usess = webDAVManager.getUserSession(req);
         boolean locked = lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity());
         if(locked && log.isDebugEnabled()) {
-        	log.debug("Ressource is locked: " + req.getPathInfo());
+        	log.debug("Ressource is locked: {}", req.getPathInfo());
         }
         return locked;
     }
@@ -1716,7 +1712,7 @@ public class WebDAVDispatcherImpl
             if (!resources.mkdir(dest)) {
                 WebResource destResource = resources.getResource(dest);
                 if (!destResource.isDirectory()) {
-                    errorList.put(dest, new Integer(WebdavStatus.SC_CONFLICT));
+                    errorList.put(dest, Integer.valueOf(WebdavStatus.SC_CONFLICT));
                     return false;
                 }
             }
@@ -1743,7 +1739,7 @@ public class WebDAVDispatcherImpl
                     String parent = destResource.getPath().substring(0, lastSlash);
                     WebResource parentResource = resources.getResource(parent);
                     if (!parentResource.isDirectory()) {
-                        errorList.put(source, new Integer(WebdavStatus.SC_CONFLICT));
+                        errorList.put(source, Integer.valueOf(WebdavStatus.SC_CONFLICT));
                         return false;
                     }
                 }
@@ -1826,6 +1822,9 @@ public class WebDAVDispatcherImpl
             if (!resources.delete(resource)) {
                 resp.setStatus(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                 return false;
+            } else {
+            	lockManager.removeResourceLock(resource);
+            	lockManager.removeLockNullResource(resource);
             }
         } else {
 
@@ -1833,8 +1832,7 @@ public class WebDAVDispatcherImpl
 
             deleteCollection(req, path, errorList);
             if (!resources.delete(resource)) {
-                errorList.put(path, new Integer
-                    (WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+                errorList.put(path, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
             }
 
             if (!errorList.isEmpty()) {
@@ -1863,7 +1861,7 @@ public class WebDAVDispatcherImpl
 
         // Prevent deletion of special subdirectories
         if (isSpecialPath(path)) {
-            errorList.put(path, new Integer(WebdavStatus.SC_FORBIDDEN));
+            errorList.put(path, Integer.valueOf(WebdavStatus.SC_FORBIDDEN));
             return;
         }
 
@@ -1889,7 +1887,7 @@ public class WebDAVDispatcherImpl
 
             if (lockManager.isLocked(childResource, ifHeader + lockTokenHeader, usess.getIdentity())) {
 
-                errorList.put(childName, new Integer(WebdavStatus.SC_LOCKED));
+                errorList.put(childName, Integer.valueOf(WebdavStatus.SC_LOCKED));
 
             } else {
                 if (childResource.isDirectory()) {
@@ -1899,8 +1897,12 @@ public class WebDAVDispatcherImpl
                 if (!resources.delete(childResource)) {
                     if (!childResource.isDirectory()) {
                         // If it's not a collection, then it's an unknown error
-                        errorList.put(childName, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+                        errorList.put(childName, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                     }
+                } else {
+                	// RFC say we need to remove locks after a delete operation
+                	lockManager.removeResourceLock(childResource);
+                    lockManager.removeLockNullResource(childResource);
                 }
             }
         }

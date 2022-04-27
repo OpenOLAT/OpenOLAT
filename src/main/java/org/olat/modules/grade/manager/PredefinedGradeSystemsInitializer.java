@@ -164,6 +164,48 @@ public class PredefinedGradeSystemsInitializer {
 			gradeSystem = gradeService.updateGradeSystem(gradeSystem);
 			dbInstance.commitAndCloseSession();
 		}
+		
+
+		
+		if (gradeService.isGradeServiceIdentifierAvailable("oo.cefr")) {
+			GradeSystem gradeSystem = gradeSystemDao.create("oo.cefr", GradeSystemType.text, true);
+			gradeSystem.setEnabled(true);
+			gradeSystem.setPassed(false);
+			gradeSystem = gradeService.updateGradeSystem(gradeSystem);
+			
+			int counter = 1;
+			PerformanceClass performanceClass = gradeService.createPerformanceClass(gradeSystem, "oo.cefr.1");
+			performanceClass.setBestToLowest(counter++);
+			performanceClass.setPassed(false);
+			gradeService.updatePerformanceClass(performanceClass);
+			
+			performanceClass = gradeService.createPerformanceClass(gradeSystem, "oo.cefr.2");
+			performanceClass.setBestToLowest(counter++);
+			performanceClass.setPassed(false);
+			gradeService.updatePerformanceClass(performanceClass);
+			
+			performanceClass = gradeService.createPerformanceClass(gradeSystem, "oo.cefr.3");
+			performanceClass.setBestToLowest(counter++);
+			performanceClass.setPassed(false);
+			gradeService.updatePerformanceClass(performanceClass);
+			
+			performanceClass = gradeService.createPerformanceClass(gradeSystem, "oo.cefr.4");
+			performanceClass.setBestToLowest(counter++);
+			performanceClass.setPassed(false);
+			gradeService.updatePerformanceClass(performanceClass);
+			
+			performanceClass = gradeService.createPerformanceClass(gradeSystem, "oo.cefr.5");
+			performanceClass.setBestToLowest(counter++);
+			performanceClass.setPassed(false);
+			gradeService.updatePerformanceClass(performanceClass);
+			
+			performanceClass = gradeService.createPerformanceClass(gradeSystem, "oo.cefr.6");
+			performanceClass.setBestToLowest(counter++);
+			performanceClass.setPassed(false);
+			gradeService.updatePerformanceClass(performanceClass);
+			
+			dbInstance.commitAndCloseSession();
+		}
 	}
 
 }

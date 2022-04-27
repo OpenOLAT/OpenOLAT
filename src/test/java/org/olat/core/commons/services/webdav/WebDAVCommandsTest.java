@@ -648,6 +648,48 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	}
 	
 	@Test
+	public void testDeleteUnlock()
+	throws IOException, URISyntaxException {
+		//create a user
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("webdav-12");
+		
+		//create a file
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
+		createFile(vfsPublic, "testDeleteUnlock.txt");
+		
+		//check
+		VFSItem item = vfsPublic.resolve("testDeleteUnlock.txt");
+		Assert.assertTrue(item instanceof VFSLeaf);
+		Assert.assertTrue(((VFSLeaf)item).getSize() > 0);
+
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user);
+
+		//lock the file
+		URI textUri = conn.getBaseURI().path("webdav").path("home").path("public").path("testDeleteUnlock.txt").build();
+		String lockToken = conn.lock(textUri, UUID.randomUUID().toString());
+		Assert.assertNotNull(lockToken);
+
+		//delete the file
+		HttpDelete delete = conn.createDelete(textUri);
+		delete.addHeader("Lock-Token", lockToken);
+		HttpResponse deleteResponse = conn.execute(delete);
+
+		Assert.assertEquals(204, deleteResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(deleteResponse.getEntity());
+		
+		//check if really deleted
+		VFSItem reloadTestLeaf = vfsPublic.resolve("testDelete.txt");
+		Assert.assertNull(reloadTestLeaf);
+		
+		boolean locked = lockManager.isLocked(item, VFSLockApplicationType.webdav, null);
+		Assert.assertFalse(locked);
+
+		conn.close();
+	}
+	
+	@Test
 	public void coursePermissions_participant()
 	throws IOException, URISyntaxException {
 		webDAVModule.setEnableLearnersBookmarksCourse(true);
