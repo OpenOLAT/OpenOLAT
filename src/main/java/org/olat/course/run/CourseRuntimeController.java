@@ -108,6 +108,7 @@ import org.olat.course.config.ui.CourseSettingsController;
 import org.olat.course.db.CourseDBManager;
 import org.olat.course.db.CustomDBMainController;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.LearningPathService;
@@ -132,6 +133,7 @@ import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
+import org.olat.course.run.preview.PreviewConfigController;
 import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -1310,7 +1312,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			reloadStatus();
 		}
 		
-		if(popedController != getRunMainController()) {
+		if(popedController != getRunMainController()
+				&& !(popedController instanceof PreviewConfigController)
+				&& !(popedController instanceof OverviewController)) {
 			toolControllerDone(ureq);
 		}
 	}
