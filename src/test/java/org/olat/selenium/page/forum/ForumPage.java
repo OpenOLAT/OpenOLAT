@@ -202,9 +202,10 @@ public class ForumPage {
 	
 	public ForumPage replyToMessageNoWait(String reference, String title, String reply) {
 		By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + reference + "')]]//a[contains(@class,'o_sel_forum_reply')]");
-		OOGraphene.waitElement(replyBy, browser);
+		OOGraphene.waitElementPresence(replyBy, 5, browser);
 		OOGraphene.click(replyBy, browser);
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		
 		if(title != null) {
 			By titleBy = By.cssSelector(".o_sel_forum_message_title input[type='text']");
