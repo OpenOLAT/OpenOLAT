@@ -27,6 +27,7 @@
 							jQuery(el).removeClass('o_hide').addClass('o_show');
 							jQuery('a#${sectionRubric.identifier}.translated i').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 							jQuery('a#${sectionRubric.identifier}.translated span').html('$r.translate("hide.rubric")');
+							BFormatter.formatLatexFormulas();
 						} else {
 							jQuery(el).removeClass('o_show').addClass('o_hide');
 							jQuery('a#${sectionRubric.identifier}.translated i').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
