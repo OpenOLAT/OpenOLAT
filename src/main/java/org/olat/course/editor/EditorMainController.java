@@ -375,7 +375,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	@Override
 	public void initToolbar() {
 		stackPanel.addTool(createNodeLink, Align.left);
-		stackPanel.addTool(quickAddCtr.getInitialComponent(), Align.left, false, "o_tool o_quick_add");
+		if(quickAddCtr != null) {
+			stackPanel.addTool(quickAddCtr.getInitialComponent(), Align.left, false, "o_tool o_quick_add");
+		}
 		stackPanel.addTool(importNodesLink, Align.left);
 		stackPanel.addTool(statusLink, Align.right);
 		stackPanel.addTool(overviewLink, Align.right);
@@ -393,7 +395,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void initQuickAdd(UserRequest ureq, ICourse course) {
 		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
 		
-		List<CourseNodeConfiguration> courseNodeConfigs = new ArrayList<CourseNodeConfiguration>();
+		List<CourseNodeConfiguration> courseNodeConfigs = new ArrayList<>();
 		cnf.getRegisteredCourseNodeAliases().stream().forEach(e -> {
 			CourseNodeConfiguration cnConfig =  cnf.getCourseNodeConfiguration(e);
 	    	boolean supportedNodeAccessType = nodeAccessService.isSupported(NodeAccessType.of(course), cnConfig.getAlias());
