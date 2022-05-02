@@ -70,17 +70,17 @@
 		<apache.log4j>2.17.2</apache.log4j>
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
-		<io.jsonwebtoken>0.11.3</io.jsonwebtoken>
+		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.2.17.Final</io.undertow>
 		<jackson.version>2.13.2</jackson.version>
 		<swagger.ui.version>4.10.3</swagger.ui.version>
 		<org.mysql.version>8.0.29</org.mysql.version>
 		<org.postgresql.version>42.3.4</org.postgresql.version>
-		<org.infinispan.version>13.0.9.Final</org.infinispan.version>
+		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.1.4</version.selenium>
 		<version.drone>3.0.0-alpha.4</version.drone>
-		<activemq.version>5.17.0</activemq.version>
+		<activemq.version>5.17.1</activemq.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
