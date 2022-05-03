@@ -57,7 +57,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
-import org.olat.login.auth.OLATAuthManager;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
@@ -110,8 +109,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
 	@Autowired
@@ -325,7 +322,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if (!UserManager.getInstance().isEmailAllowed(email)) {
 						// error, email already exists. should actually not happen if OLAT Authenticator has
 						// been set after removing shibboleth authenticator
-						getWindowControl().setError(translator.translate("sr.error.emailexists", new String[] {WebappHelper.getMailConfig("mailSupport")}));
+						getWindowControl().setError(translator.translate("sr.error.emailexists", WebappHelper.getMailConfig("mailSupport")));
 						mainContainer.setPage(VELOCITY_ROOT + "/register.html");
 						state = STATE_UNDEFINED;
 						return;
@@ -336,7 +333,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					// tell system that this user did accept the disclaimer
 					CoreSpringFactory.getImpl(RegistrationManager.class).setHasConfirmedDislaimer(identity);
 					doLogin(identity, ureq);
-					return;
 				} else if (state == STATE_MIGRATED_SHIB_USER) { // ...proceed and migrate user
 					// create additional authentication
 					Authentication auth = migrationForm.getAuthentication();
@@ -347,7 +343,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributes);
 
 					doLogin(authenticationedIdentity, ureq);
-					return;
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				mainContainer.setPage(VELOCITY_ROOT + "/register.html");

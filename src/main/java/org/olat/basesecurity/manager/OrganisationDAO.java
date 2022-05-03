@@ -149,7 +149,6 @@ public class OrganisationDAO {
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-
 		  .append(" where org.key=:key");
 		
 		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
@@ -157,6 +156,19 @@ public class OrganisationDAO {
 				.setParameter("key", key)
 				.getResultList();
 		return organisations == null || organisations.isEmpty() ? null : organisations.get(0);
+	}
+	
+	public List<Organisation> loadByIdentifier(String identifier) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where lower(org.identifier)=:identifier");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("identifier", identifier.toLowerCase())
+				.getResultList();
 	}
 	
 	public List<Organisation> loadDefaultOrganisation() {
