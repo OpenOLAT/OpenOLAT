@@ -64,7 +64,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -199,7 +198,7 @@ public class CourseGroupWebService {
 		int count = 0;
 		GroupVO[] vos = new GroupVO[groups.size()];
 		for(BusinessGroup group:groups) {
-			vos[count++] = ObjectFactory.get(group);
+			vos[count++] = GroupVO.valueOf(group);
 		}
 		return Response.ok(vos).build();
 	}
@@ -232,17 +231,17 @@ public class CourseGroupWebService {
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
     
 		BusinessGroup bg;
-    if(group.getKey() != null && group.getKey() > 0) {
-    	//group already exists
-    	bg = bgm.loadBusinessGroup(group.getKey());
-    	bgm.addResourceTo(bg, courseRe);
-    } else {
-  		Integer min = normalize(group.getMinParticipants());
-  		Integer max = normalize(group.getMaxParticipants());
-  		bg = bgm.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
-  				group.getExternalId(), group.getManagedFlags(), min, max, false, false, courseRe);
-    }
-    GroupVO savedVO = ObjectFactory.get(bg);
+		if(group.getKey() != null && group.getKey() > 0) {
+			//group already exists
+			bg = bgm.loadBusinessGroup(group.getKey());
+			bgm.addResourceTo(bg, courseRe);
+		} else {
+			Integer min = normalize(group.getMinParticipants());
+			Integer max = normalize(group.getMaxParticipants());
+			bg = bgm.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
+					group.getExternalId(), group.getManagedFlags(), min, max, false, false, courseRe);
+		}
+		GroupVO savedVO = GroupVO.valueOf(bg);
 		return Response.ok(savedVO).build();
 	}
 	

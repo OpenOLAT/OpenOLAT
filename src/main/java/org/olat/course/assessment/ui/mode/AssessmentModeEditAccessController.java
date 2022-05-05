@@ -20,7 +20,6 @@
 package org.olat.course.assessment.ui.mode;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -58,6 +57,7 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.CurriculumElementSelectionController;
 import org.olat.course.condition.GroupSelectionController;
@@ -70,7 +70,6 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -170,12 +169,14 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		ipsEl = uifactory.addCheckboxesHorizontal("ips", "mode.ips", formLayout, onKeys, onValues);
 		ipsEl.select(onKeys[0], assessmentMode.isRestrictAccessIps());
 		ipsEl.addActionListener(FormEvent.ONCHANGE);
-		ipsEl.setEnabled(status != Status.end);
+		ipsEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.ips));
 		String ipList = assessmentMode.getIpList();
 		ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 16000, 4, 60, false, false, ipList, formLayout);
 		ipListEl.setMaxLength(16000);
 		ipListEl.setVisible(assessmentMode.isRestrictAccessIps());
-		ipListEl.setEnabled(status != Status.end);
+		ipListEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.ips));
 		
 		SelectionValues targetKeyValues = new SelectionValues();
 		boolean curriculumEnabled = curriculumModule.isEnabled();
@@ -188,7 +189,8 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		targetKeyValues.add(SelectionValues.entry(AssessmentMode.Target.courseAndGroups.name(), allLabel));
 		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, targetKeyValues.keys(), targetKeyValues.values());
 		targetEl.setElementCssClass("o_sel_assessment_mode_audience");
-		targetEl.setEnabled(status != Status.end);
+		targetEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		Target target = assessmentMode.getTargetAudience();
 		if(target != null) {
 			for(String audienceKey:targetKeyValues.keys()) {
@@ -207,11 +209,14 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		formLayout.add(chooseGroupsCont);
 		
 		chooseGroupsButton = uifactory.addFormLink("choose.groups", chooseGroupsCont, Link.BUTTON);
-		chooseGroupsButton.setEnabled(status != Status.end);
+		chooseGroupsButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		chooseAreasButton = uifactory.addFormLink("choose.areas", chooseGroupsCont, Link.BUTTON);
-		chooseAreasButton.setEnabled(status != Status.end);
+		chooseAreasButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		chooseCurriculumElementsButton = uifactory.addFormLink("choose.curriculum.elements", chooseGroupsCont, Link.BUTTON);
-		chooseCurriculumElementsButton.setEnabled(status != Status.end);
+		chooseCurriculumElementsButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		chooseCurriculumElementsButton.setVisible(curriculumEnabled);
 
 		selectAssessmentModeToBusinessGroups(assessmentMode.getGroups());
@@ -220,12 +225,13 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 
 		forCoachEl = uifactory.addCheckboxesHorizontal("forcoach", "mode.for.coach", formLayout, onKeys, onValues);
 		forCoachEl.select(onKeys[0], assessmentMode.isApplySettingsForCoach());
-		forCoachEl.setEnabled(status != Status.end);
+		forCoachEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.coaches));
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		if(status != Status.end) {
+		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.access)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
 	}
@@ -464,9 +470,12 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 			assessmentMode = assessmentModeMgr.persist(assessmentMode);
 		}
 		
-		updateBusinessGroupRelations(target);
-		updateAreaRelations(target);
-		updateCurriculumElementsRelations(target);
+		AssessmentModeHelper.updateBusinessGroupRelations(groupKeys, assessmentMode, target,
+				assessmentModeMgr, businessGroupService);
+		AssessmentModeHelper.updateAreaRelations(areaKeys, assessmentMode, target,
+				assessmentModeMgr, areaMgr);
+		AssessmentModeHelper.updateCurriculumElementsRelations(curriculumElementKeys, assessmentMode, target,
+				assessmentModeMgr, curriculumService);
 
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -476,104 +485,6 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 			.fireEventToListenersOf(changedEvent, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
 	}
 	
-	private void updateCurriculumElementsRelations(Target target) {
-		if(curriculumElementKeys.isEmpty() || target == Target.course || target == Target.groups) {
-			if(!assessmentMode.getCurriculumElements().isEmpty()) {
-				List<AssessmentModeToCurriculumElement> currentElements = new ArrayList<>(assessmentMode.getCurriculumElements());
-				for(AssessmentModeToCurriculumElement modeToElement:currentElements) {
-					assessmentModeMgr.deleteAssessmentModeToCurriculumElement(modeToElement);
-				}
-				assessmentMode.getCurriculumElements().clear();
-			}
-		} else {
-			Set<Long> currentKeys = new HashSet<>();
-			List<AssessmentModeToCurriculumElement> currentElements = new ArrayList<>(assessmentMode.getCurriculumElements());
-			for(AssessmentModeToCurriculumElement modeToElement:currentElements) {
-				Long currentKey = modeToElement.getCurriculumElement().getKey();
-				if(!curriculumElementKeys.contains(currentKey)) {
-					assessmentMode.getCurriculumElements().remove(modeToElement);
-					assessmentModeMgr.deleteAssessmentModeToCurriculumElement(modeToElement);
-				} else {
-					currentKeys.add(currentKey);
-				}
-			}
-			
-			for(Long curriculumElementKey:curriculumElementKeys) {
-				if(!currentKeys.contains(curriculumElementKey)) {
-					CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
-					AssessmentModeToCurriculumElement modeToElement = assessmentModeMgr.createAssessmentModeToCurriculumElement(assessmentMode, element);
-					assessmentMode.getCurriculumElements().add(modeToElement);
-				}
-			}
-		}
-	}
-	
-	private void updateAreaRelations(Target target) {
-		//update areas
-		if(areaKeys.isEmpty() || target == Target.course || target == Target.curriculumEls) {
-			if(!assessmentMode.getAreas().isEmpty()) {
-				List<AssessmentModeToArea> currentAreas = new ArrayList<>(assessmentMode.getAreas());
-				for(AssessmentModeToArea modeToArea:currentAreas) {
-					assessmentModeMgr.deleteAssessmentModeToArea(modeToArea);
-				}
-				assessmentMode.getAreas().clear();
-			}
-		} else {
-			Set<Long> currentKeys = new HashSet<>();
-			List<AssessmentModeToArea> currentAreas = new ArrayList<>(assessmentMode.getAreas());
-			for(AssessmentModeToArea modeToArea:currentAreas) {
-				Long currentKey = modeToArea.getArea().getKey();
-				if(!areaKeys.contains(currentKey)) {
-					assessmentMode.getAreas().remove(modeToArea);
-					assessmentModeMgr.deleteAssessmentModeToArea(modeToArea);
-				} else {
-					currentKeys.add(currentKey);
-				}
-			}
-			
-			for(Long areaKey:areaKeys) {
-				if(!currentKeys.contains(areaKey)) {
-					BGArea area = areaMgr.loadArea(areaKey);
-					AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(assessmentMode, area);
-					assessmentMode.getAreas().add(modeToArea);
-				}
-			}
-		}
-	}
-	
-	private void updateBusinessGroupRelations(Target target) {
-		//update groups
-		if(groupKeys.isEmpty() || target == Target.course || target == Target.curriculumEls) {
-			if(!assessmentMode.getGroups().isEmpty()) {
-				List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
-				for(AssessmentModeToGroup modeToGroup:currentGroups) {
-					assessmentModeMgr.deleteAssessmentModeToGroup(modeToGroup);
-				}
-				assessmentMode.getGroups().clear();
-			}
-		} else {
-			Set<Long> currentKeys = new HashSet<>();
-			List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
-			for(AssessmentModeToGroup modeToGroup:currentGroups) {
-				Long currentKey = modeToGroup.getBusinessGroup().getKey();
-				if(!groupKeys.contains(currentKey)) {
-					assessmentMode.getGroups().remove(modeToGroup);
-					assessmentModeMgr.deleteAssessmentModeToGroup(modeToGroup);
-				} else {
-					currentKeys.add(currentKey);
-				}
-			}
-			
-			for(Long groupKey:groupKeys) {
-				if(!currentKeys.contains(groupKey)) {
-					BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
-					AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(assessmentMode, group);
-					assessmentMode.getGroups().add(modeToGroup);
-				}
-			}
-		}
-	}
-
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(ipsEl == source) {

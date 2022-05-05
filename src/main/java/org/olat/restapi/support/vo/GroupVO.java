@@ -23,6 +23,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.group.BusinessGroup;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 
@@ -57,6 +59,19 @@ public class GroupVO {
 
 	public GroupVO() {
 		//make jaxb happy
+	}
+	
+	public static GroupVO valueOf(BusinessGroup grp) {
+		GroupVO vo = new GroupVO();
+		vo.setKey(grp.getKey());
+		vo.setName(grp.getName());
+		vo.setDescription(grp.getDescription());
+		vo.setMaxParticipants(grp.getMaxParticipants());
+		vo.setMinParticipants(grp.getMinParticipants());
+		vo.setExternalId(grp.getExternalId());
+		vo.setManagedFlags(grp.getManagedFlagsString());
+		vo.setType("LearningGroup");
+		return vo;
 	}
 	
 	public Long getKey() {

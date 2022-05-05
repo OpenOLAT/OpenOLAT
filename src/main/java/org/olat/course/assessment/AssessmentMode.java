@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
@@ -50,6 +51,16 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public RepositoryEntry getRepositoryEntry();
 	
 	public LectureBlock getLectureBlock();
+	
+	public String getExternalId();
+	
+	public void setExternalId(String externalId);
+	
+	public AssessmentModeManagedFlag[] getManagedFlags();
+	
+	public String getManagedFlagsString();
+	
+	public void setManagedFlagsString(String managedFlagsString);
 	
 	public Status getStatus();
 

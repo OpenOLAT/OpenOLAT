@@ -46,6 +46,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.condition.AreaSelectionController;
@@ -142,7 +143,8 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		courseElementsRestrictionEl = uifactory.addCheckboxesHorizontal("cer", "mode.course.element.restriction", formLayout, onKeys, onValues);
 		courseElementsRestrictionEl.addActionListener(FormEvent.ONCHANGE);
 		courseElementsRestrictionEl.select(onKeys[0], assessmentMode.isRestrictAccessElements());
-		courseElementsRestrictionEl.setEnabled(status != Status.end);
+		courseElementsRestrictionEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.restrictions));
 		
 		String coursePage = velocity_root + "/choose_elements.html";
 		chooseElementsCont = FormLayoutContainer.createCustomFormLayout("chooseElements", getTranslator(), coursePage);
@@ -167,7 +169,8 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);
 		
 		chooseElementsButton = uifactory.addFormLink("choose.elements", chooseElementsCont, Link.BUTTON);
-		chooseElementsButton.setEnabled(status != Status.end);
+		chooseElementsButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.elements));
 		
 		startElementKey = assessmentMode.getStartElement();
 		String startElementName = "";
@@ -176,12 +179,13 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		}
 		startElementEl = uifactory.addStaticTextElement("mode.start.element", "mode.start.element", startElementName, formLayout);
 		chooseStartElementButton = uifactory.addFormLink("choose.start.element", formLayout, Link.BUTTON);
-		chooseStartElementButton.setEnabled(status != Status.end);
+		chooseStartElementButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.startElements));
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		if(status != Status.end) {
+		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.restrictions)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
 	}

@@ -33,6 +33,14 @@ public class SearchAssessmentModeParams {
 	private Date dateFrom;
 	private String idAndRefs;
 	private String name;
+	
+	private String externalId;
+	private Boolean managed;
+	private Boolean withExternalId;
+	
+	private Boolean running;
+	
+	private Long repositoryEntryKey;
 
 	public Date getDateFrom() {
 		return dateFrom;
@@ -64,5 +72,45 @@ public class SearchAssessmentModeParams {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
+	}
+
+	public Boolean getWithExternalId() {
+		return withExternalId;
+	}
+
+	public void setWithExternalId(Boolean withExternalId) {
+		this.withExternalId = withExternalId;
+	}
+
+	public Boolean getRunning() {
+		return running;
+	}
+
+	public void setRunning(Boolean running) {
+		this.running = running;
+	}
+
+	public Long getRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
+
+	public void setRepositoryEntryKey(Long repositoryEntryKey) {
+		this.repositoryEntryKey = repositoryEntryKey;
 	}
 }

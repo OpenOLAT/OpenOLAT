@@ -70,9 +70,12 @@ public class AssessmentModule extends AbstractSpringModule {
 	private static final String SEB_ALLOWVIDEOCAPTURE = "safe.exam.browser.allow.video.capture";
 	private static final String SEB_VIEWMODE = "safe.exam.browser.view.mode";
 	
+	private static final String MANAGED_ASSESSMENT_MODES_ENABLED = "managedAssessmentModes";
 	
 	@Value("${assessment.mode:enabled}")
 	private String assessmentModeEnabled;
+	@Value("${assessment.mode.managed}")
+	private boolean managedAssessmentModes;
 	
 	@Value("${safe.exam.browser.view.mode:0}")
 	private int safeExamBrowserViewMode;
@@ -146,6 +149,11 @@ public class AssessmentModule extends AbstractSpringModule {
 			assessmentModeEnabled = enabledObj;
 		}
 		
+		String managedModes = getStringPropertyValue(MANAGED_ASSESSMENT_MODES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(managedModes)) {
+			managedAssessmentModes = "true".equals(managedModes);
+		}
+		
 		String safeExamBrowserViewModeObj = getStringPropertyValue(SEB_VIEWMODE, Integer.toString(safeExamBrowserViewMode));
 		safeExamBrowserViewMode = Integer.parseInt(safeExamBrowserViewModeObj);
 		
@@ -184,6 +192,15 @@ public class AssessmentModule extends AbstractSpringModule {
 	public void setAssessmentModeEnabled(boolean enabled) {
 		assessmentModeEnabled = enabled ? "enabled" : "disabled";
 		setStringProperty("assessment.mode", assessmentModeEnabled, true);
+	}
+	
+	public boolean isManagedAssessmentModes() {
+		return managedAssessmentModes;
+	}
+
+	public void setManagedAssessmentModes(boolean enabled) {
+		managedAssessmentModes = enabled;
+		setStringProperty(MANAGED_ASSESSMENT_MODES_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public String getSafeExamBrowserDownloadUrl() {
