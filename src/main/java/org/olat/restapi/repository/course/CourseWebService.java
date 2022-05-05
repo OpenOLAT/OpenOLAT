@@ -75,6 +75,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.restapi.CourseAssessmentModeWebService;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CalSecurityCallback;
 import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
@@ -265,7 +266,22 @@ public class CourseWebService {
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
-
+	
+	/**
+	 * To get the web service to manage the assessment modes of a specific course.
+	 * 
+	 * @param request the request
+	 * @return The web service for assessment modes.
+	 */
+	@Path("assessmentmodes")
+	public CourseAssessmentModeWebService getAssessmentModeWebService(@Context HttpServletRequest request) {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean administrator = isManager(request);
+		CourseAssessmentModeWebService service = new CourseAssessmentModeWebService(courseRe, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
 	/**
 	 * Publish the course.
 	 * 

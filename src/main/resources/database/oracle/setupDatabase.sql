@@ -1536,6 +1536,8 @@ create table o_as_mode_course (
    lastmodified date not null,
    a_name varchar2(255 char),
    a_description clob,
+   a_external_id varchar2(64 char),
+   a_managed_flags varchar2(255 char),
    a_status varchar2(16 char),
    a_end_status varchar(32),
    a_manual_beginend number default 0 not null,
