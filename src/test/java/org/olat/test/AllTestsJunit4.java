@@ -529,6 +529,8 @@ import org.junit.runners.Suite;
 	org.olat.restapi.UserCoursesTest.class,
 	org.olat.restapi.UserMgmtTest.class,
 	org.olat.restapi.ContactsTest.class,
+	org.olat.restapi.AssessmentModeWebServiceTest.class,
+	org.olat.restapi.CourseAssessmentModeWebServiceTest.class,
 	org.olat.restapi.SharedFolderTest.class,
 	org.olat.restapi.SystemTest.class,
 	org.olat.restapi.ChangePasswordTest.class,
