@@ -1398,16 +1398,22 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
 		String grade = scoreEval.getGrade();
+		String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
+		Boolean passed = scoreEval.getPassed();
 		if (scoreEval.getScore() != null) {
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 			grade = gradeScoreRange.getGrade();
+			gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+			passed = Mode.none != assessmentConfig.getPassedMode()
+					? gradeScoreRange.getPassed()
+					: null;
 		}
-		ScoreEvaluation applyGradeEval = new ScoreEvaluation(scoreEval.getScore(), grade,
-				scoreEval.getGradeSystemIdent(), performanceClassIdent, scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), null, scoreEval.getCurrentRunStartDate(),
-				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		ScoreEvaluation applyGradeEval = new ScoreEvaluation(scoreEval.getScore(), grade, gradeSystemIdent,
+				performanceClassIdent, passed, scoreEval.getAssessmentStatus(), null,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, applyGradeEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
