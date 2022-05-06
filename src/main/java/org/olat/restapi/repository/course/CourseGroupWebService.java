@@ -211,7 +211,7 @@ public class CourseGroupWebService {
 	 * @return
 	 */
 	@PUT
-	@Operation(summary = "Create a new group", description = "Creates a new group for the course")
+	@Operation(summary = "Creates a new group", description = "Creates a new group for the course")
 	@ApiResponse(responseCode = "200", description = "A group to save", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
