@@ -111,6 +111,10 @@ div.o_callout_overlay {
 		font-family: $headings-font-family;
 	  	line-height: $headings-line-height;
 	}
+	.o_modal_close {
+		/* make room for context-help in header */
+		margin-left: 10px;
+	}
 }
 
 .modal.o_offcanvas_right_modal .modal-dialog {
