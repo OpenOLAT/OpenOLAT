@@ -82,6 +82,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_KEY_RATING = "rating";
 	public static final String CONFIG_KEY_FORWARD_SEEKING_RESTRICTED = "forwardSeekingRestricted";
 	public static final String CONFIG_KEY_TITLE = "title";
+	public static final String CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS = "courseSpecificCommentsRatings";
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT = "descriptionSelect";
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT_NONE = "none";
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT_RESOURCE = "resourceDescription";

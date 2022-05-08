@@ -136,7 +136,7 @@ public class VideoDisplayController extends BasicController {
 	private LicenseService licenseService;
 	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
-		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, true, true, videoEntry.getDescription(), false, false, false));
+		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, false, true, true, true, videoEntry.getDescription(), false, false, false));
 	}
 	
 	/**
@@ -191,8 +191,13 @@ public class VideoDisplayController extends BasicController {
 						? new ReadOnlyCommentsSecurityCallback() : new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				String subIdent = courseNode == null ? null : courseNode.getIdent();
 				PublishingInformations publishingInformations = getPublisher(entry, videoEntry, subIdent);
-				// comments are always linked to the video resource (it's historic)
-				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), videoEntry.getOlatResource(), subIdent,
+				// Legacy: comments are always linked to the video resource (it's historic)
+				RepositoryEntry commentsEntry = videoEntry;
+				// New: use the context rather than the video entry for not leaking comments across contexts
+				if (displayOptions.isUseContainerForCommentsAndRatings() && entry != null) {
+					commentsEntry = entry;
+				}
+				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), commentsEntry.getOlatResource(), subIdent,
 						ratingSecCallback, publishingInformations, displayOptions.isShowComments(), displayOptions.isShowRating(), true);
 				if (displayOptions.isShowComments()) {					
 					commentsAndRatingCtr.expandComments(ureq);
