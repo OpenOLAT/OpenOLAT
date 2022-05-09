@@ -156,4 +156,35 @@ public class ZipUtilTest extends OlatTestCase {
 		Assert.assertFalse(success);
 		targetDir.deleteSilently();
 	}
+	
+	
+	/**
+	 * Empty files have break the unzip loop (OO-6214)
+	 * @throws Exception
+	 */
+	@Test
+	public void unzipWithEmptyFiles() throws Exception {
+		URL url = ZipUtilTest.class.getResource("Empty_file.zip");
+		VFSLeaf zipLeaf = new VFSJavaIOFile(url.toURI());
+		
+		VFSContainer tmpDir = VFSManager.olatRootContainer(FolderConfig.getRelativeTmpDir());
+		tmpDir.setLocalSecurityCallback(new FullAccessCallback());
+		VFSContainer targetDir = tmpDir.createChildContainer("zip" + CodeHelper.getForeverUniqueID());
+		boolean success = ZipUtil.unzip(zipLeaf, targetDir, (Identity)null, false);
+		Assert.assertTrue(success);
+		
+		// check the empty file
+		VFSItem emptyLeaf = targetDir.resolve("vorgehen2.html");
+		Assert.assertNotNull(emptyLeaf);
+		Assert.assertTrue(emptyLeaf instanceof VFSLeaf);
+		Assert.assertEquals(0l, ((VFSLeaf)emptyLeaf).getSize());
+		
+		// check the other file
+		VFSItem leaf = targetDir.resolve("wissens.html");
+		Assert.assertNotNull(leaf);
+		Assert.assertTrue(leaf instanceof VFSLeaf);
+		Assert.assertTrue(((VFSLeaf)leaf).getSize() > 300);
+
+		targetDir.deleteSilently();
+	}
 }
