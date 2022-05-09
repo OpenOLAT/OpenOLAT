@@ -257,9 +257,7 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copy(oZip, newEntry, stats)) {
-									return false;
-								}
+								copy(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
@@ -267,9 +265,7 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copy(oZip, newEntry, stats)) {
-									return false;
-								}
+								copy(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
 							}
 						}
@@ -279,15 +275,20 @@ public class ZipUtil {
 				oEntr = oZip.getNextEntry();
 			}
 		} catch (IOException e) {
+			log.error("", e);
 			return false;
 		}
 		return true;
 	} // unzip
 	
-	private static boolean copy(ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats) {
+	private static boolean copy(ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats)
+	throws InvalidZipException {
 		try(OutputStream out = newEntry.getOutputStream(false)) {
 			stats.entry();
-			return zpio(oZip, out, stats) > 0;
+			zpio(oZip, out, stats);
+			return true;
+		} catch(InvalidZipException ze) {
+			throw ze;
 		} catch(Exception e) {
 			handleIOException("", e);
 			return false;
@@ -378,7 +379,7 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copyShielded(oZip, newEntry, stats)) {
+								if(!copyShielded(oZip, newEntry, stats)) {
 									return false;
 								}
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
@@ -389,9 +390,7 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copyShielded(oZip, newEntry, stats)) {
-									return false;
-								}
+								copyShielded(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
 								lastLeaf = newEntry;
 							}
@@ -407,11 +406,15 @@ public class ZipUtil {
 		return true;
 	} // unzip
 	
-	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats) {
+	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats)
+	throws InvalidZipException {
 		try(InputStream in = new ShieldInputStream(oZip);
 				OutputStream out = new BufferedOutputStream(newEntry.getOutputStream(false))) {
 			stats.entry();
-			return zpio(in, out, stats) > 0;
+			zpio(in, out, stats);
+			return true;
+		} catch(InvalidZipException ze) {
+			throw ze;
 		} catch(Exception e) {
 			handleIOException("", e);
 			return false;
@@ -912,14 +915,14 @@ public class ZipUtil {
 			maxEntries = vfsRepositoryModule.getZipMaxEntries();
 		}
 		
-		public void entry() throws IOException {
+		public void entry() throws InvalidZipException {
 			numOfEntries++;
 			if(numOfEntries > maxEntries) {
-				throw new IOException("Suspected of ZIP-bomb. Max num. of entries: " + maxEntries);
+				throw new InvalidZipException("Suspected of ZIP-bomb. Max num. of entries: " + maxEntries);
 			}
 		}
 
-		public void uncompressedData(long uncompressedData) throws IOException {
+		public void uncompressedData(long uncompressedData) throws InvalidZipException {
 			uncompressedSize += uncompressedData;
 			if(uncompressedSize < GRACE_ENTRY_SIZE) {
 				return;
@@ -929,7 +932,7 @@ public class ZipUtil {
 			if (ratio >= minInflateRatio) {
 				return;
 			}
-			throw new IOException("Suspected of ZIP-bomb");
+			throw new InvalidZipException("Suspected of ZIP-bomb");
 		}
 	}
 	
@@ -967,6 +970,15 @@ public class ZipUtil {
 			}
 		} catch (Exception e1) {
 			log.error("", e1);
+		}
+	}
+	
+	public static final class InvalidZipException extends IOException {
+		
+		private static final long serialVersionUID = 1527249524187259398L;
+
+		public InvalidZipException(String message) {
+			super(message);
 		}
 	}
 }
