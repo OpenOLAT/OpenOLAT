@@ -733,10 +733,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			/* (We commit responses immediately here) */
 			itemSessionController.commitResponses(timestamp);
 
-			/* Invoke response processing (only if responses are valid) */
-			if (allResponsesValid) {
-				itemSessionController.performResponseProcessing(timestamp);
-			}
+			/* Invoke response processing (if responses are valid or not) */
+			itemSessionController.performResponseProcessing(timestamp);
 		} catch (final QtiCandidateStateException e) {
 	        candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED, null);
 			logError("RESPONSES_NOT_EXPECTED", e);
