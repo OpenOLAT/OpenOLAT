@@ -257,9 +257,7 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copy(oZip, newEntry, stats)) {
-									return false;
-								}
+								copy(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
@@ -267,9 +265,7 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copy(oZip, newEntry, stats)) {
-									return false;
-								}
+								copy(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
 							}
 						}
@@ -378,9 +374,7 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copyShielded(oZip, newEntry, stats)) {
-									return false;
-								}
+								copyShielded(oZip, newEntry, stats);
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
 							}
@@ -389,9 +383,7 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copyShielded(oZip, newEntry, stats)) {
-									return false;
-								}
+								copyShielded(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
 								lastLeaf = newEntry;
 							}
