@@ -67,4 +67,23 @@ public class EditDatesLecturesEntryRow {
 		return lectureBlockWithTeachers.getTeachers();
 	}
 
+	@Override
+	public int hashCode() {
+		Long key = getLectureBlockKey();
+		return key == null ? 762438 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof EditDatesLecturesEntryRow) {
+			EditDatesLecturesEntryRow row = (EditDatesLecturesEntryRow)obj;
+			Long key = getLectureBlockKey();
+			Long rowKey = row.getLectureBlockKey();
+			return key != null && key.equals(rowKey);
+		}
+		return super.equals(obj);
+	}
 }
