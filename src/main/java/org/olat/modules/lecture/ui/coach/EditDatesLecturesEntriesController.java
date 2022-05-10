@@ -415,12 +415,14 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	}
 	
 	private void searchLectureBlocks(FlexiTableSearchEvent event) {
+		List<EditDatesLecturesEntryRow> selected = getSelectedLectures();
 		Map<Long,EditDatesLecturesEntryRow> lectureKeys = new HashMap<>();
 		lectureBlocksTableModel.filter(event.getFilters());
-		loadLectureBlocks(lectureKeys);
+		loadLectureBlocks(lectureKeys, selected);
 	}
 	
 	private void loadLectureBlocks() {
+		List<EditDatesLecturesEntryRow> selected = getSelectedLectures();
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		if(noticeWrapper.getPredefinedLectureBlocks() != null && !noticeWrapper.getPredefinedLectureBlocks().isEmpty()) {
 			searchParams.setLectureBlocks(noticeWrapper.getPredefinedLectureBlocks());
@@ -451,13 +453,13 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			lectureKeys.put(lectureBlock.getLectureBlock().getKey(), row);
 		}
 		lectureBlocksTableModel.setObjects(keyValues);
-		loadLectureBlocks(lectureKeys);
+		loadLectureBlocks(lectureKeys, selected);
 		initLecturesTableFilters();
 	}
 		
-	private void loadLectureBlocks(Map<Long, EditDatesLecturesEntryRow> lectureKeys) {
-		List<EditDatesLecturesEntryRow> selected = getSelectedLectures();
+	private void loadLectureBlocks(Map<Long, EditDatesLecturesEntryRow> lectureKeys, List<EditDatesLecturesEntryRow> selected) {
 		if(noticeWrapper.getLectureBlocks() != null && !noticeWrapper.getLectureBlocks().isEmpty()) {
+			selected = getSelectedLectures();
 			List<LectureBlock> currentBlocks = noticeWrapper.getLectureBlocks();
 			if(currentBlocks != null) {
 				for(LectureBlock currentBlock:currentBlocks) {
