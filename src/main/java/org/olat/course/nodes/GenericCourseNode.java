@@ -52,6 +52,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -576,6 +578,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
 		postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		postCopyCourseStyleImage(sourceCourse, sourceCourseNode, course, this, envMapper.getAuthor());
 	}
 	
 	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
@@ -674,11 +677,23 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 		
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		postCopyCourseStyleImage(course, this, course, copyInstance, author);
 		postCopyGradeScale(courseEntry, getIdent(), courseEntry, copyInstance.getIdent());
 		
 		return copyInstance;
 	}
 	
+	private void postCopyCourseStyleImage(ICourse sourceCourse, CourseNode sourceNode, ICourse targetCourse, CourseNode targetNode, Identity author) {
+		if (teaserImageSource != null && ImageSourceType.custom == teaserImageSource.getType()) {
+			CourseStyleService courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
+			VFSLeaf image = courseStyleService.getImage(sourceCourse, sourceNode);
+			if (image instanceof LocalFileImpl) {
+				ImageSource targetImageSource = courseStyleService.storeImage(targetCourse, targetNode, author, ((LocalFileImpl)image).getBasefile(), image.getName());
+				targetNode.setTeaserImageSource(targetImageSource);
+			}
+		}
+	}
+
 	private void postCopyGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry, String targetIdent) {
 		if (CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentConfig(sourceEntry, this).hasGrade()) {
 			GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
