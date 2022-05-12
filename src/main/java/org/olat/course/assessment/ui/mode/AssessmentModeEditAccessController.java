@@ -470,12 +470,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 			assessmentMode = assessmentModeMgr.persist(assessmentMode);
 		}
 		
-		AssessmentModeHelper.updateBusinessGroupRelations(groupKeys, assessmentMode, target,
-				assessmentModeMgr, businessGroupService);
-		AssessmentModeHelper.updateAreaRelations(areaKeys, assessmentMode, target,
-				assessmentModeMgr, areaMgr);
-		AssessmentModeHelper.updateCurriculumElementsRelations(curriculumElementKeys, assessmentMode, target,
-				assessmentModeMgr, curriculumService);
+		saveRelations(target);
 
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -483,6 +478,15 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode, entry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(changedEvent, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+	}
+
+	public void saveRelations(Target target) {
+		AssessmentModeHelper.updateBusinessGroupRelations(groupKeys, assessmentMode, target,
+				assessmentModeMgr, businessGroupService);
+		AssessmentModeHelper.updateAreaRelations(areaKeys, assessmentMode, target,
+				assessmentModeMgr, areaMgr);
+		AssessmentModeHelper.updateCurriculumElementsRelations(curriculumElementKeys, assessmentMode, target,
+				assessmentModeMgr, curriculumService);
 	}
 	
 	@Override

@@ -62,6 +62,7 @@ public class AssessmentModeEditController extends BasicController {
 	
 	private RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
+	boolean create;
 	private Set<BGArea> assessmentModeAreas;
 	private Set<BusinessGroup> assessmentModeBusinessGroups;
 	private Set<CurriculumElement> assessmentModeCurriculumElements;
@@ -71,6 +72,7 @@ public class AssessmentModeEditController extends BasicController {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.assessmentMode = assessmentMode;
+		this.create = assessmentMode.getKey() == null;
 		
 		mainVC = createVelocityContainer("edit");
 		if(StringHelper.containsNonWhitespace(assessmentMode.getName())) {
@@ -161,6 +163,10 @@ public class AssessmentModeEditController extends BasicController {
 			if(event == Event.CHANGED_EVENT) {
 				assessmentMode = generalCtrl.getAssessmentMode();
 				updateSegments();
+				if (create) {
+					getOrCreateAccessCtrl(ureq).saveRelations(assessmentMode.getTargetAudience());
+					create = false;
+				}
 			}
 		} else if(source == restrictionCtrl) {
 			if(event == Event.CHANGED_EVENT) {
@@ -197,6 +203,12 @@ public class AssessmentModeEditController extends BasicController {
 	}
 	
 	private void doOpenAccess(UserRequest ureq) {
+		getOrCreateAccessCtrl(ureq);
+		addToHistory(ureq, accessCtrl);
+		mainVC.put("segmentCmp", accessCtrl.getInitialComponent());
+	}
+
+	private AssessmentModeEditAccessController getOrCreateAccessCtrl(UserRequest ureq) {
 		if(accessCtrl == null) {
 			accessCtrl = new AssessmentModeEditAccessController(ureq, getWindowControl(), entry, assessmentMode);
 			if(assessmentModeAreas != null) {
@@ -210,8 +222,7 @@ public class AssessmentModeEditController extends BasicController {
 			}
 			listenTo(accessCtrl);
 		}
-		addToHistory(ureq, accessCtrl);
-		mainVC.put("segmentCmp", accessCtrl.getInitialComponent());
+		return accessCtrl;
 	}
 	
 	private void doOpenSafeExamBrowser(UserRequest ureq) {
