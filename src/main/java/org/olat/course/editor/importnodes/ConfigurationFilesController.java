@@ -130,7 +130,7 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_import_course_nodes o_import_course_files_configuration");
 		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
+		tableEl.setSelectAllEnable(false);
 		tableEl.setEmptyTableMessageKey("table.files.empty");
 	}
 	
