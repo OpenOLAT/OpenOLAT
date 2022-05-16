@@ -70,6 +70,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.SingleUserObligationContext;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -163,6 +164,8 @@ public class EnrollmentManager implements GenericEventListener {
 			enrollStatus.setErrorMessage(trans.translate("error.group.already.enrolled"));
 		}
 		syncAssessmentStatus(cgm.getCourseEntry(), enNode, userCourseEnv, identity, Role.user);
+		//Invalidate user to group cache
+		userCourseEnv.getScoreAccounting().setObligationContext(new SingleUserObligationContext());
 		log.debug("doEnroll finished");
 		return enrollStatus;
 	}
@@ -180,6 +183,8 @@ public class EnrollmentManager implements GenericEventListener {
 		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, doNotSendmailPackage);
 		log.info(identity.getKey() + " doCancelEnrollment in group " + enrolledGroup);
 		syncAssessmentStatus(courseEntry, enNode, userCourseEnv, identity, Role.user);
+		//Invalidate user to group cache
+		userCourseEnv.getScoreAccounting().setObligationContext(new SingleUserObligationContext());
 
 		// 2. Remove enrollmentdate property
 		// only remove last time date, not firsttime
