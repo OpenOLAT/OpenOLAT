@@ -219,6 +219,15 @@
 		}
 	}
 }
+.o_ac_overview {
+	.o_ac_roles {
+		display: flex;
+		flex-wrap: wrap;
+		>div {
+			margin-right: auto;
+		}
+	}
+}
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
 tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {

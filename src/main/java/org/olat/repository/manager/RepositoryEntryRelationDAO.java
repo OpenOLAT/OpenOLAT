@@ -357,6 +357,29 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
+	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select members.role, count(distinct members.id) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where v.key=:repoKey")
+		  .append(" group by members.role");
+		
+		List<Object[]> resultList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("repoKey", re.getKey())
+				.getResultList();
+		Map<String, Long> roleToCountMembers = new HashMap<>(resultList.size());
+		for(Object[] objects:resultList) {
+			String role = (String)objects[0];
+			Long count = (Long)objects[1];
+			roleToCountMembers.put(role, count);
+		}
+		
+		return roleToCountMembers;
+	}
+	
 	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
 		if(re == null || identity == null) return null;
 		

@@ -748,6 +748,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {
 		return reToGroupDao.countMembers(res, excludeMe);
 	}
+	
+	@Override
+	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
+		return reToGroupDao.getRoleToCountMemebers(re);
+	}
 
 	@Override
 	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {

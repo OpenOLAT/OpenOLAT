@@ -200,6 +200,8 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe);
+	
+	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re);
 
 	/**
 	 * Return the smallest enrollment date.

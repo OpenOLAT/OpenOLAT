@@ -41,6 +41,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private LTI13ResourceAccessController lti13AccessCtrl;
 	private AuthoringEditAccessShareController accessShareCtrl;
 	private AccessConfigurationController accessOffersCtrl;
+	private AccessOverviewController accessOverviewCtrl;
 	
 	private RepositoryEntry entry;
 	private final boolean readOnly;
@@ -85,6 +87,7 @@ public class AuthoringEditAccessController extends BasicController {
 		if(lti13Module.isEnabled()) {
 			initLTI13Access(ureq);
 		}
+		initAccessOverview(ureq);
 		putInitialPanel(mainVC);
 	}
 	
@@ -125,6 +128,7 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canDownload(),
 				accessShareCtrl.getSelectedOrganisations());
 		initAccessOffers(ureq);
+		initAccessOverview(ureq);
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
@@ -143,6 +147,7 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	private void doSaveAccessOffers(UserRequest ureq) {
 		accessOffersCtrl.commitChanges();
+		initAccessOverview(ureq);
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
@@ -175,5 +180,17 @@ public class AuthoringEditAccessController extends BasicController {
 		lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(lti13AccessCtrl);
 		mainVC.put("lti13Access", lti13AccessCtrl.getInitialComponent());
+	}
+	
+
+	
+	private void initAccessOverview(UserRequest ureq) {
+		if (accessOverviewCtrl != null) {
+			accessOverviewCtrl.reload();
+		} else {
+			accessOverviewCtrl = new AccessOverviewController(ureq, getWindowControl(), entry);
+			listenTo(accessOverviewCtrl);
+			mainVC.put("accessOverview", accessOverviewCtrl.getInitialComponent());
+		}
 	}
 }

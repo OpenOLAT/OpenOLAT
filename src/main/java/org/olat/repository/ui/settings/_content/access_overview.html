@@ -1,0 +1,33 @@
+<div class="o_ac_overview">
+	<fieldset>
+		<legend>$r.translate("access.overview.title")</legend>
+		<div class="o_ac_roles">
+			<div class="o_ac_member">
+				<h4>$r.translate("access.overview.admin.access")</h4>
+				<div>$authors</div>
+				<div>$learnresourcemanager</div>
+				<div>$principals</div>
+				<div>$administrators</div>
+			</div>
+			<div class="o_ac_admin">
+				<h4>$r.translate("access.overview.members")</h4>
+				<div>$owners</div>
+				<div>$coaches</div>
+				<div>$participants</div>
+				<div>$r.render("open.members.management")</div>
+			</div>
+		</div>
+		#if ($groups && $groups.size() > 0)
+			<h4>$r.translate("access.overview.groups")</h4>
+			#foreach($group in $groups)
+				<div>$group</div>
+			#end
+		#end
+		#if ($curriculumElements && $curriculumElements.size() > 0)
+			<h4>$r.translate("access.overview.curriculum.elements")</h4>
+			#foreach($curriculumElement in $curriculumElements)
+				<div>$curriculumElement</div>
+			#end
+		#end
+	</fieldset>
+</div>
