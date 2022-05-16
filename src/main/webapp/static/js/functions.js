@@ -2594,7 +2594,7 @@ var OOEdusharing = {
 			url = url + "&height=" + height;
 		}
 		
-		var containerHtml = "<div class='o_edusharing_container";
+		var containerHtml = "<div class='o_edusharing_container BGlossarIgnore";
 		if (typeof esClass != 'undefined') {
 			containerHtml += " " + esClass;
 		}
