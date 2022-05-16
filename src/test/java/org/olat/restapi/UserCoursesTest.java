@@ -148,7 +148,7 @@ public class UserCoursesTest extends OlatRestTestCase {
         //prepare a course with a owner
         IdentityWithLogin owner = JunitTestHelper.createAndPersistRndUser("Course-owner-");
         RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(owner.getIdentity());
-        repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
         dbInstance.commitAndCloseSession();
         
 		RestConnection conn = new RestConnection();

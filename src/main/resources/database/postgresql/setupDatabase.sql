@@ -3990,7 +3990,7 @@ create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
 create index idx_offer_guest_idx on o_ac_offer (guest_access);
-create index idx_offer_open_idx on o_ac_offer (open_access)
+create index idx_offer_open_idx on o_ac_offer (open_access);
 
 alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
 create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
