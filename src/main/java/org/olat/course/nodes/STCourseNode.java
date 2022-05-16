@@ -48,6 +48,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -59,6 +63,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -86,6 +91,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -537,6 +543,30 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 					.replaceIdsInCondition(getScoreCalculator().getPassedExpression(), envMapper));
 			getScoreCalculator().setScoreExpression(KeyAndNameConverter
 					.replaceIdsInCondition(getScoreCalculator().getScoreExpression(), envMapper));			
+		}
+		
+		// Copy files
+		boolean editorEnabled = (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(sourceCourseNode.getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE)));
+		if(settings.getCopyType() == CopyType.copy && editorEnabled) {
+			VFSContainer sourceCourseFolderCont = sourceCourse.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			VFSContainer targetCourseFolderCont = course.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			
+			String relPath = STCourseNodeEditController.getFileName(sourceCourseNode.getModuleConfiguration());
+			VFSLeaf sourceLeaf = (VFSLeaf)sourceCourseFolderCont.resolve(relPath);
+			
+			String targetRelPath = envMapper.getRenamedPathOrSource(relPath);
+			VFSItem targetItem = targetCourseFolderCont.resolve(targetRelPath);
+			if(targetItem == null && sourceLeaf.exists()) {
+				// document is copied by the process before this step
+				log.warn("Preview page's file not copied: {}", targetRelPath);
+			}
+			if(StringHelper.containsNonWhitespace(targetRelPath)) {
+				targetRelPath = VFSManager.appendLeadingSlash(targetRelPath);
+				getModuleConfiguration().setStringValue(STCourseNodeEditController.CONFIG_KEY_FILE, targetRelPath);
+				getModuleConfiguration().setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE);	
+			}
 		}
 	}
 

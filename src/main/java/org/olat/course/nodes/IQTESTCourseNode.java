@@ -58,6 +58,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -72,7 +76,9 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.iq.IQDueDateConfig;
@@ -873,4 +879,29 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		}
 	}
 	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		if(settings.getCopyType() == CopyType.copy) {
+			VFSContainer sourceCourseFolderCont = sourceCourse.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			VFSContainer targetCourseFolderCont = course.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+
+			String disclaimerFilePath = sourceCourseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
+			VFSLeaf sourceLeaf = (VFSLeaf)sourceCourseFolderCont.resolve(disclaimerFilePath);
+			
+			String targetRelPath = envMapper.getRenamedPathOrSource(disclaimerFilePath);
+			VFSItem targetItem = targetCourseFolderCont.resolve(targetRelPath);
+			if(targetItem == null && sourceLeaf.exists()) {
+				// document is copied by the process before this step
+				log.warn("Disclaimer page's file not copied: {}", targetRelPath);
+			}
+			if(StringHelper.containsNonWhitespace(targetRelPath)) {
+				targetRelPath = VFSManager.appendLeadingSlash(targetRelPath);
+				getModuleConfiguration().setStringValue(IQEditController.CONFIG_KEY_DISCLAIMER, targetRelPath);
+			}
+		}
+	}
 }
