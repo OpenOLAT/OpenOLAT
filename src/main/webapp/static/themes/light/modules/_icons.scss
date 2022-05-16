@@ -248,6 +248,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notice_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_notification:before { content: $fa-var-rss;}
 .o_icon_number_of:before { content: $fa-var-hashtag;}
+.o_icon_offer_active:before { content: $fa-var-eye; color: $o-ac-offer-active-color; }
+.o_icon_offer_inactive:before { content: $fa-var-eye-slash; color: $o-ac-offer-inactive-color;}
 .o_icon_ok:before { content: $fa-var-check; color: $brand-success}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
@@ -705,6 +707,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_identity_deleted:before { content: $fa-var-trash; }
 
 /* Access control icons */
+.o_ac_guest_icon:before { content: $fa-var-user-circle;}
 .o_ac_token_icon{ @include fa-icon-rotate(180deg, 1); &:before { content: $fa-var-key; }}
 .o_ac_free_icon:before { content: $fa-var-gift;}
 .o_ac_group_icon:before { content: $fa-var-group;}

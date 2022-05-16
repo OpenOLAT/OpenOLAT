@@ -195,26 +195,29 @@
 }
 
 .o_ac_configuration {
-	span.o_ac_infos { font-weight:normal; color: grey; }
-	
-	div.o_ac_method {
-		background-color: #efefef;
-		padding: 5px;
-		border-radius: 3px;
+	.o_ac_offer {
+		border: $o-ac-config-offer-border;
+		border-radius: $o-ac-config-offer-border-radius;
+		h3 {
+			margin-top: 0;
+			margin-bottom: 15px;
+		}
+		
+		display: flex;
+		.o_ac_offer_col {
+			width: 100%;
+			padding: 15px;
+			.o_cmds {
+				margin-top: 10px;
+				padding-right: 15px;
+			}
+		}
+		.o_ac_icon_col {
+			padding: 15px 10px;
+			border-right: $o-ac-config-offer-border;
+			background-color: $o-ac-config-offer-icon-bg-color;
+		}
 	}
-	div.o_ac_methods.form-group {
-		padding-bottom: 0;
-		margin-bottom: 0;
-	}
-}
-
-.o_repo_with_explanation {
-	padding-bottom: 0;
-	margin-bottom: 0;
-}
-
-.o_repo_explanation {
-	color: $brand-warning;
 }
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,

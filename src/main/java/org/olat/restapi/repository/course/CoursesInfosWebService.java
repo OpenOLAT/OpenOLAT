@@ -23,6 +23,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +98,8 @@ public class CoursesInfosWebService {
 	
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private ACService acService;
 	
 	/**
 	 * Get courses informations viewable by the authenticated user
@@ -122,6 +125,8 @@ public class CoursesInfosWebService {
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
+		params.setOfferOrganisations(acService.getOfferOrganisations(identity));
+		params.setOfferValidAt(new Date());
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params);
 			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
@@ -216,7 +221,7 @@ public class CoursesInfosWebService {
 		info.setDisplayName(entry.getDisplayname());
 
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult result = acManager.isAccessible(entry, identity, false);
+		AccessResult result = acManager.isAccessible(entry, identity, null, false, false);
 		if(result.isAccessible()) {
 			try {
 				final ICourse course = CourseFactory.loadCourse(entry);

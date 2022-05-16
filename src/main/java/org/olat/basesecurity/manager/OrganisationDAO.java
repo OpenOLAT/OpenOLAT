@@ -469,7 +469,25 @@ public class OrganisationDAO {
 		return levels;
 	}
 	
-
+	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct new org.olat.basesecurity.model.OrganisationRefImpl(org.key) from organisation as org")
+		  .append(" where ");
+		for (int i = 0; i < organisations.size(); i++) {
+			if (i > 0) {
+				sb.append(" or ");
+			}
+			sb.append("locate(org.materializedPathKeys, :orgPath").append(i).append(") = 1");
+		}
+		  
+		TypedQuery<OrganisationRef> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), OrganisationRef.class);
+		for (int i = 0; i < organisations.size(); i++) {
+			query.setParameter( "orgPath" + i, organisations.get(i).getMaterializedPathKeys());
+		}
+		return query.getResultList();
+	}
+	
 	public boolean hasAnyRole(IdentityRef identity, String excludeRole) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select membership.key from organisation org")

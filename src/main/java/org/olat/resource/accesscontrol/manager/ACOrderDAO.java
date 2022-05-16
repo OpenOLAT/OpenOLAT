@@ -149,7 +149,7 @@ public class ACOrderDAO {
 		return order;
 	}
 
-	public List<Order> findOrdersByDelivery(Identity delivery, OrderStatus... status) {
+	public List<Order> findOrdersByDelivery(IdentityRef delivery, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select order from ").append(OrderImpl.class.getName()).append(" order")
 			.append(" where order.delivery.key=:deliveryKey");

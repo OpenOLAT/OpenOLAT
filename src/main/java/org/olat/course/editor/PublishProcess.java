@@ -681,8 +681,8 @@ public class PublishProcess {
 		return publishTreeModel;
 	}
 
-	public void changeGeneralAccess(Identity author, RepositoryEntryStatusEnum access, boolean allUsers, boolean guests) {
-		RepositoryManager.getInstance().setAccess(repositoryEntry, access, allUsers, guests);
+	public void changeGeneralAccess(Identity author, RepositoryEntryStatusEnum status) {
+		RepositoryManager.getInstance().setStatus(repositoryEntry, status);
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
 	}

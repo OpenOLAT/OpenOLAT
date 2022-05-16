@@ -20,6 +20,7 @@
 
 package org.olat.resource.accesscontrol.method;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -64,9 +66,11 @@ public interface AccessMethodHandler {
 	
 	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form);
 	
-	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link);
-	
-	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link);
+	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, Collection<Organisation> offerOrganisations);
+
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, Collection<Organisation> offerOrganisations);
 
 	public FormController createTransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderPart part, AccessMethod method, Form form);
 	

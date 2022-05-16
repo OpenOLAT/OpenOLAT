@@ -1,38 +1,91 @@
 #if($r.isTrue($overlappingErrorConfigs))
 	<div class="o_block"><div class="o_error" role="alert"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.overlap.error")</div></div>
 #elseif($r.isTrue($overlappingConfigs))
-	<div class="o_important"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.overlap.found")</div>
+	<div class="o_block"><div class="o_warning"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.overlap.found")</div></div>
 #end
 
-#if ($confControllers && $confControllers.size() > 0)
-	#foreach($confController in $confControllers)
-		#set($css = $confController.getLink().getMethod().getMethodCssClass())
-		#set($desc = $confController.getLink().getOffer().getDescription())
-		<div class="o_block_bottom o_ac_method clearfix">
-			<label id="lab_${confController.link.key}" onclick="o_popoverWithTitle('lab_${confController.link.key}','desc_${confController.link.key}','$r.translate("offer.description")','top').popover('show');">
-				<i class="o_icon ${css}_icon o_icon-lg"> </i> ${confController.name}#if($confController.infos) <span class="o_ac_infos">$r.escapeHtml($confController.infos)</span>#end</label>
-			#if($confController.dates && !$confController.dates.empty)
-			<br/><span class="o_ac_infos">${confController.dates}</span>
-			#end
-			
-			#set($desc = $confController.getLink().getOffer().getDescription())
-			#if ($desc)
-				<div id="desc_${confController.link.key}" style="display:none;"><div>$r.xssScan($desc)</div></div>
-			#end
-			<div class="pull-right">
-			#if($r.available($confController.editButton.component.componentName)) 
-				$r.render($confController.editButton) 
-			#end
-			#if($r.available($confController.deleteButton.component.componentName)) 
-				$r.render($confController.deleteButton) 
-			#end
+#if ($offers && $offers.size() > 0)
+	#foreach($offer in $offers)
+		<div class="o_ac_offer o_block_bottom">
+			<div class="o_ac_icon_col">
+				<h3><i class="o_icon o_icon-fw #if($offer.iconCss)${offer.iconCss}_icon#end "> </i></h3>
+			</div>
+			<div class="o_ac_offer_col">
+				<h3>${offer.name}</h3>
+				
+				#if($offer.dates)
+					<div>
+						<label class="control-label col-sm-3" for="o_ac_date_${offer.link.key}">$r.translate("offer.period")</label>
+					</div>
+					<div class="form-control-static col-sm-9" id="o_ac_date_${offer.link.key}">
+						$offer.dates
+					</div>
+				#end
+				
+				#if($offer.organisationInfo)
+					<div>
+						<label class="control-label col-sm-3" for="o_ac_org_${offer.link.key}">$r.translate("access.info.organisations")</label>
+					</div>
+					<div class="form-control-static col-sm-9" id="o_ac_org_${offer.link.key}">
+						$offer.organisationInfo
+					</div>
+				#end
+				
+				#if($offer.descriptionInfo)
+					<div>
+						<label class="control-label col-sm-3" for="o_ac_desc_${offer.link.key}">$r.translate("offer.description")</label>
+					</div>
+					<div class="form-control-static col-sm-9" id="o_ac_desc_${offer.link.key}">
+						$r.xssScan($offer.descriptionInfo)
+					</div>
+				#end
+				
+				#if($offer.price)
+					<div>
+						<label class="control-label col-sm-3" for="o_ac_price_${offer.link.key}">$r.translate("access.info.price")</label>
+					</div>
+					<div class="form-control-static col-sm-9" id="o_ac_price_${offer.link.key}">
+						$offer.price
+					</div>
+				#end
+				
+				#if($extlink)
+					<div>
+						<label class="control-label col-sm-3" for="o_ac_url_${offer.link.key}">$r.translate("access.info.url")</label>
+					</div>
+					<div class="form-control-static col-sm-9" id="o_ac_url_${offer.link.key}">
+						<div class="o_copy_code o_nowrap">
+							<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+							<input type="text" value="$extlink" onclick="this.select()"/>
+							<script>
+							jQuery(function() {
+								o_QRCodePopup('o_extlink', '$extlink', 'right');
+							});
+							</script>
+						</div>
+					</div>
+				#end
+				
+				<div class="o_cmds pull-right">
+					#if($r.available($offer.editButton.component.componentName))
+						$r.render($offer.editButton)
+					#end
+					#if($r.available($offer.deleteButton.component.componentName))
+						$r.render($offer.deleteButton)
+					#end
+				</div>
 			</div>
 		</div>
 	#end
 #else
-	#if ($emptyConfigGrantsFullAccess) 
-		<div class="o_warning"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.no.methods.full.access")</div>
-	#else
-		<div class="o_important"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.no.methods.no.access")</div>
+	$r.render("empty")
+	#if($addOfferLinks && $addOfferLinks.size() > 0)
+		<div class="o_button_group">
+			#foreach($addOfferLink in $addOfferLinks)
+				#if($r.visible($addOfferLink.component.componentName))
+					$r.render($addOfferLink.component.componentName)
+				#end
+			#end
+		</div>
 	#end
 #end

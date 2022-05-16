@@ -75,9 +75,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 	private String representationalName;
 	
 	private RepositoryEntryStatusEnum status;
-	private boolean guests;
-	private boolean allUsers;
-	private boolean bookable;
+	private boolean publicVisible;
 	private List<PriceMethod> accessTypes;
 
 	private boolean member;
@@ -148,9 +146,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 	 * @param repositoryEntryView
 	 */
 	public CurriculumTreeWithViewsRow(RepositoryEntryMyView repositoryEntryView) {
-		guests = repositoryEntryView.isGuests();
-		allUsers = repositoryEntryView.isAllUsers();
-		bookable = repositoryEntryView.isBookable();
+		publicVisible = repositoryEntryView.isPublicVisible();
 		status = repositoryEntryView.getEntryStatus();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
@@ -204,9 +200,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 		parentKey = new CurriculumKey(parentCurriculumKey, parentElementKey);
 		setKey();
 		
-		guests = repositoryEntryView.isGuests();
-		allUsers = repositoryEntryView.isAllUsers();
-		bookable = repositoryEntryView.isBookable();
+		publicVisible = repositoryEntryView.isPublicVisible();
 		status = repositoryEntryView.getEntryStatus();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
@@ -453,16 +447,8 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 		return status;
 	}
 	
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-	
-	public boolean isGuests() {
-		return guests;
-	}
-	
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 	
 	public boolean isThumbnailAvailable() {

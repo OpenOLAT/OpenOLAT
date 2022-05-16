@@ -202,7 +202,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				resourcesWithAC.add(entry.getOlatResource());
 			}
 		}
-		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, searchParams.getOfferOrganisations());
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 		
 		List<RepositoryEntryRow> items = new ArrayList<>();
@@ -214,8 +214,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
 			}
 
+			
 			List<PriceMethod> types = new ArrayList<>(3);
-			if(entry.isBookable()) {
+			if(entry.isPublicVisible()) {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -229,8 +230,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 						}
 					}
 				}
-			} else if (!entry.isAllUsers() && !entry.isGuests()) {
-				// members only always show lock icon
+			} else {
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			} 
 			

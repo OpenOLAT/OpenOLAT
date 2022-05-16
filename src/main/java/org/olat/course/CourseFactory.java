@@ -654,12 +654,11 @@ public class CourseFactory {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void publishCourse(ICourse course, RepositoryEntryStatusEnum accessStatus, boolean allUsers, boolean guests,
-			Identity identity, Locale locale) {
+	public static void publishCourse(ICourse course, RepositoryEntryStatusEnum accessStatus, Identity identity, Locale locale) {
 		 CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		 PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, locale);
 		 PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
-		 publishProcess.changeGeneralAccess(identity, accessStatus, allUsers, guests);
+		 publishProcess.changeGeneralAccess(identity, accessStatus);
 
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<>();

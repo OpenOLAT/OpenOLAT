@@ -50,9 +50,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	private String authors;
 	private String shortenedDescription;
 	
-	private boolean allUsers;
-	private boolean guests;
-	private boolean bookable;
+	private boolean publicVisible;
 	private RepositoryEntryStatusEnum status;
 
 	private Date creationDate;
@@ -87,8 +85,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 		managedFlags = view.getManagedFlags();
 		
 		status = view.getEntryStatus();
-		allUsers = view.isAllUsers();
-		guests = view.isGuests();
+		publicVisible = view.isPublicVisible();
 		
 		olatResource = OresHelper.clone(view.getOlatResource());
 		
@@ -129,18 +126,8 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	}
 
 	@Override
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-
-	@Override
-	public boolean isGuests() {
-		return guests;
-	}
-	
-	@Override
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
 	@Override

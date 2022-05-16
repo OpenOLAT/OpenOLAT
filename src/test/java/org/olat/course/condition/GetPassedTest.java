@@ -71,7 +71,7 @@ public class GetPassedTest extends OlatTestCase {
 		// Create course
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Get Passed Hierarchically",
-				RepositoryEntryStatusEnum.published, true, false);
+				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(ConditionNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();

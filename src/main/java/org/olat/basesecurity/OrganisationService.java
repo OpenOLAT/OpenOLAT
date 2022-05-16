@@ -73,6 +73,8 @@ public interface OrganisationService {
 	
 	public List<Organisation> getOrganisationParentLine(Organisation organisation);
 	
+	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations);
+	
 	public Organisation updateOrganisation(Organisation organisation);
 	
 	/**

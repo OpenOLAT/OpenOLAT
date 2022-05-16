@@ -76,7 +76,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("My-course-");
 		
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(user.getIdentity());
-		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
 		repositoryService.addRole(user.getIdentity(), courseRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -112,7 +112,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		//prepare a course with a tutor
 		IdentityWithLogin teacher = JunitTestHelper.createAndPersistRndUser("Course-teacher-");
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(teacher.getIdentity());
-		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
 		repositoryService.addRole(teacher.getIdentity(), courseRe, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -183,7 +183,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		//prepare a course with a tutor
 		IdentityWithLogin me = JunitTestHelper.createAndPersistRndUser("Course-teacher-");
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(me.getIdentity());
-		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, true, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
 		markManager.setMark(courseRe, me.getIdentity(), null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
 		dbInstance.commitAndCloseSession();
 

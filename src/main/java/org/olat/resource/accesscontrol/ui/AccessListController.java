@@ -78,10 +78,12 @@ public class AccessListController extends BasicController implements AccessContr
 		//
 	}
 
+	@Override
 	public Object getUserObject() {
 		return userObject;
 	}
 
+	@Override
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
@@ -39,10 +40,10 @@ import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -257,6 +258,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		
 		// start thread 1 : incrementLaunchCounter / setAccess
 		Thread thread1 = new Thread(){
+			@Override
 			public void run() {
 				try {
 					sleep(10);
@@ -265,15 +267,11 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						RepositoryEntry re = repositoryManager.lookupRepositoryEntry(keyRepo);
 						repositoryService.incrementLaunchCounter(re);
 						if (i % 20 == 0 ) {
-							re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, true, true);
+							re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 							Assert.assertEquals("Wrong access value", RepositoryEntryStatusEnum.published, re.getEntryStatus());
-							Assert.assertEquals("Wrong access value", true, re.isAllUsers());
-							Assert.assertEquals("Wrong access value", true, re.isGuests());
 						} else if (i % 10 == 0 ) {
-							re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.preparation, false, false);
+							re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.preparation);
 							Assert.assertEquals("Wrong access value", RepositoryEntryStatusEnum.preparation, re.getEntryStatus());
-							Assert.assertEquals("Wrong access value", false, re.isAllUsers());
-							Assert.assertEquals("Wrong access value", false, re.isGuests());
 						}
 						dbInstance.commitAndCloseSession();
 					}
@@ -335,18 +333,16 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						RepositoryEntry re = repositoryManager.lookupRepositoryEntry(keyRepo);
 						repositoryService.incrementLaunchCounter(re);
 						if (i % 30 == 0 ) {
-							re = repositoryManager.setAccessAndProperties(re, RepositoryEntryStatusEnum.published, true, false, true, false, false);	
-							Assert.assertEquals("Wrong access value", RepositoryEntryStatusEnum.published, re.getEntryStatus());
-							Assert.assertEquals("Wrong access value", true, re.isAllUsers());
-							Assert.assertEquals("Wrong access value", false, re.isGuests());
-							Assert.assertEquals("Wrong canCopy value", true, re.getCanCopy());
+							re = repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.afterEndDate, false, false, false, null);
+							Assert.assertEquals("Wrong access value", RepositoryEntryAllowToLeaveOptions.afterEndDate, re.getAllowToLeaveOption());
+							Assert.assertEquals("Wrong access value", true, re.isPublicVisible());
+							Assert.assertEquals("Wrong canCopy value", false, re.getCanCopy());
 							Assert.assertEquals("Wrong getCanReference value",false, re.getCanReference());
 							Assert.assertEquals("Wrong getCanDownload value", false, re.getCanDownload());
 						} else 	if (i % 15 == 0 ) {
-							re = repositoryManager.setAccessAndProperties(re, RepositoryEntryStatusEnum.review, false, false, false, true, true);	
-							Assert.assertEquals("Wrong access value", RepositoryEntryStatusEnum.review, re.getEntryStatus());
-							Assert.assertEquals("Wrong access value", false, re.isAllUsers());
-							Assert.assertEquals("Wrong access value", false, re.isGuests());
+							re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, true, null);
+							Assert.assertEquals("Wrong access value", RepositoryEntryAllowToLeaveOptions.atAnyTime, re.getAllowToLeaveOption());
+							Assert.assertEquals("Wrong access value", false, re.isPublicVisible());
 							Assert.assertEquals("Wrong canCopy value", false, re.getCanCopy());
 							Assert.assertEquals("Wrong getCanReference value", true, re.getCanReference());
 							Assert.assertEquals("Wrong getCanDownload value", true, re.getCanDownload());
@@ -415,6 +411,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		
 		// thread 1
 		Thread thread1 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					Thread.sleep(100);
@@ -453,7 +450,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 				try {
 					Thread.sleep(200);
 					RepositoryEntry repositoryEntryT3 = repositoryManager.lookupRepositoryEntry(keyRepo);
-					repositoryEntryT3 = repositoryManager.setAccess(repositoryEntryT3, RepositoryEntryStatusEnum.published, true, true);
+					repositoryEntryT3 = repositoryManager.setStatus(repositoryEntryT3, RepositoryEntryStatusEnum.published);
 					dbInstance.closeSession();
 					log.info("testConcurrentIncrementLaunchCounterWithCodePoints: Thread3 setAccess DONE");
 				} catch (Exception ex) {
@@ -478,8 +475,6 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		RepositoryEntry repositoryEntry2 = repositoryManager.lookupRepositoryEntry(keyRepo);
 		assertEquals("Wrong value of incrementLaunch counter",2,repositoryEntry2.getStatistics().getDownloadCounter());
 		assertEquals("Wrong access value", RepositoryEntryStatusEnum.published, repositoryEntry2.getEntryStatus());
-		assertEquals("Wrong access value", true, repositoryEntry2.isAllUsers());
-		assertEquals("Wrong access value", true, repositoryEntry2.isGuests());
 		log.info("testConcurrentIncrementLaunchCounterWithCodePoints finish successful");		
 	}
 	

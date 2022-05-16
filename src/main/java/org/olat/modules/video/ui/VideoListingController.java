@@ -20,6 +20,7 @@
 package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,6 +67,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.list.RepositoryEntryRow;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -93,6 +95,8 @@ public class VideoListingController extends FormBasicController implements Activ
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private ACService acService;
 
 	public VideoListingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {		
 		super(ureq, wControl, "video_listing");
@@ -101,6 +105,8 @@ public class VideoListingController extends FormBasicController implements Activ
 		this.toolbarPanel = toolbarPanel;
 		
 		searchParams = new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), VideoFileResource.TYPE_NAME);
+		searchParams.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
+		searchParams.setOfferValidAt(new Date());
 		searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
 		dataSource = new VideoEntryDataSource(searchParams);
 		imgUrl = registerMapper(ureq, new VideoMapper());

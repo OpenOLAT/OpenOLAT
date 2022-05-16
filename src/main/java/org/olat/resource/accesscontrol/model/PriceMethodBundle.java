@@ -47,5 +47,5 @@ public class PriceMethodBundle {
 	public AccessMethod getMethod() {
 		return method;
 	}
-
+	
 }

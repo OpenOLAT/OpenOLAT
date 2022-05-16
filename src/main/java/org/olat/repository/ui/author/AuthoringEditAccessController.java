@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -26,16 +28,21 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,8 +58,8 @@ public class AuthoringEditAccessController extends BasicController {
 	private VelocityContainer mainVC;
 	
 	private LTI13ResourceAccessController lti13AccessCtrl;
-	private AuthoringEditAuthorAccessController authorAccessCtrl;
-	private AuthoringEditAccessAndBookingController accessAndBookingCtrl;
+	private AuthoringEditAccessShareController accessShareCtrl;
+	private AccessConfigurationController accessOffersCtrl;
 	
 	private RepositoryEntry entry;
 	private final boolean readOnly;
@@ -61,6 +68,11 @@ public class AuthoringEditAccessController extends BasicController {
 	private LTI13Module lti13Module;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryHandlerFactory handlerFactory;
+	
 	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
@@ -68,8 +80,8 @@ public class AuthoringEditAccessController extends BasicController {
 		this.readOnly = readOnly;
 		
 		mainVC = createVelocityContainer("editproptabpub");
-		initAccessAndBooking(ureq);
-		initAuthorAccess(ureq);
+		initAccessShare(ureq);
+		initAccessOffers(ureq);
 		if(lti13Module.isEnabled()) {
 			initLTI13Access(ureq);
 		}
@@ -87,27 +99,32 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(accessAndBookingCtrl == source) {
+		if(accessShareCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doSaveAccessAndBooking(ureq);
+				doSaveAccessShare(ureq);
 				fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
 			} else if(event == Event.CANCELLED_EVENT) {
-				initAccessAndBooking(ureq);
+				initAccessShare(ureq);
 			}
-		} else if(authorAccessCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doSaveAuthorAccess(ureq);
+		} else if(accessOffersCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				doSaveAccessOffers(ureq);
 				fireEvent(ureq, new ReloadSettingsEvent());
-			} else if(event == Event.CANCELLED_EVENT) {
-				initAuthorAccess(ureq);
 			}
 		}
 		
 		super.event(ureq, source, event);
 	}
 	
-	private void doSaveAccessAndBooking(UserRequest ureq) {
-		accessAndBookingCtrl.commitChanges();
+	private void doSaveAccessShare(UserRequest ureq) {
+		entry = repositoryManager.setAccess(entry,
+				accessShareCtrl.isPublicVisible(),
+				accessShareCtrl.getSelectedLeaveSetting(),
+				accessShareCtrl.canCopy(),
+				accessShareCtrl.canReference(),
+				accessShareCtrl.canDownload(),
+				accessShareCtrl.getSelectedOrganisations());
+		initAccessOffers(ureq);
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
@@ -116,20 +133,16 @@ public class AuthoringEditAccessController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void initAccessAndBooking(UserRequest ureq) {
-		removeAsListenerAndDispose(accessAndBookingCtrl);
+	private void initAccessShare(UserRequest ureq) {
+		removeAsListenerAndDispose(accessShareCtrl);
 		
-		accessAndBookingCtrl = new AuthoringEditAccessAndBookingController(ureq, getWindowControl(), entry, readOnly);
-		listenTo(accessAndBookingCtrl);
-		mainVC.put("accessAndBooking", accessAndBookingCtrl.getInitialComponent());
+		accessShareCtrl = new AuthoringEditAccessShareController(ureq, getWindowControl(), entry, readOnly);
+		listenTo(accessShareCtrl);
+		mainVC.put("accessAndBooking", accessShareCtrl.getInitialComponent());
 	}
 	
-	private void doSaveAuthorAccess(UserRequest ureq) {
-		boolean canCopy = authorAccessCtrl.canCopy();
-		boolean canReference = authorAccessCtrl.canReference();
-		boolean canDownload = authorAccessCtrl.canDownload();
-		entry = authorAccessCtrl.getEntry();
-		entry = repositoryManager.setAccess(entry, canCopy, canReference, canDownload);
+	private void doSaveAccessOffers(UserRequest ureq) {
+		accessOffersCtrl.commitChanges();
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
@@ -138,12 +151,22 @@ public class AuthoringEditAccessController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void initAuthorAccess(UserRequest ureq) {
-		removeAsListenerAndDispose(authorAccessCtrl);
+	private void initAccessOffers(UserRequest ureq) {
+		removeAsListenerAndDispose(accessOffersCtrl);
+		accessOffersCtrl = null;
+		mainVC.remove("offers");
 		
-		authorAccessCtrl = new AuthoringEditAuthorAccessController(ureq, getWindowControl(), entry, readOnly);
-		listenTo(authorAccessCtrl);
-		mainVC.put("authorAccess", authorAccessCtrl.getInitialComponent());
+		if (entry.isPublicVisible()) {
+			boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
+			Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
+			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(),
+					defaultOfferOrganisations, true, true, guestSupported, readOnly, managedBookings, url);
+			accessOffersCtrl.setReStatus(entry.getEntryStatus());
+			listenTo(accessOffersCtrl);
+			mainVC.put("offers", accessOffersCtrl.getInitialComponent());
+		}
 	}
 	
 	private void initLTI13Access(UserRequest ureq) {

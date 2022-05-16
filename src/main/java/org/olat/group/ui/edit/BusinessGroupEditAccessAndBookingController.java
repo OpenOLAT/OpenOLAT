@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -89,7 +90,9 @@ public class BusinessGroupEditAccessAndBookingController extends FormBasicContro
 		
 		OLATResource resource = businessGroup.getResource();
 		boolean waitingList = businessGroup.getWaitingListEnabled();
-		configController = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(), !waitingList, !managed, mainForm);
+		String url =  Settings.getServerContextPathURI() + "/url/BusinessGroup/" + businessGroup.getKey();
+		configController = new AccessConfigurationController(ureq, getWindowControl(), resource,
+				businessGroup.getName(), null, !waitingList, false, false, false, managed, url);
 		listenTo(configController);
 	}
 	

@@ -91,7 +91,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			ordersLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Booking:0]]"));
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
-			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
+			boolean booking = re.isPublicVisible() && acService.isResourceAccessControled(re.getOlatResource(), null);
 			ordersLink.setEnabled(booking);
 			toolsDropdown.addComponent(ordersLink);	
 		}

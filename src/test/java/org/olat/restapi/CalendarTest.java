@@ -140,7 +140,7 @@ public class CalendarTest extends OlatRestTestCase {
 			calendarManager.addEventTo(calendarWrapper.getKalendar(), event2);
 			
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course1, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntryStatusEnum.published, true, false);
+			entry = repositoryManager.setStatus(entry, RepositoryEntryStatusEnum.published);
 			repositoryService.addRole(id1.getIdentity(), entry, GroupRoles.participant.name());
 			
 			dbInstance.commit();
@@ -157,7 +157,7 @@ public class CalendarTest extends OlatRestTestCase {
 			Assert.assertNotNull(calendarWrapper);
 
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course2, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntryStatusEnum.published, true, false);
+			entry = repositoryManager.setStatus(entry, RepositoryEntryStatusEnum.published);
 			dbInstance.commit();
 		}
 	}

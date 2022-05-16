@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -263,7 +264,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		}
 		
 		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
-		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, null);
+		List<OLATResource> resourcesWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null);
+		List<OLATResource> resourcesWithGuestAccess = acService.filterResourceWithGuestAccess(resourcesWithAC);
 		Map<Long, List<TaxonomyLevel>> entryKeyToTaxonomyLevels = getTaxonomyLevels(repoEntries);
 		Map<Resourceable,ResourceLicense> licenses = getLicenses(repoEntries);
 		
@@ -276,10 +279,15 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			AuthoringEntryRow row = new AuthoringEntryRow(entry, fullname);
 			// bookmark
 			row.setMarked(entry.isMarked());
-
+			
+			boolean openAccess = resourcesWithOpenAccess.contains(entry.getOlatResource());
+			row.setOpenAccess(openAccess);
+			boolean guestAccess = resourcesWithGuestAccess.contains(entry.getOlatResource());
+			row.setGuestAccess(guestAccess);
+			
 			// access control
 			List<PriceMethod> types = new ArrayList<>(3);
-			if(entry.isBookable()) {
+			if(entry.isPublicVisible()) {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -293,8 +301,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 						}
 					}
 				}
-			} else if(!entry.isAllUsers() && !entry.isGuests()) {
-				// members only always show lock icon
+			} else {
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			}
 			
@@ -322,7 +329,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				? repositoryService.getTaxonomy(repoEntries, true)
 				: Collections.emptyMap();
 		return entryRefToTaxonomyLevels.entrySet().stream()
-				.collect(Collectors.toMap(e -> e.getKey().getKey(), e -> e.getValue()));
+				.collect(Collectors.toMap(e -> e.getKey().getKey(), Entry::getValue));
 	}
 
 	private Map<Resourceable,ResourceLicense> getLicenses(List<RepositoryEntryAuthorView> repoEntries) {

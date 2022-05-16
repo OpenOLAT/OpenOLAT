@@ -142,6 +142,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	public List<Organisation> getOrganisationParentLine(Organisation organisation) {
 		return organisationDao.getParentLine(organisation);
 	}
+	
+	@Override
+	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations) {
+		return organisationDao.getParentLineRefs(organisations);
+	}
 
 	@Override
 	public Organisation updateOrganisation(Organisation organisation) {

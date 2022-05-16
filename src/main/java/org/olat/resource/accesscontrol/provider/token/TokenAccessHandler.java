@@ -20,6 +20,7 @@
 
 package org.olat.resource.accesscontrol.provider.token;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -92,13 +94,15 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new TokenAccessConfigurationController(ureq, wControl, link, true);
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, Collection<Organisation> offerOrganisations) {
+		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisations, true);
 	}
 
 	@Override
-	public TokenAccessConfigurationController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new TokenAccessConfigurationController(ureq, wControl, link, false);
+	public TokenAccessConfigurationController createConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, Collection<Organisation> offerOrganisations) {
+		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisations, false);
 	}
 	
 	@Override

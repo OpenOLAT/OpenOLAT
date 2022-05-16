@@ -175,8 +175,8 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		
 		RepositoryEntry entryBlock1 = lectureBlock1.getEntry();
 		RepositoryEntry entryBlock2 = lectureBlock2.getEntry();
-		repositoryManager.setAccess(entryBlock1, RepositoryEntryStatusEnum.trash, false, false);
-		repositoryManager.setAccess(entryBlock2, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(entryBlock1, RepositoryEntryStatusEnum.trash);
+		repositoryManager.setStatus(entryBlock2, RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		
 		lectureService.addTeacher(lectureBlock1, teacher1);

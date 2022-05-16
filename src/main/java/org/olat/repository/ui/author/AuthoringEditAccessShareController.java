@@ -35,12 +35,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,13 +54,9 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,36 +65,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthoringEditAccessAndBookingController extends FormBasicController {
+public class AuthoringEditAccessShareController extends FormBasicController {
 	
 	private static final String[] leaveKeys = new String[]{
 			RepositoryEntryAllowToLeaveOptions.atAnyTime.name(),
 			RepositoryEntryAllowToLeaveOptions.afterEndDate.name(),
 			RepositoryEntryAllowToLeaveOptions.never.name()
 		};
-	private static final String[] accessKey = new String[] { "private", "booking", "shared" };
-	private static final String[] onKeys = new String[] { "on" };
-		
-	private SingleSelection leaveEl;
+	private static final String KEY_PRIVATE = "private";
+	private static final String KEY_PUBLIC = "public";
+	private static final String KEY_REFERENCE = "reference";
+	private static final String KEY_COPY = "copy";
+	private static final String KEY_DOWNLOAD = "download";
+	private static final String[] accessKey = new String[] { KEY_PRIVATE, KEY_PUBLIC };
+	
 	private SingleSelection accessEl;
+	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
-	private MultipleSelectionElement guestEl;
 	private MultipleSelectionElement organisationsEl;
-	private StaticTextElement explainGuestAccessEl;
-
-	private AccessConfigurationController acCtr;
+	private SelectionElement authorCanEl;
 	
 	private final boolean status;
 	private final boolean embbeded;
-	private final boolean guestSupported;
 	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private List<Organisation> repositoryEntryOrganisations;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -107,46 +102,44 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public AuthoringEditAccessAndBookingController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
-		super(ureq, wControl, "acces_and_booking");
+	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
 		embbeded = false;
 		status = false;
-		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
+		
 		initForm(ureq);
-		updateUI();
 	}
 	
-	public AuthoringEditAccessAndBookingController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "acces_and_booking", rootForm);
+	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = false;
 		embbeded = true;
 		status = true;
-		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
+		
 		initForm(ureq);
-		updateUI();
 	}
 	
-	public boolean isBookable() {
-		return accessEl.isOneSelected() && accessEl.isSelected(1);
+	public boolean isPublicVisible() {
+		return accessEl.isOneSelected() && accessEl.isKeySelected(KEY_PUBLIC);
 	}
 	
-	public boolean isAllUsers() {
-		return accessEl.isOneSelected() && accessEl.isSelected(2);
+	public boolean canCopy() {
+		return authorCanEl.isKeySelected(KEY_COPY);
+	}
+
+	public boolean canReference() {
+		return authorCanEl.isKeySelected(KEY_REFERENCE);
+	}
+
+	public boolean canDownload() {
+		return authorCanEl.isKeySelected(KEY_DOWNLOAD);
 	}
 	
-	public boolean isGuests() {
-		return accessEl.isOneSelected() && accessEl.isSelected(2)
-				&& guestEl.isVisible() && guestEl.isAtLeastSelected(1);
-	}
-	
-	/**
-	 * Return the publication status
-	 */
 	public RepositoryEntryStatusEnum getEntryStatus() {
 		return RepositoryEntryStatusEnum.valueOf(statusEl.getSelectedKey());
 	}
@@ -196,76 +189,58 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		return organisations;
 	}
 	
-	public List<OfferAccess> getOfferAccess() {
-		return acCtr.getOfferAccess();
-	}
-	
-	public List<Offer> getDeletedOffers() {
-		return acCtr.getDeletedOffers();
-	}
-	
-	public boolean isSendConfirmationEmail() {
-		return acCtr.isSendConfirmationEmail();
-	}
-	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer accessCont = FormLayoutContainer.createDefaultFormLayout("access", getTranslator());
-		accessCont.setRootForm(mainForm);
-		formLayout.add("access", accessCont);
-		
-		UserSession usess = ureq.getUserSession();
-		initFormOrganisations(accessCont, usess);
-		organisationsEl.setVisible(organisationModule.isEnabled());
-		organisationsEl.setEnabled(!readOnly);
-		initStatus(accessCont);
+		setFormTitle("details.access");
+		setFormContextHelp("manual_user/course_create/Access_configuration/#access-configuration");
+
+		initStatus(formLayout);
 		statusEl.setVisible(status);
 		statusEl.setEnabled(!readOnly);
 		
 		String[] accessValues = new String[] {
-				getAccessTranslatedValue("rentry.access.type.private", "rentry.access.type.private.explain", "o_icon_locked"),
-				getAccessTranslatedValue("rentry.access.type.booking", "rentry.access.type.booking.explain", "o_icon_booking"),
-				getAccessTranslatedValue("rentry.access.type.shared", "rentry.access.type.shared.explain", "o_icon_unlocked")
+				getAccessTranslatedValue("rentry.access.type.private", "rentry.access.type.private.explain", "o_icon-fw o_icon_locked"),
+				getAccessTranslatedValue("rentry.access.type.public", "rentry.access.type.public.explain", "o_icon-fw o_icon_unlocked")
 		};
-		accessEl = uifactory.addRadiosVertical("entry.access.type", "rentry.access.type", accessCont, accessKey, accessValues);
-		accessEl.addActionListener(FormEvent.ONCHANGE);
-		accessEl.setElementCssClass("o_repo_with_explanation");
+		accessEl = uifactory.addRadiosVertical("entry.access.type", "rentry.access.type", formLayout, accessKey, accessValues);
 		accessEl.setEnabled(!readOnly);
-		if(entry.isAllUsers()) {
-			accessEl.select(accessKey[2], true);
-		} else if(entry.isBookable()) {
-			accessEl.select(accessKey[1], true);
+		if (embbeded) {
+			accessEl.addActionListener(FormEvent.ONCHANGE);
+		}
+		if(entry.isPublicVisible()) {
+			accessEl.select(KEY_PUBLIC, true);
 		} else {
-			accessEl.select(accessKey[0], true);
+			accessEl.select(KEY_PRIVATE, true);
 		}
 		
-		String explainAccess = "<i class='o_icon o_icon_warn'> </i> ".concat(translate("rentry.access.type.explain"));
-		StaticTextElement explainAccessEl = uifactory.addStaticTextElement("rentry.access.type.explain", null, explainAccess, accessCont);
-		explainAccessEl.setElementCssClass("o_repo_explanation");
-
-		String[] guestValues = new String[] { translate("rentry.access.guest.on") };
-		guestEl = uifactory.addCheckboxesHorizontal("entry.access.guest", "rentry.access.guest", accessCont, onKeys, guestValues);
-		guestEl.setElementCssClass("o_sel_repositoryentry_access_guest o_repo_with_explanation");
-		guestEl.setEnabled(!readOnly);
+		initLeaveOption(formLayout);
 		
-		if(entry.isGuests()) {
-			guestEl.select(onKeys[0], true);
+		uifactory.addSpacerElement("author.config", formLayout, false);
+		
+		UserSession usess = ureq.getUserSession();
+		initFormOrganisations(formLayout, usess);
+		organisationsEl.setVisible(organisationModule.isEnabled());
+		organisationsEl.setEnabled(!readOnly);
+		
+		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
+		boolean closedOrDeleted = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted;
+		boolean supportsDownload = handlerFactory.getRepositoryHandler(entry).supportsDownload();
+		
+		SelectionValues canSV = new SelectionValues();
+		canSV.add(SelectionValues.entry(KEY_REFERENCE, translate("cif.canReference")));
+		canSV.add(SelectionValues.entry(KEY_COPY, translate("cif.canCopy")));
+		if (supportsDownload) {
+			canSV.add(SelectionValues.entry(KEY_DOWNLOAD, translate("cif.canDownload")));
 		}
-		
-		explainGuestAccessEl = uifactory.addStaticTextElement("rentry.access.guest.explain", null, explainAccess, accessCont);
-		explainGuestAccessEl.setElementCssClass("o_repo_explanation");
-		explainGuestAccessEl.setEnabled(!readOnly);
-
-		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(),
-				true, !managedBookings && !readOnly, mainForm);
-		listenTo(acCtr);
-		formLayout.add("bookings", acCtr.getInitialFormItem());
-
-		FormLayoutContainer optionsCont = FormLayoutContainer.createDefaultFormLayout("otherOptions", getTranslator());
-		optionsCont.setRootForm(mainForm);
-		formLayout.add("options", optionsCont);
-		initLeaveOption(optionsCont);
+		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", formLayout, canSV.keys(), canSV.values(), 1);
+		authorCanEl.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
+		authorCanEl.select(KEY_REFERENCE, entry.getCanReference()); 
+		authorCanEl.select(KEY_COPY, entry.getCanCopy()); 
+		if (supportsDownload) {
+			authorCanEl.select(KEY_DOWNLOAD, entry.getCanDownload()); 
+		}
 
 		if(!embbeded && !readOnly) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -274,13 +249,6 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
-	}
-	
-	private void updateUI() {
-		boolean shared = accessEl.isSelected(2);
-		guestEl.setVisible(shared  && guestSupported);
-		explainGuestAccessEl.setVisible(shared && guestSupported);
-		acCtr.getInitialFormItem().setVisible(accessEl.isSelected(1));
 	}
 	
 	private String getAccessTranslatedValue(String i18nKey, String explanationI18nKey, String iconCssClass) {
@@ -327,6 +295,9 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		statusEl.setElementCssClass("o_sel_repositoryentry_access_publication");
 		statusEl.setEnabled(!managedAccess && !closedOrDeleted);
 		statusEl.select(entry.getStatus(), true);
+		if (embbeded) {
+			statusEl.addActionListener(FormEvent.ONCHANGE);
+		}
 	}
 	
 	private void initLeaveOption(FormItemContainer formLayout) {
@@ -337,7 +308,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		};
 		
 		final boolean managedLeaving = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.membersmanagement);
-		leaveEl = uifactory.addDropdownSingleselect("entry.leave", "rentry.leave.option", formLayout, leaveKeys, leaveValues, null);
+		leaveEl = uifactory.addRadiosVertical("entry.leave", "rentry.leave.option", formLayout, leaveKeys, leaveValues);
 		boolean found = false;
 		for(String leaveKey:leaveKeys) {
 			if(leaveKey.equals(entry.getAllowToLeaveOption().name())) {
@@ -391,6 +362,16 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == accessEl) {
+			fireEvent(ureq, new PublicVisibleEvent(accessEl.isKeySelected(KEY_PUBLIC)));
+		} else if (source == statusEl) {
+			fireEvent(ureq, new StatusEvent(getEntryStatus()));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
@@ -415,32 +396,39 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(accessEl == source) {
-			updateUI();
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	public RepositoryEntry commitChanges() {
-		boolean bookable = isBookable();
-		List<Organisation> organisations = getSelectedOrganisations();
-		entry = repositoryManager.setAccess(entry,
-				isAllUsers(), isGuests(), bookable,
-				getSelectedLeaveSetting(), organisations);
-		
-		if(bookable) {
-			acCtr.commitChanges();
-		} else {
-			acCtr.invalidateBookings();
-		}
-		return entry;
-	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-}
+	
+	public static class PublicVisibleEvent extends Event {
+
+		private static final long serialVersionUID = 2663359793325512923L;
+		private final boolean publicVisible;
+		
+		public PublicVisibleEvent(boolean publicVisible) {
+			super("public-visible");
+			this.publicVisible = publicVisible;
+		}
+		
+		public boolean isPublicVisible() {
+			return publicVisible;
+		}
+	}
+	
+	public static class StatusEvent extends Event {
+
+		private static final long serialVersionUID = 2757546613805700985L;
+		private final RepositoryEntryStatusEnum status;
+		
+		public StatusEvent(RepositoryEntryStatusEnum status) {
+			super("public-visible");
+			this.status = status;
+		}
+		
+		public RepositoryEntryStatusEnum getStatus() {
+			return status;
+		}
+	}
+ }

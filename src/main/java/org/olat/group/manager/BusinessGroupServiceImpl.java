@@ -102,6 +102,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -145,6 +146,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private RepositoryEntryQueries repositoryEntryQueries;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private DB dbInstance;
 
@@ -1490,6 +1493,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 		params.setRoles(Roles.administratorRoles());
 		params.setResourceTypes(Collections.singletonList("CourseModule"));
+		params.setOfferOrganisations(acService.getOfferOrganisations(ureqIdentity));
+		params.setOfferValidAt(new Date());
 		
 		float ratio = -1.0f;
 		if(delegate != null) {

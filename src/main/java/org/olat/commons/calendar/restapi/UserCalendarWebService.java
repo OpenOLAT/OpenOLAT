@@ -26,6 +26,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -113,6 +114,8 @@ public class UserCalendarWebService {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CollaborationManager collaborationManager;
+	@Autowired
+	private ACService acService;
 	
 	
 	@GET
@@ -288,6 +291,8 @@ public class UserCalendarWebService {
 				SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
 				repoParams.setOnlyExplicitMember(true);
 				repoParams.setIdentity(retrievedUser);
+				repoParams.setOfferOrganisations(acService.getOfferOrganisations(retrievedUser));
+				repoParams.setOfferValidAt(new Date());
 				
 				IdentityEnvironment ienv = new IdentityEnvironment();
 				ienv.setIdentity(retrievedUser);
@@ -295,7 +300,7 @@ public class UserCalendarWebService {
 				
 				List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);
 				for(RepositoryEntry entry:entries) {
-					AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
+					AccessResult result = acManager.isAccessible(entry, retrievedUser, null, false, false);
 					if(result.isAccessible()) {
 						try {
 							final ICourse course = CourseFactory.loadCourse(entry);

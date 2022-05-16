@@ -134,11 +134,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepositoryEntry re1 = (RepositoryEntry)o1;
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				
-				if(!re1.isAllUsers() && !re1.isGuests()) {
-					if(re2.isAllUsers() || re2.isGuests()) {
+				if(!re1.isPublicVisible()) {
+					if(re2.isPublicVisible()) {
 						return 1;
 					}
-				} else if(!re1.isAllUsers() && !re1.isGuests()) {
+				} else if(!re1.isPublicVisible()) {
 					return -1;
 				}
 				
@@ -230,12 +230,12 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				
 				int ar1 = re1.getEntryStatus().ordinal();
-				if(!re1.isAllUsers() && !re1.isGuests()) {
+				if(!re1.isPublicVisible()) {
 					ar1 = 99;
 				}
 				
 				int ar2 = re2.getEntryStatus().ordinal();
-				if(!re2.isAllUsers() && !re2.isGuests()) {
+				if(!re2.isPublicVisible()) {
 					ar2 = 99;
 				}
 				if(ar1 < ar2) return -1;
@@ -275,8 +275,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		RepositoryEntry re = getObject(row);
 		switch (RepoCols.values()[col]) {
 			case ac: {
-				if (!re.isAllUsers() && !re.isGuests()) {
-					// members only always show lock icon
+				if (!re.isPublicVisible()) {
 					return Collections.singletonList("o_ac_membersonly");
 				}
 				OLATResourceAccess access = repoEntriesWithOffer.get(re.getOlatResource().getKey());
@@ -284,9 +283,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 					return null;						
 				}
 				return access;
-			}
-			case acGuest: {
-				return re.isGuests();
 			}
 			case repoEntry: return re; 
 			case displayname: return getDisplayName(re, translator.getLocale());
@@ -318,7 +314,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	
 	public enum RepoCols {
 		ac,
-		acGuest,
 		repoEntry,
 		displayname,
 		author,

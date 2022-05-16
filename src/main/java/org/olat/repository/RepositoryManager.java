@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.FlushModeType;
@@ -59,6 +60,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
@@ -97,6 +99,8 @@ import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
@@ -143,6 +147,10 @@ public class RepositoryManager {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
 	@Autowired
@@ -565,8 +573,8 @@ public class RepositoryManager {
 		RepositoryEntryStatusEnum status = re.getEntryStatus();
 		if (roles.isGuestOnly()) {
 			// allow for guests if access granted for guests
-			canLaunch = re.isGuests()
-					&& (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
+			canLaunch = re.isPublicVisible()
+					&& acService.isAccessible(re, identity, null, true, false).isAccessible();
 		} else {
 			// allow if identity is owner
 			List<Object[]> roleAndDefs = repositoryEntryRelationDao.getRoleAndDefaults(identity, re);
@@ -651,9 +659,6 @@ public class RepositoryManager {
 								|| status == RepositoryEntryStatusEnum.coachpublished
 								|| status == RepositoryEntryStatusEnum.published
 								|| status == RepositoryEntryStatusEnum.closed;
-					} else if(re.isAllUsers() || re.isGuests()) {
-						canLaunch = status == RepositoryEntryStatusEnum.published
-								|| status == RepositoryEntryStatusEnum.closed;
 					}
 				}
 				
@@ -663,10 +668,13 @@ public class RepositoryManager {
 							|| status == RepositoryEntryStatusEnum.closed;
 				}
 				
-				if(!canLaunch && (re.isAllUsers() || re.isGuests()
-						|| isGroupParticipant  || isCourseParticipant || isCurriculumParticipant)) {
+				if(!canLaunch && (isGroupParticipant  || isCourseParticipant || isCurriculumParticipant)) {
 					canLaunch = status == RepositoryEntryStatusEnum.published
 							|| status == RepositoryEntryStatusEnum.closed;
+				}
+				
+				if(!canLaunch && re.isPublicVisible()) {
+					canLaunch = acService.isAccessible(re, identity, Boolean.FALSE, false, false).isAccessible();
 				}
 			}
 		}
@@ -679,56 +687,25 @@ public class RepositoryManager {
 				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,
 				isAuthor, isAdministrator, isLearnRessourceManager, isPrincipal, canLaunch, readOnly);
 	}
-
-	public RepositoryEntry setAccess(final RepositoryEntry re, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
-		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
-		if(reloadedRe == null) {
-			return null;
-		}
-		reloadedRe.setEntryStatus(status);
-		reloadedRe.setAllUsers(allUsers);
-		reloadedRe.setGuests(guests);
-		reloadedRe.setLastModified(new Date());
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
-		return updatedRe;
-	}
 	
-	public RepositoryEntry setAccess(final RepositoryEntry re,
-			boolean canCopy, boolean canReference, boolean canDownload) {
+	public RepositoryEntry setAccess(final RepositoryEntry re, boolean publicVisible,
+			RepositoryEntryAllowToLeaveOptions leaveSetting, boolean canCopy, boolean canReference, boolean canDownload,
+			List<Organisation> organisations) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
+		
 		reloadedRe.setLastModified(new Date());
-		//properties
+		reloadedRe.setPublicVisible(publicVisible);
+		reloadedRe.setAllowToLeaveOption(leaveSetting);
 		reloadedRe.setCanCopy(canCopy);
 		reloadedRe.setCanReference(canReference);
 		reloadedRe.setCanDownload(canDownload);
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		//fetch the values
-		updatedRe.getStatistics().getLaunchCounter();
-		if(updatedRe.getLifecycle() != null) {
-			updatedRe.getLifecycle().getCreationDate();
+		
+		if (!publicVisible) {
+			acService.deleteOffers(reloadedRe.getOlatResource());
 		}
-
-		dbInstance.commit();
-		return updatedRe;
-	}
-	
-	
-	public RepositoryEntry setAccess(final RepositoryEntry re, boolean allUsers, boolean guests, boolean bookable,
-			RepositoryEntryAllowToLeaveOptions leaveSetting, List<Organisation> organisations) {
-		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
-		if(reloadedRe == null) {
-			return null;
-		}
-		reloadedRe.setAllUsers(allUsers);
-		reloadedRe.setGuests(guests);
-		reloadedRe.setBookable(bookable);
-		reloadedRe.setLastModified(new Date());
-		reloadedRe.setAllowToLeaveOption(leaveSetting);
 		
 		if(organisations != null) {
 			// sync the relation re_to_group
@@ -768,34 +745,13 @@ public class RepositoryManager {
 		}
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
-		return updatedRe;
-	}
-
-	public RepositoryEntry setAccessAndProperties(final RepositoryEntry re,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
-			boolean canCopy, boolean canReference, boolean canDownload) {
-		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
-		if(reloadedRe == null) {
-			return null;
-		}
-		reloadedRe.setEntryStatus(status);
-		reloadedRe.setAllUsers(allUsers);
-		reloadedRe.setGuests(guests);
-		reloadedRe.setLastModified(new Date());
-		//properties
-		reloadedRe.setCanCopy(canCopy);
-		reloadedRe.setCanReference(canReference);
-		reloadedRe.setCanDownload(canDownload);
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		//fetch the values
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();
 		}
-
 		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 	
@@ -1936,18 +1892,77 @@ public class RepositoryManager {
 			sb.append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey");
 		}
-		sb.append("   and (")
-		  .append("     membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append("     or ")
-		  .append("     ((v.allUsers=true or v.bookable=true) and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting).append(")")
-		  .append("   )")
+		sb.append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" )")
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
+		
+		// Public access and offers
+		List<OrganisationRef> offerOrganisations = acService.getOfferOrganisations(identity);
+		Date offerValidAt = null;
+		if (!offerOrganisations.isEmpty()) {
+			sb.append(" or (");
+			sb.append(" res.key in (");
+			sb.append("   select resource.key");
+			sb.append("     from acoffer offer");
+			sb.append("     inner join offer.resource resource");
+			sb.append("     inner join repositoryentry re2");
+			sb.append("        on re2.olatResource.key = resource.key");
+			sb.append("       and re2.publicVisible = true");
+			sb.append("     inner join offertoorganisation oto");
+			sb.append("        on oto.offer.key = offer.key");
+			sb.append("    where offer.valid = true");
+			sb.append("      and offer.openAccess = true");
+			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
+			sb.append("      and oto.organisation.key in :organisationKeys");
+			sb.append(")"); // in
+			sb.append(")"); // or
+			
+			// Access methods
+			if (acModule.isEnabled()) {
+				sb.append(" or (");
+				sb.append(" res.key in (");
+				sb.append("   select resource.key");
+				sb.append("     from acofferaccess access");
+				sb.append("     inner join access.offer offer");
+				sb.append("     inner join offer.resource resource");
+				sb.append("     inner join repositoryentry re2");
+				sb.append("        on re2.olatResource.key = resource.key");
+				sb.append("       and re2.publicVisible = true");
+				sb.append("     inner join offertoorganisation oto");
+				sb.append("        on oto.offer.key = offer.key");
+				sb.append("   where offer.valid = true");
+				sb.append("     and offer.openAccess = false");
+				sb.append("     and offer.guestAccess = false");
+				sb.append("     and access.method.enabled = true");
+				sb.append("     and oto.organisation.key in :organisationKeys");
+				
+				offerValidAt = new Date();
+				sb.append(" and (");
+				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+				sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
+				sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
+				sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+				sb.append(" or");
+				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
+				sb.append(" and offer.validFrom is null and offer.validTo is null");
+				sb.append(" )");
+				sb.append(")"); // in
+				sb.append(")"); // or
+			}
+		}
+		
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey());
+		if (!offerOrganisations.isEmpty()) {
+			query.setParameter("organisationKeys", offerOrganisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+		}
+		if (offerValidAt != null) {
+			query.setParameter( "offerValidAt", offerValidAt);
+		}
+		
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}

@@ -22,7 +22,6 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.Collection;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +37,7 @@ import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler;
 import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -60,13 +60,12 @@ public class AccessControlAdminController extends FormBasicController {
 
 	private String[] methodValues = {""};
 	private String[] methodKeys = {""};
-
-	private final AccessControlModule acModule;
+	
+	@Autowired
+	private AccessControlModule acModule;
 
 	public AccessControlAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 
 		values = new String[] {
 			getTranslator().translate("ac.on")

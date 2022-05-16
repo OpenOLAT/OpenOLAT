@@ -159,7 +159,7 @@ public class CurriculumImportHandler {
 					dbInstance.commit();
 					if("CourseModule".equals(importedEntry.getOlatResource().getResourceableTypeName())) {
 						ICourse course = CourseFactory.loadCourse(importedEntry);
-						CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.preparation, false, false, author, locale);
+						CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.preparation, author, locale);
 					}
 				}
 			}

@@ -81,7 +81,7 @@ public class AccessTransactionGatling extends OlatTestCase {
 		
 		for(RepositoryEntry course:courses) {
 			try {
-				List<Offer> offers = acService.findOfferByResource(course.getOlatResource(), true, null);
+				List<Offer> offers = acService.findOfferByResource(course.getOlatResource(), true, null, null);
 				if(offers.isEmpty()) {
 					OLATResource randomOres = course.getOlatResource();
 					Offer offer = acService.createOffer(randomOres, "Free " + course.getDisplayname());
@@ -97,7 +97,7 @@ public class AccessTransactionGatling extends OlatTestCase {
 
 					List<Identity> identities = loadIdentities.subList(fromIndex, toIndex);
 					for(Identity identity:identities) {
-						acService.isAccessible(course, identity, false, true);
+						acService.isAccessible(course, identity, Boolean.FALSE, false, true);
 						dbInstance.commit();
 					}
 				}

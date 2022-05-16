@@ -189,7 +189,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		DropdownItem addExceptionalObligationDropdown = uifactory.addDropdownMenu("config.exceptional.obligation.add",
 				"config.exceptional.obligation.add", null, obligationCont, getTranslator());
-		addExceptionalObligationDropdown.setOrientation(DropdownOrientation.normal);
+		addExceptionalObligationDropdown.setOrientation(DropdownOrientation.right);
 		addExceptionalObligationDropdown.setExpandContentHeight(true);
 		
 		learningPathService.getExceptionalObligationHandlers().stream()

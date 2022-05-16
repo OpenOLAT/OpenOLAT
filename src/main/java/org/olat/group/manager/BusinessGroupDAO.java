@@ -803,7 +803,7 @@ public class BusinessGroupDAO {
 				if(row.getBundles() == null) {
 					row.setBundles(new ArrayList<>(3));
 				}
-				row.getBundles().add(new PriceMethodBundle(price, method));	
+				row.getBundles().add(new PriceMethodBundle(price, method));
 			}
 		}
 	}

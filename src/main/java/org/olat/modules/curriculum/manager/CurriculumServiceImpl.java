@@ -106,6 +106,7 @@ import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -132,6 +133,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private RepositoryEntryMyCourseQueries myCourseQueries;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -972,6 +975,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(!elementsMap.isEmpty()) {
 			SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
 			params.setCurriculums(curriculums);
+			params.setOfferOrganisations(acService.getOfferOrganisations(identity));
+			params.setOfferValidAt(new Date());
+			
 			List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
 			Map<Long, RepositoryEntryMyView> viewMap = new HashMap<>();
 			for(RepositoryEntryMyView view:views) {

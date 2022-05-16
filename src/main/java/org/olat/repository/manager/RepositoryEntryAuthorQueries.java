@@ -531,9 +531,9 @@ public class RepositoryEntryAuthorQueries {
 					break; 
 				case access:
 					if(asc) {
-						sb.append(" order by v.allUsers asc, v.status asc, lower(v.displayname) asc");
+						sb.append(" order by v.status asc, lower(v.displayname) asc");
 					} else {
-						sb.append(" order by v.allUsers desc, v.status desc, lower(v.displayname) desc");
+						sb.append(" order by v.status desc, lower(v.displayname) desc");
 					}
 					break;
 				case ac:

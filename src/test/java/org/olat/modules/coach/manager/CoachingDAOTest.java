@@ -480,11 +480,11 @@ public class CoachingDAOTest extends OlatTestCase {
 	throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1",
-				RepositoryEntryStatusEnum.preparation, false, false, courseUrl);
+				RepositoryEntryStatusEnum.preparation, courseUrl);
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2",
-				RepositoryEntryStatusEnum.review, false, false, courseUrl);
+				RepositoryEntryStatusEnum.review, courseUrl);
 		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3",
-				RepositoryEntryStatusEnum.published, true, false, courseUrl);
+				RepositoryEntryStatusEnum.published, courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -1087,7 +1087,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	public void isCoach_notPermitted() throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course",
-				RepositoryEntryStatusEnum.published, false, false, courseUrl);
+				RepositoryEntryStatusEnum.published, courseUrl);
 		dbInstance.commitAndCloseSession();
 	
 		//owner of course

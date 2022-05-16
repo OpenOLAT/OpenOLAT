@@ -144,6 +144,7 @@
 		<class>org.olat.repository.model.RepositoryEntryEducationalTypeImpl</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OfferToOrganisationImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderPartImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderLineImpl</class>

@@ -510,6 +510,7 @@ create table o_repositoryentry (
    allusers boolean default false not null,
    guests boolean default false not null,
    bookable boolean default false not null,
+   publicvisible bool default false not null,
    deletiondate timestamp default null,
    fk_deleted_by int8 default null,
    fk_educational_type bigint default null,
@@ -854,12 +855,25 @@ create table o_ac_offer (
   resourcedisplayname varchar(255),
   autobooking bool not null default false,
   confirmation_email bool default false,
+  open_access bool default false not null,
+  guest_access bool default false not null,
+  catalog_publish bool default false not null,
+  catalog_web_publish bool default false not null,
   token varchar(255),
   price_amount DECIMAL,
   price_currency_code VARCHAR(3),
   offer_desc VARCHAR(2000),
   fk_resource_id int8,
   primary key (offer_id)
+);
+
+create table o_ac_offer_to_organisation (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  fk_offer int8 not null,
+  fk_organisation int8 not null,
+  primary key (id)
 );
 
 create table o_ac_method (
@@ -3975,6 +3989,13 @@ create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
+create index idx_offer_guest_idx on o_ac_offer (guest_access);
+create index idx_offer_open_idx on o_ac_offer (open_access)
+
+alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
+alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_oto_org_idx on o_ac_offer_to_organisation (fk_organisation);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);

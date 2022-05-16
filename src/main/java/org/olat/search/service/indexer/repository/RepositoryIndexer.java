@@ -215,19 +215,19 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		if (repositoryEntry == null) {
 			return false;
 		}
-		if(roles.isGuestOnly() && !repositoryEntry.isGuests()) {
+		if(roles.isGuestOnly() && !(repositoryEntry.isPublicVisible() && CoreSpringFactory.getImpl(ACService.class).isGuestAccessible(repositoryEntry, true))) {
 			return false;
 		}
 		
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, repositoryEntry);
 		
 		boolean isAllowedToLaunch = false;
-		if (!reSecurity.isEntryAdmin() && !reSecurity.canLaunch() && repositoryEntry.isBookable()) {
+		if (!reSecurity.isEntryAdmin() && !reSecurity.canLaunch() && repositoryEntry.isPublicVisible()) {
 			List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
 			if(entries.size() > 1) {
 				boolean hasAccess = false;
 				ACService acService = CoreSpringFactory.getImpl(ACService.class);
-				AccessResult acResult = acService.isAccessible(repositoryEntry, identity, false); 
+				AccessResult acResult = acService.isAccessible(repositoryEntry, identity, reSecurity.isMember(), false, false); 
 				if (acResult.isAccessible()) {
 					hasAccess = true;
 				} else if (!acResult.getAvailableMethods().isEmpty()) {

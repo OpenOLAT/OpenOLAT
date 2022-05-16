@@ -1,35 +1,15 @@
 <fieldset class="o_form form-horizontal o_ac_configuration">
-#if ($off_title) 
-	<legend>
-		$off_title
-	</legend>
-#end
-
-#if ($off_desc || $off_warn || $off_info)
-	<div class="row"><div class="col-sm-offset-3 col-sm-9">
-		#if ($off_desc) <div class="o_desc">$off_desc</div> #end
-		#if ($off_warn) <div class="o_warning">$off_warn</div> #end
-		#if ($off_info) <div class="o_info">$off_info</div> #end
-	</div></div>
-#end
-	<div class="form-group o_ac_methods">
-		<label class="control-label col-sm-3">$r.translate("ac.methods.label") $r.render("acMethodsLabelHelp")</label>
-		<div class="col-sm-9">$r.render("conf-controllers")</div>
-	</div>
-	#if($methods) 
-	<div class="form-group"><div class="col-sm-9 col-sm-offset-3"><div class="btn-group">
-		<button type="button" class="btn btn-default dropdown-toggle o_sel_accesscontrol_create" data-toggle="dropdown">$r.translate("add.accesscontrol") <span class="caret"></span></button>
-		<ul class="dropdown-menu dropdown-menu-right" role="menu">
-			#foreach($method in $methods)
-				<li>$r.render($method.component.componentName)</li>
-			#end
-		</ul>
-	</div></div></div>
+	#if ($off_title) 
+		<legend>
+			$off_title
+		</legend>
 	#end
-	#if($r.visible("confirmation.email"))
-	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("confirmation.email")</label>
-		<div class="col-sm-9">$r.render("confirmation.email")</div>
-	</div>
+	#if($r.available("create.offer") && $r.visible("create.offer"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("create.offer")
+		</div>
 	#end
+	<div>
+		$r.render("offers")
+	</div>
 </fieldset>

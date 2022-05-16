@@ -356,7 +356,7 @@ public class JunitTestHelper {
 		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null,
 				r, RepositoryEntryStatusEnum.published, defOrganisation);
 		if(!membersOnly) {
-			re.setAllUsers(true);
+			re.setPublicVisible(true);
 		}
 		repositoryService.update(re);
 		return re;
@@ -370,7 +370,7 @@ public class JunitTestHelper {
 		RepositoryEntry re = null;
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Demo-Kurs-16.0.zip");
-			re = deployCourse(initialAuthor, "Demo-Kurs-7.1", RepositoryEntryStatusEnum.published, true, false, courseUrl);
+			re = deployCourse(initialAuthor, "Demo-Kurs-7.1", RepositoryEntryStatusEnum.published, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -385,7 +385,7 @@ public class JunitTestHelper {
 		RepositoryEntry re = null;
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/CopyCourseWizardTestCourse.zip");
-			re = deployCourse(initialAuthor, "CPW-Test", RepositoryEntryStatusEnum.published, true, false, courseUrl);
+			re = deployCourse(initialAuthor, "CPW-Test", RepositoryEntryStatusEnum.published, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -428,7 +428,7 @@ public class JunitTestHelper {
 			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Basic_course.zip");
-			return deployCourse(initialAuthor, displayname, status, allUsers, guests, courseUrl);
+			return deployCourse(initialAuthor, displayname, status, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -436,10 +436,10 @@ public class JunitTestHelper {
 	}
 	
 	public static RepositoryEntry deployEmptyCourse(Identity initialAuthor, String displayname,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
+			RepositoryEntryStatusEnum status) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Empty_course.zip");
-			return deployCourse(initialAuthor, displayname, status, allUsers, guests, courseUrl);
+			return deployCourse(initialAuthor, displayname, status, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -455,22 +455,22 @@ public class JunitTestHelper {
 	 * @return The repository entry of the course
 	 */
 	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, URL courseUrl) {
-		return deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, true, false, courseUrl);
+		return deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl);
 	}
 	
 	/**
 	 * 
 	 * @param initialAuthor The author
 	 * @param displayname The name of the course
-	 * @param access The access
 	 * @param courseUrl The file to import
+	 * @param access The access
 	 * @return The repository entry of the course
 	 */
 	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, URL courseUrl) {
+			RepositoryEntryStatusEnum status, URL courseUrl) {
 		try {
 			File courseFile = new File(courseUrl.toURI());
-			return deployCourse(initialAuthor, displayname, courseFile, status, allUsers, guests);
+			return deployCourse(initialAuthor, displayname, courseFile, status);
 		} catch (URISyntaxException e) {
 			log.error("", e);
 			return null;
@@ -486,7 +486,7 @@ public class JunitTestHelper {
 	 * @return The repository entry of the course
 	 */
 	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile) {	
-		return deployCourse(initialAuthor, displayname, courseFile, RepositoryEntryStatusEnum.published, true, false) ;
+		return deployCourse(initialAuthor, displayname, courseFile, RepositoryEntryStatusEnum.published) ;
 	}
 	
 	/**
@@ -497,8 +497,7 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {		
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile, RepositoryEntryStatusEnum status) {
 		try {
 			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
@@ -507,7 +506,7 @@ public class JunitTestHelper {
 			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course", true, defOrganisation, Locale.ENGLISH, courseFile, null);
 			
 			ICourse course = CourseFactory.loadCourse(re);
-			CourseFactory.publishCourse(course, status, allUsers, guests, initialAuthor, Locale.ENGLISH);
+			CourseFactory.publishCourse(course, status, initialAuthor, Locale.ENGLISH);
 			return  CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(re.getKey());
 		} catch (Exception e) {
 			log.error("", e);

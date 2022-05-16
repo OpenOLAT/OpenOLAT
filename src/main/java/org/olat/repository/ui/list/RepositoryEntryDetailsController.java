@@ -89,7 +89,6 @@ import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.login.LoginModule;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -149,8 +148,6 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private Integer index;
 	private final boolean inRuntime;
 
-	@Autowired
-	private LoginModule loginModule;
 	@Autowired
 	protected UserRatingsDAO userRatingsDao;
 	@Autowired
@@ -373,18 +370,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			}
 
 			//access control
-			String accessI18n = null;
 			List<PriceMethod> types = new ArrayList<>();
-			if(entry.isAllUsers() || entry.isGuests()) {
-				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-				startLink.setElementCssClass("o_start btn-block");
-				if(guestOnly) {
-					startLink.setVisible(entry.isGuests());
-				}
-				accessI18n = translate("cif.status.".concat(entry.getEntryStatus().name()));
-			} else if(entry.isBookable()) {
-				AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, false);
+			if(entry.isPublicVisible()) {
+				AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
 				if(acResult.isAccessible()) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
@@ -410,21 +398,17 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setVisible(false);
 				}
-				accessI18n = translate("cif.status.".concat(entry.getEntryStatus().name()));
 			} else {
 				// visible only to members only
 				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 				startLink.setElementCssClass("o_start btn-block");
 				startLink.setVisible(isMember);
-				accessI18n = translate("cif.access.membersonly");
 			}
 			
 			startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 			startLink.setPrimary(true);
 			startLink.setFocus(true);
-
-			layoutCont.contextPut("accessI18n", accessI18n);
 			
 			if(!types.isEmpty()) {
 				layoutCont.contextPut("ac", types);
@@ -499,24 +483,24 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
 						refLinks.add(name);
 					}
-	            	layoutCont.contextPut("referenceLinks", refLinks);
+					layoutCont.contextPut("referenceLinks", refLinks);
 				}
-            }
-            
-            if(organisationModule.isEnabled()) {
-            	String organisations = getOrganisationsToString();
-            	layoutCont.contextPut("organisations", organisations);
-            }
-            if(curriculumModule.isEnabled()) {
-            	List<String> curriculums = getCurriculumsToString();
-            	layoutCont.contextPut("curriculums", curriculums);
-            }
-            
-            // Link to bookmark entry
-            String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-            layoutCont.contextPut("extlink", url);
-            Boolean guestAllowed = Boolean.valueOf(entry.isGuests() && loginModule.isGuestLoginLinksEnabled());
-            layoutCont.contextPut("isGuestAllowed", guestAllowed);
+			}
+			
+			if(organisationModule.isEnabled()) {
+				String organisations = getOrganisationsToString();
+				layoutCont.contextPut("organisations", organisations);
+			}
+			if(curriculumModule.isEnabled()) {
+				List<String> curriculums = getCurriculumsToString();
+				layoutCont.contextPut("curriculums", curriculums);
+			}
+			
+			// Link to bookmark entry
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			layoutCont.contextPut("extlink", url);
+			Boolean guestAllowed = Boolean.valueOf(entry.isPublicVisible() && acService.isGuestAccessible(entry, false));
+			layoutCont.contextPut("isGuestAllowed", guestAllowed);
 
 			//Owners
 			List<String> authorLinkNames = new ArrayList<>(authorKeys.size());

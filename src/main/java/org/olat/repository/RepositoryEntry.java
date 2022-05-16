@@ -176,6 +176,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	@Column(name="status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Column(name="publicvisible", nullable=false, insertable=true, updatable=true)
+	private boolean publicVisible;
 	@Column(name="allusers", nullable=false, insertable=true, updatable=true)
 	private boolean allUsers;
 	@Column(name="guests", nullable=false, insertable=true, updatable=true)
@@ -456,30 +458,51 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.status = status.name();
 	}
 
+	/*
+	 * if a repository entry is public visible the offers for guests, open access and bookings are available.
+	 * Oh the other hand if a repository entry is not public visible offers for guests, open access and bookings are not available.
+	 * In this case the members of the repository entry can only be managed in the members management.
+	 */
+
+	public boolean isPublicVisible() {
+		return publicVisible;
+	}
+
+	public void setPublicVisible(boolean publicVisible) {
+		this.publicVisible = publicVisible;
+	}
+	
+	@Deprecated
 	public boolean isBookable() {
 		return bookable;
 	}
 
+	@Deprecated
 	public void setBookable(boolean bookable) {
 		this.bookable = bookable;
 	}
 
+	@Deprecated
 	public boolean isAllUsers() {
 		return allUsers;
 	}
 
+	@Deprecated
 	public void setAllUsers(boolean allUsers) {
 		this.allUsers = allUsers;
 	}
 
+	@Deprecated
 	public boolean isGuests() {
 		return guests;
 	}
 
+	@Deprecated
 	public void setGuests(boolean guests) {
 		this.guests = guests;
 	}
 
+	@Deprecated
 	public String getAllowToLeave() {
 		return allowToLeave;
 	}

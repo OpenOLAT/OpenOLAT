@@ -59,11 +59,7 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public RepositoryEntryStatusEnum getEntryStatus();
 	
-	public boolean isAllUsers();
-	
-	public boolean isGuests();
-	
-	public boolean isBookable();
+	public boolean isPublicVisible();
 	
 	public OLATResource getOlatResource();
 	

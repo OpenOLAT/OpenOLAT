@@ -19,7 +19,9 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -29,11 +31,14 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +54,8 @@ public class RepositoryEntryQueries {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private AccessControlModule acModule;
 	
 	public int countEntries(SearchRepositoryEntryParameters params) {
 		TypedQuery<Number> dbQuery = createQuery(params, false, Number.class);
@@ -88,7 +95,7 @@ public class RepositoryEntryQueries {
 			     .append(" left join fetch v.lifecycle as lifecycle");
 		}
 
-		boolean setIdentity = appendAccessSubSelects(query, params.getRoles(), params.isOnlyExplicitMember());
+		AddParams addParams = appendAccessSubSelects(query, params.getRoles(), params.isOnlyExplicitMember(), params.getOfferValidAt(), params.getOfferOrganisations());
 
 		if(params.getParentEntry() != null) {
 			query.append(" and parentCei.key=:parentCeiKey");
@@ -219,11 +226,17 @@ public class RepositoryEntryQueries {
 		if(StringHelper.containsNonWhitespace(params.getExternalRef())) {
 			dbQuery.setParameter("externalRef", params.getExternalRef());
 		}
-		if(setIdentity) {
+		if(addParams.isIdentity()) {
 			dbQuery.setParameter("identityKey", params.getIdentity().getKey());
 		}
 		if(params.getAsParticipant() != null) {
 			dbQuery.setParameter("participantKey", params.getAsParticipant().getKey());
+		}
+		if (addParams.isOfferValidAt() && params.getOfferValidAt() != null) {
+			dbQuery.setParameter( "offerValidAt", params.getOfferValidAt());
+		}
+		if (addParams.isOfferOrganisations() && params.getOfferOrganisations() != null && !params.getOfferOrganisations().isEmpty()) {
+			dbQuery.setParameter("organisationKeys", params.getOfferOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
 		}
 		return dbQuery;
 	}
@@ -236,17 +249,31 @@ public class RepositoryEntryQueries {
 	 * @param roles
 	 * @return
 	 */
-	private boolean appendAccessSubSelects(QueryBuilder sb, Roles roles, boolean onlyExplicitMember) {
+	private AddParams appendAccessSubSelects(QueryBuilder sb, Roles roles, boolean onlyExplicitMember, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations) {
 		if(roles.isGuestOnly()) {
-			sb.append(" where v.guests=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
-			return false;
+			sb.append(" where v.publicVisible=true and v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
+			sb.append(" and res.key in (");
+			sb.append("   select resource.key");
+			sb.append("     from acoffer offer");
+			sb.append("     inner join offer.resource resource");
+			sb.append("    where offer.valid = true");
+			sb.append("      and offer.guestAccess = true");
+			sb.append(")");
+			return new AddParams(false, false, false);
 		}
 		
-		// no by-pass -> join the memberships
-		sb.append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" where membership.identity.key=:identityKey and");
+		boolean offerValidAtUsed = false;
+		boolean offerOrganisationsUsed = false;
+		
+		if(dbInstance.isMySQL()) {
+			sb.append(" where (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    and ");
+		} else {
+			sb.append(" where (exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    and ");
+		}
 
 		if(onlyExplicitMember) {
 			sb.append("((")
@@ -255,14 +282,11 @@ public class RepositoryEntryQueries {
 			  .append(" membership.role='").append(GroupRoles.coach.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 			  .append(") or (")
 			  .append(" membership.role='").append(GroupRoles.participant.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
-			  .append("))");
+			  .append(")))");
 		} else {
 			//access rules as user
 			sb.append("(")
-			  .append("(membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
-			  .append("   and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
-			// administrator, learn resource manager and owner
-			  .append(") or (")
+			  .append("(")
 			  .append(" membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
 			  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 			if(roles.isAuthor()) {
@@ -278,7 +302,93 @@ public class RepositoryEntryQueries {
 			  .append(" membership.role ").in(GroupRoles.participant).append("  and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			
 			sb.append("))");
+			sb.append(")");
+			
+			// Open access
+			sb.append(" or (");
+			sb.append(" res.key in (");
+			sb.append("   select resource.key");
+			sb.append("     from acoffer offer");
+			sb.append("     inner join offer.resource resource");
+			sb.append("     inner join repositoryentry re2");
+			sb.append("        on re2.olatResource.key = resource.key");
+			sb.append("       and re2.publicVisible = true");
+			sb.append("     inner join offertoorganisation oto");
+			sb.append("        on oto.offer.key = offer.key");
+			sb.append("    where offer.valid = true");
+			sb.append("      and offer.openAccess = true");
+			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
+			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+				sb.append("      and oto.organisation.key in :organisationKeys");
+				offerOrganisationsUsed = true;
+			}
+			sb.append(")"); // in
+			sb.append(")"); // or
+			
+			// Access methods
+			if (acModule.isEnabled()) {
+				sb.append(" or (");
+				sb.append(" res.key in (");
+				sb.append("   select resource.key");
+				sb.append("     from acofferaccess access");
+				sb.append("     inner join access.offer offer");
+				sb.append("     inner join offer.resource resource");
+				sb.append("     inner join repositoryentry re2");
+				sb.append("        on re2.olatResource.key = resource.key");
+				sb.append("       and re2.publicVisible = true");
+				sb.append("     inner join offertoorganisation oto");
+				sb.append("        on oto.offer.key = offer.key");
+				sb.append("   where offer.valid = true");
+				sb.append("     and offer.openAccess = false");
+				sb.append("     and offer.guestAccess = false");
+				sb.append("     and access.method.enabled = true");
+				if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+					sb.append("     and oto.organisation.key in :organisationKeys");
+					offerOrganisationsUsed = true;
+				}
+				if (offerValidAt != null) {
+					sb.append(" and (");
+					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+					sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
+					sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
+					sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+					sb.append(" or");
+					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
+					sb.append(" and offer.validFrom is null and offer.validTo is null");
+					sb.append(" )");
+					offerValidAtUsed = true;
+				}
+				sb.append(")"); // in
+				sb.append(")"); // or
+			}
 		}
-		return true;
+		sb.append(")");
+		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed);
+	}
+	
+	private final static class AddParams {
+		
+		private final boolean identity;
+		private final boolean offerValidAt;
+		private final boolean offerOrganisations;
+		
+		public AddParams(boolean identity, boolean offerValidAt, boolean offerOrganisations) {
+			this.identity = identity;
+			this.offerValidAt = offerValidAt;
+			this.offerOrganisations = offerOrganisations;
+		}
+		
+		public boolean isIdentity() {
+			return identity;
+		}
+		
+		public boolean isOfferValidAt() {
+			return offerValidAt;
+		}
+		
+		public boolean isOfferOrganisations() {
+			return offerOrganisations;
+		}
+		
 	}
 }

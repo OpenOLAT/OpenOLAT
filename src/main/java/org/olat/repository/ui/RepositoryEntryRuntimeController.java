@@ -516,7 +516,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			ordersLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Booking:0]]"));
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
-			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
+			boolean booking = re.isPublicVisible() && acService.isResourceAccessControled(re.getOlatResource(), null);
 			ordersLink.setEnabled(booking);
 			toolsDropdown.addComponent(ordersLink);	
 		}
@@ -1018,11 +1018,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(security .isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
 			launchContent(ureq);
 		} else {
-			// guest are allowed to see resource with BARG
 			if(security.canLaunch()) {
 				launchContent(ureq);
-			} else if(re.isBookable() && canBook()) {
-				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
+			} else if(re.isPublicVisible()) {
+				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), false);
 				if(acResult.isAccessible()) {
 					launchContent(ureq);
 				} else if (re != null
@@ -1047,11 +1046,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				accessRefused(ureq);
 			}
 		}
-	}
-	
-	private boolean canBook() {
-		// need to check organization too?
-		return !roles.isGuestOnly();
 	}
 	
 	private void accessRefused(UserRequest ureq) {

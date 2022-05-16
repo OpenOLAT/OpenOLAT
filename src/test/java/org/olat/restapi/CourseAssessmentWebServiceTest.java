@@ -310,7 +310,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		URL courseUrl = OlatRestTestCase.class.getResource("file_resources/course_with_qti21.zip");
 		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(admin, "QTI 2.1 Course", courseUrl);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, admin, Locale.ENGLISH);
 		return course;
 	}
 	
@@ -320,7 +320,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 
 		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(admin, "GTA Course", courseUrl);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, admin, Locale.ENGLISH);
 		return course;
 	}
 	

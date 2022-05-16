@@ -512,6 +512,7 @@ create table if not exists o_repositoryentry (
    allusers bit default 0 not null,
    guests bit default 0 not null,
    bookable bit default 0 not null,
+   publicvisible bool default false not null,
    allowtoleave varchar(16),
    candownload bit not null,
    cancopy bit not null,
@@ -938,12 +939,25 @@ create table  if not exists o_ac_offer (
   resourcedisplayname varchar(255),
   autobooking boolean default 0,
   confirmation_email bit default 0,
+  open_access bool default false not null,
+  guest_access bool default false not null,
+  catalog_publish bool default false not null,
+  catalog_web_publish bool default false not null,
   token varchar(255),
   price_amount DECIMAL(12,4),
   price_currency_code VARCHAR(3),
   offer_desc VARCHAR(2000),
   fk_resource_id bigint,
   primary key (offer_id)
+);
+
+create table o_ac_offer_to_organisation (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  fk_offer bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
 );
 
 create table if not exists o_ac_method (
@@ -3802,6 +3816,7 @@ alter table o_mail_to_recipient ENGINE = InnoDB;
 alter table o_mail_recipient ENGINE = InnoDB;
 alter table o_mail_attachment ENGINE = InnoDB;
 alter table o_ac_offer ENGINE = InnoDB;
+alter table o_ac_offer_to_organisation ENGINE = InnoDB;
 alter table o_ac_method ENGINE = InnoDB;
 alter table o_ac_offer_access ENGINE = InnoDB;
 alter table o_ac_order ENGINE = InnoDB;
@@ -4134,6 +4149,11 @@ create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
+create index idx_offer_guest_idx on o_ac_offer (guest_access);
+create index idx_offer_open_idx on o_ac_offer (open_access);
+
+alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer (offer_id);
+alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);

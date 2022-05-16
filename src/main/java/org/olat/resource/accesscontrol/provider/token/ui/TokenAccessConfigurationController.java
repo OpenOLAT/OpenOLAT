@@ -20,19 +20,17 @@
 
 package org.olat.resource.accesscontrol.provider.token.ui;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Util;
+import org.olat.core.id.Organisation;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
-import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 
 /**
  * 
@@ -45,28 +43,17 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
  */
 public class TokenAccessConfigurationController extends AbstractConfigurationMethodController {
 
-	private TextElement descEl, tokenEl;
-	private DateChooser dateFrom, dateTo;
-	private final OfferAccess link;
+	private TextElement tokenEl;
 	
-	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
-		super(ureq, wControl, edit);
-		this.link = link;
-		setTranslator(Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), getTranslator()));
-		
+	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
+			Collection<Organisation> offerOrganisations, boolean edit) {
+		super(ureq, wControl, link, offerOrganisations, edit);
 		initForm(ureq);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+	protected void initCustomFormElements(FormItemContainer formLayout) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_token_form");
-		
-		String desc = null;
-		if(link.getOffer() != null) {
-			desc = link.getOffer().getDescription();
-		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
-		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
 		String token = "";
 		if(link.getOffer() instanceof OfferImpl) {
@@ -74,37 +61,20 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 		}
 		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, token, formLayout);
 		tokenEl.setElementCssClass("o_sel_accesscontrol_token");
-		
-		dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", link.getValidFrom(), formLayout);
-		dateFrom.setHelpText(translate("from.hint"));
-		dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", link.getValidTo(), formLayout);
-		dateTo.setHelpText(translate("to.hint"));
-
-		super.initForm(formLayout, listener, ureq);
+		tokenEl.setMandatory(true);
 	}
 	
 	@Override
-	public AccessMethod getMethod() {
-		return link.getMethod();
-	}
-
-	@Override
-	public OfferAccess commitChanges() {
+	protected void updateCustomChanges() {
 		Offer offer = link.getOffer();
 		if(offer instanceof OfferImpl) {
 			((OfferImpl)offer).setToken(tokenEl.getValue());
 		}
-		offer.setDescription(descEl.getValue());
-		offer.setValidFrom(dateFrom.getDate());
-		offer.setValidTo(dateTo.getDate());
-		link.setValidFrom(dateFrom.getDate());
-		link.setValidTo(dateTo.getDate());
-		return link;
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String token = tokenEl.getValue();
 		tokenEl.clearError();
@@ -113,12 +83,6 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 			allOk = false;
 		}
 		
-		if (dateFrom.getDate() != null && dateTo.getDate() != null && dateFrom.getDate().compareTo(dateTo.getDate()) > 0) {
-			dateTo.setErrorKey("date.error", null);
-			dateFrom.setErrorKey(null, null);
-			allOk &= false;
-		}
-		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk ;
 	}
 }

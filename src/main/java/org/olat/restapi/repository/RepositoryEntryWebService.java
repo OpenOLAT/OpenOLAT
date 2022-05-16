@@ -90,7 +90,6 @@ import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -104,7 +103,6 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
-import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -868,7 +866,7 @@ public class RepositoryEntryWebService {
 	@GET
 	@Path("metadata")
 	@Operation(summary = "Get lots of metadata of the repository entry", description = "Get lots of metadata of the repository entry from description up-to educational type and technical type")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+	@ApiResponse(responseCode = "200", description = "The metadata of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
@@ -892,7 +890,7 @@ public class RepositoryEntryWebService {
 	@PUT
 	@Path("metadata")
 	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values.")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+	@ApiResponse(responseCode = "200", description = "The metadata of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
@@ -912,7 +910,7 @@ public class RepositoryEntryWebService {
 	@POST
 	@Path("metadata")
 	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+	@ApiResponse(responseCode = "200", description = "The metadata of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
@@ -940,63 +938,6 @@ public class RepositoryEntryWebService {
 				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
 		
 		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
-	}
-
-	
-	/**
-	 * Get the access configuration of the repository entry.
-	 * 
-	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the repository entry.
-	 */
-	@GET
-	@Path("access")
-	@Operation(summary = "Get the access configuration of the repository entry", description = "Get the access configuration of the repository entry")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAccess(@Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		RepositoryEntryAccessVO accessVo = RepositoryEntryAccessVO.valueOf(entry);
-		return Response.ok(accessVo).build();
-	}
-	
-	/**
-	 * Update the access configuration of the repository entry. Attention! It's
-	 * a low level method which only change the status without the stuff
-	 * done by the change status methods. Use it only if you know what you do.
-	 * 
-	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the repository entry.
-	 */
-	@POST
-	@Path("access")
-	@Operation(summary = "Update the access configuration of the repository entry", description = "Update the access configuration of the repository entry. Attention! It's\n" + 
-			" a low level method which only change the status without the stuff\n" + 
-			" done by the change status methods. Use it only if you know what you do")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response updateAccess(RepositoryEntryAccessVO accessVo, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		if(accessVo.getRepoEntryKey() != null && !accessVo.getRepoEntryKey().equals(entry.getKey())) {
-			return Response.serverError().status(Status.BAD_REQUEST).build();
-		}
-		
-		boolean guests = accessVo.isGuests();
-		boolean allUsers = accessVo.isAllUsers();
-		RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.valueOf(accessVo.getStatus());
-		entry = repositoryManager.setAccess(entry, status, allUsers, guests);
-		return Response.ok(RepositoryEntryAccessVO.valueOf(entry)).build();
 	}
 	
 	@GET

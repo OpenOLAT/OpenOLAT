@@ -71,6 +71,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 
 /**
  * Dispatch any media files belonging to a podcast which an identity is
@@ -499,7 +500,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 	 */
 	private boolean allowsGuestAccess(final RepositoryEntry repoEntry) {
 		boolean guestsAllowed = false;
-		if (repoEntry != null && repoEntry.isGuests()) {
+		if (repoEntry != null && repoEntry.isPublicVisible() && CoreSpringFactory.getImpl(ACService.class).isGuestAccessible(repoEntry, true)) {
 			guestsAllowed = true;
 		}
 		return guestsAllowed;

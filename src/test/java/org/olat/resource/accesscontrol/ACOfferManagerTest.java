@@ -20,29 +20,30 @@
 
 package org.olat.resource.accesscontrol;
 
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.olat.test.JunitTestHelper.random;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
-import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
+import org.olat.resource.accesscontrol.manager.ACOfferToOrganisationDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,15 +60,16 @@ public class ACOfferManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
-
 	@Autowired
 	private ACOfferDAO acOfferManager;
-
 	@Autowired
 	private ACService acService;
-
 	@Autowired
 	private ACMethodDAO acMethodManager;
+	@Autowired
+	private ACOfferToOrganisationDAO offerToOrganisationDao;
+	@Autowired
+	private OrganisationService organisationService;
 
 	@Test
 	public void testManagers() {
@@ -77,11 +79,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 
 	@Test
 	public void testSaveOffer() {
-		//create a resource
-		OLATResourceable testOreable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable);
-		assertNotNull(testOres);
-
+		OLATResource testOres = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
 		//create an offer
@@ -108,7 +106,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check if the offer is saved
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, null);
 		assertNotNull(offers);
 		assertEquals(1, offers.size());
 		Offer savedOffer = offers.get(0);
@@ -127,10 +125,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 
 	@Test
 	public void testDeleteOffer() {
-		OLATResourceable testOreable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable);
-		assertNotNull(testOres);
-
+		OLATResource testOres = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
 		//create an offer
@@ -151,7 +146,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the offer
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, null);
 		assertNotNull(offers);
 		assertEquals(1, offers.size());
 		assertEquals(offer, offers.get(0));
@@ -162,13 +157,13 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//try to retrieve the offer
-		List<Offer> noOffers = acOfferManager.findOfferByResource(testOres, true, null);
+		List<Offer> noOffers = acOfferManager.findOfferByResource(testOres, true, null, null);
 		assertNotNull(noOffers);
 		assertEquals(0, noOffers.size());
 		dbInstance.commitAndCloseSession();
 
 		//retrieve all offers, deleted too
-		List<Offer> delOffers = acOfferManager.findOfferByResource(testOres, false, null);
+		List<Offer> delOffers = acOfferManager.findOfferByResource(testOres, false, null, null);
 		assertNotNull(delOffers);
 		assertEquals(1, delOffers.size());
 		assertEquals(offer, delOffers.get(0));
@@ -178,11 +173,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 
 	@Test
 	public void testDeleteResource() {
-		//create a random resource
-		OLATResourceable testOreable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable);
-		assertNotNull(testOres);
-
+		OLATResource testOres = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
 		//create an offer
@@ -201,7 +192,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//load offer by resource -> nothing found
-		List<Offer> retrievedOffers = acOfferManager.findOfferByResource(testOres, true, null);
+		List<Offer> retrievedOffers = acOfferManager.findOfferByResource(testOres, true, null, null);
 		assertNotNull(retrievedOffers);
 		assertEquals(0, retrievedOffers.size());
 
@@ -211,84 +202,260 @@ public class ACOfferManagerTest extends OlatTestCase {
 		assertNull(retrievedOffer.getResource());
 		assertEquals(offer, retrievedOffer);
 	}
-
+	
 	@Test
-	public void testFilter() {
-		//create resources
-		OLATResourceable testOreable1 = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres1 = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable1);
-		assertNotNull(testOres1);
-
-		OLATResourceable testOreable2 = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres2 = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable2);
-		assertNotNull(testOres2);
-
-		OLATResourceable testOreable3 = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres3 = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable3);
-		assertNotNull(testOres3);
-
+	public void shouldFilterByValid() {
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
+		
+		// Offer valid
+		Offer offerValid = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerValid = acOfferManager.saveOffer(offerValid);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerValid, method));
+		// Offer not valid
+		Offer offerNotValid = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerNotValid = acOfferManager.saveOffer(offerNotValid);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerNotValid, method));
+		acOfferManager.deleteOffer(offerNotValid); // valid => false
 		dbInstance.commitAndCloseSession();
-
-		//create  offers
-		Offer offer1 = acOfferManager.createOffer(testOres1, "TestFilter 1");
-		Offer offer2 = acOfferManager.createOffer(testOres2, "TestFilter 2");
-		acOfferManager.saveOffer(offer1);
-		acOfferManager.saveOffer(offer2);
-
+		
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, null);
+		
+		assertThat(offers).hasSize(1).containsExactlyInAnyOrder(offerValid);
+	}
+	
+	@Test
+	public void shouldFilterByDate() {
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
+		Date date = new Date();
+		
+		// Offer valid always
+		Offer offerAlways = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerAlways = acOfferManager.saveOffer(offerAlways);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerAlways, method));
+		// Offer valid at due date
+		Offer offerInRange = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerInRange.setValidFrom(DateUtils.addDays(date, -2));
+		offerInRange.setValidTo(DateUtils.addDays(date, 2));
+		offerInRange = acOfferManager.saveOffer(offerInRange);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerInRange, method));
+		// Offer valid in past
+		Offer offerInPast = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerInPast.setValidFrom(DateUtils.addDays(date, -10));
+		offerInPast.setValidTo(DateUtils.addDays(date, -2));
+		offerInPast = acOfferManager.saveOffer(offerInPast);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerInPast, method));
+		// Offer valid in future
+		Offer offerInFuture = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerInFuture.setValidFrom(DateUtils.addDays(date, 2));
+		offerInFuture.setValidTo(DateUtils.addDays(date, 12));
+		offerInFuture = acOfferManager.saveOffer(offerInFuture);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerInFuture, method));
 		dbInstance.commitAndCloseSession();
-
-		//filter by resources
-		List<Long> resourceKeys = new ArrayList<>();
-		resourceKeys.add(testOres1.getKey());
-		resourceKeys.add(testOres2.getKey());
-		resourceKeys.add(testOres3.getKey());
-		Set<Long> filteredKeys = acOfferManager.filterResourceWithOffer(resourceKeys);
-		assertNotNull(filteredKeys);
-		assertEquals(2, filteredKeys.size());
-		assertTrue(filteredKeys.contains(testOres1.getKey()));
-		assertTrue(filteredKeys.contains(testOres2.getKey()));
-		assertFalse(filteredKeys.contains(testOres3.getKey()));
+		
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, date, null);
+		
+		assertThat(offers).containsExactlyInAnyOrder(offerAlways, offerInRange);
+	}
+	
+	@Test
+	public void shouldFilterByOrganisation() {
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation organisationOther = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		
+		// Offer in organisation
+		Offer offerInOrganisation1 = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerInOrganisation1 = acOfferManager.saveOffer(offerInOrganisation1);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerInOrganisation1, method));
+		offerToOrganisationDao.createRelation(offerInOrganisation1, organisation1);
+		Offer offerInOrganisation2 = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerInOrganisation2 = acOfferManager.saveOffer(offerInOrganisation2);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerInOrganisation2, method));
+		offerToOrganisationDao.createRelation(offerInOrganisation2, organisation2);
+		// Offer not in organisation
+		Offer offerNotInOrganisation = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerNotInOrganisation = acOfferManager.saveOffer(offerNotInOrganisation);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerNotInOrganisation, method));
+		offerToOrganisationDao.createRelation(offerNotInOrganisation, organisationOther);
+		// Offer in no organisation
+		Offer offerInNoOrganisation = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerInNoOrganisation = acOfferManager.saveOffer(offerInNoOrganisation);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerInNoOrganisation, method));
+		dbInstance.commitAndCloseSession();
+		
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, List.of(organisation1, organisation2));
+		
+		assertThat(offers).containsExactlyInAnyOrder(offerInOrganisation2, offerInOrganisation1);
+	}
+	
+	@Test
+	public void shouldGetOpenAccessible() {
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
+		List<Organisation> organisations = List.of(organisation1, organisation2);
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+		
+		// No offer
+		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		
+		// No open offer
+		Offer offer = acService.createOffer(resource, random());
+		acOfferManager.saveOffer(offer);
+		acService.updateOfferOrganisations(offer, organisations);
+		dbInstance.commitAndCloseSession();
+		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		
+		// Open offer in other organisation
+		offer = acService.createOffer(resource, random());
+		offer.setOpenAccess(true);
+		acOfferManager.saveOffer(offer);
+		acService.updateOfferOrganisations(offer, List.of(organisation3));
+		dbInstance.commitAndCloseSession();
+		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		
+		// Open offer in organisation
+		acService.updateOfferOrganisations(offer, List.of(organisation2));
+		dbInstance.commitAndCloseSession();
+		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isTrue();
+		
+		// Delete offer
+		acService.deleteOffer(offer);
+		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+	}
+	
+	@Test
+	public void shouldGetOpenAccessibleResources() {
+		OLATResource resource1 = JunitTestHelper.createRandomResource();
+		OLATResource resource2 = JunitTestHelper.createRandomResource();
+		OLATResource resource3 = JunitTestHelper.createRandomResource();
+		OLATResource resource4 = JunitTestHelper.createRandomResource();
+		OLATResource resource5 = JunitTestHelper.createRandomResource();
+		
+		// Open access offer
+		Offer offer = acOfferManager.createOffer(resource1, random());
+		offer.setOpenAccess(true);
+		acOfferManager.saveOffer(offer);
+		
+		// Resource with two open access offers
+		offer = acOfferManager.createOffer(resource2, random());
+		offer.setOpenAccess(true);
+		acOfferManager.saveOffer(offer);
+		offer = acOfferManager.createOffer(resource2, random());
+		offer.setOpenAccess(true);
+		acOfferManager.saveOffer(offer);
+		
+		// Offer but not open access
+		offer = acOfferManager.createOffer(resource4, random());
+		offer.setOpenAccess(false);
+		acOfferManager.saveOffer(offer);
+		
+		// Not in selection list
+		offer = acOfferManager.createOffer(resource5, random());
+		offer.setOpenAccess(true);
+		acOfferManager.saveOffer(offer);
+		dbInstance.commitAndCloseSession();
+		
+		List<OLATResource> resources = acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2, resource3, resource4), null);
+		
+		assertThat(resources).hasSize(2).containsExactlyInAnyOrder(resource1, resource2);
+	}
+	
+	@Test
+	public void shouldGetOpenAccessibleResources_filterOrganisations() {
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		OLATResource resource1 = JunitTestHelper.createRandomResource();
+		OLATResource resource2 = JunitTestHelper.createRandomResource();
+		OLATResource resource3 = JunitTestHelper.createRandomResource();
+		OLATResource resource4 = JunitTestHelper.createRandomResource();
+		
+		createReOpenAccess(resource1, singletonList(organisation1));
+		createReOpenAccess(resource2, singletonList(organisation2));
+		createReOpenAccess(resource4, singletonList(otherOganisation));
+		dbInstance.commitAndCloseSession();
+		
+		List<OLATResource> resources = acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2, resource3, resource4), List.of(organisation1, organisation2));
+		
+		assertThat(resources).hasSize(2).containsExactlyInAnyOrder(resource1, resource2);
+	}
+	
+	private void createReOpenAccess(OLATResource resource, List<Organisation> offerOrganisations) {
+		Offer offer = acService.createOffer(resource, random());
+		offer.setOpenAccess(true);
+		offer = acService.save(offer);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+	}
+	
+	@Test
+	public void shouldGetGuestAccessible() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+		
+		// No offer
+		assertThat(acOfferManager.isGuestAccessible(resource)).isFalse();
+		
+		// Open Access
+		Offer offer = acService.createOffer(resource, random());
+		offer.setOpenAccess(true);
+		acOfferManager.saveOffer(offer);
+		dbInstance.commitAndCloseSession();
+		assertThat(acOfferManager.isGuestAccessible(resource)).isFalse();
+		
+		// Guest access
+		offer = acService.createOffer(resource, random());
+		offer.setGuestAccess(true);
+		offer = acOfferManager.saveOffer(offer);
+		dbInstance.commitAndCloseSession();
+		assertThat(acOfferManager.isGuestAccessible(resource)).isTrue();
+		
+		// Delete guest access
+		acService.deleteOffer(offer);
+		dbInstance.commitAndCloseSession();
+		assertThat(acOfferManager.isGuestAccessible(resource)).isFalse();
+	}
+	
+	@Test
+	public void shouldGetGuestAccessibleResources() {
+		OLATResource resource1 = JunitTestHelper.createRandomResource();
+		OLATResource resource2 = JunitTestHelper.createRandomResource();
+		OLATResource resource3 = JunitTestHelper.createRandomResource();
+		OLATResource resource4 = JunitTestHelper.createRandomResource();
+		OLATResource resource5 = JunitTestHelper.createRandomResource();
+		
+		// Open access offer
+		Offer offer = acOfferManager.createOffer(resource1, random());
+		offer.setGuestAccess(true);
+		acOfferManager.saveOffer(offer);
+		
+		// Resource with two open access offers
+		offer = acOfferManager.createOffer(resource2, random());
+		offer.setGuestAccess(true);
+		acOfferManager.saveOffer(offer);
+		offer = acOfferManager.createOffer(resource2, random());
+		offer.setGuestAccess(true);
+		acOfferManager.saveOffer(offer);
+		
+		// Offer but not open access
+		offer = acOfferManager.createOffer(resource4, random());
+		offer.setGuestAccess(false);
+		acOfferManager.saveOffer(offer);
+		
+		// Not in selection list
+		offer = acOfferManager.createOffer(resource5, random());
+		offer.setGuestAccess(true);
+		acOfferManager.saveOffer(offer);
+		dbInstance.commitAndCloseSession();
+		
+		List<OLATResource> resources = acOfferManager.loadGuestAccessibleResources(List.of(resource1, resource2, resource3, resource4));
+		
+		assertThat(resources).hasSize(2).containsExactlyInAnyOrder(resource1, resource2);
 	}
 
-	@Test
-	public void testFilterWithDelete() {
-		//create resources
-		OLATResourceable testOreable1 = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres1 = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable1);
-		assertNotNull(testOres1);
-
-		OLATResourceable testOreable2 = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres2 = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable2);
-		assertNotNull(testOres2);
-
-		OLATResourceable testOreable3 = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource testOres3 = OLATResourceManager.getInstance().findOrPersistResourceable(testOreable3);
-		assertNotNull(testOres3);
-
-		dbInstance.commitAndCloseSession();
-
-		//create  offers
-		Offer offer1 = acOfferManager.createOffer(testOres1, "TestFilterWithDelete 1");
-		Offer offer2 = acOfferManager.createOffer(testOres2, "TestFilterWithDelete 2");
-		acOfferManager.saveOffer(offer1);
-		acOfferManager.saveOffer(offer2);
-
-		dbInstance.commitAndCloseSession();
-
-		//delete resource of offer 2
-		testOres2 = dbInstance.getCurrentEntityManager().find(OLATResourceImpl.class, testOres2.getKey());
-		dbInstance.deleteObject(testOres2);
-
-		//filter by resources
-		List<Long> resourceKeys = new ArrayList<>();
-		resourceKeys.add(testOres1.getKey());
-		resourceKeys.add(testOres2.getKey());
-		resourceKeys.add(testOres3.getKey());
-		Set<Long> filteredKeys = acOfferManager.filterResourceWithOffer(resourceKeys);
-		assertNotNull(filteredKeys);
-		assertEquals(1, filteredKeys.size());
-		assertTrue(filteredKeys.contains(testOres1.getKey()));
-		assertFalse(filteredKeys.contains(testOres2.getKey()));
-		assertFalse(filteredKeys.contains(testOres3.getKey()));
-	}
 }

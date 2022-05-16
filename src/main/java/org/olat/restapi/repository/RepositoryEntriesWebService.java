@@ -33,6 +33,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,6 +72,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
@@ -132,6 +134,8 @@ public class RepositoryEntriesWebService {
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
+	@Autowired
+	private ACService acService;
 	
 	/**
 	 * The version number of this web service
@@ -180,6 +184,8 @@ public class RepositoryEntriesWebService {
 			Identity identity = getIdentity(httpRequest);
 			RepositoryManager rm = RepositoryManager.getInstance();
 			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
+			params.setOfferOrganisations(acService.getOfferOrganisations(identity));
+			params.setOfferValidAt(new Date());
 			params.setManaged(managed);
 			if(StringHelper.containsNonWhitespace(externalId)) {
 				params.setExternalId(externalId);
@@ -268,6 +274,8 @@ public class RepositoryEntriesWebService {
 				if(restrictedType) types.add(type);
 
 				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(name, author, null, restrictedType ? types : null, identity, roles);
+				params.setOfferOrganisations(acService.getOfferOrganisations(identity));
+				params.setOfferValidAt(new Date());
 				List<RepositoryEntry> lstRepos = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				if(!lstRepos.isEmpty()) reposFound.addAll(lstRepos);
 			}
@@ -315,8 +323,6 @@ public class RepositoryEntriesWebService {
 			File tmpFile = partsReader.getFile();
 			long length = tmpFile.length();
 			if(length > 0) {
-				boolean guests = false;
-				boolean allUsers = false;
 				RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.preparation;
 				
 				Long accessRaw = partsReader.getLongValue("access");
@@ -326,12 +332,8 @@ public class RepositoryEntriesWebService {
 				
 				if(RepositoryEntryStatusEnum.isValid(statusRaw)) {
 					status = RepositoryEntryStatusEnum.valueOf(statusRaw);
-					allUsers = "true".equals(allUsersRaw);
-					guests = "true".equals(guestsRaw);
 				} else if(accessRaw != null) {
 					status = RestSecurityHelper.convertToEntryStatus(accessRaw.intValue(), false);
-					allUsers = accessRaw.longValue() >= 3;
-					guests = accessRaw.longValue() >= 4;
 				}
 
 				String softkey = partsReader.getValue("softkey");
@@ -349,7 +351,7 @@ public class RepositoryEntriesWebService {
 						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager,
 						OrganisationRoles.author);
 				if(hasAdminRights) {
-					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, status, allUsers, guests, organisation);
+					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, status, organisation);
 					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
 					return Response.ok(vo).build();
 				} else {
@@ -366,7 +368,7 @@ public class RepositoryEntriesWebService {
 	}
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
-			String displayname, String softkey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Organisation organisation) {
+			String displayname, String softkey, RepositoryEntryStatusEnum status, Organisation organisation) {
 		try {
 			RepositoryHandler handler = null;
 			for(String type:handlerFactory.getSupportedTypes()) {
@@ -392,8 +394,6 @@ public class RepositoryEntriesWebService {
 					addedEntry.setSoftkey(softkey);
 				}
 				addedEntry.setEntryStatus(status);
-				addedEntry.setAllUsers(allUsers);
-				addedEntry.setGuests(guests);
 				addedEntry = repositoryService.update(addedEntry);
 			}
 			return addedEntry;

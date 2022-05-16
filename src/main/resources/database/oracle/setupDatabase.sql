@@ -557,6 +557,7 @@ CREATE TABLE o_repositoryentry (
   allusers number default 0 not null,
   guests number default 0 not null,
   bookable number default 0 not null,
+  publicvisible number default 0 not null,
   allowtoleave varchar2(16 char),
   candownload number NOT NULL,
   cancopy number NOT NULL,
@@ -904,6 +905,10 @@ create table o_ac_offer (
   token varchar(255 char),
   autobooking number default 0 not null,
   confirmation_email number default 0,
+  open_access number default 0 not null,
+  guest_access number default 0 not null,
+  catalog_publish number default 0 not null,
+  catalog_web_publish number default 0 not null,
   price_amount number(20,2),
   price_currency_code VARCHAR(3 char),
   offer_desc VARCHAR(2000 char),
@@ -4077,6 +4082,13 @@ create index idx_re_to_lev_tax_lev_idx on o_re_to_tax_level (fk_taxonomy_level);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
+create index idx_offer_guest_idx on o_ac_offer (guest_access);
+create index idx_offer_open_idx on o_ac_offer (open_access);
+
+alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
+alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_oto_org_idx on o_ac_offer_to_organisation (fk_organisation);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);

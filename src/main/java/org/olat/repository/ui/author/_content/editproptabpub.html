@@ -1,5 +1,7 @@
 $r.render("accessAndBooking")
-$r.render("authorAccess")
+#if($r.available("offers"))
+	$r.render("offers")
+#end
 #if($r.available("lti13Access"))
 	$r.render("lti13Access")
 #end

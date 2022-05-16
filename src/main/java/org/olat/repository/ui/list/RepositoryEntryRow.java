@@ -61,9 +61,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private final String expenditureOfWork;
 	private String thumbnailRelPath;
 	private final RepositoryEntryStatusEnum status;
-	private final boolean allUsers;
-	private final boolean guests;
-	private final boolean bookable;
+	private final boolean publicVisible;
 	
 	private final String score;
 	private final Boolean passed;
@@ -109,9 +107,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		expenditureOfWork = entry.getExpenditureOfWork();
 		launchCounter = entry.getLaunchCounter();
 		status = entry.getEntryStatus();
-		allUsers = entry.isAllUsers();
-		guests = entry.isGuests();
-		bookable = entry.isBookable();
+		publicVisible = entry.isPublicVisible();
 		taxonomyLevels = entry.getTaxonomyLevels();
 		
 		//bookmark
@@ -159,16 +155,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return status;
 	}
 	
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-	
-	public boolean isGuests() {
-		return guests;
-	}
-	
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
 	public String getExternalId() {

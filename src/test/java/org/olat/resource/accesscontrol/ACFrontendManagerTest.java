@@ -20,9 +20,12 @@
 
 package org.olat.resource.accesscontrol;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.olat.test.JunitTestHelper.createRandomResource;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,10 +36,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
@@ -44,9 +47,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
@@ -81,8 +82,6 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -108,8 +107,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Test
 	public void testRepoWorkflow() {
 		//create a repository entry
-		RepositoryEntry re = createRepositoryEntry();
-		assertNotNull(re);
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 
 		//create and save an offer
 		Offer offer = acService.createOffer(re.getOlatResource(), "TestRepoWorkflow");
@@ -126,7 +124,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the offer
-		List<Offer> offers = acService.findOfferByResource(re.getOlatResource(), true, null);
+		List<Offer> offers = acService.findOfferByResource(re.getOlatResource(), true, null, null);
 		assertEquals(1, offers.size());
 		Offer savedOffer = offers.get(0);
 		assertNotNull(savedOffer);
@@ -389,11 +387,12 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Test
 	public void makeAccessible() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("acc-" + UUID.randomUUID());
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		organisationService.addMember(organisation, id, OrganisationRoles.user);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		AccessMethod method = methods.get(0);
 
-		RepositoryEntry re = createRepositoryEntry();
-		Assert.assertNotNull(re);
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 
 		//create an offer to buy
 		OLATResource randomOres = re.getOlatResource();
@@ -402,16 +401,16 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		offer = acService.save(offer);
 		link = acService.saveOfferAccess(link);
+		acService.updateOfferOrganisations(offer, List.of(organisation));
 		dbInstance.commit();
 
 		long start = System.nanoTime();
-		AccessResult acResult = acService.isAccessible(re, id, false, true);
+		AccessResult acResult = acService.isAccessible(re, id, null, false, true);
 		Assert.assertNotNull(acResult);
 		Assert.assertTrue(acResult.isAccessible());
 		dbInstance.commit();
 		CodeHelper.printMilliSecondTime(start, "One click");
 	}
-	
 	
 	@Test
 	public void testStandardMethods() {
@@ -440,20 +439,40 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertTrue(foundFree);
 		assertTrue(foundToken);
 	}
-
-	private RepositoryEntry createRepositoryEntry() {
-		//create a repository entry
-		OLATResourceable resourceable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
-		dbInstance.getCurrentEntityManager().persist(r);
-
-		// now make a repository entry for this resource
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Florian Gnägi", "Access controlled by OLAT ",
-				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description",
-				r, RepositoryEntryStatusEnum.review, defOrganisation);
-		re = repositoryService.update(re);
+	
+	@Test
+	public void shouldUpdateOrganisations() {
+		Offer offer = acService.createOffer(createRandomResource(), random());
+		offer = acService.save(offer);
 		dbInstance.commitAndCloseSession();
-		return re;
+		
+		// No organisations
+		acService.updateOfferOrganisations(offer, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).isEmpty();
+		
+		// Add two organisations
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		acService.updateOfferOrganisations(offer, List.of(organisation1, organisation2));
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).containsExactlyInAnyOrder(organisation1, organisation2);
+		
+		// Remove one organisation, add two new organisations
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), null, null);
+		acService.updateOfferOrganisations(offer, List.of(organisation2, organisation3, organisation4));
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).containsExactlyInAnyOrder(organisation2, organisation3, organisation4);
+		
+		// Delete all organisations
+		acService.updateOfferOrganisations(offer, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).isEmpty();
 	}
+	
 }

@@ -55,9 +55,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	private final RepositoryEntryManagedFlag[] managedFlags;
 	
 	private final RepositoryEntryStatusEnum status;
-	private final boolean allUsers;
-	private final boolean guests;
-	private final boolean bookable;
+	private final boolean publicVisible;
 	
 	private final Date lastUsage;
 	
@@ -95,9 +93,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		managedFlags = re.getManagedFlags();
 		
 		status = re.getEntryStatus();
-		allUsers = re.isAllUsers();
-		guests = re.isGuests();
-		bookable = re.isBookable();
+		publicVisible = re.isPublicVisible();
 		
 		lastUsage = re.getStatistics().getLastUsage();
 		
@@ -201,18 +197,8 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	}
 
 	@Override
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-
-	@Override
-	public boolean isGuests() {
-		return guests;
-	}
-
-	@Override
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
 	@Override

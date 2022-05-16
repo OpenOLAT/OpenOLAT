@@ -55,9 +55,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private final RepositoryEntryStatusEnum status;
-	private final boolean allUsers;
-	private final boolean guests;
-	private final boolean bookable;
+	private final boolean publicVisible;
 	
 	private final OLATResource olatResource;
 	private final RepositoryEntryLifecycle lifecycle;
@@ -94,9 +92,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
 		status = re.getEntryStatus();
-		allUsers = re.isAllUsers();
-		guests = re.isGuests();
-		bookable = re.isBookable();
+		publicVisible = re.isPublicVisible();
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
@@ -149,25 +145,14 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		this.lastModified = lastModified;
 	}
 
-
 	@Override
 	public RepositoryEntryStatusEnum getEntryStatus() {
 		return status;
 	}
 
 	@Override
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-
-	@Override
-	public boolean isGuests() {
-		return guests;
-	}
-	
-	@Override
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
 	@Override

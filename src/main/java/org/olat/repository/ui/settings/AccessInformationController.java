@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.settings;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -29,6 +32,9 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,6 +45,9 @@ import org.olat.repository.RepositoryService;
 public class AccessInformationController extends FormBasicController {
 	
 	private final RepositoryEntry entry;
+	
+	@Autowired
+	private ACService acService;
 	
 	public AccessInformationController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "access_infos", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
@@ -62,22 +71,25 @@ public class AccessInformationController extends FormBasicController {
 			layoutCont.contextPut("coachCondition", translate("access.info.conditions.coach"));
 			
 			// participant
-			boolean participantAccess = status == RepositoryEntryStatusEnum.coachpublished
-					|| status == RepositoryEntryStatusEnum.published;
+			boolean participantAccess = status == RepositoryEntryStatusEnum.published
+					|| status == RepositoryEntryStatusEnum.closed;
 			layoutCont.contextPut("participantCatalog", getAccess(participantAccess));
 			layoutCont.contextPut("participantCondition", translate("access.info.conditions.participant"));
 			
 			// all users
-			boolean allUsersAccess = participantAccess && (entry.isBookable() || entry.isAllUsers());
+			List<Offer> offers = entry.isPublicVisible()
+					? acService.getOffers(entry, true, true, null, null)
+					: Collections.emptyList();
+			boolean allUsersAccess = offers.stream().anyMatch(offer -> !offer.isGuestAccess());
 			layoutCont.contextPut("allUsersCatalog", getAccess(allUsersAccess));
 			if(allUsersAccess) {
-				layoutCont.contextPut("allUsersCondition", translate("access.info.conditions.participant"));
+				layoutCont.contextPut("allUsersCondition", translate("access.info.conditions.all.users"));
 			} else {
 				layoutCont.contextPut("allUsersCondition", translate("access.info.conditions.not.share.allUsers"));
 			}
 			
 			// guests
-			boolean guestsAccess = participantAccess && entry.isGuests();
+			boolean guestsAccess = offers.stream().anyMatch(Offer::isGuestAccess);
 			layoutCont.contextPut("guestsCatalog", getAccess(guestsAccess));
 			if(guestsAccess) {
 				layoutCont.contextPut("guestsCondition", translate("access.info.conditions.participant"));

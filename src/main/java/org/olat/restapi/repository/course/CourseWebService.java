@@ -103,12 +103,10 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.OlatResourceVO;
-import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.user.restapi.OrganisationVO;
@@ -298,30 +296,19 @@ public class CourseWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response publishCourse(@QueryParam("locale") Locale locale,
-			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
-			@QueryParam("status") String status, @QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
+	public Response publishCourse(@QueryParam("locale") Locale locale, @QueryParam("status") String status,
 			@Context HttpServletRequest request) {
 		UserRequest ureq = getUserRequest(request);
 		if (!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		boolean accessGuests = false;
-		boolean accessAllUsers = false;
 		RepositoryEntryStatusEnum accessStatus = RepositoryEntryStatusEnum.preparation;
 		if(RepositoryEntryStatusEnum.isValid(status)) {
 			accessStatus = RepositoryEntryStatusEnum.valueOf(status);
-			accessAllUsers = allUsers != null && allUsers.booleanValue();
-			accessGuests = guests != null && guests.booleanValue();
-		} else if(access != null) {
-			boolean members = membersOnly != null && membersOnly.booleanValue();
-			accessStatus = RestSecurityHelper.convertToEntryStatus(access.intValue(), members);
-			accessAllUsers = access.longValue() >= 3;
-			accessGuests = access.longValue() >= 4;
 		}
 
-		CourseFactory.publishCourse(course, accessStatus, accessAllUsers, accessGuests, ureq.getIdentity(), locale);
+		CourseFactory.publishCourse(course, accessStatus, ureq.getIdentity(), locale);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
@@ -439,31 +426,6 @@ public class CourseWebService {
 			}
 		}
 		return lifecycle;
-	}
-	
-	
-	/**
-	 * Get the access configuration of the course by id.
-	 * 
-	 * @param request The HTTP request
-	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the course.
-	 */
-	@GET
-	@Path("access")
-	@Operation(summary = "Get the access configuration of the course by id", description = "Get the access configuration of the course by id")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the course", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAccess(@Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryEntryAccessVO accessVo = RepositoryEntryAccessVO.valueOf(entry);
-		return Response.ok(accessVo).build();
 	}
 
 	/**
@@ -1399,7 +1361,7 @@ public class CourseWebService {
 		}
 
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult result = acManager.isAccessible(entry, identity, false);
+		AccessResult result = acManager.isAccessible(entry, identity, null, false, false);
 		return result.isAccessible();
 	}
 }

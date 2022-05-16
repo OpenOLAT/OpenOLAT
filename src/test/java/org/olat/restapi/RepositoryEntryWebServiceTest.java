@@ -64,14 +64,12 @@ import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
-import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.test.JunitTestHelper;
@@ -639,71 +637,6 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Biel/Bienne", updatedRe.getLocation());
 		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
 		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
-	}
-	
-	
-	@Test
-	public void getAccess() throws IOException, URISyntaxException {
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-
-		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		URI request = UriBuilder.fromUri(getContextURI())
-				.path("repo/entries").path(re.getKey().toString()).path("access").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		RepositoryEntryAccessVO accessVo = conn.parse(response, RepositoryEntryAccessVO.class);
-		conn.shutdown();
-		
-		//check
-		Assert.assertNotNull(accessVo);
-		Assert.assertEquals(re.getKey(), accessVo.getRepoEntryKey());
-		Assert.assertEquals(re.getStatus(), accessVo.getStatus());
-		Assert.assertEquals(re.isAllUsers(), accessVo.isAllUsers());
-		Assert.assertEquals(re.isGuests(), accessVo.isGuests());
-	}
-	
-	@Test
-	public void updateAccess() throws IOException, URISyntaxException {
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
-		dbInstance.commitAndCloseSession();
-		Assert.assertTrue(re.isAllUsers());
-		Assert.assertFalse(re.isGuests());
-
-		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		RepositoryEntryAccessVO accessVo = new RepositoryEntryAccessVO();
-		accessVo.setStatus(RepositoryEntryStatusEnum.published.name());
-		accessVo.setAllUsers(false);
-		accessVo.setGuests(false);
-		
-		URI request = UriBuilder.fromUri(getContextURI())
-				.path("repo/entries").path(re.getKey().toString()).path("access").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, accessVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		RepositoryEntryAccessVO updatedAccessVo = conn.parse(response, RepositoryEntryAccessVO.class);
-		conn.shutdown();
-		
-		// check return value
-		Assert.assertNotNull(updatedAccessVo);
-		Assert.assertEquals(re.getKey(), updatedAccessVo.getRepoEntryKey());
-		Assert.assertEquals(RepositoryEntryStatusEnum.published.name(), updatedAccessVo.getStatus());
-		Assert.assertFalse(updatedAccessVo.isAllUsers());
-		Assert.assertFalse(updatedAccessVo.isGuests());
-		
-		// check database value
-		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
-		Assert.assertEquals(RepositoryEntryStatusEnum.published, updatedRe.getEntryStatus());
-		Assert.assertFalse(updatedRe.isAllUsers());
-		Assert.assertFalse(updatedRe.isGuests());
 	}
 	
 	@Test

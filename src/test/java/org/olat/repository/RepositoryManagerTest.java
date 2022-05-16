@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
-import org.hibernate.LazyInitializationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -48,6 +47,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
@@ -368,7 +368,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -392,7 +391,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -417,7 +415,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -449,7 +446,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
 		dbInstance.commitAndCloseSession();
-		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(course, RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		
 		//participant bookmarks
@@ -470,7 +467,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
 		repositoryEntryRelationDao.addRole(participant, course, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
-		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.coachpublished, false, false);
+		repositoryManager.setStatus(course, RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
 		
 		//participant bookmarks
@@ -489,8 +486,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-2");
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
-		repositoryManager.setAccess(course, false, false, true, RepositoryEntryAllowToLeaveOptions.never, null);
-		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(course, RepositoryEntryStatusEnum.published);
+		repositoryManager.setAccess(course, true, RepositoryEntryAllowToLeaveOptions.never, false, false, false, null);
 		
 		//create and save an offer
 		Offer offer = acService.createOffer(course.getOlatResource(), course.getDisplayname());
@@ -512,7 +509,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, courses.size());
 		
 		// beacause it triggers issues with other tests
-		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setStatus(course, RepositoryEntryStatusEnum.preparation);
 		
 	}
 	
@@ -535,8 +532,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 				found = true;
 			}
 		
-			if(entry.isAllUsers()) {
-				//OK
+			if (entry.isPublicVisible()) {
+				//
 			} else if(entry.getEntryStatus() == RepositoryEntryStatusEnum.published
 					|| entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				RepositoryEntry reloadedRe = repositoryManager.lookupRepositoryEntry(entry.getKey());
@@ -555,7 +552,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-le-");
 		RepositoryEntry reNotPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, reNotPublished, GroupRoles.participant.name());
-		repositoryManager.setAccess(reNotPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		repositoryManager.setStatus(reNotPublished, RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
 
 		long start = System.nanoTime();
@@ -568,7 +565,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		// check access
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
-			Assert.assertTrue(entry.isAllUsers() || entry.isBookable()
+			Assert.assertTrue(entry.isPublicVisible()
 					|| repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
 		}
 		CodeHelper.printMilliSecondTime(start, entries.size() + " check");
@@ -577,20 +574,28 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void getParticipantRepositoryEntry_forAll() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-le-");
-		RepositoryEntry reNotPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotPublished, RepositoryEntryStatusEnum.published, true, true);
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.afterEndDate, false, false, false, null);
+		Offer offer = acService.createOffer(re.getOlatResource(), re.getDisplayname());
+		offer.setOpenAccess(true);
+		acService.save(offer);
+		List<OrganisationRef> offerOrganisationRefs = acService.getOfferOrganisations(id);
+		Organisation organisation = organisationService.getOrganisation(offerOrganisationRefs.get(0));
+		acService.updateOfferOrganisations(offer, List.of(organisation));
 		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
-		Assert.assertTrue(entries.contains(reNotPublished));
+		Assert.assertTrue(entries.contains(re));
 		log.info("Num. of entries: {}", entries.size());
 		
 		// check access
 		for(RepositoryEntry entry:entries) {
-			Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
-			Assert.assertTrue(entry.isAllUsers() || entry.isBookable()
-					|| repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
+			Assert.assertTrue(entry.isPublicVisible() || repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
+			if (!entry.isPublicVisible()) {
+				Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
+			}
 		}
 	}
 	
@@ -636,7 +641,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -660,7 +664,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -1030,7 +1033,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-re-1");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commit();
-		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -1044,7 +1047,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commit();
-		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -1062,7 +1065,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commit();
-		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		
 		Roles roles = Roles.authorRoles();
@@ -1075,8 +1078,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commit();
-		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.review, false, false);
-		re = repositoryManager.setAccess(re, false, true, false);
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.review);
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		Roles roles = Roles.authorRoles();
@@ -1160,38 +1163,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertTrue(group1CoachRole);
 		boolean group2CoachRole = businessGroupRelationDao.hasRole(owner, group2, GroupRoles.coach.name());
 		Assert.assertTrue(group2CoachRole);
-	}
-	
-	/**
-	 * This is a simulation of OO-2667 to make sure that the LazyInitializationException don't
-	 * set the transaction on rollback.
-	 */
-	@Test
-	public void lazyLoadingCheck() {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 5", "",
-				null, RepositoryEntryStatusEnum.trash, defOrganisation);
-		dbInstance.commitAndCloseSession();
-		
-		RepositoryEntryLifecycle cycle = lifecycleDao.create("New cycle 1", "New cycle soft 1", false, new Date(), new Date());
-		re = repositoryManager.setDescriptionAndName(re, "Updated repo entry", null, null, "", null, null, null, null, null, null, null, cycle, null, null, null);
-		dbInstance.commitAndCloseSession();
-		
-		RepositoryEntry lazyRe = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.review, false, false);
-		dbInstance.commitAndCloseSession();
-		
-		try {// produce the exception
-			lazyRe.getLifecycle().getValidFrom();
-			Assert.fail();
-		} catch (LazyInitializationException e) {
-			//
-		}
-		
-		//load a fresh entry
-		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(lazyRe.getKey());
-		Date validFrom = entry.getLifecycle().getValidFrom();
-		Assert.assertNotNull(validFrom);
-		dbInstance.commitAndCloseSession();
 	}
 
 	private RepositoryEntry createRepositoryEntry(final String type, Identity owner, long i) {

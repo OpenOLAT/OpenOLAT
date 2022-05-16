@@ -21,20 +21,21 @@
 package org.olat.resource.accesscontrol.manager;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.OrganisationRef;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,17 +54,25 @@ public class ACOfferDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select offer, access.method from acofferaccess access ")
-				.append(" inner join access.offer offer")
-				.append(" left join offer.resource resource")
-				.append(" where resource.key=:resourceKey")
-				.append(" and offer.valid=").append(valid);
-
+	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> organisations) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select offer, access");
+		sb.append("  from acoffer offer");
+		sb.append("  left join acofferaccess access");
+		sb.append("    on access.offer.key = offer.key ");
+		sb.append("  left join offer.resource resource");
+		if (organisations != null && !organisations.isEmpty()) {
+			sb.append(" left join offertoorganisation oto");
+			sb.append("   on oto.offer.key = offer.key");
+		}
+		sb.and().append("resource.key=:resourceKey");
+		sb.and().append("offer.valid=").append(valid);
 		if(atDate != null) {
-			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
-			  .append(" and (offer.validTo is null or offer.validTo>=:atDate)");
+			sb.and().append("(offer.validFrom is null or offer.validFrom<=:atDate)");
+			sb.and().append("(offer.validTo is null or offer.validTo>=:atDate)");
+		}
+		if (organisations != null && !organisations.isEmpty()) {
+			sb.and().append(" oto.organisation.key in :organisationKeys");
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -72,18 +81,102 @@ public class ACOfferDAO {
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
-
+		if (organisations != null && !organisations.isEmpty()) {
+			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+		}
+		
 		List<Object[]> loadedObjects = query.getResultList();
-		List<Offer> offers = new ArrayList<>();
+		// join to organisation may lead to duplicate offers
+		Set<Offer> offers = new HashSet<>();
 		for(Object[] objects:loadedObjects) {
 			Offer offer = (Offer)objects[0];
-			AccessMethod method = (AccessMethod)objects[1];
-			if(method.isVisibleInGui()) {
+			OfferAccess offerAccess = (OfferAccess)objects[1];
+			if(offerAccess == null || offerAccess.getMethod().isVisibleInGui()) {
 				offers.add(offer);
 			}
 		}
+		
+		return new ArrayList<>(offers);
+	}
 
-		return offers;
+	public boolean isOpenAccessible(OLATResource olatResource, List<? extends OrganisationRef> organisations) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(*)");
+		sb.append("  from acoffer offer");
+		sb.append(" inner join offertoorganisation oto");
+		sb.append("   on oto.offer.key = offer.key");
+		sb.and().append(" offer.valid = true");
+		sb.and().append(" offer.openAccess = true");
+		sb.and().append(" offer.resource.key=:resourceKey");
+		if (organisations != null && !organisations.isEmpty()) {
+			sb.and().append(" oto.organisation.key in :organisationKeys");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", olatResource.getKey());
+		if (organisations != null && !organisations.isEmpty()) {
+			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+		}
+		
+		return query.getSingleResult().longValue() > 0;
+	}
+
+	public List<OLATResource> loadOpenAccessibleResources(List<OLATResource> resources, List<? extends OrganisationRef> organisations) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct offer.resource");
+		sb.append("  from acoffer offer");
+		sb.append(" inner join offer.resource resource");
+		if (organisations != null && !organisations.isEmpty()) {
+			sb.append(" inner join offertoorganisation oto");
+			sb.append("   on oto.offer.key = offer.key");
+		}
+		sb.and().append(" offer.valid = true");
+		sb.and().append(" offer.openAccess = true");
+		sb.and().append(" offer.resource.key in :resourceKeys");
+		if (organisations != null && !organisations.isEmpty()) {
+			sb.and().append(" oto.organisation.key in :organisationKeys");
+		}
+		
+		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).collect(Collectors.toList());
+		TypedQuery<OLATResource> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OLATResource.class)
+				.setParameter("resourceKeys", resourceKeys);
+		if (organisations != null && !organisations.isEmpty()) {
+			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+		}
+		
+		return query.getResultList();
+	}
+	
+	public boolean isGuestAccessible(OLATResource olatResource) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(*)");
+		sb.append("  from acoffer offer");
+		sb.and().append(" offer.valid = true");
+		sb.and().append(" offer.guestAccess = true");
+		sb.and().append(" offer.resource.key=:resourceKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", olatResource.getKey())
+				.getSingleResult().longValue() > 0;
+	}
+
+	public List<OLATResource> loadGuestAccessibleResources(List<OLATResource> resources) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct offer.resource");
+		sb.append("  from acoffer offer");
+		sb.append(" inner join offer.resource resource");
+		sb.and().append(" offer.valid = true");
+		sb.and().append(" offer.guestAccess = true");
+		sb.and().append(" offer.resource.key in :resourceKeys");
+		
+		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OLATResource.class)
+				.setParameter("resourceKeys", resourceKeys)
+				.getResultList();
 	}
 
 	public Offer loadOfferByKey(Long key) {
@@ -98,34 +191,6 @@ public class ACOfferDAO {
 				.getResultList();
 		if(offers.isEmpty()) return null;
 		return offers.get(0);
-	}
-
-	public Set<Long> filterResourceWithOffer(Collection<Long> resourceKeys) {
-		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptySet();
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select offer.resource.key from acoffer offer")
-		  .append(" inner join offer.resource resource")
-		  .append(" where resource.key in (:resourceKeys)");
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
-
-		Set<Long> resourceWithOffers = new HashSet<>();
-		List<Long> keys = new ArrayList<>(resourceKeys);
-
-		//too much in with hibernate can generate a stack overflow
-		int hibernateInBatch = 500;
-		int firstResult = 0;
-		do {
-			int toIndex = Math.min(firstResult + hibernateInBatch, keys.size());
-			List<Long> inParameter = keys.subList(firstResult, toIndex);
-			query.setParameter("resourceKeys", inParameter);
-			firstResult += inParameter.size();
-
-			List<Long> offerKeys = query.getResultList();
-			resourceWithOffers.addAll(offerKeys);
-		} while(firstResult < keys.size());
-
-		return resourceWithOffers;
 	}
 
 	public Offer createOffer(OLATResource resource, String resourceName) {
@@ -168,4 +233,5 @@ public class ACOfferDAO {
 		}
 		return offer;
 	}
+	
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -104,13 +106,15 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, true);
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, Collection<Organisation> offerOrganisations) {
+		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisations, true);
 	}
 
 	@Override
-	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, false);
+	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, Collection<Organisation> offerOrganisations) {
+		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisations, false);
 	}
 	
 	@Override

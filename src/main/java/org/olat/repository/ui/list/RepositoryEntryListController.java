@@ -846,7 +846,7 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeStartLink(RepositoryEntryRow row) {
 		String label;
 		String iconCss;
-		if(row.isBookable() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
+		if(!row.isMember() && row.isPublicVisible() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty()) {
 			label = "book";
 			iconCss = "btn btn-sm btn-primary o_book ";
 		} else {

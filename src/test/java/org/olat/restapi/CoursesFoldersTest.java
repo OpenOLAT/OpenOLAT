@@ -49,6 +49,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
@@ -62,6 +63,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
@@ -75,6 +77,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -118,6 +122,12 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		assertTrue(conn.login(user));
 		
 		CourseWithBC courseWithBc = deployCourse();
+		repositoryService.addRole(
+				user.getIdentity(),
+				courseWithBc.course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(get);
@@ -304,7 +314,7 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		bcNode.setNoAccessExplanation("You don't have access");
 		course.getEditorTreeModel().addCourseNode(bcNode, rootNode);
 
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, admin, Locale.ENGLISH);
 		return new CourseWithBC(course, bcNode);
 	}
 	
