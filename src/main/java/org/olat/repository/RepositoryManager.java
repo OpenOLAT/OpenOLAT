@@ -2064,6 +2064,49 @@ public class RepositoryManager {
 		}
 		return query.getResultList();
 	}
+	
+    public int countLearningResourcesAsOwner(IdentityRef identity) {
+        QueryBuilder sb = new QueryBuilder(1200);
+        sb.append("select count(v.key) from repositoryentry v")
+          .append(" inner join v.olatResource as res");
+        whereClauseLearningResourcesAsOwner(sb);
+
+        return dbInstance.getCurrentEntityManager()
+                .createQuery(sb.toString(), Number.class)
+                .setParameter("identityKey", identity.getKey())
+                .getSingleResult().intValue();
+    }
+
+    public List<RepositoryEntry> getLearningResourcesAsOwner(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
+        QueryBuilder sb = new QueryBuilder(1200);
+        sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+          .append(" inner join fetch v.olatResource as res ")
+          .append(" inner join fetch v.statistics as statistics")
+          .append(" left join fetch v.lifecycle as lifecycle");
+        whereClauseLearningResourcesAsOwner(sb);
+        appendOrderBy(sb, "v", orderby);
+
+        TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+                .createQuery(sb.toString(), RepositoryEntry.class)
+                .setParameter("identityKey", identity.getKey())
+                .setFirstResult(firstResult);
+        if(maxResults > 0) {
+            query.setMaxResults(maxResults);
+        }
+        return query.getResultList();
+    }
+
+    /**
+     * Write the where clause for countLearningResourcesAsOwner and getLearningResourcesAsOwner
+     * @param sb
+     */
+    private final void whereClauseLearningResourcesAsOwner(QueryBuilder sb) {
+        sb.append(" inner join v.groups as relGroup")
+          .append(" inner join relGroup.group as baseGroup")
+          .append(" inner join baseGroup.members as membership")
+          .append(" where membership.role ='").append(GroupRoles.owner.name()).append("' and membership.identity.key=:identityKey");
+    }
+
 
 	/**
 	 * Need a repository entry or identites to return a list.
