@@ -556,13 +556,17 @@ public class CourseFactory {
 			CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
 			if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
 				VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
-				VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
-				VFSManager.copyContent(sourceContainer, targetContainer);
+				if (sourceContainer.exists()) {
+					VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+					targetContainer.copyContentOf(sourceContainer, author);
+				}
 			}
 			if(cc.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(cc.getDocumentsPath())) {
 				VFSContainer sourceContainer = CourseDocumentsFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
-				VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
-				VFSManager.copyContent(sourceContainer, targetContainer);
+				if (sourceContainer.exists()) {
+					VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+					targetContainer.copyContentOf(sourceContainer, author);
+				}
 			}
 			
 			// copy folder nodes directories
