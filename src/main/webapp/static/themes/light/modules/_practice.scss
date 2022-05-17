@@ -2,16 +2,6 @@
 	display: grid;
 	grid-template-columns: 1fr 3fr;
 	column-gap: 15px;
-	
-	.o_practice_scores {
-	
-	}
-	
-	.o_practice_start {
-	
-	}
-	
-
 }
 
 .o_practice_play {
@@ -220,11 +210,16 @@
 	gap: 15px;
 	
 	.o_practice_statistics_numbers {
-		flex: 1 1 300px;
+		flex: 2 2 300px;
 	}
 	
 	.o_practice_statistics_graph {
-		flex: 1 1 300px;
+		flex: 0 0 200px;
+	}
+	
+	.o_practice_statistics_legend {
+		margin: 20px 20px 0 0;
+		flex: 1 1 200px;
 	}
 }
 

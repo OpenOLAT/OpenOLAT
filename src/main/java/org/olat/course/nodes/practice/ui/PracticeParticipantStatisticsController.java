@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.chart.PieChartElement;
+import org.olat.core.gui.components.chart.PiePoint;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -201,8 +203,8 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		Map<String,PracticeAssessmentItemGlobalRef> globalRefsMap = globalRefs.stream()
 				.collect(Collectors.toMap(PracticeAssessmentItemGlobalRef::getIdentifier, ref -> ref, (u, v) -> u));
 		
-		Levels globalLevels = new Levels(numOfLevels);
-		Map<TaxonomyLevel, PracticeParticipantTaxonomyStatisticsRow> levelMaps = new HashMap<>();
+		final Levels globalLevels = new Levels(numOfLevels);
+		final Map<TaxonomyLevel, PracticeParticipantTaxonomyStatisticsRow> levelMaps = new HashMap<>();
 		
 		long numOfLastAttempt = 0l;
 		long correctLastAttempt = 0l;
@@ -234,6 +236,14 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		}
 
 		flc.contextPut("globalLevels", globalLevels);
+		
+		PieChartElement chartEl = new PieChartElement("levels.chart");
+		chartEl.setLayer(20);
+		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getColor(0)));
+		for(int i=1; i<=numOfLevels; i++) {
+			chartEl.addPoints(new PiePoint(globalLevels.getLevelPercent(i), globalLevels.getColor(i)));
+		}
+		flc.add("levels.chart", chartEl);
 		
 		double correctPercent = 0.0d;
 		if(numOfLastAttempt > 0) {

@@ -40,6 +40,18 @@ public class Levels {
 		}
 	}
 	
+	public String getColor(int i) {
+		switch(i) {
+			case 0: return "#CCCCCC";
+			case 1: return "#9FC4F8";
+			case 2: return "#B3A7D5";
+			case 3: return "#FFE59A";
+			case 4: return "#FFCCEE";
+			case 5: return "#B0FBB4";
+			default: return "#CCCCCC";
+		}
+	}
+	
 	public void append(PracticeAssessmentItemGlobalRef globalRef) {
 		total++;
 		if(globalRef == null) {
@@ -61,7 +73,7 @@ public class Levels {
 	}
 	
 	public long getNotPercent() {
-		return toPercent(getNot());
+		return Math.round(toPercent(getNot()));
 	}
 
 	public int getLevel(int level) {
@@ -73,7 +85,7 @@ public class Levels {
 	}
 	
 	public long getLevelPercent(int level) {
-		return toPercent(getLevel(level));
+		return Math.round(toPercent(getLevel(level)));
 	}
 	
 	public int getTotal() {
@@ -84,12 +96,10 @@ public class Levels {
 		return levelArr.length;
 	}
 	
-	public long toPercent(int val) {
+	public double toPercent(int val) {
 		if(total == 0) {
-			return 0;
+			return 0.0d;
 		}
-		
-		double percent = (val / (double)total) * 100.0d;
-		return Math.round(percent);
+		return (val / (double)total) * 100.0d;
 	}
 }
