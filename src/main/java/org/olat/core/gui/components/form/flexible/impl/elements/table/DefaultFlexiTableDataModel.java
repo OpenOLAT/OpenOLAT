@@ -41,7 +41,7 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 	}
 	
 	public DefaultFlexiTableDataModel(List<U> rows, FlexiTableColumnModel columnModel) {
-		this.rows = new ArrayList<>(rows);
+		this.rows = rows == null ? new ArrayList<>() : new ArrayList<>(rows);
 		this.columnModel = columnModel;
 	}
 	

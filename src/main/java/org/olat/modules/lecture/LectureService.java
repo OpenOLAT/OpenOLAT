@@ -643,6 +643,8 @@ public interface LectureService {
 	public List<Identity> getTeachers(RepositoryEntry entry);
 	
 	public boolean isMasterCoach(LectureBlock block, IdentityRef identity);
+
+	public List<Identity> getMasterCoaches(IdentityRef participant, List<LectureBlock> blocks, List<RepositoryEntry> entries, Date start, Date end);
 	
 	/**
 	 * Search the teachers 

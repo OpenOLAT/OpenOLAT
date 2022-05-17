@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -587,10 +588,12 @@ public class AbsenceNoticesListController extends FormBasicController {
 		if(guardModalController(contactTeachersCtrl)) return;
 
 		List<Identity> teachers = row.getTeachers();
-		if(teachers.isEmpty()) {
+		List<Identity> masterCoaches = lectureService.getMasterCoaches(new IdentityRefImpl(row.getIdentityKey()),
+				row.getLectureBlocks(), row.getEntriesList(), row.getStartDate(), row.getEndDate());
+		if(teachers.isEmpty() && masterCoaches.isEmpty()) {
 			showWarning("warning.teachers.at.least.one.contact");
 		} else {
-			contactTeachersCtrl = new ContactTeachersController(ureq, getWindowControl(), teachers);
+			contactTeachersCtrl = new ContactTeachersController(ureq, getWindowControl(), teachers, masterCoaches);
 			listenTo(contactTeachersCtrl);
 			
 			String title = translate("contact.teachers");

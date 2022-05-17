@@ -1492,7 +1492,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public boolean isMasterCoach(LectureBlock block, IdentityRef identity) {
-		return lectureBlockDao. isMasterCoach(block, identity);
+		return lectureBlockDao.isMasterCoach(block, identity);
+	}
+
+	@Override
+	public List<Identity> getMasterCoaches(IdentityRef participant, List<LectureBlock> blocks, List<RepositoryEntry> entries, Date start, Date end) {
+		return lectureBlockDao.getMasterCoaches(participant, blocks, entries, start, end);
 	}
 
 	@Override

@@ -361,7 +361,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	}
 	
 	public boolean isClosed() {
-		return status.decommissioned();
+		return status != null && status.decommissioned();
 	}
 
 	public boolean isSingleEntry() {
