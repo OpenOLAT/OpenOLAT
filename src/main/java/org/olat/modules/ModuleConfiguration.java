@@ -135,8 +135,7 @@ public class ModuleConfiguration implements Serializable {
 		Object val = get(config_key);
 		if (val == null) return null;
 		if( val instanceof Boolean) return (Boolean)val;
-		Boolean set = val.equals("true")? Boolean.TRUE : Boolean.FALSE;
-		return set;
+		return val.equals("true") ? Boolean.TRUE : Boolean.FALSE;
 	}
 	
 	public Float getFloatEntry(String config_key) {
@@ -148,7 +147,7 @@ public class ModuleConfiguration implements Serializable {
 			floatValue = (Float)val;
 		} else if( val instanceof String) {
 			try {
-				floatValue = new Float((String)val);
+				floatValue = Float.valueOf((String)val);
 			} catch(NumberFormatException e) {
 				//
 			}
@@ -171,18 +170,27 @@ public class ModuleConfiguration implements Serializable {
 		return (b == null? defaultvalue : b.booleanValue());
 	}
 	
-	public int getIntegerSafe(String config_key, int defaultValue) {
+	public int getIntegerSafe(String configKey, int defaultValue) {
 		// ints are stored as Integer
-		Integer val = (Integer) get(config_key);
-		if (val == null) {
-			return defaultValue;
-		} else {
-			return val.intValue();
+		Object val = get(configKey);
+		int intVal = defaultValue;
+		if(val instanceof Number) {
+			intVal = ((Number)val).intValue();
+		} else if(val instanceof String) {
+			String stringVal = (String)val;
+			if(StringHelper.containsNonWhitespace(stringVal)) {
+				try {
+					intVal = Integer.parseInt(stringVal);
+				} catch(NumberFormatException e) {
+					//
+				}
+			}
 		}
+		return intVal;
 	}
 	
 	public void setIntValue(String config_key, int value) {
-		set(config_key, new Integer(value));
+		set(config_key, Integer.valueOf(value));
 	}
 
 	/**

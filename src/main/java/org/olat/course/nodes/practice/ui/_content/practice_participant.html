@@ -1,0 +1,76 @@
+<h3>$r.escapeHtml($welcomeTitle)</h3>
+<p>$r.translate("welcome.desc")</p>
+
+<div class="o_practice_run">
+
+	<div class="o_practice_scores">
+		<div class="o_practice_challenge">
+			<h5>$r.translate("current.challenge")</h5>
+			
+			<div class="o_practice_series_progress">
+				<div class="progress" style="width: 100%">
+					<div class="progress-bar" style="width: ${currentSeriesProgress}%"> </div>
+				</div>
+				<i class="o_icon o_icon_assessment_tool"> </i>
+			</div>
+			<span>$r.escapeHtml($currentSeries)</span>
+			
+			<div class="o_practice_challenges_progress">
+				<i class="o_icon o_icon_challenge"> </i>
+				<strong>$r.escapeHtml($challengeProgress)</strong>
+				<span>$r.translate("challenges.ended")</span>
+			</div>
+		</div>
+		#if($r.visible("rankList"))
+			$r.render("rankList")
+		#end
+	</div>
+	
+	<div class="o_practice_start">
+		<div class="o_block_bottom o_practice_play_card">
+			<div class="o_practice_shuffle_play">
+				<h4>$r.translate("play.shuffle.title")</h4>
+				<p>$r.escapeHtml($playShuffleDesc)</p>
+				$r.render("play")
+			</div>
+			<div class="o_practice_shuffle_play_icon">
+				<i class="o_icon o_practice_icon"> </i>
+			</div>
+		</div>
+		
+		<fieldset class="o_block">
+			<legend>$r.translate("play.modes.title")</legend>
+			<p>$r.translate("play.modes.desc")</p>
+			
+			<div class="o_practice_play_modes_card">
+				<div class="o_practice_play_mode_card">
+					<div>
+						<span><i class="o_icon o_icon_add"> </i></span>
+						<h4>$r.translate("play.new.questions.title")</h4>
+						<p>$r.translate("play.new.questions.desc")</p>
+					</div>
+					$r.render("play.new.questions")
+				</div>
+				<div class="o_practice_play_mode_card">
+					<div>
+						<span><i class="o_icon o_icon_exclamation_circle"> </i></span>
+						<h4>$r.translate("play.errors.title")</h4>
+						<p>$r.escapeHtml($errorsDesc)</p>
+					</div>
+					$r.render("play.errors")
+				</div>
+				<div class="o_practice_play_mode_card">
+					<div>
+						<span><i class="o_icon o_icon_user"> </i></span>
+						<h4>$r.translate("play.custom.title")</h4>
+						<p>$r.translate("play.custom.desc")</p>
+					</div>
+					$r.render("play.custom")
+				</div>
+			</div>
+		</fieldset>
+		
+		$r.render("statistics")
+	
+	</div>
+</div>

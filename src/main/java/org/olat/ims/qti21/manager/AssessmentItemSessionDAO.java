@@ -26,6 +26,8 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
@@ -47,12 +49,14 @@ public class AssessmentItemSessionDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AssessmentItemSession createAndPersistAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier) {
+	public AssessmentItemSession createAndPersistAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts,
+			String assessmentItemIdentifier, String externalRefIdentifier) {
 		AssessmentItemSessionImpl itemSession = new AssessmentItemSessionImpl();
 		Date now = new Date();
 		itemSession.setCreationDate(now);
 		itemSession.setLastModified(now);
 		itemSession.setAssessmentItemIdentifier(assessmentItemIdentifier);
+		itemSession.setExternalRefIdentifier(externalRefIdentifier);
 		itemSession.setAssessmentTestSession(assessmentTestSession);
 		if(parentParts != null) {
 			itemSession.setSectionIdentifier(parentParts.getSectionIdentifier());
@@ -169,5 +173,30 @@ public class AssessmentItemSessionDAO {
 	
 	public AssessmentItemSession merge(AssessmentItemSession itemSession) {
 		return dbInstance.getCurrentEntityManager().merge(itemSession);
+	}
+	
+	public double getProcentCorrectAtFirstAttempt(AssessmentTestSession assessmentTestSession) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(itemSession.key) as total,")
+		  .append(" sum(case when itemSession.passed=true and itemSession.attempts=1 then 1 else 0 end) as correct")
+		  .append(" from qtiassessmentitemsession itemSession")
+		  .append(" where itemSession.assessmentTestSession.key=:assessmentTestSessionKey")
+		  .append(" group by itemSession.assessmentTestSession.key");
+		
+		List<Object[]> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("assessmentTestSessionKey", assessmentTestSession.getKey())
+				.getResultList();
+		
+		double val = 0.0d;
+		if(stats.size() == 1) {
+			Object[] counters = stats.get(0);
+			long total = PersistenceHelper.extractPrimitiveLong(counters, 0);
+			long correct = PersistenceHelper.extractPrimitiveLong(counters, 1);
+			if(correct > 0l) {
+				val = correct / (double)total;
+			}
+		}
+		return val;
 	}
 }

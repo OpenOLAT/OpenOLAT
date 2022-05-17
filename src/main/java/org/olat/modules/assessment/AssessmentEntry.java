@@ -96,6 +96,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public void setUserVisibility(Boolean visibility);
 	
+	public Boolean getShare();
+	
+	public void setShare(Boolean share);
+	
 	public AssessmentEntryStatus getAssessmentStatus();
 	
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus);

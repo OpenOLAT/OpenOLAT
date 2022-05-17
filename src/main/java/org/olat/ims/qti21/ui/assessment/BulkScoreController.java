@@ -195,7 +195,7 @@ public class BulkScoreController extends FormBasicController {
 			ParentPartItemRefs parentParts = AssessmentTestHelper
 					.getParentSection(testPlanNodeKey, testSessionState, resolvedAssessmentTest);
 			AssessmentItemSession itemSession = qtiService
-					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier);
+					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, null);
 
 			evaluateScore(itemSession, score);
 			

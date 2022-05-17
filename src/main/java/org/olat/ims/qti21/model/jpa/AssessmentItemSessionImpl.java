@@ -70,12 +70,17 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
     @Column(name="q_testpartidentifier", nullable=true, insertable=true, updatable=false)
     private String testPartIdentifier;
     
+    @Column(name="q_externalrefidentifier", nullable=true, insertable=true, updatable=false)
+    private String externalRefIdentifier;
+    
     @Column(name="q_duration", nullable=true, insertable=true, updatable=true)
     private Long duration;
     @Column(name="q_passed", nullable=true, insertable=true, updatable=true)
     private Boolean passed;
     @Column(name="q_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal score;
+    @Column(name="q_attempts", nullable=true, insertable=true, updatable=true)
+    private Integer attempts;
     
     @Column(name="q_manual_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal manualScore;
@@ -158,6 +163,16 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 	}
 
 	@Override
+	public Integer getAttempts() {
+		return attempts;
+	}
+
+	@Override
+	public void setAttempts(Integer attempts) {
+		this.attempts = attempts;
+	}
+
+	@Override
 	public String getCoachComment() {
 		return coachComment;
 	}
@@ -172,6 +187,7 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 		return toReview;
 	}
 
+	@Override
 	public void setToReview(boolean toReview) {
 		this.toReview = toReview;
 	}
@@ -183,6 +199,15 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 
 	public void setAssessmentItemIdentifier(String assessmentItemIdentifier) {
 		this.assessmentItemIdentifier = assessmentItemIdentifier;
+	}
+
+	@Override
+	public String getExternalRefIdentifier() {
+		return externalRefIdentifier;
+	}
+
+	public void setExternalRefIdentifier(String externalRefIdentifier) {
+		this.externalRefIdentifier = externalRefIdentifier;
 	}
 
 	@Override

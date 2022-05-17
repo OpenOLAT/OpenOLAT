@@ -1407,6 +1407,7 @@ create table o_as_entry (
    a_date_done datetime,
    a_details varchar(1024) default null,
    a_user_visibility bit,
+   a_share bit,
    a_fully_assessed bit default null,
    a_date_fully_assessed datetime,
    a_assessment_id bigint default null,
@@ -1888,6 +1889,8 @@ create table o_qti_assessmentitem_session (
    q_to_review bit default 0,
    q_passed bit default null,
    q_storage varchar(1024),
+   q_attempts bigint default null,
+   q_externalrefidentifier varchar(64) default null,
    fk_assessmenttest_session bigint not null,
    primary key (id)
 );
@@ -1914,6 +1917,35 @@ create table o_qti_assessment_marks (
    fk_reference_entry bigint not null,
    fk_entry bigint,
    q_subident varchar(64),
+   fk_identity bigint not null,
+   primary key (id)
+);
+
+-- Practice
+create table o_practice_resource (
+  id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   fk_entry bigint not null,
+   p_subident varchar(64) not null,
+   fk_test_entry bigint,
+   fk_item_collection bigint,
+   fk_pool bigint,
+   fk_resource_share bigint,
+   primary key (id)
+);
+
+create table o_practice_global_item_ref (
+  id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   p_identifier varchar(64) not null,
+   p_level bigint default 0,
+   p_attempts bigint default 0,
+   p_correct_answers bigint default 0,
+   p_incorrect_answers bigint default 0,
+   p_last_attempt_date datetime,
+   p_last_attempt_passed bool default null,
    fk_identity bigint not null,
    primary key (id)
 );
@@ -3849,6 +3881,8 @@ alter table o_qti_assessmenttest_session ENGINE = InnoDB;
 alter table o_qti_assessmentitem_session ENGINE = InnoDB;
 alter table o_qti_assessment_response ENGINE = InnoDB;
 alter table o_qti_assessment_marks ENGINE = InnoDB;
+alter table o_practice_resource ENGINE = InnoDB;
+alter table o_practice_global_item_ref ENGINE = InnoDB;
 alter table o_qp_pool ENGINE = InnoDB;
 alter table o_qp_taxonomy_level ENGINE = InnoDB;
 alter table o_qp_item ENGINE = InnoDB;
@@ -4429,10 +4463,22 @@ create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemiden
 alter table o_qti_assessment_response add constraint qti_resp_to_testsession_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
 alter table o_qti_assessment_response add constraint qti_resp_to_itemsession_idx foreign key (fk_assessmentitem_session) references o_qti_assessmentitem_session (id);
 create index idx_response_identifier_idx on o_qti_assessment_response (q_responseidentifier);
+create index idx_item_ext_ref_idx on o_qti_assessmentitem_session (q_externalrefidentifier);
 
 alter table o_qti_assessment_marks add constraint qti_marks_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+
+-- Practice
+alter table o_practice_resource add constraint pract_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_practice_resource add constraint pract_test_entry_idx foreign key (fk_test_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_practice_resource add constraint pract_item_coll_idx foreign key (fk_item_collection) references o_qp_item_collection (id);
+alter table o_practice_resource add constraint pract_poll_idx foreign key (fk_pool) references o_qp_pool (id);
+alter table o_practice_resource add constraint pract_rsrc_share_idx foreign key (fk_resource_share) references o_olatresource(resource_id);
+
+alter table o_practice_global_item_ref add constraint pract_global_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+
+create index idx_pract_global_id_uu_idx on o_practice_global_item_ref (fk_identity,p_identifier);
 
 -- portfolio
 alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);

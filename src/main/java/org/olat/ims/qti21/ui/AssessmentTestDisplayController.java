@@ -1217,7 +1217,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		ParentPartItemRefs parentParts = getParentSection(currentItemKey);
 		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService
-				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier);
+				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier, null);
 
 		Identifier rIdentifier = qtiWorksCtrl.getResponseIdentifierFromUniqueId(responseIdentifier);
 		itemSessionController.unbindResponse(rIdentifier);
@@ -1266,7 +1266,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		ParentPartItemRefs parentParts = getParentSection(currentItemKey);
 		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService
-				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier);
+				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier, null);
 		
 		mapFileResponseDate(fileResponseMap, responseDataMap, fileSubmissionMap);
 
@@ -1373,7 +1373,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService
-				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier);
+				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier, null);
 		
 		mapFileResponseDate(fileResponseMap, responseDataMap, fileSubmissionMap) ;
         
@@ -1415,8 +1415,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(timestamp, testSessionState, false);
         
         ItemSessionState itemSessionState = testSessionState.getCurrentItemSessionState();
-		long itemDuration = itemSessionState.getDurationAccumulated();
-		itemSession.setDuration(itemDuration);
+		itemSession.setDuration(itemSessionState.getDurationAccumulated());
+		itemSession.setAttempts(itemSessionState.getNumAttempts());
 		ItemResult itemResult = assessmentResult.getItemResult(assessmentItemIdentifier);
 		collectOutcomeVariablesForItemSession(itemResult, itemSession);
         /* Persist CandidateResponse entities */

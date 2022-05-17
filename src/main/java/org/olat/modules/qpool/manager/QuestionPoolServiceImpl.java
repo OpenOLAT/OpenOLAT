@@ -693,7 +693,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private TaxonomyRef getQPoolTaxonomyRef() {
 		String key = qpoolModule.getTaxonomyQPoolKey();
 		try {
-			return new TaxonomyRefImpl(new Long(key));
+			return new TaxonomyRefImpl(Long.valueOf(key));
 		} catch (NumberFormatException e) {
 			log.error("", e);
 			return null;

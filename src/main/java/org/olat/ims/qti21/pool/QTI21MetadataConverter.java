@@ -121,16 +121,19 @@ public class QTI21MetadataConverter {
 	}
 	
 	public TaxonomyLevel toTaxonomy(String str) {
-		String[] path = str.split("/");
+		String[] path = str.split("[/]");
 		List<String> cleanedPath = new ArrayList<>(path.length);
 		for(String segment:path) {
 			if(StringHelper.containsNonWhitespace(segment)) {
 				cleanedPath.add(segment);
 			}
 		}
-		
+		return toTaxonomy(cleanedPath);
+	}
+	
+	public TaxonomyLevel toTaxonomy(List<String> cleanedPath) {
 		TaxonomyLevel lowerLevel = null;
-		if(path.length > 0) {
+		if(!cleanedPath.isEmpty()) {
 			for(String field :cleanedPath) {
 				List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevelBy(lowerLevel, field);
 				

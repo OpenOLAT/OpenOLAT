@@ -398,10 +398,12 @@ public interface QTI21Service {
 	 * 
 	 * @param candidateSession The candidate session
 	 * @param parentParts The parent sections (optional)
-	 * @param assessmentItemIdentifier The assessment item identifier 
-	 * @return The item session (persistent if the candidate session is persitable, in memory if not)
+	 * @param assessmentItemIdentifier The assessment item identifier
+	 * @param externalRefIdentifier The item identifier from a test suite perspective
+	 * @return The item session (persistent if the candidate session is persistable, in memory if not)
 	 */
-	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier);
+	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts,
+			String assessmentItemIdentifier, String externalRefIdentifier);
 
 	public AssessmentItemSession getAssessmentItemSession(AssessmentItemSessionRef candidateSession);
 	

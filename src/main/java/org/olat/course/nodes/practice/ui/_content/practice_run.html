@@ -1,0 +1,14 @@
+<div class="clearfix">
+#if($r.visible("practiceCmp"))
+	$r.render("practiceCmp")
+#elseif($r.visible("participantCmp"))
+	$r.render("participantCmp")
+#elseif($r.visible("segments"))
+	$r.render("segments")
+	#if($r.available("segmentCmp"))
+	<div class="o_segments_content">
+		$r.render("segmentCmp")
+	</div>
+	#end
+#end
+</div>

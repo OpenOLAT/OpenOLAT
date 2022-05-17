@@ -177,7 +177,12 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
 		sb.append("<span class='o_qti_item_meta'>");
-		renderItemStatus(renderer, sb, itemSessionState, translator);
+		if(component.isShowStatus()) {
+			renderItemStatus(renderer, sb, itemSessionState, translator);
+		}
+		if(component.isShowQuestionLevel()) {
+			renderQuestionLevels(component.getQuestionLevel(), sb, translator);
+		}
 		sb.append("</span>");
 		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h4>")
 		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
@@ -301,6 +306,18 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		} else {
 			super.renderItemStatus(sb, itemSessionState, null, translator);
 		}
+	}
+	
+	private void renderQuestionLevels(int level, StringOutput sb, Translator translator) {
+		sb.append("<span class='o_assessmentitem_level'>").append(translator.translate("assessment.item.level")).append("");
+		for(int i=1; i<=5; i++) {
+			if(i <= level) {
+				sb.append(" <i class='o_icon o_icon_circle_color'> </i>");
+			} else {
+				sb.append(" <i class='o_icon o_icon_disabled'> </i>");
+			}
+		}
+		sb.append("</span>");
 	}
 	
 	@Override

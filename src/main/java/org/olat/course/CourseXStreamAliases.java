@@ -89,6 +89,7 @@ import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.SolutionList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
+import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.style.model.ImageSourceImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -143,7 +144,9 @@ public class CourseXStreamAliases {
 			// edubook elements
 			BookSection.class, BookSectionImpl.class,
 			// adobe connect element
-			AdobeConnectCompatibilityConfiguration.class, WimbaClassroomCompatibilityConfiguration.class, MeetingCompatibilityDate.class
+			AdobeConnectCompatibilityConfiguration.class, WimbaClassroomCompatibilityConfiguration.class, MeetingCompatibilityDate.class,
+			// practice
+			PracticeFilterRule.class, PracticeFilterRule.Type.class
 		};
 		
 		xstream.addPermission(new ExplicitTypePermission(types));

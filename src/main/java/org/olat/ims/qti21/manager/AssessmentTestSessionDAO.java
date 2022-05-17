@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
@@ -864,6 +865,31 @@ public class AssessmentTestSessionDAO {
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class);
 		decorateTestSessionPermission(query, searchParams) ;
+		return query.getResultList();
+	}
+	
+	public List<AssessmentTestSession> getValidTestSessions(IdentityRef identity, RepositoryEntryRef courseEntry, String subIdent, Date from, Date to) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select session from qtiassessmenttestsession session ")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey")
+		  .append(" and session.exploded=false and session.cancelled=false")
+		  .append(" and session.creationDate>=:from and session.creationDate<=:to");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and session.subIdent=:subIdent");
+		} else {
+			sb.append(" and session.subIdent is null");
+		}
+			
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("from", from, TemporalType.TIMESTAMP)
+				.setParameter("to", to, TemporalType.TIMESTAMP);
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+
 		return query.getResultList();
 	}
 	

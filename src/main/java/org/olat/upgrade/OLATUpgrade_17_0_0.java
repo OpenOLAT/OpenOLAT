@@ -224,7 +224,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	}
 	
 	private void initOfferToOrg(Offer offer) {
-		List<Organisation> organisations = "BusinessGroup".equals(offer.getResource().getResourceableTypeName())
+		List<Organisation> organisations = offer.getResource() == null || "BusinessGroup".equals(offer.getResource().getResourceableTypeName())
 				? Collections.emptyList()
 				: getReOfferOrgansation(offer);
 		

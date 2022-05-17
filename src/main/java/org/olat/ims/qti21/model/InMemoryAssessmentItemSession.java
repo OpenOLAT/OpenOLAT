@@ -41,7 +41,9 @@ public class InMemoryAssessmentItemSession implements AssessmentItemSession {
     private Boolean passed;
     private BigDecimal score;
     private BigDecimal manualScore;
-    
+    private Integer attempts;
+
+    private String externalRefIdentifier;
     private final String assessmentItemIdentifier;
     private final AssessmentTestSession assessmentTestSession;
 
@@ -86,6 +88,15 @@ public class InMemoryAssessmentItemSession implements AssessmentItemSession {
 	@Override
 	public String getTestPartIdentifier() {
 		return null;
+	}
+
+	@Override
+	public String getExternalRefIdentifier() {
+		return  externalRefIdentifier;
+	}
+
+	public void setExternalRefIdentifier(String externalRefIdentifier) {
+		this.externalRefIdentifier = externalRefIdentifier;
 	}
 
 	@Override
@@ -151,6 +162,16 @@ public class InMemoryAssessmentItemSession implements AssessmentItemSession {
 	@Override
 	public void setDuration(Long duration) {
 		this.duration = duration;
+	}
+
+	@Override
+	public Integer getAttempts() {
+		return attempts;
+	}
+
+	@Override
+	public void setAttempts(Integer attempts) {
+		this.attempts = attempts;
 	}
 
 	@Override

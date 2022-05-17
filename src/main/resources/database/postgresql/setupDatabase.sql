@@ -1429,6 +1429,7 @@ create table o_as_entry (
    a_date_done timestamp,
    a_details varchar(1024) default null,
    a_user_visibility bool,
+   a_share bool,
    a_fully_assessed bool default null,
    a_date_fully_assessed timestamp,
    a_assessment_id int8 default null,
@@ -1910,6 +1911,8 @@ create table o_qti_assessmentitem_session (
    q_to_review bool default false,
    q_passed bool default null,
    q_storage varchar(1024),
+   q_attempts int8 default null,
+   q_externalrefidentifier varchar(64) default null,
    fk_assessmenttest_session int8 not null,
    primary key (id)
 );
@@ -1936,6 +1939,34 @@ create table o_qti_assessment_marks (
    fk_reference_entry int8 not null,
    fk_entry int8,
    q_subident varchar(64),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+create table o_practice_resource (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   fk_entry int8 not null,
+   p_subident varchar(64) not null,
+   fk_test_entry int8,
+   fk_item_collection int8,
+   fk_pool int8,
+   fk_resource_share int8,
+   primary key (id)
+);
+
+create table o_practice_global_item_ref (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   p_identifier varchar(64) not null,
+   p_level int8 default 0,
+   p_attempts int8 default 0,
+   p_correct_answers int8 default 0,
+   p_incorrect_answers int8 default 0,
+   p_last_attempt_date timestamp,
+   p_last_attempt_passed bool default null,
    fk_identity int8 not null,
    primary key (id)
 );
@@ -4370,6 +4401,7 @@ create index idx_qti_sess_to_as_entry_idx on o_qti_assessmenttest_session (fk_as
 alter table o_qti_assessmentitem_session add constraint qti_itemsess_to_testsess_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
 create index idx_itemsess_to_testsess_idx on o_qti_assessmentitem_session (fk_assessmenttest_session);
 create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemidentifier);
+create index idx_item_ext_ref_idx on o_qti_assessmentitem_session (q_externalrefidentifier);
 
 alter table o_qti_assessment_response add constraint qti_resp_to_testsession_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
 create index idx_resp_to_testsession_idx on o_qti_assessment_response (fk_assessmenttest_session);
@@ -4383,6 +4415,24 @@ alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx 
 create index idx_qti_marks_to_centry_idx on o_qti_assessment_marks (fk_reference_entry);
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identity);
+
+-- Practice
+alter table o_practice_resource add constraint pract_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_pract_entry_idx on o_practice_resource (fk_entry);
+
+alter table o_practice_resource add constraint pract_test_entry_idx foreign key (fk_test_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_pract_test_entry_idx on o_practice_resource (fk_test_entry);
+alter table o_practice_resource add constraint pract_item_coll_idx foreign key (fk_item_collection) references o_qp_item_collection (id);
+create index idx_pract_item_coll_idx on o_practice_resource (fk_item_collection);
+alter table o_practice_resource add constraint pract_poll_idx foreign key (fk_pool) references o_qp_pool (id);
+create index idx_poll_idx on o_practice_resource (fk_pool);
+alter table o_practice_resource add constraint pract_rsrc_share_idx foreign key (fk_resource_share) references o_olatresource(resource_id);
+create index idx_rsrc_share_idx on o_practice_resource (fk_resource_share);
+
+alter table o_practice_global_item_ref add constraint pract_global_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_pract_global_ident_idx on o_practice_global_item_ref (fk_identity);
+
+create index idx_pract_global_id_uu_idx on o_practice_global_item_ref (fk_identity,p_identifier);
 
 -- portfolio
 alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);

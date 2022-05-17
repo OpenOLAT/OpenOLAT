@@ -41,7 +41,7 @@ public class DoneChartRenderer extends DefaultComponentRenderer {
 		
 		DoneChart doneChart = (DoneChart)source;
 		
-		sb.append("<span class=\"radial-progress radial-progress-pie o_assessment_chart\">");
+		sb.append("DRU <span class=\"radial-progress radial-progress-pie o_assessment_chart\">");
 		sb.append("<svg viewBox=\"0 0 32 32\">");
 		sb.append("<circle r=\"16\" cx=\"16\" cy=\"16\" class=\"radial-bg\"></circle>");
 		appendPieSlice(sb, "o_done_slice", doneChart.getDonePercent());

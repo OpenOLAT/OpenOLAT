@@ -74,6 +74,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_catalog:before { content: $fa-var-sitemap;}
 .o_icon_catalog_sub:before { content: $fa-var-folder; }
 .o_icon_certificate:before { content: $fa-var-certificate;}
+.o_icon_challenge:before { content: $fa-var-diamond; }
 .o_icon_chat:before { content: $fa-var-comment-o; }
 .o_icon_chats:before { content: $fa-var-comments-o; }
 .o_icon_check:before { content: $fa-var-check; }
@@ -151,6 +152,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eraser:before { content: $fa-var-eraser; }
 .o_icon_error:before { content: $fa-var-exclamation-circle; color: $brand-danger;}
 .o_icon_exclamation:before { content: $fa-var-exclamation;}
+.o_icon_exclamation_circle:before { content: $fa-var-exclamation-circle;}
 .o_icon_expand:before { content: $fa-var-expand;}
 .o_icon_expenditure:before { content: $fa-var-clock-o;}
 .o_icon_export:before { content: $fa-var-share-square-o;}
@@ -482,6 +484,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_wiki_icon:before { content: $fa-var-globe; }
 .o_podcast_icon:before { content: $fa-var-video-camera; }
 .o_pf_icon:before { content: $fa-var-inbox; }
+.o_practice_icon:before { content: $fa-var-soccer-ball-o; }
 .o_blog_icon:before { content: $fa-var-bullhorn; }
 .o_ep_icon:before { content: $fa-var-briefcase; }
 .o_iqtest_icon:before { content: $fa-var-pencil-square; }

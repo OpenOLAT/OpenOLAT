@@ -113,9 +113,9 @@ public class AssessmentItemPreviewController extends BasicController {
 
 		String subIdent = itemRef.getIdentifier().toString();
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, subIdent, testEntry, assessmentEntry, true, resolvedAssessmentItem, 
-				rootDirectory, itemFile, QTI21DeliveryOptions.defaultSettings(),
-				new InMemoryOutcomeListener(), candidateAuditLogger);
+				testEntry, subIdent, testEntry, assessmentEntry, true,
+				resolvedAssessmentItem, rootDirectory, itemFile, null,
+				QTI21DeliveryOptions.defaultSettings(), new InMemoryOutcomeListener(), candidateAuditLogger);
 		listenTo(displayCtrl);
 		mainVC.put("display", displayCtrl.getInitialComponent());
 	}

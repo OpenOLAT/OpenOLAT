@@ -758,12 +758,13 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier) {
+	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts,
+			String assessmentItemIdentifier, String externalRefIdentifier) {
 		AssessmentItemSession itemSession;
 		if(assessmentTestSession instanceof Persistable) {
 			itemSession = itemSessionDao.getAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);
 			if(itemSession == null) {
-				itemSession = itemSessionDao.createAndPersistAssessmentItemSession(assessmentTestSession, parentParts, assessmentItemIdentifier);
+				itemSession = itemSessionDao.createAndPersistAssessmentItemSession(assessmentTestSession, parentParts, assessmentItemIdentifier, externalRefIdentifier);
 			}
 		} else {
 			itemSession = new InMemoryAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);

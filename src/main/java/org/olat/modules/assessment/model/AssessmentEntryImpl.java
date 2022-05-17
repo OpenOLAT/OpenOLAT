@@ -118,6 +118,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private String details;
 	@Column(name="a_user_visibility", nullable=true, insertable=true, updatable=true)
 	private Boolean userVisibility;
+	@Column(name="a_share", nullable=true, insertable=true, updatable=true)
+	private Boolean share;
 
 	@Column(name="a_completion", nullable=true, insertable=true, updatable=true)
 	private Double completion;
@@ -426,6 +428,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setUserVisibility(Boolean visibility) {
 		this.userVisibility = visibility;
+	}
+
+	@Override
+	public Boolean getShare() {
+		return share;
+	}
+
+	@Override
+	public void setShare(Boolean share) {
+		this.share = share;
 	}
 
 	@Override

@@ -220,7 +220,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 			parentParts.setSectionIdentifier(sectionIdentifier);
 			String testPartIdentifier = UUID.randomUUID().toString();
 			parentParts.setTestPartIdentifier(testPartIdentifier);
-			AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, UUID.randomUUID().toString());
+			AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, UUID.randomUUID().toString(), null);
 			Assert.assertNotNull(itemSession);
 			dbInstance.commit();
 			
@@ -568,7 +568,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		//create an assessment test session with a response
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry, assessedIdentity, null, null, false);
 		Assert.assertNotNull(testSession);
-		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, UUID.randomUUID().toString());
+		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, UUID.randomUUID().toString(), null);
 		Assert.assertNotNull(itemSession);
 		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, UUID.randomUUID().toString(), ResponseLegality.VALID, ResponseDataType.FILE);
 		Assert.assertNotNull(response);
