@@ -511,7 +511,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				coachedGroups = assessmentCallback.getCoachedGroups();
 			}
 
-			if(!coachedGroups.isEmpty()) {
+			if(coachedGroups != null && !coachedGroups.isEmpty()) {
 				for(BusinessGroup coachedGroup:coachedGroups) {
 					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
 					groupValues.add(new SelectionValue("businessgroup-" + coachedGroup.getKey(), groupName, null,

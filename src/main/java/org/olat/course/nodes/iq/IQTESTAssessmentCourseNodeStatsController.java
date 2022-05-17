@@ -86,14 +86,14 @@ public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseN
 			groups.add(bGroup);
 		}
 		
-		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+		if(assessmentCallback.canAssessBusinessGoupMembers() && assessmentCallback.getCoachedGroups() != null) {
 			List<Group> bgBaseGroups = assessmentCallback.getCoachedGroups().stream()
 					.map(BusinessGroup::getBaseGroup)
 					.collect(Collectors.toList());
 			groups.addAll(bgBaseGroups);
 		}
 		
-		if(assessmentCallback.canAssessCurriculumMembers()) {
+		if(assessmentCallback.canAssessCurriculumMembers() && userCourseEnv.getCoachedCurriculumElements() != null) {
 			List<Group> ceBaseGroups = userCourseEnv.getCoachedCurriculumElements().stream()
 					.map(CurriculumElement::getGroup)
 					.collect(Collectors.toList());
