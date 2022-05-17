@@ -885,6 +885,44 @@ public class LectureBlockDAO {
 		return masterCoachs != null && masterCoachs.size() > 0 && masterCoachs.get(0) != null;
 	}
 	
+	public List<Identity> getMasterCoaches(IdentityRef participant, List<LectureBlock> blocks, List<RepositoryEntry> entries, Date start, Date end) {
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select distinct mcIdent from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join bGroup.members mastercoachs on (mastercoachs.role='").append(CurriculumRoles.mastercoach.name()).append("')")
+		  .append(" inner join mastercoachs.identity mcIdent")
+		  .append(" inner join mcIdent.user mcUser")
+		  .append(" where participants.identity.key=:participantKey")
+		  .append(" and block.startDate>=:startDate and block.endDate<=:endDate");
+		
+		if(blocks != null && !blocks.isEmpty()) {
+			sb.append(" and block.key in (:blockKeys)");
+		}
+		if(entries != null && !entries.isEmpty()) {
+			sb.append(" and block.entry.key in (:entryKeys)");
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("startDate", start, TemporalType.TIMESTAMP)
+				.setParameter("endDate", end, TemporalType.TIMESTAMP)
+				.setParameter("participantKey", participant.getKey());
+		if(blocks != null && !blocks.isEmpty()) {
+			List<Long> blockKeys = blocks.stream()
+					.map(LectureBlock::getKey).collect(Collectors.toList());
+			query.setParameter("blockKeys", blockKeys);
+		}
+		if(entries != null && !entries.isEmpty()) {
+			List<Long> entryKeys = entries.stream()
+					.map(RepositoryEntry::getKey).collect(Collectors.toList());
+			query.setParameter("entryKeys", entryKeys);
+		}
+		
+		return query.getResultList();
+	}
+	
 	public List<Identity> getParticipants(LectureBlockRef block) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct ident from lectureblock block")

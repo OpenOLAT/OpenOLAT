@@ -36,6 +36,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.group.BusinessGroup;
@@ -1047,6 +1048,82 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		boolean isTeacher = lectureBlockDao.hasLecturesAsTeacher(entry, teacher);
 		Assert.assertTrue(isTeacher);
+	}
+	
+	@Test
+	public void isMasterCoach() {
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("master-coach-3");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-mc-4");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		String elementId = UUID.randomUUID().toString();
+		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-3", "Curriculum with lectures 5", "Curriculum", curOrganisation);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation with master coaches",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commit();
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
+		dbInstance.commitAndCloseSession();
+
+		// Check master coach is what it is
+		boolean isMasterCoach = lectureBlockDao.isMasterCoach(lectureBlock, masterCoach);
+		Assert.assertTrue(isMasterCoach);
+		// Participant is not master coach
+		boolean isNotMasterCoach = lectureBlockDao.isMasterCoach(lectureBlock, participant);
+		Assert.assertFalse(isNotMasterCoach);
+	}
+	
+	@Test
+	public void getMasterCoaches() {
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("master-coach-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-mc-2");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		String elementId = UUID.randomUUID().toString();
+		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-1", "Curriculum with lectures 4", "Curriculum", curOrganisation);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation with master coaches",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commit();
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
+		dbInstance.commitAndCloseSession();
+
+		// get teachers
+		Date now = new Date();
+		List<Identity> masterCoaches = lectureBlockDao.getMasterCoaches(participant,
+				List.of(lectureBlock), List.of(entry), DateUtils.addDays(now, -5), DateUtils.addDays(now, 5));
+		Assert.assertNotNull(masterCoaches);
+		Assert.assertEquals(1, masterCoaches.size());
+		Assert.assertTrue(masterCoaches.contains(masterCoach));
+	}
+	
+	@Test
+	public void getMasterCoachesNegativeTest() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("not-master-coach-2");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-mc-3");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commit();
+		
+		// get teachers
+		Date now = new Date();
+		List<Identity> masterCoaches = lectureBlockDao.getMasterCoaches(participant,
+				List.of(lectureBlock), List.of(entry), DateUtils.addDays(now, -5), DateUtils.addDays(now, 5));
+		Assert.assertNotNull(masterCoaches);
+		Assert.assertTrue(masterCoaches.isEmpty());
 	}
 	
 	@Test

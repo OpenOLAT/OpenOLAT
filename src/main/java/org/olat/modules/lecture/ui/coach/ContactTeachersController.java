@@ -68,47 +68,59 @@ public class ContactTeachersController extends FormBasicController {
 	private RichTextElement bodyEl;
 	private MultipleSelectionElement sendMailEl;
 	private MultipleSelectionElement teachersEl;
+	private MultipleSelectionElement masterCoachesEl;
 	
 	private final boolean mailMandatory;
 	private final boolean withButtons;
-	private List<Identity> identities;
+	private List<Identity> teachers;
+	private List<Identity> masterCoaches;
 
 	@Autowired
 	private MailManager mailService;
 	@Autowired
 	private UserManager userManager;
 	
-	public ContactTeachersController(UserRequest ureq, WindowControl wControl, List<Identity> identities) {
+	public ContactTeachersController(UserRequest ureq, WindowControl wControl, List<Identity> teachers, List<Identity> masterCoaches) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(ContactForm.class, getLocale(), getTranslator()));
-		this.identities = identities;
+		this.teachers = teachers;
+		this.masterCoaches = masterCoaches;
 		withButtons = true;
 		mailMandatory = true;
 		
 		initForm(ureq);
 	}
 	
-	public ContactTeachersController(UserRequest ureq, WindowControl wControl, List<Identity> identities,
+	public ContactTeachersController(UserRequest ureq, WindowControl wControl, List<Identity> teachers, List<Identity> masterCoaches,
 			LecturesSecurityCallback secCallback, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, "", rootForm);	
 		setTranslator(Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(ContactForm.class, getLocale(), getTranslator()));
-		this.identities = identities;
+		this.teachers = teachers;
+		this.masterCoaches = masterCoaches;
 		withButtons = false;
 		mailMandatory = secCallback.needToInformTeacher();
 		
 		initForm(ureq);
 	}
 	
-	public List<Identity> getSelectedTeacher() {
-		List<Identity> teachers = new ArrayList<>();
+	public List<Identity> getRecipients() {
+		List<Identity> recipients = new ArrayList<>();
 		Collection<String> selectedTeacherKeys = teachersEl.getSelectedKeys();
-		for(Identity identity:identities) {
+		for(Identity identity:teachers) {
 			if(selectedTeacherKeys.contains(identity.getKey().toString())) {
-				teachers.add(identity);
+				recipients.add(identity);
 			}
 		}
-		return teachers;
+		
+		Collection<String> selectedMasterCoachesKeys = masterCoachesEl.getSelectedKeys();
+		for(Identity identity:masterCoaches) {
+			if(selectedMasterCoachesKeys.contains(identity.getKey().toString())) {
+				recipients.add(identity);
+			}
+		}
+		
+		return recipients;
 	}
 	
 	public boolean isSendMail() {
@@ -133,13 +145,26 @@ public class ContactTeachersController extends FormBasicController {
 		}
 		
 		SelectionValues keyValues = new SelectionValues();
-		for(Identity identity:identities) {
+		for(Identity identity:teachers) {
 			String key = identity.getKey().toString();
 			String fullName = userManager.getUserDisplayName(identity);
 			keyValues.add(SelectionValues.entry(key, fullName));
 		}
-		teachersEl = uifactory.addCheckboxesVertical("contact.teachers", "contact.teachers", formLayout, keyValues.keys(), keyValues.values(), 1);
+		teachersEl = uifactory.addCheckboxesVertical("contact.teachers", "contact.teachers", formLayout,
+				keyValues.keys(), keyValues.values(), 1);
 		teachersEl.selectAll();
+		teachersEl.setVisible(!keyValues.isEmpty() || masterCoaches.isEmpty());
+		
+		SelectionValues masterCoachesKeyValues = new SelectionValues();
+		for(Identity identity:masterCoaches) {
+			String key = identity.getKey().toString();
+			String fullName = userManager.getUserDisplayName(identity);
+			masterCoachesKeyValues.add(SelectionValues.entry(key, fullName));
+		}
+		masterCoachesEl = uifactory.addCheckboxesVertical("contact.mastercoaches", "contact.mastercoaches", formLayout,
+				masterCoachesKeyValues.keys(), masterCoachesKeyValues.values(), 1);
+		masterCoachesEl.selectAll();
+		masterCoachesEl.setVisible(!masterCoachesKeyValues.isEmpty());
 		
 		subjectEl = uifactory.addTextElement("subject", "mail.subject", 255, "", formLayout);
 		subjectEl.setElementCssClass("o_sel_mail_subject");
@@ -164,21 +189,23 @@ public class ContactTeachersController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 
 		teachersEl.clearError();
-		if(withButtons && !teachersEl.isAtLeastSelected(1)) {
+		masterCoachesEl.clearError();
+		if(withButtons && getRecipients().isEmpty()) {
 			teachersEl.setErrorKey("form.legende.mandatory", null);
+			masterCoachesEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())
-				&& (withButtons || teachersEl.isAtLeastSelected(1))) {
+				&& (withButtons || teachersEl.isAtLeastSelected(1) || masterCoachesEl.isAtLeastSelected(1))) {
 			subjectEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
 		bodyEl.clearError();
 		if(!StringHelper.containsNonWhitespace(bodyEl.getValue())
-				&& (withButtons || teachersEl.isAtLeastSelected(1))) {
+				&& (withButtons || teachersEl.isAtLeastSelected(1) || masterCoachesEl.isAtLeastSelected(1))) {
 			bodyEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
@@ -218,7 +245,7 @@ public class ContactTeachersController extends FormBasicController {
 		boolean success = false;
 		try {
 			ContactList teachersList = new ContactList(translate("contact.teachers.list.name"));
-			List<Identity> selectedTeachers = getSelectedTeacher();
+			List<Identity> selectedTeachers = getRecipients();
 			teachersList.addAllIdentites(selectedTeachers);
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
 			MailBundle bundle = new MailBundle();
