@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -86,8 +85,6 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private OrganisationService organisationService;
 
 	public CurriculumElementListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, QualityGenerator generator, QualityGeneratorConfigs configs) {
