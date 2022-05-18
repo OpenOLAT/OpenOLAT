@@ -167,13 +167,18 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 	
 	@Override
-	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent) {
-		return assessmentEntryDao.getScoreCount(remositoryEntry, subIdent);
+	public Long getScoreCount(RepositoryEntryRef repositoryEntry, String subIdent) {
+		return assessmentEntryDao.getScoreCount(repositoryEntry, subIdent);
 	}
 
 	@Override
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start) {
 		return assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
+	}
+	
+	@Override
+	public List<AssessmentEntry> getRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry) {
+		return assessmentEntryDao.loadRootEntriesWithoutPassed(repositoryEntry);
 	}
 
 	@Override

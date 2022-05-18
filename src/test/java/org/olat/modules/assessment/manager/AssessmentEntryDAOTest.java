@@ -1137,6 +1137,32 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadRootEntriesWithoutPassed() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19");
+		
+		AssessmentEntry aeRootNullPassed1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), Boolean.TRUE, null);
+		aeRootNullPassed1.setPassed(null);
+		aeRootNullPassed1 = assessmentEntryDao.updateAssessmentEntry(aeRootNullPassed1);
+		AssessmentEntry aeRootNullPassed2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, random(), Boolean.TRUE, null);
+		aeRootNullPassed2.setPassed(null);
+		aeRootNullPassed2 = assessmentEntryDao.updateAssessmentEntry(aeRootNullPassed2);
+		AssessmentEntry aeNotRootNullPassed = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), Boolean.FALSE, null);
+		aeNotRootNullPassed.setPassed(null);
+		aeNotRootNullPassed = assessmentEntryDao.updateAssessmentEntry(aeNotRootNullPassed);
+		AssessmentEntry aeRootPassed = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), Boolean.TRUE, null);
+		aeRootPassed.setPassed(Boolean.TRUE);
+		aeRootPassed = assessmentEntryDao.updateAssessmentEntry(aeRootPassed);
+		
+		List<AssessmentEntry> assessmentEntries = assessmentEntryDao.loadRootEntriesWithoutPassed(entry);
+		
+		assertThat(assessmentEntries)
+				.contains(aeRootNullPassed1, aeRootNullPassed2)
+				.doesNotContain(aeNotRootNullPassed, aeRootPassed);
+	}
+	
+	@Test
 	public void removeEntryForReferenceEntry() {
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19");

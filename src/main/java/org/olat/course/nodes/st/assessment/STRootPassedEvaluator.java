@@ -134,7 +134,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		return currentPassed;
 	}
 
-	private int getActivePassedConfigs(ModuleConfiguration config) {
+	public static int getActivePassedConfigs(ModuleConfiguration config) {
 		int active = 0;
 		if (config.has(STCourseNode.CONFIG_PASSED_PROGRESS)) {
 			active++;

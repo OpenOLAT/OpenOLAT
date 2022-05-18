@@ -356,4 +356,10 @@ public interface CourseAssessmentService {
 	 */
 	public void evaluateStartOver(Date start);
 
+	/**
+	 * Evaluate the assessment entries of users without a passed root value in
+	 * learning path courses where the lifecycle is over.
+	 */
+	public void evaluateLifecycleOver(Date now);
+
 }

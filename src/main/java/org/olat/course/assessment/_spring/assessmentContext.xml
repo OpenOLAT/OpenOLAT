@@ -17,10 +17,20 @@
 	<bean id="assessmentEvaluateStartOverJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentEvaluateStartOverJob" />
 	</bean>
+	
+	<bean id="assessmentEvaluateLifecycleOverTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="AssessmentEvaluateLifecycleOverJob" />
+		<property name="cronExpression" value="1 * * * * ?" />
+		<property name="startDelay" value="27000" />
+	</bean>
+	
+	<bean id="AssessmentEvaluateLifecycleOverJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentEvaluateLifecycleOverJob" />
+	</bean>
 		
 	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />
-	    <property name="cronExpression" value="1 * * * * ?" />
+	    <property name="cronExpression" value="3 3 3 * * ?" />
 	    <property name="startDelay" value="55000" />
 	</bean>
 	

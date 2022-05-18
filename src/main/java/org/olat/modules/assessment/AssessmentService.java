@@ -109,7 +109,7 @@ public interface AssessmentService {
 	/**
 	 * @return whether at least one assessment entry has a grade.
 	 */
-	public boolean hasGrades(RepositoryEntryRef remositoryEntry, String subIdent);
+	public boolean hasGrades(RepositoryEntryRef repositoryEntry, String subIdent);
 	
 	/**
 	 * @return the number of assessment entries with a score
@@ -117,6 +117,8 @@ public interface AssessmentService {
 	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent);
 
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
+
+	public List<AssessmentEntry> getRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry);
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 	

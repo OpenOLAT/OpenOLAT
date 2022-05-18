@@ -212,7 +212,7 @@ public class AssessmentEntryDAO {
 				.isEmpty();
 	}
 	
-	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent) {
+	public Long getScoreCount(RepositoryEntryRef repositoryEntry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(data.key)");
 		sb.append("  from assessmententry data");
@@ -222,7 +222,7 @@ public class AssessmentEntryDAO {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
-				.setParameter("repositoryEntryKey", remositoryEntry.getKey())
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
 				.setParameter("subIdent", subIdent)
 				.getSingleResult();
 	}
@@ -623,6 +623,7 @@ public class AssessmentEntryDAO {
 		sb.append("  from assessmententry ae");
 		sb.append("       inner join fetch ae.repositoryEntry re");
 		sb.append("       inner join fetch ae.identity identity");
+		sb.append("       inner join fetch identity.user user");
 		sb.append(" where ae.entryRoot = true");
 		sb.append("   and (ae.repositoryEntry.key, ae.identity.key) in (");
 		sb.append("       select subae.repositoryEntry.key, subae.identity.key");
@@ -635,6 +636,22 @@ public class AssessmentEntryDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)
 				.setParameter("start", start)
+				.getResultList();
+	}
+
+	public List<AssessmentEntry> loadRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae");
+		sb.append("  from assessmententry ae");
+		sb.append("       inner join fetch ae.identity identity");
+		sb.append("       inner join fetch identity.user user");
+		sb.and().append("ae.entryRoot = true");
+		sb.and().append("ae.passed is null");
+		sb.and().append("ae.repositoryEntry.key = :repositoryEntryKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
 				.getResultList();
 	}
 
