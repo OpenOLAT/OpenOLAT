@@ -96,7 +96,8 @@ public class OpenAccessOfferController extends FormBasicController {
 		SelectionValues catalogSV = new SelectionValues();
 		catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
 		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
-		catalogEl.select(CATALOG_WEB, offer.isCatalogWebPublish());
+		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
+		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

@@ -135,9 +135,14 @@ public class BookingPage {
 		return this;
 	}
 	
-	public BookingPage configureGuestMethod(String description) {
+	public BookingPage configureGuestMethod(String description, boolean catalog) {
 		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_description textarea");
-		browser.findElement(descriptionBy).sendKeys(description);		
+		browser.findElement(descriptionBy).sendKeys(description);	
+		
+		if(catalog) {
+			By catalogBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_catalog input[name='offer.catalog']");
+			browser.findElement(catalogBy).click();
+		}
 
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_guest_form button.btn-primary");
 		browser.findElement(submitBy).click();

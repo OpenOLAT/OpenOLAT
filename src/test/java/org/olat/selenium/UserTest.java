@@ -90,7 +90,26 @@ public class UserTest extends Deployments {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		//deploy a course
-		CourseVO course = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
+		CourseVO newCourse = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
+		
+		// Administrator opens the course to the public
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.searchResource(newCourse.getKey().toString())
+			.selectResource(newCourse.getTitle());
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.openToolsMenu()
+			.settings()
+			.accessConfiguration()
+			.quickOpenAccess();
 
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -109,7 +128,7 @@ public class UserTest extends Deployments {
 			.setResume(ResumeOption.auto);
 		
 		//open a course via REST url
-		CoursePageFragment coursePage = CoursePageFragment.getCourse(browser, deploymentUrl, course);
+		CoursePageFragment coursePage = CoursePageFragment.getCourse(browser, deploymentUrl, newCourse);
 		coursePage
 			.assertOnCoursePage()
 			.clickTree();
@@ -126,7 +145,7 @@ public class UserTest extends Deployments {
 		WebElement courseTitle = browser.findElement(By.tagName("h2"));
 		Assert.assertNotNull(courseTitle);
 		Assert.assertTrue(courseTitle.isDisplayed());
-		Assert.assertTrue(courseTitle.getText().contains(course.getTitle()));
+		Assert.assertTrue(courseTitle.getText().contains(newCourse.getTitle()));
 	}
 	
 	/**
@@ -144,7 +163,26 @@ public class UserTest extends Deployments {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		//deploy a course
-		CourseVO course = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
+		CourseVO newCourse = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
+
+		// Administrator opens the course to the public
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.searchResource(newCourse.getKey().toString())
+			.selectResource(newCourse.getTitle());
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.openToolsMenu()
+			.settings()
+			.accessConfiguration()
+			.quickOpenAccess();
 
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl)
@@ -159,7 +197,7 @@ public class UserTest extends Deployments {
 			.setResume(ResumeOption.ondemand);
 		
 		//open a course via REST url and click it
-		CoursePageFragment.getCourse(browser, deploymentUrl, course).clickTree();
+		CoursePageFragment.getCourse(browser, deploymentUrl, newCourse).clickTree();
 		
 		//logout
 		userTools.logout();
@@ -175,7 +213,7 @@ public class UserTest extends Deployments {
 		WebElement courseTitle = browser.findElement(By.tagName("h2"));
 		Assert.assertNotNull(courseTitle);
 		Assert.assertTrue(courseTitle.isDisplayed());
-		Assert.assertTrue(courseTitle.getText().contains(course.getTitle()));
+		Assert.assertTrue(courseTitle.getText().contains(newCourse.getTitle()));
 	}
 	
 	/**

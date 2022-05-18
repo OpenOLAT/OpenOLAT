@@ -259,6 +259,21 @@ public class AuthoringEnvPage {
 		OOGraphene.waitBusy(browser);
 	}
 	
+	public AuthoringEnvPage searchResource(String text) {
+		By searchPresetBy = By.cssSelector(".o_sel_author_env .o_table_tabs a.o_sel_author_search");
+		OOGraphene.waitElement(searchPresetBy, browser);
+		browser.findElement(searchPresetBy).click();
+		
+		By searchFieldBy = By.cssSelector(".o_sel_author_env .o_table_large_search input[type='text']");
+		OOGraphene.waitElement(searchFieldBy, browser);
+		browser.findElement(searchFieldBy).sendKeys(text);
+		
+		By searchButtonBy = By.cssSelector(".o_sel_author_env .o_table_large_search a.o_table_search_button");
+		browser.findElement(searchButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public void editResource(String title) {
 		if(browser instanceof FirefoxDriver) {
 			By toolsMenuCaretBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td[contains(@class,'o_col_action')]/a[i[contains(@class,'o_icon_actions')]]");

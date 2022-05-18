@@ -1607,7 +1607,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.guest)
+			.selectAccess(UserAccess.guest, true)
 			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(null, node1)

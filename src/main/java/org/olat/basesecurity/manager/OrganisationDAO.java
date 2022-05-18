@@ -470,6 +470,8 @@ public class OrganisationDAO {
 	}
 	
 	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations) {
+		if(organisations.isEmpty()) return new ArrayList<>();
+		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select distinct new org.olat.basesecurity.model.OrganisationRefImpl(org.key) from organisation as org")
 		  .append(" where ");
