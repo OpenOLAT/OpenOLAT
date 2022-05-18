@@ -585,8 +585,7 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.quickOpenAccess()
 			.clickToolbarBack();
 		qtiPage
 			.publish();

@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.UserAccess;
 import org.openqa.selenium.By;
@@ -59,7 +60,7 @@ public class PublisherPageFragment {
 	}
 
 	public void quickPublish() {
-		quickPublish(UserAccess.guest);
+		quickPublish(UserAccess.registred);
 	}
 	
 	public void quickPublish(UserAccess access) {
@@ -107,30 +108,28 @@ public class PublisherPageFragment {
 		Select publishStatusSelect = new Select(publishStatusEl);
 		publishStatusSelect.selectByValue("published");
 
-		if(access == UserAccess.registred || access == UserAccess.guest) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='shared']");
-			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-			
-			By guestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label[input[@name='entry.access.guest' and @value='on']]");
-			OOGraphene.waitElement(guestsBy, browser);
-			
-			if(access == UserAccess.guest) {
-				WebElement guestsEl = browser.findElement(guestsBy);
-				OOGraphene.check(guestsEl, Boolean.TRUE);
-			}
-		} else if(access == UserAccess.membersOnly) {
+		if(access == UserAccess.membersOnly) {
 			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
 			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
-		} else if(access == UserAccess.booking) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
+		} else if(access == UserAccess.booking || access == UserAccess.registred || access == UserAccess.guest) {
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='public']");
 			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-			
 			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
 			OOGraphene.waitElement(accessConfigurationBy, browser);
 		}
+		
+		if(access == UserAccess.registred) {
+			new BookingPage(browser)
+				.addOpenAsFirstMethod()
+				.configureOpenMethod("Hello");
+		} else if(access == UserAccess.guest) {
+			new BookingPage(browser)
+				.openAddDropMenu()
+				.addGuestMethod()
+				.configureGuestMethod("Hello");
+		}
+		
 		return this;
 	}
 	

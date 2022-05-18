@@ -80,6 +80,8 @@ public class OpenAccessOfferController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_accesscontrol_open_form");
+		
 		String desc = null;
 		if(offer != null) {
 			desc = offer.getDescription();

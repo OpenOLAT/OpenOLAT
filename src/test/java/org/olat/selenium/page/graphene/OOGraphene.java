@@ -123,6 +123,18 @@ public class OOGraphene {
 		}
 	}
 	
+	public static void waitModalDialogWithFieldsetDisappears(WebDriver browser, String fieldsetCssClass) {
+		try {
+			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//fieldset[contains(@class,'" + fieldsetCssClass + "')]");
+			new WebDriverWait(browser, driverTimeout)
+				.withTimeout(timeout).pollingEvery(poolingSlow)
+				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);
+			throw e;
+		}
+	}
+	
 	/**
 	 * Wait until the busy flag is ok, the browser scrolled
 	 * to the top and that the body of the top modal dialog is

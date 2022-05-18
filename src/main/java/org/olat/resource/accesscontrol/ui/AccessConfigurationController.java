@@ -216,6 +216,7 @@ public class AccessConfigurationController extends FormBasicController {
 		if(!readOnly) {
 			if (!managedBookings) {
 				addMethodDropdown = uifactory.addDropdownMenu("create.offer", "create.offer", null, formLayout, getTranslator());
+				addMethodDropdown.setElementCssClass("o_sel_accesscontrol_create");
 				addMethodDropdown.setOrientation(DropdownOrientation.normal);
 				addMethodDropdown.setExpandContentHeight(true);
 				
@@ -245,21 +246,25 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			
 			addOpenAccessLink = uifactory.addFormLink("create.offer.open.link", "create.offer.open", null, formLayout, Link.LINK);
+			addOpenAccessLink.setElementCssClass("o_sel_ac_add_open");
 			addOpenAccessLink.setVisible(openAccessSupported);
 			addMethodDropdown.addElement(addOpenAccessLink);
 			formLayout.add(addOpenAccessLink.getName(), addOpenAccessLink);
 			
 			addOpenAccessButton = uifactory.addFormLink("create.offer.open", offersContainer, Link.BUTTON);
+			addOpenAccessButton.setElementCssClass("o_sel_ac_add_open");
 			addOpenAccessButton.setVisible(openAccessSupported);
 			addOfferLinks.add(addOpenAccessButton);
 			
 			boolean addGuest = isAddGuest();
 			addGuestLink = uifactory.addFormLink("create.offer.guest.link", "create.offer.guest", null, formLayout, Link.LINK);
+			addGuestLink.setElementCssClass("o_sel_ac_add_guest");
 			addGuestLink.setVisible(addGuest);
 			addMethodDropdown.addElement(addGuestLink);
 			formLayout.add(addGuestLink.getName(), addGuestLink);
 			
 			addGuestButton = uifactory.addFormLink("create.offer.guest", offersContainer, Link.BUTTON);
+			addGuestButton.setElementCssClass("o_sel_ac_add_guest");
 			addGuestButton.setVisible(addGuest);
 			addOfferLinks.add(addGuestButton);
 			

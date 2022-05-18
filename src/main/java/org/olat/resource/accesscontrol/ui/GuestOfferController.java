@@ -56,6 +56,8 @@ public class GuestOfferController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_accesscontrol_guest_form");
+		
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, offer.getDescription(), formLayout);
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		

@@ -970,7 +970,6 @@ public class CourseTest extends Deployments {
 			.addTokenMethod()
 			.configureTokenMethod("secret", "The password is secret");
 		courseAccess
-			.save()
 			.clickToolbarBack();
 		// publish the course
 		course
@@ -1292,8 +1291,7 @@ public class CourseTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.quickOpenAccess()
 			.clickToolbarBack();
 		//publish
 		course
@@ -1655,8 +1653,7 @@ public class CourseTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.quickOpenAccess()
 			.clickToolbarBack();
 		
 		String courseUrl = authorBrowser.getCurrentUrl();
@@ -1755,7 +1752,7 @@ public class CourseTest extends Deployments {
 		cpPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.quickOpenAccess()
 			.save()
 			.clickToolbarBack();
 		//publish

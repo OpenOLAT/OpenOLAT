@@ -80,7 +80,7 @@
 #else
 	$r.render("empty")
 	#if($addOfferLinks && $addOfferLinks.size() > 0)
-		<div class="o_button_group">
+		<div class="o_button_group o_sel_ac_add_first_methods">
 			#foreach($addOfferLink in $addOfferLinks)
 				#if($r.visible($addOfferLink.component.componentName))
 					$r.render($addOfferLink.component.componentName)
