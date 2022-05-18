@@ -291,7 +291,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
 		} else if (source == startDateEl) {
-			if (!dateMoved && startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
+			if (!dateMoved && startDateEl.getDate() != null && startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
 				Date startDate = startDateEl.getDate();
 				long difference = startDate.getTime() - startDateEl.getInitialDate().getTime();
 				Date endDate = endDateEl.getDate();
@@ -405,25 +405,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 					break;
 				case beginAndEnd: 
 					dateTypesEl.select("private", true);
+					startDateEl.setDate(context.getBeginDate());
+					endDateEl.setDate(context.getEndDate());
+					if (startDateEl.getInitialDate() == null) {
+						startDateEl.setInitialDate(context.getInitialBeginDate());
+					}
 					break;
 				case semester: 
 					dateTypesEl.select("public", true);
-					break;
-			}
-		}
-		
-		if (dateTypesEl.getSelectedKey() != null) {
-			switch (dateTypesEl.getSelectedKey()) {
-				case "private": 
-					startDateEl.setDate(context.getBeginDate());
-					endDateEl.setDate(context.getEndDate());
-					
-					if (context.getRepositoryLifeCycle() != null) {
-						startDateEl.setInitialDate(context.getRepositoryLifeCycle().getValidFrom());
-						endDateEl.setDate(context.getRepositoryLifeCycle().getValidTo());
-					}
-					break;
-				case "public": 
 					if (context.getSemesterKey() != null) {
 						publicDatesEl.select(context.getSemesterKey().toString(), true);
 					}
