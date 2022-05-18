@@ -359,6 +359,9 @@ public class MetaInfoFormController extends FormBasicController {
 			// a directory.
 			// Hide the metadata.
 			setMetaFieldsVisible(false);
+			licenseEl.setVisible(false);
+			licensorEl.setVisible(false);
+			licenseFreetextEl.setVisible(false);
 			if (moreMetaDataLink != null) moreMetaDataLink.setVisible(false);
 		}
 

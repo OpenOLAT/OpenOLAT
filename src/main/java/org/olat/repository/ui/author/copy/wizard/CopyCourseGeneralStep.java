@@ -139,6 +139,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			displayNameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 				displayNameEl.setErrorKey("input.mandatory", null);
+				allOk &= false;
 			}
 			
 			return allOk;

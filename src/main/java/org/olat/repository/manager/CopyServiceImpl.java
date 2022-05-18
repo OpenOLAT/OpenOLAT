@@ -170,12 +170,13 @@ public class CopyServiceImpl implements CopyService {
 		target.setAuthors(context.getAuthors());
 		
 		// Copy taxonomy levels
-		List<TaxonomyLevel> taxonomyLevels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(sourceEntry);
-		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-			RepositoryEntryToTaxonomyLevel relation = repositoryEntryToTaxonomyLevelDao.createRelation(target, taxonomyLevel);
-			target.getTaxonomyLevels().add(relation);
+		if (context.getTaxonomyLevels() != null) {
+			for (TaxonomyLevel taxonomyLevel : context.getTaxonomyLevels()) {
+				RepositoryEntryToTaxonomyLevel relation = repositoryEntryToTaxonomyLevelDao.createRelation(target, taxonomyLevel);
+				target.getTaxonomyLevels().add(relation);
+			}
 		}
-
+		
 		// Add to organisations
 		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
 		if (sourceOrganisations != null) {

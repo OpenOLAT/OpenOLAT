@@ -24,11 +24,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.duedate.DueDateConfig;
@@ -37,6 +37,7 @@ import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -83,7 +84,7 @@ public class CopyCourseContext {
 	private String licenseTypeKey;
 	private String licensor;
 	private String licenseFreetext;
-	private String expenditureOfWork;
+	private Set<TaxonomyLevel> taxonomyLevels;
 	
 	// GroupStep
 	private CopyType groupCopyType;			 
@@ -107,6 +108,7 @@ public class CopyCourseContext {
 	// ExecutionStep
 	private ExecutionType executionType;
 	private Date beginDate;
+	private Date initialBeginDate;
 	private Date endDate;
 	private long dateDifference = 0;
 	private Long semesterKey;
@@ -377,7 +379,7 @@ public class CopyCourseContext {
 	}
 	
 	public String getDisplayName() {
-		return getValue(displayName, sourceRepositoryEntry.getDisplayname());
+		return displayName;
 	}
 	
 	public void setDisplayName(String displayName) {
@@ -385,7 +387,7 @@ public class CopyCourseContext {
 	}
 	
 	public String getExternalRef() {
-		return getValue(externalRef, sourceRepositoryEntry.getExternalRef());
+		return externalRef;
 	}
 	
 	public void setExternalRef(String externalRef) {
@@ -401,7 +403,7 @@ public class CopyCourseContext {
 	}
 
 	public String getAuthors() {
-		return getValue(authors, sourceRepositoryEntry.getAuthors());
+		return authors;
 	}
 	
 	public void setAuthors(String authors) {
@@ -431,13 +433,13 @@ public class CopyCourseContext {
 	public void setLicenseFreetext(String freetext) {
 		this.licenseFreetext = freetext;
 	}
-	
-	public String getExpenditureOfWork() {
-		return expenditureOfWork;
+
+	public Set<TaxonomyLevel> getTaxonomyLevels() {
+		return taxonomyLevels;
 	}
-	
-	public void setExpenditureOfWork(String expenditureOfWork) {
-		this.expenditureOfWork = expenditureOfWork;
+
+	public void setTaxonomyLevels(Set<TaxonomyLevel> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	public CopyType getGroupCopyType() {
@@ -556,14 +558,16 @@ public class CopyCourseContext {
 		this.executionType = executionType;
 	}
 	
+	public Date getInitialBeginDate() {
+		return initialBeginDate;
+	}
+
+	public void setInitialBeginDate(Date initialBeginDate) {
+		this.initialBeginDate = initialBeginDate;
+	}
+
 	public Date getBeginDate() {
-		if (beginDate != null) {
-			return beginDate;
-		} else if (getRepositoryLifeCycle() != null) {
-			return getRepositoryLifeCycle().getValidFrom();
-		} else {
-			return null;
-		}
+		return beginDate;
 	}
 	
 	public void setBeginDate(Date beginDate) {
@@ -571,13 +575,7 @@ public class CopyCourseContext {
 	}
 	
 	public Date getEndDate() {
-		if (endDate != null) {
-			return endDate;
-		} else if (getRepositoryLifeCycle() != null) {
-			return getRepositoryLifeCycle().getValidTo();
-		}
-		
-		return null;
+		return endDate;
 	}
 	
 	public void setEndDate(Date endDate) {
@@ -789,14 +787,6 @@ public class CopyCourseContext {
 		none, 
 		beginAndEnd,
 		semester;
-	}
-	
-	public String getValue(String newValue, String oldValue) {
-		return StringHelper.containsNonWhitespace(newValue) ? newValue : oldValue;
-	}
-	
-	public Date getValue(Date newValue, Date oldValue) {
-		return newValue != null ? newValue : oldValue;
 	}
 	
 	public CopyType getCopyType(String copyTypeString) {

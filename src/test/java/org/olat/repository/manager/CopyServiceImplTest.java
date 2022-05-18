@@ -119,6 +119,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 		context = new CopyCourseContext();
 		context.setExecutingIdentity(author);
 		context.setSourceRepositoryEntry(source);
+		context.setDisplayName(source.getDisplayname());
 		
 		loadCopyConfig(context);
 		
