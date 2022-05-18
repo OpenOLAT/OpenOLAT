@@ -90,8 +90,19 @@ public interface ACService {
 	
 	/**
 	 * A user can see and book the offers of this organisations.
+	 * 
+	 * @param identity
+	 * @return
 	 */
 	public List<OrganisationRef> getOfferOrganisations(IdentityRef identity);
+	
+	/**
+	 * An author can select these organisations when he edits an offer.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<Organisation> getSelectionOfferOrganisations(Identity identity);
 	
 	public Offer createOffer(OLATResource resource, String resourceName);
 

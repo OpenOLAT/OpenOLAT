@@ -77,6 +77,7 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.AccessTransaction;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.OfferToOrganisation;
 import org.olat.resource.accesscontrol.Order;
@@ -254,6 +255,18 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		
 		List<Organisation> userOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.user);
 		return organisationService.getParentLineRefs(userOrganisations);
+	}
+	
+	@Override
+	public List<Organisation> getSelectionOfferOrganisations(Identity identity) {
+		OfferOrganisationSelection offerOrganisationSelection = accessModule.getOfferOrganisationSelection();
+		if (OfferOrganisationSelection.all == offerOrganisationSelection) {
+			return organisationService.getOrganisations();
+		} else if (OfferOrganisationSelection.sub == offerOrganisationSelection) {
+			return organisationService.getOrganisations(identity, OrganisationRoles.administrator,
+					OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		}
+		return new ArrayList<>(1);
 	}
 
 	@Override

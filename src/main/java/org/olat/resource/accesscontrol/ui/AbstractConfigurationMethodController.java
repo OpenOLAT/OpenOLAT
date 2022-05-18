@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,8 +45,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,9 +77,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private final boolean edit;
 	
 	@Autowired
-	private OrganisationModule organisationModule;
+	private ACService acService;
 	@Autowired
-	private OrganisationService organisationService;
+	private OrganisationModule organisationModule;
 	
 	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, OfferAccess link,
 			Collection<Organisation> offerOrganisations, boolean edit) {
@@ -117,7 +115,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		datesEl.setSeparator("offer.period.date.to");
 		
 		if (organisationModule.isEnabled() && offerOrganisations != null) {
-			initFormOrganisations(formLayout, ureq.getUserSession().getRoles());
+			initFormOrganisations(formLayout);
 		}
 		
 		SelectionValues catalogSV = new SelectionValues();
@@ -148,9 +146,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		updateUI();
 	}
 	
-	private void initFormOrganisations(FormItemContainer formLayout, Roles roles) {
-		organisations = organisationService.getOrganisations(getIdentity(), roles, OrganisationRoles.administrator,
-				OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+	private void initFormOrganisations(FormItemContainer formLayout) {
+		organisations = acService.getSelectionOfferOrganisations(getIdentity());
 		
 		for (Organisation offerOrganisation : offerOrganisations) {
 			if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {

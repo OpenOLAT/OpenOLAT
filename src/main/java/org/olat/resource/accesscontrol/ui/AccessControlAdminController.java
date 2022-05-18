@@ -20,18 +20,23 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.util.Collection;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
@@ -54,6 +59,7 @@ public class AccessControlAdminController extends FormBasicController {
 	private MultipleSelectionElement enabled;
 	private MultipleSelectionElement homeEnabled;
 	private MultipleSelectionElement methods;
+	private SingleSelection offerOrgEl;
 
 	private String[] values = {""};
 	private String[] keys = {"on"};
@@ -107,7 +113,18 @@ public class AccessControlAdminController extends FormBasicController {
 		methods.select(METHOD_AUTO, acModule.isAutoEnabled());
 		methods.setEnabled(acModule.isEnabled());
 		methods.addActionListener(FormEvent.ONCHANGE);
-
+		
+		uifactory.addSpacerElement("org", formLayout, false);
+		SelectionValues offerOrgSV = new SelectionValues();
+		offerOrgSV.add(entry(OfferOrganisationSelection.all.name(), translate("offer.organisation.selection.all")));
+		offerOrgSV.add(entry(OfferOrganisationSelection.sub.name(), translate("offer.organisation.selection.sub")));
+		offerOrgEl = uifactory.addRadiosVertical("offer.organisation.selection", formLayout, offerOrgSV.keys(), offerOrgSV.values());
+		if (offerOrgEl.containsKey(acModule.getOfferOrganisationSelection().name())) {
+			offerOrgEl.select(acModule.getOfferOrganisationSelection().name(), true);
+		} else {
+			offerOrgEl.select(OfferOrganisationSelection.all.name(), true);
+		}
+		
 		uifactory.addSpacerElement("itgirl", formLayout, false);
 
 		homeEnabled = uifactory.addCheckboxesHorizontal("ac.home.enabled", formLayout, keys, values);
@@ -151,6 +168,8 @@ public class AccessControlAdminController extends FormBasicController {
 		boolean paypalCheckoutEnabled = selectedMethods.contains(PaypalCheckoutAccessHandler.METHOD_TYPE);
 		acModule.setPaypalCheckoutEnabled(paypalCheckoutEnabled);
 		acModule.setAutoEnabled(selectedMethods.contains(METHOD_AUTO));
+		
+		acModule.setOfferOrganisationSelection(OfferOrganisationSelection.valueOf(offerOrgEl.getSelectedKey()));
 
 		boolean homeOverviewEnabled = paypalEnabled || !homeEnabled.getSelectedKeys().isEmpty();
 		acModule.setHomeOverviewEnabled(homeOverviewEnabled);
