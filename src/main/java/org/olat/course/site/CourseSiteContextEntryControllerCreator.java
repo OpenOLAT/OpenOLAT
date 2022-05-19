@@ -107,8 +107,12 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			}
 		}
 		
-		if (!reSecurity.canLaunch() && !isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
-			return messageController(ureq, wControl, "launch.noaccess");
+		if (!reSecurity.canLaunch()) {
+			if(isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
+				reSecurity = rm.isAllowed(ureq, re);
+			} else {
+				return messageController(ureq, wControl, "launch.noaccess");
+			}
 		}
 
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);

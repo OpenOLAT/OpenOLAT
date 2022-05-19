@@ -101,6 +101,14 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
+	/**
+	 * Configure access. Make the offer configuration for registered and
+	 * guest, catalog only implemented for guest.
+	 * 
+	 * @param access Type of access
+	 * @param catalog Web publishing for guest access
+	 * @return Itself
+	 */
 	public PublisherPageFragment selectAccess(UserAccess access, boolean catalog) {
 		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
 		OOGraphene.scrollTo(publishStatusBy, browser);
