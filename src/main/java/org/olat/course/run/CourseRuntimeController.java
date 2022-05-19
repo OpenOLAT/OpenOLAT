@@ -72,6 +72,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -107,6 +108,9 @@ import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.ui.CourseSettingsController;
 import org.olat.course.db.CourseDBManager;
 import org.olat.course.db.CustomDBMainController;
+import org.olat.course.disclaimer.CourseDisclaimerManager;
+import org.olat.course.disclaimer.event.CourseDisclaimerEvent;
+import org.olat.course.disclaimer.ui.CourseDisclaimerReviewController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -207,7 +211,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
-		efficiencyStatementsLink, noteLink, leaveLink,
+		efficiencyStatementsLink, noteLink, leaveLink, disclaimerLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
 		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink,
@@ -246,6 +250,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
+	private CourseDisclaimerReviewController disclaimeReviewController;
 
 	private Map<String, Boolean> courseRightsCache;
 
@@ -275,6 +280,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private SearchModule searchModule;
 	@Autowired
 	private LearningPathService learningPathService;
+	@Autowired 
+	private CourseDisclaimerManager disclaimerManager;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -887,6 +894,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 			myCourse.addComponent(bookmarkLink);
 		}
+		
+		boolean hasDisclaimer = courseModule.isDisclaimerEnabled() && cc.isDisclaimerEnabled();
+		if (hasDisclaimer) {
+			disclaimerLink = LinkFactory.createToolLink("disclaimer",translate("command.disclaimer"), this, "o_icon_disclaimer");
+			myCourse.addComponent(disclaimerLink);
+		}
+		
 
 		if (userCourseEnv != null) {
 			if(myCourse.size() > 0 && (!userCourseEnv.getCoachedGroups().isEmpty() || !userCourseEnv.getParticipatingGroups().isEmpty() || !userCourseEnv.getWaitingLists().isEmpty())) {
@@ -1169,6 +1183,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			coordinatorManager.getCoordinator().getEventBus().deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		}
 	}
+	
+	private void doDisclaimerAccept() {
+		initToolbar();
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURES_DISCLAIMER_ACCEPTED, getClass());
+	}
+	private void doDisclaimerReject(UserRequest ureq) {
+		doClose(ureq);
+		cleanUp();
+		showInfo("msg.disclaimer.denied");			
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURES_DISCLAIMER_REJECTED, getClass());
+	}
 
 	@Override
 	public boolean requestForClose(UserRequest ureq) {
@@ -1264,6 +1289,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doEfficiencyStatements(ureq);
 		} else if(noteLink == source) {
 			launchPersonalNotes(ureq);
+		} else if(disclaimerLink == source) {
+			showDisclaimer(ureq);
 		} else if(openGlossaryLink == source) {
 			launchGlossary(ureq);
 		} else if(leaveLink == source) {
@@ -1327,8 +1354,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if (event instanceof OpenCourseToolEvent) {
 				CourseTool tool = ((OpenCourseToolEvent)event).getTool();
 				doOpenTool(ureq, tool);
-			} else if (event == RunMainController.COURSE_DISCLAIMER_ACCEPTED) {
-				initToolbar();
 			}
 		} else if (lifeCycleChangeCtr == source) {
 			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
@@ -1343,7 +1368,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}  else if(source == leaveDialogBox) {
 			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
-			}else{
+			} else{
 				cmc.deactivate();
 			}
 		} else if (source == searchController) {
@@ -1353,6 +1378,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (source == unsupportedCourseNodesCtrl) {
 			cmc.deactivate();
 			cleanUp();
+		}
+		
+		if (event.equals(CourseDisclaimerEvent.ACCEPTED)) {
+			doDisclaimerAccept();
+		} else if (event.equals(CourseDisclaimerEvent.REJECTED)) {
+			doDisclaimerReject(ureq);
 		}
 		
 		if (event instanceof AssessmentModeStatusEvent) {
@@ -2535,6 +2566,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		ControllerCreator popupLayoutCtr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
 		//open in new browser window
 		openInNewBrowserWindow(ureq, popupLayoutCtr, false);
+	}
+	
+	private void showDisclaimer(UserRequest ureq) {
+	//FIXME
+		// show the accepted disclaimer in review / read-only mode
+		if (disclaimeReviewController != null) {
+			removeAsListenerAndDispose(disclaimeReviewController);
+		}
+		disclaimeReviewController = new CourseDisclaimerReviewController(ureq, getWindowControl(), getRepositoryEntry());
+		listenTo(disclaimeReviewController);	
+		toolbarPanel.pushController(translate("command.disclaimer"), disclaimeReviewController);
 	}
 	
 	private void launchGlossary(UserRequest ureq) {

@@ -80,6 +80,16 @@ public interface CourseDisclaimerManager {
 	 */
 	public List<CourseDisclaimerConsent> getConsents(RepositoryEntryRef repositoryEntryRef);
 	
+	
+	/**
+	 * Returns the consent for a specific identity related to a repository entry or NULL if not available
+	 * 
+	 * @param repositoryEntryRef
+	 * @param identity
+	 * @return CourseDisclaimerConsent
+	 */
+	public CourseDisclaimerConsent getConsent(RepositoryEntryRef repositoryEntryRef, Identity identity);
+
 	/**
 	 * Returns whether access to a repository entry is granted or not to a user
 	 * 
