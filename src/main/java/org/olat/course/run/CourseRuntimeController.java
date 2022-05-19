@@ -725,7 +725,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if (courseDBManager.isEnabled() && (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_DB))) {
 				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this, "o_icon_coursedb");
-				//TODO url
 				tools.addComponent(dbLink);
 			}
 		}
@@ -895,7 +894,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			myCourse.addComponent(bookmarkLink);
 		}
 		
-		boolean hasDisclaimer = courseModule.isDisclaimerEnabled() && cc.isDisclaimerEnabled();
+		boolean hasDisclaimer = courseModule.isDisclaimerEnabled() 
+				&& userCourseEnv != null
+				&& disclaimerManager.isAccessGranted(getRepositoryEntry(), getIdentity(), userCourseEnv.getIdentityEnvironment().getRoles());
 		if (hasDisclaimer) {
 			disclaimerLink = LinkFactory.createToolLink("disclaimer",translate("command.disclaimer"), this, "o_icon_disclaimer");
 			myCourse.addComponent(disclaimerLink);
@@ -2569,7 +2570,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void showDisclaimer(UserRequest ureq) {
-	//FIXME
 		// show the accepted disclaimer in review / read-only mode
 		if (disclaimeReviewController != null) {
 			removeAsListenerAndDispose(disclaimeReviewController);

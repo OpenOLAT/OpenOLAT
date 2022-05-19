@@ -61,6 +61,7 @@ public class CourseDisclaimerReviewController extends BasicController {
 			// something strange happened, user should not be able to call this code if he never accepted the disclaimer
 			logWarn("CourseDisclaimerReviewController called with NULL consent for repoEntry::" + repositoryEntry.getKey() + " and identity::" + getIdentity().getKey(), null);
 			putInitialPanel(new Panel("empty"));
+			return;
 		}		
 		
 		// Reuse the disclaimer form
