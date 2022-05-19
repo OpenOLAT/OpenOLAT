@@ -1280,16 +1280,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	 * Get the license of the MetaInfo or create a new default license.
 	 *
 	 * @param meta
-	 * @param itentity the current user
-	 * @return the license or null if it is meta for a directory
+	 * @param identity the current user
+	 * @return the license
 	 */
 	@Override
-	public License getOrCreateLicense(VFSMetadata meta, Identity itentity) {
-		if (meta.isDirectory()) return null;
+	public License getOrCreateLicense(VFSMetadata meta, Identity identity) {
+		if (meta != null && meta.isDirectory()) return null;
 		
 		License license = getLicense(meta);
 		if (license == null) {
-			license = licenseService.createDefaultLicense(licenseHandler, itentity);
+			license = licenseService.createDefaultLicense(licenseHandler, identity);
 		}
 		return license;
 	}
