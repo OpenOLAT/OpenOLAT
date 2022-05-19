@@ -22,12 +22,18 @@ package org.olat.group.ui.edit;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.helpers.Settings;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,20 +44,30 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupEditAccessController extends BasicController {
 
+	private AccessConfigurationController accessCtrl;
 	private LTI13ResourceAccessController lti13AccessCtrl;
-	private BusinessGroupEditAccessAndBookingController accessCtrl;
 	
+	@Autowired
+	private AccessControlModule acModule;
 	@Autowired
 	private LTI13Module lti13Module;
 	
 	public BusinessGroupEditAccessController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
-
+		
 		VelocityContainer mainVC = createVelocityContainer("edit_access");
 		
-		accessCtrl = new BusinessGroupEditAccessAndBookingController(ureq, getWindowControl(), businessGroup);
-		listenTo(accessCtrl);
-		mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());
+		if(acModule.isEnabled()) {
+			OLATResource resource = businessGroup.getResource();
+			boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
+			boolean waitingList = businessGroup.getWaitingListEnabled();
+			String url =  Settings.getServerContextPathURI() + "/url/BusinessGroup/" + businessGroup.getKey();
+			accessCtrl = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(),
+					!waitingList, false, false, false, null, false, false, managed, url,
+					"manual_user/groups/Group_Administration/#booking");
+			listenTo(accessCtrl);
+			mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());
+		}
 		
 		if(lti13Module.isEnabled()) {
 			lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), businessGroup);
@@ -67,17 +83,28 @@ public class BusinessGroupEditAccessController extends BasicController {
 	}
 	
 	public int getNumOfBookingConfigurations() {
-		return accessCtrl.getNumOfBookingConfigurations();
+		return accessCtrl == null ? 0 : accessCtrl.getNumOfBookingConfigurations();
 	}
 	
 	public void updateBusinessGroup(BusinessGroup updatedGroup) {
-		accessCtrl.updateBusinessGroup(updatedGroup);
+		boolean waitingList = updatedGroup.getWaitingListEnabled();
+		accessCtrl.setAllowPaymentMethod(!waitingList);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == accessCtrl) {
+			if(event == Event.CHANGED_EVENT) {
+				accessCtrl.commitChanges();
+			}
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-	
 
 }

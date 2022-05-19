@@ -95,14 +95,18 @@ public class TokenAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations) {
-		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisations, true);
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported) {
+		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
+				offerOrganisations, catalogSupported, true);
 	}
 
 	@Override
 	public TokenAccessConfigurationController createConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations) {
-		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisations, false);
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported) {
+		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
+				offerOrganisations, catalogSupported, false);
 	}
 	
 	@Override

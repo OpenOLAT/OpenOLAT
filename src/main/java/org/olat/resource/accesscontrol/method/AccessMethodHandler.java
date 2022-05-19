@@ -67,10 +67,12 @@ public interface AccessMethodHandler {
 	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form);
 	
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations);
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported);
 
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations);
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported);
 
 	public FormController createTransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderPart part, AccessMethod method, Form form);
 	

@@ -79,8 +79,8 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
-				entry.getOlatResource(), entry.getDisplayname(), defaultOfferOrganisations, true, true, guestSupported,
-				false, managedBookings, url);
+				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,
+				defaultOfferOrganisations, true, false, managedBookings, url, null);
 		accessOffersCtrl.setReStatus(RepositoryEntryStatusEnum.preparation);
 		listenTo(accessOffersCtrl);
 		

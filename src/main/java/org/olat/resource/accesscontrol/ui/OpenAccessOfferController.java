@@ -58,7 +58,9 @@ public class OpenAccessOfferController extends FormBasicController {
 	private MultipleSelectionElement catalogEl;
 
 	private final Offer offer;
+	private final boolean offerOrganisationsSupported;
 	private final Collection<Organisation> offerOrganisations;
+	private final boolean catalogSupported;
 	private final boolean edit;
 	private List<Organisation> organisations;
 	
@@ -68,10 +70,13 @@ public class OpenAccessOfferController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	
 	public OpenAccessOfferController(UserRequest ureq, WindowControl wControl, Offer offer,
-			Collection<Organisation> offerOrganisations, boolean edit) {
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean edit) {
 		super(ureq, wControl);
 		this.offer = offer;
+		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.offerOrganisations = offerOrganisations;
+		this.catalogSupported = catalogSupported;
 		this.edit = edit;
 		initForm(ureq);
 	}
@@ -89,7 +94,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		
 		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
 		
-		if (organisationModule.isEnabled() && offerOrganisations != null) {
+		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
 			initFormOrganisations(formLayout);
 		}
 		
@@ -97,7 +102,8 @@ public class OpenAccessOfferController extends FormBasicController {
 		catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
 		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
-		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
+		catalogEl.select(CATALOG_WEB,offer != null && offer.isCatalogWebPublish());
+		catalogEl.setVisible(catalogSupported);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
@@ -114,9 +120,11 @@ public class OpenAccessOfferController extends FormBasicController {
 	private void initFormOrganisations(FormItemContainer formLayout) {
 		organisations = acService.getSelectionOfferOrganisations(getIdentity());
 		
-		for (Organisation offerOrganisation : offerOrganisations) {
-			if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {
-				organisations.add(offerOrganisation);
+		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+			for (Organisation offerOrganisation : offerOrganisations) {
+				if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {
+					organisations.add(offerOrganisation);
+				}
 			}
 		}
 		

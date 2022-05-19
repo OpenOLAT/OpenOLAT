@@ -72,7 +72,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private MultipleSelectionElement confirmationEmailEl;
 
 	protected final OfferAccess link;
+	private final boolean offerOrganisationsSupported;
 	private final Collection<Organisation> offerOrganisations;
+	private final boolean catalogSupported;
 	private List<Organisation> organisations;
 	private final boolean edit;
 	
@@ -82,11 +84,14 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private OrganisationModule organisationModule;
 	
 	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			Collection<Organisation> offerOrganisations, boolean edit) {
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean edit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AbstractConfigurationMethodController.class, getLocale(), getTranslator()));
 		this.link = link;
+		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.offerOrganisations = offerOrganisations;
+		this.catalogSupported = catalogSupported;
 		this.edit = edit;
 	}
 	
@@ -114,7 +119,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		datesEl.setSecondDate(link.getValidTo());
 		datesEl.setSeparator("offer.period.date.to");
 		
-		if (organisationModule.isEnabled() && offerOrganisations != null) {
+		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
 			initFormOrganisations(formLayout);
 		}
 		
@@ -124,6 +129,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
 		catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
+		catalogEl.setVisible(catalogSupported);
 		
 		String[] onValues = new String[] { translate("on") };
 		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys, onValues);
@@ -149,9 +155,11 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private void initFormOrganisations(FormItemContainer formLayout) {
 		organisations = acService.getSelectionOfferOrganisations(getIdentity());
 		
-		for (Organisation offerOrganisation : offerOrganisations) {
-			if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {
-				organisations.add(offerOrganisation);
+		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+			for (Organisation offerOrganisation : offerOrganisations) {
+				if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {
+					organisations.add(offerOrganisation);
+				}
 			}
 		}
 		

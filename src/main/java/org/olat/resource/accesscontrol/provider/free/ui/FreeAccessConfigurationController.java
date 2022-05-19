@@ -46,8 +46,9 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	private String[] autoKeys = new String[]{ "x" };
 	
 	public FreeAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			Collection<Organisation> offerOrganisations, boolean edit) {
-		super(ureq, wControl, link, offerOrganisations, edit);
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogSupported, edit);
 		initForm(ureq);
 	}
 

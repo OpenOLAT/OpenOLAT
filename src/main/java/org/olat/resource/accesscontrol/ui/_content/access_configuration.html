@@ -1,11 +1,20 @@
 <fieldset class="o_form form-horizontal o_ac_configuration">
 	#if ($off_title) 
-		<legend>
-			$off_title
-		</legend>
+		<legend>		
+			#if ($off_chelp_url) 
+				$r.contextHelpWithWrapper("$off_chelp_url")
+			#end		
+			#if ($off_icon)
+				<i class="$off_icon"> </i>
+			#end
+			$!off_title
+		</legend> 
+	#elseif ($off_chelp_url) 
+		<div class="clearfix">$r.contextHelpWithWrapper("$off_chelp_url")</div>
 	#end
+	
 	#if($r.available("create.offer") && $r.visible("create.offer"))
-		<div class="o_button_group o_button_group_right">
+		<div class="o_button_group o_button_group_right o_button_group_top">
 			$r.render("create.offer")
 		</div>
 	#end

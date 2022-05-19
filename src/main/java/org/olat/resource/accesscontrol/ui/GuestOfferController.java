@@ -45,11 +45,13 @@ public class GuestOfferController extends FormBasicController {
 	private MultipleSelectionElement catalogEl;
 
 	private final Offer offer;
+	private final boolean catalogSupported;
 	private final boolean edit;
 	
-	public GuestOfferController(UserRequest ureq, WindowControl wControl, Offer offer, boolean edit) {
+	public GuestOfferController(UserRequest ureq, WindowControl wControl, Offer offer, boolean catalogSupported, boolean edit) {
 		super(ureq, wControl);
 		this.offer = offer;
+		this.catalogSupported = catalogSupported;
 		this.edit = edit;
 		initForm(ureq);
 	}
@@ -67,7 +69,8 @@ public class GuestOfferController extends FormBasicController {
 		catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
 		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
-		catalogEl.select(CATALOG_WEB, offer.isCatalogWebPublish());
+		catalogEl.select(CATALOG_WEB,offer != null && offer.isCatalogWebPublish());
+		catalogEl.setVisible(catalogSupported);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

@@ -78,13 +78,13 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations) {
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported) {
 		return null;
 	}
 
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations) {
+			OfferAccess link, boolean offerOrganisationSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported) {
 		return null;
 	}
 

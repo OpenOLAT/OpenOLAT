@@ -46,8 +46,9 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 	private TextElement tokenEl;
 	
 	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			Collection<Organisation> offerOrganisations, boolean edit) {
-		super(ureq, wControl, link, offerOrganisations, edit);
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogSupported, edit);
 		initForm(ureq);
 	}
 

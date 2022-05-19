@@ -167,7 +167,7 @@ public class AuthoringEditAccessController extends BasicController {
 			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(),
-					defaultOfferOrganisations, true, true, guestSupported, readOnly, managedBookings, url);
+					true, true, guestSupported, true, defaultOfferOrganisations, true, readOnly, managedBookings, url, null);
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
 			mainVC.put("offers", accessOffersCtrl.getInitialComponent());

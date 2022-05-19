@@ -107,14 +107,18 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations) {
-		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisations, true);
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported) {
+		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
+				offerOrganisations, catalogSupported, true);
 	}
 
 	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link, Collection<Organisation> offerOrganisations) {
-		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisations, false);
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported) {
+		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
+				offerOrganisations, catalogSupported, false);
 	}
 	
 	@Override

@@ -81,11 +81,6 @@ public class AccessConfigurationController extends FormBasicController {
 	private FormLink addGuestLink;
 	private FormLink addGuestButton;
 	private final List<FormLink> addOfferLinks = new ArrayList<>();
-	
-	private int counter = 0;
-	private final String displayName;
-	private final OLATResource resource;
-	private Collection<Organisation> defaultOfferOrganisations;
 
 	private CloseableModalController cmc;
 	private FormLayoutContainer offersContainer;
@@ -96,14 +91,21 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private final List<Offer> deletedOfferList = new ArrayList<>();
 	private final List<AccessInfo> accessInfos = new ArrayList<>();
-
-	private boolean allowPaymentMethod;
+	
+	private int counter = 0;
+	private final String displayName;
+	private final OLATResource resource;
 	private RepositoryEntryStatusEnum reStatus;
+	private boolean allowPaymentMethod;
 	private final boolean openAccessSupported;
 	private final boolean guestSupported;
+	private final boolean offerOrganisationsSupported;
+	private Collection<Organisation> defaultOfferOrganisations;
+	private final boolean catalogSupported;
 	private final boolean readOnly;
 	private final boolean managedBookings;
-	private final String url;
+	private final String resourceUrl;
+	private final String helpUrl;
 	private final Formatter formatter;
 
 	@Autowired
@@ -114,38 +116,46 @@ public class AccessConfigurationController extends FormBasicController {
 	private AccessControlModule acModule;
 
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
-			String displayName, Collection<Organisation> defaultOfferOrganisations, boolean allowPaymentMethod,
-			boolean openAccessSupported, boolean guestSupported, boolean readOnly, boolean managedBookings, String url) {
+			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
+			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
+			boolean catalogSupported, boolean readOnly, boolean managedBookings, String resourceUrl, String helpUrl) {
 		super(ureq, wControl, "access_configuration");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
 		this.displayName = displayName;
-		this.defaultOfferOrganisations = defaultOfferOrganisations;
 		this.allowPaymentMethod = allowPaymentMethod;
 		this.openAccessSupported = openAccessSupported;
 		this.guestSupported = guestSupported;
+		this.offerOrganisationsSupported = offerOrganisationsSupported;
+		this.defaultOfferOrganisations = defaultOfferOrganisations;
+		this.catalogSupported = catalogSupported;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
-		this.url = url;
+		this.resourceUrl = resourceUrl;
+		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
 	}
 
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, Form form, OLATResource resource,
-			String displayName, Collection<Organisation> defaultOfferOrganisations, boolean allowPaymentMethod,
-			boolean openAccessSupported, boolean guestSupported, boolean readOnly, boolean managedBookings, String url) {
+			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
+			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
+			boolean catalogSupported, boolean readOnly, boolean managedBookings, String resourceUrl, String helpUrl) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
 		this.displayName = displayName;
-		this.defaultOfferOrganisations = defaultOfferOrganisations;
 		this.allowPaymentMethod = allowPaymentMethod;
 		this.openAccessSupported = openAccessSupported;
 		this.guestSupported = guestSupported;
+		this.offerOrganisationsSupported = offerOrganisationsSupported;
+		this.defaultOfferOrganisations = defaultOfferOrganisations;
+		this.catalogSupported = catalogSupported;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
-		this.url = url;
+		this.resourceUrl = resourceUrl;
+		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
@@ -197,6 +207,7 @@ public class AccessConfigurationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("offers.title");
+		setFormContextHelp(helpUrl);
 		
 		String confPage = velocity_root + "/configuration_list.html";
 		offersContainer = FormLayoutContainer.createCustomFormLayout("offers", getTranslator(), confPage);
@@ -205,7 +216,7 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		loadOffers();
 		offersContainer.contextPut("offers", accessInfos);
-		offersContainer.contextPut("extlink", url);
+		offersContainer.contextPut("extlink", resourceUrl);
 		
 		EmptyState emptyState = EmptyStateFactory.create("empty", offersContainer.getFormItemComponent(), this);
 		emptyState.setIconCss("o_icon o_icon_booking");
@@ -217,7 +228,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if (!managedBookings) {
 				addMethodDropdown = uifactory.addDropdownMenu("create.offer", "create.offer", null, formLayout, getTranslator());
 				addMethodDropdown.setElementCssClass("o_sel_accesscontrol_create");
-				addMethodDropdown.setOrientation(DropdownOrientation.normal);
+				addMethodDropdown.setOrientation(DropdownOrientation.right);
 				addMethodDropdown.setExpandContentHeight(true);
 				
 				List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
@@ -508,7 +519,8 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		removeAsListenerAndDispose(openAccessOfferCtrl);
-		openAccessOfferCtrl = new OpenAccessOfferController(ureq, getWindowControl(), openAccessOffer, offerOrganisations, offer != null);
+		openAccessOfferCtrl = new OpenAccessOfferController(ureq, getWindowControl(), openAccessOffer,
+				offerOrganisationsSupported, offerOrganisations, catalogSupported, offer != null);
 		listenTo(openAccessOfferCtrl);
 		String title = translate("offer.open.access.name");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), openAccessOfferCtrl.getInitialComponent(), true, title);
@@ -524,7 +536,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		removeAsListenerAndDispose(guestOfferCtrl);
-		guestOfferCtrl = new GuestOfferController(ureq, getWindowControl(), guestOffer, offer != null);
+		guestOfferCtrl = new GuestOfferController(ureq, getWindowControl(), guestOffer, catalogSupported, offer != null);
 		listenTo(guestOfferCtrl);
 		String title = translate("offer.guest.name");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), guestOfferCtrl.getInitialComponent(), true, title);
@@ -547,7 +559,7 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
 			Collection<Organisation> offerOrganisations = acService.getOfferOrganisations(link.getOffer());
-			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link, offerOrganisations);
+			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, offerOrganisations, catalogSupported);
 			if(editMethodCtrl != null) {
 				listenTo(editMethodCtrl);
 	
@@ -566,7 +578,7 @@ public class AccessConfigurationController extends FormBasicController {
 		removeAsListenerAndDispose(newMethodCtrl);
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
-			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link, defaultOfferOrganisations);
+			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, defaultOfferOrganisations, catalogSupported);
 		}
 		if(newMethodCtrl != null && handler != null) {
 			listenTo(newMethodCtrl);
@@ -596,12 +608,12 @@ public class AccessConfigurationController extends FormBasicController {
 				acService.save(info.getOffer());
 			} else if (info.getOffer().isOpenAccess()) {
 				acService.save(info.getOffer());
-				acService.updateOfferOrganisations(info.getOffer(), info.offerOrganisations);
+				acService.updateOfferOrganisations(info.getOffer(), info.getOfferOrganisations());
 			} else {
 				OfferAccess link = info.getLink();
 				if (link != null) {
 					acService.saveOfferAccess(link);
-					acService.updateOfferOrganisations(info.getOffer(), info.offerOrganisations);
+					acService.updateOfferOrganisations(info.getOffer(), info.getOfferOrganisations());
 				}
 			}
 		}
@@ -774,7 +786,7 @@ public class AccessConfigurationController extends FormBasicController {
 					if (from == null && to == null) {
 						return ICON_ACTIVE + translate("access.active");
 					} else if(from != null && to != null) {
-						return ICON_ACTIVE + translate("access.active.from.to", formatter.formatDate(to), formatter.formatDate(from));
+						return ICON_ACTIVE + translate("access.active.from.to", formatter.formatDate(from), formatter.formatDate(to));
 					} else if(from != null) {
 						return  ICON_ACTIVE + translate("access.active.from", formatter.formatDate(from));
 					} else if(to != null) {

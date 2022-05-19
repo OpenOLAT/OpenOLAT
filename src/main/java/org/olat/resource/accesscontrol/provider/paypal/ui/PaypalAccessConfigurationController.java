@@ -91,8 +91,9 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 	private AccessControlModule acModule;
 	
 	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			Collection<Organisation> offerOrganisations, boolean edit) {
-		super(ureq, wControl, link, offerOrganisations, edit);
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogSupported, edit);
 		vatValues = new String[]{ translate("vat.on") };
 		initForm(ureq);
 	}
