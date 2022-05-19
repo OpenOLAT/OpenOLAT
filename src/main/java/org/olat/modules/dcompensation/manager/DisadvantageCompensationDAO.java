@@ -190,4 +190,29 @@ public class DisadvantageCompensationDAO {
 		List<Long> keys = query.getResultList();
 		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
 	}
+	
+	/**
+	 * Fetch all repository informations.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<DisadvantageCompensation> getDisadvantageCompensations(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select compensation from dcompensation as compensation")
+		  .append(" where compensation.entry.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DisadvantageCompensation.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+	}
+	
+	public int deleteDisadvantageCompensationsByEntry(RepositoryEntryRef entry) {
+		String query = "delete from dcompensation as compensation where compensation.entry.key=:entryKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+	}
 }
