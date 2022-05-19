@@ -184,7 +184,7 @@ public class BookingPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
-		By tokenRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h3>i.o_ac_token_icon");
+		By tokenRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h4>i.o_ac_token_icon");
 		OOGraphene.waitElement(tokenRowBy, browser);
 		return this;
 	}
