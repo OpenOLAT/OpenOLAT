@@ -22,7 +22,6 @@ package org.olat.course.disclaimer.manager;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -50,9 +49,6 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager, Use
 	
 	@Autowired
 	private CourseDisclaimerDAO courseDisclaimerDAO;
-
-	@Autowired
-	private BaseSecurityManager baseSecurityManager;
 	
 	@Autowired
 	private DB dbInstance;
@@ -71,6 +67,12 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager, Use
 	public List<CourseDisclaimerConsent> getConsents(RepositoryEntryRef repositoryEntryRef) {
 		return courseDisclaimerDAO.getConsents(repositoryEntryRef);
 	}
+	
+	@Override
+	public CourseDisclaimerConsent getConsent(RepositoryEntryRef repositoryEntryRef, Identity identity) {
+		return courseDisclaimerDAO.getCourseDisclaimerConsent(repositoryEntryRef, identity);
+	}
+
 
 	@Override
 	public void acceptDisclaimer(RepositoryEntry repositoryEntry, Identity identitiy, Roles roles, boolean disc1Accepted, boolean disc2Accepted) {

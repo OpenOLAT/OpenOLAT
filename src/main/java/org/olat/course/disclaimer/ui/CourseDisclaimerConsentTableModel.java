@@ -19,6 +19,7 @@
  */
 package org.olat.course.disclaimer.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -29,8 +30,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -39,18 +43,18 @@ import org.olat.core.util.StringHelper;
  * @author Alexander Boeckle
  */
 public class CourseDisclaimerConsentTableModel extends DefaultFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>
-implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
+implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, FlexiTableCssDelegate {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseDisclaimerConsentTableModel.class);
 	
+	private Translator translator;	
 	private Locale locale;
-	
 	private List<CourseDisclaimerConsenstPropertiesRow> backupList;
 	
-	public CourseDisclaimerConsentTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public CourseDisclaimerConsentTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
-		
-		this.locale = locale;
+		this.translator = translator;
+		this.locale = translator.getLocale();
 	}
 
 	@Override
@@ -68,7 +72,12 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
 		
 		switch (ConsentCols.values()[col]) {
 			case consent:
-				return row.getConsentDate();
+				Date consentDate = row.getConsentDate();
+				if (consentDate == null) {
+					return translator.translate("consent.rejected");
+				} else {					
+					return row.getConsentDate();
+				}
 			case tools:
 				return row.getToolsLink();
 			default:
@@ -152,5 +161,25 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
 		public String sortKey() {
 			return name();
 		}
+	}
+
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		// mark consents without date as rejected
+		CourseDisclaimerConsenstPropertiesRow consentRow = getObject(pos);
+		if (consentRow.getConsentDate() == null) {			
+			return "o_marked_deleted";
+		}
+		return null;
 	}
 }

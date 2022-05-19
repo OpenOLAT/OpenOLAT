@@ -310,6 +310,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_redo:before { content: $fa-var-repeat; }
 .o_icon_refresh:before { content: $fa-var-refresh; }
 .o_icon_reject:before { content: $fa-var-times; color:$brand-danger; }
+.btn-danger .o_icon_reject:before { color: $btn-danger-color; }
 .o_icon_rejected:before { content: $fa-var-thumbs-down;}
 .o_icon_reminder:before { content: $fa-var-bell-o; }
 .o_icon_remove:before { content: $fa-var-times; }

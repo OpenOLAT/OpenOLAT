@@ -275,6 +275,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				if(disclaimerController == null) {
 					disclaimerController = new CourseDisclaimerConsentOverviewController(ureq, bwControl, repoEntry, toolbarPanel, entryAdmin || memberManagementRight || groupManagementRight);
 					listenTo(disclaimerController);
+				} else {
+					disclaimerController.loadModel();
 				}
 				mainVC.put("content", disclaimerController.getInitialComponent());
 				selectedCtrl = disclaimerController;

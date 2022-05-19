@@ -185,6 +185,15 @@ public class CourseLoggingAction extends BaseLoggingAction {
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node)
 						.addOptional(OlatResourceableType.node));
 	
+	
+	public static final ILoggingAction COURES_DISCLAIMER_ACCEPTED = 
+			new CourseLoggingAction(ActionType.tracking, CrudAction.create, ActionVerb.add, ActionObject.disclaimerConsent).setTypeList(
+			new ResourceableTypeList().addMandatory(OlatResourceableType.course));
+	public static final ILoggingAction COURES_DISCLAIMER_REJECTED = 
+			new CourseLoggingAction(ActionType.tracking, CrudAction.delete, ActionVerb.remove, ActionObject.disclaimerConsent).setTypeList(
+			new ResourceableTypeList().addMandatory(OlatResourceableType.course));
+
+	
 
 	/**
 	 * This static constructor's only use is to set the javaFieldIdForDebug

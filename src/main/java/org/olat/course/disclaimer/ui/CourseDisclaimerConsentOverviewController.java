@@ -170,7 +170,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		columnsModel.addFlexiColumnModel(toolsCol);
 
 
-		tableModel = new CourseDisclaimerConsentTableModel(columnsModel, getLocale());
+		tableModel = new CourseDisclaimerConsentTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "consents", tableModel, 25, false, getTranslator(),
 				formLayout);
 		tableEl.setCustomizeColumns(true);
@@ -179,6 +179,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course_disclaimer_consents_table-v2");
+		tableEl.setCssDelegate(tableModel);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);

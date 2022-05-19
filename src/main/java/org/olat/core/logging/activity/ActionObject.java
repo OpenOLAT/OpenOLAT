@@ -51,6 +51,7 @@ public enum ActionObject {
 	comment,
 	course,
 	cpgetfile,
+	disclaimerConsent,
 	editor,
 	efficency,
 	feed,

@@ -91,6 +91,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
+import org.olat.course.disclaimer.event.CourseDisclaimerEvent;
 import org.olat.course.disclaimer.ui.CourseDisclaimerConsentController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -135,7 +136,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private static final Logger log = Tracing.createLoggerFor(RunMainController.class);
 
 	public static final Event RELOAD_COURSE_NODE = new Event("reload-course-node");
-	public static final Event COURSE_DISCLAIMER_ACCEPTED = new Event("course-disclaimer-accepted");
 	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
@@ -870,11 +870,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				doAssessmentConfirmation(false);
 			}
 		} else if (source == disclaimerController) {
-			if (event == Event.DONE_EVENT) {
+			if (event == CourseDisclaimerEvent.ACCEPTED) {
 				disclaimerAccepted = true;
 				coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
 				coursemain.setDirty(true);
-				fireEvent(ureq, COURSE_DISCLAIMER_ACCEPTED);
+				// forward to course runtime
+				fireEvent(ureq, event);
+			} else if (event == CourseDisclaimerEvent.REJECTED) {
+				disclaimerAccepted = false;
+				// add empty panel just in case to certainly display nothing
+				coursemain.put("coursemain", new Panel("empty"));
+				coursemain.setDirty(true);
+				// forward to course runtime
+				fireEvent(ureq, event);
 			}
 		}
 	}

@@ -70,6 +70,12 @@
 	.o_marked {
 		 font-weight: bold;
 	}
+	.o_marked_deleted {
+		font-style: italic;
+		color: $text-muted;
+		text-decoration: line-through;
+		text-decoration-color: $brand-danger;
+	}
 
 	.table {
 		margin-bottom: 0;
@@ -82,6 +88,7 @@
 			text-decoration: none;
 		}
 	}
+	
 	/* action cols must have a minimum width to users can touch it */
 	.o_col_action {
 		.o_icon_actions {
