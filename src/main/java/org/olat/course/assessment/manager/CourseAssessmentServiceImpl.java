@@ -555,16 +555,25 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		List<RepositoryEntry> courseEntries = courseAssessmentQueries.loadLpCoursesLifecycle(new Date());
 		log.debug("Evaluate lifecycle over for {} courses.", courseEntries.size());
 		for (RepositoryEntry courseEntry : courseEntries) {
-			ICourse course = CourseFactory.loadCourse(courseEntry);
-			CourseNode rootNode = course.getRunStructure().getRootNode();
-			if (STRootPassedEvaluator.getActivePassedConfigs(rootNode.getModuleConfiguration()) > 0) {
-				log.debug("Evaluate lifecycle over for courses {}", courseEntry);
-				List<AssessmentEntry> assessmentEntries = assessmentService.getRootEntriesWithoutPassed(courseEntry);
-				for (AssessmentEntry assessmentEntry : assessmentEntries) {
-					evaluateAll(course.getCourseEnvironment(), rootNode, assessmentEntry.getIdentity(), assessmentEntry);
-					log.debug("Evaluated score accounting after lifecycle over in course {} for {}",courseEntry,
-							assessmentEntry.getIdentity());
-				}
+			try {
+				tryEvaluateLifecycleOver(courseEntry);
+			} catch (Exception e) {
+				// Just ignore
+			}
+		}
+	}
+
+	protected void tryEvaluateLifecycleOver(RepositoryEntry courseEntry) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		if (STRootPassedEvaluator.getActivePassedConfigs(rootNode.getModuleConfiguration()) > 0) {
+			log.debug("Evaluate lifecycle over for courses {}", courseEntry);
+			List<AssessmentEntry> assessmentEntries = assessmentService.getRootEntriesWithoutPassed(courseEntry);
+			for (AssessmentEntry assessmentEntry : assessmentEntries) {
+				evaluateAll(course.getCourseEnvironment(), rootNode, assessmentEntry.getIdentity(), assessmentEntry);
+				log.debug("Evaluated score accounting after lifecycle over in course {} for {}",courseEntry,
+						assessmentEntry.getIdentity());
+			
 			}
 		}
 	}
