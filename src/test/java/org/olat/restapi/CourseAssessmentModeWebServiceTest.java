@@ -75,7 +75,6 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
-	
 	@Before
 	public void setUp() throws Exception {
 		try {
@@ -121,6 +120,40 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		for(AssessmentModeVO modeVo:modeVoes) {
 			Assert.assertEquals(courseEntry.getKey(), modeVo.getRepositoryEntryKey());
 		}
+	}
+	
+	@Test
+	public void getAssessmentModeByKey()
+	throws IOException, URISyntaxException {
+		
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(courseEntry);
+		mode.setName("Get course assessment");
+		mode.setBegin(new Date());
+		mode.setEnd(new Date());
+		mode.setTargetAudience(Target.course);
+		mode.setManagedFlagsString("all");
+		
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		
+		// Search with the external ID
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").path(savedMode.getKey().toString())
+				.build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+
+		AssessmentModeVO modeVo = conn.parse(response.getEntity(), AssessmentModeVO.class);
+		Assert.assertNotNull(modeVo);
+		Assert.assertEquals(savedMode.getKey(), modeVo.getKey());
+		Assert.assertEquals("Get course assessment", modeVo.getName());
+
+		conn.shutdown();
 	}
 	
 	@Test

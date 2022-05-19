@@ -140,7 +140,7 @@ public class CourseAssessmentModeWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The resource not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getAssessmentMode(@PathParam("identityKey") Long assessmentKey, @Context HttpServletRequest request) {
+	public Response getAssessmentMode(@PathParam("assessmentKey") Long assessmentKey, @Context HttpServletRequest request) {
 		if(!isAdministrator(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}

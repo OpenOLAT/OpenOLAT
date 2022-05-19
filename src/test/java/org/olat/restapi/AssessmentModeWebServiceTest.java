@@ -117,6 +117,41 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void getAssessmentModeByKey()
+	throws IOException, URISyntaxException {
+		
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
+		mode.setName("Get assessment");
+		mode.setBegin(new Date());
+		mode.setEnd(new Date());
+		mode.setTargetAudience(Target.course);
+		mode.setManagedFlagsString("all");
+		
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(savedMode);
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		
+		// Search with the external ID
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("assessmentmodes").path(savedMode.getKey().toString())
+				.build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+
+		AssessmentModeVO modeVo = conn.parse(response.getEntity(), AssessmentModeVO.class);
+		Assert.assertNotNull(modeVo);
+		Assert.assertEquals(savedMode.getKey(), modeVo.getKey());
+		Assert.assertEquals("Get assessment", modeVo.getName());
+
+		conn.shutdown();
+	}
+	
+	@Test
 	public void findAssessmentModesByExternalId()
 	throws IOException, URISyntaxException {
 		
