@@ -8,10 +8,10 @@
 	#foreach($offer in $offers)
 		<div class="o_ac_offer o_block_bottom">
 			<div class="o_ac_icon_col">
-				<h3><i class="o_icon o_icon-fw #if($offer.iconCss)${offer.iconCss}_icon#end "> </i></h3>
+				<h4><i class="o_icon o_icon-fw #if($offer.iconCss)${offer.iconCss}_icon#end "> </i></h4>
 			</div>
 			<div class="o_ac_offer_col">
-				<h3>${offer.name}</h3>
+				<h4>${offer.name}</h4>
 				
 				#if($offer.dates)
 					<div>
@@ -55,11 +55,11 @@
 					</div>
 					<div class="form-control-static col-sm-9" id="o_ac_url_${offer.link.key}">
 						<div class="o_copy_code o_nowrap">
-							<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+							<a href="javascript:;" id="o_extlink_${offer.link.key}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 							<input type="text" value="$extlink" onclick="this.select()"/>
 							<script>
 							jQuery(function() {
-								o_QRCodePopup('o_extlink', '$extlink', 'right');
+								o_QRCodePopup('o_extlink_${offer.link.key}', '$extlink', 'right');
 							});
 							</script>
 						</div>
