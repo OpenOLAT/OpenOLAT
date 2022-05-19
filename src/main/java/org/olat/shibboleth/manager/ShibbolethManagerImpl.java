@@ -74,7 +74,7 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 		Identity identity = createUserAndPersist(username, shibbolethUniqueID, language, organisation, shibbolethAttributes);
 		if(organisations != null && organisations.size() > 1) {
 			for(int i=1; i<organisations.size(); i++) {
-				organisationService.addMember(organisations.get(i), identity, OrganisationRoles.author);
+				organisationService.addMember(organisations.get(i), identity, OrganisationRoles.user);
 			}
 		}
 		addToAuthorsGroup(identity, organisations, shibbolethAttributes);
