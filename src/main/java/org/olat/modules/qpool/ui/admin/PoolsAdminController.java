@@ -50,8 +50,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
@@ -80,7 +78,7 @@ public class PoolsAdminController extends FormBasicController {
 	private GroupController groupCtrl;
 	private CloseableModalController cmc;
 	private PoolEditController poolEditCtrl;
-	private DialogBoxController confirmDeleteCtrl;
+	private ConfirmDeletePoolController confirmDeleteCtrl;
 	
 	@Autowired
 	private QPoolService qpoolService;
@@ -166,19 +164,22 @@ public class PoolsAdminController extends FormBasicController {
         qpoolService.removeOwners(list, Collections.singletonList(selectedPool));
 			}
 		}	else if(source == confirmDeleteCtrl) {
-			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				Pool pool = (Pool)confirmDeleteCtrl.getUserObject();
-				doDelete(ureq, pool);
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reloadModel();
+				fireEvent(ureq, new QPoolEvent(QPoolEvent.POOL_DELETED));
 			}
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(poolEditCtrl);
 		removeAsListenerAndDispose(groupCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteCtrl = null;
 		poolEditCtrl = null;
 		groupCtrl = null;
 		cmc = null;
@@ -190,16 +191,14 @@ public class PoolsAdminController extends FormBasicController {
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, Pool pool) {
+		confirmDeleteCtrl = new ConfirmDeletePoolController(ureq, getWindowControl(), pool);
+		listenTo(confirmDeleteCtrl);
+		
 		String title = translate("delete.pool");
-		String text = translate("delete.pool.confirm", new String[]{ pool.getName() });
-		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
-		confirmDeleteCtrl.setUserObject(pool);
-	}
-	
-	private void doDelete(UserRequest ureq, Pool pool) {
-		qpoolService.deletePool(pool);
-		reloadModel();
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.POOL_DELETED));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				confirmDeleteCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);	
 	}
 	
 	private void doEditPool(UserRequest ureq, Pool pool) {

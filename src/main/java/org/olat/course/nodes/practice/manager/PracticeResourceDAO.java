@@ -77,6 +77,54 @@ public class PracticeResourceDAO {
 				.getResultList();
 	}
 	
+	public List<PracticeResource> getResources(Pool pool) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rsrc from practiceresource as rsrc")
+		  .append(" inner join fetch rsrc.repositoryEntry as v")
+		  .append(" inner join fetch rsrc.pool as pool")
+		  .and().append(" pool.key=:poolKey");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PracticeResource.class)
+				.setParameter("poolKey", pool.getKey())
+				.getResultList();
+	}
+	
+	public List<PracticeResource> getResources(QuestionItemCollection collection) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rsrc from practiceresource as rsrc")
+		  .append(" inner join fetch rsrc.repositoryEntry as v")
+		  .append(" inner join fetch rsrc.itemCollection as iCollection")
+		  .and().append(" iCollection.key=:collectionKey");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PracticeResource.class)
+				.setParameter("collectionKey", collection.getKey())
+				.getResultList();
+	}
+	
+	public List<PracticeResource> getResourcesOfTest(RepositoryEntry testEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rsrc from practiceresource as rsrc")
+		  .append(" inner join fetch rsrc.repositoryEntry as v")
+		  .append(" inner join fetch rsrc.testEntry as test")
+		  .and().append(" test.key=:repoEntryKey");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PracticeResource.class)
+				.setParameter("repoEntryKey", testEntry.getKey())
+				.getResultList();
+	}
+	
+	public List<PracticeResource> getResourcesOfSharedResource(OLATResource resource) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rsrc from practiceresource as rsrc")
+		  .append(" inner join fetch rsrc.repositoryEntry as v")
+		  .append(" inner join fetch rsrc.resourceShare as share")
+		  .and().append(" share.key=:resourceKey");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PracticeResource.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+	}
+	
 	public void deleteResource(PracticeResource resource) {
 		PracticeResource reloadedResource = dbInstance.getCurrentEntityManager()
 				.getReference(PracticeResourceImpl.class, resource.getKey());

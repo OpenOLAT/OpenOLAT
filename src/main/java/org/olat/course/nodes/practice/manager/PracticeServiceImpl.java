@@ -48,6 +48,8 @@ import org.olat.course.nodes.practice.model.PracticeResourceInfos;
 import org.olat.course.nodes.practice.model.RankedIdentity;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.group.BusinessGroup;
+import org.olat.group.DeletableGroupData;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentItemSessionDAO;
@@ -69,6 +71,7 @@ import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +88,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  *
  */
 @Service
-public class PracticeServiceImpl implements PracticeService {
+public class PracticeServiceImpl implements PracticeService, RepositoryEntryDataDeletable, DeletableGroupData {
 	
 	private static final Logger log = Tracing.createLoggerFor(PracticeServiceImpl.class);
 
@@ -138,12 +141,40 @@ public class PracticeServiceImpl implements PracticeService {
 	public void deleteResource(PracticeResource resource) {
 		practiceResourceDao.deleteResource(resource);
 	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<PracticeResource> resources = practiceResourceDao.getResourcesOfTest(re);
+		for(PracticeResource resource:resources) {
+			practiceResourceDao.deleteResource(resource);
+		}
+		return true;
+	}
+
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		List<PracticeResource> resources = practiceResourceDao.getResourcesOfSharedResource(group.getResource());
+		for(PracticeResource resource:resources) {
+			practiceResourceDao.deleteResource(resource);
+		}
+		return true;
+	}
 
 	@Override
 	public List<PracticeResource> getResources(RepositoryEntry courseEntry, String subIdent) {
 		return practiceResourceDao.getResources(courseEntry, subIdent);
 	}
 	
+	@Override
+	public List<PracticeResource> getResources(Pool pool) {
+		return practiceResourceDao.getResources(pool);
+	}
+
+	@Override
+	public List<PracticeResource> getResources(QuestionItemCollection collection) {
+		return practiceResourceDao.getResources(collection);
+	}
+
 	@Override
 	public List<PracticeResourceInfos> getResourcesInfos(IdentityRef identity, RepositoryEntry courseEntry, String subIdent) {
 		List<PracticeResource> resources = getResources(courseEntry, subIdent);

@@ -21,6 +21,7 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -34,6 +35,8 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.practice.PracticeResource;
+import org.olat.course.nodes.practice.PracticeService;
 import org.olat.course.nodes.practice.ui.PracticeEditController;
 import org.olat.course.nodes.practice.ui.PracticeParticipantController;
 import org.olat.course.nodes.practice.ui.PracticeRunController;
@@ -42,6 +45,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 
@@ -111,6 +115,22 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
+	}
+	
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
+		// 1) Delete all assessment test sessions (QTI 2.1)
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(courseEntry, getIdent());
+		
+		// Delete practice resources
+		PracticeService practiceService = CoreSpringFactory.getImpl(PracticeService.class);
+		List<PracticeResource> practiceResources = practiceService.getResources(courseEntry, getIdent());
+		for(PracticeResource practiceResource:practiceResources) {
+			practiceService.deleteResource(practiceResource);
+		}
 	}
 	
 	@Override

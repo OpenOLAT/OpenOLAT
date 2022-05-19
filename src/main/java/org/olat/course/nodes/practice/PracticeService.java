@@ -55,10 +55,26 @@ public interface PracticeService {
 	public void deleteResource(PracticeResource resource);
 	
 	
-	
+	/**
+	 * @param courseEntry The course repository entry
+	 * @param subIdent The sub-identifier of the course element
+	 * @return A list of practice resources used by the course element
+	 */
 	public List<PracticeResource> getResources(RepositoryEntry courseEntry, String subIdent);
 	
 	public List<PracticeResourceInfos> getResourcesInfos(IdentityRef identity, RepositoryEntry courseEntry, String subIdent);
+	
+	/**
+	 * @param pool A pool
+	 * @return The list of practice resources which used the specified pool
+	 */
+	public List<PracticeResource> getResources(Pool pool);
+	
+	/**
+	 * @param collection An item collection of the question pool
+	 * @return The list of practice resources which used the specified collection
+	 */
+	public List<PracticeResource> getResources(QuestionItemCollection collection);
 	
 	
 	public List<PracticeItem> generateItems(List<PracticeResource> resources,

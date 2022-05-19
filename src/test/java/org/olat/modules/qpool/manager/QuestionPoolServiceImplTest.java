@@ -99,14 +99,14 @@ public class QuestionPoolServiceImplTest {
 	public void shouldSaveRating() {
 		when(reviewServiceMock.decideStatus(any(), any())).thenReturn(new ReviewDecision(false, null));
 
-		sut.rateItemInReview(item, identityDummy, new Float(RATING_FIVE), null);
+		sut.rateItemInReview(item, identityDummy, Float.valueOf(RATING_FIVE), null);
 		
 		verify(commentAndRatingServiceMock).createRating(identityDummy, item, null, RATING_FIVE);
 	}
 	
 	@Test
 	public void shouldSaveRatingOnlyIfPresent() {
-		sut.rateItemInReview(item, identityDummy, new Float(NO_RATING), null);
+		sut.rateItemInReview(item, identityDummy, Float.valueOf(NO_RATING), null);
 		
 		verify(commentAndRatingServiceMock, never()).createRating(identityDummy, item, null, NO_RATING);	
 	}
@@ -115,7 +115,7 @@ public class QuestionPoolServiceImplTest {
 	public void shouldSaveRatingOnlyIfStatusReview() {
 		item.setQuestionStatus(QuestionStatus.draft);
 		
-		sut.rateItemInReview(item, identityDummy, new Float(NO_RATING), null);
+		sut.rateItemInReview(item, identityDummy, Float.valueOf(NO_RATING), null);
 		
 		verify(commentAndRatingServiceMock, never()).createRating(identityDummy, item, null, NO_RATING);	
 	}
@@ -136,7 +136,7 @@ public class QuestionPoolServiceImplTest {
 	
 	@Test
 	public void shouldSetNewStatusIfChanged() {
-		Float rating = new Float(RATING_FIVE);
+		Float rating = Float.valueOf(RATING_FIVE);
 		QuestionStatus status = QuestionStatus.finalVersion;
 		ReviewDecision decision = new ReviewDecision(true, status);
 		when(reviewServiceMock.decideStatus(item, rating)).thenReturn(decision);
@@ -150,7 +150,7 @@ public class QuestionPoolServiceImplTest {
 	public void shouldSetNewStatusOnlyIfChanged() {
 		QuestionStatus status = QuestionStatus.draft;
 		item.setQuestionStatus(status);
-		Float rating = new Float(RATING_FIVE);
+		Float rating = Float.valueOf(RATING_FIVE);
 		ReviewDecision decision = new ReviewDecision(false, QuestionStatus.finalVersion);
 		when(reviewServiceMock.decideStatus(item, rating)).thenReturn(decision);
 
