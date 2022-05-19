@@ -238,6 +238,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	}
 
 	private void addLicense(VFSMetadata meta, Identity id) {
+		if (meta.isDirectory()) return;
+		
 		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
 		FolderLicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
