@@ -19,7 +19,7 @@
 					</td> 
 				</tr> 
 				<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
+					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.success.status")</th>
 					<td>
 					#if($hasPassedValue && $passed)	
 						<i class="o_icon o_icon_passed"></i> 

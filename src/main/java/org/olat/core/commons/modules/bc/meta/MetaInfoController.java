@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MetaInfoController extends FormBasicController {
 	private VFSItem item;
 	private FormLink moreMetaDataLink;
-	private StaticTextElement publisher, creator, sourceEl, city, pages, language, url, publicationDateEl;;
+	private StaticTextElement publisher, creator, sourceEl, city, pages, language, url, publicationDateEl;
 	private StaticTextElement licenseEl;
 	private StaticTextElement licensorEl;
 	private StaticTextElement licenseFreetextEl;
@@ -140,17 +140,19 @@ public class MetaInfoController extends FormBasicController {
 		// license
 		if (licenseModule.isEnabled(licenseHandler)) {
 			License license = vfsRepositoryService.getOrCreateLicense(meta, getIdentity());
-			boolean isNoLicense = !licenseService.isNoLicense(license.getLicenseType());
-			boolean isFreetext = licenseService.isFreetext(license.getLicenseType());
-
-			licenseEl = uifactory.addStaticTextElement("mf.license",
-					LicenseUIFactory.translate(license.getLicenseType(), getLocale()), formLayout);
-			if (isNoLicense) {
-				licensorEl = uifactory.addStaticTextElement("mf.licensor", license.getLicensor(), formLayout);
-			}
-			if (isFreetext) {
-				licenseFreetextEl = uifactory.addStaticTextElement("mf.freetext",
-						LicenseUIFactory.getFormattedLicenseText(license), formLayout);
+			if (license != null) {
+				boolean isNoLicense = !licenseService.isNoLicense(license.getLicenseType());
+				boolean isFreetext = licenseService.isFreetext(license.getLicenseType());
+				
+				licenseEl = uifactory.addStaticTextElement("mf.license",
+						LicenseUIFactory.translate(license.getLicenseType(), getLocale()), formLayout);
+				if (isNoLicense) {
+					licensorEl = uifactory.addStaticTextElement("mf.licensor", license.getLicensor(), formLayout);
+				}
+				if (isFreetext) {
+					licenseFreetextEl = uifactory.addStaticTextElement("mf.freetext",
+							LicenseUIFactory.getFormattedLicenseText(license), formLayout);
+				}
 			}
 		}
 

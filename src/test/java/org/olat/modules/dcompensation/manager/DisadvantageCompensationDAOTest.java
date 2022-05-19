@@ -204,5 +204,26 @@ public class DisadvantageCompensationDAOTest extends OlatTestCase {
 			.containsExactlyInAnyOrder(compensation1, compensation2);
 	}
 	
+	@Test
+	public void deleteDisadvantageCompensationsByEntry() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-16");
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-18");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Date approval = DateUtils.addDays(new Date(), -21);
+		
+		DisadvantageCompensation compensation = disadvantageCompensationDao
+				.createDisadvantageCompensation(identity, 15, "Not responsible", approval, creator, entry, subIdent, "Element-1");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(compensation);
+		
+		int deletedCompensations = disadvantageCompensationDao.deleteDisadvantageCompensationsByEntry(entry);
+		Assert.assertEquals(1, deletedCompensations);
+		
+		boolean creatorCompensations = disadvantageCompensationDao
+				.isActiveDisadvantagedUser(creator, entry, List.of(subIdent));
+		Assert.assertFalse(creatorCompensations);
+	}
+	
 
 }

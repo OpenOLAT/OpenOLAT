@@ -96,6 +96,14 @@ public class DisadvantageCompensationAuditLogDAO {
 				.getResultList();
 	}
 	
+	public int deleteDisadvantageCompensationsAuditLogsByEntry(RepositoryEntryRef entry) {
+		String query = "delete from dcompensationauditlog as auditLog where auditLog.entryKey=:entryKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+	}
+	
 	public String toXml(DisadvantageCompensationImpl compensation) {
 		if(compensation == null) return null;
 		return disadvantageCompensationXStream.toXML(compensation);

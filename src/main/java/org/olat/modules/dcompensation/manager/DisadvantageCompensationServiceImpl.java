@@ -30,6 +30,7 @@ import org.olat.modules.dcompensation.DisadvantageCompensationAuditLog.Action;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.model.DisadvantageCompensationImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class DisadvantageCompensationServiceImpl implements DisadvantageCompensationService {
+public class DisadvantageCompensationServiceImpl implements DisadvantageCompensationService, RepositoryEntryDataDeletable {
 	
 	@Autowired
 	private DisadvantageCompensationDAO disadvantageCompensationDao;
@@ -69,6 +70,13 @@ public class DisadvantageCompensationServiceImpl implements DisadvantageCompensa
 		return disadvantageCompensationDao.getDisadvantageCompensations(identity);
 	}
 	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		disadvantageCompensationAuditLogDao.deleteDisadvantageCompensationsAuditLogsByEntry(re);
+		disadvantageCompensationDao.deleteDisadvantageCompensationsByEntry(re);
+		return true;
+	}
+
 	@Override
 	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, String subIdent) {
 		return disadvantageCompensationDao.getActiveDisadvantageCompensations(entry, subIdent);
