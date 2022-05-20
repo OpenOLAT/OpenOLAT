@@ -181,7 +181,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 		
-		if ((entryAdmin || principal || memberManagementRight || groupManagementRight) && courseModule.isDisclaimerEnabled()) {
+		if ((entryAdmin || principal || memberManagementRight || groupManagementRight)
+				&& courseModule.isDisclaimerEnabled() && coachCourseEnv.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled()) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.consents"), CMD_CONSENTS);
 			node.setAltText("menu.consents.alt");
 			node.setCssClass("o_sel_memebersmgt_consents");

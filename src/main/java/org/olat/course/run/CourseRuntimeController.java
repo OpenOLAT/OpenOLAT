@@ -895,6 +895,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		boolean hasDisclaimer = courseModule.isDisclaimerEnabled() 
+				&& cc.isDisclaimerEnabled()
 				&& userCourseEnv != null
 				&& disclaimerManager.isAccessGranted(getRepositoryEntry(), getIdentity(), userCourseEnv.getIdentityEnvironment().getRoles());
 		if (hasDisclaimer) {

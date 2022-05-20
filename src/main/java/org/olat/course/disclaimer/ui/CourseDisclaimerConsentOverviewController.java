@@ -241,7 +241,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 				if (event.getCommand().equals(FlexiTableSearchEvent.QUICK_SEARCH)) {
 					FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
 					String searchString = ftse.getSearch();
-					tableModel.search(searchString, ureq);
+					tableModel.search(searchString);
 					tableEl.setEmptyTableSettings("error.no.consent.found.filter", null, "o_icon_disclaimer");
 				} else if (event.getCommand().equals(FlexiTableSearchEvent.RESET.getCommand())) {
 					tableModel.resetSearch();
