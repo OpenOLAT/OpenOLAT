@@ -2557,7 +2557,7 @@ var OOEdusharing = {
 	},
 		
 	replaceWithSpinner: function(node, width, height) {
-		var spinnerHtml = "<div style='";
+		var spinnerHtml = "<div class='BGlossarIgnore' style='";
 		if (width > 0) {
 			spinnerHtml += "width:" + width + "px;";
 		}
@@ -2646,6 +2646,7 @@ var OOEdusharing = {
 	 */
 	render: function() {
 		var esNodes = jQuery("[data-es_identifier]");
+		esNodes.addClass("BGlossarIgnore");
 		if (esNodes.length > 0) {
 			esNodes.each(function() {
 				var node = jQuery( this );
