@@ -26,14 +26,12 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -46,6 +44,8 @@ public class CourseDisclaimerConsentTableModel extends DefaultFlexiTableDataMode
 implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, FlexiTableCssDelegate {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseDisclaimerConsentTableModel.class);
+	
+	private static final ConsentCols[] COLS = ConsentCols.values();
 	
 	private Translator translator;	
 	private Locale locale;
@@ -70,14 +70,13 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, F
 			return row.getIdentityProp(propPos);
 		}
 		
-		switch (ConsentCols.values()[col]) {
+		switch (COLS[col]) {
 			case consent:
 				Date consentDate = row.getConsentDate();
 				if (consentDate == null) {
 					return translator.translate("consent.rejected");
-				} else {					
-					return row.getConsentDate();
-				}
+				}				
+				return row.getConsentDate();
 			case tools:
 				return row.getToolsLink();
 			default:
@@ -87,11 +86,13 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, F
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<CourseDisclaimerConsenstPropertiesRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
-		super.setObjects(rows);
+		if(orderBy != null) {
+			List<CourseDisclaimerConsenstPropertiesRow> rows = new CourseDisclaimerConsentTableSortableDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 	
-	public void search(final String searchString, UserRequest ureq) {
+	public void search(final String searchString) {
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			try {
 				List<CourseDisclaimerConsenstPropertiesRow> filteredList;
@@ -108,10 +109,7 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, F
 				}
 				super.setObjects(filteredList);
 			} catch (Exception e) {
-				resetSearch();
-				log.error("", ureq.getUserSession().getIdentity());
-				log.error("Searchstring: ", searchString);
-				log.error("", e);
+				log.error("Searchstring: {}", searchString, e);
 			}
 		} else {
 			resetSearch();
@@ -154,7 +152,7 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, F
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this == consent;
 		}
 
 		@Override
