@@ -148,7 +148,7 @@ public class BookingPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_guest_form");
 		
-		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h3>i.o_ac_guest_icon");
+		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h4>i.o_ac_guest_icon");
 		OOGraphene.waitElement(publicRowBy, browser);
 		return this;
 	}
@@ -161,7 +161,7 @@ public class BookingPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_open_form");
 		
-		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h3");
+		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h4");
 		OOGraphene.waitElement(publicRowBy, browser);
 		return this;
 	}
