@@ -192,7 +192,6 @@ public class TUConfigForm extends FormBasicController {
 				allOk &= false;
 			} else if (url.getHost().startsWith(Settings.getServerDomainName())) {
 				thost.setErrorKey("error.internal", true);
-				allOk &= false;
 			}
 		} catch (MalformedURLException e) {
 			thost.setErrorKey("TUConfigForm.invalidurl", null);
