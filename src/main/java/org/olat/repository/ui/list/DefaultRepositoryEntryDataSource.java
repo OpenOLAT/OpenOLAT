@@ -161,10 +161,17 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				String value = ((FlexiTableExtendedFilter)filter).getValue();
 				if("closed".equals(value)) {
 					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.closed });
-				} else {
-					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+				} else if("active".equals(value)) {
+					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.published });
+				} else if("preperation".equals(value)) {
+					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToCoachPublished());
 				}
 				break;
+			case DATES:
+				List<String> filterVals = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (filterVals != null) {
+					filterVals.forEach(filterVal -> searchParams.addFilter(Filter.valueOf(filterVal)));
+				}
 			case EDUCATIONALTYPE:
 				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
 				searchParams.setEducationalTypeKeys(educationalTypes);
@@ -173,7 +180,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				searchParams.setAuthor(filter.getValue());
 				break;
 			default:
-				// DATES, BOOKING, PASSED are all old style filters
+				// BOOKING, PASSED are all old style filters
 				String filterVal = ((FlexiTableExtendedFilter)filter).getValue();
 				if(filterVal != null) {
 					searchParams.addFilter(Filter.valueOf(filterVal));

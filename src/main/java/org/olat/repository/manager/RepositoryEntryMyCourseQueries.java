@@ -257,7 +257,29 @@ public class RepositoryEntryMyCourseQueries {
 				needIdentityKey |= appendFiltersInWhereClause(filter, sb);
 			}
 		}
-
+		if(params.isLifecycleFilterDefined()) {
+			boolean or = false;
+			sb.append(" and (");
+			if (params.getFilters().contains(Filter.currentCourses)) {
+				sb.append(" lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
+				or = true;
+			}
+			if (params.getFilters().contains(Filter.upcomingCourses)) {
+				if (or) {
+					sb.append(" or ");
+				}
+				sb.append(" lifecycle.validFrom>=:now");
+				or = true;
+			}
+			if (params.getFilters().contains(Filter.oldCourses)) {
+				if (or) {
+					sb.append(" or ");
+				}
+				sb.append(" lifecycle.validTo<=:now");
+			}
+			sb.append(")");
+		}
+		
 		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
 			sb.append(" and exists (select el.key from curriculumelement el, repoentrytogroup rel")
 			  .append("   where el.curriculum.key in (:curriculumKeys) and rel.entry.key=v.key and el.group.key=rel.group.key")
@@ -549,15 +571,6 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" and exists (select oresname.key from ").append(OLATResourceImpl.class.getName()).append(" as oresname")
 				  .append("    where oresname.key=v.olatResource.key and oresname.resName='CourseModule'")
 				  .append(" )");
-				break;
-			case currentCourses:
-				sb.append(" and lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
-				break;
-			case upcomingCourses:
-				sb.append(" and lifecycle.validFrom>=:now");
-				break;
-			case oldCourses:
-				sb.append(" and lifecycle.validTo<=:now");
 				break;
 			case passed:
 				needIdentityKey = true;

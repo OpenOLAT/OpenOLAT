@@ -320,8 +320,17 @@ public class RepositoryEntryListController extends FormBasicController
 			tabs.add(bookmarkTab);
 		}
 		
-		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.current.courses"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+		FlexiFiltersTab prepTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Preparation", translate("search.preparation"),
+				TabSelectionBehavior.reloadData, List.of(
+						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
+						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "preparation")));
+		prepTab.setElementCssClass("o_sel_mycourses_my");
+		tabs.add(prepTab);
+		
+		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.active"),
+				TabSelectionBehavior.reloadData, List.of(
+						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
+						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "active")));
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
@@ -372,11 +381,10 @@ public class RepositoryEntryListController extends FormBasicController
 				FilterButton.OWNED.name(), myResourcesKeyValue, true));
 
 		SelectionValues coursesValues = new SelectionValues();
-		coursesValues.add(SelectionValues.entry(Filter.onlyCourses.name(), translate("filter.only.courses")));
-		coursesValues.add(SelectionValues.entry(Filter.currentCourses.name(), translate("filter.current.courses")));
-		coursesValues.add(SelectionValues.entry(Filter.upcomingCourses.name(), translate("filter.upcoming.courses")));
-		coursesValues.add(SelectionValues.entry(Filter.oldCourses.name(), translate("filter.old.courses")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.timeline"),
+		coursesValues.add(SelectionValues.entry(Filter.currentCourses.name(), translate("filter.execution.period.current")));
+		coursesValues.add(SelectionValues.entry(Filter.upcomingCourses.name(), translate("filter.execution.period.upcoming")));
+		coursesValues.add(SelectionValues.entry(Filter.oldCourses.name(), translate("filter.execution.period.finished")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.execution.period"),
 				FilterButton.DATES.name(), coursesValues, true));
 
 		SelectionValues bookingValues = new SelectionValues();
@@ -398,6 +406,7 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
+		lifecycleValues.add(SelectionValues.entry("preparation", translate("cif.resources.status.preparation")));
 		lifecycleValues.add(SelectionValues.entry("active", translate("cif.resources.status.active")));
 		lifecycleValues.add(SelectionValues.entry("closed", translate("cif.resources.status.closed")));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
