@@ -163,7 +163,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.closed });
 				} else if("active".equals(value)) {
 					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.published });
-				} else if("preperation".equals(value)) {
+				} else if("preparation".equals(value)) {
 					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToCoachPublished());
 				}
 				break;
