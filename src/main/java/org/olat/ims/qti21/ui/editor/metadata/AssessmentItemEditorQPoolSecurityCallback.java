@@ -66,6 +66,21 @@ public class AssessmentItemEditorQPoolSecurityCallback implements QPoolSecurityC
 	}
 
 	@Override
+	public boolean canNewQuestions() {
+		return false;
+	}
+
+	@Override
+	public boolean canEditQuestions() {
+		return false;
+	}
+
+	@Override
+	public boolean canShareQuestions() {
+		return false;
+	}
+
+	@Override
 	public boolean canCreateTest() {
 		return false;
 	}

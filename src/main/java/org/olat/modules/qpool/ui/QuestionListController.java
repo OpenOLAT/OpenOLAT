@@ -216,12 +216,14 @@ public class QuestionListController extends AbstractItemListController implement
 			updateStatusFilter();
 		}
 		
-		if(getSource().isCreateEnabled()) {
-			newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
-			newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");
+		if(getSecurityCallback().canNewQuestions()) {
+			if(getSource().isCreateEnabled()) {
+				newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
+				newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");			
+			}
+			importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
+			importItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_import");
 		}
-		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
-		importItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_import");
 		
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
@@ -230,26 +232,34 @@ public class QuestionListController extends AbstractItemListController implement
 			createTest = uifactory.addFormLink("create.test", formLayout, Link.BUTTON);
 		}
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
-		if (getSecurityCallback().canUsePools() || getSecurityCallback().canUseGroups()) {
-			shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		
+		// Share / unshare items
+		if(getSecurityCallback().canShareQuestions()) {
+			if (getSecurityCallback().canUsePools() || getSecurityCallback().canUseGroups()) {
+				shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+			}
+			if(getSource().isRemoveEnabled()) {
+				removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
+			}
 		}
-		if(getSource().isRemoveEnabled()) {
-			removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
-		}
-		if(getSource().isCopyEnabled()) {
-			copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
-		}
-		if(getSource().isImportEnabled()) {
-			convertItem = uifactory.addFormLink("convert.item", formLayout, Link.BUTTON);
-		}
-		if(getSource().isAuthorRightsEnable()) {
-			authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
-		}
-		if(getSource().isDeleteEnabled()) {
-			deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
-		}
-		if(getSource().isBulkChangeEnabled()) {
-			bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
+		
+		// Bulk manipulation of items
+		if(getSecurityCallback().canEditQuestions()) {
+			if(getSource().isCopyEnabled() && getSecurityCallback().canEditQuestions()) {
+				copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
+			}
+			if(getSource().isImportEnabled() && getSecurityCallback().canEditQuestions()) {
+				convertItem = uifactory.addFormLink("convert.item", formLayout, Link.BUTTON);
+			}
+			if(getSource().isAuthorRightsEnable() && getSecurityCallback().canEditQuestions()) {
+				authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
+			}
+			if(getSource().isDeleteEnabled() && getSecurityCallback().canEditQuestions()) {
+				deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
+			}
+			if(getSource().isBulkChangeEnabled() && getSecurityCallback().canEditQuestions()) {
+				bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
+			}
 		}
 	}
 	
