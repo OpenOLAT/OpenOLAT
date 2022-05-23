@@ -299,7 +299,7 @@ public class RepositoryEntryQueries {
 			  .append(" membership.role ").in(GroupRoles.coach).append("  and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 			// as member
 			  .append(") or (")
-			  .append(" membership.role ").in(GroupRoles.participant).append("  and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
+			  .append(" membership.role ").in(GroupRoles.participant).append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 			
 			sb.append("))");
 			sb.append(")");

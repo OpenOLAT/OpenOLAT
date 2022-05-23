@@ -490,7 +490,7 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		if(inRoles.contains(GroupRoles.participant)) {
 			if(or) sb.append(" or ");
-			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
 			or = true;
 		}
 		sb.append(")");

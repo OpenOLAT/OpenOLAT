@@ -558,15 +558,13 @@ public class RepositoryManagerTest extends OlatTestCase {
 		long start = System.nanoTime();
 		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
-		Assert.assertFalse(entries.contains(reNotPublished));
+		Assert.assertTrue(entries.contains(reNotPublished));
 		CodeHelper.printMilliSecondTime(start, "Query");
 		start = System.nanoTime();
 		
 		// check access
 		for(RepositoryEntry entry:entries) {
-			Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
-			Assert.assertTrue(entry.isPublicVisible()
-					|| repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
+			Assert.assertTrue(RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToPublished()));
 		}
 		CodeHelper.printMilliSecondTime(start, entries.size() + " check");
 	}

@@ -355,8 +355,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	private boolean filterByStatus(Offer offer, RepositoryEntryStatusEnum status) {
-		if (offer.isOpenAccess() || offer.isGuestAccess()) {
-			return RepositoryEntryStatusEnum.published == status || RepositoryEntryStatusEnum.closed == status;
+		if (offer.isGuestAccess()) {
+			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_GUEST);
+		}
+		if (offer.isOpenAccess()) {
+			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_OPEN);
 		}
 		return offer.getValidFrom() == null && offer.getValidTo() == null
 				? RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD)

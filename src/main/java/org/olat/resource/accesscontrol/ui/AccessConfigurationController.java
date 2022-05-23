@@ -776,7 +776,7 @@ public class AccessConfigurationController extends FormBasicController {
 									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
 						} else if(to != null) {
 							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
-									? ICON_ACTIVE + translate("access.status.active.to", translate("cif.status." + reStatus.name()), formatter.formatDate(from))
+									? ICON_ACTIVE + translate("access.status.active.to", translate("cif.status." + reStatus.name()), formatter.formatDate(to))
 									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
 						}
 					}

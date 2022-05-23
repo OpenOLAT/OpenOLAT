@@ -1894,7 +1894,7 @@ public class RepositoryManager {
 		}
 		sb.append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" )")
-		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
+		  .append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 		
 		// Public access and offers
 		List<OrganisationRef> offerOrganisations = acService.getOfferOrganisations(identity);
