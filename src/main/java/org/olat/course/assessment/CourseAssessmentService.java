@@ -358,8 +358,8 @@ public interface CourseAssessmentService {
 
 	/**
 	 * Evaluate the assessment entries of users without a passed root value in
-	 * learning path courses where the lifecycle is over.
+	 * courses where the lifecycle is over.
 	 */
-	public void evaluateLifecycleOver(Date now);
+	public void evaluateLifecycleOver(Date validToBefore);
 
 }

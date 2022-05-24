@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
-import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -66,8 +65,6 @@ public class CourseAssessmentQueriesTest extends OlatTestCase {
 		RepositoryEntryLifecycle cycleNotOver = courseEntryLifecycleNotOver.getLifecycle();
 		cycleNotOver.setValidTo(DateUtils.addDays(new Date(), 20));
 		courseEntryNoLifecycle = repositoryManager.setDescriptionAndName(courseEntryNoLifecycle, null, null, null, null, null, null, null, null, cycleNotOver);
-		RepositoryEntry courseEntryNoLp = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.published);
-		repositoryManager.setTechnicalType(courseEntryNoLp, random());
 		RepositoryEntry courseEntryPreperation = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry courseEntryReview = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.review);
 		RepositoryEntry courseEntryCoachPublished = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.coachpublished);
@@ -77,7 +74,7 @@ public class CourseAssessmentQueriesTest extends OlatTestCase {
 		RepositoryEntry courseEntryDeleted = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.deleted);
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> courseEntries = sut.loadLpCoursesLifecycle(new Date());
+		List<RepositoryEntry> courseEntries = sut.loadCoursesLifecycle(new Date());
 		
 		assertThat(courseEntries)
 				.contains(
@@ -89,7 +86,6 @@ public class CourseAssessmentQueriesTest extends OlatTestCase {
 				).doesNotContain(
 						courseEntryNoLifecycle,
 						courseEntryLifecycleNotOver,
-						courseEntryNoLp,
 						courseEntryTrash,
 						courseEntryDeleted
 				);
@@ -97,7 +93,6 @@ public class CourseAssessmentQueriesTest extends OlatTestCase {
 
 	private RepositoryEntry createLpCourseEntryLifecycleOver(Identity identity, RepositoryEntryStatusEnum status) {
 		RepositoryEntry repositoryEntry = JunitTestHelper.deployBasicCourse(identity);
-		repositoryManager.setTechnicalType(repositoryEntry, LearningPathNodeAccessProvider.TYPE);
 		repositoryManager.setStatus(repositoryEntry, status);
 		String softKey = "lf_" + repositoryEntry.getSoftkey();
 		RepositoryEntryLifecycle lifecycle = lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true,

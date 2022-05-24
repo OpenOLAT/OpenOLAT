@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,14 +41,13 @@ public class CourseAssessmentQueries {
 	@Autowired
 	private DB dbInstance;
 
-	public List<RepositoryEntry> loadLpCoursesLifecycle(Date validToBefore) {
+	public List<RepositoryEntry> loadCoursesLifecycle(Date validToBefore) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select re");
 		sb.append("  from ").append(RepositoryEntry.class.getName()).append(" as re ");
 		sb.append("       inner join fetch re.olatResource as ores");
 		sb.append("       inner join fetch re.lifecycle as lifecycle");
 		sb.and().append("ores.resName ='CourseModule'");
-		sb.and().append("re.technicalType = '").append(LearningPathNodeAccessProvider.TYPE).append("'");
 		sb.and().append("re.status").in(RepositoryEntryStatusEnum.preparationToClosed());
 		sb.and().append("lifecycle.validTo < :validToBefore");
 		

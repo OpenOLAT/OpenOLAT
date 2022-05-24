@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -45,8 +46,8 @@ public class AssessmentEvaluateLifecycleOverJob extends JobWithDB {
 	public void executeWithDB(JobExecutionContext context)
 	throws JobExecutionException {
 		try {
-			Date now = new Date();
-			CoreSpringFactory.getImpl(CourseAssessmentService.class).evaluateLifecycleOver(now);
+			Date yesterday = DateUtils.setTime(DateUtils.addDays(new Date(), -1), 23, 59, 59);
+			CoreSpringFactory.getImpl(CourseAssessmentService.class).evaluateLifecycleOver(yesterday);
 			logger.debug("AssessmentEvaluateLifecycleOverJob run.");
 		} catch (Exception e) {
 			logger.error("", e);

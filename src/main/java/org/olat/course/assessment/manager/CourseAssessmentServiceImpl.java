@@ -55,19 +55,25 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeStatsController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.STRootPassedEvaluator;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
@@ -551,8 +557,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void evaluateLifecycleOver(Date now) {
-		List<RepositoryEntry> courseEntries = courseAssessmentQueries.loadLpCoursesLifecycle(new Date());
+	public void evaluateLifecycleOver(Date validToBefore) {
+		List<RepositoryEntry> courseEntries = courseAssessmentQueries.loadCoursesLifecycle(validToBefore);
 		log.debug("Evaluate lifecycle over for {} courses.", courseEntries.size());
 		for (RepositoryEntry courseEntry : courseEntries) {
 			try {
@@ -563,10 +569,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		}
 	}
 
-	protected void tryEvaluateLifecycleOver(RepositoryEntry courseEntry) {
+	private void tryEvaluateLifecycleOver(RepositoryEntry courseEntry) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		if (STRootPassedEvaluator.getActivePassedConfigs(rootNode.getModuleConfiguration()) > 0) {
+		if (isFailedOnLifecycleOver(NodeAccessType.of(course), (STCourseNode)rootNode)) {
 			log.debug("Evaluate lifecycle over for courses {}", courseEntry);
 			List<AssessmentEntry> assessmentEntries = assessmentService.getRootEntriesWithoutPassed(courseEntry);
 			for (AssessmentEntry assessmentEntry : assessmentEntries) {
@@ -577,4 +583,16 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			}
 		}
 	}
+	
+	private boolean isFailedOnLifecycleOver(NodeAccessType type, STCourseNode rootNode) {
+			ModuleConfiguration moduleConfig = rootNode.getModuleConfiguration();
+		if (LearningPathNodeAccessProvider.TYPE.equals(type.getType())) {
+			return STRootPassedEvaluator.getActivePassedConfigs(moduleConfig) > 0;
+		} else if (ConditionNodeAccessProvider.TYPE.equals(type.getType())) {
+			return moduleConfig.getBooleanSafe(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, true)
+					&& FailedEvaluationType.failedAsNotPassedAfterEndDate == rootNode.getScoreCalculator().getFailedType();
+		}
+		return false;
+	}
+	
 }
