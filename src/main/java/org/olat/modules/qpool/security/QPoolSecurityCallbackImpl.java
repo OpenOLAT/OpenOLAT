@@ -81,6 +81,21 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 	}
 
 	@Override
+	public boolean canNewQuestions() {
+		return admin || olatAuthor || poolAdmin;
+	}
+
+	@Override
+	public boolean canEditQuestions() {
+		return admin || olatAuthor || poolAdmin;
+	}
+
+	@Override
+	public boolean canShareQuestions() {
+		return admin || olatAuthor || poolAdmin;
+	}
+
+	@Override
 	public boolean canCreateTest() {
 		return admin || olatAuthor;
 	}
