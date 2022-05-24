@@ -335,6 +335,7 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.addRole(id, rePreparation, GroupRoles.coach.name());
 		repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, reReview, GroupRoles.coach.name());
@@ -352,8 +353,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id, reTrash, GroupRoles.coach.name());
 		repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		repositoryEntryRelationDao.addRole(id, reDeleted, GroupRoles.coach.name());
+		repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -362,8 +363,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		params.setMembershipMandatory(true);
 		
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertFalse(contains(reReview, views));
+		Assert.assertTrue(contains(rePreparation, views));
+		Assert.assertTrue(contains(reReview, views));
 		Assert.assertTrue(contains(reCoachPublished, views));
 		Assert.assertTrue(contains(rePublished, views));
 		Assert.assertTrue(contains(reClosed, views));
@@ -374,8 +375,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		SearchMyRepositoryEntryViewParams paramsForAll = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
 
 		List<RepositoryEntryMyView> viewsForAll = repositoryEntryMyCourseViewQueries.searchViews(paramsForAll, 0, -1);
-		Assert.assertFalse(contains(rePreparation, viewsForAll));
-		Assert.assertFalse(contains(reReview, viewsForAll));
+		Assert.assertTrue(contains(rePreparation, viewsForAll));
+		Assert.assertTrue(contains(reReview, viewsForAll));
 		Assert.assertTrue(contains(reCoachPublished, viewsForAll));
 		Assert.assertTrue(contains(rePublished, viewsForAll));
 		Assert.assertTrue(contains(reClosed, viewsForAll));
@@ -399,7 +400,7 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
 		
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(reCoach, views));
+		Assert.assertTrue(contains(reCoach, views));
 		Assert.assertFalse(contains(reNotCoach, views));
 	}
 	

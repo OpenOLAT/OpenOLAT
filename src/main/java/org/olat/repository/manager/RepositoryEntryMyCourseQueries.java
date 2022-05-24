@@ -477,22 +477,7 @@ public class RepositoryEntryMyCourseQueries {
 			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("    and (");
 		}
-		
-		boolean or = false;
-		if(inRoles.contains(GroupRoles.owner)) {
-			sb.append(" (membership.role='").append(GroupRoles.owner).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
-			or = true;
-		}
-		if(inRoles.contains(GroupRoles.coach)) {
-			if(or) sb.append(" or ");
-			sb.append(" (membership.role='").append(GroupRoles.coach).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")");
-			or = true;
-		}
-		if(inRoles.contains(GroupRoles.participant)) {
-			if(or) sb.append(" or ");
-			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
-			or = true;
-		}
+		sb.append("membership.role").in(inRoles.stream().toArray(GroupRoles[]::new)).append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		sb.append(")");
 		sb.append(")");
 		
