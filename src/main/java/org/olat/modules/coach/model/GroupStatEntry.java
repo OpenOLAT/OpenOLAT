@@ -38,6 +38,7 @@ public class GroupStatEntry {
 	private int countPassed = 0;
 	private int countFailed = 0;
 	private int countNotAttempted = 0;
+	private int countScore = 0;
 	private Float averageScore;
 	private double sumScore = 0.0d;
 	private int initialLaunch = 0;
@@ -113,6 +114,14 @@ public class GroupStatEntry {
 		this.countNotAttempted = countNotAttempted;
 	}
 	
+	public int getCountScore() {
+		return countScore;
+	}
+
+	public void setCountScore(int countScore) {
+		this.countScore = countScore;
+	}
+
 	public Float getAverageScore() {
 		return averageScore;
 	}

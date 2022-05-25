@@ -242,7 +242,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//make statements participant 1
 	    effManager.createUserEfficiencyStatement(new Date(), 6.0f, "g1", "gs1", "pc1", true, participant1, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, "g2", "gs1", "pc2", false, participant1, re2.getOlatResource());
+	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, "g2", "gs1", "pc2", null, participant1, re2.getOlatResource());
 	    effManager.createUserEfficiencyStatement(new Date(), 2.0f, "g3", "gs1", "pc3", false, participant1, re3.getOlatResource());
 
 		//make statements participant 2
@@ -273,8 +273,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		CourseStatEntry entryRe2 = getCourseStatEntry(re2, nativeStats);
 		Assert.assertEquals(2, entryRe2.getCountStudents());
 		Assert.assertEquals(0, entryRe2.getCountPassed());
-		Assert.assertEquals(1, entryRe2.getCountFailed());
-		Assert.assertEquals(1, entryRe2.getCountNotAttempted());
+		Assert.assertEquals(0, entryRe2.getCountFailed());
+		Assert.assertEquals(2, entryRe2.getCountNotAttempted());
 		Assert.assertEquals(2, entryRe2.getInitialLaunch());
 		Assert.assertEquals(4.0f, entryRe2.getAverageScore(), 0.0001);
 		
@@ -296,8 +296,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		StudentStatEntry entryParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
 		Assert.assertNotNull(entryParticipant1);
 		Assert.assertEquals(1, entryParticipant1.getCountPassed());
-		Assert.assertEquals(2, entryParticipant1.getCountFailed());
-		Assert.assertEquals(0, entryParticipant1.getCountNotAttempted());
+		Assert.assertEquals(1, entryParticipant1.getCountFailed());
+		Assert.assertEquals(1, entryParticipant1.getCountNotAttempted());
 		Assert.assertEquals(3, entryParticipant1.getInitialLaunch());
 		Assert.assertEquals(3, entryParticipant1.getCountRepo());
 		//participant2
@@ -321,8 +321,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, entryGroup1.getCountDistinctStudents());
 		Assert.assertEquals(3, entryGroup1.getCountCourses());
 		Assert.assertEquals(2, entryGroup1.getCountPassed());
-		Assert.assertEquals(2, entryGroup1.getCountFailed());
-		Assert.assertEquals(2, entryGroup1.getCountNotAttempted());
+		Assert.assertEquals(1, entryGroup1.getCountFailed());
+		Assert.assertEquals(3, entryGroup1.getCountNotAttempted());
 		Assert.assertEquals(5, entryGroup1.getInitialLaunch());
 		Assert.assertEquals(4.5f, entryGroup1.getAverageScore(), 0.0001f);
 	}
