@@ -173,8 +173,8 @@ public class CoachingDAO {
 					groupEntry.setRepoIds(null);
 					int attempted = groupEntry.getCountPassed() + groupEntry.getCountFailed();
 					groupEntry.setCountNotAttempted(groupEntry.getCountStudents() - attempted);
-					if(attempted > 0) {
-						float averageScore = (float)groupEntry.getSumScore() / attempted;
+					if(groupEntry.getCountScore() > 0) {
+						float averageScore = (float)groupEntry.getSumScore() / groupEntry.getCountScore();
 						groupEntry.setAverageScore(averageScore);
 					}
 				}
@@ -346,6 +346,7 @@ public class CoachingDAO {
 		  .append(" fin_statement.re_id,")
 		  .append(" sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed,")
 		  .append(" sum(case when fin_statement.passed=").appendFalse().append(" then 1 else 0 end) as num_of_failed,")
+		  .append(" sum(case when fin_statement.score is not null then 1 else 0 end) as num_score,")
 		  .append(" sum(fin_statement.score) as avg_score ")
 		  .append("from ( select ")
 		  .append("  distinct sg_statement.id as id,")
@@ -378,8 +379,10 @@ public class CoachingDAO {
 				int failed = ((Number)rawStats[3]).intValue();
 				entry.setCountFailed(failed + entry.getCountFailed());
 				entry.setCountPassed(passed + entry.getCountPassed());
-				if(rawStats[4] != null) {
-					entry.setSumScore(entry.getSumScore() + ((Number)rawStats[4]).floatValue());
+				int countScore = ((Number)rawStats[4]).intValue();
+				entry.setCountScore(entry.getCountScore() + countScore);
+				if(rawStats[5] != null) {
+					entry.setSumScore(entry.getSumScore() + ((Number)rawStats[5]).floatValue());
 				}
 				entry.getRepoIds().add(repoKey);
 			}
@@ -394,6 +397,7 @@ public class CoachingDAO {
 		  .append(" fin_statement.re_id,")
 		  .append(" sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed,")
 		  .append(" sum(case when fin_statement.passed=").appendFalse().append(" then 1 else 0 end) as num_of_failed,")
+		  .append(" sum(case when fin_statement.score is not null then 1 else 0 end) as num_score,")
 		  .append(" sum(fin_statement.score) as avg_score ")
 		  .append("from ( select ")
 		  .append("  distinct sg_statement.id as id,")
@@ -427,8 +431,10 @@ public class CoachingDAO {
 				int failed = ((Number)rawStats[3]).intValue();
 				entry.setCountFailed(failed + entry.getCountFailed());
 				entry.setCountPassed(passed + entry.getCountPassed());
-				if(rawStats[4] != null) {
-					entry.setSumScore(entry.getSumScore() + ((Number)rawStats[4]).floatValue());
+				int countScore = ((Number)rawStats[4]).intValue();
+				entry.setCountScore(entry.getCountScore() + countScore);
+				if(rawStats[5] != null) {
+					entry.setSumScore(entry.getSumScore() + ((Number)rawStats[5]).floatValue());
 				}
 				entry.getRepoIds().add(repoKey);
 			}
