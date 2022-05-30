@@ -454,9 +454,9 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		if(secCallback.canEditAbsences() && notice == null) {
 			FormLink allLink = uifactory.addFormLink("all_".concat(Integer.toString(++counter)), "all", null, flc, Link.LINK);
-			allLink.setTitle("all.desc");
 			allLink.setDomReplacementWrapperRequired(false);
 			allLink.setUserObject(row);
+			allLinkLabel(allLink, row, numOfAbsences);
 			row.setAllLink(allLink);
 		}
 
@@ -468,6 +468,19 @@ public class TeacherRollCallController extends FormBasicController {
 		row.setCommentEl(commentEl);
 		flc.add(commentEl);
 		return row;
+	}
+	
+	private void allLinkLabel(FormLink allLink, TeacherRollCallRow row, int numOfAbsences) {
+		if(allLink == null) return;
+		
+		int numOfChecks = row.getChecks() == null ? 0 : row.getChecks().length;
+		if(numOfChecks == numOfAbsences && "all".equals(allLink.getI18nKey())) {
+			allLink.setI18nKey("all.reset");
+			allLink.setTitle("all.reset.desc");
+		} else {
+			allLink.setI18nKey("all");
+			allLink.setTitle("all.desc");
+		}
 	}
 
 	@Override
@@ -587,7 +600,11 @@ public class TeacherRollCallController extends FormBasicController {
 				if(cmd.startsWith("abs_reason_")) {
 					doCalloutReasonAbsence(ureq, link.getFormDispatchId(), (TeacherRollCallRow)link.getUserObject());
 				} else if(cmd.startsWith("all_")) {
-					doCheckAllRow((TeacherRollCallRow)link.getUserObject());
+					if("all".equals(link.getI18nKey())) {
+						doCheckAllRow((TeacherRollCallRow)link.getUserObject());
+					} else {
+						doUncheckAllRow((TeacherRollCallRow)link.getUserObject());
+					}
 				} else if(cmd.startsWith("notice_")) {
 					doCalloutAbsenceNotice(ureq, link.getFormDispatchId(), (TeacherRollCallRow)link.getUserObject());
 				}
@@ -613,6 +630,8 @@ public class TeacherRollCallController extends FormBasicController {
 					numOfAbsences++;
 				}
 			}
+
+			allLinkLabel(row.getAllLink(), row, numOfAbsences);
 		}
 		row.getNumOfAbsencesEl().setValue(Integer.toString(numOfAbsences));
 	}
@@ -666,6 +685,28 @@ public class TeacherRollCallController extends FormBasicController {
 		flc.contextPut("expandedDescription", Boolean.valueOf(nextState));
 	}
 	
+	
+	
+	private void doUncheckAllRow(TeacherRollCallRow row) {
+		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, new ArrayList<>());
+		for(MultipleSelectionElement check:row.getChecks()) {
+			check.uncheckAll();
+		}
+		row.setRollCall(rollCall);
+		if(authorizedAbsenceEnabled && row.getAuthorizedAbsence() != null) {
+			row.getAuthorizedAbsence().uncheckAll();
+			row.getAuthorizedAbsenceCont().setDirty(true);
+		}
+
+		if(row.getReasonLink() != null) {
+			row.getReasonLink().setVisible(false);
+		}
+		row.getRollCallStatusEl().getComponent().setDirty(true);
+		recalculateNumOfAbsences(row);
+		tableEl.reloadData();
+		flc.setDirty(true);
+	}
+	
 	private void doCheckAllRow(TeacherRollCallRow row) {
 		List<Integer> allAbsences = new ArrayList<>(numOfLectures);
 		for(int i=0; i<numOfLectures; i++) {
@@ -709,8 +750,10 @@ public class TeacherRollCallController extends FormBasicController {
 		if(authorizedAbsenceEnabled && row.getAuthorizedAbsence() != null) {
 			if(rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue()) {
 				row.getAuthorizedAbsence().select(onKeys[0], true);
+				row.getReasonLink().setVisible(true);
 			} else {
 				row.getAuthorizedAbsence().uncheckAll();
+				row.getReasonLink().setVisible(false);
 			}
 			row.getAuthorizedAbsenceCont().setDirty(true);
 		}
