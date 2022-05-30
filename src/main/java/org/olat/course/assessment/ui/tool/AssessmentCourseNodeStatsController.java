@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -36,6 +38,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentStatsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -78,6 +81,7 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
+		params.setBusinessGroupKeys(assessmentCallback.getCoachedGroups().stream().map(BusinessGroup::getKey).collect(Collectors.toList()));
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);

@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -83,16 +84,39 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 			searchParams.setSearchString(null);
 		}
 		
-		List<Integer> exactStatusList = getStatusFromFilter(filters);
-		if(exactStatusList.isEmpty()) {
-			searchParams.setExactStatusList(preselectedStatusList);
+		if(isStatusShowAll(filters)) {
+			searchParams.setStatus(null);
+			searchParams.setExactStatusList(List.of());
 		} else {
-			searchParams.setExactStatusList(exactStatusList);
+			List<Integer> exactStatusList = getStatusFromFilter(filters);
+			if(exactStatusList.isEmpty()) {
+				if(preselectedStatusList == null) {
+					searchParams.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+					searchParams.setExactStatusList(preselectedStatusList);
+				} else {
+					searchParams.setStatus(null);
+					searchParams.setExactStatusList(List.of());
+				}
+			} else {
+				searchParams.setStatus(null);
+				searchParams.setExactStatusList(exactStatusList);
+			}
 		}
 		
 		List<IdentityPropertiesRow> rows = searchQuery
 				.getIdentitiesByPowerSearch(searchParams, userPropertyHandlers, locale, sortKey, firstResult, maxResults);
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
+	}
+	
+	private boolean isStatusShowAll(List<FlexiTableFilter> filters) {
+		if(filters != null && !filters.isEmpty()) {
+			for(FlexiTableFilter filter:filters) {
+				if(filter.isShowAll()) {
+					return true;
+				}	
+			}
+		}
+		return false;
 	}
 	
 	private List<Integer> getStatusFromFilter(List<FlexiTableFilter> filters) {
