@@ -34,8 +34,9 @@ public class PerformanceClassRow {
 	private final PerformanceClass performanceClass;
 	private Integer position;
 	private String identifier;
-	private FormLink nameLink;
+	private String name;
 	private MultipleSelectionElement markPassedEl;
+	private FormLink toolsLink;
 	
 	public PerformanceClassRow(PerformanceClass performanceClass) {
 		this.performanceClass = performanceClass;
@@ -61,12 +62,12 @@ public class PerformanceClassRow {
 		this.identifier = identifier;
 	}
 
-	public FormLink getNameLink() {
-		return nameLink;
+	public String getName() {
+		return name;
 	}
 
-	public void setNameLink(FormLink nameLink) {
-		this.nameLink = nameLink;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public MultipleSelectionElement getMarkPassedEl() {
@@ -75,6 +76,14 @@ public class PerformanceClassRow {
 
 	public void setMarkPassedEl(MultipleSelectionElement markPassedEl) {
 		this.markPassedEl = markPassedEl;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 	
 }

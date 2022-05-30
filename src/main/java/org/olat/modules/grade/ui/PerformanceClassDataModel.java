@@ -47,8 +47,9 @@ public class PerformanceClassDataModel extends DefaultFlexiTableDataModel<Perfor
 	private Object getValueAt(PerformanceClassRow row, int col) {
 		switch(COLS[col]) {
 			case position: return row.getPosition();
-			case name: return row.getNameLink();
+			case name: return row.getName();
 			case markPassed: return row.getMarkPassedEl();
+			case tools: return row.getToolsLink();
 			default: return null;
 		}
 	}
@@ -56,7 +57,8 @@ public class PerformanceClassDataModel extends DefaultFlexiTableDataModel<Perfor
 	public enum PerformanceClassCols implements FlexiColumnDef {
 		position("performance.class.postion"),
 		name("performance.class.name"),
-		markPassed("performance.class.mark.passed");
+		markPassed("performance.class.mark.passed"),
+		tools("table.header.actions");
 		
 		private final String i18nKey;
 		

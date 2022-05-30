@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -47,11 +48,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
@@ -74,8 +80,7 @@ public class GradeSystemEditController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
-	private static final String CMD_TRANSLATE_NAME = "translate";
-	private static final String CMD_DELETE = "delete";
+	private static final String CMD_EDIT = "edit";
 	
 	private StaticTextElement systemNameEl;
 	private FormLink systemNameLink;
@@ -98,6 +103,8 @@ public class GradeSystemEditController extends FormBasicController {
 	private SingleKeyTranslatorController systemNameTranslatorCtrl;
 	private SingleKeyTranslatorController systemLabelTranslatorCtrl;
 	private SingleKeyTranslatorController translatorCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ToolsController toolsCtrl;
 	
 	private GradeSystem gradeSystem;
 	private boolean hasScale;
@@ -237,7 +244,6 @@ public class GradeSystemEditController extends FormBasicController {
 			for (PerformanceClassRow row : performanceClassRows) {
 				row.getMarkPassedEl().setVisible(passedEl.isAtLeastSelected(1));
 				row.getMarkPassedEl().setEnabled(!hasScale && !predefined);
-				row.getNameLink().setEnabled(!predefined);
 			}
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -247,8 +253,12 @@ public class GradeSystemEditController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.markPassed));
 			}
 			if (!hasScale && !predefined) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_DELETE, -1, CMD_DELETE,
-					new StaticFlexiCellRenderer(translate("performance.class.delete"), CMD_DELETE, "", "", null)));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_EDIT, -1, CMD_EDIT,
+						new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));
+				
+				StickyActionColumnModel toolsColumn = new StickyActionColumnModel(PerformanceClassCols.tools);
+				toolsColumn.setExportable(false);
+				columnsModel.addFlexiColumnModel(toolsColumn);
 			}
 			
 			dataModel = new PerformanceClassDataModel(columnsModel);
@@ -273,9 +283,16 @@ public class GradeSystemEditController extends FormBasicController {
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == translatorCtrl) {
-			updateNameLink((PerformanceClassRow)translatorCtrl.getUserObject());
+			updateName((PerformanceClassRow)translatorCtrl.getUserObject());
 			cmc.deactivate();
 			cleanUp();
+		} else if (toolsCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -285,11 +302,15 @@ public class GradeSystemEditController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(systemLabelTranslatorCtrl);
 		removeAsListenerAndDispose(systemNameTranslatorCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(translatorCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		systemLabelTranslatorCtrl = null;
 		systemNameTranslatorCtrl = null;
+		toolsCalloutCtrl = null;
 		translatorCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -309,17 +330,17 @@ public class GradeSystemEditController extends FormBasicController {
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if (CMD_TRANSLATE_NAME.equals(cmd)) {
-				PerformanceClassRow performanceClassRow = (PerformanceClassRow)link.getUserObject();
-				doTranslatePerformanceClass(ureq, performanceClassRow);
-			} 
+			if (cmd != null && cmd.startsWith("tools")) {
+				PerformanceClassRow performanceClassRow= (PerformanceClassRow)link.getUserObject();
+				doOpenTools(ureq, performanceClassRow, link);
+			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				if (CMD_DELETE.equals(cmd)) {
+				if (CMD_EDIT.equals(cmd)) {
 					PerformanceClassRow performanceClassRow = dataModel.getObject(se.getIndex());
-					doDelete(performanceClassRow);
+					doTranslatePerformanceClass(ureq, performanceClassRow);
 				}
 			}
 		} 
@@ -479,6 +500,24 @@ public class GradeSystemEditController extends FormBasicController {
 		Integer position = performanceClassRows.isEmpty()
 				? Integer.valueOf(1)
 				: Integer.valueOf(performanceClassRows.get(performanceClassRows.size()-1).getPosition().intValue() + 1);
+		doAddPerformanceClass(position);
+	}
+
+	private void doAddPerformanceClassBelow(Integer position) {
+		PerformanceClassRow row = createRow(null, position.intValue() + 1, false);
+		performanceClassRows.add(position.intValue(), row);
+		
+		for (int i = 0; i < performanceClassRows.size(); i++) {
+			PerformanceClassRow performanceClassRow = performanceClassRows.get(i);
+			performanceClassRow.setPosition(Integer.valueOf(i + 1));
+			updateName(performanceClassRow);
+		}
+		
+		dataModel.setObjects(performanceClassRows);
+		tableEl.reset();
+	}
+
+	private void doAddPerformanceClass(Integer position) {
 		PerformanceClassRow row = createRow(null, position, false);
 		performanceClassRows.add(row);
 		
@@ -495,16 +534,18 @@ public class GradeSystemEditController extends FormBasicController {
 				: UUID.randomUUID().toString().toLowerCase().replace("-", "");
 		row.setIdentifier(identifier);
 		
-		FormLink nameLink = uifactory.addFormLink("name_" + identifier, CMD_TRANSLATE_NAME, "", null, null, Link.NONTRANSLATED);
-		nameLink.setUserObject(row);
-		row.setNameLink(nameLink);
-		updateNameLink(row);
+		updateName(row);
 		
 		MultipleSelectionElement markPassedEl = uifactory.addCheckboxesHorizontal(
 				"passed_" + row.getPosition(), null, performanceClassCont, onKeys, onValues);
 		markPassedEl.setDomReplacementWrapperRequired(false);
 		markPassedEl.select(onKeys[0], passed);
 		row.setMarkPassedEl(markPassedEl);
+		
+		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getPosition(), "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
 		
 		return row;
 	}
@@ -546,17 +587,64 @@ public class GradeSystemEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void updateNameLink(PerformanceClassRow row) {
+	private void updateName(PerformanceClassRow row) {
 		String translatedName = row.getPerformanceClass() != null
 				? GradeUIFactory.translatePerformanceClass(getTranslator(), row.getPerformanceClass())
 				: GradeUIFactory.translatePerformanceClass(getTranslator(), row.getIdentifier(), row.getPosition().toString());
-		row.getNameLink().setI18nKey(translatedName);
+		row.setName(translatedName);
 	}
 	
 	private void doDelete(PerformanceClassRow performanceClassRow) {
 		performanceClassRows.remove(performanceClassRow);
 		dataModel.setObjects(performanceClassRows);
 		tableEl.reset();
+	}
+	
+	private void doOpenTools(UserRequest ureq, PerformanceClassRow performanceClassRow, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), performanceClassRow);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final Link addBelowLink;
+		private final Link deleteLink;
+		
+		private final PerformanceClassRow performanceClassRow;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, PerformanceClassRow performanceClassRow) {
+			super(ureq, wControl);
+			this.performanceClassRow = performanceClassRow;
+			
+			VelocityContainer mainVC = createVelocityContainer("performance_class_tools");
+			
+			addBelowLink = LinkFactory.createLink("performance.class.add.below", "add.below", getTranslator(), mainVC, this, Link.LINK);
+			addBelowLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			this.fireEvent(ureq, Event.DONE_EVENT);
+			if(addBelowLink == source) {
+				doAddPerformanceClassBelow(performanceClassRow.getPosition());
+			} else if(deleteLink == source) {
+				doDelete(performanceClassRow);
+			}
+		}
+		
 	}
 
 }
