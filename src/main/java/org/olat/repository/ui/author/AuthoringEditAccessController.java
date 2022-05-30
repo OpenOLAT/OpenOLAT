@@ -28,8 +28,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.ims.lti13.LTI13Module;
@@ -62,6 +65,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private AuthoringEditAccessShareController accessShareCtrl;
 	private AccessConfigurationController accessOffersCtrl;
 	private AccessOverviewController accessOverviewCtrl;
+	private DialogBoxController confirmDeleteCalendarDialog;
 	
 	private RepositoryEntry entry;
 	private final boolean readOnly;
@@ -77,7 +81,7 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.entry = entry;
 		this.readOnly = readOnly;
 		
@@ -104,10 +108,15 @@ public class AuthoringEditAccessController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(accessShareCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doSaveAccessShare(ureq);
-				fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
+				doConfirmSaveAccessShare(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
 				initAccessShare(ureq);
+			}
+		} else if (source == confirmDeleteCalendarDialog) {
+			if (DialogBoxUIFactory.isOkEvent(event)) {
+				doSaveAccessShare(ureq);
+			} else {
+				accessShareCtrl.markDirty();
 			}
 		} else if(accessOffersCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
@@ -117,6 +126,16 @@ public class AuthoringEditAccessController extends BasicController {
 		}
 		
 		super.event(ureq, source, event);
+	}
+	
+	private void doConfirmSaveAccessShare(UserRequest ureq) {
+		if (!accessShareCtrl.isPublicVisible() && accessOffersCtrl != null && accessOffersCtrl.getNumOfBookingConfigurations() > 0) {
+			String title = translate("confirmation.offers.delete.title");
+			String msg = translate("confirmation.offers.delete.text");
+			confirmDeleteCalendarDialog = activateOkCancelDialog(ureq, title, msg, confirmDeleteCalendarDialog);
+		} else {
+			doSaveAccessShare(ureq);
+		}
 	}
 	
 	private void doSaveAccessShare(UserRequest ureq) {
@@ -129,6 +148,8 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.getSelectedOrganisations());
 		initAccessOffers(ureq);
 		initAccessOverview(ureq);
+		
+		fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");

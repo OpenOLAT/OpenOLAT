@@ -396,7 +396,7 @@ $o-repo-status-color-bright			: #fff;
 /* Access control */
 $o-ac-offer-active-color			: #3c763d !default;
 $o-ac-offer-inactive-color			: #8A6D40 !default;
-$o-ac-config-offer-border			: 1px solid #e7e7e7 !default;
+$o-ac-config-offer-border			: 1px solid $panel-default-border !default;
 $o-ac-config-offer-border-radius	: $panel-border-radius !default;
 $o-ac-config-offer-icon-bg-color	: #fcfcfc !default;
 

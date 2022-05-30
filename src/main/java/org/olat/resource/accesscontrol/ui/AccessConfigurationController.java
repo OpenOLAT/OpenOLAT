@@ -768,7 +768,7 @@ public class AccessConfigurationController extends FormBasicController {
 									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
 						} else if(from != null && to != null) {
 							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
-									? ICON_ACTIVE + translate("access.status.active.from.to", formatter.formatDate(to), formatter.formatDate(from))
+									? ICON_ACTIVE + translate("access.status.active.from.to", formatter.formatDate(from), formatter.formatDate(to))
 									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
 						} else if(from != null) {
 							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
@@ -871,4 +871,5 @@ public class AccessConfigurationController extends FormBasicController {
 			this.deleteButton = deleteButton;
 		}
 	}
+	
 }

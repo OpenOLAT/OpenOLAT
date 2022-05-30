@@ -207,6 +207,7 @@
 		.o_ac_offer_col {
 			width: 100%;
 			padding: 15px;
+			background-color: $panel-bg;
 			.o_cmds {
 				margin-top: 10px;
 				padding-right: 15px;
@@ -220,12 +221,8 @@
 	}
 }
 .o_ac_overview {
-	.o_ac_roles {
-		display: flex;
-		flex-wrap: wrap;
-		>div {
-			margin-right: auto;
-		}
+	.panel-body {
+		padding: 0px;
 	}
 }
 

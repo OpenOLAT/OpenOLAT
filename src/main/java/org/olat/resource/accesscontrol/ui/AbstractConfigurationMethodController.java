@@ -243,7 +243,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	}
 	
 	public List<Organisation> getOfferOrganisations() {
-		if (organisationsEl == null) return null;
+		if (organisationsEl == null) {
+			return List.copyOf(offerOrganisations);
+		}
 		
 		Collection<String> selectedOrgKeys = organisationsEl.getSelectedKeys();
 		return organisations.stream()

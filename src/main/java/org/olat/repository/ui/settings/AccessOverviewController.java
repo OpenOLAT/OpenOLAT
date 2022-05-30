@@ -95,8 +95,30 @@ public class AccessOverviewController extends BasicController {
 		entry = repositoryService.loadByKey(entry.getKey());
 		Map<String, Long> roleToCountMemebers = repositoryService.getRoleToCountMemebers(entry);
 		
-		// Admin access
+		// Members
+		Long ownersCount = roleToCountMemebers.getOrDefault(GroupRoles.owner.name(), Long.valueOf(0));
+		String owners = ICON_ACTIVE + translate("access.overview.owners", ownersCount.toString());
+		mainVC.contextPut("owners", owners);
 		
+		Long coachesCount = roleToCountMemebers.getOrDefault(GroupRoles.coach.name(), Long.valueOf(0));
+		String coaches = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.coachPublishedToClosed())
+				? ICON_ACTIVE
+				: ICON_INACTIVE;
+		coaches += translate("access.overview.coaches", coachesCount.toString());
+		mainVC.contextPut("coaches", coaches);
+		
+		Long participantsCount = roleToCountMemebers.getOrDefault(GroupRoles.participant.name(), Long.valueOf(0));
+		String participants = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
+				? ICON_ACTIVE
+				: ICON_INACTIVE;
+		participants += translate("access.overview.participants", participantsCount.toString());
+		mainVC.contextPut("participants", participants);
+		
+		openMemberManagementLink = LinkFactory.createLink("access.overview.open.members.management", getTranslator(), this);
+		openMemberManagementLink.setIconLeftCSS("o_icon o_icon_membersmanagement");
+		mainVC.put("open.members.management", openMemberManagementLink);
+		
+		// Admin access
 		String authors = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.reviewToClosed())
 				? ICON_ACTIVE
 				: ICON_INACTIVE;
@@ -138,29 +160,6 @@ public class AccessOverviewController extends BasicController {
 				administratorsCount.toString(),
 				translate("access.overview.right", translate("access.overview.right.full")));
 		mainVC.contextPut("administrators", administrators);
-		
-		// Members
-		Long ownersCount = roleToCountMemebers.getOrDefault(GroupRoles.owner.name(), Long.valueOf(0));
-		String owners = ICON_ACTIVE + translate("access.overview.owners", ownersCount.toString());
-		mainVC.contextPut("owners", owners);
-		
-		Long coachesCount = roleToCountMemebers.getOrDefault(GroupRoles.coach.name(), Long.valueOf(0));
-		String coaches = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.coachPublishedToClosed())
-				? ICON_ACTIVE
-				: ICON_INACTIVE;
-		coaches += translate("access.overview.coaches", coachesCount.toString());
-		mainVC.contextPut("coaches", coaches);
-		
-		Long participantsCount = roleToCountMemebers.getOrDefault(GroupRoles.participant.name(), Long.valueOf(0));
-		String participants = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
-				? ICON_ACTIVE
-				: ICON_INACTIVE;
-		participants += translate("access.overview.participants", participantsCount.toString());
-		mainVC.contextPut("participants", participants);
-		
-		openMemberManagementLink = LinkFactory.createLink("access.overview.open.members.management", getTranslator(), this);
-		openMemberManagementLink.setIconLeftCSS("o_icon o_icon_membersmanagement");
-		mainVC.put("open.members.management", openMemberManagementLink);
 		
 		// Groups
 		List<String> groups = businessGroupService.findBusinessGroupsFromRepositoryEntry(bgSearchParams, getIdentity(), entry).stream()
