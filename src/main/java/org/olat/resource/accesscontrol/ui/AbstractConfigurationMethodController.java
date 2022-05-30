@@ -244,6 +244,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	public List<Organisation> getOfferOrganisations() {
 		if (organisationsEl == null) {
+			if (offerOrganisations == null) {
+				return null;
+			}
 			return List.copyOf(offerOrganisations);
 		}
 		

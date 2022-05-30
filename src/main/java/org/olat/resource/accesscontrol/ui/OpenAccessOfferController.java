@@ -176,6 +176,9 @@ public class OpenAccessOfferController extends FormBasicController {
 	
 	public List<Organisation> getOfferOrganisations() {
 		if (organisationsEl == null) {
+			if (offerOrganisations == null) {
+				return null;
+			}
 			return List.copyOf(offerOrganisations);
 		}
 		
