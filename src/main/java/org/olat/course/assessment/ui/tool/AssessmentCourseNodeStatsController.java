@@ -81,7 +81,9 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
-		params.setBusinessGroupKeys(assessmentCallback.getCoachedGroups().stream().map(BusinessGroup::getKey).collect(Collectors.toList()));
+		if(assessmentCallback.canAssessBusinessGoupMembers() && assessmentCallback.getCoachedGroups() != null && !assessmentCallback.getCoachedGroups().isEmpty()) {
+			params.setBusinessGroupKeys(assessmentCallback.getCoachedGroups().stream().map(BusinessGroup::getKey).collect(Collectors.toList()));
+		}
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
