@@ -33,11 +33,17 @@ public class SelectLectureCurriculumElementEvent extends Event {
 	private static final long serialVersionUID = -5189454510423055216L;
 	public static final String SELECT = "select-cur-element-identity";
 	
+	private final boolean showAbsences;
 	private final CurriculumElement curriculumElement;
 	
-	public SelectLectureCurriculumElementEvent(CurriculumElement curriculumElement) {
+	public SelectLectureCurriculumElementEvent(CurriculumElement curriculumElement, boolean showAbsences) {
 		super(SELECT);
+		this.showAbsences = showAbsences;
 		this.curriculumElement = curriculumElement;
+	}
+
+	public boolean isShowAbsences() {
+		return showAbsences;
 	}
 
 	public CurriculumElement getCurriculumElement() {

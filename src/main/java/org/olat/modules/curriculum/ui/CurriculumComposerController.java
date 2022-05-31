@@ -742,7 +742,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", row.getKey());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row);
-		lecturesCtrl = new CurriculumElementLecturesController(ureq, bwControl, toolbarPanel, curriculumElement, secCallback);
+		lecturesCtrl = new CurriculumElementLecturesController(ureq, bwControl, toolbarPanel, curriculumElement, true, secCallback);
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(row.getDisplayName(), null, row);
 		toolbarPanel.pushController(translate("lectures"), lecturesCtrl);

@@ -41,6 +41,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
 import org.olat.modules.lecture.model.LectureCurriculumElementSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.CurriculumElementsTableModel.LectureCurriculumCols;
 import org.olat.modules.lecture.ui.event.SelectLectureCurriculumElementEvent;
@@ -82,6 +83,10 @@ public class CurriculumElementsListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureCurriculumCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureCurriculumCols.endDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureCurriculumCols.numOfParticipants));
+		if(secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach || secCallback.viewAs() == LectureRoles.teacher) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.absences", translate("table.header.absences"),
+					"absences", "o_icon o_icon_timetable o_icon-fw"));
+		}
 
 		tableModel = new CurriculumElementsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
@@ -92,8 +97,13 @@ public class CurriculumElementsListController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
-				LectureCurriculumElementInfos infos = tableModel.getObject(((SelectionEvent)event).getIndex());
-				fireEvent(ureq, new SelectLectureCurriculumElementEvent(infos.getElement()));
+				SelectionEvent se = (SelectionEvent)event;
+				LectureCurriculumElementInfos infos = tableModel.getObject(se.getIndex());
+				if("select".equals(se.getCommand())) {
+					fireEvent(ureq, new SelectLectureCurriculumElementEvent(infos.getElement(), false));
+				} else if("absences".equals(se.getCommand())) {
+					fireEvent(ureq, new SelectLectureCurriculumElementEvent(infos.getElement(), true));
+				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
 				loadModel(ftse.getSearch());

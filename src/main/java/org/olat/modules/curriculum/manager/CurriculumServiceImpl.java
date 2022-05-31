@@ -874,11 +874,16 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<RepositoryEntry> getRepositoryEntriesWithLecturesAndDescendants(CurriculumElement element, Identity identity) {
-		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
+	public List<RepositoryEntry> getRepositoryEntriesWithLectures(CurriculumElement element, Identity identity, boolean withDescendants) {
+		List<CurriculumElement> descendants;
+		if(withDescendants) {
+			descendants = curriculumElementDao.getDescendants(element);
+		} else {
+			descendants = new ArrayList<>();
+		}	
 		descendants.add(element);
 		List<String> roles = Arrays.asList(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(),
-				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name(), CurriculumRoles.mastercoach.name());
 		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
 		return curriculumRepositoryEntryRelationDao
 				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), true, identity, roles);

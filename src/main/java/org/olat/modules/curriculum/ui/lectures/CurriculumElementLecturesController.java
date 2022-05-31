@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -81,8 +81,17 @@ public class CurriculumElementLecturesController extends BasicController {
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public CurriculumElementLecturesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumElement element, CurriculumSecurityCallback secCallback) {
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param breadcrumbPanel A breadcrumb panel (mandatory)
+	 * @param element The curriculum element
+	 * @param withDescendants Show the lectures of the specified curriculum and all its descendants (or not)
+	 * @param secCallback The security callback
+	 */
+	public CurriculumElementLecturesController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel breadcrumbPanel,
+			CurriculumElement element, boolean withDescendants, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 
 		Roles roles = ureq.getUserSession().getRoles();
@@ -91,11 +100,12 @@ public class CurriculumElementLecturesController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");
 		
-		boolean all = lectureModule.isOwnerCanViewAllCoursesInCurriculum() || secCallback.canViewAllLectures();
+		boolean all = secCallback.canViewAllLectures()
+				|| (lectureModule.isOwnerCanViewAllCoursesInCurriculum() && secCallback.canEditCurriculumElement(element));
 		
 		Identity checkByIdentity = all ? null : getIdentity();
 		List<RepositoryEntry> entries = curriculumService
-				.getRepositoryEntriesWithLecturesAndDescendants(element, checkByIdentity);
+				.getRepositoryEntriesWithLectures(element, checkByIdentity, withDescendants);
 		
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
 		params.setEntries(entries);
@@ -110,7 +120,7 @@ public class CurriculumElementLecturesController extends BasicController {
 		if(filterByEntry.isEmpty()) {
 			mainVC.contextPut("hasLectures", Boolean.FALSE);
 		} else {
-			lecturesListCtlr = new LecturesListController(ureq, getWindowControl(), toolbarPanel,
+			lecturesListCtlr = new LecturesListController(ureq, getWindowControl(), breadcrumbPanel,
 					aggregatedStatistics, filterByEntry, curriculum, element, userPropertyHandlers, PROPS_IDENTIFIER);
 			listenTo(lecturesListCtlr);
 			mainVC.contextPut("hasLectures", Boolean.TRUE);
