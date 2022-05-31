@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -73,7 +73,7 @@ public class LecturesListController extends FormBasicController implements Expor
 	
 	private FlexiTableElement tableEl;
 	private LecturesListDataModel tableModel;
-	private TooledStackedPanel toolbarPanel;
+	private BreadcrumbPanel breadcrumbPanel;
 	
 	private final String propsIdentifier;
 	private final boolean absenceNoticeEnabled;
@@ -95,13 +95,13 @@ public class LecturesListController extends FormBasicController implements Expor
 	@Autowired
 	private BaseSecurity securityManager;
 	
-	public LecturesListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+	public LecturesListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel breadcrumbPanel,
 			List<LectureBlockIdentityStatistics> statistics, List<RepositoryEntryRef> filterByEntries,
 			Curriculum curriculum, CurriculumElement curriculumElement,
 			List<UserPropertyHandler> userPropertyHandlers, String propsIdentifier) {
 		super(ureq, wControl, "curriculum_lectures_table", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.toolbarPanel = toolbarPanel;
+		this.breadcrumbPanel = breadcrumbPanel;
 		this.statistics = statistics;
 		this.filterByEntries = filterByEntries;
 		this.propsIdentifier = propsIdentifier;
@@ -203,9 +203,9 @@ public class LecturesListController extends FormBasicController implements Expor
 		participantLecturesOverviewCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(),
 				assessedIdentity, filterByEntries, true, true, true, true, false, false, false);
 		listenTo(participantLecturesOverviewCtrl);
-		participantLecturesOverviewCtrl.setBreadcrumbPanel(toolbarPanel);
+		participantLecturesOverviewCtrl.setBreadcrumbPanel(breadcrumbPanel);
 		
 		String fullName = userManager.getUserDisplayName(assessedIdentity);
-		toolbarPanel.pushController(fullName, participantLecturesOverviewCtrl);
+		breadcrumbPanel.pushController(fullName, participantLecturesOverviewCtrl);
 	}
 }

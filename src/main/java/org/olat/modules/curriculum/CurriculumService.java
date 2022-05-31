@@ -461,7 +461,7 @@ public interface CurriculumService {
 	 * @param identity Specify the identity to check the permissions of the repository entries
 	 * @return A list of repository entries with lectures enabled
 	 */
-	public List<RepositoryEntry> getRepositoryEntriesWithLecturesAndDescendants(CurriculumElement element, Identity identity);
+	public List<RepositoryEntry> getRepositoryEntriesWithLectures(CurriculumElement element, Identity identity, boolean withDescendants);
 	
 	/**
 	 * Check if the repository entry is already in relation with the specified

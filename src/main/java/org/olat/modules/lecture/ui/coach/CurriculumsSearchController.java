@@ -33,9 +33,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
+import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.event.SelectLectureCurriculumElementEvent;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
@@ -56,7 +60,8 @@ public class CurriculumsSearchController extends BasicController {
 	
 	private final LecturesSecurityCallback secCallback;
 	
-	private IdentityProfileController profileCtrl; 
+	private IdentityProfileController profileCtrl;
+	private CurriculumElementLecturesController lecturesCtrl;
 	private CurriculumElementsListController elementsSearchCtrl;
 	private ParticipantsSearchListController participantsSearchCtrl;
 	
@@ -88,7 +93,11 @@ public class CurriculumsSearchController extends BasicController {
 		if(elementsSearchCtrl == source) {
 			if(event instanceof SelectLectureCurriculumElementEvent) {
 				SelectLectureCurriculumElementEvent sie = (SelectLectureCurriculumElementEvent)event;
-				doSelectCurriculumElement(ureq, sie.getCurriculumElement());
+				if(sie.isShowAbsences()) {
+					doSelectLectures(ureq, sie.getCurriculumElement());
+				} else {
+					doSelectCurriculumElement(ureq, sie.getCurriculumElement());
+				}
 			}
 		} else if(source == participantsSearchCtrl) {
 			if(event instanceof SelectLectureIdentityEvent) {
@@ -104,6 +113,19 @@ public class CurriculumsSearchController extends BasicController {
 		listenTo(participantsSearchCtrl);
 		panel.pushController(element.getDisplayName(), participantsSearchCtrl);
 		participantsSearchCtrl.doSearch(ureq, null);
+	}
+	
+	private void doSelectLectures(UserRequest ureq, CurriculumElement element) {
+		LectureRoles viewAs = secCallback.viewAs();
+		CurriculumSecurityCallback curriculumSecCallback;
+		if(viewAs == LectureRoles.lecturemanager || viewAs ==LectureRoles.mastercoach) {
+			curriculumSecCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+		} else {
+			curriculumSecCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+		}
+		lecturesCtrl = new CurriculumElementLecturesController(ureq, getWindowControl(), panel, element, false, curriculumSecCallback);
+		listenTo(lecturesCtrl);
+		panel.pushController(element.getDisplayName(), lecturesCtrl);
 	}
 	
 	private void doSelectParticipant(UserRequest ureq, Long identityKey) {
