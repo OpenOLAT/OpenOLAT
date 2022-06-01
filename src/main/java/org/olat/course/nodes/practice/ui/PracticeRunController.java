@@ -142,9 +142,7 @@ public class PracticeRunController extends BasicController {
 				doComposeSerie(ureq);
 			}
 		} else if(serieCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
-				cleanUpSerie();
-			} else if(event instanceof OverviewEvent) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event instanceof OverviewEvent) {
 				cleanUpSerie();
 				participantCtrl.reload();
 			} else if(event instanceof NextSerieEvent) {
@@ -225,8 +223,9 @@ public class PracticeRunController extends BasicController {
 	private void doStartPractice(UserRequest ureq, PlayMode playMode, List<PracticeItem> items) {
 		cleanUpSerie();
 		
+		boolean countSerieInChallenge = playMode == PlayMode.freeShuffle;
 		serieCtrl = new PracticeController(ureq, getWindowControl(),
-				courseEntry, courseNode, items, playMode, userCourseEnv, authorMode);
+				courseEntry, courseNode, items, playMode, userCourseEnv, countSerieInChallenge, authorMode);
 		listenTo(serieCtrl);
 		mainVC.put("practiceCmp", serieCtrl.getInitialComponent());
 	}

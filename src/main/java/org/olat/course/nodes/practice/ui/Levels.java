@@ -40,15 +40,15 @@ public class Levels {
 		}
 	}
 	
-	public String getColor(int i) {
+	public String getCssClass(int i) {
 		switch(i) {
-			case 0: return "#CCCCCC";
-			case 1: return "#9FC4F8";
-			case 2: return "#B3A7D5";
-			case 3: return "#FFE59A";
-			case 4: return "#FFCCEE";
-			case 5: return "#B0FBB4";
-			default: return "#CCCCCC";
+			case 0: return "o_practice_progress_not";
+			case 1: return "o_practice_progress_l1";
+			case 2: return "o_practice_progress_l2";
+			case 3: return "o_practice_progress_l3";
+			case 4: return "o_practice_progress_l4";
+			case 5: return "o_practice_progress_l5";
+			default: return "o_practice_progress_not";
 		}
 	}
 	

@@ -168,15 +168,12 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 	protected void loadStatistics(List<AssessmentTestSession> seriesList) {
 		series = List.copyOf(seriesList);
 
-		int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
-		int challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 2);
-		
-		int numOfSeries = series.size();
+		final int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
+		final int numOfSeries = series.size();
 		flc.contextPut("series", Integer.valueOf(numOfSeries));
 		
-		int currentNumOfSeries = series.size() % seriesPerChallenge;
-		int completedChallenges = Math.min(challengesToComplete, (numOfSeries - currentNumOfSeries) / seriesPerChallenge);
-		flc.contextPut("challenges", Integer.valueOf(completedChallenges));
+		long completedChallenges = PracticeHelper.completedChalllenges(numOfSeries, seriesPerChallenge);
+		flc.contextPut("challenges", Long.valueOf(completedChallenges));
 		
 		long duration = 0l;
 		long numOfDuration = 0l;
@@ -239,9 +236,9 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		
 		PieChartElement chartEl = new PieChartElement("levels.chart");
 		chartEl.setLayer(20);
-		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getColor(0)));
+		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getCssClass(0)));
 		for(int i=1; i<=numOfLevels; i++) {
-			chartEl.addPoints(new PiePoint(globalLevels.getLevelPercent(i), globalLevels.getColor(i)));
+			chartEl.addPoints(new PiePoint(globalLevels.getLevelPercent(i), globalLevels.getCssClass(i)));
 		}
 		flc.add("levels.chart", chartEl);
 		

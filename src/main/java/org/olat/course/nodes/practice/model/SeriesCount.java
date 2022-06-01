@@ -17,41 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.chart;
+package org.olat.course.nodes.practice.model;
 
 /**
  * 
- * Initial date: 17 mai 2022<br>
+ * Initial date: 1 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PiePoint {
+public class SeriesCount {
 	
-	private double value;
-	private String cssClass;
+	private final Long identityKey;
+	private final long count;
 	
-	public PiePoint() {
-		//
+	public SeriesCount(Long identityKey, long count) {
+		this.identityKey = identityKey;
+		this.count = count;
 	}
-	
-	public PiePoint(double value, String cssClass) {
-		this.value = value;
-		this.cssClass = cssClass;
+
+	public Long getIdentityKey() {
+		return identityKey;
 	}
-	
-	public double getValue() {
-		return value;
-	}
-	
-	public void setValue(double value) {
-		this.value = value;
-	}
-	
-	public String getCssClass() {
-		return cssClass;
-	}
-	
-	public void setCssClass(String cssClass) {
-		this.cssClass = cssClass;
+
+	public long getCount() {
+		return count;
 	}
 }

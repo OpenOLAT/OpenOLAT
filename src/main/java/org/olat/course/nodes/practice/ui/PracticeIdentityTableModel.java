@@ -19,11 +19,15 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 
 /**
@@ -37,13 +41,19 @@ implements SortableFlexiTableDataModel<PracticeIdentityRow> {
 	
 	private static final PracticeIdentityCols[] COLS = PracticeIdentityCols.values();
 	
-	public PracticeIdentityTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public PracticeIdentityTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		// TODO practice
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<PracticeIdentityRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override
@@ -56,7 +66,7 @@ implements SortableFlexiTableDataModel<PracticeIdentityRow> {
 	public Object getValueAt(PracticeIdentityRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case challenges: return row.getSeries();
+				case challenges: return row.getChallenges();
 				case status: return row.getAssessmentEntryStatus();
 				default: return "ERROR";
 			}

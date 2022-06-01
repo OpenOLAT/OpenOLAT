@@ -147,23 +147,24 @@ public class PracticeParticipantController extends FormBasicController {
 		flc.contextPut("errorsDesc", errorsDesc);
 
 		// Block to counter if the max. number of series is completed
-		int completedSeries = Math.min(series.size(), (seriesPerChallenge * challengesToComplete));
-		int currentNumOfSeries = completedSeries % seriesPerChallenge;
+		final int completedSeries = series.size();
+		final int currentNumOfSeries = completedSeries % seriesPerChallenge;
 
 		// Challenges
-		int completedChallenges = (completedSeries - currentNumOfSeries) / seriesPerChallenge;
-		completedChallenges = Math.min(completedChallenges, challengesToComplete);
+		final long completedChallenges = PracticeHelper.completedChalllenges(completedSeries, seriesPerChallenge);
 		String challengeProgress = translate("challenge.progress",
-				Integer.toString(completedChallenges), Integer.toString(challengesToComplete));
+				Long.toString(completedChallenges), Integer.toString(challengesToComplete));
 		flc.contextPut("challengeProgress", challengeProgress);
-		
+
 		// Series
 		String currentSeriesI18n = seriesPerChallenge > 1 ? "current.series.plural" : "current.series.singular";
-		String currentSeriesStr = Integer.toString(currentNumOfSeries);
+		String currentSeriesStr;
 		// check if the user completed the challenges
 		boolean ended = currentNumOfSeries == 0 && completedSeries >= (seriesPerChallenge * challengesToComplete);
 		if(ended) {
 			currentSeriesStr = Integer.toString(seriesPerChallenge);
+		} else {
+			currentSeriesStr = Integer.toString(currentNumOfSeries);
 		}
 		String currentSeries = translate(currentSeriesI18n, currentSeriesStr, Integer.toString(seriesPerChallenge));
 		flc.contextPut("currentSeries", currentSeries);

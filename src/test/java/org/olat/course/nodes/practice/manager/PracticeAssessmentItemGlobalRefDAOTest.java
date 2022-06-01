@@ -73,12 +73,15 @@ public class PracticeAssessmentItemGlobalRefDAOTest extends OlatTestCase {
 		String ref1 = uuid + "-1";
 		String ref2 = uuid + "-2";
 		
-		PracticeAssessmentItemGlobalRef globalRef1 = practiceAssessmentItemGlobalRefDao.createAssessmentItemGlobalRefDAO(identity, ref1);
-		PracticeAssessmentItemGlobalRef globalRef2 = practiceAssessmentItemGlobalRefDao.createAssessmentItemGlobalRefDAO(identity, ref2);
+		PracticeAssessmentItemGlobalRef globalRef1 = practiceAssessmentItemGlobalRefDao
+				.createAssessmentItemGlobalRefDAO(identity, ref1);
+		PracticeAssessmentItemGlobalRef globalRef2 = practiceAssessmentItemGlobalRefDao
+				.createAssessmentItemGlobalRefDAO(identity, ref2);
 		dbInstance.commitAndCloseSession();
 		
 		List<String> uuids = List.of(ref1, ref2);
-		List<PracticeAssessmentItemGlobalRef> globalRefs = practiceAssessmentItemGlobalRefDao.getAssessmentItemGlobalRefByUuids(identity, uuids);
+		List<PracticeAssessmentItemGlobalRef> globalRefs = practiceAssessmentItemGlobalRefDao
+				.getAssessmentItemGlobalRefByUuids(identity, uuids, false);
 		assertThat(globalRefs)
 			.isNotNull()
 			.isNotEmpty()

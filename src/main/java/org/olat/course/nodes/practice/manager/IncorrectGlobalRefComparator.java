@@ -17,41 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.chart;
+package org.olat.course.nodes.practice.manager;
+
+import java.util.Comparator;
+
+import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 
 /**
  * 
- * Initial date: 17 mai 2022<br>
+ * Initial date: 1 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PiePoint {
-	
-	private double value;
-	private String cssClass;
-	
-	public PiePoint() {
-		//
+public class IncorrectGlobalRefComparator implements Comparator<PracticeAssessmentItemGlobalRef> {
+
+	@Override
+	public int compare(PracticeAssessmentItemGlobalRef o1, PracticeAssessmentItemGlobalRef o2) {
+		double i1 = getIncorrectness(o1);
+		double i2 = getIncorrectness(o2);
+		return Double.compare(i1, i2);
 	}
 	
-	public PiePoint(double value, String cssClass) {
-		this.value = value;
-		this.cssClass = cssClass;
-	}
-	
-	public double getValue() {
-		return value;
-	}
-	
-	public void setValue(double value) {
-		this.value = value;
-	}
-	
-	public String getCssClass() {
-		return cssClass;
-	}
-	
-	public void setCssClass(String cssClass) {
-		this.cssClass = cssClass;
+	private double getIncorrectness(PracticeAssessmentItemGlobalRef o) {
+		if(o == null || o.getAttempts() <= 0) {
+			return 0.0d;
+		}
+		return o.getIncorrectAnswers() / (double)o.getAttempts();
 	}
 }

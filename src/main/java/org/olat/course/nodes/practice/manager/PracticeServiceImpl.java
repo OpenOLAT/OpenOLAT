@@ -47,6 +47,7 @@ import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.PracticeResourceInfos;
 import org.olat.course.nodes.practice.model.RankedIdentity;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
+import org.olat.course.nodes.practice.model.SeriesCount;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
@@ -265,7 +266,9 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		}
 		
 		proposedItems = trimItems(proposedItems, numOfItems);
-		Collections.shuffle(proposedItems);
+		if(searchParams.getPlayMode() != PlayMode.incorrectQuestions) {
+			Collections.shuffle(proposedItems);
+		}
 		return proposedItems;
 	}
 		
@@ -445,19 +448,28 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		return practiceItems;
 	}
 	
+	/**
+	 * @param practiceItems All items
+	 * @param identity The user
+	 * @return A list of items with at least an incorrect answer order by "incorrectness"
+	 */
 	private List<PracticeItem> filterIncorrectQuestionsPlayMode(List<PracticeItem> practiceItems, IdentityRef identity) {
-		List<PracticeAssessmentItemGlobalRef> globalRefs = getPracticeAssessmentItemGlobalRefs(practiceItems, identity);
-		Set<String> notPassedRefs = globalRefs.stream()
-				.filter(ref -> ref.getLastAttemptsPassed() != null && !ref.getLastAttemptsPassed().booleanValue())
-				.map(PracticeAssessmentItemGlobalRef::getIdentifier)
-				.collect(Collectors.toSet());
+		List<PracticeAssessmentItemGlobalRef> globalRefs = getPracticeAssessmentItemGlobalRefs(practiceItems, identity, true);
+		Collections.sort(globalRefs, new IncorrectGlobalRefComparator());
+		Collections.reverse(globalRefs);
 
-		practiceItems = practiceItems.stream()
-			.filter(item -> item.getIdentifier() != null && notPassedRefs.contains(item.getIdentifier()))
-			.collect(Collectors.toList());
+		Map<String,PracticeItem> identifiersToItem = practiceItems.stream()
+			.filter(item -> item.getIdentifier() != null)
+			.collect(Collectors.toMap(PracticeItem::getIdentifier, item -> item, (u, v) -> u));
 		
-		return practiceItems;
-		
+		List<PracticeItem> incorrectItems = new ArrayList<>(globalRefs.size());
+		for(PracticeAssessmentItemGlobalRef globalRef:globalRefs) {
+			PracticeItem item = identifiersToItem.get(globalRef.getIdentifier());
+			if(item != null) {
+				incorrectItems.add(item);
+			}
+		}
+		return incorrectItems;
 	}
 	
 	private int countItemsOfRepositoryEntry(RepositoryEntry testEntry) {
@@ -536,6 +548,11 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	public long countCompletedSeries(IdentityRef identity, RepositoryEntry courseEntry, String subIdent) {
 		return practiceAssessmentTestSessionDao.countCompletedTestSessions(courseEntry, courseEntry, subIdent, identity);
 	}
+	
+	@Override
+	public List<SeriesCount> getCountOfCompletedSeries(RepositoryEntry courseEntry, String subIdent) {
+		return practiceAssessmentTestSessionDao.countCompletedTestSessions(courseEntry, courseEntry, subIdent);
+	}
 
 	@Override
 	public List<AssessmentTestSession> getTerminatedSeries(IdentityRef identity, RepositoryEntry courseEntry, String subIdent, Date from, Date to) {
@@ -549,11 +566,15 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 
 	@Override
 	public List<PracticeAssessmentItemGlobalRef> getPracticeAssessmentItemGlobalRefs(List<PracticeItem> items, IdentityRef identity) {
+		return getPracticeAssessmentItemGlobalRefs(items, identity, false);
+	}
+	
+	private List<PracticeAssessmentItemGlobalRef> getPracticeAssessmentItemGlobalRefs(List<PracticeItem> items, IdentityRef identity, boolean withOnlyIncorrect) {
 		List<String> identifiers = items.stream()
 				.map(PracticeItem::getIdentifier)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-		return practiceAssessmentItemGlobalRefDao.getAssessmentItemGlobalRefByUuids(identity, identifiers);
+		return practiceAssessmentItemGlobalRefDao.getAssessmentItemGlobalRefByUuids(identity, identifiers, withOnlyIncorrect);
 	}
 
 	@Override

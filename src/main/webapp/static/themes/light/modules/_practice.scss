@@ -36,6 +36,54 @@
 	}
 }
 
+.o_practice_statistics_legend i {
+	&.o_practice_progress_not {
+		color: $o-practice-progress-not-bg-color;
+	}
+	&.o_practice_progress_l1 {
+		color: $o-practice-progress-l1-bg-color;
+	}
+	&.o_practice_progress_l2 {
+		color: $o-practice-progress-l2-bg-color;
+	}
+	&.o_practice_progress_l3 {
+		color: $o-practice-progress-l3-bg-color;
+	}
+	&.o_practice_progress_l4 {
+		color: $o-practice-progress-l4-bg-color;
+	}
+	&.o_practice_progress_l5 {
+		color: $o-practice-progress-l5-bg-color;
+	}
+}
+
+svg {
+	.o_practice_progress_not {
+		fill: $o-practice-progress-not-bg-color;
+		stroke: $o-practice-progress-not-bg-color;
+	}
+	.o_practice_progress_l1 {
+		fill: $o-practice-progress-l1-bg-color;
+		stroke: $o-practice-progress-l1-bg-color;
+	}
+	.o_practice_progress_l2 {
+		fill: $o-practice-progress-l2-bg-color;
+		stroke: $o-practice-progress-l2-bg-color;
+	}
+	.o_practice_progress_l3 {
+		fill: $o-practice-progress-l3-bg-color;
+		stroke: $o-practice-progress-l3-bg-color;
+	}
+	.o_practice_progress_l4 {
+		fill: $o-practice-progress-l4-bg-color;
+		stroke: $o-practice-progress-l4-bg-color;
+	}
+	.o_practice_progress_l5 {
+		fill: $o-practice-progress-l5-bg-color;
+		stroke: $o-practice-progress-l5-bg-color;
+	}
+}
+
 .o_practice_progress {
 	display: flex;
 	align-items: center;

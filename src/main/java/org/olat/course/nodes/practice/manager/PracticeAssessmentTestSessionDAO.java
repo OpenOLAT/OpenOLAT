@@ -19,11 +19,14 @@
  */
 package org.olat.course.nodes.practice.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.course.nodes.practice.model.SeriesCount;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +65,34 @@ public class PracticeAssessmentTestSessionDAO {
 		return counts == null || counts.isEmpty() || counts.get(0) == null ? 0 : counts.get(0).longValue();
 	}
 	
+	public List<SeriesCount> countCompletedTestSessions(RepositoryEntryRef testEntry,
+			RepositoryEntryRef entry, String subIdent) {
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select session.identity.key, count(*) from qtiassessmenttestsession session")
+		  .and().append(" session.testEntry.key=:testEntryKey")
+		  .and().append(" session.repositoryEntry.key=:courseEntryKey and session.subIdent=:subIdent")
+		  .and().append(" session.cancelled=false and session.exploded=false")
+		  .and().append(" (session.finishTime is not null or session.terminationTime is not null)")
+		  .and().append(" session.passed=true")
+		  .append(" group by session.identity.key");
+		
+		List<Object[]> numOfSeriesList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("courseEntryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+		
+		List<SeriesCount> counters = new ArrayList<>(numOfSeriesList.size());
+		for(Object[] count:numOfSeriesList) {
+			Long identityKey = (Long)count[0];
+			long numOfSeries = PersistenceHelper.extractPrimitiveLong(count, 1);
+			counters.add(new SeriesCount(identityKey, numOfSeries));
+		}
+		return counters;
+	}
+	
 	public List<AssessmentEntry> loadAssessmentEntries(RepositoryEntryRef entry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select data from assessmententry data ")
@@ -70,7 +101,7 @@ public class PracticeAssessmentTestSessionDAO {
 		   .and().append(" data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
 		   .and().append(" data.score is not null")
 		   .and().append(" data.share=true")
-		   .append(" order by data.score");
+		   .append(" order by data.score desc");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)

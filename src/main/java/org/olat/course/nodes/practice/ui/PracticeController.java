@@ -110,6 +110,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	private final ProgressBar progressBar;
 	private final VelocityContainer mainVC;
 	
+	private final boolean saveSerie;
 	private final boolean authorMode;
 	private final RepositoryEntry courseEntry;
 	private final PracticeCourseNode courseNode;
@@ -147,10 +148,11 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	
 	public PracticeController(UserRequest ureq, WindowControl wControl, 
 			RepositoryEntry courseEntry, PracticeCourseNode courseNode, List<PracticeItem> items,
-			PlayMode playMode, UserCourseEnvironment userCourseEnv, boolean authorMode) {
+			PlayMode playMode, UserCourseEnvironment userCourseEnv, boolean saveSerie, boolean authorMode) {
 		super(ureq, wControl);
 		
 		this.playMode = playMode;
+		this.saveSerie = saveSerie;
 		this.authorMode = authorMode;
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
@@ -281,9 +283,13 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	private void doEnd(UserRequest ureq) {
 		testSession = qtiService.reloadAssessmentTestSession(testSession);
 		testSession.setTerminationTime(new Date());
-		if(runningPracticeItems.size() >= questionPerSeries) {
+		if(runningPracticeItems.size() >= questionPerSeries && saveSerie) {
 			testSession.setPassed(Boolean.TRUE);
+		} else {
+			testSession.setPassed(Boolean.FALSE);
 		}
+		testSession.setNumOfAnsweredQuestions(runningPracticeItems.size());
+		testSession.setNumOfQuestions(runningPracticeItems.size());
 		testSession.setDuration(ureq.getRequestTimestamp().getTime() - startDate.getTime());
 		testSession = qtiService.updateAssessmentTestSession(testSession);
 		dbInstance.commitAndCloseSession();
@@ -420,6 +426,9 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 			ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 			resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+			if(resolvedAssessmentItem == null) {
+				return;
+			}
 			RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
 			if(rootNode != null) {
 				URI itemUri = rootNode.getSystemId();
@@ -599,6 +608,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				layoutCont.contextPut("itemTitle", itemTitle);
 
 				layoutCont.contextPut("itemLevel", Integer.valueOf(globalRef.getLevel()));
+				layoutCont.contextPut("maxItemLevel", Integer.valueOf(maxLevels));
 			}
 			
 			ItemBodyResultFormItem userFormItem = new ItemBodyResultFormItem("userResponseItem", resolvedAssessmentItem);
@@ -699,11 +709,11 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment);
 			
 			final Boolean passed = itemSession.getPassed();
-			final boolean firstAttempt = itemSessionState.getNumAttempts() == 1;
 			final boolean correct = passed == null || passed.booleanValue();
 			
 			practiceItem.setCorrect(correct);
 			practiceItem.incrementAttempts();
+			final boolean firstAttempt = practiceItem.getAttempts() == 1;
 			if(firstAttempt && correct) {
 				practiceItem.setCorrectAtFirstAttempts(true);
 			}

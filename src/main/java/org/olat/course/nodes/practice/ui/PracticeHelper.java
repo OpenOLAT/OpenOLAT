@@ -19,45 +19,20 @@
  */
 package org.olat.course.nodes.practice.ui;
 
-import java.util.List;
-import java.util.Locale;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-
 /**
  * 
- * Initial date: 11 mai 2022<br>
+ * Initial date: 1 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PracticeIdentityRow extends UserPropertiesRow {
+public class PracticeHelper {
 	
-	private final long series;
-	private final long challenges;
-	private final AssessmentEntryStatus status;
-	
-	public PracticeIdentityRow(Identity identity, AssessmentEntryStatus status,
-			long series, long challenges,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		super(identity, userPropertyHandlers, locale);	
-		this.status = status;
-		this.series = series;
-		this.challenges = challenges;
+	private PracticeHelper() {
+		//
 	}
 	
-	public long getSeries() {
-		return series;
+	public static long completedChalllenges(long numOfSeries, long seriesPerChallenge) {
+		long currentNumOfSeries = numOfSeries % seriesPerChallenge;
+		return (numOfSeries - currentNumOfSeries) / seriesPerChallenge;
 	}
-	
-	public long getChallenges() {
-		return challenges;
-	}
-	
-	public AssessmentEntryStatus getAssessmentEntryStatus() {
-		return status;
-	}
-
 }

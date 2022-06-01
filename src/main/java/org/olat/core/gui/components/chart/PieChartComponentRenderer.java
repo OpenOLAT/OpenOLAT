@@ -60,11 +60,8 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("    w: dWidth,\n")
 		  .append("    h: dHeight,\n")
 		  .append("    margin: margin,\n")
-		  .append("    layer: ").append(layer).append(",\n");
-		sb.append("    colors: ");
-		renderColors(sb, serie);
-		sb.append(",\n");
-		sb.append("    values: ");
+		  .append("    layer: ").append(layer).append(",\n")
+		  .append("    entries: ");
 		renderValues(sb, serie);
 		sb.append("\n")
 		  .append("  });\n")
@@ -74,7 +71,7 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("</script>");
 	}
 	
-	private void renderColors(StringOutput sb, List<PiePoint> serie) {
+	private void renderValues(StringOutput sb, List<PiePoint> serie) {
 		int numOfPoints = serie.size();
 		
 		sb.append("[");
@@ -82,24 +79,11 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 			if(i > 0) {
 				sb.append(",");
 			}
-			PiePoint point = serie.get(i);
-			sb.append("'").append(point.getColor()).append("'");
-		}
-		sb.append("]");
-	}
-	
-	private void renderValues(StringOutput sb, List<PiePoint> serie) {
-		int numOfPoints = serie.size();
-		
-		sb.append("{");
-		for(int i=0; i<numOfPoints; i++) {
-			if(i > 0) {
-				sb.append(",");
-			}
+			
 			PiePoint point = serie.get(i);
 			String category = Character.toString((char)(i + 97));
-			sb.append(category).append(": ").append(point.getValue());
+			sb.append("{ key: '").append(category).append("', value: ").append(point.getValue()).append(", cssClass: '").append(point.getCssClass()).append("'}");
 		}
-		sb.append("}");
+		sb.append("]");
 	}
 }

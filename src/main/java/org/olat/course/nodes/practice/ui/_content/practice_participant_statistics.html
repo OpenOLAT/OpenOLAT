@@ -25,13 +25,13 @@
 			$r.render("levels.chart")
 		</div>
 		<div class="o_practice_statistics_legend">
-			<span><i class='o_icon o_icon_circle_color' style='color: ${globalLevels.getColor(0)}'> </i> $r.translate("level.stat.not") (${globalLevels.getNotPercent()}%)</span><br>
+			<span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass(0)}'> </i> $r.translate("level.stat.not") (${globalLevels.getNotPercent()}%)</span><br>
 			#if($r.isNotNull($globalLevels))
 				#set($start = 1)
 				#set($end = ${globalLevels.getNumOfLevels()})
 				#set($range = [$start..$end])
 				#foreach($i in $range)
-				   <span><i class='o_icon o_icon_circle_color' style='color: ${globalLevels.getColor($i)}'> </i> $r.translate("level.stat.percent") $i (${globalLevels.getLevelPercent($i)}%)</span><br>
+				   <span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass($i)}'> </i> $r.translate("level.stat.percent") $i (${globalLevels.getLevelPercent($i)}%)</span><br>
 				#end
 			#end
 		</div>

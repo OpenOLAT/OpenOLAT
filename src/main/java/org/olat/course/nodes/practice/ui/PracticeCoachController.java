@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -31,31 +32,44 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
+import org.olat.course.nodes.practice.PracticeService;
+import org.olat.course.nodes.practice.model.SeriesCount;
 import org.olat.course.nodes.practice.ui.PracticeIdentityTableModel.PracticeIdentityCols;
 import org.olat.course.nodes.practice.ui.renders.PracticeChallengeCellRenderer;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -89,6 +103,8 @@ public class PracticeCoachController extends FormBasicController implements Acti
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private PracticeService practiceService;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -99,6 +115,7 @@ public class PracticeCoachController extends FormBasicController implements Acti
 			RepositoryEntry courseEntry, PracticeCourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, "practice_coach");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
@@ -146,13 +163,42 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				new PracticeChallengeCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "details"));
 		
-		tableModel = new PracticeIdentityTableModel(columnsModel);
+		tableModel = new PracticeIdentityTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_practice_coach_table");
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setSortSettings(options);
 		tableEl.setSelectAllEnable(true);
+		
+		initFilters();
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// life-cycle
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry("notReady", translate("filter.notReady")));
+		statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
+		statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
+		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
+		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		
+		// members
+		if (assessmentCallback.canAssessNonMembers()) {
+			SelectionValues membersValues = new SelectionValues();
+			membersValues.add(SelectionValues.entry("membersOnly", translate("filter.members")));
+			membersValues.add(SelectionValues.entry("nonMembersOnly", translate("filter.other.users")));
+			FlexiTableSingleSelectionFilter filter = new FlexiTableSingleSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+			filter.setValue("membersOnly");
+			filters.add(filter);
+		}
+
+		tableEl.setFilters(true, filters, false, false);
 	}
 
 	@Override
@@ -168,6 +214,8 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				if("details".equals(se.getCommand()) || "select".equals(se.getCommand())) {
 					doDetails(ureq, tableModel.getObject(se.getIndex()));
 				}
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -180,7 +228,7 @@ public class PracticeCoachController extends FormBasicController implements Acti
 	
 	private void loadModel() {
 		SearchAssessedIdentityParams params = getSearchParameters();
-		
+
 		// Get the identities and remove identity without assessment entry.
 		List<Identity> practicingIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 
@@ -191,14 +239,22 @@ public class PracticeCoachController extends FormBasicController implements Acti
 			.filter(entry -> entry.getIdentity() != null)
 			.forEach(entry -> entryMap.put(entry.getIdentity().getKey(), entry));
 		
+		List<SeriesCount> numOfSeriesList = practiceService.getCountOfCompletedSeries(courseEntry, courseNode.getIdent());
+		Map<Long,SeriesCount> numOfSeriesMap = numOfSeriesList.stream()
+				.collect(Collectors.toMap(SeriesCount::getIdentityKey, series -> series, (u, v) -> u));
+		
 		// Apply filters
+		final int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
 		
 		List<PracticeIdentityRow> rows = new ArrayList<>(practicingIdentities.size());
 		for(Identity practicingIdentity:practicingIdentities) {
 			AssessmentEntry entry = entryMap.get(practicingIdentity.getKey());
 			if(entry != null) {
+				SeriesCount series = numOfSeriesMap.get(practicingIdentity.getKey());
+				long numOfSeries = series == null || series.getCount() < 0l ? 0l: series.getCount();
+				long challenges = PracticeHelper.completedChalllenges(numOfSeries, seriesPerChallenge);
 				rows.add(new PracticeIdentityRow(practicingIdentity, entry.getAssessmentStatus(),
-						userPropertyHandlers, getLocale()));
+						numOfSeries, challenges, userPropertyHandlers, getLocale()));
 			}
 		}
 		
@@ -208,6 +264,35 @@ public class PracticeCoachController extends FormBasicController implements Acti
 	
 	private SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
+		if (statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<AssessmentEntryStatus> passed = filterValues.stream()
+						.filter(AssessmentEntryStatus::isValueOf)
+						.map(AssessmentEntryStatus::valueOf)
+						.collect(Collectors.toList());
+				params.setAssessmentStatus(passed);
+			}
+		}
+		
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			String filterValue = ((FlexiTableExtendedFilter)membersFilter).getValue();
+			if("membersOnly".equals(filterValue)) {
+				params.setMemebersOnly(true);
+				params.setNonMemebersOnly(false);
+			} else if("nonMembersOnly".equals(filterValue)) {
+				params.setMemebersOnly(false);
+				params.setNonMemebersOnly(true);
+			}
+		} else {
+			params.setMemebersOnly(true);
+			params.setNonMemebersOnly(false);
+		}
 		
 		return params;
 	}

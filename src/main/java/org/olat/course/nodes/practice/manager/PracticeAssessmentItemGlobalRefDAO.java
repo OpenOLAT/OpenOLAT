@@ -54,7 +54,8 @@ public class PracticeAssessmentItemGlobalRefDAO {
 		return ref;
 	}
 	
-	public List<PracticeAssessmentItemGlobalRef> getAssessmentItemGlobalRefByUuids(IdentityRef identity, List<String> identifiers) {
+	public List<PracticeAssessmentItemGlobalRef> getAssessmentItemGlobalRefByUuids(IdentityRef identity,
+			List<String> identifiers, boolean onlyWithIncorrect) {
 		if(identifiers == null || identifiers.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -62,6 +63,9 @@ public class PracticeAssessmentItemGlobalRefDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select itemRef from practiceglobalitemref as itemRef")
 		  .append(" where itemRef.identity.key=:identityKey and itemRef.identifier in (:identifiers)");
+		if(onlyWithIncorrect) {
+			sb.append(" and itemRef.incorrectAnswers > 0");
+		}
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PracticeAssessmentItemGlobalRef.class)

@@ -29,6 +29,7 @@ import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.PracticeResourceInfos;
 import org.olat.course.nodes.practice.model.RankedIdentity;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
+import org.olat.course.nodes.practice.model.SeriesCount;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItemCollection;
@@ -91,6 +92,8 @@ public interface PracticeService {
 	public void resetSeries(IdentityRef identity, RepositoryEntry courseEntry, String subIdent);
 	
 	public long countCompletedSeries(IdentityRef identity, RepositoryEntry courseEntry, String subIdent);
+	
+	public List<SeriesCount> getCountOfCompletedSeries(RepositoryEntry courseEntry, String subIdent);
 	
 	public double getProcentCorrectness(AssessmentTestSession testSession);
 	
