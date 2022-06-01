@@ -181,7 +181,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			renderItemStatus(renderer, sb, itemSessionState, translator);
 		}
 		if(component.isShowQuestionLevel()) {
-			renderQuestionLevels(component.getQuestionLevel(), sb, translator);
+			renderQuestionLevels(component.getQuestionLevel(), component.getMaxQuestionLevel(), sb, translator);
 		}
 		sb.append("</span>");
 		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h4>")
@@ -308,9 +308,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderQuestionLevels(int level, StringOutput sb, Translator translator) {
+	private void renderQuestionLevels(int level, int maxQuestionLevels, StringOutput sb, Translator translator) {
 		sb.append("<span class='o_assessmentitem_level'>").append(translator.translate("assessment.item.level")).append("");
-		for(int i=1; i<=5; i++) {
+		for(int i=1; i<=maxQuestionLevels; i++) {
 			if(i <= level) {
 				sb.append(" <i class='o_icon o_icon_circle_color'> </i>");
 			} else {

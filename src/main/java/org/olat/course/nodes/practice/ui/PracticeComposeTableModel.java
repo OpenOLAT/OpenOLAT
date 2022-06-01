@@ -22,12 +22,14 @@ package org.olat.course.nodes.practice.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 import org.olat.course.nodes.practice.model.PracticeItem;
@@ -43,17 +45,22 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 	
 	private static final ComposeCols[] COLS = ComposeCols.values();
 	
+	private final Locale locale;
 	private final int numOfLevels;
 	private List<PracticeComposeItemRow> backupRows;
 	
-	public PracticeComposeTableModel(FlexiTableColumnModel columnsModel, int numOfLevels) {
+	public PracticeComposeTableModel(FlexiTableColumnModel columnsModel, int numOfLevels, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 		this.numOfLevels = numOfLevels;
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<PracticeComposeItemRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 	
 	public void filter(String searchString, boolean notAnswered, List<Long> taxonomyLevels, List<Long> levels, Double correctFrom, Double correctTo) {

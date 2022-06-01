@@ -32,7 +32,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.olat.core.id.Persistable;
 import org.olat.course.nodes.practice.PracticeResource;
@@ -116,22 +115,6 @@ public class PracticeResourceImpl implements Persistable, PracticeResource {
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
-	}
-
-	@Override
-	@Transient
-	public String getName() {
-		String name = null;
-		if(getTestEntry() != null) {
-			name = getTestEntry().getDisplayname();
-		} else if(getPool() != null) {
-			name = getPool().getName();
-		} else if(getItemCollection() != null) {
-			name = getItemCollection().getName();
-		} else if(getResourceShare() != null) {
-			name = getResourceShare().getResourceableId().toString();
-		}
-		return name;
 	}
 
 	@Override

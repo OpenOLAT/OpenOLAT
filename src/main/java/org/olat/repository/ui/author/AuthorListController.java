@@ -218,6 +218,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink importLink;
 	private FormLink importUrlLink;
 	private FormLink copyButton;
+	private FormLink selectButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
@@ -796,6 +797,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			deletePermanentlyButton = uifactory.addFormLink("tools.delete.permanently", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(deletePermanentlyButton);
 		}
+		
+		if(configuration.isSelectRepositoryEntries() && configuration.getSelectRepositoryEntries() == SelectionMode.multi) {
+			selectButton = uifactory.addFormLink("tools.select.entries", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(selectButton);
+		}
 	}
 	
 	@Override
@@ -1085,6 +1091,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			doImport(ureq);
 		} else if(importUrlLink == source) {
 			doImportUrl(ureq);
+		} else if(selectButton == source) {
+			fireEvent(ureq, new AuthoringEntryRowsListSelectionEvent(getMultiSelectedRows()));
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -1349,7 +1357,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		return rows;
 	}
 	
-	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if(tab == null) return;
 		
 		tableEl.setSelectedFilterTab(ureq, tab);

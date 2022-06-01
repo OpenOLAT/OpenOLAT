@@ -60,7 +60,7 @@ implements SortableFlexiTableDataModel<PracticeResourceInfos> {
 		switch(COLS[col]) {
 			case id: return row.getResource().getKey();
 			case icon: return getIcon(row.getResource());
-			case title: return row.getResource().getName();
+			case title: return row.getName();
 			case numOfQuestions: return row.getNumOfItems();
 			default: return "ERROR";
 		}

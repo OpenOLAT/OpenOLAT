@@ -104,7 +104,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 		super(ureq, wControl, "compose");
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
-		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 1);
+		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
 		
 		resources = practiceService.getResources(courseEntry, courseNode.getIdent());
 		
@@ -124,7 +124,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableModel = new PracticeComposeTableModel(columnsModel, numOfLevels);
+		tableModel = new PracticeComposeTableModel(columnsModel, numOfLevels, getLocale());
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ComposeCols.question));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ComposeCols.level,
@@ -137,7 +137,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 				new StaticFlexiCellRenderer("", "play", "o_practice_play", "o_icon o_icon_start", null));
 		columnsModel.addFlexiColumnModel(playCol);
 		
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setCustomizeColumns(false);

@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
@@ -46,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentEvents;
@@ -114,6 +116,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	private final List<RunningPracticeItem> runningPracticeItems;
 	private final AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	
+	private final int maxLevels;
 	private int currentIndex = 0;
 	private final PlayMode playMode;
 	private final int questionPerSeries;
@@ -122,7 +125,9 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	private final UserCourseEnvironment userCourseEnv;
 	
 	private EndController endCtrl;
+	private CloseableModalController cmc;
 	private FeedbackController feedbackCtrl;
+	private ConfirmCancelController cancelCtrl;
 	private PracticeAssessmentItemController assessmentItemCtrl;
 	
 	private final Date startDate;
@@ -154,7 +159,8 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				.collect(Collectors.toList());
 		startDate = ureq.getRequestTimestamp();
 		this.userCourseEnv = userCourseEnv;
-		questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 20);
+		questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
+		maxLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
 		
 		AssessmentEntry assessmentEntry;
 		if(authorMode) {
@@ -195,7 +201,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(closeLink == source) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
+			doConfirmCancel(ureq);
 		}
 	}
 	
@@ -213,7 +219,22 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			if(event instanceof NextSerieEvent || event instanceof OverviewEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if(cancelCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
+			cmc.deactivate();
 		}
+	}
+	
+	private void doConfirmCancel(UserRequest ureq) {
+		cancelCtrl = new ConfirmCancelController(ureq, getWindowControl());
+		listenTo(cancelCtrl);
+		
+		String title = translate("confirm.back.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", cancelCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	private void doNextQuestion(UserRequest ureq) {
@@ -277,8 +298,8 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	}
 	
 	private void updateCalculatedScoreAndStatus(UserRequest ureq) {
-		int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 1);
-		int challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 1);
+		int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
+		int challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 2);
 		int totalSeries = seriesPerChallenge * challengesToComplete;
 		long completedSeries = practiceService.countCompletedSeries(getIdentity(), courseEntry, courseNode.getIdent());
 		
@@ -592,7 +613,8 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			initInteractionResultFormItem(solutionFormItem);
 			formLayout.add("solutionItem", solutionFormItem);
 			
-			uifactory.addFormSubmitButton("next", formLayout);
+			FormSubmit nextButton = uifactory.addFormSubmitButton("next", formLayout);
+			nextButton.setFocus(true);
 		}
 		
 		private void initInteractionResultFormItem(ItemBodyResultFormItem formItem) {
@@ -636,7 +658,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			
 			List<PracticeAssessmentItemGlobalRef> refs = practiceService.getPracticeAssessmentItemGlobalRefs(List.of(practiceItem.getItem()), getIdentity());
 			int level = refs.isEmpty() ? 0 : refs.get(0).getLevel();
-			qtiWorksCtrl.showQuestionLevel(level);
+			qtiWorksCtrl.showQuestionLevel(level, maxLevels);
 		}
 		
 		protected ItemSessionState getItemSessionState() {

@@ -97,7 +97,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		} else {
 			resources = List.copyOf(cachedResources);
 		}
-		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 1);
+		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
 		
 		initForm(ureq);
 		
@@ -121,7 +121,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		this.resources = resources;
 		this.courseEntry = courseEntry;
 		practicingIdentity = getIdentity();
-		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 1);
+		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
 
 		initForm(ureq);
 		loadStatistics(series);
@@ -160,7 +160,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		}
 		
 		taxonomyTableModel = new PracticeParticipantTaxonomyStatisticsTableModel(columnsModel);
-		taxonomyTableEl = uifactory.addTableElement(getWindowControl(), "taxonomy.table", taxonomyTableModel, 24, false, getTranslator(), formLayout);
+		taxonomyTableEl = uifactory.addTableElement(getWindowControl(), "taxonomy.table", taxonomyTableModel, 20, false, getTranslator(), formLayout);
 		taxonomyTableEl.setNumOfRowsEnabled(false);
 		taxonomyTableEl.setCustomizeColumns(false);
 	}
@@ -168,8 +168,8 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 	protected void loadStatistics(List<AssessmentTestSession> seriesList) {
 		series = List.copyOf(seriesList);
 
-		int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 1);
-		int challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 1);
+		int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
+		int challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 2);
 		
 		int numOfSeries = series.size();
 		flc.contextPut("series", Integer.valueOf(numOfSeries));

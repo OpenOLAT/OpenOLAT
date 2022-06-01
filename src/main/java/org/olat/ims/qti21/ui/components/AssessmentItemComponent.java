@@ -50,6 +50,7 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	private boolean enableSkip;
 	
 	private int questionLevel;
+	private int maxQuestionLevel = 5;
 	private boolean showQuestionLevel = false;
 	private boolean showStatus = true;
 	
@@ -93,9 +94,14 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	public int getQuestionLevel() {
 		return questionLevel;
 	}
+	
+	public int getMaxQuestionLevel() {
+		return maxQuestionLevel;
+	}
 
-	public void setQuestionLevel(int questionLevel) {
+	public void setQuestionLevel(int questionLevel, int maxQuestionLevel) {
 		this.questionLevel = questionLevel;
+		this.maxQuestionLevel = maxQuestionLevel;
 	}
 
 	public boolean isShowQuestionLevel() {

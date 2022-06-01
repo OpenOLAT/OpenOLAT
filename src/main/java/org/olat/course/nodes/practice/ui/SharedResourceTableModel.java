@@ -74,7 +74,7 @@ implements SortableFlexiTableDataModel<SharedResourceRow> {
 	}
 
 	public enum SharedResourceCols implements FlexiSortableColumnDef {
-		id("table.header.taxonomy.level"),
+		id("table.header.id"),
 		icon("table.header.icon"),
 		name("table.header.questions");
 		

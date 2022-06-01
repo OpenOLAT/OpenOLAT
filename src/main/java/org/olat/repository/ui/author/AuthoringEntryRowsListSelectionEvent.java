@@ -17,37 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.practice;
+package org.olat.repository.ui.author;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QuestionItemCollection;
-import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
+import java.util.List;
+
+import org.olat.core.gui.control.Event;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
 
 /**
  * 
- * Initial date: 5 mai 2022<br>
+ * Initial date: 6 oct. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PracticeResource extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
-	
-	
-	public RepositoryEntry getRepositoryEntry();
+public class AuthoringEntryRowsListSelectionEvent extends Event {
 
-	public String getSubIdent();
+	private static final long serialVersionUID = 5665272422542979377L;
 	
+	private List<AuthoringEntryRow> rows;
 	
-	public RepositoryEntry getTestEntry();
+	public AuthoringEntryRowsListSelectionEvent(List<AuthoringEntryRow> rows) {
+		super(ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED.getCommand());
+		this.rows = rows;
+	}
 
-	public QuestionItemCollection getItemCollection();
-
-	public Pool getPool();
-	
-	public OLATResource getResourceShare();
-
+	public List<AuthoringEntryRow> getRows() {
+		return rows;
+	}
 }

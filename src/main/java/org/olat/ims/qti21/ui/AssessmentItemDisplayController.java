@@ -1128,8 +1128,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		 * 
 		 * @param level The level (0 to 5)
 		 */
-		public void showQuestionLevel(int level) {
-			qtiEl.setQuestionLevel(level);
+		public void showQuestionLevel(int level, int maxLevels) {
+			qtiEl.setQuestionLevel(level, maxLevels);
 			qtiEl.setShowQuestionLevel(true);
 			qtiEl.setShowStatus(false);
 		}

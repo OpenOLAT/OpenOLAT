@@ -100,8 +100,8 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 		return component.getQuestionLevel();
 	}
 
-	public void setQuestionLevel(int questionLevel) {
-		component.setQuestionLevel(questionLevel);
+	public void setQuestionLevel(int questionLevel, int maxQuestionLevels) {
+		component.setQuestionLevel(questionLevel, maxQuestionLevels);
 	}
 
 	public boolean isShowQuestionLevel() {

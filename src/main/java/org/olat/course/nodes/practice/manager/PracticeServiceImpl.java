@@ -50,6 +50,7 @@ import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentItemSessionDAO;
@@ -102,6 +103,8 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	private QItemQueriesDAO itemQueriesDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private PracticeResourceDAO practiceResourceDao;
 	@Autowired
@@ -197,7 +200,8 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 				SearchQuestionItemParams params = new SearchQuestionItemParams();
 				params.setResource(resource.getResourceShare());
 				int numOfItems	= itemQueriesDao.countItems(params);
-				infos.add(new PracticeResourceInfos(resource, numOfItems));
+				BusinessGroup businessGroup = businessGroupDao.loadByResourceId(resource.getResourceShare().getResourceableId());
+				infos.add(new PracticeResourceInfos(resource, businessGroup, numOfItems));
 			}
 		}
 		return infos;

@@ -43,7 +43,6 @@ import org.olat.course.nodes.practice.ui.events.StartPracticeEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,8 +74,6 @@ public class PracticeParticipantController extends FormBasicController {
 	private PracticeParticipantStatisticsController statisticsCtrl;
 	
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private PracticeService practiceService;
 	
 	public PracticeParticipantController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, PracticeCourseNode courseNode,
@@ -87,9 +84,9 @@ public class PracticeParticipantController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
 		rankList = courseNode.getModuleConfiguration().getBooleanSafe(PracticeEditController.CONFIG_KEY_RANK_LIST, false);
-		questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 20);
-		seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 1);
-		challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 1);
+		questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
+		seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
+		challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 2);
 		
 		series = practiceService.getSeries(getIdentity(), courseEntry, courseNode.getIdent());
 		resources = practiceService.getResources(courseEntry, courseNode.getIdent());
@@ -102,18 +99,6 @@ public class PracticeParticipantController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
-			String welcomeTitle;
-			if(ureq.getUserSession().getRoles().isGuestOnly()) {
-				welcomeTitle = translate("welcome.title.guest");
-			} else {
-				String[] args = new String[] {
-					getIdentity().getUser().getFirstName(), getIdentity().getUser().getLastName(),
-					userManager.getUserDisplayName(getIdentity())
-				};
-				welcomeTitle = translate("welcome.title", args);
-			}
-			layoutCont.contextPut("welcomeTitle", welcomeTitle);
 			
 			String playShuffleDesc = translate("play.shuffle.desc", Integer.toString(questionPerSeries));
 			layoutCont.contextPut("playShuffleDesc", playShuffleDesc);

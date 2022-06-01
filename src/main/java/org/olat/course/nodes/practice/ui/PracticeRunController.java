@@ -28,6 +28,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -61,6 +62,7 @@ public class PracticeRunController extends BasicController {
 	private Link coachLink;
 	private Link previewLink;
 	private SegmentViewComponent segmentView;
+	private BreadcrumbedStackedPanel composerPanel;
 	private final VelocityContainer mainVC;
 	private TooledStackedPanel coachPanel;
 	
@@ -125,6 +127,8 @@ public class PracticeRunController extends BasicController {
 					doOpenParticipant(ureq);
 				}
 			}
+		} else if(composerPanel == source) {
+			cleanUpComposer();
 		}
 	}
 	
@@ -150,6 +154,15 @@ public class PracticeRunController extends BasicController {
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUpComposer() {
+		removeAsListenerAndDispose(composeSerieCtrl);
+		composeSerieCtrl = null;
+		composerPanel.removeListener(this);
+		composerPanel = null;
+		
+		cleanUpSerie();
 	}
 	
 	private void cleanUpSerie() {
@@ -199,7 +212,7 @@ public class PracticeRunController extends BasicController {
 		searchParams.setPlayMode(playMode);
 		
 		List<PracticeResource> resources = practiceService.getResources(courseEntry, courseNode.getIdent());
-		int questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 20);
+		int questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
 		
 		if(items.isEmpty()) {
@@ -223,7 +236,12 @@ public class PracticeRunController extends BasicController {
 
 		composeSerieCtrl = new PracticeComposeSerieController(ureq, getWindowControl(), courseEntry, courseNode);
 		listenTo(composeSerieCtrl);
-		mainVC.put("practiceCmp", composeSerieCtrl.getInitialComponent());
+		
+		composerPanel = new BreadcrumbedStackedPanel("composer", getTranslator(), this);
+		composerPanel.setInvisibleCrumb(0);
+		composerPanel.pushController(translate("crumb.overview"), this);
+		composerPanel.pushController(translate("crumb.compose"), composeSerieCtrl);
+		mainVC.put("practiceCmp", composerPanel);
 	}
 
 }

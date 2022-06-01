@@ -52,9 +52,9 @@ public class LevelCircleCellRenderer implements FlexiCellRenderer {
 				}
 				
 				if(i <= level) {
-					target.append("<span><i class='o_icon o_icon_circle_color'> </i></span>");
+					target.append("<span class='o_assessmentitem_level'><i class='o_icon o_icon_circle_color'> </i></span>");
 				} else {
-					target.append("<span><i class='o_icon o_icon_disabled'> </i></span>");
+					target.append("<span class='o_assessmentitem_level'><i class='o_icon o_icon_disabled'> </i></span>");
 				}
 			}
 		}

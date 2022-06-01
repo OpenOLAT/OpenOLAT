@@ -32,15 +32,17 @@ public class PracticeFilterRule implements Serializable {
 	private static final long serialVersionUID = -3493887701920916425L;
 	
 	private Type type;
+	private Operator operator;
 	private String value;
 	
 	public PracticeFilterRule() {
 		//
 	}
 	
-	public PracticeFilterRule(Type type, String value) {
+	public PracticeFilterRule(Type type, Operator operator, String value) {
 		this.type = type;
 		this.value = value;
+		this.operator = operator;
 	}
 
 	public Type getType() {
@@ -49,6 +51,17 @@ public class PracticeFilterRule implements Serializable {
 	
 	public void setType(Type type) {
 		this.type = type;
+	}
+
+	/**
+	 * @return The operator, default is equals
+	 */
+	public Operator getOperator() {
+		return operator == null ? Operator.equals : operator;
+	}
+
+	public void setOperator(Operator operator) {
+		this.operator = operator;
 	}
 
 	public String getValue() {
@@ -64,5 +77,11 @@ public class PracticeFilterRule implements Serializable {
 		keyword,
 		language,
 		educationalContextLevel
+	}
+	
+	public enum Operator {
+
+		equals,
+		notEquals
 	}
 }

@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -57,6 +58,7 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
+import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
@@ -84,6 +86,7 @@ import org.olat.repository.ui.author.AuthorListConfiguration;
 import org.olat.repository.ui.author.AuthorListController;
 import org.olat.repository.ui.author.AuthoringEntryRow;
 import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
+import org.olat.repository.ui.author.AuthoringEntryRowsListSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -103,7 +106,6 @@ public class PracticeConfigurationController extends FormBasicController {
 	private TextElement seriePerChallengeEl;
 	private MultipleSelectionElement rankListEl;
 
-	private DefaultFlexiColumnModel titleCol;
 	private FlexiTableElement resourcesTableEl;
 	private PracticeResourceTableModel resourcesModel;
 	private FlexiTableElement taxonomyStatisticsEl;
@@ -189,7 +191,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		iconCol.setHeaderLabel("&nbsp;");
 		iconCol.setHeaderTooltip(translate(PracticeResourceCols.icon.i18nHeaderKey()));
 		columnsModel.addFlexiColumnModel(iconCol);
-		titleCol = new DefaultFlexiColumnModel(PracticeResourceCols.title);
+		DefaultFlexiColumnModel titleCol = new DefaultFlexiColumnModel(PracticeResourceCols.title);
 		columnsModel.addFlexiColumnModel(titleCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeResourceCols.numOfQuestions));
 		DefaultFlexiColumnModel removeCol = new DefaultFlexiColumnModel("remove", "", "remove", "o_icon o_icon_delete_item");
@@ -326,7 +328,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		}
 		levelEl = uifactory.addDropdownSingleselect("levels", "levels", formLayout,
 				levels.keys(), levels.values());
-		String level = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_LEVELS, "1");
+		String level = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_LEVELS, "3");
 		if(StringHelper.containsNonWhitespace(level) && levels.containsKey(level)) {
 			levelEl.select(level, true);
 		}
@@ -337,17 +339,17 @@ public class PracticeConfigurationController extends FormBasicController {
 		questionsPerSerie.add(SelectionValues.entry("50", "50"));
 		questionPerSerieEl = uifactory.addDropdownSingleselect("questions.serie", "questions.serie", formLayout,
 				questionsPerSerie.keys(), questionsPerSerie.values());
-		String questionPerSerie = config.getStringValue(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, "20");
+		String questionPerSerie = config.getStringValue(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, "10");
 		if(StringHelper.containsNonWhitespace(questionPerSerie) && questionsPerSerie.containsKey(questionPerSerie)) {
 			questionPerSerieEl.select(questionPerSerie, true);
 		}
 		
-		String seriePerChallenge = config.getStringValue(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, "1");
+		String seriePerChallenge = config.getStringValue(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, "2");
 		seriePerChallengeEl = uifactory.addTextElement("series.challenge", 4, seriePerChallenge, formLayout);
 		
 		uifactory.addSpacerElement("challenges-space", formLayout, false);
 
-		String challengeToComplete = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, "1");
+		String challengeToComplete = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, "2");
 		challengeToCompleteEl = uifactory.addTextElement("num.challenges", 4, challengeToComplete, formLayout);
 		
 		SelectionValues rankKeys = new SelectionValues();
@@ -363,7 +365,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeTaxonomyCols.numOfQuestions));
 
 		taxonomyStatisticsModel = new PracticeResourceTaxonomyTableModel(columnsModel);
-		taxonomyStatisticsEl = uifactory.addTableElement(getWindowControl(), "statistics.taxonomy.level", taxonomyStatisticsModel, 24, false, getTranslator(), formLayout);
+		taxonomyStatisticsEl = uifactory.addTableElement(getWindowControl(), "statistics.taxonomy.level", taxonomyStatisticsModel, 20, false, getTranslator(), formLayout);
 		taxonomyStatisticsEl.setNumOfRowsEnabled(false);
 		taxonomyStatisticsEl.setCustomizeColumns(false);
 	}
@@ -427,6 +429,9 @@ public class PracticeConfigurationController extends FormBasicController {
 			if(event instanceof AuthoringEntryRowSelectionEvent) {
 				AuthoringEntryRowSelectionEvent se = (AuthoringEntryRowSelectionEvent)event;
 				doAddTest(se.getRow());
+			} else if(event instanceof AuthoringEntryRowsListSelectionEvent) {
+				AuthoringEntryRowsListSelectionEvent se = (AuthoringEntryRowsListSelectionEvent)event;
+				doAddTest(se.getRows());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -539,7 +544,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		List<Long> selectedLevelKeys = getSelectedTaxonomyLevels();
 		config.setList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, selectedLevelKeys);
 		boolean rankList = rankListEl.isAtLeastSelected(1);
-		config.setBooleanEntry(PracticeEditController.CONFIG_KEY_RANK_LIST, Boolean.valueOf(rankList));
+		config.setBooleanEntry(PracticeEditController.CONFIG_KEY_RANK_LIST, rankList);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 		
@@ -552,7 +557,7 @@ public class PracticeConfigurationController extends FormBasicController {
 			String type = ruleEl.getTypeEl().getSelectedKey();
 			PracticeFilterRule.Type typed = PracticeFilterRule.Type.valueOf(type);
 			String value = ruleEl.getValue();
-			rules.add(new PracticeFilterRule(typed, value));
+			rules.add(new PracticeFilterRule(typed, Operator.equals, value));
 		}
 		return rules;
 	}
@@ -577,13 +582,22 @@ public class PracticeConfigurationController extends FormBasicController {
 	private void doAddTest(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("practice-qti21-test-v1", ImsQTI21Resource.TYPE_NAME);
+		tableConfig.setSelectRepositoryEntry(SelectionMode.multi);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
+		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.setCanReference(true);
 		searchParams.addResourceTypes(ImsQTI21Resource.TYPE_NAME);
+		List<Long> excludeEntries = resourcesModel.getObjects().stream()
+				.filter(infos -> infos.getResource().getTestEntry() != null)
+				.map(resource -> resource.getResource().getTestEntry().getKey())
+				.collect(Collectors.toList());
+		searchParams.setExcludeEntryKeys(excludeEntries);
+		
 		testResourcesListCtrl = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
 		listenTo(testResourcesListCtrl);
+		testResourcesListCtrl.selectFilterTab(ureq, testResourcesListCtrl.getMyTab());
 		
 		String title = translate("add.resource.test.title");
 		cmc = new CloseableModalController(getWindowControl(), "close", testResourcesListCtrl.getInitialComponent(), true, title);
@@ -598,8 +612,18 @@ public class PracticeConfigurationController extends FormBasicController {
 		loadStatistics();
 	}
 	
+	private void doAddTest(List<AuthoringEntryRow> entryRows) {
+		for(AuthoringEntryRow entryRow:entryRows) {
+			RepositoryEntry testEntry = repositoryService.loadByKey(entryRow.getKey());
+			practiceResourceService.createResource(courseEntry, courseNode.getIdent(), testEntry);
+		}
+		loadModel();
+		loadStatistics();
+	}
+	
 	private void doAddPool(UserRequest ureq) {
-		sharesChooserCtrl = new SharedResourceChooserController(ureq, getWindowControl(), courseEntry, courseNode);
+		List<PracticeResourceInfos> resources = resourcesModel.getObjects();
+		sharesChooserCtrl = new SharedResourceChooserController(ureq, getWindowControl(), courseEntry, courseNode, resources);
 		listenTo(sharesChooserCtrl);
 		
 		String title = translate("add.resource.pool.title");
@@ -631,7 +655,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	}
 	
 	private void doAddRule(String rule) {
-		PracticeFilterRule filter = new PracticeFilterRule(PracticeFilterRule.Type.valueOf(rule), null);
+		PracticeFilterRule filter = new PracticeFilterRule(PracticeFilterRule.Type.valueOf(rule), Operator.equals, null);
 		RuleElement ruleEl = initRuleForm(criteriaCont, filter);
 		ruleEls.add(ruleEl);
 		criteriaCont.setDirty(true);
@@ -643,7 +667,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	}
 	
 	private void doChangeRuleType(RuleElement ruleEl) {
-		PracticeFilterRule rule = new PracticeFilterRule(ruleEl.getType(), ruleEl.getValue());
+		PracticeFilterRule rule = new PracticeFilterRule(ruleEl.getType(), Operator.equals, ruleEl.getValue());
 		initRuleValueForm(criteriaCont, rule, ruleEl);
 		criteriaCont.setDirty(true);
 	}

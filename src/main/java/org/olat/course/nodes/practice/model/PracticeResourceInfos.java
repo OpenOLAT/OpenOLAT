@@ -20,6 +20,7 @@
 package org.olat.course.nodes.practice.model;
 
 import org.olat.course.nodes.practice.PracticeResource;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
@@ -30,15 +31,35 @@ import org.olat.course.nodes.practice.PracticeResource;
 public class PracticeResourceInfos {
 	
 	private final PracticeResource resource;
+	private final BusinessGroup businessGroup;
 	private final int numOfItems;
 	
 	public PracticeResourceInfos(PracticeResource resource, int numOfItems) {
+		this(resource, null, numOfItems);
+	}
+	
+	public PracticeResourceInfos(PracticeResource resource, BusinessGroup businessGroup, int numOfItems) {
 		this.resource = resource;
 		this.numOfItems = numOfItems;
+		this.businessGroup = businessGroup;
 	}
 	
 	public String getName() {
-		return resource.getName();
+		String name = null;
+		if(resource.getTestEntry() != null) {
+			name = resource.getTestEntry().getDisplayname();
+		} else if(resource.getPool() != null) {
+			name = resource.getPool().getName();
+		} else if(resource.getItemCollection() != null) {
+			name = resource.getItemCollection().getName();
+		} else if(resource.getResourceShare() != null) {
+			if(businessGroup != null) {
+				name = businessGroup.getName();
+			} else {
+				name = resource.getResourceShare().getResourceableId().toString();
+			}
+		}
+		return name;
 	}
 	
 	public boolean isTestEntry() {
