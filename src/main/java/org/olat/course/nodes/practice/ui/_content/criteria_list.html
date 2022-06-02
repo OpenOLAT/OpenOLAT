@@ -17,7 +17,8 @@
 	#foreach($rule in $rules)
 	<div class="o_reminder_rule row o_sel_row-$foreach.count">
 		<div class="col-md-4">$r.render($rule.typeEl.name)</div>
-		<div class="col-md-6">
+		<div class="col-md-2">$r.render($rule.operatorEl.name)</div>
+		<div class="col-md-4">
 			$r.render($rule.valueItem.name)
 			#if($f.hasError($rule.valueItem))
 				<br>$r.render("${rule.valueItem.name}_ERROR")

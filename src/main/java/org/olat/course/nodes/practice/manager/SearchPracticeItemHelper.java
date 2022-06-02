@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.practice.PracticeFilterRule;
+import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
@@ -86,13 +87,18 @@ public class SearchPracticeItemHelper {
 			if(taxonomicPathKey != null && !levelsPathKeys.contains(taxonomicPathKey)) {
 				return false;
 			}
-		} else if (includeWithoutTaxonomy && StringHelper.containsNonWhitespace(taxonomicPathKey)) {
+		}/* else if (includeWithoutTaxonomy && StringHelper.containsNonWhitespace(taxonomicPathKey)) {
 			return false;
-		}
+		}*/
 		return true;
 	}
 	
 	public static boolean accept(QuestionItem item, PracticeFilterRule rule) {
+		boolean val = isEqual(item, rule);
+		return accept(val, rule.getOperator());
+	}
+	
+	private static boolean isEqual(QuestionItem item, PracticeFilterRule rule) {
 		if(rule.getType() == Type.language) {
 			return rule.getValue().equalsIgnoreCase(item.getLanguage());
 		}
@@ -108,10 +114,13 @@ public class SearchPracticeItemHelper {
 		}
 		
 		if(rule.getType() == Type.assessmentType) {
-			String assessmentType = item.getAssessmentType();
-			return assessmentType != null && assessmentType.equals(rule.getValue());
+			return rule.getValue().equals(item.getAssessmentType());
 		}
 		return true;
+	}
+	
+	private static boolean accept(boolean equalVal, Operator operator) {
+		return (equalVal && operator == Operator.equals) || (!equalVal && operator == Operator.notEquals);
 	}
 	
 	

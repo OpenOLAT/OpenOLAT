@@ -269,11 +269,17 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 		}
 		
+		SelectionValues operatorKeys = new SelectionValues();
+		operatorKeys.add(SelectionValues.entry(PracticeFilterRule.Operator.equals.name(), translate("operator.equal")));
+		operatorKeys.add(SelectionValues.entry(PracticeFilterRule.Operator.notEquals.name(), translate("operator.not.equal")));
+		SingleSelection operatorEl = uifactory.addDropdownSingleselect("rule.operator.".concat(partId), null, rulesCont, operatorKeys.keys(), operatorKeys.values(), null);
+		operatorEl.select(rule.getOperator().name(), true);
+		
 		FormLink deleteRuleButton = uifactory.addFormLink("delete.rule.".concat(partId), "delete", "", null, rulesCont, Link.NONTRANSLATED + Link.BUTTON);
 		deleteRuleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		deleteRuleButton.setElementCssClass("o_sel_course_delete_rule");
 
-		RuleElement ruleEl = new RuleElement(typeEl, deleteRuleButton);
+		RuleElement ruleEl = new RuleElement(typeEl, operatorEl, deleteRuleButton);
 		typeEl.setUserObject(ruleEl);
 		deleteRuleButton.setUserObject(ruleEl);
 		
@@ -581,7 +587,8 @@ public class PracticeConfigurationController extends FormBasicController {
 			String type = ruleEl.getTypeEl().getSelectedKey();
 			PracticeFilterRule.Type typed = PracticeFilterRule.Type.valueOf(type);
 			String value = ruleEl.getValue();
-			rules.add(new PracticeFilterRule(typed, Operator.equals, value));
+			Operator operator = ruleEl.getOperator();
+			rules.add(new PracticeFilterRule(typed, operator, value));
 		}
 		return rules;
 	}
@@ -691,7 +698,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	}
 	
 	private void doChangeRuleType(RuleElement ruleEl) {
-		PracticeFilterRule rule = new PracticeFilterRule(ruleEl.getType(), Operator.equals, ruleEl.getValue());
+		PracticeFilterRule rule = new PracticeFilterRule(ruleEl.getType(), ruleEl.getOperator(), ruleEl.getValue());
 		initRuleValueForm(criteriaCont, rule, ruleEl);
 		criteriaCont.setDirty(true);
 	}
@@ -699,16 +706,22 @@ public class PracticeConfigurationController extends FormBasicController {
 	public static class RuleElement {
 		
 		private final SingleSelection typeEl;
+		private final SingleSelection operatorEl;
 		private final FormLink deleteButton;
 		private FormItem valueItem;
 		
-		public RuleElement(SingleSelection typeEl, FormLink deleteButton) {
+		public RuleElement(SingleSelection typeEl, SingleSelection operatorEl, FormLink deleteButton) {
 			this.typeEl = typeEl;
+			this.operatorEl = operatorEl;
 			this.deleteButton = deleteButton;
 		}
 		
 		public PracticeFilterRule.Type getType() {
 			return Type.valueOf(typeEl.getSelectedKey());
+		}
+		
+		public SingleSelection getOperatorEl() {
+			return operatorEl;
 		}
 		
 		public SingleSelection getTypeEl() {
@@ -735,6 +748,13 @@ public class PracticeConfigurationController extends FormBasicController {
 				return ((SingleSelection)valueItem).getSelectedKey();
 			}
 			return null;	
+		}
+		
+		public Operator getOperator() {
+			if(operatorEl.isOneSelected()) {
+				return Operator.valueOf(operatorEl.getSelectedKey());
+			}
+			return Operator.equals;
 		}
 	}
 }

@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
+import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.modules.qpool.Pool;
@@ -175,16 +176,33 @@ public class PracticeQuestionItemQueries {
 					continue;
 				}
 				types.add(rule.getType());
+				Operator operator = rule.getOperator();
 				
 				Type type = rule.getType();
 				if(type == Type.assessmentType) {
-					sb.and().append(" item.assessmentType in (:assessmentTypes)");
+					if(operator.equals(Operator.equals)) {
+						sb.and().append(" (item.assessmentType is null or item.assessmentType not in (:assessmentTypes))");
+					} else {
+						sb.and().append(" item.assessmentType in (:assessmentTypes)");
+					}
 				} else if(type == Type.educationalContextLevel) {
-					sb.and().append(" item.educationalContext.key in (:educationalContextKeys)");
+					if(operator.equals(Operator.equals)) {
+						sb.and().append(" item.educationalContext.key in (:educationalContextKeys)");
+					} else {
+						sb.and().append(" (item.educationalContext.key is null or item.educationalContext.key not in (:educationalContextKeys))");
+					}
 				} else if(type == Type.keyword) {
-					sb.and().appendFuzzyLike("item.keywords", "keywords_" + (count++));
+					if(operator == Operator.equals) {
+						sb.and().appendFuzzyLike("item.keywords", "keywords_" + (count++));
+					} else {
+						sb.and().appendFuzzyNotLike("item.keywords", "keywords_" + (count++));
+					}
 				} else if(type == Type.language) {
-					sb.and().append(" item.language in (:languages)");
+					if(operator.equals(Operator.equals)) {
+						sb.and().append(" item.language in (:languages)");
+					} else {
+						sb.and().append(" (item.language is null or item.language not in (:languages))");
+					}
 				}
 			}
 		}

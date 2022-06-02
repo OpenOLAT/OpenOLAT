@@ -149,6 +149,23 @@ public class PersistenceHelper {
 			log.error("", e);
 		}
 	}
+	
+	public static final void appendFuzzyNotLike(Appendable sb, String field, String key, String dbVendor) {
+		try {
+			sb.append("(").append(field).append(" is null or ");
+			if(dbVendor.equals("mysql")) {
+				sb.append(" ").append(field).append(" not like :").append(key);
+			} else {
+				sb.append(" lower(").append(field).append(") not like :").append(key);
+			}
+			if(dbVendor.equals("oracle")) {
+				sb.append(" escape '\\'");
+			}
+			sb.append(")");
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
 
 	
 	/**

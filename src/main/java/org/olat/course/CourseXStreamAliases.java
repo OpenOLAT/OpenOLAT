@@ -146,7 +146,7 @@ public class CourseXStreamAliases {
 			// adobe connect element
 			AdobeConnectCompatibilityConfiguration.class, WimbaClassroomCompatibilityConfiguration.class, MeetingCompatibilityDate.class,
 			// practice
-			PracticeFilterRule.class, PracticeFilterRule.Type.class
+			PracticeFilterRule.class, PracticeFilterRule.Type.class, PracticeFilterRule.Operator.class
 		};
 		
 		xstream.addPermission(new ExplicitTypePermission(types));
