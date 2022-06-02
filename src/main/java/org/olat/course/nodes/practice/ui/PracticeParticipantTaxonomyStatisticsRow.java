@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.List;
+
+import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -30,18 +33,45 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class PracticeParticipantTaxonomyStatisticsRow {
 	
 	private final Levels levels;
+	private final String taxonomyLevelName;
+	private final List<String> taxonomyPath;
+	private final String taxonomicPathKey;
 	private final TaxonomyLevel taxonomyLevel;
+	
+	public PracticeParticipantTaxonomyStatisticsRow(String label, int numOfLevels) {
+		this.taxonomyLevelName = label;
+		levels = new Levels(numOfLevels);
+		taxonomyPath = null;
+		taxonomyLevel = null;
+		taxonomicPathKey = null;
+	}
 	
 	public PracticeParticipantTaxonomyStatisticsRow(TaxonomyLevel taxonomyLevel, int numOfLevels) {
 		this.taxonomyLevel = taxonomyLevel;
-		this.levels = new Levels(numOfLevels);
+		taxonomyLevelName = taxonomyLevel.getDisplayName();
+		levels = new Levels(numOfLevels);
+		taxonomyPath = SearchPracticeItemParametersHelper.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
+		taxonomicPathKey = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(taxonomyLevelName, taxonomyPath);
 	}
 
 	public Levels getLevels() {
 		return levels;
 	}
-
+	
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
 	}
+
+	public String getTaxonomyLevelName() {
+		return taxonomyLevelName;
+	}
+
+	public List<String> getTaxonomyPath() {
+		return taxonomyPath;
+	}
+
+	public String getTaxonomicPathKey() {
+		return taxonomicPathKey;
+	}
+	
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.practice.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -26,6 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
 import org.olat.course.nodes.practice.ui.PracticeEditController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -42,7 +44,11 @@ public class SearchPracticeItemParameters {
 	
 	private List<PracticeFilterRule> rules;
 	private List<TaxonomyLevel> descendantsTaxonomyLevels;
-	private Long exactTaxonomyLevelKey;
+	private List<String> descendantsTaxonomicPathKeys;
+	private TaxonomyLevel exactTaxonomyLevel;
+	private List<String> exactTaxonomicPathKeys;
+	
+	private boolean includeWithoutTaxonomyLevel;
 	
 	private PlayMode playMode;
 	private RepositoryEntryRef courseEntry;
@@ -57,12 +63,15 @@ public class SearchPracticeItemParameters {
 		
 		List<Long> selectedLevels = courseNode.getModuleConfiguration()
 				.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
-
 		if(selectedLevels != null && !selectedLevels.isEmpty()) {
 			List<TaxonomyLevel> levels = CoreSpringFactory.getImpl(TaxonomyService.class)
 					.getTaxonomyLevelsByKeys(selectedLevels);
 			searchParams.setDescendantsLevels(levels);
 		}
+		
+		boolean includeWOLevels = courseNode.getModuleConfiguration()
+				.getBooleanSafe(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, false);
+		searchParams.setIncludeWithoutTaxonomyLevel(includeWOLevels);
 		
 		searchParams.setIdentity(identity);
 		searchParams.setCourseEntry(entry);
@@ -89,17 +98,50 @@ public class SearchPracticeItemParameters {
 	public List<TaxonomyLevel> getDescendantsLevels() {
 		return descendantsTaxonomyLevels;
 	}
-
-	public void setDescendantsLevels(List<TaxonomyLevel> descendantsLevelKeys) {
-		this.descendantsTaxonomyLevels = descendantsLevelKeys;
+	
+	public List<String> getDescendantsTaxonomicPathKeys() {
+		return descendantsTaxonomicPathKeys;
 	}
 
-	public Long getExactTaxonomyLevelKey() {
-		return exactTaxonomyLevelKey;
+	public void setDescendantsLevels(List<TaxonomyLevel> descendantsLevels) {
+		this.descendantsTaxonomyLevels = descendantsLevels;
+		
+		if(descendantsLevels == null || descendantsLevels.isEmpty()) {
+			descendantsTaxonomicPathKeys = null;
+		} else {
+			descendantsTaxonomicPathKeys = new ArrayList<>(descendantsLevels.size() * 2);
+			for(TaxonomyLevel descendantsLevel:descendantsLevels) {
+				List<String> pathKeys = SearchPracticeItemParametersHelper
+						.buildKeyOfTaxonomicPath(descendantsLevel);
+				descendantsTaxonomicPathKeys.addAll(pathKeys);
+			}
+		}
 	}
 
-	public void setExactTaxonomyLevelKey(Long exactTaxonomyLevelKey) {
-		this.exactTaxonomyLevelKey = exactTaxonomyLevelKey;
+	public boolean isIncludeWithoutTaxonomyLevel() {
+		return includeWithoutTaxonomyLevel;
+	}
+
+	public void setIncludeWithoutTaxonomyLevel(boolean includeWithoutTaxonomyLevel) {
+		this.includeWithoutTaxonomyLevel = includeWithoutTaxonomyLevel;
+	}
+
+	public TaxonomyLevel getExactTaxonomyLevel() {
+		return exactTaxonomyLevel;
+	}
+
+	public void setExactTaxonomyLevel(TaxonomyLevel exactTaxonomyLevel) {
+		this.exactTaxonomyLevel = exactTaxonomyLevel;
+		if(exactTaxonomyLevel == null) {
+			exactTaxonomicPathKeys = null;
+		} else {
+			exactTaxonomicPathKeys = SearchPracticeItemParametersHelper
+					.buildKeyOfTaxonomicPath(exactTaxonomyLevel);
+		}
+	}
+
+	public List<String> getExactTaxonomicPathKeys() {
+		return exactTaxonomicPathKeys;
 	}
 
 	public RepositoryEntryRef getCourseEntry() {

@@ -22,10 +22,8 @@ package org.olat.course.nodes.practice.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -60,6 +58,7 @@ import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
 import org.olat.course.nodes.practice.model.PracticeItem;
@@ -68,6 +67,7 @@ import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.course.nodes.practice.ui.PracticeResourceTableModel.PracticeResourceCols;
 import org.olat.course.nodes.practice.ui.PracticeResourceTaxonomyTableModel.PracticeTaxonomyCols;
 import org.olat.course.nodes.practice.ui.renders.PracticeResourceIconFlexiCellRenderer;
+import org.olat.course.nodes.practice.ui.renders.PracticeTaxonomyCellRenderer;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.qpool.QPoolService;
@@ -100,6 +100,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	private FormLink addTestButton;
 	private FormLink addPoolButton;
 	private MultipleSelectionElement taxonomyEl;
+	private MultipleSelectionElement withoutTaxonomyEl;
 	private SingleSelection levelEl;
 	private TextElement challengeToCompleteEl;
 	private SingleSelection questionPerSerieEl;
@@ -218,6 +219,15 @@ public class PracticeConfigurationController extends FormBasicController {
 		}
 		taxonomyEl = uifactory.addCheckboxesDropdown("taxonomy.levels", "taxonomy.levels", formLayout,
 				levelKeys.keys(), levelKeys.values());
+		
+		SelectionValues woKeys = new SelectionValues();
+		woKeys.add(SelectionValues.entry("wo", translate("wo.taxonomy.levels")));
+		withoutTaxonomyEl = uifactory.addCheckboxesHorizontal("wo.taxonomy.levels", "wo.taxonomy.levels", formLayout,
+				woKeys.keys(), woKeys.values());
+		boolean includeWoLevels = config.getBooleanSafe(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, false);
+		if(includeWoLevels) {
+			withoutTaxonomyEl.select("wo", true);
+		}
 		
 		List<Long> selectedLevels = config.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
 		if(selectedLevels != null) {
@@ -361,7 +371,8 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private void initStatisticsForm(FormLayoutContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeTaxonomyCols.taxonomyLevel));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeTaxonomyCols.taxonomyLevel,
+				new PracticeTaxonomyCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeTaxonomyCols.numOfQuestions));
 
 		taxonomyStatisticsModel = new PracticeResourceTaxonomyTableModel(columnsModel);
@@ -385,22 +396,30 @@ public class PracticeConfigurationController extends FormBasicController {
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(getSelectedTaxonomyLevels());
 			searchParams.setDescendantsLevels(levels);
 		}
+
+		searchParams.setIncludeWithoutTaxonomyLevel(withoutTaxonomyEl.isAtLeastSelected(1));
 		
 		List<PracticeResource> resources = getSelectedResources();
 		List<PracticeItem> items = practiceResourceService.generateItems(resources, searchParams, -1, getLocale());
 		
-		Set<TaxonomyLevel> taxonomyLevels = new HashSet<>();
 		Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap = new HashMap<>();
+		int withoutTaxonomyLevels = 0;
 		
 		// Collect taxonomy levels
 		for(PracticeItem item:items) {
 			QuestionItem qItem = item.getItem();
-			if(qItem != null && qItem.getTaxonomyLevel() != null) {
-				TaxonomyLevel level = qItem.getTaxonomyLevel();
-				taxonomyLevels.add(level);
-				taxonomyLevelsMap
-					.computeIfAbsent(level.getDisplayName(), PracticeResourceTaxonomyRow::new)
-					.incrementNumOfQuestions();
+			if(qItem != null) {
+				String levelName = qItem.getTaxonomyLevelName();
+				if(StringHelper.containsNonWhitespace(levelName)) {
+					List<String> parentLine = SearchPracticeItemParametersHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
+					String key = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
+	
+					taxonomyLevelsMap
+						.computeIfAbsent(key, l -> new PracticeResourceTaxonomyRow(levelName, parentLine))
+						.incrementNumOfQuestions();
+				} else {
+					withoutTaxonomyLevels++;
+				}
 			}
 		}
 
@@ -409,6 +428,9 @@ public class PracticeConfigurationController extends FormBasicController {
 		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
 		
 		List<PracticeResourceTaxonomyRow> taxonomyLevelsStats = new ArrayList<>(taxonomyLevelsMap.values());
+		if(withoutTaxonomyEl.isAtLeastSelected(1)) {
+			taxonomyLevelsStats.add(new PracticeResourceTaxonomyRow(translate("wo.taxonomy.level.label"), withoutTaxonomyLevels));
+		}
 		taxonomyStatisticsModel.setObjects(taxonomyLevelsStats);
 		taxonomyStatisticsEl.reset(true, true, true);
 	}
@@ -543,6 +565,8 @@ public class PracticeConfigurationController extends FormBasicController {
 		config.setList(PracticeEditController.CONFIG_KEY_FILTER_RULES, rules);
 		List<Long> selectedLevelKeys = getSelectedTaxonomyLevels();
 		config.setList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, selectedLevelKeys);
+		boolean includeWoLevels = withoutTaxonomyEl.isAtLeastSelected(1);
+		config.setBooleanEntry(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, includeWoLevels);
 		boolean rankList = rankListEl.isAtLeastSelected(1);
 		config.setBooleanEntry(PracticeEditController.CONFIG_KEY_RANK_LIST, rankList);
 		

@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
-import org.olat.course.nodes.practice.model.PracticeItem;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
 
 /**
  * 
@@ -63,17 +63,19 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 		}
 	}
 	
-	public void filter(String searchString, boolean notAnswered, List<Long> taxonomyLevels, List<Long> levels, Double correctFrom, Double correctTo) {
+	public void filter(String searchString, boolean notAnswered, List<String> taxonomyLevelsKeyPaths, boolean includeWithoutTaxonomy,
+			List<Long> levels, Double correctFrom, Double correctTo) {
 		if(StringHelper.containsNonWhitespace(searchString) || notAnswered
 				|| (levels != null && !levels.isEmpty())
-				|| (taxonomyLevels != null && !taxonomyLevels.isEmpty())
+				|| (taxonomyLevelsKeyPaths != null && !taxonomyLevelsKeyPaths.isEmpty())
+				|| includeWithoutTaxonomy
 				|| (correctFrom != null && correctTo != null)) {
 			if(searchString != null) {
 				searchString = searchString.toLowerCase();
 			}
 			List<PracticeComposeItemRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(PracticeComposeItemRow backupRow:backupRows) {
-				if(accept(searchString, notAnswered, taxonomyLevels, levels, correctFrom, correctTo, backupRow)) {
+				if(accept(searchString, notAnswered, taxonomyLevelsKeyPaths, includeWithoutTaxonomy, levels, correctFrom, correctTo, backupRow)) {
 					filteredRows.add(backupRow);
 				}
 			}
@@ -83,7 +85,7 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 		}
 	}
 	
-	private boolean accept(String searchString, boolean notAnswered, List<Long> taxonomyLevels,
+	private boolean accept(String searchString, boolean notAnswered, List<String> taxonomyLevelsKeyPaths, boolean includeWithoutTaxonomy,
 			List<Long> levels, Double correctFrom, Double correctTo, PracticeComposeItemRow row) {
 
 		final String displayName = row.getItem().getDisplayName();
@@ -91,12 +93,8 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 			return false;
 		}
 		
-		if(taxonomyLevels != null && !taxonomyLevels.isEmpty()) {
-			PracticeItem item = row.getItem();
-			
-			if(item.getTaxonomyLevel() == null || !taxonomyLevels.contains(item.getTaxonomyLevel().getKey())) {
-				return false;
-			}
+		if(!SearchPracticeItemParametersHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, includeWithoutTaxonomy)) {
+			return false;
 		}
 		
 		if(levels != null && !levels.isEmpty()) {

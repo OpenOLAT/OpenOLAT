@@ -35,4 +35,6 @@ public class PracticeHelper {
 		long currentNumOfSeries = numOfSeries % seriesPerChallenge;
 		return (numOfSeries - currentNumOfSeries) / seriesPerChallenge;
 	}
+	
+
 }

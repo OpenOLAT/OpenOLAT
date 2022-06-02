@@ -1133,6 +1133,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			qtiEl.setShowQuestionLevel(true);
 			qtiEl.setShowStatus(false);
 		}
+		
+		public void setSubmitI18nKey(String i18nKey) {
+			qtiEl.getSubmitButton().setI18nKey(i18nKey, null);
+		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

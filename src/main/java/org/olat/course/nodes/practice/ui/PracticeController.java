@@ -623,7 +623,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			initInteractionResultFormItem(solutionFormItem);
 			formLayout.add("solutionItem", solutionFormItem);
 			
-			FormSubmit nextButton = uifactory.addFormSubmitButton("next", formLayout);
+			FormSubmit nextButton = uifactory.addFormSubmitButton("next.question", formLayout);
 			nextButton.setFocus(true);
 		}
 		
@@ -669,6 +669,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			List<PracticeAssessmentItemGlobalRef> refs = practiceService.getPracticeAssessmentItemGlobalRefs(List.of(practiceItem.getItem()), getIdentity());
 			int level = refs.isEmpty() ? 0 : refs.get(0).getLevel();
 			qtiWorksCtrl.showQuestionLevel(level, maxLevels);
+			qtiWorksCtrl.setSubmitI18nKey("submit.check");
 		}
 		
 		protected ItemSessionState getItemSessionState() {

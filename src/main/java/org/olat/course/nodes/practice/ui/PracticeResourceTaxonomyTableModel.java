@@ -54,7 +54,7 @@ implements SortableFlexiTableDataModel<PracticeResourceTaxonomyRow> {
 	@Override
 	public Object getValueAt(PracticeResourceTaxonomyRow row, int col) {
 		switch(COLS[col]) {
-			case taxonomyLevel: return row.getTaxonomyLevel();
+			case taxonomyLevel: return row;
 			case numOfQuestions: return row.getNumOfQuestions();
 			default: return "ERROR";
 		}

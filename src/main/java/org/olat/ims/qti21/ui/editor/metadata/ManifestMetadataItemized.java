@@ -153,11 +153,7 @@ public class ManifestMetadataItemized implements QuestionItem, QuestionItemEdita
 	@Override
 	public String getTaxonomicPath() {
 		if(taxonomyLevel != null) {
-			String path = taxonomyLevel.getMaterializedPathIdentifiers();
-			if(path != null) {
-				path += "/" + taxonomyLevel.getIdentifier();
-			}
-			return path;
+			return taxonomyLevel.getMaterializedPathIdentifiers();
 		}
 		return metadataBuilder.getClassificationTaxonomy();
 	}

@@ -55,9 +55,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
-import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.course.nodes.practice.ui.PracticeComposeTableModel.ComposeCols;
@@ -78,6 +78,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 
 	public static final String ALL_TAB_ID = "All";
 	public static final String ALL_NOT_PRACTICED_ID = "NotPracticed";
+	public static final String NOT_ASSIGNED = "notassigned";
 	
 	public static final String FILTER_LEVEL = "level";
 	public static final String FILTER_CORRECT = "correct";
@@ -160,6 +161,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 			for(TaxonomyLevel level:descendantLevels) {
 				taxonomyLevelsValues.add(SelectionValues.entry(level.getKey().toString(), level.getDisplayName()));
 			}
+			taxonomyLevelsValues.add(SelectionValues.entry(NOT_ASSIGNED, translate("wo.taxonomy.level.label")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.taxonomy.level.label"),
 					FILTER_TAXONOMY, taxonomyLevelsValues, true));
 		}
@@ -245,37 +247,36 @@ public class PracticeComposeSerieController extends FormBasicController {
 			}
 		}
 		
-		List<Long> taxonomyLevels = new ArrayList<>();
+		List<String> taxonomyLevelsKeyPath = new ArrayList<>();
+		boolean includeWithoutTaxonomy = false;
 		FlexiTableFilter taxonomyFilter = FlexiTableFilter.getFilter(filters, FILTER_TAXONOMY);
 		if(taxonomyFilter != null) {
-			taxonomyLevels = ((FlexiTableMultiSelectionFilter)taxonomyFilter).getLongValues();
+			List<String> selectedValues = ((FlexiTableMultiSelectionFilter)taxonomyFilter).getValues();
+			taxonomyLevelsKeyPath = toTaxonomyKeyPaths(Set.copyOf(selectedValues));
+			includeWithoutTaxonomy = selectedValues.contains(NOT_ASSIGNED);
 		}
 		
-		tableModel.filter(searchString, notAnswered, taxonomyLevels, levels, correctFrom, correctTo);
+		tableModel.filter(searchString, notAnswered, taxonomyLevelsKeyPath, includeWithoutTaxonomy, levels, correctFrom, correctTo);
 		tableEl.reset(true, true, true);
 	}
 	
 	private SearchPracticeItemParameters getSearchParams() {
-		SearchPracticeItemParameters searchParams = new SearchPracticeItemParameters();
-		List<PracticeFilterRule> rules = courseNode.getModuleConfiguration()
-				.getList(PracticeEditController.CONFIG_KEY_FILTER_RULES, PracticeFilterRule.class);
-		
-		List<Long> selectedLevels = courseNode.getModuleConfiguration()
-				.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
-		if(selectedLevels != null && !selectedLevels.isEmpty()) {
-			List<TaxonomyLevel> levels = practiceService.getTaxonomyWithDescendants(selectedLevels);
-			searchParams.setDescendantsLevels(levels);
-		}
-		
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(getIdentity(), courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.all);
-		searchParams.setRules(rules);
-		searchParams.setIdentity(getIdentity());
-		searchParams.setCourseEntry(courseEntry);
-		searchParams.setSubIdent(courseNode.getIdent());
-		searchParams.setDescendantsLevels(descendantLevels);
-		searchParams.setExactTaxonomyLevelKey(null);
-		
 		return searchParams;
+	}
+	
+	private List<String> toTaxonomyKeyPaths(Set<String> keyLevels) {
+		if(keyLevels == null || keyLevels.isEmpty()) return List.of();
+		
+		List<String> taxonomyKeyPaths = new ArrayList<>(keyLevels.size());
+		for(TaxonomyLevel taxonomyLevel:descendantLevels) {
+			if(keyLevels.contains(taxonomyLevel.getKey().toString())) {
+				List<String> keyPaths = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(taxonomyLevel);
+				taxonomyKeyPaths.addAll(keyPaths);
+			}
+		}
+		return taxonomyKeyPaths;
 	}
 
 	@Override

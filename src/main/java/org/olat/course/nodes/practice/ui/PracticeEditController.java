@@ -53,6 +53,10 @@ public class PracticeEditController extends ActivateableTabbableDefaultControlle
 	 * List of taxonomy levels to filter
 	 */
 	public static final String CONFIG_KEY_FILTER_TAXONOMY_LEVELS = "filterTaxonomyLevels";
+	/**
+	 * List of taxonomy levels to filter
+	 */
+	public static final String CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS = "filterIncludeWoTaxonomyLevels";
 	
 	public static final String CONFIG_KEY_RANK_LIST = "rankListOfParticipants";
 	

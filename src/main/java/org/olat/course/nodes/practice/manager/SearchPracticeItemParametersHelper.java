@@ -19,10 +19,13 @@
  */
 package org.olat.course.nodes.practice.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
+import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -41,19 +44,14 @@ public class SearchPracticeItemParametersHelper {
 	}
 
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams) {
-		TaxonomyLevel taxonomyLevel = item.getTaxonomyLevel();
-		if(searchParams.getExactTaxonomyLevelKey() != null
-				&& (taxonomyLevel == null || !taxonomyLevel.getKey().equals(searchParams.getExactTaxonomyLevelKey()))) {
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+		if(searchParams.getExactTaxonomyLevel() != null
+				&& (taxonomicPathKey == null || !searchParams.getExactTaxonomicPathKeys().contains(taxonomicPathKey))) {
 			return false;
 		}
-
-		if(searchParams.getDescendantsLevels() != null && !searchParams.getDescendantsLevels().isEmpty()) {
-			if(taxonomyLevel == null) {
-				return false;
-			}
-			if(!searchParams.getDescendantsLevels().contains(taxonomyLevel)) {
-				return false;
-			}
+		
+		if(!accept(taxonomicPathKey, searchParams.getDescendantsTaxonomicPathKeys(), searchParams.isIncludeWithoutTaxonomyLevel())) {
+			return false;
 		}
 
 		List<PracticeFilterRule> rules = searchParams.getRules();
@@ -63,6 +61,25 @@ public class SearchPracticeItemParametersHelper {
 					return false;
 				}
 			}
+		}
+		return true;
+	}
+	
+	public static boolean accept(PracticeItem item, List<String> levelsPathKeys, boolean includeWithoutTaxonomy) {
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+		return accept(taxonomicPathKey, levelsPathKeys, includeWithoutTaxonomy);
+	}
+	
+	public static boolean accept(String taxonomicPathKey, List<String> levelsPathKeys, boolean includeWithoutTaxonomy) {
+		if(levelsPathKeys != null && !levelsPathKeys.isEmpty()) {
+			if(taxonomicPathKey == null && !includeWithoutTaxonomy) {
+				return false;
+			}
+			if(taxonomicPathKey != null && !levelsPathKeys.contains(taxonomicPathKey)) {
+				return false;
+			}
+		} else if (includeWithoutTaxonomy && StringHelper.containsNonWhitespace(taxonomicPathKey)) {
+			return false;
 		}
 		return true;
 	}
@@ -88,4 +105,54 @@ public class SearchPracticeItemParametersHelper {
 		}
 		return true;
 	}
+	
+	
+	public static List<String> cleanTaxonomicParentLine(String displayName, String taxonomicPath) {
+		List<String> path;
+		if(StringHelper.containsNonWhitespace(taxonomicPath)) {
+			String[] pathArray = taxonomicPath.split("[/]");
+			path = new ArrayList<>(pathArray.length);
+			for(String segment:pathArray) {
+				if(StringHelper.containsNonWhitespace(segment)) {
+					path.add(segment);
+				}
+			}
+			
+			if(!path.isEmpty() && path.get(path.size() - 1).equals(displayName)) {
+				path = path.subList(0, path.size() -1);
+			}
+		} else {
+			path = List.of();
+		}
+		return path;
+	}
+	
+	public static String buildKeyOfTaxonomicPath(String displayName, String taxonomicPath) {
+		List<String> parentLine = cleanTaxonomicParentLine( displayName, taxonomicPath);
+		return buildKeyOfTaxonomicPath(displayName, parentLine);
+	}
+	
+	public static String buildKeyOfTaxonomicPath(String displayName, List<String> taxonomicPath) {
+		StringBuilder sb = new StringBuilder();
+		if(taxonomicPath != null && !taxonomicPath.isEmpty()) {
+			for(String segment:taxonomicPath) {
+				if(sb.length() == 0) {
+					sb.append("/");
+				}
+				sb.append(segment).append("/");
+			}
+		}
+		if(StringHelper.containsNonWhitespace(displayName)) {
+			if(sb.length() == 0) {
+				sb.append("/");
+			}
+			sb.append(displayName).append("/");
+		}
+		return sb.length() == 0 ? null : sb.toString();
+	}
+	
+	public static List<String> buildKeyOfTaxonomicPath(TaxonomyLevel level) {
+		String identifiers = level.getMaterializedPathIdentifiers();
+		return List.of(identifiers);
+	}	
 }

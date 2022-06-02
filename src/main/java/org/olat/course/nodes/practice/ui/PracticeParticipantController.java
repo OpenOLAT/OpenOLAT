@@ -62,7 +62,6 @@ public class PracticeParticipantController extends FormBasicController {
 	private final int questionPerSeries;
 	private final int seriesPerChallenge;
 	private final int challengesToComplete;
-	private int numOfErrors = 2;
 	private List<AssessmentTestSession> series;
 	private final List<PracticeResource> resources;
 	private final UserCourseEnvironment userCourseEnv;
@@ -141,11 +140,6 @@ public class PracticeParticipantController extends FormBasicController {
 	}
 	
 	protected void loadStatistics() {
-		// Errors
-		String errorsI18nKey = numOfErrors > 1 ? "play.errors.desc.plural" : "play.errors.desc.singular";
-		String errorsDesc = translate(errorsI18nKey, Integer.toString(numOfErrors));
-		flc.contextPut("errorsDesc", errorsDesc);
-
 		// Block to counter if the max. number of series is completed
 		final int completedSeries = series.size();
 		final int currentNumOfSeries = completedSeries % seriesPerChallenge;

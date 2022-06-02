@@ -20,7 +20,6 @@
 package org.olat.course.nodes.practice.model;
 
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -43,7 +42,8 @@ public class PracticeItem {
 	
 	private final RepositoryEntry entry;
 	
-	private final TaxonomyLevel taxonomyLevel;
+	private final String taxonomyLevelName;
+	private final String taxonomicPath;
 	
 	public PracticeItem(QuestionItem item) {
 		this(item.getIdentifier(), item.getTitle(), null, item, null);
@@ -63,7 +63,8 @@ public class PracticeItem {
 		this.entry = entry;
 		this.identifier = identifier;
 		this.displayName = displayName;
-		this.taxonomyLevel = item == null ? null : item.getTaxonomyLevel();
+		taxonomyLevelName = item == null ? null : item.getTaxonomyLevelName();
+		taxonomicPath = item == null ? null : item.getTaxonomicPath();
 	}
 	
 	public String getIdentifier() {
@@ -85,8 +86,12 @@ public class PracticeItem {
 	public RepositoryEntry getRepositoryEntry() {
 		return entry;
 	}
-	
-	public TaxonomyLevel getTaxonomyLevel() {
-		return taxonomyLevel;
+
+	public String getTaxonomyLevelName() {
+		return taxonomyLevelName;
+	}
+
+	public String getTaxonomicPath() {
+		return taxonomicPath;
 	}
 }

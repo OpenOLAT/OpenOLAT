@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 6 mai 2022<br>
@@ -28,14 +30,26 @@ package org.olat.course.nodes.practice.ui;
 public class PracticeResourceTaxonomyRow {
 	
 	private final String taxonomyLevel;
+	private final List<String> taxonomyPath;
 	private int numOfQuestions = 0;
 	
-	public PracticeResourceTaxonomyRow(String taxonomyLevel) {
+	public PracticeResourceTaxonomyRow(String taxonomyLevel, List<String> taxonomyPath) {
 		this.taxonomyLevel = taxonomyLevel;
+		this.taxonomyPath = taxonomyPath;
+	}
+	
+	public PracticeResourceTaxonomyRow(String label, int numOfQuestions) {
+		taxonomyLevel = label;
+		taxonomyPath = List.of();
+		this.numOfQuestions = numOfQuestions;
 	}
 
 	public String getTaxonomyLevel() {
 		return taxonomyLevel;
+	}
+	
+	public List<String> getTaxonomyPath() {
+		return taxonomyPath;
 	}
 
 	public int getNumOfQuestions() {

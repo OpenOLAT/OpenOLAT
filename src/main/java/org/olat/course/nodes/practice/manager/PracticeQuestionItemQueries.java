@@ -150,8 +150,9 @@ public class PracticeQuestionItemQueries {
 	}
 	
 	private void appendSearchParams(QueryBuilder sb, SearchPracticeItemParameters searchParams) {
-		if(searchParams.getExactTaxonomyLevelKey() != null) {
-			sb.and().append("taxonomyLevel.key =:taxonomyLevelKey");	
+		if(searchParams.getExactTaxonomyLevel() != null) {
+			sb.and().append("taxonomyLevel.key =:taxonomyLevelKey");
+			
 		} else if(searchParams.getDescendantsLevels() != null && !searchParams.getDescendantsLevels().isEmpty()) {
 			sb.and().append("(");
 			for(int i=0; i<searchParams.getDescendantsLevels().size(); i++) {
@@ -159,6 +160,9 @@ public class PracticeQuestionItemQueries {
 					sb.append(" or ");
 				}
 				sb.append("taxonomyLevel.materializedPathKeys like :taxonomyLevels_" + i);
+			}
+			if(searchParams.isIncludeWithoutTaxonomyLevel()) {
+				sb.append(" or taxonomyLevel is null");
 			}
 			sb.append(")");
 		}
@@ -187,8 +191,8 @@ public class PracticeQuestionItemQueries {
 	}
 	
 	private void appendSearchParams(TypedQuery<QuestionItem> query, SearchPracticeItemParameters searchParams) {
-		if(searchParams.getExactTaxonomyLevelKey() != null) {
-			query.setParameter("taxonomyLevelKey", searchParams.getExactTaxonomyLevelKey());
+		if(searchParams.getExactTaxonomyLevel() != null) {
+			query.setParameter("taxonomyLevelKey", searchParams.getExactTaxonomyLevel().getKey());
 		} else if(searchParams.getDescendantsLevels() != null && !searchParams.getDescendantsLevels().isEmpty()) {
 			for(int i=0; i<searchParams.getDescendantsLevels().size(); i++) {
 				query.setParameter("taxonomyLevels_" + i, searchParams.getDescendantsLevels().get(i).getMaterializedPathKeys() + "%");

@@ -51,14 +51,15 @@ import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.course.nodes.practice.ui.PracticeParticipantTaxonomyStatisticsTableModel.TaxonomyStatisticsCols;
 import org.olat.course.nodes.practice.ui.events.StartPracticeEvent;
 import org.olat.course.nodes.practice.ui.renders.LevelBarsCellRenderer;
 import org.olat.course.nodes.practice.ui.renders.LevelNumbersCellRenderer;
+import org.olat.course.nodes.practice.ui.renders.PracticeTaxonomyCellRenderer;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -77,6 +78,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 	private final Identity practicingIdentity;
 	private final RepositoryEntry courseEntry;
 	private final int numOfLevels;
+	private final boolean includeWithoutTaxonomyLevels;
 	
 	private FlexiTableElement taxonomyTableEl;
 	private PracticeParticipantTaxonomyStatisticsTableModel taxonomyTableModel;
@@ -97,7 +99,10 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		} else {
 			resources = List.copyOf(cachedResources);
 		}
-		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
+		numOfLevels = courseNode.getModuleConfiguration()
+				.getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
+		includeWithoutTaxonomyLevels = courseNode.getModuleConfiguration()
+				.getBooleanSafe(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, false);
 		
 		initForm(ureq);
 		
@@ -105,7 +110,8 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		loadStatistics(seriesList);
 		
 		if(cachedItems == null) {
-			SearchPracticeItemParameters searchParams = new SearchPracticeItemParameters();
+			SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
+			searchParams.setPlayMode(PlayMode.all);
 			allItems = practiceService.generateItems(resources, searchParams, -1, getLocale());
 		} else {
 			allItems = List.copyOf(cachedItems);
@@ -121,12 +127,16 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		this.resources = resources;
 		this.courseEntry = courseEntry;
 		practicingIdentity = getIdentity();
-		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
+		numOfLevels = courseNode.getModuleConfiguration()
+				.getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
+		includeWithoutTaxonomyLevels = courseNode.getModuleConfiguration()
+				.getBooleanSafe(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, false);
 
 		initForm(ureq);
 		loadStatistics(series);
 		
-		SearchPracticeItemParameters searchParams = new SearchPracticeItemParameters();
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
+		searchParams.setPlayMode(PlayMode.all);
 		allItems = practiceService.generateItems(resources, searchParams, -1, getLocale());
 		loadItemStatistics(allItems);
 	}
@@ -143,7 +153,8 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyStatisticsCols.taxonomyLevel));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyStatisticsCols.taxonomyLevel,
+				new PracticeTaxonomyCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyStatisticsCols.bars,
 				new LevelBarsCellRenderer()));
 		
@@ -201,10 +212,12 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 				.collect(Collectors.toMap(PracticeAssessmentItemGlobalRef::getIdentifier, ref -> ref, (u, v) -> u));
 		
 		final Levels globalLevels = new Levels(numOfLevels);
-		final Map<TaxonomyLevel, PracticeParticipantTaxonomyStatisticsRow> levelMaps = new HashMap<>();
+		final Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps = new HashMap<>();
 		
 		long numOfLastAttempt = 0l;
 		long correctLastAttempt = 0l;
+		PracticeParticipantTaxonomyStatisticsRow withoutTaxonomyLevelRow
+			= new PracticeParticipantTaxonomyStatisticsRow(translate("wo.taxonomy.level.label"), numOfLevels);
 		
 		Set<String> duplicates = new HashSet<>();
 		for(PracticeItem item:items) {
@@ -217,11 +230,13 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 			globalLevels.append(globalRef);
 			duplicates.add(identifier);
 			
-			TaxonomyLevel taxonomyLevel = item.getTaxonomyLevel();
+			String taxonomyLevel = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
 			if(taxonomyLevel != null) {
 				PracticeParticipantTaxonomyStatisticsRow row = levelMaps
 						.computeIfAbsent(taxonomyLevel, level -> new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels));
 				row.getLevels().append(globalRef);
+			} else {
+				withoutTaxonomyLevelRow.getLevels().append(globalRef);
 			}
 			
 			if(globalRef != null && globalRef.getLastAttempts() != null) {
@@ -249,6 +264,9 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		flc.contextPut("correctPercent", Long.toString(Math.round(correctPercent)));
 		
 		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = new ArrayList<>(levelMaps.values());
+		if(includeWithoutTaxonomyLevels) {
+			levelRows.add(withoutTaxonomyLevelRow);
+		}
 		taxonomyTableModel.setObjects(levelRows);
 		taxonomyTableEl.reset();
 	}
@@ -275,7 +293,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 	private void doStartTaxonomyLevelMode(UserRequest ureq, PracticeParticipantTaxonomyStatisticsRow statisticsRow) {
 		SearchPracticeItemParameters searchParams = getSearchParams();
 		searchParams.setPlayMode(PlayMode.all);
-		searchParams.setExactTaxonomyLevelKey(statisticsRow.getTaxonomyLevel().getKey());
+		searchParams.setExactTaxonomyLevel(statisticsRow.getTaxonomyLevel());
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, getLocale());
 		fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
 	}
@@ -288,7 +306,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 		searchParams.setIdentity(getIdentity());
 		searchParams.setCourseEntry(courseEntry);
 		searchParams.setSubIdent(courseNode.getIdent());
-		searchParams.setExactTaxonomyLevelKey(null);
+		searchParams.setExactTaxonomyLevel(null);
 		
 		return searchParams;
 	}
