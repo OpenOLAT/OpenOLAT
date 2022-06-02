@@ -218,6 +218,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		QTI21PracticeMetadataConverter metadataConverter = null;
 
 		List<PracticeItem> proposedItems = new ArrayList<>();
+		Set<String> identifiers = new HashSet<>();
 		for(PracticeResource resource:resources) {
 			if(resource.getTestEntry() != null) {
 				if(metadataConverter == null) {
@@ -227,7 +228,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 					}
 					metadataConverter = new QTI21PracticeMetadataConverter(levelKeys, itemTypeDao, educationalContextDao);
 				}
-				List<PracticeItem> resourceItems = loadItemsOfRepositoryEntry(resource.getTestEntry(), locale, searchParams, metadataConverter);
+				List<PracticeItem> resourceItems = loadItemsOfRepositoryEntry(resource.getTestEntry(), locale, searchParams, metadataConverter, identifiers);
 				proposedItems.addAll(resourceItems);
 			} else if(resource.getItemCollection() != null) {
 				collections.add(resource.getItemCollection());
@@ -252,9 +253,12 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			List<QuestionItem> items = practiceQuestionItemQueries.searchItems(searchParams, collections, pools, shares,
 					searchParams.getIdentity());
 			log.debug("{} questions from QPool", items.size());
-			
 			for(QuestionItem item:items) {
-				proposedItems.add(new PracticeItem(item));
+				String identifier = item.getIdentifier();
+				if(!identifiers.contains(identifier) && SearchPracticeItemParametersHelper.autoAnswer(item)) {
+					proposedItems.add(new PracticeItem(item));
+					identifiers.add(identifier);
+				}
 			}
 		}
 		
@@ -480,7 +484,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	}
 	
 	private List<PracticeItem> loadItemsOfRepositoryEntry(RepositoryEntry testEntry, Locale locale,
-			SearchPracticeItemParameters searchParams, QTI21MetadataConverter metadataConverter) {
+			SearchPracticeItemParameters searchParams, QTI21MetadataConverter metadataConverter, Set<String> identifiers) {
 		final String language = locale.getLanguage();
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -491,7 +495,6 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		List<AssessmentItemRef> assessmentItemRefs = resolvedAssessmentTest.getAssessmentItemRefs();
 		
 		List<PracticeItem> items = new ArrayList<>(assessmentItemRefs.size());
-		List<String> identifiers = new ArrayList<>(assessmentItemRefs.size());
 		for(AssessmentItemRef ref:assessmentItemRefs) {
 			URI systemId = resolvedAssessmentTest.getSystemIdByItemRefMap().get(ref);
 			
@@ -501,13 +504,14 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			ManifestMetadataBuilder metadataBuilder = manifestBuilder.getMetadataBuilder(resourceType, true);
 			
 			QuestionItem item = new ManifestMetadataItemized(metadataBuilder, language, metadataConverter);
-			if(SearchPracticeItemParametersHelper.accept(item, searchParams)) {
-				String identifier = item.getIdentifier();
-				if(!StringHelper.containsNonWhitespace(identifier)) {
-					identifier = testEntry.getKey() + "-" + ref.getIdentifier().toString();
-				}
-				identifiers.add(identifier);
-				
+			String identifier = item.getIdentifier();
+			if(!StringHelper.containsNonWhitespace(identifier)) {
+				identifier = testEntry.getKey() + "-" + ref.getIdentifier().toString();
+			}
+
+			if(!identifiers.contains(identifier)
+					&& SearchPracticeItemParametersHelper.autoAnswer(item)
+					&& SearchPracticeItemParametersHelper.accept(item, searchParams)) {
 				
 				String displayName = item.getTitle();
 				if(displayName == null) {
@@ -521,6 +525,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 				}
 
 				items.add(new PracticeItem(identifier, displayName, ref, item, testEntry));
+				identifiers.add(identifier);
 			}
 		}
 		

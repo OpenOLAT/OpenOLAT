@@ -27,6 +27,7 @@ import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -41,6 +42,13 @@ public class SearchPracticeItemParametersHelper {
 	
 	private SearchPracticeItemParametersHelper() {
 		//
+	}
+	
+	public static boolean autoAnswer(QuestionItem item) {
+		String type = item.getItemType();
+		return !QTI21QuestionType.drawing.name().equals(type)
+				&& !QTI21QuestionType.essay.name().equals(type)
+				&& !QTI21QuestionType.upload.name().equals(type);
 	}
 
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams) {
