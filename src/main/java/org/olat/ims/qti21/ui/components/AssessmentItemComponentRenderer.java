@@ -214,6 +214,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			submit.setDirty(false);
 		}
 		
+		boolean skipRendered = false;
 		boolean enableAdditionalButtons = component.isEnableBack() || component.isEnableSkip()
 				|| component.isEnableResetHard() || component.isEnableResetSoft();
 		if(enableAdditionalButtons && (itemSessionState.isResponded() || itemSessionState.getEndTime() != null)) {
@@ -240,6 +241,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				if(component.isEnableSkip()) {
 					String title = translator.translate("skip.item");
 					renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
+					skipRendered = true;
 				}
 			} else {
 				if(isCorrectlyAnswered(itemSessionState) && !willShowFeedback(component, assessmentItem)) {
@@ -248,6 +250,11 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				String title = translator.translate("next.item");
 				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
 			}
+		}
+		
+		if(component.isEnableAlwaysSkip() && !skipRendered) {
+			String title = translator.translate("skip.item");
+			renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
 		}
 		
 		sb.append("</div>");

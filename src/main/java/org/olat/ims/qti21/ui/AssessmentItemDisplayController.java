@@ -985,7 +985,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         lastEvent = candidateEvent;
     }
     
-	private void next(UserRequest ureq, QTIWorksAssessmentItemEvent event) {
+	protected void next(UserRequest ureq, QTIWorksAssessmentItemEvent event) {
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 		
@@ -1136,6 +1136,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		
 		public void setSubmitI18nKey(String i18nKey) {
 			qtiEl.getSubmitButton().setI18nKey(i18nKey, null);
+		}
+		
+		public void setEnableAlwaysSkip(boolean enable) {
+			qtiEl.setEnableAlwaysSkip(enable);
 		}
 
 		@Override

@@ -255,7 +255,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			log.debug("{} questions from QPool", items.size());
 			for(QuestionItem item:items) {
 				String identifier = item.getIdentifier();
-				if(!identifiers.contains(identifier) && SearchPracticeItemParametersHelper.autoAnswer(item)) {
+				if(!identifiers.contains(identifier) && SearchPracticeItemHelper.autoAnswer(item)) {
 					proposedItems.add(new PracticeItem(item));
 					identifiers.add(identifier);
 				}
@@ -426,7 +426,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	private List<PracticeItem> trimItems(List<PracticeItem> items, int maxQuestions) {
 		if(maxQuestions > 0 && items.size() > maxQuestions) {
 			Collections.shuffle(items);
-			items = items.subList(0, maxQuestions);
+			items = new ArrayList<>(items.subList(0, maxQuestions));
 		}
 		return items;
 	}
@@ -510,8 +510,8 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			}
 
 			if(!identifiers.contains(identifier)
-					&& SearchPracticeItemParametersHelper.autoAnswer(item)
-					&& SearchPracticeItemParametersHelper.accept(item, searchParams)) {
+					&& SearchPracticeItemHelper.autoAnswer(item)
+					&& SearchPracticeItemHelper.accept(item, searchParams)) {
 				
 				String displayName = item.getTitle();
 				if(displayName == null) {

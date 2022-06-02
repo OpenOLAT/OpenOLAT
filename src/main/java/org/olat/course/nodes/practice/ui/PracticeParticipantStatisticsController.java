@@ -48,10 +48,9 @@ import org.olat.core.util.Formatter;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
-import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
-import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.course.nodes.practice.ui.PracticeParticipantTaxonomyStatisticsTableModel.TaxonomyStatisticsCols;
@@ -230,7 +229,7 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 			globalLevels.append(globalRef);
 			duplicates.add(identifier);
 			
-			String taxonomyLevel = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+			String taxonomyLevel = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
 			if(taxonomyLevel != null) {
 				PracticeParticipantTaxonomyStatisticsRow row = levelMaps
 						.computeIfAbsent(taxonomyLevel, level -> new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels));
@@ -291,23 +290,15 @@ public class PracticeParticipantStatisticsController extends FormBasicController
 	}
 	
 	private void doStartTaxonomyLevelMode(UserRequest ureq, PracticeParticipantTaxonomyStatisticsRow statisticsRow) {
-		SearchPracticeItemParameters searchParams = getSearchParams();
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.all);
+		// Override standard taxonomy settings
 		searchParams.setExactTaxonomyLevel(statisticsRow.getTaxonomyLevel());
-		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, getLocale());
-		fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
-	}
-	
-	private SearchPracticeItemParameters getSearchParams() {
-		SearchPracticeItemParameters searchParams = new SearchPracticeItemParameters();
-		List<PracticeFilterRule> rules = courseNode.getModuleConfiguration()
-				.getList(PracticeEditController.CONFIG_KEY_FILTER_RULES, PracticeFilterRule.class);
-		searchParams.setRules(rules);
-		searchParams.setIdentity(getIdentity());
-		searchParams.setCourseEntry(courseEntry);
-		searchParams.setSubIdent(courseNode.getIdent());
-		searchParams.setExactTaxonomyLevel(null);
+		searchParams.setIncludeWithoutTaxonomyLevel(false);
+		searchParams.setDescendantsLevels(null);
 		
-		return searchParams;
+		int questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
+		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
+		fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
 	}
 }

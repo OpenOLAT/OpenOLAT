@@ -57,7 +57,7 @@ import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
-import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.course.nodes.practice.ui.PracticeComposeTableModel.ComposeCols;
@@ -272,7 +272,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 		List<String> taxonomyKeyPaths = new ArrayList<>(keyLevels.size());
 		for(TaxonomyLevel taxonomyLevel:descendantLevels) {
 			if(keyLevels.contains(taxonomyLevel.getKey().toString())) {
-				List<String> keyPaths = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(taxonomyLevel);
+				List<String> keyPaths = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(taxonomyLevel);
 				taxonomyKeyPaths.addAll(keyPaths);
 			}
 		}

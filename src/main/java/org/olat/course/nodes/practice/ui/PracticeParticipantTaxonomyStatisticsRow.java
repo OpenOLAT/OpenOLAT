@@ -21,7 +21,7 @@ package org.olat.course.nodes.practice.ui;
 
 import java.util.List;
 
-import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -50,8 +50,8 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		this.taxonomyLevel = taxonomyLevel;
 		taxonomyLevelName = taxonomyLevel.getDisplayName();
 		levels = new Levels(numOfLevels);
-		taxonomyPath = SearchPracticeItemParametersHelper.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
-		taxonomicPathKey = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(taxonomyLevelName, taxonomyPath);
+		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
+		taxonomicPathKey = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(taxonomyLevelName, taxonomyPath);
 	}
 
 	public Levels getLevels() {

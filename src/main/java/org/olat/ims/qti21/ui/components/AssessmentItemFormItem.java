@@ -96,6 +96,14 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 		component.setEnableSkip(enable);
 	}
 	
+	public boolean isEnableAlwaysSkip() {
+		return component.isEnableAlwaysSkip();
+	}
+
+	public void setEnableAlwaysSkip(boolean enable) {
+		component.setEnableAlwaysSkip(enable);
+	}
+	
 	public int getQuestionLevel() {
 		return component.getQuestionLevel();
 	}

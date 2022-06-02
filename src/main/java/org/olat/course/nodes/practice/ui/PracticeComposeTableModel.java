@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
-import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 
 /**
  * 
@@ -93,7 +93,7 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 			return false;
 		}
 		
-		if(!SearchPracticeItemParametersHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, includeWithoutTaxonomy)) {
+		if(!SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, includeWithoutTaxonomy)) {
 			return false;
 		}
 		

@@ -27,7 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
-import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.ui.PracticeEditController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -111,7 +111,7 @@ public class SearchPracticeItemParameters {
 		} else {
 			descendantsTaxonomicPathKeys = new ArrayList<>(descendantsLevels.size() * 2);
 			for(TaxonomyLevel descendantsLevel:descendantsLevels) {
-				List<String> pathKeys = SearchPracticeItemParametersHelper
+				List<String> pathKeys = SearchPracticeItemHelper
 						.buildKeyOfTaxonomicPath(descendantsLevel);
 				descendantsTaxonomicPathKeys.addAll(pathKeys);
 			}
@@ -135,7 +135,7 @@ public class SearchPracticeItemParameters {
 		if(exactTaxonomyLevel == null) {
 			exactTaxonomicPathKeys = null;
 		} else {
-			exactTaxonomicPathKeys = SearchPracticeItemParametersHelper
+			exactTaxonomicPathKeys = SearchPracticeItemHelper
 					.buildKeyOfTaxonomicPath(exactTaxonomyLevel);
 		}
 	}

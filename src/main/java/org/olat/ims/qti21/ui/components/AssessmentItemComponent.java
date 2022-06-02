@@ -48,6 +48,7 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	private boolean enableResetHard;
 	private boolean enableResetSoft;
 	private boolean enableSkip;
+	private boolean enableAlwaysSkip;
 	
 	private int questionLevel;
 	private int maxQuestionLevel = 5;
@@ -91,6 +92,14 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 		this.enableSkip = enableSkip;
 	}
 	
+	public boolean isEnableAlwaysSkip() {
+		return enableAlwaysSkip;
+	}
+
+	public void setEnableAlwaysSkip(boolean enableAlwaysSkip) {
+		this.enableAlwaysSkip = enableAlwaysSkip;
+	}
+
 	public int getQuestionLevel() {
 		return questionLevel;
 	}

@@ -38,9 +38,9 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SearchPracticeItemParametersHelper {
+public class SearchPracticeItemHelper {
 	
-	private SearchPracticeItemParametersHelper() {
+	private SearchPracticeItemHelper() {
 		//
 	}
 	

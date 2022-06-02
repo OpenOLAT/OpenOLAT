@@ -60,6 +60,7 @@ import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.ui.events.NextSerieEvent;
 import org.olat.course.nodes.practice.ui.events.OverviewEvent;
 import org.olat.course.nodes.practice.ui.events.ResponseEvent;
+import org.olat.course.nodes.practice.ui.events.SkipEvent;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -74,6 +75,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
+import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.ResponseInput;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
@@ -212,6 +214,8 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		if(assessmentItemCtrl == source) {
 			if(event instanceof ResponseEvent) {
 				doFeedback(ureq, (ResponseEvent)event);
+			} else if(event instanceof SkipEvent) {
+				doNextQuestion(ureq);
 			}
 		} else if(feedbackCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -258,7 +262,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		for(int i=nextIndex; i<runningPracticeItems.size(); i++) {
 			RunningPracticeItem item = runningPracticeItems.get(i);
 			currentIndex = i;
-			if(item.getAttempts() == 0 || !item.isCorrect()) {
+			if((item.getAttempts() == 0 || !item.isCorrect()) && !item.isSkip()) {
 				return item;
 			}
 		}
@@ -462,6 +466,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		private int attempts;
 		private boolean correct;
 		private boolean correctAtFirstAttempts;
+		private boolean skip = false;
 		
 		public RunningPracticeItem(PracticeItem item) {
 			this.item = item;
@@ -497,6 +502,14 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		public void setCorrectAtFirstAttempts(boolean correctAtFirstAttempts) {
 			this.correctAtFirstAttempts = correctAtFirstAttempts;
+		}
+
+		public boolean isSkip() {
+			return skip;
+		}
+
+		public void setSkip(boolean skip) {
+			this.skip = skip;
 		}
 	}
 
@@ -670,6 +683,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			int level = refs.isEmpty() ? 0 : refs.get(0).getLevel();
 			qtiWorksCtrl.showQuestionLevel(level, maxLevels);
 			qtiWorksCtrl.setSubmitI18nKey("submit.check");
+			qtiWorksCtrl.setEnableAlwaysSkip(practiceItem.getAttempts() >= 1);
 		}
 		
 		protected ItemSessionState getItemSessionState() {
@@ -725,6 +739,16 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				fireEvent(ureq, new ResponseEvent(passed, globalRef));
 			} else {
 				fireEvent(ureq, new ResponseEvent(null, globalRef));
+			}
+		}
+
+		@Override
+		protected void next(UserRequest ureq, QTIWorksAssessmentItemEvent event) {
+			super.next(ureq, event);
+			
+			if(event.getEvent() == QTIWorksAssessmentItemEvent.Event.skip) {
+				practiceItem.setSkip(true);
+				fireEvent(ureq, new SkipEvent(null));
 			}
 		}
 

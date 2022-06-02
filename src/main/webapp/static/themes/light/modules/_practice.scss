@@ -147,6 +147,17 @@ svg {
 	border: 1px solid $o-practice-play-border-color;
 	border-radius: $o-practice-play-border-radius;
 	
+	i.o_challenge {
+		
+		position: absolute;
+		width: 1em;
+		height: 1em;
+		background-image: url('#{$o-images-path}practise/trophybadge.svg');
+		background-repeat:no-repeat;
+		background-position:50% 50%;		
+		background-size: contain;
+	}
+	
 	.o_practice_series_progress {
 		position: relative;
 		margin: 15px 15px 0 0;
@@ -155,12 +166,10 @@ svg {
 			background-color: $o-practice-challenge-progress-bg-color;
 		}
 		
-		i {
-			position: absolute;
-			top: -0.3em;
+		i.o_challenge {
+			font-size: 280%;
+			top: -0.25em;
 			right: -0.5em;
-			color: $o-practice-challenge-progress-bg-color;
-			font-size: 300%;
 		}
 	}
 	
@@ -171,23 +180,21 @@ svg {
 		border: 1px solid $o-practice-play-border-color;
 		border-radius: $o-practice-play-border-radius;
 		
-		i {
+		i.o_challenge {
 			font-size: 300%;
-			position: absolute;
 			top: 0.3em;
 			left: 0.3em;
-			color: $brand-primary;
 		}
 		
 		span {
 			display: block;
-			padding-left: 58px;
+			padding-left: 50px;
 			font-size: 85%;
 		}
 		
 		strong {
 			display: block;
-			padding-left: 58px;
+			padding-left: 50px;
 			font-size: 200%;
 		}
 	}

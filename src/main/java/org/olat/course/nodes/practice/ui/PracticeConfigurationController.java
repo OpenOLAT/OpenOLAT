@@ -58,7 +58,7 @@ import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
-import org.olat.course.nodes.practice.manager.SearchPracticeItemParametersHelper;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
 import org.olat.course.nodes.practice.model.PracticeItem;
@@ -411,8 +411,8 @@ public class PracticeConfigurationController extends FormBasicController {
 			if(qItem != null) {
 				String levelName = qItem.getTaxonomyLevelName();
 				if(StringHelper.containsNonWhitespace(levelName)) {
-					List<String> parentLine = SearchPracticeItemParametersHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
-					String key = SearchPracticeItemParametersHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
+					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
+					String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
 	
 					taxonomyLevelsMap
 						.computeIfAbsent(key, l -> new PracticeResourceTaxonomyRow(levelName, parentLine))
