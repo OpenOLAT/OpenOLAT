@@ -190,7 +190,7 @@ public class PracticeRunController extends BasicController {
 	
 	private void doOpenParticipant(UserRequest ureq) {
 		participantCtrl = new PracticeParticipantController(ureq, getWindowControl(),
-				courseEntry, courseNode, userCourseEnv);
+				courseEntry, courseNode, userCourseEnv, getIdentity(), null, null);
 		listenTo(participantCtrl);
 
 		addToHistory(ureq, participantCtrl);

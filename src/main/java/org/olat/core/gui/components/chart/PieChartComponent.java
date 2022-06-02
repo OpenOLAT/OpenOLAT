@@ -42,6 +42,8 @@ public class PieChartComponent extends DefaultD3Component {
 	
 	public PieChartComponent(String name) {
 		super(name);
+		setDomReplacementWrapperRequired(false);
+		this.isDomReplacementWrapperRequired();
 	}
 
 	public int getLayer() {

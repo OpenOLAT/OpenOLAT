@@ -19,29 +19,52 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.chart.PieChartElement;
+import org.olat.core.gui.components.chart.PiePoint;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
+import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
+import org.olat.course.nodes.practice.ui.PracticeParticipantTaxonomyStatisticsTableModel.TaxonomyStatisticsCols;
 import org.olat.course.nodes.practice.ui.events.ComposeSerieEvent;
 import org.olat.course.nodes.practice.ui.events.StartPracticeEvent;
+import org.olat.course.nodes.practice.ui.renders.LevelBarsCellRenderer;
+import org.olat.course.nodes.practice.ui.renders.LevelNumbersCellRenderer;
+import org.olat.course.nodes.practice.ui.renders.PracticeTaxonomyCellRenderer;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,64 +80,92 @@ public class PracticeParticipantController extends FormBasicController {
 	private FormLink newQuestionsButton;
 	private FormLink errorsButton;
 	private FormLink customButton;
+	private FlexiTableElement taxonomyTableEl;
+	private PracticeParticipantTaxonomyStatisticsTableModel taxonomyTableModel;
 	
 	private final boolean rankList;
+	
+	private final int numOfLevels;
 	private final int questionPerSeries;
 	private final int seriesPerChallenge;
 	private final int challengesToComplete;
+	private final boolean includeWithoutTaxonomyLevels;
+
+	private final List<PracticeItem> allItems;
 	private List<AssessmentTestSession> series;
 	private final List<PracticeResource> resources;
 	private final UserCourseEnvironment userCourseEnv;
+	private final boolean playable;
+	private final Identity practicingIdentity;
 	
 	private RepositoryEntry courseEntry;
 	private PracticeCourseNode courseNode;
 	
 	private PracticeRankListController rankListCtrl;
-	private PracticeParticipantStatisticsController statisticsCtrl;
 	
+	@Autowired
+	private TaxonomyService taxonomyService;
 	@Autowired
 	private PracticeService practiceService;
 	
-	public PracticeParticipantController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, PracticeCourseNode courseNode,
-			UserCourseEnvironment userCourseEnv) {
+	public PracticeParticipantController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			PracticeCourseNode courseNode, UserCourseEnvironment userCourseEnv, Identity practicingIdentity,
+			List<PracticeResource> cachedResources, List<PracticeItem> cachedItems) {
 		super(ureq, wControl, "practice_participant");
 		
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
+		this.practicingIdentity = practicingIdentity;
+		playable = getIdentity().equals(practicingIdentity);
 		rankList = courseNode.getModuleConfiguration().getBooleanSafe(PracticeEditController.CONFIG_KEY_RANK_LIST, false);
 		questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
 		seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
 		challengesToComplete = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, 2);
+		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
+		includeWithoutTaxonomyLevels = courseNode.getModuleConfiguration().getBooleanSafe(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, false);
 		
-		series = practiceService.getSeries(getIdentity(), courseEntry, courseNode.getIdent());
-		resources = practiceService.getResources(courseEntry, courseNode.getIdent());
+		series = practiceService.getSeries(practicingIdentity, courseEntry, courseNode.getIdent());
+		resources = cachedResources == null ? practiceService.getResources(courseEntry, courseNode.getIdent()) : new ArrayList<>(cachedResources);
+		
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
+		searchParams.setPlayMode(PlayMode.all);
+		allItems = cachedItems == null ? practiceService.generateItems(resources, searchParams, -1, getLocale()) : new ArrayList<>(cachedItems);
 		
 		initForm(ureq);
 		load(series);
+	}
+	
+	public List<PracticeResource> getResources() {
+		return resources;
+		
+	}
+	public List<PracticeItem> getPracticeItems() {
+		return allItems;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
 			String playShuffleDesc = translate("play.shuffle.desc", Integer.toString(questionPerSeries));
 			layoutCont.contextPut("playShuffleDesc", playShuffleDesc);
+			layoutCont.contextPut("playable", Boolean.valueOf(playable));
 		}
 		
-		if(rankList) {
+		if(rankList && userCourseEnv != null) {
 			rankListCtrl = new PracticeRankListController(ureq, getWindowControl(), mainForm,
 					courseEntry, courseNode, userCourseEnv);
 			listenTo(rankListCtrl);
 			formLayout.add("rankList", rankListCtrl.getInitialFormItem());
 		}
 		
-		statisticsCtrl = new PracticeParticipantStatisticsController(ureq, getWindowControl(),
-				courseEntry, courseNode, resources, series, mainForm);
-		listenTo(statisticsCtrl);
-		formLayout.add("statistics", statisticsCtrl.getInitialFormItem());
-		
+		initPractiseStarters(formLayout);
+		initSubjectStatistics(formLayout);
+
+	}
+	
+	private void initPractiseStarters(FormItemContainer formLayout) {
 		playButton = uifactory.addFormLink("play", formLayout, Link.BUTTON);
 		playButton.setElementCssClass("btn btn-primary");
 		playButton.setIconRightCSS("o_icon o_icon_start");
@@ -126,29 +177,54 @@ public class PracticeParticipantController extends FormBasicController {
 		customButton.setIconRightCSS("o_icon o_icon_start");
 	}
 	
+	private void initSubjectStatistics(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyStatisticsCols.taxonomyLevel,
+				new PracticeTaxonomyCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyStatisticsCols.bars,
+				new LevelBarsCellRenderer()));
+		
+		DefaultFlexiColumnModel numbersCol = new DefaultFlexiColumnModel(TaxonomyStatisticsCols.numbers,
+				new LevelNumbersCellRenderer());
+		numbersCol.setHeaderLabel("&nbsp;");
+		numbersCol.setHeaderTooltip(translate(TaxonomyStatisticsCols.numbers.i18nHeaderKey()));
+		columnsModel.addFlexiColumnModel(numbersCol);
+		
+		if(practicingIdentity.equals(getIdentity())) {
+			DefaultFlexiColumnModel playCol = new DefaultFlexiColumnModel("play", -1, "play",
+					new StaticFlexiCellRenderer("", "play", "o_practice_play", "o_icon o_icon_start", null));
+			columnsModel.addFlexiColumnModel(playCol);
+		}
+		
+		taxonomyTableModel = new PracticeParticipantTaxonomyStatisticsTableModel(columnsModel);
+		taxonomyTableEl = uifactory.addTableElement(getWindowControl(), "taxonomy.table", taxonomyTableModel, 20, false, getTranslator(), formLayout);
+		taxonomyTableEl.setNumOfRowsEnabled(false);
+		taxonomyTableEl.setCustomizeColumns(false);
+	}
+	
 	protected void reload() {
-		series = practiceService.getSeries(getIdentity(), courseEntry, courseNode.getIdent());
+		series = practiceService.getSeries(practicingIdentity, courseEntry, courseNode.getIdent());
 		load(series);
 	}
 	
 	protected void load(List<AssessmentTestSession> seriesList) {
 		this.series = seriesList;
-		loadStatistics();
-		if(statisticsCtrl != null) {
-			statisticsCtrl.loadStatistics(seriesList);
-		}
+		loadChallengeStatistics();
+		loadItemStatistics(allItems);
 	}
 	
-	protected void loadStatistics() {
+	private void loadChallengeStatistics() {
 		// Block to counter if the max. number of series is completed
 		final int completedSeries = series.size();
 		final int currentNumOfSeries = completedSeries % seriesPerChallenge;
+		flc.contextPut("series", Integer.valueOf(completedSeries));
 
 		// Challenges
 		final long completedChallenges = PracticeHelper.completedChalllenges(completedSeries, seriesPerChallenge);
 		String challengeProgress = translate("challenge.progress",
 				Long.toString(completedChallenges), Integer.toString(challengesToComplete));
 		flc.contextPut("challengeProgress", challengeProgress);
+		flc.contextPut("challenges", Long.valueOf(completedChallenges));
 
 		// Series
 		String currentSeriesI18n = seriesPerChallenge > 1 ? "current.series.plural" : "current.series.singular";
@@ -171,16 +247,110 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 		
 		flc.contextPut("currentSeriesProgress", Double.valueOf(currentSeriesProgress));
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(statisticsCtrl == source) {
-			if(event instanceof StartPracticeEvent) {
-				fireEvent(ureq, event);
+		
+		long duration = 0l;
+		long numOfDuration = 0l;
+		for(AssessmentTestSession serie:series) {
+			if(serie.getDuration() != null) {
+				duration += serie.getDuration().longValue();
+				numOfDuration++;
 			}
 		}
-		super.event(ureq, source, event);
+		
+		double averageDuration = 0.0d;
+		if(numOfDuration > 0) {
+			averageDuration = duration / (double)numOfDuration;
+		}
+		String formattedAverageDuration = Formatter.formatDuration(Math.round(averageDuration));
+		flc.contextPut("averageDuration", formattedAverageDuration);
+	}
+	
+	private void loadItemStatistics(List<PracticeItem> items) {
+		
+		flc.contextPut("numOfLevels", numOfLevels);
+		flc.contextPut("numOfQuestions", items.size());
+		
+		List<PracticeAssessmentItemGlobalRef> globalRefs = practiceService
+				.getPracticeAssessmentItemGlobalRefs(items, practicingIdentity);
+		Map<String,PracticeAssessmentItemGlobalRef> globalRefsMap = globalRefs.stream()
+				.collect(Collectors.toMap(PracticeAssessmentItemGlobalRef::getIdentifier, ref -> ref, (u, v) -> u));
+		
+		long numOfLastAttempt = 0l;
+		long correctLastAttempt = 0l;
+		final Levels globalLevels = new Levels(numOfLevels);
+		
+		List<Long> selectedLevels = courseNode.getModuleConfiguration().getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
+		final Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps = new HashMap<>();
+		if(selectedLevels != null && !selectedLevels.isEmpty()) {
+			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(selectedLevels);
+			for(TaxonomyLevel level:levels) {
+				List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
+				for(String key:keys) {
+					levelMaps.put(key, new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels));
+				}
+			}
+		}
+
+		PracticeParticipantTaxonomyStatisticsRow withoutTaxonomyLevelRow
+			= new PracticeParticipantTaxonomyStatisticsRow(translate("wo.taxonomy.level.label"), numOfLevels);
+
+		Set<String> duplicates = new HashSet<>();
+		for(PracticeItem item:items) {
+			String identifier = item.getIdentifier();
+			if(identifier == null || duplicates.contains(identifier)) {
+				continue;
+			}
+			
+			PracticeAssessmentItemGlobalRef globalRef = globalRefsMap.get(identifier);
+			globalLevels.append(globalRef);
+			duplicates.add(identifier);
+			
+			String taxonomyLevel = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+			if(taxonomyLevel != null) {
+				PracticeParticipantTaxonomyStatisticsRow row = levelMaps.get(taxonomyLevel);
+				if(row != null) {
+					row.getLevels().append(globalRef);
+				} else {
+					withoutTaxonomyLevelRow.getLevels().append(globalRef);
+				}
+			} else {
+				withoutTaxonomyLevelRow.getLevels().append(globalRef);
+			}
+			
+			if(globalRef != null && globalRef.getLastAttempts() != null) {
+				numOfLastAttempt++;
+				if(globalRef.getLastAttemptsPassed() != null && globalRef.getLastAttemptsPassed().booleanValue()) {
+					correctLastAttempt++;
+				}
+			}
+		}
+
+		flc.contextPut("globalLevels", globalLevels);
+		
+		PieChartElement chartEl = new PieChartElement("levels.chart");
+		chartEl.setElementCssClass("o_practice_piechart");
+		chartEl.setLayer(20);
+		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getCssClass(0)));
+		for(int i=1; i<=numOfLevels; i++) {
+			chartEl.addPoints(new PiePoint(globalLevels.getLevelPercent(i), globalLevels.getCssClass(i)));
+		}
+		flc.add("levels.chart", chartEl);
+		flc.contextPut("progressI18n", getIdentity().equals(practicingIdentity) ? "progress.chart.title.your" : "progress.chart.title");
+		
+		double correctPercent = 0.0d;
+		if(numOfLastAttempt > 0) {
+			correctPercent = (correctLastAttempt / (double)numOfLastAttempt) * 100.0d;
+		}
+		flc.contextPut("correctPercent", Long.toString(Math.round(correctPercent)));
+		
+		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = levelMaps.values().stream()
+				.filter(levelRow -> !levelRow.isEmpty())
+				.collect(Collectors.toList());
+		if(includeWithoutTaxonomyLevels) {
+			levelRows.add(withoutTaxonomyLevelRow);
+		}
+		taxonomyTableModel.setObjects(levelRows);
+		taxonomyTableEl.reset();
 	}
 
 	@Override
@@ -193,6 +363,14 @@ public class PracticeParticipantController extends FormBasicController {
 			doErrorQuestions(ureq);
 		} else if(customButton == source) {
 			fireEvent(ureq, new ComposeSerieEvent());
+		} else if(taxonomyTableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("play".equals(se.getCommand())) {
+					PracticeParticipantTaxonomyStatisticsRow statisticsRow = taxonomyTableModel.getObject(se.getIndex());
+					doStartTaxonomyLevelMode(ureq, statisticsRow);
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -203,7 +381,7 @@ public class PracticeParticipantController extends FormBasicController {
 	}
 	
 	private void doPlayShuffled(UserRequest ureq) {
-		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(getIdentity(), courseEntry, courseNode);
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.freeShuffle);
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
 		if(items.isEmpty()) {
@@ -214,7 +392,7 @@ public class PracticeParticipantController extends FormBasicController {
 	}
 
 	private void doNewQuestions(UserRequest ureq) {
-		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(getIdentity(), courseEntry, courseNode);
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.newQuestions);
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
 		if(items.isEmpty()) {
@@ -225,7 +403,7 @@ public class PracticeParticipantController extends FormBasicController {
 	}
 	
 	private void doErrorQuestions(UserRequest ureq) {
-		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(getIdentity(), courseEntry, courseNode);
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.incorrectQuestions);
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
 		if(items.isEmpty()) {
@@ -233,5 +411,17 @@ public class PracticeParticipantController extends FormBasicController {
 		} else {
 			fireEvent(ureq, new StartPracticeEvent(PlayMode.incorrectQuestions, items));
 		}
+	}
+	
+	private void doStartTaxonomyLevelMode(UserRequest ureq, PracticeParticipantTaxonomyStatisticsRow statisticsRow) {
+		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
+		searchParams.setPlayMode(PlayMode.all);
+		// Override standard taxonomy settings
+		searchParams.setExactTaxonomyLevel(statisticsRow.getTaxonomyLevel());
+		searchParams.setIncludeWithoutTaxonomyLevel(false);
+		searchParams.setDescendantsLevels(null);
+		
+		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
+		fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
 	}
 }

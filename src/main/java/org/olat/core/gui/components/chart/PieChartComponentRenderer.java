@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -44,19 +45,23 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 		List<PiePoint> serie = poc.getSerie();
 		int layer = poc.getLayer();
 		
-		sb.append("<div id='d").append(cmpId).append("d3holder' class='radarChart' style='max-width:650px; max-height:650px; margin:0 auto;'></div>\n");
+		sb.append("<div id='o_c").append(cmpId).append("' class='radarChart");
+		if(StringHelper.containsNonWhitespace(poc.getElementCssClass())) {
+			sb.append(" ").append(poc.getElementCssClass());
+		}
+		sb.append("' style='max-width:650px; max-height:650px;'></div>\n");
 		sb.append("<script>\n")
 		  .append("\"use strict\";")
 		  .append("jQuery(function() {\n")
 		  .append(" var render = function() {\n")
-		  .append("  var placeholderWidth = jQuery('#d").append(cmpId).append("d3holder').width();\n")
-		  .append("  var placeholderHeight = jQuery('#d").append(cmpId).append("d3holder').height();\n")
+		  .append("  var placeholderWidth = jQuery('#o_c").append(cmpId).append("').width();\n")
+		  .append("  var placeholderHeight = jQuery('#o_c").append(cmpId).append("').height();\n")
 		  .append("  var placeholderSize = placeholderHeight > 20 ? Math.min(placeholderWidth, placeholderHeight) : placeholderWidth;\n")
-		  .append("  var margin = 20;\n")
+		  .append("  var margin = 0;\n")
 		  .append("  var dWidth = (placeholderSize - margin);\n")
 		  .append("  var dHeight = dWidth;\n");
 
-		sb.append("  jQuery('#d").append(cmpId).append("d3holder').ooPieChart({\n")
+		sb.append("  jQuery('#o_c").append(cmpId).append("').ooPieChart({\n")
 		  .append("    w: dWidth,\n")
 		  .append("    h: dHeight,\n")
 		  .append("    margin: margin,\n")

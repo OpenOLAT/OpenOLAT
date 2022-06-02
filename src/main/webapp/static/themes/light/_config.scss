@@ -1067,7 +1067,7 @@ $o-edu-type-exam-course-color 				: $o-cn-style-cat-red-color !default;
 $o-edu-type-certification-course-color		: $o-cn-style-cat-orange-color !default;
 $o-edu-type-date-course-color				: $o-cn-style-cat-purple-color !default;
 $o-edu-type-seminar-course-color			: $o-cn-style-cat-light-blue-color !default;
-$o-edu-type-lecture-course-color				: $o-cn-style-cat-light-green-color !default;
+$o-edu-type-lecture-course-color			: $o-cn-style-cat-light-green-color !default;
 $o-edu-type-blendedlearning-course-color	: $o-cn-style-cat-yellow-color !default;
 $o-edu-type-selfstudy-course-color			: $o-cn-style-cat-dark-green-color !default;
 
@@ -1076,8 +1076,8 @@ $o-export-area-meta-color					: #777;
 $o-export-area-rowelem-space-md				: 10px !default;
 
 /* Practice */
-$o-practice-play-main-bg-color				: #F7F6F6;
 $o-practice-play-main-border-color			: $brand-primary;
+$o-practice-play-main-bg-color				: lighten($brand-primary,50%);
 $o-practice-play-bg-color					: #fff;
 $o-practice-play-border-color				: #e5e5e5;
 $o-practice-play-border-radius				: $border-radius-base !default;

@@ -1,6 +1,6 @@
 .o_practice_run {
 	display: grid;
-	grid-template-columns: 1fr 3fr;
+	grid-template-columns: 3fr 1fr;
 	column-gap: 15px;
 }
 
@@ -143,12 +143,9 @@ svg {
 }
 
 .o_practice_challenge {
-	padding: 1em;
-	border: 1px solid $o-practice-play-border-color;
-	border-radius: $o-practice-play-border-radius;
-	
-	i.o_challenge {
-		
+	min-width: 200px;
+
+	i.o_challenge {	
 		position: absolute;
 		width: 1em;
 		height: 1em;
@@ -174,16 +171,10 @@ svg {
 	}
 	
 	.o_practice_challenges_progress {
-		padding: 1em;
-		margin-top: 1em;
 		position: relative;
-		border: 1px solid $o-practice-play-border-color;
-		border-radius: $o-practice-play-border-radius;
-		
+
 		i.o_challenge {
 			font-size: 300%;
-			top: 0.3em;
-			left: 0.3em;
 		}
 		
 		span {
@@ -203,24 +194,25 @@ svg {
 
 .o_practice_play_card {
 	padding: 1em 2em;
-	display: flex;
-	align-items: center;
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	column-gap: 15px;
+	
 	border: 1px solid $o-practice-play-main-border-color;
 	border-radius: $o-practice-play-border-radius;
 	background-color: $o-practice-play-main-bg-color;
 	
 	.o_practice_shuffle_play {
-		flex: 3 0 auto;
+		border-right: 1px solid $o-practice-play-main-border-color;
+		
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
 	}
 	
-	.o_practice_shuffle_play_icon {
-		flex: 0 0 auto;
-		padding: 1em;
-		
-		i {
-			color: #ccc;
-			font-size: 500%;
-		}
+	h3, h4 {
+		margin-top: 0;
+		padding-top: 0;
 	}
 	
 	a {
@@ -233,7 +225,7 @@ svg {
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr;
 	column-gap: 15px;
-
+	
 	.o_practice_play_mode_card {
 		padding: 1em;
 		display: flex;
@@ -244,7 +236,7 @@ svg {
 		border: 1px solid $o-practice-play-border-color;
 		border-radius: $o-practice-play-border-radius;
 		background-color: $o-practice-play-bg-color;
-
+	
 		span>i {
 			color: #ccc;
 			font-size: 500%;
@@ -255,26 +247,44 @@ svg {
 			max-width: 200px;
 			margin: 0 auto;
 			background-color: $o-practice-play-start-link-bg-color;
-			
 		}
 	}
 }
 
 .o_practice_statistics {
-	display: flex;
-	gap: 15px;
+	padding: 1em;
+	position: relative;
 	
-	.o_practice_statistics_numbers {
-		flex: 2 2 300px;
-	}
+	span {
+		position: absolute;
+		top: 1em;
+		right: 1em;
 	
-	.o_practice_statistics_graph {
-		flex: 0 0 200px;
+		>i {
+			color: #ccc;
+			font-size: 500%;
+		}
 	}
+}
+
+.o_practice_metrics_progress {
+	display: grid;
+	grid-template-columns: 6fr 1fr;
+	column-gap: 15px;
+}
+
+.o_practice_statistics_graph {
+	padding: 1em 2em;
+	border: 1px solid $o-practice-play-border-color;
+	border-radius: $o-practice-play-border-radius;
+	background-color: $o-practice-play-bg-color;
 	
 	.o_practice_statistics_legend {
-		margin: 20px 20px 0 0;
-		flex: 1 1 200px;
+		margin: 0.5em 2em;
+	}
+	
+	.radarChart {
+		margin: 1em 2em;
 	}
 }
 

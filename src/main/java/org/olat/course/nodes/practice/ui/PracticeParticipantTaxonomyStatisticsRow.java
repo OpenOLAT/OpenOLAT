@@ -53,6 +53,10 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
 		taxonomicPathKey = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(taxonomyLevelName, taxonomyPath);
 	}
+	
+	public boolean isEmpty() {
+		return levels == null || levels.getTotal() <= 0;
+	}
 
 	public Levels getLevels() {
 		return levels;

@@ -1,38 +1,32 @@
 <div class="o_practice_run">
-	<div class="o_practice_scores">
-		<div class="o_practice_challenge">
-			<h5>$r.translate("current.challenge")</h5>
-			
-			<div class="o_practice_series_progress">
-				<div class="progress" style="width: 100%">
-					<div class="progress-bar" style="width: ${currentSeriesProgress}%"> </div>
-				</div>
-				<i class="o_challenge"> </i>
-			</div>
-			<span>$r.escapeHtml($currentSeries)</span>
-			
-			<div class="o_practice_challenges_progress">
-				<i class="o_challenge"> </i>
-				<strong>$r.escapeHtml($challengeProgress)</strong>
-				<span>$r.translate("challenges.ended")</span>
-			</div>
-		</div>
-		#if($r.visible("rankList"))
-			$r.render("rankList")
-		#end
-	</div>
-	
 	<div class="o_practice_start">
+		#if($r.isTrue($playable))
 		<div class="o_block_bottom o_practice_play_card">
 			<div class="o_practice_shuffle_play">
-				<h4>$r.translate("play.shuffle.title")</h4>
-				<p>$r.escapeHtml($playShuffleDesc)</p>
+				<div>
+					<h3>$r.translate("play.shuffle.title")</h3>
+					<p>$r.escapeHtml($playShuffleDesc)</p>
+				</div>
 				$r.render("play")
 			</div>
-			<div class="o_practice_shuffle_play_icon">
-				<i class="o_icon o_practice_icon"> </i>
+			
+			<div class="o_practice_challenge">
+				<div class="o_practice_challenges_progress">
+					<i class="o_challenge"> </i>
+					<strong>$r.escapeHtml($challengeProgress)</strong>
+					<span>$r.translate("challenges.ended")</span>
+				</div>
+				<h5>$r.translate("current.challenge")</h5>
+				<div class="o_practice_series_progress">
+					<div class="progress" style="width: 100%">
+						<div class="progress-bar" style="width: ${currentSeriesProgress}%"> </div>
+					</div>
+					<i class="o_challenge"> </i>
+				</div>
+				<span>$r.escapeHtml($currentSeries)</span>
 			</div>
 		</div>
+		
 		
 		<fieldset class="o_block">
 			<legend>$r.translate("play.modes.title")</legend>
@@ -65,8 +59,88 @@
 				</div>
 			</div>
 		</fieldset>
+		#end ## end playable
 		
-		$r.render("statistics")
+		<div class="panel panel-default">
+			<div class="o_practice_statistics">
+				<h4>$r.translate("pro.levels")</h4>
+				<p>$r.translate("pro.levels.desc")</p>
+				<span><i class="o_icon o_icon_levels "> </i></span>
+			</div>
+			<div class="o_practice_taxonomy_statistics">
+				$r.render("taxonomy.table")
+			</div>
+		</div>
+		
+		<fieldset class="o_block">
+			<legend>$r.translate("your.statistics")</legend>
+			<div class="panel panel-default">
+				<div class="panel-heading"><strong>$r.translate("your.metrics")</strong></div>
+				<div class="o_practice_metrics">
+					<table class="table table-condensed">
+						<tbody>
+							<tr>
+								<th scope="row">$r.translate("table.header.challenges")</th>
+								<td>$challenges</td>
+								<th scope="row">$r.translate("table.header.num.questions")</th>
+								<td>$numOfQuestions</td>
+							</tr>
+							<tr>
+								<th scope="row">$r.translate("table.header.series")</th>
+								<td>$series</td>
+								<th scope="row">$r.translate("table.header.correct.percent")</th>
+								<td>${correctPercent}%</td>
+							</tr>
+							<tr>
+								<th scope="row">$r.translate("table.header.duration")</th>
+								<td>$averageDuration</td>
+								<td colspan="2"></td>
+							</tr>
+							<tr>
+								<td id="learn_levels" colspan="4">
+									<label>$r.translate("table.header.learn.pro.levels")</label>
+									<div class="o_practice_metrics_progress">
+									
+										#if($r.isNotNull($globalLevels))
+										<div class="progress" style="width:100%;">
+											<div class='progress-bar ${globalLevels.getNotCssClass()}' style='width:${globalLevels.getNotPercent()}%' title="${globalLevels.getNotPercent()}%"></div>
+											#foreach($i in ${globalLevels.getLevels()})
+												<div class='progress-bar ${globalLevels.getCssClass($i)}' style='width:${globalLevels.getLevelPercent($i)}%' title="${globalLevels.getLevelPercent($i)}%"></div>
+											#end
+										</div>
+										<div class="numbers">
+											${globalLevels.getNot()}
+											#foreach($i in ${globalLevels.getLevels()})
+												/ ${globalLevels.getLevelString($i)}
+											#end
+										</div>
+										#end
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</fieldset>
+	</div>
 	
+	<div class="o_practice_scores">
+		<div class="o_practice_statistics_graph">
+			<h4>$r.translate($progressI18n)</h4>
+			$r.render("levels.chart")
+			<div class="o_practice_statistics_legend">
+				<span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass(0)}'> </i> $r.translate("level.stat.not") (${globalLevels.getNotPercent()}%)</span><br>
+				#if($r.isNotNull($globalLevels))
+					#foreach($i in ${globalLevels.getLevels()})
+					   <span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass($i)}'> </i> $r.translate("level.stat.percent") $i (${globalLevels.getLevelPercent($i)}%)</span><br>
+					#end
+				#end
+			</div>
+		</div>
+
+		#if($r.visible("rankList"))
+			$r.render("rankList")
+		#end
 	</div>
 </div>

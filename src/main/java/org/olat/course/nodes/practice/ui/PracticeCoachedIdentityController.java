@@ -57,8 +57,8 @@ public class PracticeCoachedIdentityController extends BasicController {
 	private final PracticeCourseNode courseNode;
 	
 	private CloseableModalController cmc;
+	private PracticeParticipantController statisticsCtrl;
 	private ConfirmResetPracticeDataController confirmCtrl;
-	private PracticeParticipantStatisticsController statisticsCtrl;
 	
 	public PracticeCoachedIdentityController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, PracticeCourseNode courseNode, Identity practicingIdentity) {
@@ -127,8 +127,8 @@ public class PracticeCoachedIdentityController extends BasicController {
 		List<PracticeItem> items = statisticsCtrl == null ? null : statisticsCtrl.getPracticeItems();
 		removeAsListenerAndDispose(statisticsCtrl);
 		
-		statisticsCtrl = new PracticeParticipantStatisticsController(ureq, getWindowControl(),
-				courseEntry, courseNode, practicingIdentity, resources, items);
+		statisticsCtrl = new PracticeParticipantController(ureq, getWindowControl(),
+				courseEntry, courseNode, null, practicingIdentity, resources, items);
 		listenTo(statisticsCtrl);
 		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
 	}

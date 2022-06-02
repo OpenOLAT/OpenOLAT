@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 
 /**
@@ -40,15 +43,23 @@ public class Levels {
 		}
 	}
 	
+	public List<Integer> getLevels() {
+		List<Integer> levels = new ArrayList<>();
+		for(int i=0; i<levelArr.length; i++) {
+			levels.add(Integer.valueOf(i + 1));
+		}
+		return levels;
+	}
+	
 	public String getCssClass(int i) {
 		switch(i) {
-			case 0: return "o_practice_progress_not";
+			case 0: return getNotCssClass();
 			case 1: return "o_practice_progress_l1";
 			case 2: return "o_practice_progress_l2";
 			case 3: return "o_practice_progress_l3";
 			case 4: return "o_practice_progress_l4";
 			case 5: return "o_practice_progress_l5";
-			default: return "o_practice_progress_not";
+			default: return getNotCssClass();
 		}
 	}
 	
@@ -75,6 +86,10 @@ public class Levels {
 	public long getNotPercent() {
 		return Math.round(toPercent(getNot()));
 	}
+	
+	public String getNotCssClass() {
+		return "o_practice_progress_not";
+	}
 
 	public int getLevel(int level) {
 		int jLevel = level - 1;
@@ -82,6 +97,13 @@ public class Levels {
 			return levelArr[jLevel];
 		}
 		return 0;
+	}
+	
+	public String getLevelString(Integer level) {
+		if(level == null) return "";
+		
+		int val = getLevel(level.intValue());
+		return Integer.toString(val);
 	}
 	
 	public long getLevelPercent(int level) {
