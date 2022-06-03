@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
@@ -35,23 +36,23 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 	private final Levels levels;
 	private final String taxonomyLevelName;
 	private final List<String> taxonomyPath;
-	private final String taxonomicPathKey;
 	private final TaxonomyLevel taxonomyLevel;
+	
+	private List<TaxonomyLevel> aggregatedLevels;
 	
 	public PracticeParticipantTaxonomyStatisticsRow(String label, int numOfLevels) {
 		this.taxonomyLevelName = label;
 		levels = new Levels(numOfLevels);
 		taxonomyPath = null;
 		taxonomyLevel = null;
-		taxonomicPathKey = null;
 	}
 	
 	public PracticeParticipantTaxonomyStatisticsRow(TaxonomyLevel taxonomyLevel, int numOfLevels) {
 		this.taxonomyLevel = taxonomyLevel;
 		taxonomyLevelName = taxonomyLevel.getDisplayName();
 		levels = new Levels(numOfLevels);
-		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
-		taxonomicPathKey = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(taxonomyLevelName, taxonomyPath);
+		taxonomyPath = SearchPracticeItemHelper
+				.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
 	}
 	
 	public boolean isEmpty() {
@@ -74,8 +75,15 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		return taxonomyPath;
 	}
 
-	public String getTaxonomicPathKey() {
-		return taxonomicPathKey;
+	public List<TaxonomyLevel> getAggregatedLevels() {
+		return aggregatedLevels;
 	}
-	
+
+	public void appendRow(PracticeParticipantTaxonomyStatisticsRow row) {
+		if(aggregatedLevels == null) {
+			aggregatedLevels = new ArrayList<>();
+		}
+		aggregatedLevels.add(row.getTaxonomyLevel());
+		levels.add(row.getLevels());
+	}
 }

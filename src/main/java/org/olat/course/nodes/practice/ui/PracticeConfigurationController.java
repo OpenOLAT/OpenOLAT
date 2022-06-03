@@ -398,9 +398,17 @@ public class PracticeConfigurationController extends FormBasicController {
 		searchParams.setRules(getRules());
 		
 		List<Long> taxonomyLevelKeys = getSelectedTaxonomyLevels();
+		Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap = new HashMap<>();
 		if(!taxonomyLevelKeys.isEmpty()) {
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(getSelectedTaxonomyLevels());
 			searchParams.setDescendantsLevels(levels);
+			for(TaxonomyLevel level:levels) {
+				List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
+				PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level);
+				for(String key:keys) {
+					taxonomyLevelsMap.put(key, row);
+				}
+			}
 		}
 
 		searchParams.setIncludeWithoutTaxonomyLevel(withoutTaxonomyEl.isAtLeastSelected(1));
@@ -408,7 +416,6 @@ public class PracticeConfigurationController extends FormBasicController {
 		List<PracticeResource> resources = getSelectedResources();
 		List<PracticeItem> items = practiceResourceService.generateItems(resources, searchParams, -1, getLocale());
 		
-		Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap = new HashMap<>();
 		int withoutTaxonomyLevels = 0;
 		
 		// Collect taxonomy levels
@@ -419,10 +426,12 @@ public class PracticeConfigurationController extends FormBasicController {
 				if(StringHelper.containsNonWhitespace(levelName)) {
 					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
 					String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
-	
-					taxonomyLevelsMap
-						.computeIfAbsent(key, l -> new PracticeResourceTaxonomyRow(levelName, parentLine))
-						.incrementNumOfQuestions();
+					PracticeResourceTaxonomyRow row = taxonomyLevelsMap.get(key);
+					if(row != null) {
+						row.incrementNumOfQuestions();
+					} else {
+						withoutTaxonomyLevels++;
+					}
 				} else {
 					withoutTaxonomyLevels++;
 				}
@@ -433,7 +442,9 @@ public class PracticeConfigurationController extends FormBasicController {
 		String questionsMsg = translate("stats.num.questions", Integer.toString(items.size()));
 		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
 		
-		List<PracticeResourceTaxonomyRow> taxonomyLevelsStats = new ArrayList<>(taxonomyLevelsMap.values());
+		List<PracticeResourceTaxonomyRow> taxonomyLevelsStats = taxonomyLevelsMap.values().stream()
+				.filter(levelRow -> !levelRow.isEmpty())
+				.collect(Collectors.toList());
 		if(withoutTaxonomyEl.isAtLeastSelected(1)) {
 			taxonomyLevelsStats.add(new PracticeResourceTaxonomyRow(translate("wo.taxonomy.level.label"), withoutTaxonomyLevels));
 		}

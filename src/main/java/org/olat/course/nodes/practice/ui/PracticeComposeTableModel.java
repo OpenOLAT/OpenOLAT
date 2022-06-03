@@ -93,7 +93,7 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 			return false;
 		}
 		
-		if(!SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, includeWithoutTaxonomy)) {
+		if(!SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, false, includeWithoutTaxonomy)) {
 			return false;
 		}
 		

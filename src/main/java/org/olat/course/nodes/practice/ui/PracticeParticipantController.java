@@ -20,8 +20,11 @@
 package org.olat.course.nodes.practice.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -285,11 +288,13 @@ public class PracticeParticipantController extends FormBasicController {
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(selectedLevels);
 			for(TaxonomyLevel level:levels) {
 				List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
+				PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels);
 				for(String key:keys) {
-					levelMaps.put(key, new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels));
+					levelMaps.put(key, row);
 				}
 			}
 		}
+		flc.contextPut("withLevels", !selectedLevels.isEmpty());
 
 		PracticeParticipantTaxonomyStatisticsRow withoutTaxonomyLevelRow
 			= new PracticeParticipantTaxonomyStatisticsRow(translate("wo.taxonomy.level.label"), numOfLevels);
@@ -345,14 +350,49 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 		flc.contextPut("correctPercent", Long.toString(Math.round(correctPercent)));
 		
-		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = levelMaps.values().stream()
-				.filter(levelRow -> !levelRow.isEmpty())
-				.collect(Collectors.toList());
+		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = new ArrayList<>(levelMaps.values());
+		aggregate(levelRows);
 		if(includeWithoutTaxonomyLevels) {
 			levelRows.add(withoutTaxonomyLevelRow);
 		}
 		taxonomyTableModel.setObjects(levelRows);
 		taxonomyTableEl.reset();
+	}
+	
+	private void aggregate(List<PracticeParticipantTaxonomyStatisticsRow> levelRows) {
+		List<PracticeParticipantTaxonomyStatisticsRow> parentCopyLevelRows = new ArrayList<>(levelRows);
+		Collections.sort(levelRows, new TaxonomyPathComparator());
+		for(Iterator<PracticeParticipantTaxonomyStatisticsRow> itRows=levelRows.iterator(); itRows.hasNext(); ) {
+			PracticeParticipantTaxonomyStatisticsRow row = itRows.next();
+			if(row.getAggregatedLevels() != null && !row.getAggregatedLevels().isEmpty()) {
+				continue;
+			}
+			
+			int numOfQuestions = row.getLevels().getTotal();
+			if(numOfQuestions < questionPerSeries) {
+				PracticeParticipantTaxonomyStatisticsRow parent = getParentRow(row.getTaxonomyLevel(), parentCopyLevelRows);
+				if(parent != null) {
+					parent.appendRow(row);
+					itRows.remove();
+				}	
+			}
+		}
+		
+		for(Iterator<PracticeParticipantTaxonomyStatisticsRow> itRows=levelRows.iterator(); itRows.hasNext(); ) {
+			if(itRows.next().isEmpty()) {
+				itRows.remove();
+			}
+		}
+	}
+	
+	private PracticeParticipantTaxonomyStatisticsRow getParentRow(TaxonomyLevel taxonomyLevel, List<PracticeParticipantTaxonomyStatisticsRow> levelRows) {
+		TaxonomyLevel parentLevel = taxonomyLevel.getParent();
+		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelRows) {
+			if(levelRow.getTaxonomyLevel().equals(parentLevel)) {
+				return levelRow;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -425,5 +465,19 @@ public class PracticeParticipantController extends FormBasicController {
 		
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
 		fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
+	}
+	
+	private class TaxonomyPathComparator implements Comparator<PracticeParticipantTaxonomyStatisticsRow> {
+
+		@Override
+		public int compare(PracticeParticipantTaxonomyStatisticsRow o1, PracticeParticipantTaxonomyStatisticsRow o2) {
+			int p1 = length(o1);
+			int p2 = length(o2);
+			return Integer.compare(p2, p1);
+		}
+		
+		private int length(PracticeParticipantTaxonomyStatisticsRow o) {
+			return o == null || o.getTaxonomyPath() == null ? 0 : o.getTaxonomyPath().size();
+		}
 	}
 }

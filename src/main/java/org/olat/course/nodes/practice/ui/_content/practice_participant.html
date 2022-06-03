@@ -61,6 +61,7 @@
 		</fieldset>
 		#end ## end playable
 		
+		#if($r.isTrue($withLevels))
 		<div class="panel panel-default">
 			<div class="o_practice_statistics">
 				<h4>$r.translate("pro.levels")</h4>
@@ -71,6 +72,7 @@
 				$r.render("taxonomy.table")
 			</div>
 		</div>
+		#end
 		
 		<fieldset class="o_block">
 			<legend>$r.translate("your.statistics")</legend>

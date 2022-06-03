@@ -124,4 +124,13 @@ public class Levels {
 		}
 		return (val / (double)total) * 100.0d;
 	}
+	
+	public void add(Levels levelsToAdd) {
+		not += levelsToAdd.getNot();
+		total += levelsToAdd.getTotal();
+		
+		for(int i=getNumOfLevels(); i-->0; ) {
+			levelArr[i] += levelsToAdd.levelArr[i];
+		}
+	}
 }

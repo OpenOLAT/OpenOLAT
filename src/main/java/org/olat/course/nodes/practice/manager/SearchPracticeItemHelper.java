@@ -59,7 +59,7 @@ public class SearchPracticeItemHelper {
 			return false;
 		}
 		
-		if(!accept(taxonomicPathKey, searchParams.getDescendantsTaxonomicPathKeys(), searchParams.isIncludeWithoutTaxonomyLevel())) {
+		if(!accept(taxonomicPathKey, searchParams.getDescendantsTaxonomicPathKeys(), true, searchParams.isIncludeWithoutTaxonomyLevel())) {
 			return false;
 		}
 
@@ -74,23 +74,33 @@ public class SearchPracticeItemHelper {
 		return true;
 	}
 	
-	public static boolean accept(PracticeItem item, List<String> levelsPathKeys, boolean includeWithoutTaxonomy) {
+	public static boolean accept(PracticeItem item, List<String> levelsPathKeys, boolean allowDescendants, boolean includeWithoutTaxonomy) {
 		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
-		return accept(taxonomicPathKey, levelsPathKeys, includeWithoutTaxonomy);
+		return accept(taxonomicPathKey, levelsPathKeys, allowDescendants, includeWithoutTaxonomy);
 	}
 	
-	public static boolean accept(String taxonomicPathKey, List<String> levelsPathKeys, boolean includeWithoutTaxonomy) {
+	public static boolean accept(String taxonomicPathKey, List<String> levelsPathKeys, boolean allowDescendants, boolean includeWithoutTaxonomy) {
 		if(levelsPathKeys != null && !levelsPathKeys.isEmpty()) {
 			if(taxonomicPathKey == null && !includeWithoutTaxonomy) {
 				return false;
 			}
-			if(taxonomicPathKey != null && !levelsPathKeys.contains(taxonomicPathKey)) {
+			if(taxonomicPathKey != null && !acceptPath(taxonomicPathKey, levelsPathKeys, allowDescendants)) {
 				return false;
 			}
 		}/* else if (includeWithoutTaxonomy && StringHelper.containsNonWhitespace(taxonomicPathKey)) {
 			return false;
 		}*/
 		return true;
+	}
+	
+	private static boolean acceptPath(String taxonomicPathKey, List<String> levelsPathKeys, boolean allowDescendants) {
+		for(String levelPathKey:levelsPathKeys) {
+			if((allowDescendants && taxonomicPathKey.startsWith(levelPathKey))
+					|| taxonomicPathKey.equals(levelPathKey)) {
+				return true;
+			}	
+		}
+		return false;
 	}
 	
 	public static boolean accept(QuestionItem item, PracticeFilterRule rule) {
