@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -35,8 +36,15 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
+import org.olat.course.nodes.practice.model.PracticeItem;
+import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.course.nodes.practice.ui.PracticeEditController;
 import org.olat.course.nodes.practice.ui.PracticeParticipantController;
 import org.olat.course.nodes.practice.ui.PracticeRunController;
@@ -69,19 +77,67 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
+		}
 
-		return StatusDescription.NOERROR;
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
+		}
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
 	}
 	
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
-		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
+		oneClickStatusCache = null;//delete the cache
+		
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_PRACTICE, getConditionExpressions());
+		if(oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			//isConfigValidWithTranslator add first
+			sds.remove(oneClickStatusCache[0]);
+		}
+		sds.addAll(validateInternalConfiguration(cev));
+		if(sds.isEmpty()) {
+			sds.add(StatusDescription.NOERROR);
+		}
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
+	}
+
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
+		List<StatusDescription> sdList = new ArrayList<>(5);
+		
+		if(cev != null) {
+			RepositoryEntry courseEntry = cev.getCourseGroupManager().getCourseEntry();
+			NodeAccessType accessType = NodeAccessType.of(courseEntry.getTechnicalType());
+			if(LearningPathNodeAccessProvider.TYPE.equals(accessType.getType())) {
+				PracticeService practiceService = CoreSpringFactory.getImpl(PracticeService.class);
+				LearningPathConfigs configs = CoreSpringFactory.getImpl(LearningPathService.class).getConfigs(this);
+				FullyAssessedTrigger trigger = configs.getFullyAssessedTrigger();
+				if(trigger == FullyAssessedTrigger.statusDone) {
+					List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
+					SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(null, courseEntry, this);
+					List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, null);
+	
+					int questionsPerSerie = getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
+					if(items.size() < questionsPerSerie) {
+						addStatusWarningDescription("warning.practice.num.questions", PracticeEditController.PANE_TAB_CONFIGURATION, sdList);
+					}
+				}
+			}
+		}
+
+		return sdList;
+	}
+	
+	private void addStatusWarningDescription(String key, String pane, List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.WARNING, key, key, params, PACKAGE_PRACTICE);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override

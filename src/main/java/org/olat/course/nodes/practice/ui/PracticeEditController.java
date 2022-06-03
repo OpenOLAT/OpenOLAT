@@ -38,6 +38,8 @@ import org.olat.course.nodes.PracticeCourseNode;
  */
 public class PracticeEditController extends ActivateableTabbableDefaultController {
 
+	public static final String PANE_TAB_CONFIGURATION = "pane.tab.config.practice";
+	
 	public static final String CONFIG_KEY_NUM_LEVELS = "numberOfLevels";
 	public static final String CONFIG_KEY_QUESTIONS_PER_SERIE = "questionsPerSerie";
 	public static final String CONFIG_KEY_SERIE_PER_CHALLENGE = "seriesPerChallenge";
@@ -59,6 +61,10 @@ public class PracticeEditController extends ActivateableTabbableDefaultControlle
 	public static final String CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS = "filterIncludeWoTaxonomyLevels";
 	
 	public static final String CONFIG_KEY_RANK_LIST = "rankListOfParticipants";
+	/**
+	 * Cache the number of questions found
+	 */
+	public static final String CONFIG_NUM_OF_QUESTIONS = "numOfQuestionsAsCache";
 	
 	
 	private TabbedPane myTabbedPane;
@@ -68,7 +74,7 @@ public class PracticeEditController extends ActivateableTabbableDefaultControlle
 	
 	public PracticeEditController(UserRequest ureq, WindowControl wControl, ICourse course, PracticeCourseNode courseNode) {
 		super(ureq, wControl);
-		paneKeys = new String[]{ "pane.tab.config.practice" };
+		paneKeys = new String[]{ PANE_TAB_CONFIGURATION };
 		
 		configurationCtrl = new PracticeConfigurationController(ureq, wControl, course, courseNode);
 		listenTo(configurationCtrl);

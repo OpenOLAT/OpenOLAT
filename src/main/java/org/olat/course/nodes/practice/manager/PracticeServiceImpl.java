@@ -485,7 +485,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	
 	private List<PracticeItem> loadItemsOfRepositoryEntry(RepositoryEntry testEntry, Locale locale,
 			SearchPracticeItemParameters searchParams, QTI21MetadataConverter metadataConverter, Set<String> identifiers) {
-		final String language = locale.getLanguage();
+		final String language = locale == null ? "de" : locale.getLanguage();
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
