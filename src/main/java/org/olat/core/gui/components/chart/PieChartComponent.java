@@ -40,6 +40,9 @@ public class PieChartComponent extends DefaultD3Component {
 	private int layer = 0;
 	private final List<PiePoint> series = new ArrayList<>();
 	
+	private String title;
+	private String subTitle;
+	
 	public PieChartComponent(String name) {
 		super(name);
 		setDomReplacementWrapperRequired(false);
@@ -52,6 +55,22 @@ public class PieChartComponent extends DefaultD3Component {
 
 	public void setLayer(int layer) {
 		this.layer = layer;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getSubTitle() {
+		return subTitle;
+	}
+
+	public void setSubTitle(String subTitle) {
+		this.subTitle = subTitle;
 	}
 
 	public List<PiePoint> getSerie() {

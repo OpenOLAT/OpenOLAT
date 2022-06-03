@@ -55,6 +55,22 @@ public class PieChartElement extends FormItemImpl {
 	public void setLayer(int layer) {
 		component.setLayer(layer);
 	}
+	
+	public String getTitle() {
+		return component.getTitle();
+	}
+
+	public void setTitle(String title) {
+		component.setTitle(title);
+	}
+
+	public String getSubTitle() {
+		return component.getSubTitle();
+	}
+
+	public void setSubTitle(String subTitle) {
+		component.setSubTitle(subTitle);
+	}
 
 	public List<PiePoint> getSerie() {
 		return component.getSerie();

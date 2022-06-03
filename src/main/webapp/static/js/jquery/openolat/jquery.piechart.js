@@ -7,7 +7,9 @@
 			margin: 20,
 			layer: 0,
 			colors: [],
-			entries: []
+			entries: [],
+			title: null,
+			subTitle: null
 		}, options);
 
 		try {
@@ -24,6 +26,8 @@
 			var layer = cfg.layer;
 			var dataEntries = settings.entries;
 			var colorRange = settings.colors;
+			var title = settings.title;
+			var subTitle = settings.subTitle;
 			
 			// The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
 			var radius = Math.min(width, height) / 2 - margin
@@ -52,7 +56,7 @@
 			var dataReady = pie(dataEntries);
 			
 			// Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-			svg
+			var chart = svg
 			  .selectAll('whatever')
 			  .data(dataReady)
 			  .enter()
@@ -63,6 +67,23 @@
 			  )
 			  .attr("class", function(d) { return d.data.cssClass; })
 			  .style("stroke-width", "0px");
+			
+			if(title != null) { 
+				svg
+				  .append("text")
+				  .attr("y", "-5")
+				  .attr("text-anchor", "middle")
+				  .attr("class", "o_piechart_title")
+				  .text(title);
+			}
+			if(subTitle != null) { 
+				svg
+				  .append("text")
+				  .attr("y", "20")
+				  .attr("text-anchor", "middle")
+				  .attr("class", "o_piechart_subtitle")
+				  .text(subTitle);
+			}
 		}
 	}
 }( jQuery ));

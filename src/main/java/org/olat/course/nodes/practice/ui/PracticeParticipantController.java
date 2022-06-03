@@ -330,6 +330,8 @@ public class PracticeParticipantController extends FormBasicController {
 		PieChartElement chartEl = new PieChartElement("levels.chart");
 		chartEl.setElementCssClass("o_practice_piechart");
 		chartEl.setLayer(20);
+		chartEl.setTitle(Integer.toString(globalLevels.getTotal()));
+		chartEl.setSubTitle(translate("chart.title"));
 		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getCssClass(0)));
 		for(int i=1; i<=numOfLevels; i++) {
 			chartEl.addPoints(new PiePoint(globalLevels.getLevelPercent(i), globalLevels.getCssClass(i)));

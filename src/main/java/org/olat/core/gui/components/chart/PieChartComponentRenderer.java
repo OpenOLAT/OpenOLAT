@@ -45,7 +45,7 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 		List<PiePoint> serie = poc.getSerie();
 		int layer = poc.getLayer();
 		
-		sb.append("<div id='o_c").append(cmpId).append("' class='radarChart");
+		sb.append("<div id='o_c").append(cmpId).append("' class='o_pie_chart");
 		if(StringHelper.containsNonWhitespace(poc.getElementCssClass())) {
 			sb.append(" ").append(poc.getElementCssClass());
 		}
@@ -65,10 +65,20 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("    w: dWidth,\n")
 		  .append("    h: dHeight,\n")
 		  .append("    margin: margin,\n")
-		  .append("    layer: ").append(layer).append(",\n")
-		  .append("    entries: ");
+		  .append("    layer: ").append(layer).append(",\n");
+		if(StringHelper.containsNonWhitespace(poc.getTitle())) {
+			sb.append("    title: '").append(poc.getTitle()).append("',");
+		}
+		if(StringHelper.containsNonWhitespace(poc.getSubTitle())) {
+			sb.append("    subTitle: '").append(poc.getSubTitle()).append("',");
+		}
+		sb.append("    entries: ");
 		renderValues(sb, serie);
-		sb.append("\n")
+		sb.append(",\n");
+		
+		
+		
+		sb
 		  .append("  });\n")
 		  .append(" }\n")//end render function
 		  .append(" render();\n")
