@@ -95,6 +95,10 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement tequilaApiSecretEl;
 	private TextElement tequilaOAuth2EndpointEl;
 	
+	private MultipleSelectionElement switchEduIDEl;
+	private TextElement switchEduIDApiKeyEl;
+	private TextElement switchEduIDApiSecretEl;
+	
 	private MultipleSelectionElement keycloakEl;
 	private MultipleSelectionElement keycloakDefaultEl;
 	private TextElement keycloakClientIdEl;
@@ -153,6 +157,7 @@ public class OAuthAdminController extends FormBasicController {
 		initAdfsForm(formLayout);
 		initAzureAdfsForm(formLayout);
 		initKeycloakForm(formLayout);
+		initSwitchEduIDForm(formLayout);
 		initTequilaForm(formLayout);
 		initOpenIDConnectForm(formLayout);
 		
@@ -397,6 +402,29 @@ public class OAuthAdminController extends FormBasicController {
 			tequilaApiKeyEl.setVisible(false);
 			tequilaApiSecretEl.setVisible(false);
 			tequilaOAuth2EndpointEl.setVisible(false);
+		}
+	}
+	
+	private void initSwitchEduIDForm(FormItemContainer formLayout) {
+		FormLayoutContainer switchEduIdCont = FormLayoutContainer.createDefaultFormLayout("switchEduID", getTranslator());
+		switchEduIdCont.setFormTitle(translate("switch.eduid.admin.title"));
+		switchEduIdCont.setFormTitleIconCss("o_icon o_icon_provider_switch_eduid");
+		switchEduIdCont.setRootForm(mainForm);
+		formLayout.add(switchEduIdCont);
+		
+		switchEduIDEl = uifactory.addCheckboxesHorizontal("switch.eduid.enabled", switchEduIdCont, keys, values);
+		switchEduIDEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String tequilaApiKey = oauthModule.getSwitchEduIDApiKey();
+		switchEduIDApiKeyEl = uifactory.addTextElement("switch.eduid.id", "switch.eduid.api.id", 256, tequilaApiKey, switchEduIdCont);
+		String tequilaApiSecret = oauthModule.getSwitchEduIDApiSecret();
+		switchEduIDApiSecretEl = uifactory.addTextElement("switch.eduid.secret", "switch.eduid.api.secret", 256, tequilaApiSecret, switchEduIdCont);
+		
+		if(oauthModule.isTequilaEnabled()) {
+			switchEduIDEl.select(keys[0], true);
+		} else {
+			switchEduIDApiKeyEl.setVisible(false);
+			switchEduIDApiSecretEl.setVisible(false);
 		}
 	}
 	
@@ -687,6 +715,16 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setKeycloakEndpoint("");
 			oauthModule.setKeycloakRootEnabled(false);
 			oauthModule.setKeycloakRealm("");
+		}
+		
+		if(switchEduIDEl.isAtLeastSelected(1)) {
+			oauthModule.setSwitchEduIDEnabled(true);
+			oauthModule.setSwitchEduIDApiKey(switchEduIDApiKeyEl.getValue());
+			oauthModule.setSwitchEduIDApiSecret(switchEduIDApiSecretEl.getValue());
+		} else {
+			oauthModule.setSwitchEduIDEnabled(false);
+			oauthModule.setSwitchEduIDApiKey("");
+			oauthModule.setSwitchEduIDApiSecret("");
 		}
 		
 		if(tequilaEl.isAtLeastSelected(1)) {

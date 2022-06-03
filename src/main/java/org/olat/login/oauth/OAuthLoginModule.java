@@ -85,6 +85,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String azureAdfsApiKey;
 	private String azureAdfsApiSecret;
 	private String azureAdfsTenant;
+
+	@Value("${switch.eduid.enabled:false}")
+	private boolean switchEduIDEnabled;
+	@Value("${switch.eduid.root:false}")
+	private boolean switchEduIDRootEnabled;
+	@Value("${switch.eduid.client.id}")
+	private String switchEduIDApiKey;
+	@Value("${switch.eduid.client.secret}")
+	private String switchEduIDApiSecret;
 	
 	private boolean tequilaEnabled;
 	private String tequilaApiKey;
@@ -110,6 +119,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String keycloakEndpoint;
 	@Value("${oauth.keycloak.realm}")
 	private String keycloakRealm;
+	
 	
 	@Autowired
 	private List<OAuthSPI> oauthSPIs;
@@ -182,12 +192,20 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", false);
 		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", false);
 		
-		//tequila
+		// Switch edu-ID
 		String tequilaEnabledObj = getStringPropertyValue("tequilaEnabled", true);
 		tequilaEnabled = "true".equals(tequilaEnabledObj);
 		tequilaApiKey = getStringPropertyValue("tequilaApiKey", false);
 		tequilaApiSecret = getStringPropertyValue("tequilaApiSecret", false);
 		tequilaOAuth2Endpoint = getStringPropertyValue("tequilaOAuth2Endpoint", false);
+		
+		//tequila
+		String switchEduIDEnabledObj = getStringPropertyValue("switchEduIDEnabled", true);
+		switchEduIDEnabled = "true".equals(switchEduIDEnabledObj);
+		switchEduIDApiKey = getStringPropertyValue("switchEduIDApiKey", false);
+		switchEduIDApiSecret = getStringPropertyValue("switchEduIDApiSecret", false);
+		String switchEduIDRootEnabledObj = getStringPropertyValue("switchEduIDRootEnabled", true);
+		switchEduIDRootEnabled = "true".equals(switchEduIDRootEnabledObj);
 		
 		// Keycloak
 		String keycloakEnabledObj = getStringPropertyValue(KEYCLOAK_ENABLED, keycloakEnabled);
@@ -552,6 +570,42 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setAzureAdfsTenant(String azureAdfsTenant) {
 		this.azureAdfsTenant = azureAdfsTenant;
 		setStringProperty("azureAdfsTenant", azureAdfsTenant, true);
+	}
+
+	public boolean isSwitchEduIDEnabled() {
+		return switchEduIDEnabled;
+	}
+
+	public void setSwitchEduIDEnabled(boolean switchEduIDEnabled) {
+		this.switchEduIDEnabled = switchEduIDEnabled;
+		setStringProperty("switchEduIDEnabled", switchEduIDEnabled ? "true" : "false", true);
+	}
+
+	public boolean isSwitchEduIDRootEnabled() {
+		return switchEduIDRootEnabled;
+	}
+
+	public void setSwitchEduIDRootEnabled(boolean rootEnabled) {
+		this.switchEduIDRootEnabled = rootEnabled;
+		setStringProperty("switchEduIDRootEnabled", rootEnabled ? "true" : "false", true);
+	}
+
+	public String getSwitchEduIDApiKey() {
+		return switchEduIDApiKey;
+	}
+
+	public void setSwitchEduIDApiKey(String apiKey) {
+		this.switchEduIDApiKey = apiKey;
+		setStringProperty("switchEduIDApiKey", apiKey, true);
+	}
+
+	public String getSwitchEduIDApiSecret() {
+		return switchEduIDApiSecret;
+	}
+
+	public void setSwitchEduIDApiSecret(String secret) {
+		this.switchEduIDApiSecret = secret;
+		setStringProperty("switchEduIDApiSecret", secret, true);
 	}
 
 	public boolean isTequilaEnabled() {
