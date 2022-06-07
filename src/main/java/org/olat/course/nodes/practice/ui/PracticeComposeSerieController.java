@@ -252,8 +252,10 @@ public class PracticeComposeSerieController extends FormBasicController {
 		FlexiTableFilter taxonomyFilter = FlexiTableFilter.getFilter(filters, FILTER_TAXONOMY);
 		if(taxonomyFilter != null) {
 			List<String> selectedValues = ((FlexiTableMultiSelectionFilter)taxonomyFilter).getValues();
-			taxonomyLevelsKeyPath = toTaxonomyKeyPaths(Set.copyOf(selectedValues));
-			includeWithoutTaxonomy = selectedValues.contains(NOT_ASSIGNED);
+			if(selectedValues != null && !selectedValues.isEmpty()) {
+				taxonomyLevelsKeyPath = toTaxonomyKeyPaths(Set.copyOf(selectedValues));
+				includeWithoutTaxonomy = selectedValues.contains(NOT_ASSIGNED);
+			}
 		}
 		
 		tableModel.filter(searchString, notAnswered, taxonomyLevelsKeyPath, includeWithoutTaxonomy, levels, correctFrom, correctTo);
