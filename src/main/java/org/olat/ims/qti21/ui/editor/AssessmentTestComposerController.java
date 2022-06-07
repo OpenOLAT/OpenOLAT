@@ -628,7 +628,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		selectQItemCtrl = new SelectItemController(ureq, getWindowControl(), QTI21Constants.QTI_21_FORMAT);
 		listenTo(selectQItemCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, translate("title.add") );
+		String title = translate("title.add.from.pool");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
