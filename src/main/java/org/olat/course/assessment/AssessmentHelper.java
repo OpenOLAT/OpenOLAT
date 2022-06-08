@@ -414,7 +414,7 @@ public class AssessmentHelper {
 					lastModifications.addLastCoachModified(scoreEvaluation.getLastCoachModified());
 				}
 				
-				if(!followUserVisibility || scoreEvaluation.getUserVisible() == null || scoreEvaluation.getUserVisible().booleanValue()) {
+				if(!followUserVisibility || (scoreEvaluation.getUserVisible() != null && scoreEvaluation.getUserVisible().booleanValue())) {
 					// attempts
 					if (assessmentConfig.hasAttempts()) {
 						hasDisplayableValuesConfigured = true;
