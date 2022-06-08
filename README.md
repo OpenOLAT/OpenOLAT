@@ -445,7 +445,7 @@ when the test get slower over time.
 
 #### Execute Selenium functional tests
 
-The Selenium integration tests start the whole web application in Tomcat 8.0. They run with
+The Selenium integration tests start the whole web application in Tomcat 9.0. They run with
 Google Chrome or Firefox and their WebDrivers will be automatically downloaded (internet connection
 needed). The browsers need to be installed the standard way on Mac or Linux.
 
@@ -454,13 +454,13 @@ Execution time ca. 60 - 90m
 **For PostgreSQL:**
 
 ```bash
-mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.db.postgresql.pass=serial -Ptomcat
+mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=chrome -Dtest.env.webdriver.browserVersion=102.0.5005.61 -Dtest.env.webdriver.chrome.version=102.0.5005.61 -Dtest.env.db.postgresql.pass=serial -Ptomcat
 ```
 
 Or with Firefox
 
 ```bash
-mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=firefox -Dtest.env.db.postgresql.pass=serial -Ptomcat
+mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=firefox -Dtest.env.webdriver.browserVersion= -Dtest.env.db.postgresql.pass=serial -Ptomcat
 ```
 
 **For MySQL:**
