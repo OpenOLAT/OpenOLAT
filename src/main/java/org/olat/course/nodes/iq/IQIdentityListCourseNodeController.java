@@ -344,10 +344,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				Date end = null;
 				Date start = null;
 				Double completion = null;
-				Integer extraTimeInSeconds = null;
+				Integer extraTimeInSeconds = session.getExtraTime();
 				if(session.getFinishTime() == null && session.getTerminationTime() == null) {
 					start = session.getCreationDate();
-					extraTimeInSeconds = session.getExtraTime();
 					if(session.getNumOfQuestions() != null && session.getNumOfQuestions().intValue() > 0 && session.getNumOfAnsweredQuestions() != null) {
 						completion = session.getNumOfAnsweredQuestions().doubleValue() / session.getNumOfQuestions().doubleValue();
 					}
