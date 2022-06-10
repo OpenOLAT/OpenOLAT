@@ -1983,9 +1983,11 @@ function setFlexiFormDirtyByListener(e){
 function setFlexiFormDirty(formId, hideMessage){
 	jQuery('#'+formId).each(function() {
 		var submitId = jQuery(this).data('FlexiSubmit');
+		console.log('Flexi dirty', submitId);
 		if(submitId != null) {
 			jQuery('#'+submitId).addClass('btn o_button_dirty');
 			o2c = (hideMessage ? 0 : 1);
+		console.log('Flexi dirty', submitId, o2c);
 		}
 	});
 }
@@ -2142,6 +2144,7 @@ function o_extraTinyDirty(editor) {
 	var dirty = editor.isDirty();
 	function o_extraTinyDirtyToggle(elm) {
 		if(dirty) {
+			o2c=1;
 			jQuery(elm).addClass('o_button_dirty');
 		} else {
 			jQuery(elm).removeClass('o_button_dirty');
