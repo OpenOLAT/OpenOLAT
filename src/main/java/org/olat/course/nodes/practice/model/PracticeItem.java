@@ -20,6 +20,7 @@
 package org.olat.course.nodes.practice.model;
 
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -44,6 +45,7 @@ public class PracticeItem {
 	
 	private final String taxonomyLevelName;
 	private final String taxonomicPath;
+	private final TaxonomyLevel taxonomyLevel;
 	
 	public PracticeItem(QuestionItem item) {
 		this(item.getIdentifier(), item.getTitle(), null, item, null);
@@ -65,6 +67,7 @@ public class PracticeItem {
 		this.displayName = displayName;
 		taxonomyLevelName = item == null ? null : item.getTaxonomyLevelName();
 		taxonomicPath = item == null ? null : item.getTaxonomicPath();
+		taxonomyLevel = item == null ? null : item.getTaxonomyLevel();
 	}
 	
 	public String getIdentifier() {
@@ -93,5 +96,15 @@ public class PracticeItem {
 
 	public String getTaxonomicPath() {
 		return taxonomicPath;
+	}
+	
+	/**
+	 * This is the taxonomy level of OpenOlat, the item can have other metadata and
+	 * level name and path without having the taxonomy level.
+	 * 
+	 * @return A taxonomy level if found on the database.
+	 */
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
 	}
 }

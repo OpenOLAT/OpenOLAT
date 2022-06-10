@@ -61,6 +61,6 @@ public class PracticeTaxonomyCellRenderer implements FlexiCellRenderer {
 			}
 			target.append("</small><br>");
 		}
-		target.append("<span>").append(level).append("</span>");
+		target.append("<strong>").append(level).append("</strong>");
 	}
 }

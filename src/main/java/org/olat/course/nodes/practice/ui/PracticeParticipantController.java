@@ -295,7 +295,6 @@ public class PracticeParticipantController extends FormBasicController {
 				putTaxonomyLevelInMap(level, levelMaps);
 			}
 		}
-		flc.contextPut("withLevels", !selectedLevels.isEmpty());
 
 		PracticeParticipantTaxonomyStatisticsRow withoutTaxonomyLevelRow
 			= new PracticeParticipantTaxonomyStatisticsRow(translate("wo.taxonomy.level.label"), numOfLevels);
@@ -316,9 +315,10 @@ public class PracticeParticipantController extends FormBasicController {
 				PracticeParticipantTaxonomyStatisticsRow row = levelMaps.get(taxonomyLevel);
 				if(row != null) {
 					row.getLevels().append(globalRef);
-				} /*else if(!withSpecifiedTaxonomy && item.getTaxonomyLevelName() != null) {
-					// putTaxonomyLevelInMap(row.getTaxonomyLevel(), levelMaps).getLevels().append(globalRef);
-				} */ else {
+				} else if(!withSpecifiedTaxonomy && item.getTaxonomyLevel() != null) {
+					putTaxonomyLevelInMap(item.getTaxonomyLevel(), levelMaps)
+						.getLevels().append(globalRef);
+				} else {
 					withoutTaxonomyLevelRow.getLevels().append(globalRef);
 				}
 			} else {
@@ -332,7 +332,6 @@ public class PracticeParticipantController extends FormBasicController {
 				}
 			}
 		}
-
 		
 		flc.contextPut("globalLevels", globalLevels);
 		globalLevelsLink.setI18nKey(Integer.toString(globalLevels.getTotal()));
@@ -363,7 +362,7 @@ public class PracticeParticipantController extends FormBasicController {
 			levelRows.add(withoutTaxonomyLevelRow);
 		}
 		addCalloutLevelsLinks(levelRows);
-		
+		flc.contextPut("withLevels", !selectedLevels.isEmpty() || !levelRows.isEmpty());
 
 		taxonomyTableModel.setObjects(levelRows);
 		taxonomyTableEl.sort(TaxonomyStatisticsCols.taxonomyLevel.name(), true);
