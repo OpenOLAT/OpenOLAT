@@ -625,17 +625,25 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		List<AssessmentEntry> entries = practiceAssessmentTestSessionDao.loadAssessmentEntries(courseEntry, subIdent);
 		
 		int index = -1;
-		for(int i=0; i<entries.size(); i++) {
-			if(identity.equals(entries.get(i).getIdentity())) {
-				index = i;
-			}
-		}
-		
-		index = index - (numOfEntries / 2);
-		if(index < 0) {
+		int stopIndex = -1;
+		if(entries.size() <= numOfEntries) {
 			index = 0;
+			stopIndex = entries.size();
+		} else {
+			for(int i=0; i<entries.size(); i++) {
+				if(identity.equals(entries.get(i).getIdentity())) {
+					index = i;
+				}
+			}
+			
+			index = index - (numOfEntries / 2);
+			if(index < 0) {
+				index = 0;
+			}
+	
+			stopIndex = index + numOfEntries;
 		}
-		int stopIndex = index + numOfEntries;
+
 		List<RankedIdentity> rankList = new ArrayList<>();
 		for(int i=index; i<stopIndex && i<entries.size(); i++) {
 			Identity user = entries.get(i).getIdentity();

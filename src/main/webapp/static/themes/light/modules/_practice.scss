@@ -127,6 +127,7 @@ svg {
 	margin-top: 1em;
 	border: 1px solid $o-practice-play-border-color;
 	border-radius: $o-practice-play-border-radius;
+	background-color: $o-practice-play-bg-color;
 	
 	table>tbody>tr>td {
 		line-height: 2em;
@@ -135,6 +136,7 @@ svg {
 	
 	.o_practice_rank_me {
 		background-color: $o-practice-play-main-bg-color;
+		
 		
 		td {
 			color: $o-practice-rank-me-color;
@@ -157,7 +159,7 @@ svg {
 	
 	.o_practice_series_progress {
 		position: relative;
-		margin: 15px 15px 0 0;
+		margin: 15px 25px 0 0;
 		
 		.progress-bar {
 			background-color: $o-practice-challenge-progress-bg-color;
@@ -166,7 +168,7 @@ svg {
 		i.o_challenge {
 			font-size: 280%;
 			top: -0.25em;
-			right: -0.5em;
+			right: -1.1em;
 		}
 	}
 	
@@ -189,6 +191,10 @@ svg {
 			font-size: 200%;
 		}
 	}
+}
+
+.o_practice_end .o_practice_data.o_practice_challenge {
+	margin-top: -1em;
 }
 
 
@@ -285,6 +291,16 @@ svg {
 	
 	.o_pie_chart {
 		margin: 1em 2em;
+	}
+}
+
+.o_practice_statistics_legend.o_practice_callout_levels {
+	display: grid;
+	grid-template-columns: 1fr 1fr 5fr;
+	column-gap: 5px;
+	
+	.o_practice_num {
+		text-align: right;
 	}
 }
 

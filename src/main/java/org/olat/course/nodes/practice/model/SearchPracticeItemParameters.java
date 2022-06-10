@@ -45,7 +45,7 @@ public class SearchPracticeItemParameters {
 	private List<PracticeFilterRule> rules;
 	private List<TaxonomyLevel> descendantsTaxonomyLevels;
 	private List<String> descendantsTaxonomicPathKeys;
-	private TaxonomyLevel exactTaxonomyLevel;
+	private List<TaxonomyLevel> exactTaxonomyLevels;
 	private List<String> exactTaxonomicPathKeys;
 	
 	private boolean includeWithoutTaxonomyLevel;
@@ -125,18 +125,24 @@ public class SearchPracticeItemParameters {
 	public void setIncludeWithoutTaxonomyLevel(boolean includeWithoutTaxonomyLevel) {
 		this.includeWithoutTaxonomyLevel = includeWithoutTaxonomyLevel;
 	}
-
-	public TaxonomyLevel getExactTaxonomyLevel() {
-		return exactTaxonomyLevel;
+	
+	public boolean hasExactTaxonomyLevels() {
+		return exactTaxonomyLevels != null && !exactTaxonomyLevels.isEmpty();
 	}
 
-	public void setExactTaxonomyLevel(TaxonomyLevel exactTaxonomyLevel) {
-		this.exactTaxonomyLevel = exactTaxonomyLevel;
-		if(exactTaxonomyLevel == null) {
+	public List<TaxonomyLevel> getExactTaxonomyLevels() {
+		return exactTaxonomyLevels;
+	}
+
+	public void setExactTaxonomyLevels(List<TaxonomyLevel> exactTaxonomyLevels) {
+		this.exactTaxonomyLevels = exactTaxonomyLevels;
+		if(exactTaxonomyLevels == null || exactTaxonomyLevels.isEmpty()) {
 			exactTaxonomicPathKeys = null;
 		} else {
-			exactTaxonomicPathKeys = SearchPracticeItemHelper
-					.buildKeyOfTaxonomicPath(exactTaxonomyLevel);
+			exactTaxonomicPathKeys = new ArrayList<>();
+			for(TaxonomyLevel exactTaxonomyLevel:exactTaxonomyLevels) {
+				exactTaxonomicPathKeys.addAll(SearchPracticeItemHelper.buildKeyOfTaxonomicPath(exactTaxonomyLevel));
+			}
 		}
 	}
 

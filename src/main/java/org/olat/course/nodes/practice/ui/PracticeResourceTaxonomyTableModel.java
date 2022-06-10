@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -36,13 +39,19 @@ implements SortableFlexiTableDataModel<PracticeResourceTaxonomyRow> {
 	
 	private static final PracticeTaxonomyCols[] COLS = PracticeTaxonomyCols.values();
 	
-	public PracticeResourceTaxonomyTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public PracticeResourceTaxonomyTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<PracticeResourceTaxonomyRow> rows = new PracticeResourceTaxonomyTableSortDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 	
 	@Override

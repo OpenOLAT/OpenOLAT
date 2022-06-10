@@ -1077,12 +1077,12 @@ $o-export-area-rowelem-space-md				: 10px !default;
 
 /* Practice */
 $o-practice-play-main-border-color			: $brand-primary;
-$o-practice-play-main-bg-color				: lighten($brand-primary,50%);
-$o-practice-play-bg-color					: #fff;
+$o-practice-play-main-bg-color				: rgba($brand-primary,0.1);
+$o-practice-play-bg-color					: #fcfcfc;
 $o-practice-play-border-color				: #e5e5e5;
 $o-practice-play-border-radius				: $border-radius-base !default;
 $o-practice-play-start-link-bg-color		: #F7F6F6;
-$o-practice-challenge-progress-bg-color		: #FEDA64;
+$o-practice-challenge-progress-bg-color		: $brand-primary;
 $o-practice-progress-not-bg-color			: #CCCCCC;
 $o-practice-progress-l1-bg-color			: $o-cn-style-cat-light-blue-color ;
 $o-practice-progress-l2-bg-color			: $o-cn-style-cat-purple-color;

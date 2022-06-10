@@ -68,6 +68,7 @@ implements SortableFlexiTableDataModel<PracticeIdentityRow> {
 			switch(COLS[col]) {
 				case challenges: return row.getChallenges();
 				case status: return row.getAssessmentEntryStatus();
+				case score: return row.getScore();
 				default: return "ERROR";
 			}
 		}
@@ -78,7 +79,8 @@ implements SortableFlexiTableDataModel<PracticeIdentityRow> {
 	
 	public enum PracticeIdentityCols implements FlexiSortableColumnDef {
 		challenges("table.header.challenges"),
-		status("table.header.status");
+		status("table.header.status"),
+		score("table.header.score");
 		
 		private final String i18nKey;
 

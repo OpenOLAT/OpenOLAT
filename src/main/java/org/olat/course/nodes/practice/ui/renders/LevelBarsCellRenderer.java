@@ -41,14 +41,14 @@ public class LevelBarsCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof Levels) {
 			Levels levels = (Levels)cellValue;
 			target.append("<div class='progress' style='width:100%;'>");
-			if(levels.getNot() > 0) {
-				render(target, "o_practice_progress_not", levels.getNot(), levels.getTotal());
-			}
 			for(int i=1; i<=levels.getNumOfLevels(); i++) {
 				int val = levels.getLevel(i);
 				if(val > 0) {
 					render(target, "o_practice_progress_l" + i, val, levels.getTotal());
 				}
+			}
+			if(levels.getNot() > 0) {
+				render(target, "o_practice_progress_not", levels.getNot(), levels.getTotal());
 			}
 			target.append("</div>");
 		}

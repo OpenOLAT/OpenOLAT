@@ -20,12 +20,14 @@
 package org.olat.course.nodes.practice.ui;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.model.PracticeResourceInfos;
 
@@ -40,13 +42,28 @@ implements SortableFlexiTableDataModel<PracticeResourceInfos> {
 	
 	private static final PracticeResourceCols[] COLS = PracticeResourceCols.values();
 	
-	public PracticeResourceTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public PracticeResourceTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<PracticeResourceInfos> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
+	}
+	
+	public int getTotalNumOfItems() {
+		int total = 0;
+		List<PracticeResourceInfos> rows = getObjects();
+		for(PracticeResourceInfos row:rows) {
+			total += row.getNumOfItems();
+		}
+		return total;
 	}
 
 	@Override

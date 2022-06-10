@@ -51,16 +51,16 @@ public class PracticeTaxonomyCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void render(StringOutput target, String level, List<String> path) {
-		target.append("<span>").append(level).append("</span>");
 		if(path != null && !path.isEmpty()) {
-			target.append("<br><small>");
+			target.append("<small class='text-muted'>");
 			for(int i=0; i<path.size(); i++) {
 				if(i > 0) {
 					target.append(" / ");
 				}
 				target.append(path.get(i));
 			}
-			target.append("</small>");
+			target.append("</small><br>");
 		}
+		target.append("<span>").append(level).append("</span>");
 	}
 }

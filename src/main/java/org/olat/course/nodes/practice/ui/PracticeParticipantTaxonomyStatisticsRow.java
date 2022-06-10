@@ -22,6 +22,7 @@ package org.olat.course.nodes.practice.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -33,6 +34,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  */
 public class PracticeParticipantTaxonomyStatisticsRow {
 	
+	private final boolean withoutTaxonomy;
 	private final Levels levels;
 	private final String taxonomyLevelName;
 	private final List<String> taxonomyPath;
@@ -40,7 +42,10 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 	
 	private List<TaxonomyLevel> aggregatedLevels;
 	
+	private FormLink levelsLink;
+	
 	public PracticeParticipantTaxonomyStatisticsRow(String label, int numOfLevels) {
+		withoutTaxonomy = true;
 		this.taxonomyLevelName = label;
 		levels = new Levels(numOfLevels);
 		taxonomyPath = null;
@@ -48,11 +53,16 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 	}
 	
 	public PracticeParticipantTaxonomyStatisticsRow(TaxonomyLevel taxonomyLevel, int numOfLevels) {
+		withoutTaxonomy = false;
 		this.taxonomyLevel = taxonomyLevel;
 		taxonomyLevelName = taxonomyLevel.getDisplayName();
 		levels = new Levels(numOfLevels);
 		taxonomyPath = SearchPracticeItemHelper
 				.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
+	}
+	
+	public boolean withoutTaxonomy() {
+		return withoutTaxonomy;
 	}
 	
 	public boolean isEmpty() {
@@ -85,5 +95,13 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		}
 		aggregatedLevels.add(row.getTaxonomyLevel());
 		levels.add(row.getLevels());
+	}
+	
+	public FormLink getLevelsLink() {
+		return levelsLink;
+	}
+
+	public void setLevelsLink(FormLink levelsLink) {
+		this.levelsLink = levelsLink;
 	}
 }

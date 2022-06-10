@@ -9,7 +9,29 @@
 				<span><i class="o_icon o_icon_check"> </i> $procentCorrect%</span>
 			</div>
 		</div>
-		<hr>
+		
+		#if($r.isNotEmpty($currentSeriesProgress))
+		<div class="form-group">
+			<div class="col-sm-6 o_practice_label">
+				<label>$r.translate("current.challenge")</label>
+			</div>
+			<div class="col-sm-6 o_practice_data o_practice_challenge">
+				<div class="o_practice_series_progress">
+					<div class="progress" style="width: 100%;">
+						<div class="progress-bar" style="width: ${currentSeriesProgress}%; animation: moveprogress 1s;"> </div>
+					</div>
+					<i class="o_challenge"> </i>
+				</div>
+				<style>
+				@keyframes moveprogress {
+				  0%   { width: ${previousSeriesProgress}%;}
+				  100% { width: ${currentSeriesProgress}%;}
+				}
+				</style>
+				<span>$r.escapeHtml($currentSeries)</span>
+			</div>
+		</div>
+		#end
 	
 		<div class="form-group">
 			<div class="col-sm-6 o_practice_label">
@@ -19,14 +41,7 @@
 				<span>$durationToday</span>
 			</div>
 		</div>
-		<div class="form-group">
-			<div class="col-sm-6 o_practice_label">
-				<label>$r.translate("today.num.series")</label>
-			</div>
-			<div class="col-sm-6 o_practice_data">
-				<span>$numOfSeriesToday</span>
-			</div>
-		</div>
+
 	</fieldset>
 </div>
 <div class="o_button_group">

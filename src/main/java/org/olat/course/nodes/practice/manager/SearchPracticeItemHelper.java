@@ -54,7 +54,7 @@ public class SearchPracticeItemHelper {
 
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams) {
 		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
-		if(searchParams.getExactTaxonomyLevel() != null
+		if(searchParams.hasExactTaxonomyLevels()
 				&& (taxonomicPathKey == null || !searchParams.getExactTaxonomicPathKeys().contains(taxonomicPathKey))) {
 			return false;
 		}

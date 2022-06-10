@@ -39,6 +39,7 @@ import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -151,8 +152,8 @@ public class PracticeQuestionItemQueries {
 	}
 	
 	private void appendSearchParams(QueryBuilder sb, SearchPracticeItemParameters searchParams) {
-		if(searchParams.getExactTaxonomyLevel() != null) {
-			sb.and().append("taxonomyLevel.key =:taxonomyLevelKey");
+		if(searchParams.hasExactTaxonomyLevels()) {
+			sb.and().append("taxonomyLevel.key in (:taxonomyLevelKey)");
 			
 		} else if(searchParams.getDescendantsLevels() != null && !searchParams.getDescendantsLevels().isEmpty()) {
 			sb.and().append("(");
@@ -181,9 +182,9 @@ public class PracticeQuestionItemQueries {
 				Type type = rule.getType();
 				if(type == Type.assessmentType) {
 					if(operator.equals(Operator.equals)) {
-						sb.and().append(" (item.assessmentType is null or item.assessmentType not in (:assessmentTypes))");
-					} else {
 						sb.and().append(" item.assessmentType in (:assessmentTypes)");
+					} else {
+						sb.and().append(" (item.assessmentType is null or item.assessmentType not in (:assessmentTypes))");
 					}
 				} else if(type == Type.educationalContextLevel) {
 					if(operator.equals(Operator.equals)) {
@@ -209,8 +210,11 @@ public class PracticeQuestionItemQueries {
 	}
 	
 	private void appendSearchParams(TypedQuery<QuestionItem> query, SearchPracticeItemParameters searchParams) {
-		if(searchParams.getExactTaxonomyLevel() != null) {
-			query.setParameter("taxonomyLevelKey", searchParams.getExactTaxonomyLevel().getKey());
+		if(searchParams.hasExactTaxonomyLevels()) {
+			List<Long> levelKeys = searchParams.getExactTaxonomyLevels().stream()
+					.map(TaxonomyLevel::getKey)
+					.collect(Collectors.toList());
+			query.setParameter("taxonomyLevelKey", levelKeys);
 		} else if(searchParams.getDescendantsLevels() != null && !searchParams.getDescendantsLevels().isEmpty()) {
 			for(int i=0; i<searchParams.getDescendantsLevels().size(); i++) {
 				query.setParameter("taxonomyLevels_" + i, searchParams.getDescendantsLevels().get(i).getMaterializedPathKeys() + "%");

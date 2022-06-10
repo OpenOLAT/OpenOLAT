@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,12 +38,14 @@ public class PracticeIdentityRow extends UserPropertiesRow {
 	
 	private final long series;
 	private final long challenges;
+	private final BigDecimal score;
 	private final AssessmentEntryStatus status;
 	
-	public PracticeIdentityRow(Identity identity, AssessmentEntryStatus status,
-			long series, long challenges,
+	public PracticeIdentityRow(Identity identity,
+			AssessmentEntryStatus status, BigDecimal score, long series, long challenges,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		super(identity, userPropertyHandlers, locale);	
+		super(identity, userPropertyHandlers, locale);
+		this.score = score;
 		this.status = status;
 		this.series = series;
 		this.challenges = challenges;
@@ -54,6 +57,10 @@ public class PracticeIdentityRow extends UserPropertiesRow {
 	
 	public long getChallenges() {
 		return challenges;
+	}
+	
+	public BigDecimal getScore() {
+		return score;
 	}
 	
 	public AssessmentEntryStatus getAssessmentEntryStatus() {

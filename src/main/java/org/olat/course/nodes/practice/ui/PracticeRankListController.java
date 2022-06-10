@@ -76,7 +76,7 @@ public class PracticeRankListController extends FormBasicController {
 		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
 		
 		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-		shared = assessmentEntry == null || assessmentEntry.getShare() == null ? false : assessmentEntry.getShare();
+		shared = assessmentEntry != null && assessmentEntry.getShare() != null && assessmentEntry.getShare().booleanValue();
 		
 		initForm(ureq);
 		if(shared) {

@@ -35,16 +35,23 @@ public class PracticeResourceTaxonomyRow {
 	private final String taxonomyLevel;
 	private final List<String> taxonomyPath;
 	private int numOfQuestions = 0;
+	private final boolean withoutTaxonomy;
 	
 	public PracticeResourceTaxonomyRow(TaxonomyLevel level) {
+		withoutTaxonomy = false;
 		taxonomyLevel = level.getDisplayName();
 		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(taxonomyLevel, level.getMaterializedPathIdentifiers());
 	}
 	
 	public PracticeResourceTaxonomyRow(String label, int numOfQuestions) {
+		withoutTaxonomy = true;
 		taxonomyLevel = label;
 		taxonomyPath = List.of();
 		this.numOfQuestions = numOfQuestions;
+	}
+	
+	public boolean withoutTaxonomy() {
+		return withoutTaxonomy;
 	}
 
 	public String getTaxonomyLevel() {

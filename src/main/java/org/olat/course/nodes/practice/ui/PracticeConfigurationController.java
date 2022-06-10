@@ -200,7 +200,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		removeCol.setHeaderTooltip(translate("remove"));
 		columnsModel.addFlexiColumnModel(removeCol);
 		
-		resourcesModel = new PracticeResourceTableModel(columnsModel);
+		resourcesModel = new PracticeResourceTableModel(columnsModel, getLocale());
 		resourcesTableEl = uifactory.addTableElement(getWindowControl(), "resources.list", resourcesModel, 12, false, getTranslator(), formLayout);
 		resourcesTableEl.setCustomizeColumns(false);
 		resourcesTableEl.setNumOfRowsEnabled(false);
@@ -344,6 +344,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		}
 		levelEl = uifactory.addDropdownSingleselect("levels", "levels", formLayout,
 				levels.keys(), levels.values());
+		levelEl.setMandatory(true);
 		String level = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_LEVELS, "3");
 		if(StringHelper.containsNonWhitespace(level) && levels.containsKey(level)) {
 			levelEl.select(level, true);
@@ -355,6 +356,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		questionsPerSerie.add(SelectionValues.entry("50", "50"));
 		questionPerSerieEl = uifactory.addDropdownSingleselect("questions.serie", "questions.serie", formLayout,
 				questionsPerSerie.keys(), questionsPerSerie.values());
+		questionPerSerieEl.setMandatory(true);
 		String questionPerSerie = config.getStringValue(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, "10");
 		if(StringHelper.containsNonWhitespace(questionPerSerie) && questionsPerSerie.containsKey(questionPerSerie)) {
 			questionPerSerieEl.select(questionPerSerie, true);
@@ -362,11 +364,13 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		String seriePerChallenge = config.getStringValue(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, "2");
 		seriePerChallengeEl = uifactory.addTextElement("series.challenge", 4, seriePerChallenge, formLayout);
+		seriePerChallengeEl.setMandatory(true);
 		
 		uifactory.addSpacerElement("challenges-space", formLayout, false);
 
 		String challengeToComplete = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, "2");
 		challengeToCompleteEl = uifactory.addTextElement("num.challenges", 4, challengeToComplete, formLayout);
+		challengeToCompleteEl.setMandatory(true);
 		
 		SelectionValues rankKeys = new SelectionValues();
 		rankKeys.add(SelectionValues.entry("on", ""));
@@ -381,7 +385,7 @@ public class PracticeConfigurationController extends FormBasicController {
 				new PracticeTaxonomyCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeTaxonomyCols.numOfQuestions));
 
-		taxonomyStatisticsModel = new PracticeResourceTaxonomyTableModel(columnsModel);
+		taxonomyStatisticsModel = new PracticeResourceTaxonomyTableModel(columnsModel, getLocale());
 		taxonomyStatisticsEl = uifactory.addTableElement(getWindowControl(), "statistics.taxonomy.level", taxonomyStatisticsModel, 20, false, getTranslator(), formLayout);
 		taxonomyStatisticsEl.setNumOfRowsEnabled(false);
 		taxonomyStatisticsEl.setCustomizeColumns(false);
@@ -399,15 +403,12 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		List<Long> taxonomyLevelKeys = getSelectedTaxonomyLevels();
 		Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap = new HashMap<>();
-		if(!taxonomyLevelKeys.isEmpty()) {
+		boolean withSpecifiedTaxonomy = !taxonomyLevelKeys.isEmpty();
+		if(withSpecifiedTaxonomy) {
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(getSelectedTaxonomyLevels());
 			searchParams.setDescendantsLevels(levels);
 			for(TaxonomyLevel level:levels) {
-				List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-				PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level);
-				for(String key:keys) {
-					taxonomyLevelsMap.put(key, row);
-				}
+				putTaxonomyLevelInMap(level, taxonomyLevelsMap);
 			}
 		}
 
@@ -429,6 +430,9 @@ public class PracticeConfigurationController extends FormBasicController {
 					PracticeResourceTaxonomyRow row = taxonomyLevelsMap.get(key);
 					if(row != null) {
 						row.incrementNumOfQuestions();
+					} else if(!withSpecifiedTaxonomy && qItem.getTaxonomyLevel() != null) {
+						putTaxonomyLevelInMap(qItem.getTaxonomyLevel(), taxonomyLevelsMap)
+							.incrementNumOfQuestions();
 					} else {
 						withoutTaxonomyLevels++;
 					}
@@ -439,7 +443,8 @@ public class PracticeConfigurationController extends FormBasicController {
 		}
 
 		// Some statistics
-		String questionsMsg = translate("stats.num.questions", Integer.toString(items.size()));
+		int total = resourcesModel.getTotalNumOfItems();
+		String questionsMsg = translate("stats.num.questions", Integer.toString(items.size()), Integer.toString(total));
 		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
 		
 		List<PracticeResourceTaxonomyRow> taxonomyLevelsStats = taxonomyLevelsMap.values().stream()
@@ -450,6 +455,16 @@ public class PracticeConfigurationController extends FormBasicController {
 		}
 		taxonomyStatisticsModel.setObjects(taxonomyLevelsStats);
 		taxonomyStatisticsEl.reset(true, true, true);
+		taxonomyStatisticsEl.sort(PracticeTaxonomyCols.taxonomyLevel.name(), true);
+	}
+	
+	private PracticeResourceTaxonomyRow putTaxonomyLevelInMap(TaxonomyLevel level, Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap) {
+		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
+		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level);
+		for(String key:keys) {
+			taxonomyLevelsMap.put(key, row);
+		}
+		return row;
 	}
 	
 	private void loadRules() {

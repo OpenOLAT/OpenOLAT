@@ -107,6 +107,5 @@ public class ConfirmResetPracticeDataController extends FormBasicController {
 	
 	private void doResetData() {
 		practiceService.resetSeries(practicingIdentity, courseEntry, subIdent);
-		//TODO practice reset course element
 	}
 }

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,6 +47,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentEvents;
@@ -535,23 +535,59 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				long procentCorrect = Math.round(correctAtFirstAttempts * 100.0d);
 				layoutCont.contextPut("procentCorrect", Long.toString(procentCorrect));
 				
-				Date from = CalendarUtils.startOfDay(ureq.getRequestTimestamp());
-				Date to = CalendarUtils.endOfDay(ureq.getRequestTimestamp());
-				List<AssessmentTestSession> sessions = practiceService.getTerminatedSeries(getIdentity(), courseEntry, courseNode.getIdent(), from, to);
-				layoutCont.contextPut("numOfSeriesToday", Integer.toString(sessions.size()));
+				List<AssessmentTestSession> series = practiceService.getSeries(getIdentity(), courseEntry, courseNode.getIdent());
 				
+				int seriesToday = 0;
 				long duration = 0l;
-				for(AssessmentTestSession session:sessions) {
-					if(session.getDuration() != null) {
-						duration += session.getDuration().longValue();
+				for(AssessmentTestSession session:series) {
+					if(DateUtils.isSameDay(ureq.getRequestTimestamp(), session.getCreationDate())) {
+						seriesToday++;
+						if(session.getDuration() != null) {
+							duration += session.getDuration().longValue();
+						}
 					}
 				}
-				
+
 				String durationStr = "-";
 				if(duration > 0l) {
 					durationStr = Formatter.formatDuration(duration);
 				}
 				layoutCont.contextPut("durationToday", durationStr);
+				layoutCont.contextPut("numOfSeriesToday", Integer.toString(seriesToday));
+				if(saveSerie) {
+					int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
+					
+					final int completedSeries = PracticeHelper.completedSeries(series);
+					final int currentNumOfSeries = completedSeries % seriesPerChallenge;
+					
+					// Series
+					String currentSeriesI18n = seriesPerChallenge > 1 ? "current.series.plural" : "current.series.singular";
+					String currentSeriesStr;
+					// Check if the user completed a challenge
+					boolean ended = currentNumOfSeries == 0 && completedSeries >= seriesPerChallenge;
+					if(ended) {
+						currentSeriesStr = Integer.toString(seriesPerChallenge);
+					} else {
+						currentSeriesStr = Integer.toString(currentNumOfSeries);
+					}
+					String currentSeries = translate(currentSeriesI18n, currentSeriesStr, Integer.toString(seriesPerChallenge));
+					flc.contextPut("currentSeries", currentSeries);
+					
+					double currentSeriesProgress = 0.0d;
+					int previousNumOfSeries = 0;
+					if(ended) {
+						previousNumOfSeries = seriesPerChallenge - 1;
+						currentSeriesProgress = 100.0d;
+					} else if(currentNumOfSeries > 0) {
+						previousNumOfSeries = currentNumOfSeries - 1;
+						currentSeriesProgress = (currentNumOfSeries / (double)seriesPerChallenge) * 100.0d;
+					}
+					
+					double previousSeriesProgress = Math.max(0.0d, ((previousNumOfSeries / (double)seriesPerChallenge) * 100.0d));
+					layoutCont.contextPut("currentSeries", currentSeries);
+					layoutCont.contextPut("previousSeriesProgress", Double.valueOf(previousSeriesProgress));
+					layoutCont.contextPut("currentSeriesProgress", Double.valueOf(currentSeriesProgress));
+				}
 			}
 			
 			backButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);

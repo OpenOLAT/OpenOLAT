@@ -79,8 +79,6 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
 	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
-	@Autowired
-	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	
 	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {

@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -36,13 +39,19 @@ implements SortableFlexiTableDataModel<PracticeParticipantTaxonomyStatisticsRow>
 	
 	private static final TaxonomyStatisticsCols[] COLS = TaxonomyStatisticsCols.values();
 	
-	public PracticeParticipantTaxonomyStatisticsTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public PracticeParticipantTaxonomyStatisticsTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<PracticeParticipantTaxonomyStatisticsRow> rows = new PracticeParticipantTaxonomyStatisticsTableSortDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 	
 	@Override
@@ -55,8 +64,8 @@ implements SortableFlexiTableDataModel<PracticeParticipantTaxonomyStatisticsRow>
 	public Object getValueAt(PracticeParticipantTaxonomyStatisticsRow row, int col) {
 		switch(COLS[col]) {
 			case taxonomyLevel: return row;
-			case bars:
-			case numbers: return row.getLevels();
+			case bars: return row.getLevels();
+			case numbers: return row.getLevelsLink();
 			default: return "ERROR";
 		}
 	}

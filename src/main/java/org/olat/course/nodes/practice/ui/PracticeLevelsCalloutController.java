@@ -19,36 +19,31 @@
  */
 package org.olat.course.nodes.practice.ui;
 
-import java.util.List;
-
-import org.olat.ims.qti21.AssessmentTestSession;
-
-
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * Initial date: 1 juin 2022<br>
+ * Initial date: 10 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PracticeHelper {
+public class PracticeLevelsCalloutController extends BasicController {
 	
-	private PracticeHelper() {
+	public PracticeLevelsCalloutController(UserRequest ureq, WindowControl wControl, Levels levels) {
+		super(ureq, wControl);
+		
+		VelocityContainer mainVC = createVelocityContainer("callout_levels");
+		mainVC.contextPut("levels", levels);
+		putInitialPanel(mainVC);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-	
-	public static long completedChalllenges(long numOfSeries, long seriesPerChallenge) {
-		long currentNumOfSeries = numOfSeries % seriesPerChallenge;
-		return (numOfSeries - currentNumOfSeries) / seriesPerChallenge;
-	}
-	
-	public static final int completedSeries(List<AssessmentTestSession> series) {
-		int completedSeries = 0;
-		for(AssessmentTestSession serie:series) {
-			if(Boolean.TRUE.equals(serie.getPassed())) {
-				completedSeries++;
-			}
-		}
-		return completedSeries;
 	}
 }

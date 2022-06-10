@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.course.nodes.PracticeCourseNode;
@@ -62,7 +63,6 @@ import org.olat.course.nodes.practice.ui.PracticeParticipantTaxonomyStatisticsTa
 import org.olat.course.nodes.practice.ui.events.ComposeSerieEvent;
 import org.olat.course.nodes.practice.ui.events.StartPracticeEvent;
 import org.olat.course.nodes.practice.ui.renders.LevelBarsCellRenderer;
-import org.olat.course.nodes.practice.ui.renders.LevelNumbersCellRenderer;
 import org.olat.course.nodes.practice.ui.renders.PracticeTaxonomyCellRenderer;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -83,11 +83,13 @@ public class PracticeParticipantController extends FormBasicController {
 	private FormLink newQuestionsButton;
 	private FormLink errorsButton;
 	private FormLink customButton;
+	private FormLink globalLevelsLink;
 	private FlexiTableElement taxonomyTableEl;
 	private PracticeParticipantTaxonomyStatisticsTableModel taxonomyTableModel;
 	
 	private final boolean rankList;
 	
+	private int counter = 0;
 	private final int numOfLevels;
 	private final int questionPerSeries;
 	private final int seriesPerChallenge;
@@ -105,6 +107,8 @@ public class PracticeParticipantController extends FormBasicController {
 	private PracticeCourseNode courseNode;
 	
 	private PracticeRankListController rankListCtrl;
+	private PracticeLevelsCalloutController levelsCtrl; 
+	private CloseableCalloutWindowController levelsCalloutCtrl;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -163,9 +167,10 @@ public class PracticeParticipantController extends FormBasicController {
 			formLayout.add("rankList", rankListCtrl.getInitialFormItem());
 		}
 		
+		globalLevelsLink = uifactory.addFormLink("global.levels", "0", null, flc, Link.LINK | Link.NONTRANSLATED);
+		
 		initPractiseStarters(formLayout);
 		initSubjectStatistics(formLayout);
-
 	}
 	
 	private void initPractiseStarters(FormItemContainer formLayout) {
@@ -187,8 +192,7 @@ public class PracticeParticipantController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyStatisticsCols.bars,
 				new LevelBarsCellRenderer()));
 		
-		DefaultFlexiColumnModel numbersCol = new DefaultFlexiColumnModel(TaxonomyStatisticsCols.numbers,
-				new LevelNumbersCellRenderer());
+		DefaultFlexiColumnModel numbersCol = new DefaultFlexiColumnModel(TaxonomyStatisticsCols.numbers);
 		numbersCol.setHeaderLabel("&nbsp;");
 		numbersCol.setHeaderTooltip(translate(TaxonomyStatisticsCols.numbers.i18nHeaderKey()));
 		columnsModel.addFlexiColumnModel(numbersCol);
@@ -199,7 +203,7 @@ public class PracticeParticipantController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(playCol);
 		}
 		
-		taxonomyTableModel = new PracticeParticipantTaxonomyStatisticsTableModel(columnsModel);
+		taxonomyTableModel = new PracticeParticipantTaxonomyStatisticsTableModel(columnsModel, getLocale());
 		taxonomyTableEl = uifactory.addTableElement(getWindowControl(), "taxonomy.table", taxonomyTableModel, 20, false, getTranslator(), formLayout);
 		taxonomyTableEl.setNumOfRowsEnabled(false);
 		taxonomyTableEl.setCustomizeColumns(false);
@@ -218,7 +222,7 @@ public class PracticeParticipantController extends FormBasicController {
 	
 	private void loadChallengeStatistics() {
 		// Block to counter if the max. number of series is completed
-		final int completedSeries = series.size();
+		final int completedSeries = PracticeHelper.completedSeries(series);
 		final int currentNumOfSeries = completedSeries % seriesPerChallenge;
 		flc.contextPut("series", Integer.valueOf(completedSeries));
 
@@ -284,14 +288,11 @@ public class PracticeParticipantController extends FormBasicController {
 		
 		List<Long> selectedLevels = courseNode.getModuleConfiguration().getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
 		final Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps = new HashMap<>();
-		if(selectedLevels != null && !selectedLevels.isEmpty()) {
+		boolean withSpecifiedTaxonomy = selectedLevels != null && !selectedLevels.isEmpty();
+		if(withSpecifiedTaxonomy) {
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(selectedLevels);
 			for(TaxonomyLevel level:levels) {
-				List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-				PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels);
-				for(String key:keys) {
-					levelMaps.put(key, row);
-				}
+				putTaxonomyLevelInMap(level, levelMaps);
 			}
 		}
 		flc.contextPut("withLevels", !selectedLevels.isEmpty());
@@ -315,7 +316,9 @@ public class PracticeParticipantController extends FormBasicController {
 				PracticeParticipantTaxonomyStatisticsRow row = levelMaps.get(taxonomyLevel);
 				if(row != null) {
 					row.getLevels().append(globalRef);
-				} else {
+				} /*else if(!withSpecifiedTaxonomy && item.getTaxonomyLevelName() != null) {
+					// putTaxonomyLevelInMap(row.getTaxonomyLevel(), levelMaps).getLevels().append(globalRef);
+				} */ else {
 					withoutTaxonomyLevelRow.getLevels().append(globalRef);
 				}
 			} else {
@@ -330,17 +333,21 @@ public class PracticeParticipantController extends FormBasicController {
 			}
 		}
 
+		
 		flc.contextPut("globalLevels", globalLevels);
+		globalLevelsLink.setI18nKey(Integer.toString(globalLevels.getTotal()));
+		globalLevelsLink.setUserObject(globalLevels);
+		flc.add("global.levels", globalLevelsLink);
 		
 		PieChartElement chartEl = new PieChartElement("levels.chart");
 		chartEl.setElementCssClass("o_practice_piechart");
 		chartEl.setLayer(20);
 		chartEl.setTitle(Integer.toString(globalLevels.getTotal()));
 		chartEl.setSubTitle(translate("chart.title"));
-		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getCssClass(0)));
 		for(int i=1; i<=numOfLevels; i++) {
 			chartEl.addPoints(new PiePoint(globalLevels.getLevelPercent(i), globalLevels.getCssClass(i)));
 		}
+		chartEl.addPoints(new PiePoint(globalLevels.getNotPercent(), globalLevels.getCssClass(0)));
 		flc.add("levels.chart", chartEl);
 		flc.contextPut("progressI18n", getIdentity().equals(practicingIdentity) ? "progress.chart.title.your" : "progress.chart.title");
 		
@@ -355,8 +362,32 @@ public class PracticeParticipantController extends FormBasicController {
 		if(includeWithoutTaxonomyLevels) {
 			levelRows.add(withoutTaxonomyLevelRow);
 		}
+		addCalloutLevelsLinks(levelRows);
+		
+
 		taxonomyTableModel.setObjects(levelRows);
+		taxonomyTableEl.sort(TaxonomyStatisticsCols.taxonomyLevel.name(), true);
 		taxonomyTableEl.reset();
+	}
+	
+	private PracticeParticipantTaxonomyStatisticsRow putTaxonomyLevelInMap(TaxonomyLevel level,
+			Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps) {
+		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
+		PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(level, numOfLevels);
+		for(String key:keys) {
+			levelMaps.put(key, row);
+		}
+		return row;
+	}
+	
+	private void addCalloutLevelsLinks(List<PracticeParticipantTaxonomyStatisticsRow> levelRows) {
+		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelRows) {
+			Levels levels = levelRow.getLevels();
+			FormLink calloutLink = uifactory.addFormLink("levels_callout_" + (counter++), Integer.toString(levels.getTotal()),
+					null, flc, Link.LINK | Link.NONTRANSLATED);
+			levelRow.setLevelsLink(calloutLink);
+			calloutLink.setUserObject(levels);
+		}
 	}
 	
 	private void aggregate(List<PracticeParticipantTaxonomyStatisticsRow> levelRows) {
@@ -413,6 +444,11 @@ public class PracticeParticipantController extends FormBasicController {
 					doStartTaxonomyLevelMode(ureq, statisticsRow);
 				}
 			}
+		} else if(globalLevelsLink == source) {
+			doOpenLevelsCallout(ureq, globalLevelsLink.getFormDispatchId(), (Levels)globalLevelsLink.getUserObject());
+		} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof Levels) {
+			FormLink calloutLink = (FormLink)source;
+			doOpenLevelsCallout(ureq, calloutLink.getFormDispatchId(), (Levels)calloutLink.getUserObject());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -459,12 +495,33 @@ public class PracticeParticipantController extends FormBasicController {
 		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.all);
 		// Override standard taxonomy settings
-		searchParams.setExactTaxonomyLevel(statisticsRow.getTaxonomyLevel());
+		List<TaxonomyLevel> taxonomyLevels = new ArrayList<>();
+		if(statisticsRow.getAggregatedLevels() != null) {
+			taxonomyLevels.addAll(statisticsRow.getAggregatedLevels());
+		}
+		if(statisticsRow.getTaxonomyLevel() != null) {
+			taxonomyLevels.add(statisticsRow.getTaxonomyLevel());
+		}
+		searchParams.setExactTaxonomyLevels(taxonomyLevels);
 		searchParams.setIncludeWithoutTaxonomyLevel(false);
 		searchParams.setDescendantsLevels(null);
 		
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
-		fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
+		if(items.isEmpty()) {
+			showWarning("warning.no.items.found");
+		} else {
+			fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
+		}
+	}
+	
+	private void doOpenLevelsCallout(UserRequest ureq, String elementId, Levels levels) {
+		levelsCtrl = new PracticeLevelsCalloutController(ureq, getWindowControl(), levels);
+		listenTo(levelsCtrl);
+
+		levelsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				levelsCtrl.getInitialComponent(), elementId, "", true, "");
+		listenTo(levelsCalloutCtrl);
+		levelsCalloutCtrl.activate();
 	}
 	
 	private class TaxonomyPathComparator implements Comparator<PracticeParticipantTaxonomyStatisticsRow> {

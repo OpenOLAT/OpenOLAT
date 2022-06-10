@@ -105,17 +105,12 @@
 									
 										#if($r.isNotNull($globalLevels))
 										<div class="progress" style="width:100%;">
-											<div class='progress-bar ${globalLevels.getNotCssClass()}' style='width:${globalLevels.getNotPercent()}%' title="${globalLevels.getNotPercent()}%"></div>
 											#foreach($i in ${globalLevels.getLevels()})
 												<div class='progress-bar ${globalLevels.getCssClass($i)}' style='width:${globalLevels.getLevelPercent($i)}%' title="${globalLevels.getLevelPercent($i)}%"></div>
 											#end
+											<div class='progress-bar ${globalLevels.getNotCssClass()}' style='width:${globalLevels.getNotPercent()}%' title="${globalLevels.getNotPercent()}%"></div>
 										</div>
-										<div class="numbers">
-											${globalLevels.getNot()}
-											#foreach($i in ${globalLevels.getLevels()})
-												/ ${globalLevels.getLevelString($i)}
-											#end
-										</div>
+										<div class="numbers">$r.render("global.levels")</div>
 										#end
 									</div>
 								</td>
@@ -132,12 +127,12 @@
 			<h4>$r.translate($progressI18n)</h4>
 			$r.render("levels.chart")
 			<div class="o_practice_statistics_legend">
-				<span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass(0)}'> </i> $r.translate("level.stat.not") (${globalLevels.getNotPercent()}%)</span><br>
 				#if($r.isNotNull($globalLevels))
 					#foreach($i in ${globalLevels.getLevels()})
 					   <span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass($i)}'> </i> $r.translate("level.stat.percent") $i (${globalLevels.getLevelPercent($i)}%)</span><br>
 					#end
 				#end
+				<span><i class='o_icon o_icon_circle_color ${globalLevels.getCssClass(0)}'> </i> $r.translate("level.stat.not") (${globalLevels.getNotPercent()}%)</span>
 			</div>
 		</div>
 

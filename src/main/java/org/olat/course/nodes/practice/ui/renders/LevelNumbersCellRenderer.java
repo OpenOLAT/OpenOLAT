@@ -40,10 +40,10 @@ public class LevelNumbersCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof Levels) {
 			Levels levels = (Levels)cellValue;
-			target.append(levels.getNot());
 			for(int i=1; i<=levels.getNumOfLevels(); i++) {
-				target.append(" / ").append(levels.getLevel(i));
+				target.append(levels.getLevel(i)).append(" / ");
 			}
+			target.append(levels.getNot());
 		}
 	}
 }

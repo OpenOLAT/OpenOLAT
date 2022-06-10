@@ -71,6 +71,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -161,6 +162,10 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				new AssessmentStatusCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeIdentityCols.challenges,
 				new PracticeChallengeCellRenderer()));
+		if(ureq.getUserSession().getRoles().isAdministrator()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PracticeIdentityCols.score,
+					new ScoreCellRenderer()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "details"));
 		
 		tableModel = new PracticeIdentityTableModel(columnsModel, getLocale());
@@ -253,7 +258,7 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				SeriesCount series = numOfSeriesMap.get(practicingIdentity.getKey());
 				long numOfSeries = series == null || series.getCount() < 0l ? 0l: series.getCount();
 				long challenges = PracticeHelper.completedChalllenges(numOfSeries, seriesPerChallenge);
-				rows.add(new PracticeIdentityRow(practicingIdentity, entry.getAssessmentStatus(),
+				rows.add(new PracticeIdentityRow(practicingIdentity, entry.getAssessmentStatus(), entry.getScore(),
 						numOfSeries, challenges, userPropertyHandlers, getLocale()));
 			}
 		}
