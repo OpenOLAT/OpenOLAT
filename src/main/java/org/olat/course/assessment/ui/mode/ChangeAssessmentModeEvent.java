@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.mode;
 
+import java.util.Date;
+
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -45,6 +47,8 @@ public class ChangeAssessmentModeEvent extends MultiUserEvent {
 	private Long assessmentModeKey;
 	private Status status;
 	private EndStatus endStatus;
+	private Date end;
+	private int followUpTime;
 	
 	public ChangeAssessmentModeEvent(AssessmentMode assessmentMode, RepositoryEntry entry) {
 		super(CHANGED);
@@ -52,6 +56,8 @@ public class ChangeAssessmentModeEvent extends MultiUserEvent {
 		assessmentModeKey = assessmentMode.getKey();
 		status = assessmentMode.getStatus();
 		endStatus = assessmentMode.getEndStatus();
+		end = assessmentMode.getEnd();
+		followUpTime = assessmentMode.getFollowupTime();
 	}
 	
 	public Long getEntryKey() {
@@ -76,5 +82,21 @@ public class ChangeAssessmentModeEvent extends MultiUserEvent {
 
 	public void setEndStatus(EndStatus endStatus) {
 		this.endStatus = endStatus;
+	}
+
+	public Date getEnd() {
+		return end;
+	}
+
+	public void setEnd(Date end) {
+		this.end = end;
+	}
+
+	public int getFollowUpTime() {
+		return followUpTime;
+	}
+
+	public void setFollowUpTime(int followUpTime) {
+		this.followUpTime = followUpTime;
 	}
 }
