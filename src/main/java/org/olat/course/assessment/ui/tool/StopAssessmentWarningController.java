@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -123,7 +124,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 			assessmemntModeMessageFormatting(mode, mainVC);
 			if(canStopAssessmentMode(mode)) {
 				String modeName = mode.getName();
-				String label = translate("assessment.tool.stop", new String[] { StringHelper.escapeHtml(modeName) });
+				String label = translate("assessment.tool.stop", StringHelper.escapeHtml(modeName));
 				if(stopAssessmentMode == null) {
 					stopAssessmentMode = LinkFactory.createCustomLink("assessment.stop", "stop", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, mainVC, this);
 				}
@@ -152,7 +153,8 @@ public class StopAssessmentWarningController extends BasicController implements 
 	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
 		try {
 			TransientAssessmentMode aMode = event.getAssessementMode();
-			processChangeAssessmentModeEvents(aMode.getModeKey(), aMode.getRepositoryEntryKey(), aMode.getStatus(), aMode.getEndStatus());
+			processChangeAssessmentModeEvents(aMode.getModeKey(), aMode.getRepositoryEntryKey(),
+					aMode.getEnd(), aMode.getFollowupTime(), aMode.getStatus(), aMode.getEndStatus());
 		} catch (Exception e) {
 			logError("", e);
 		}
@@ -160,20 +162,22 @@ public class StopAssessmentWarningController extends BasicController implements 
 	
 	private void processChangeAssessmentModeEvents(ChangeAssessmentModeEvent event) {
 		try {
-			processChangeAssessmentModeEvents(event.getAssessmentModeKey(), event.getEntryKey(), event.getStatus(), event.getEndStatus());
+			processChangeAssessmentModeEvents(event.getAssessmentModeKey(), event.getEntryKey(),
+					event.getEnd(), event.getFollowUpTime(), event.getStatus(), event.getEndStatus());
 		} catch (Exception e) {
 			logError("", e);
 		}
 	}
 	
-	private void processChangeAssessmentModeEvents(Long assessmentModeKey, Long entryKey, Status status, EndStatus endStatus) {
+	private void processChangeAssessmentModeEvents(Long assessmentModeKey, Long entryKey,
+			Date end, int followUptime, Status status, EndStatus endStatus) {
 		try {
 			List<AssessmentMode> currentModes = assessmentModes;
 			if(courseEntry.getKey().equals(entryKey)) {
 				if(currentModes != null && !currentModes.isEmpty()) {
 					for(AssessmentMode currentMode:currentModes) {
 						if(assessmentModeKey.equals(currentMode.getKey())) {
-							if(needReload(currentMode, status, endStatus)) {
+							if(needReload(currentMode, end, followUptime, status, endStatus)) {
 								reloadAssessmentModeMessage();
 							}
 							return;
@@ -188,8 +192,9 @@ public class StopAssessmentWarningController extends BasicController implements 
 		}
 	}
 	
-	private boolean needReload(AssessmentMode currentMode, Status status, EndStatus endStatus) {
-		return currentMode == null || currentMode.getStatus() != status || currentMode.getEndStatus() != endStatus;
+	private boolean needReload(AssessmentMode currentMode, Date end, int followUpTime, Status status, EndStatus endStatus) {
+		return currentMode == null || currentMode.getStatus() != status || currentMode.getEndStatus() != endStatus
+				|| !DateUtils.isSameDate(currentMode.getEnd(), end) || currentMode.getFollowupTime() != followUpTime ;
 	}
 
 	@Override

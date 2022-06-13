@@ -23,6 +23,7 @@
    
 	<extension qualifier="webdriver">
 		<property name="browser">${webdriver.browser:firefox}</property>
+		<property name="browserVersion">${webdriver.browserVersion:}</property>
 		<property name="dimensions">1024x800</property>
 		<!--
 		<property name="downloadBinaries">false</property>
@@ -32,7 +33,7 @@
 		-->
 		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.31.0}</property>
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
-		<property name="chromeDriverVersion">${webdriver.chrome.version:101.0.4951.41}</property>
+		<property name="chromeDriverVersion">${webdriver.chrome.version:102.0.5005.61}</property>
 		<property name="chromeArguments">${webdriver.chrome.arguments}</property>
 		<property name="chromeExperimentalOption">{
 			"prefs":{"credentials_enable_service": false, "profile.password_manager_enabled": false }
