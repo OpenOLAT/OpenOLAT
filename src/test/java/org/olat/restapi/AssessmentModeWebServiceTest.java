@@ -35,6 +35,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -464,7 +465,35 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		
 		conn.shutdown();
 	}
-
+	
+	@Test
+	public void deleteAssessmentMode()
+	throws IOException, URISyntaxException {
+		
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
+		mode.setName("Assessment to delete");
+		mode.setBegin(new Date());
+		mode.setEnd(new Date());
+		mode.setTargetAudience(Target.course);
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(savedMode);
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		// Search with the external ID
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("assessmentmodes").path(savedMode.getKey().toString())
+				.build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		AssessmentMode deletedMode = assessmentModeMgr.getAssessmentModeById(savedMode.getKey());
+		Assert.assertNull(deletedMode);
+	}
 	
 	protected List<AssessmentModeVO> parseAssessmentModeArray(HttpEntity entity) {
 		try(InputStream in=entity.getContent()) {

@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -372,6 +373,31 @@ public class AssessmentModeWebService {
 		
 		AssessmentModeVO vo = AssessmentModeVO.valueOf(assessmentMode);
 		return Response.ok(vo).build();
+	}
+	
+	@DELETE
+	@Path("{assessmentKey}")
+	@Operation(summary = "Delete the assessment mode", description = "Delete the assessment mode")
+	@ApiResponse(responseCode = "200", description = "The persisted assessment mode",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AssessmentModeVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AssessmentModeVO.class)))
+				})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The resource not found")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response deleteAssessmentMode(@PathParam("assessmentKey") Long assessmentKey, @Context HttpServletRequest request) {
+		if(!isAdministrator(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		AssessmentMode modeToDelete = assessmentModeManager.getAssessmentModeById(assessmentKey);
+		if(modeToDelete == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		assessmentModeManager.delete(modeToDelete);
+		return Response.serverError().status(Status.OK).build();
 	}
 	
 	private boolean isAdministrator(HttpServletRequest request) {
