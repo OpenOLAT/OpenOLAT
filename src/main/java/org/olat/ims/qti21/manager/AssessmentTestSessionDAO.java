@@ -587,6 +587,16 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, List<String> courseSubIdents, List<? extends IdentityRef> identities) {
+		List<Long> identityKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		return getRunningTestSessionsByIdentityKeys(entry, courseSubIdents, identityKeys);
+	}
+
+	
+	public List<AssessmentTestSession> getRunningTestSessionsByIdentityKeys(RepositoryEntryRef entry, List<String> courseSubIdents, List<Long> identityKeys) {
+		if(identityKeys == null || identityKeys.isEmpty()) return new ArrayList<>();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
 		  .append(" left join session.testEntry testEntry")
@@ -600,10 +610,6 @@ public class AssessmentTestSessionDAO {
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
 			sb.append(" and session.subIdent in (:subIdents)");
 		}
-		
-		List<Long> identityKeys = identities.stream()
-				.map(IdentityRef::getKey)
-				.collect(Collectors.toList());
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)

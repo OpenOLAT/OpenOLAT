@@ -21,6 +21,7 @@ package org.olat.core.gui.components.countdown;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.olat.core.gui.UserRequest;
@@ -41,7 +42,9 @@ public class CountDownComponent extends AbstractComponent {
 	private static final CountDownComponentRenderer RENDERER = new CountDownComponentRenderer();
 
 	private String i18nKey;
-	private String currentRenderedTime;
+	private String i18nKeySingular;
+	private String i18nKeyZero;
+	private Long currentRenderedTime;
 	private Date date;
 	
 	public CountDownComponent(String name, Date date, Translator translator) {
@@ -59,28 +62,28 @@ public class CountDownComponent extends AbstractComponent {
 		this.date = date;
 	}
 	
-	public String getCountDown() {
+	public Long getCountDown() {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		long diffInMillies = date.getTime() - cal.getTimeInMillis();
 		
-		String countDown;
+		Long countDown;
 		if(diffInMillies < 0) {
 			countDown = null;
 		} else {
 			TimeUnit timeUnit = TimeUnit.MINUTES;
 			long diffInMinutes = timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
-			countDown = Long.toString(diffInMinutes);
+			countDown = Long.valueOf(diffInMinutes);
 		}
 	    return countDown;
 	}
 
-	public String getCurrentRenderedTime() {
+	public Long getCurrentRenderedTime() {
 		return currentRenderedTime;
 	}
 
-	public void setCurrentRenderedTime(String currentRenderedTime) {
+	public void setCurrentRenderedTime(Long currentRenderedTime) {
 		this.currentRenderedTime = currentRenderedTime;
 	}
 	
@@ -92,20 +95,26 @@ public class CountDownComponent extends AbstractComponent {
 		this.i18nKey = key;
 	}
 
+	public String getI18nKeySingular() {
+		return i18nKeySingular;
+	}
+
+	public void setI18nKeySingular(String i18nKey) {
+		this.i18nKeySingular = i18nKey;
+	}
+
+	public String getI18nKeyZero() {
+		return i18nKeyZero;
+	}
+
+	public void setI18nKeyZero(String i18nKeyZero) {
+		this.i18nKeyZero = i18nKeyZero;
+	}
+
 	@Override
 	public boolean isDirty() {
-		boolean dirty;
-		String countDown = getCountDown();
-		if(countDown == null && currentRenderedTime == null) {
-			dirty = false;
-		} else if(countDown != null && currentRenderedTime == null) {
-			dirty = true;
-		} else if(countDown == null && currentRenderedTime != null) {
-			dirty = true;
-		} else {
-			dirty = !countDown.equals(currentRenderedTime);
-		}
-		return dirty;
+		Long countDown = getCountDown();
+		return !Objects.equals(countDown, currentRenderedTime);
 	}
 
 	@Override

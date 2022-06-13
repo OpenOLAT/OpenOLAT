@@ -42,13 +42,20 @@ class CountDownComponentRenderer extends DefaultComponentRenderer {
 		CountDownComponent cmp = (CountDownComponent)source;
 		sb.append("<span id='o_c").append(cmp.getDispatchID()).append("'>");
 		
-		String countDown = cmp.getCountDown();
+		Long countDown = cmp.getCountDown();
 		cmp.setCurrentRenderedTime(countDown);
 		if(countDown != null) {
-			if(cmp.getI18nKey() == null) {
+			String i18nKey = cmp.getI18nKey();
+			if(countDown.intValue() == 0 && cmp.getI18nKeyZero() != null) {
+				i18nKey = cmp.getI18nKeyZero();
+			} else if(countDown.intValue() <= 1 && cmp.getI18nKeySingular() != null) {
+				i18nKey = cmp.getI18nKeySingular();
+			}
+			
+			if(i18nKey == null) {
 				sb.append(countDown);
 			} else {
-				sb.append(translator.translate(cmp.getI18nKey(), new String[]{ countDown }));
+				sb.append(translator.translate(i18nKey, countDown.toString()));
 			}
 		}
 		sb.append("</span>");

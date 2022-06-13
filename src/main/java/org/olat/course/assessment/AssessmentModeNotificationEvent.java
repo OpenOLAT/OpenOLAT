@@ -19,8 +19,10 @@
  */
 package org.olat.course.assessment;
 
+import java.util.Map;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
@@ -48,11 +50,13 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 
 	private TransientAssessmentMode mode;
 	private Set<Long> assessedIdentityKeys;
+	private Map<Long,Integer> extraTimesInSeconds;
 	
-	public AssessmentModeNotificationEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys) {
+	public AssessmentModeNotificationEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys, Map<Long,Integer> extraTimesInSeconds) {
 		super(cmd);
 		this.mode = mode;
 		this.assessedIdentityKeys = assessedIdentityKeys;
+		this.extraTimesInSeconds = extraTimesInSeconds;
 	}
 
 	public TransientAssessmentMode getAssessementMode() {
@@ -63,6 +67,30 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 		return assessedIdentityKeys;
 	}
 	
+	/**
+	 * @return The extra time is not always available as payload of the event.
+	 */
+	public Map<Long, Integer> getExtraTimesInSeconds() {
+		return extraTimesInSeconds;
+	}
+	
+	/**
+	 * 
+	 * @param identity The extra time of the specified identity
+	 * @return Null if the extra time is not delivered with the event,
+	 * 		0 if the user has no extra time, or the extra time in seconds.
+	 */
+	public Integer getExtraTimeInSeconds(IdentityRef identity) {
+		if(extraTimesInSeconds == null || identity == null) return null;
+		
+		Integer time = extraTimesInSeconds.get(identity.getKey());
+		return time == null ? Integer.valueOf(0) : time;
+	}
+
+	public void setExtraTimesInSeconds(Map<Long, Integer> extraTimesInSeconds) {
+		this.extraTimesInSeconds = extraTimesInSeconds;
+	}
+
 	public boolean isModeOf(TransientAssessmentMode currentAssessmentMode, Identity identity) {
 		// if an assessment is running, only relevant if they are the same
 		if(currentAssessmentMode != null) {

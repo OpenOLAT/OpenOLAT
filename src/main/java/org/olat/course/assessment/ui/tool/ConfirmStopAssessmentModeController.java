@@ -107,7 +107,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String name = StringHelper.escapeHtml(mode.getName());
-			layoutCont.contextPut("msg", translate("confirm.stop.final.text.details", new String[] { name }));
+			layoutCont.contextPut("msg", translate("confirm.stop.final.text.details", name));
 		}
 	}
 	
@@ -118,13 +118,13 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String name = StringHelper.escapeHtml(mode.getName());
-			layoutCont.contextPut("msg", translate("confirm.stop.text.details", new String[] { name }));
+			layoutCont.contextPut("msg", translate("confirm.stop.text.details", name ));
 
 			if(numOfDisadvantagedUsers == 1) {
 				layoutCont.contextPut("compensationMsg", translate("confirm.stop.text.compensations"));
 			} else if(numOfDisadvantagedUsers > 1) {
 				layoutCont.contextPut("compensationMsg", translate("confirm.stop.text.compensations.plural",
-						new String[] { Integer.toString(numOfDisadvantagedUsers) }));
+						Integer.toString(numOfDisadvantagedUsers)));
 			}
 		}
 		

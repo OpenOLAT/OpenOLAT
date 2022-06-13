@@ -27,6 +27,7 @@ package org.olat.core.commons.fullWebApp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -99,6 +100,7 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -1487,7 +1489,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		String cmd = event.getCommand();
 		switch(cmd) {
 			case AssessmentModeNotificationEvent.STOP_WARNING:
-				lockResourceMessage(event.getAssessementMode());
+				lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()));
 				break;
 			case AssessmentModeNotificationEvent.BEFORE:
 				if(asyncUnlockResource(event.getAssessementMode())) {
@@ -1651,15 +1653,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return unlock;
 	}
 	
-	private void lockResourceMessage(TransientAssessmentMode mode) {
+	private void lockResourceWarningMessage(TransientAssessmentMode mode, Integer extraTime) {
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			Translator trans = Util.createPackageTranslator(AssessmentModeGuardController.class, getLocale());
+			Date end = mode.getEnd();
+			if(extraTime != null && extraTime > 0) {
+				end = DateUtils.addSeconds(end, extraTime.intValue());
+			}
+			
 			if(stickyMessageCmp.getDelegateComponent() instanceof CountDownComponent) {
 				CountDownComponent cmp = (CountDownComponent)stickyMessageCmp.getDelegateComponent();
-				cmp.setDate(mode.getEnd());
+				cmp.setDate(end);
 			} else {
-				CountDownComponent cmp = new CountDownComponent("stickcountdown", mode.getEnd(), trans);
+				CountDownComponent cmp = new CountDownComponent("stickcountdown", end, trans);
 				cmp.setI18nKey("assessment.countdown");
+				cmp.setI18nKeySingular("assessment.countdown.singular");
+				cmp.setI18nKeyZero("assessment.countdown.zero");
 				stickyMessageCmp.setDelegateComponent(cmp);
 			}
 		}

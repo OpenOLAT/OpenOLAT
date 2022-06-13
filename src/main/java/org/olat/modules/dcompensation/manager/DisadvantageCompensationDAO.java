@@ -167,6 +167,25 @@ public class DisadvantageCompensationDAO {
 				.collect(Collectors.toList());
 	}
 	
+	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, List<String> subIdents) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select compensation from dcompensation as compensation")
+		  .append(" inner join fetch compensation.identity as ident")
+		  .append(" where compensation.entry.key=:entryKey and compensation.status=:status");
+		if(subIdents != null && !subIdents.isEmpty()) {
+			sb.append(" and compensation.subIdent in (:subIdent)");
+		}
+		
+		TypedQuery<DisadvantageCompensation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DisadvantageCompensation.class)
+				.setParameter("status", DisadvantageCompensationStatusEnum.active.name())
+				.setParameter("entryKey", entry.getKey());
+		if(subIdents != null && !subIdents.isEmpty()) {
+			query.setParameter("subIdent", subIdents);
+		}
+		return query.getResultList();
+	}
+	
 	public boolean isActiveDisadvantagedUser(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdents) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select compensation.key from dcompensation as compensation")
