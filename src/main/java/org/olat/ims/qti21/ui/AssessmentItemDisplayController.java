@@ -219,9 +219,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.outcomesListener = outcomesListener;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = initOrResumeAssessmentTestSession(entry, subIdent, testEntry, assessmentEntry, authorMode);
-		String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
-        		.extractIfSuccessful().getIdentifier();
-		itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, externalRefIdentifier);
+		itemSession = getItemSession(resolvedAssessmentItem, externalRefIdentifier);
 		
 		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
 		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), fUnzippedDirRoot, submissionDir));
@@ -237,6 +235,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			initQtiWorks(ureq);
 		}
 		putInitialPanel(mainVC);
+	}
+	
+	protected AssessmentItemSession getItemSession(ResolvedAssessmentItem rAssessmentItem, String externalRefIdentifier) {
+		String  assessmentItemIdentifier = rAssessmentItem.getRootNodeLookup().extractIfSuccessful().getIdentifier();
+		return qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, externalRefIdentifier);
 	}
 	
 	protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry, String subIdent, RepositoryEntry referenceEntry,

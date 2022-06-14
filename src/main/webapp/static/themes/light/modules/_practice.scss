@@ -210,6 +210,7 @@ svg {
 	
 	.o_practice_shuffle_play {
 		border-right: 1px solid $o-practice-play-main-border-color;
+		padding-right: 15px;
 		
 		display: flex;
 		flex-direction: column;
@@ -224,6 +225,12 @@ svg {
 	a {
 		width: 100%;
 		max-width: 200px;
+	}
+}
+
+@media all and (max-width: $screen-sm-min) {
+	.o_practice_run {
+		grid-template-columns: 1fr;
 	}
 }
 
@@ -329,6 +336,3 @@ svg {
 .o_assessmentitem_level>i {
 	color: $o-practice-level-disc-color;
 }
-
-
-

@@ -178,8 +178,6 @@ public class PracticeRunController extends BasicController {
 					courseEntry, courseNode, userCourseEnv);
 			listenTo(coachCtrl);
 			coachPanel.pushController(translate("segment.participants"), coachCtrl);
-		} else {
-			//TODO coachCtrl.reload(ureq);
 		}
 		addToHistory(ureq, coachCtrl);
 		if(mainVC != null) {

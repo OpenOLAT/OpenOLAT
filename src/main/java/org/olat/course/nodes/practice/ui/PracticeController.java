@@ -67,6 +67,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesAssessmentItemListener;
@@ -234,7 +235,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	}
 	
 	private void doConfirmCancel(UserRequest ureq) {
-		cancelCtrl = new ConfirmCancelController(ureq, getWindowControl());
+		cancelCtrl = new ConfirmCancelController(ureq, getWindowControl(), playMode);
 		listenTo(cancelCtrl);
 		
 		String title = translate("confirm.back.title");
@@ -527,6 +528,11 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			if(formLayout instanceof FormLayoutContainer) {
 				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+				if(playMode == PlayMode.freeShuffle) {
+					layoutCont.contextPut("msg", translate("serie.completed"));
+				} else {
+					layoutCont.contextPut("msg", translate("serie.completed.individual"));
+				}
 
 				long numCorrectAtFirstAttempts = runningPracticeItems.stream()
 						.filter(RunningPracticeItem::isCorrectAtFirstAttempts)
@@ -555,47 +561,50 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				layoutCont.contextPut("durationToday", durationStr);
 				layoutCont.contextPut("numOfSeriesToday", Integer.toString(seriesToday));
 				if(saveSerie) {
-					int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
-					
-					final int completedSeries = PracticeHelper.completedSeries(series);
-					final int currentNumOfSeries = completedSeries % seriesPerChallenge;
-					
-					// Series
-					String currentSeriesI18n = seriesPerChallenge > 1 ? "current.series.plural" : "current.series.singular";
-					String currentSeriesStr;
-					// Check if the user completed a challenge
-					boolean ended = currentNumOfSeries == 0 && completedSeries >= seriesPerChallenge;
-					if(ended) {
-						currentSeriesStr = Integer.toString(seriesPerChallenge);
-					} else {
-						currentSeriesStr = Integer.toString(currentNumOfSeries);
-					}
-					String currentSeries = translate(currentSeriesI18n, currentSeriesStr, Integer.toString(seriesPerChallenge));
-					flc.contextPut("currentSeries", currentSeries);
-					
-					double currentSeriesProgress = 0.0d;
-					int previousNumOfSeries = 0;
-					if(ended) {
-						previousNumOfSeries = seriesPerChallenge - 1;
-						currentSeriesProgress = 100.0d;
-					} else if(currentNumOfSeries > 0) {
-						previousNumOfSeries = currentNumOfSeries - 1;
-						currentSeriesProgress = (currentNumOfSeries / (double)seriesPerChallenge) * 100.0d;
-					}
-					
-					double previousSeriesProgress = Math.max(0.0d, ((previousNumOfSeries / (double)seriesPerChallenge) * 100.0d));
-					layoutCont.contextPut("currentSeries", currentSeries);
-					layoutCont.contextPut("previousSeriesProgress", Double.valueOf(previousSeriesProgress));
-					layoutCont.contextPut("currentSeriesProgress", Double.valueOf(currentSeriesProgress));
+					initProgressInChallenges(layoutCont, series);
 				}
 			}
 			
 			backButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
 			if(playMode == PlayMode.freeShuffle
-					|| playMode == PlayMode.newQuestions
-					|| playMode == PlayMode.incorrectQuestions) {
+					|| playMode == PlayMode.newQuestions) {
 				uifactory.addFormSubmitButton("next.serie", formLayout);
 			}
+		}
+		
+		private void initProgressInChallenges(FormLayoutContainer layoutCont, List<AssessmentTestSession> series) {
+			int seriesPerChallenge = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, 2);
+			
+			final int completedSeries = PracticeHelper.completedSeries(series);
+			final int currentNumOfSeries = completedSeries % seriesPerChallenge;
+			
+			// Series
+			String currentSeriesI18n = seriesPerChallenge > 1 ? "current.series.plural" : "current.series.singular";
+			String currentSeriesStr;
+			// Check if the user completed a challenge
+			boolean ended = currentNumOfSeries == 0 && completedSeries >= seriesPerChallenge;
+			if(ended) {
+				currentSeriesStr = Integer.toString(seriesPerChallenge);
+			} else {
+				currentSeriesStr = Integer.toString(currentNumOfSeries);
+			}
+			String currentSeries = translate(currentSeriesI18n, currentSeriesStr, Integer.toString(seriesPerChallenge));
+			flc.contextPut("currentSeries", currentSeries);
+			
+			double currentSeriesProgress = 0.0d;
+			int previousNumOfSeries = 0;
+			if(ended) {
+				previousNumOfSeries = seriesPerChallenge - 1;
+				currentSeriesProgress = 100.0d;
+			} else if(currentNumOfSeries > 0) {
+				previousNumOfSeries = currentNumOfSeries - 1;
+				currentSeriesProgress = (currentNumOfSeries / (double)seriesPerChallenge) * 100.0d;
+			}
+			
+			double previousSeriesProgress = Math.max(0.0d, ((previousNumOfSeries / (double)seriesPerChallenge) * 100.0d));
+			layoutCont.contextPut("currentSeries", currentSeries);
+			layoutCont.contextPut("previousSeriesProgress", Double.valueOf(previousSeriesProgress));
+			layoutCont.contextPut("currentSeriesProgress", Double.valueOf(currentSeriesProgress));
 		}
 		
 		@Override
@@ -746,10 +755,16 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			}
 			return itemSessionState;
 		}
+		
+		@Override
+		protected AssessmentItemSession getItemSession(ResolvedAssessmentItem rAssessmentItem, String externalRefIdentifier) {
+			String  assessmentItemIdentifier = rAssessmentItem.getRootNodeLookup().extractIfSuccessful().getIdentifier() + "-" + (currentIndex);
+			return qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, externalRefIdentifier);
+		}
 
 		@Override
-		protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry,
-				String subIdent, RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean author) {
+		protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry cEntry, String subIdent,
+				RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean author) {
 			candidateSession = testSession;
 			return testSession;
 		}

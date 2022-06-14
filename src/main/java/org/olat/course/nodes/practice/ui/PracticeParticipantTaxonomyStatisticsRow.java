@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
+import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -41,6 +42,7 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 	private final TaxonomyLevel taxonomyLevel;
 	
 	private List<TaxonomyLevel> aggregatedLevels;
+	private final List<PracticeItem> cachedItems = new ArrayList<>();
 	
 	private FormLink levelsLink;
 	
@@ -103,5 +105,17 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 
 	public void setLevelsLink(FormLink levelsLink) {
 		this.levelsLink = levelsLink;
+	}
+
+	/**
+	 * Especially for items without taxonomy level has this definition
+	 * is somewhat complicated.
+	 */
+	public List<PracticeItem> getCachedItems() {
+		return cachedItems;
+	}
+
+	public void cacheItem(PracticeItem item) {
+		cachedItems.add(item);
 	}
 }

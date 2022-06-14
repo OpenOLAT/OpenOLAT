@@ -319,9 +319,11 @@ public class PracticeParticipantController extends FormBasicController {
 					putTaxonomyLevelInMap(item.getTaxonomyLevel(), levelMaps)
 						.getLevels().append(globalRef);
 				} else {
+					withoutTaxonomyLevelRow.cacheItem(item);
 					withoutTaxonomyLevelRow.getLevels().append(globalRef);
 				}
 			} else {
+				withoutTaxonomyLevelRow.cacheItem(item);
 				withoutTaxonomyLevelRow.getLevels().append(globalRef);
 			}
 			
@@ -440,7 +442,11 @@ public class PracticeParticipantController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				if("play".equals(se.getCommand())) {
 					PracticeParticipantTaxonomyStatisticsRow statisticsRow = taxonomyTableModel.getObject(se.getIndex());
-					doStartTaxonomyLevelMode(ureq, statisticsRow);
+					if(statisticsRow.withoutTaxonomy()) {
+						doWithoutTaxonomyLevelQuestions(ureq, statisticsRow);
+					} else {
+						doStartTaxonomyLevelMode(ureq, statisticsRow);
+					}
 				}
 			}
 		} else if(globalLevelsLink == source) {
@@ -487,6 +493,25 @@ public class PracticeParticipantController extends FormBasicController {
 			showWarning("warning.no.items.found");
 		} else {
 			fireEvent(ureq, new StartPracticeEvent(PlayMode.incorrectQuestions, items));
+		}
+	}
+
+	/**
+	 * Retrieve the cached items.
+	 * 
+	 * @param ureq The user request
+	 * @param statisticsRow The row
+	 */
+	private void doWithoutTaxonomyLevelQuestions(UserRequest ureq, PracticeParticipantTaxonomyStatisticsRow statisticsRow) {
+		List<PracticeItem> items = statisticsRow.getCachedItems();
+		if(items.isEmpty()) {
+			showWarning("warning.no.items.found");
+		} else {
+			Collections.shuffle(items);
+			if(items.size() > questionPerSeries) {
+				items = new ArrayList<>(items.subList(0, questionPerSeries));
+			}
+			fireEvent(ureq, new StartPracticeEvent(PlayMode.all, items));
 		}
 	}
 	

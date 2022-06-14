@@ -22,9 +22,13 @@ package org.olat.course.nodes.practice.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.nodes.practice.PlayMode;
 
 /**
  * 
@@ -34,15 +38,31 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class ConfirmCancelController extends FormBasicController {
 	
-	public ConfirmCancelController(UserRequest ureq, WindowControl wControl) {
+	private PlayMode playMode;
+	
+	public ConfirmCancelController(UserRequest ureq, WindowControl wControl, PlayMode playMode) {
 		super(ureq, wControl, "confirm_back");
+		this.playMode = playMode;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("back", formLayout);
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			if(playMode == PlayMode.freeShuffle) {
+				layoutCont.contextPut("msg", translate("confirm.back.text"));
+			} else {
+				layoutCont.contextPut("msg", translate("confirm.back.text.individual"));
+			}
+		}
+		
+		FormCancel cancel = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		FormSubmit submit = uifactory.addFormSubmitButton("back", formLayout);
+		if(playMode == PlayMode.freeShuffle) {
+			cancel.setI18nKey("cancel.serie");
+			submit.setI18nKey("back.serie", null);
+		}
 	}
 
 	@Override
