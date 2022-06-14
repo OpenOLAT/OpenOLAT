@@ -208,9 +208,9 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		switchEduIDRootEnabled = "true".equals(switchEduIDRootEnabledObj);
 		
 		// Keycloak
-		String keycloakEnabledObj = getStringPropertyValue(KEYCLOAK_ENABLED, keycloakEnabled);
+		String keycloakEnabledObj = getStringPropertyValue(KEYCLOAK_ENABLED, Boolean.toString(keycloakEnabled));
 		keycloakEnabled = "true".equals(keycloakEnabledObj);
-		String keycloakRootEnabledObj = getStringPropertyValue(KEYCLOAK_ROOT_ENABLED, keycloakRootEnabled);
+		String keycloakRootEnabledObj = getStringPropertyValue(KEYCLOAK_ROOT_ENABLED, Boolean.toString(keycloakRootEnabled));
 		keycloakRootEnabled = "true".equals(keycloakRootEnabledObj);
 		keycloakEndpoint = getStringPropertyValue(KEYCLOAK_ENDPOINT, keycloakEndpoint);
 		keycloakRealm = getStringPropertyValue(KEYCLOAK_REALM, keycloakRealm);
