@@ -127,7 +127,7 @@ public class STLearningPathConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
-		setFormContextHelp("Learning Path");
+		setFormContextHelp("manual_user/course_create/Learning_path_course_-_Course_editor/");
 		formLayout.setElementCssClass("o_lp_config_edit");
 		
 		SelectionValues sequenceKV = new SelectionValues();
