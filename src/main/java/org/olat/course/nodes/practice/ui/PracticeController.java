@@ -22,6 +22,7 @@ package org.olat.course.nodes.practice.ui;
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -667,6 +668,12 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 				layoutCont.contextPut("itemLevel", Integer.valueOf(globalRef.getLevel()));
 				layoutCont.contextPut("maxItemLevel", Integer.valueOf(maxLevels));
+				
+				List<Integer> globalLevels = new ArrayList<>();
+				for(int i=1; i<=maxLevels; i++) {
+					globalLevels.add(Integer.valueOf(i));
+				}
+				layoutCont.contextPut("globalLevels", globalLevels);
 			}
 			
 			ItemBodyResultFormItem userFormItem = new ItemBodyResultFormItem("userResponseItem", resolvedAssessmentItem);

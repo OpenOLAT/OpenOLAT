@@ -2,8 +2,7 @@
 	<div class="qtiworks o_assessmentitem">
 		<div class="o_assessmentitem_wrapper">
 			<h4 class="itemTitle">$r.escapeHtml($itemTitle) <span class="o_qti_item_meta"><span class='o_assessmentitem_level'>$r.translate("table.header.level")
-			#set($range = [1..$maxItemLevel])
-			#foreach($i in $range)
+			#foreach($i in $globalLevels)
 				#if($r.isNotNull($itemLevel) && $i <= $itemLevel)
 					<i class='o_icon o_icon_circle_color'> </i>
 				#else

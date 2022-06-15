@@ -44,9 +44,12 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 	private List<TaxonomyLevel> aggregatedLevels;
 	private final List<PracticeItem> cachedItems = new ArrayList<>();
 	
+	private final List<String> keys;
+	
 	private FormLink levelsLink;
 	
 	public PracticeParticipantTaxonomyStatisticsRow(String label, int numOfLevels) {
+		keys = List.of();
 		withoutTaxonomy = true;
 		this.taxonomyLevelName = label;
 		levels = new Levels(numOfLevels);
@@ -54,13 +57,18 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		taxonomyLevel = null;
 	}
 	
-	public PracticeParticipantTaxonomyStatisticsRow(TaxonomyLevel taxonomyLevel, int numOfLevels) {
+	public PracticeParticipantTaxonomyStatisticsRow(List<String> keys, TaxonomyLevel taxonomyLevel, int numOfLevels) {
+		this.keys = keys;
 		withoutTaxonomy = false;
 		this.taxonomyLevel = taxonomyLevel;
 		taxonomyLevelName = taxonomyLevel.getDisplayName();
 		levels = new Levels(numOfLevels);
 		taxonomyPath = SearchPracticeItemHelper
 				.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());
+	}
+	
+	public List<String> getKeys() {
+		return keys;
 	}
 	
 	public boolean withoutTaxonomy() {
