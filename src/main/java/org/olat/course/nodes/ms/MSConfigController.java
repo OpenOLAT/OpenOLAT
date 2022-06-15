@@ -672,6 +672,7 @@ public class MSConfigController extends FormBasicController {
 		formEntry = searchCtrl.getSelectedEntry();
 		doCalculateMinMax();
 		updateUI();
+		markDirty();
 	}
 
 	private void doCalculateMinMax() {
