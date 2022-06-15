@@ -95,6 +95,17 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	@Value("${switch.eduid.client.secret}")
 	private String switchEduIDApiSecret;
 	
+	@Value("${oauth.datenlotsen.enabled:false}")
+	private boolean datenlotsenEnabled;
+	@Value("${oauth.datenlotsen.root:false}")
+	private boolean datenlotsenRootEnabled;
+	@Value("${oauth.datenlotsen.client.id}")
+	private String datenlotsenApiKey;
+	@Value("${oauth.datenlotsen.client.secret}")
+	private String datenlotsenApiSecret;
+	@Value("${oauth.datenlotsen.endpoint}")
+	private String datenlotsenEndpoint;
+	
 	private boolean tequilaEnabled;
 	private String tequilaApiKey;
 	private String tequilaApiSecret;
@@ -192,20 +203,29 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", false);
 		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", false);
 		
-		// Switch edu-ID
+		// Tequila
 		String tequilaEnabledObj = getStringPropertyValue("tequilaEnabled", true);
 		tequilaEnabled = "true".equals(tequilaEnabledObj);
 		tequilaApiKey = getStringPropertyValue("tequilaApiKey", false);
 		tequilaApiSecret = getStringPropertyValue("tequilaApiSecret", false);
 		tequilaOAuth2Endpoint = getStringPropertyValue("tequilaOAuth2Endpoint", false);
 		
-		//tequila
-		String switchEduIDEnabledObj = getStringPropertyValue("switchEduIDEnabled", true);
+		// Switch edu-ID
+		String switchEduIDEnabledObj = getStringPropertyValue("switchEduIDEnabled", Boolean.toString(switchEduIDEnabled));
 		switchEduIDEnabled = "true".equals(switchEduIDEnabledObj);
-		switchEduIDApiKey = getStringPropertyValue("switchEduIDApiKey", false);
-		switchEduIDApiSecret = getStringPropertyValue("switchEduIDApiSecret", false);
-		String switchEduIDRootEnabledObj = getStringPropertyValue("switchEduIDRootEnabled", true);
+		String switchEduIDRootEnabledObj = getStringPropertyValue("switchEduIDRootEnabled", Boolean.toString(switchEduIDRootEnabled));
 		switchEduIDRootEnabled = "true".equals(switchEduIDRootEnabledObj);
+		switchEduIDApiKey = getStringPropertyValue("switchEduIDApiKey", switchEduIDApiKey);
+		switchEduIDApiSecret = getStringPropertyValue("switchEduIDApiSecret", switchEduIDApiSecret);
+		
+		// Datenlotsen
+		String datenlotsenEnabledObj = getStringPropertyValue("datenlotsenEnabled", Boolean.toString(datenlotsenEnabled));
+		datenlotsenEnabled = "true".equals(datenlotsenEnabledObj);
+		String datenlotsenRootEnabledObj = getStringPropertyValue("datenlotsenRootEnabled", Boolean.toString(datenlotsenRootEnabled));
+		datenlotsenRootEnabled = "true".equals(datenlotsenRootEnabledObj);
+		datenlotsenApiKey = getStringPropertyValue("datenlotsenApiKey", datenlotsenApiKey);
+		datenlotsenApiSecret = getStringPropertyValue("datenlotsenApiSecret", datenlotsenApiSecret);
+		datenlotsenEndpoint = getStringPropertyValue("datenlotsenEndpoint", datenlotsenEndpoint);
 		
 		// Keycloak
 		String keycloakEnabledObj = getStringPropertyValue(KEYCLOAK_ENABLED, Boolean.toString(keycloakEnabled));
@@ -232,10 +252,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 			if(propertyKey instanceof String) {
 				String key = (String)propertyKey;
 				if(key.startsWith(OPEN_ID_IF_START_MARKER) && key.endsWith(OPEN_ID_IF_END_MARKER)) {
-					 OAuthSPI spi = getAdditionalOpenIDConnectIF(key);
-					 if(spi != null) {
-						 otherOAuthSPies.add(spi);
-					 }
+					OAuthSPI spi = getAdditionalOpenIDConnectIF(key);
+					otherOAuthSPies.add(spi);
 				}
 			}
 		}
@@ -606,6 +624,51 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setSwitchEduIDApiSecret(String secret) {
 		this.switchEduIDApiSecret = secret;
 		setStringProperty("switchEduIDApiSecret", secret, true);
+	}
+
+	public boolean isDatenlotsenEnabled() {
+		return datenlotsenEnabled;
+	}
+
+	public void setDatenlotsenEnabled(boolean enabled) {
+		datenlotsenEnabled = enabled;
+		setStringProperty("datenlotsenEnabled", enabled ? "true" : "false", true);
+	}
+
+	public boolean isDatenlotsenRootEnabled() {
+		return datenlotsenRootEnabled;
+	}
+
+	public void setDatenlotsenRootEnabled(boolean enabled) {
+		datenlotsenRootEnabled = enabled;
+		setStringProperty("datenlotsenRootEnabled", enabled ? "true" : "false", true);
+	}
+
+	public String getDatenlotsenApiKey() {
+		return datenlotsenApiKey;
+	}
+
+	public void setDatenlotsenApiKey(String apiKey) {
+		this.datenlotsenApiKey = apiKey;
+		setStringProperty("datenlotsenApiKey", apiKey, true);
+	}
+
+	public String getDatenlotsenApiSecret() {
+		return datenlotsenApiSecret;
+	}
+
+	public void setDatenlotsenApiSecret(String apiSecret) {
+		this.datenlotsenApiSecret = apiSecret;
+		setStringProperty("datenlotsenApiSecret", apiSecret, true);
+	}
+
+	public String getDatenlotsenEndpoint() {
+		return datenlotsenEndpoint;
+	}
+
+	public void setDatenlotsenEndpoint(String endpoint) {
+		this.datenlotsenEndpoint = endpoint;
+		setStringProperty("datenlotsenEndpoint", endpoint, true);
 	}
 
 	public boolean isTequilaEnabled() {

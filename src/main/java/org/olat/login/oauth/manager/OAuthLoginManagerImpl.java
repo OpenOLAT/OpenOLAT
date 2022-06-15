@@ -79,7 +79,8 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager {
 			
 			ValidationError error = new ValidationError();
 			String value = oauthUser.getProperty(userPropertyHandler.getName());
-			if (!userPropertyHandler.isValidValue(newIdentity.getUser(), value, error, Locale.ENGLISH)) {
+			if (!userPropertyHandler.isValidValue(newIdentity.getUser(), value, error, Locale.ENGLISH)
+					|| (!StringHelper.containsNonWhitespace(value) && userManager.isMandatoryUserProperty(OAuthRegistrationController.USERPROPERTIES_FORM_IDENTIFIER, userPropertyHandler))) {
 				return  false;
 			}
 		}
