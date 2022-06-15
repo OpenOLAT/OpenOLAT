@@ -230,6 +230,7 @@ public class FormConfigController extends FormBasicController {
 		if (selectedFormEntry != null) {
 			this.formEntry = selectedFormEntry;
 			updateUI();
+			markDirty();
 		}
 	}
 
