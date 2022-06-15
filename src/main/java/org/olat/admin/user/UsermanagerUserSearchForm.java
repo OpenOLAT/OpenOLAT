@@ -332,6 +332,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 					apl.add(authKey);
 				} else {
 					apl.add(authKey);
+					apl.add(authKey.toUpperCase());
 				}
 			}
 		}
