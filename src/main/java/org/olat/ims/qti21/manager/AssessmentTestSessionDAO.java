@@ -592,29 +592,32 @@ public class AssessmentTestSessionDAO {
 				.collect(Collectors.toList());
 		return getRunningTestSessionsByIdentityKeys(entry, courseSubIdents, identityKeys);
 	}
-
 	
+	/**
+	 * The query doesn't fetch the test entry, only the identities (no users).
+	 * 
+	 * @param entry The repository entry, the cours entry
+	 * @param courseSubIdents A list of elements ids, null searches all
+	 * @param identityKeys A list of assessed identities keys (mandatory)
+	 * @return A list of assessment test sessions without finished or termination time,
+	 * 		not exploded or cancelled
+	 */
 	public List<AssessmentTestSession> getRunningTestSessionsByIdentityKeys(RepositoryEntryRef entry, List<String> courseSubIdents, List<Long> identityKeys) {
 		if(identityKeys == null || identityKeys.isEmpty()) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
-		  .append(" left join session.testEntry testEntry")
-		  .append(" left join testEntry.olatResource testResource")
 		  .append(" inner join fetch session.identity assessedIdentity")
-		  .append(" inner join fetch assessedIdentity.user assessedUser")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey")
 		  .append(" and session.finishTime is null and session.terminationTime is null")
 		  .append(" and session.exploded=false and session.cancelled=false")
-		  .append(" and session.identity.key in (:identityKeys)");
+		  .append(" and assessedIdentity.key in (:identityKeys)");
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
 			sb.append(" and session.subIdent in (:subIdents)");
 		}
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
-				.setFirstResult(0)
-				.setMaxResults(1)
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setParameter("identityKeys", identityKeys);		
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {

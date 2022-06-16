@@ -312,10 +312,18 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				row.setMaxScore(infos.getMaxScore());
 				if(infos.getCompletion() != null) {
 					row.getCurrentCompletion().setCompletion(infos.getCompletion());
+				} else {
+					row.getCurrentCompletion().setCompletion(null);
 				}
 				if(infos.getStart() != null) {
 					row.getCurrentRunStart().setDate(infos.getStart());
+				} else {
+					row.getCurrentRunStart().setDate(null);
 				}
+			} else {
+				row.setDetails(null);
+				row.getCurrentCompletion().setCompletion(null);
+				row.getCurrentRunStart().setDate(null);
 			}
 		}
 		
