@@ -567,8 +567,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			}
 			
 			backButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
-			if(playMode == PlayMode.freeShuffle
-					|| playMode == PlayMode.newQuestions) {
+			if(playMode == PlayMode.freeShuffle) {
 				uifactory.addFormSubmitButton("next.serie", formLayout);
 			}
 		}

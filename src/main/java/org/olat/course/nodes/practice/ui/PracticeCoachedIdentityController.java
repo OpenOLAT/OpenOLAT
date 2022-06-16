@@ -113,7 +113,7 @@ public class PracticeCoachedIdentityController extends BasicController {
 	
 	private void doConfirmReset(UserRequest ureq) {
 		confirmCtrl = new ConfirmResetPracticeDataController(ureq, getWindowControl(),
-				courseEntry, courseNode.getIdent(), practicingIdentity);
+				courseEntry, courseNode, practicingIdentity);
 		listenTo(confirmCtrl);
 		
 		String title = translate("confirm.reset.data.title");

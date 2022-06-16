@@ -309,6 +309,10 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		}
 		
 		if(leveledItems.size() < maxQuestions) {
+			fillRandomlyLevelBottomUp(leveledItems, practiceItems, identifierRefs, levelMix, maxQuestions - leveledItems.size());
+		}
+		
+		if(leveledItems.size() < maxQuestions) {
 			fillRandomly(leveledItems, practiceItems, maxQuestions - leveledItems.size());
 		}
 		
@@ -336,6 +340,41 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		}
 	}
 	
+	private void fillRandomlyLevelBottomUp(List<PracticeItem> items, List<PracticeItem> allPracticeItems,
+			Map<String,PracticeAssessmentItemGlobalRef> identifierRefs, List<MixLevel> levelMix, int numOfQuestionsToAdd) {
+		for(int i=0; i<levelMix.size() && numOfQuestionsToAdd > 0; i++) {
+			MixLevel ml = levelMix.get(i);
+			List<PracticeItem> selectedItems = selectedByLevels(items, allPracticeItems, identifierRefs, ml);
+			filterPreferredQuestions(ml.getNumOfDaysBeforeRepetition(), selectedItems, numOfQuestionsToAdd, identifierRefs);
+			selectedItems = trimItems(selectedItems, numOfQuestionsToAdd);
+			items.addAll(selectedItems);
+			numOfQuestionsToAdd -= selectedItems.size();
+		}
+	}
+	
+	private List<PracticeItem> selectedByLevels(List<PracticeItem> items, List<PracticeItem> allPracticeItems,
+			Map<String,PracticeAssessmentItemGlobalRef> identifierRefs, MixLevel levelMix) {
+		
+		Set<String> identifiers = items.stream()
+				.filter(item -> item.getIdentifier() != null)
+				.map(PracticeItem::getIdentifier)
+				.collect(Collectors.toSet());
+		
+		List<PracticeItem> selectedItems = new ArrayList<>();
+		for(int i=0; i<allPracticeItems.size(); i++) {
+			PracticeItem item = allPracticeItems.get(i);
+			PracticeAssessmentItemGlobalRef itemGlobalRef = null;
+			if(item.getIdentifier() != null) {
+				itemGlobalRef = identifierRefs.get(item.getIdentifier());
+			}
+			if(!identifiers.contains(item.getIdentifier()) && levelMix.accept(itemGlobalRef)) {
+				selectedItems.add(item);
+			}
+		}
+
+		return selectedItems;
+	}
+
 	private List<PracticeItem> filterLevel(int level, int daysBeforeRepetition,
 			List<PracticeItem> practiceItems, int maxQuestions,
 			Map<String,PracticeAssessmentItemGlobalRef> identifierRefs) {

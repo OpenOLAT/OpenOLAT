@@ -111,7 +111,7 @@ public class PracticeQuestionItemQueries {
 		} else if(playMode == PlayMode.incorrectQuestions) {
 			sb.and()
 			  .append(" exists (select ref.identifier from practiceglobalitemref ref")
-			  .append("  where ref.identifier=item.identifier and ref.lastAttemptsPassed=false and ref.identity.key=:identityKey")
+			  .append("  where ref.identifier=item.identifier and ref.incorrectAnswers>0 and ref.identity.key=:identityKey")
 			  .append(" )");
 			needIdentity = true;
 		}

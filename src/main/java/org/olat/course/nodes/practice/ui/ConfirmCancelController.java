@@ -58,11 +58,9 @@ public class ConfirmCancelController extends FormBasicController {
 		}
 		
 		FormCancel cancel = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		cancel.setI18nKey("cancel.serie");
 		FormSubmit submit = uifactory.addFormSubmitButton("back", formLayout);
-		if(playMode == PlayMode.freeShuffle) {
-			cancel.setI18nKey("cancel.serie");
-			submit.setI18nKey("back.serie", null);
-		}
+		submit.setI18nKey("back.serie", null);
 	}
 
 	@Override

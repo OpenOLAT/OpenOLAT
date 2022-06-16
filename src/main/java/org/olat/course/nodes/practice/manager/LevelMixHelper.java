@@ -21,6 +21,8 @@ package org.olat.course.nodes.practice.manager;
 
 import java.util.List;
 
+import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
+
 /**
  * 
  * Initial date: 16 mai 2022<br>
@@ -93,6 +95,17 @@ public class LevelMixHelper {
 		public int numOfQuestions(int total) {
 			double p = part / 100.0d;
 			return (int)Math.round(p * total);
+		}
+		
+		public boolean accept(PracticeAssessmentItemGlobalRef ref) {
+			if(level == 0) {
+				return ref == null || ref.getLevel() <= 0;
+			}
+			
+			if(level == 5) {
+				return ref != null && ref.getLevel() >= 5;
+			}
+			return ref != null && ref.getLevel() == level;
 		}
 	}
 }
