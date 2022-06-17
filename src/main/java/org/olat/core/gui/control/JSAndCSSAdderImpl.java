@@ -107,6 +107,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	private Map<String, String> cssPathToId = new HashMap<>();
 	private Map<String, Integer> cssPathToIndex = new HashMap<>();
 	private final Comparator<String> cssIndexComparator = new Comparator<String>(){
+		@Override
 		public int compare(String css1, String css2) {
 			int index1 = cssPathToIndex.get(css1);
 			int index2 = cssPathToIndex.get(css2);
@@ -125,10 +126,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		jsToRender = curJsList;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
-	 *      java.lang.String)
-	 */
 	@Override
 	public void addRequiredStaticJsFile(String jsFileName) {
 		addRequiredJsFile(jsFileName, ENCODING_DEFAULT, null);
@@ -203,10 +200,12 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	 * this is slower than a normal full page click (aka known as non-ajax mode). 
 	 * 
 	 */
+	@Override
 	public void requireFullPageRefresh() {
 		requiresFullPageRefresh = true;
 	}
 	
+	@Override
 	public boolean finishAndCheckChange() {
 		// ----- find out whether there are any freshly added or removed css classes. -----
 		// create new sets since we need to keep the original list untouched 
@@ -282,9 +281,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		return wasRawChanged || fullPageRefresh;
 	}
 
-	/**
-	 * @return
-	 */
 	public Component getJsCssRawHtmlHeader() {
 		return dc;
 	}

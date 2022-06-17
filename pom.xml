@@ -162,6 +162,7 @@
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
@@ -203,6 +204,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
@@ -288,6 +290,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
@@ -322,6 +325,7 @@
 												<include>${basedir}/target/jquery/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
 												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.11.4.custom.min.css</include>
 												<include>${basedir}/src/main/webapp/static/js/dragula/dragula.min.css</include>
+												<include>${basedir}/src/main/webapp/static/js/swiper/swiper-bundle.min.css</include>
 											</includes>
 										</aggregation>
 									</aggregations>
@@ -333,6 +337,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>

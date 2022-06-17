@@ -49,7 +49,7 @@
 	   <property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 	
-	<bean id="olatsites_catalog" class="org.olat.repository.site.CatalogSiteDef">
+	<bean id="olatsites_catalog" class="org.olat.modules.catalog.site.CatalogSiteDef">
 	   <property name="order" value="6" />
 	   <property name="enabled" value="${site.catalog.enable}"/>
 	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToGuestSiteSecurityCallback"/>

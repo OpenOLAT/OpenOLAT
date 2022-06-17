@@ -554,6 +554,7 @@ CREATE TABLE o_repositoryentry (
   varchar2(255),
   initialauthor varchar2(128 char) NOT NULL,
   status varchar(16) default 'preparation' not null,
+  status_published_date date,
   allusers number default 0 not null,
   guests number default 0 not null,
   bookable number default 0 not null,
@@ -1079,6 +1080,31 @@ create table o_ac_auto_advance_order (
   fk_method number(20) not null,
   primary key (id)
 );
+
+
+-- Catalog V2
+create table o_ca_launcher (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   c_type varchar2(50),
+   c_identifier varchar2(32),
+   c_sort_order number(20),
+   c_enabled number default 1 not null,
+   c_config varchar2(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   c_type varchar2(50),
+   c_sort_order number(20),
+   c_enabled number default 1 not null,
+   c_config varchar2(1024),
+   primary key (id)
+);
+
 
 CREATE TABLE o_stat_lastupdated (
   lastupdated date not null,

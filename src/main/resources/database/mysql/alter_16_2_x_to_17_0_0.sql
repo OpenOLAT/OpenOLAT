@@ -25,6 +25,35 @@ create index idx_offer_open_idx on o_ac_offer (open_access);
 alter table o_repositoryentry add column publicvisible bool default false not null;
 
 
+-- Catalog V2
+create table o_ca_launcher (
+   id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   c_type varchar(50),
+   c_identifier varchar(32),
+   c_sort_order integer,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   c_type varchar(50),
+   c_sort_order integer,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+
+alter table o_repositoryentry add column status_published_date datetime;
+
+alter table o_ca_launcher ENGINE = InnoDB;
+alter table o_ca_filter ENGINE = InnoDB;
+
+
 -- Practice
 alter table o_qti_assessmentitem_session add column q_attempts bigint default null;
 alter table o_qti_assessmentitem_session add column q_externalrefidentifier varchar(64) default null;

@@ -12,6 +12,7 @@
 
 	<import resource="classpath:/org/olat/modules/adobeconnect/_spring/adobeConnectContext.xml"/>
 	<import resource="classpath:/org/olat/modules/bigbluebutton/_spring/bigBlueButtonContext.xml"/>
+	<import resource="classpath:/org/olat/modules/catalog/_spring/catalogContext.xml"/>
 	<import resource="classpath:/org/olat/modules/coach/_spring/coachContext.xml"/>
 	<import resource="classpath:/org/olat/modules/grade/_spring/gradeContext.xml"/>
 	<import resource="classpath:/org/olat/modules/grading/_spring/gradingContext.xml"/>

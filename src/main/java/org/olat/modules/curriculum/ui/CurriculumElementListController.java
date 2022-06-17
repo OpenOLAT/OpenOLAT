@@ -100,6 +100,7 @@ import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -616,7 +617,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			} else if(entry == null) {
 				showWarning("repositoryentry.not.existing");
 			} else {
-				detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, false);
+				detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
 				listenTo(detailsCtrl);
 				addToHistory(ureq, detailsCtrl);
 				

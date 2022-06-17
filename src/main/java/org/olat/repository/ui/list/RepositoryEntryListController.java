@@ -740,7 +740,7 @@ public class RepositoryEntryListController extends FormBasicController
 			if(entry == null) {
 				showWarning("repositoryentry.not.existing");
 			} else {
-				detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, row, false);
+				detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
 				listenTo(detailsCtrl);
 				addToHistory(ureq, detailsCtrl);
 				

@@ -507,6 +507,7 @@ create table o_repositoryentry (
    cancopy bool not null,
    canreference bool not null,
    status varchar(16) default 'preparation' not null,
+   status_published_date timestamp,
    allusers boolean default false not null,
    guests boolean default false not null,
    bookable boolean default false not null,
@@ -1037,6 +1038,29 @@ create table o_ac_checkout_transaction (
    p_capture_currency_code varchar(3),
    p_capture_amount decimal,
    p_paypal_invoice_id varchar(64),
+   primary key (id)
+);
+
+-- Catalog V2
+create table o_ca_launcher (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(50),
+   c_identifier varchar(32),
+   c_sort_order int8,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(50),
+   c_sort_order int8,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
    primary key (id)
 );
 

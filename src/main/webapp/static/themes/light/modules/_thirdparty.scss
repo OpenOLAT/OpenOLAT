@@ -200,4 +200,10 @@
 	margin-right: 3px;
 }
 
+/*
+ * Swiper
+ */
+ body {
+	--swiper-theme-color: #{$o-swiper-color};
+ }
 

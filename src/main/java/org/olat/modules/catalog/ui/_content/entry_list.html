@@ -1,0 +1,24 @@
+<div class="o_catalog_list">
+	#if($description)
+		<div class="o_taxonomy">
+			<div class="o_description">
+				$description
+			</div>
+		</div>
+	#end
+	#if($r.isNotNull($taxonomyLevels) && $r.isNotEmpty($taxonomyLevels))
+		<div class="o_taxonomy_launchers o_block_large_bottom #if($square)o_launchers_square#end">
+			#foreach($taxonomyLevel in $taxonomyLevels)
+			<div class="o_taxonomy_launcher o_card_hover" onClick="${f.ffXHREvent("select_taxonomy","$taxonomyLevel.key")};" role="link">
+				<div class="o_visual">
+					<span class="o_visual_not_available" #if($taxonomyLevel.thumbnailRelPath) style="background-image:url('$taxonomyLevel.thumbnailRelPath');" #end></span>
+				</div>
+				<div class="o_meta">
+					<h4 class="o_title">$r.render($taxonomyLevel.selectLinkName)</h4>
+				</div>
+			</div>
+			#end
+		</div>
+	#end
+	$r.render("table")
+</div>

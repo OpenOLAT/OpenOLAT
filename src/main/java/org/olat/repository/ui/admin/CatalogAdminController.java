@@ -41,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogAdminController extends FormBasicController {
 
-	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement enableBrowsingEl;
 	private MultipleSelectionElement siteEl;
 	private MultipleSelectionElement addMultipleEntriesEl;
@@ -51,10 +50,6 @@ public class CatalogAdminController extends FormBasicController {
 	@Autowired
 	private RepositoryModule repositoryModule;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 */
 	public CatalogAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -63,26 +58,18 @@ public class CatalogAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.catalog.settings");
-
-		boolean enabled = repositoryModule.isCatalogEnabled();
-		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", formLayout, new String[]{"xx"}, new String[]{""});
-		enableEl.select("xx", enabled);
-		enableEl.addActionListener(FormEvent.ONCLICK);
+		setFormTitle("catalog.config");
 
 		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", formLayout, new String[]{"xx"}, new String[]{""});
 		enableBrowsingEl.select("xx", repositoryModule.isCatalogBrowsingEnabled());
-		enableBrowsingEl.setEnabled(enabled);
 		enableBrowsingEl.addActionListener(FormEvent.ONCLICK);
 
 		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", formLayout, new String[]{"xx"}, new String[]{""});
 		siteEl.select("xx", repositoryModule.isCatalogSiteEnabled());
-		siteEl.setEnabled(enabled);
 		siteEl.addActionListener(FormEvent.ONCLICK);
 
 		addMultipleEntriesEl = uifactory.addCheckboxesHorizontal("catalog.add.multiple.entries", "catalog.add.multiple.entries", formLayout, new String[]{"xx"}, new String[]{""});
 		addMultipleEntriesEl.select("xx", repositoryModule.isCatalogMultiSelectEnabled());
-		addMultipleEntriesEl.setEnabled(enabled);
 		addMultipleEntriesEl.addActionListener(FormEvent.ONCLICK);
 
 		String[] addEntryKeys = {AddEntryPosition.alphabetical.name(), AddEntryPosition.top.name(), AddEntryPosition.bottom.name()};
@@ -97,7 +84,6 @@ public class CatalogAdminController extends FormBasicController {
 			addCategoryPosEl.select(AddEntryPosition.alphabetical.name(), true);
 		}
 
-		addCategoryPosEl.setEnabled(enabled);
 		addCategoryPosEl.addActionListener(FormEvent.ONCHANGE);
 
 		addEntryPosEl = uifactory.addDropdownSingleselect("catalog.add.entry.position", "catalog.add.entry.position", formLayout, addEntryKeys, addEntryValues);
@@ -108,19 +94,12 @@ public class CatalogAdminController extends FormBasicController {
 		} else {
 			addEntryPosEl.select(AddEntryPosition.alphabetical.name(), true);
 		}
-		addEntryPosEl.setEnabled(enabled);
 		addEntryPosEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == enableEl) {
-			boolean enabled = enableEl.isSelected(0);
-			repositoryModule.setCatalogEnabled(enabled);
-			siteEl.setEnabled(enabled);
-			enableBrowsingEl.setEnabled(enabled);
-			addEntryPosEl.setEnabled(enabled);
-		} else if(source == siteEl) {
+		if (source == siteEl) {
 			repositoryModule.setCatalogSiteEnabled(siteEl.isSelected(0));
 		} else if(source == enableBrowsingEl) {
 			repositoryModule.setCatalogBrowsingEnabled(enableBrowsingEl.isSelected(0));

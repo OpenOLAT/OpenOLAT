@@ -747,7 +747,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public List<FlexiTableExtendedFilter> getExtendedFilters() {
 		if(filtersEl == null) {
-			return List.of();
+			return new ArrayList<>();
 		}
 		
 		List<FlexiTableFilter> filterList = filtersEl.getAllFilters();

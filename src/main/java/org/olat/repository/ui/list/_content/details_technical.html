@@ -1,0 +1,135 @@
+<div class="panel panel-default o_infopanel">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseInfo">
+		<h3 class="panel-title">
+			$r.contextHelpWithWrapper("manual_user/authoring/Technical_Information_on_Resources_and_Usage/")
+			<i id="collapseInfoToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
+			$r.translate("details.entryinfoheader")
+		</h3>
+	</div>
+	<div id="collapseInfo" class="panel-collapse collapse">
+		<table class="table table-condensed table-striped"><tbody>
+			<tr><th scope="row">$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
+			#if ($roles.isAdministrator() || $roles.isLearnResourceManager())
+				<tr><th scope="row">$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
+				<tr><th scope="row">$r.translate("cif.softkey")</th><td>$r.escapeHtml($v.getSoftkey())</td></tr>
+			#end
+			#if($v.getExternalId())
+				<tr><th scope="row">$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
+			#end
+			#if($v.getExternalRef())
+				<tr><th scope="row">$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
+			#end
+			<tr><th scope="row">$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
+			<tr><th scope="row">$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
+			
+			#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
+				#if ($r.isNotEmpty($technicalType))
+					<tr><th scope="row">$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
+				#end
+				<tr><th scope="row">$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
+				<tr>
+					<th scope="row">$r.translate("cif.owners")</th>
+					<td><ul class="list-unstyled">
+						#foreach($authorlinkname in $authorlinknames)
+							<li>$r.render($authorlinkname)</li>
+						#end
+					</ul></td>
+				</tr>
+			#end
+			#if($r.isNotEmpty($organisations))
+				<tr>
+					<th scope="row">$r.translate("cif.organisations")</th>
+					<td>$organisations</td>
+				</tr>
+			#end
+			#if($r.isNotEmpty($curriculums))
+				<tr>
+					<th scope="row">$r.translate("cif.curriculums")</th>
+					<td><ul class="list-unstyled">
+						#foreach($curriculum in $curriculums)
+							<li>$curriculum</li>
+						#end
+					</ul></td>
+				</tr>
+			#end
+			
+		</tbody></table>
+	</div>
+</div>
+<script>
+	jQuery('#collapseInfo').on('hide.bs.collapse', function () {
+		jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+	})
+	jQuery('#collapseInfo').on('show.bs.collapse', function () {
+		jQuery('#collapseInfoToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+	})
+</script>
+
+#if (($referenceLinks && $referenceLinks.size() > 0))
+	<div class="panel panel-default o_usagepanel">
+		<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
+			<h3 class="panel-title">
+				$r.contextHelpWithWrapper("manual_user/authoring/Set_up_info_page/")
+				<i id="collapseUsageToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
+				$r.translate("details.referenceinfoheader")
+			</h3>
+		</div>
+		#if ($referenceLinks && $referenceLinks.size() > 0)
+		<div id="collapseUsage" class="panel-collapse collapse">
+			<table class="table table-condensed table-striped"><tbody>
+				<tr>
+					<th scope="row">$r.translate("details.referenceinfo")</th>
+					<td>$r.translate("details.referenceinfo.txt")
+						#foreach($referenceLink in $referenceLinks)
+							#if($foreach.count != 1), #end$r.render($referenceLink)
+						#end
+					</td>
+				</tr>
+				<tr><th scope="row">$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
+				<tr><th scope="row">$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
+				<tr><th scope="row">$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
+				<tr><th scope="row">$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
+			</tbody></table>
+		</div>
+		#end
+	</div>
+	<script>
+		jQuery('#collapseUsage').on('hide.bs.collapse', function () {
+			jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseUsage').on('show.bs.collapse', function () {
+			jQuery('#collapseUsageToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
+	</script>
+#end
+
+#if ($v && $v.getManagedFlags().size() > 0)
+	<div class="panel panel-default o_managedpanel">
+		<div class="panel-heading" data-toggle="collapse" data-target="#collapseManaged">
+			<h3 class="panel-title">
+				<i id="collapseManagedToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
+				$r.translate("cif.managedflags")
+			</h3>
+		</div>
+		<div id="collapseManaged" class="panel-collapse collapse">
+			<div class="panel-body">
+				$r.translate("managed.resource.intro")
+			</div>
+			<div class="panel-body">
+				<ul>
+				#foreach ($flag in $v.getManagedFlags())
+					<li>$r.translate("managed.flags.course.${flag}")</li>
+				#end
+				</ul>
+			</div>
+		</div>
+	</div>
+	<script>
+		jQuery('#collapseManaged').on('hide.bs.collapse', function () {
+			jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseManaged').on('show.bs.collapse', function () {
+			jQuery('#collapseManagedToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
+	</script>
+#end

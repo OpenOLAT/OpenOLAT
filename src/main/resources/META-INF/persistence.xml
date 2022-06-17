@@ -187,6 +187,8 @@
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonServerImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonAttendeeImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingReferenceImpl</class>
+		<class>org.olat.modules.catalog.model.CatalogLauncherImpl</class>
+		<class>org.olat.modules.catalog.model.CatalogFilterImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>

@@ -396,7 +396,9 @@ $o-repo-status-color-bright			: #fff;
 /* Access control */
 $o-ac-offer-active-color			: #3c763d !default;
 $o-ac-offer-inactive-color			: #8A6D40 !default;
-$o-ac-config-offer-border			: 1px solid $panel-default-border !default;
+$o-ac-method-border					: 1px solid #e7e7e7 !default;
+$o-ac-method-border-radius			: $panel-border-radius !default;
+$o-ac-config-offer-border			: 1px solid #e7e7e7 !default;
 $o-ac-config-offer-border-radius	: $panel-border-radius !default;
 $o-ac-config-offer-icon-bg-color	: #fcfcfc !default;
 
@@ -1092,4 +1094,6 @@ $o-practice-progress-l5-bg-color			: $o-cn-style-cat-light-green-color;
 $o-practice-level-disc-color				: $brand-primary;
 $o-practice-rank-me-color					: $brand-primary;
 
+/* Swiper */
+$o-swiper-color								: $btn-primary-bg !default;
 

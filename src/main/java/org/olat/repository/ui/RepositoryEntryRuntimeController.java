@@ -89,6 +89,7 @@ import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -965,7 +966,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		WindowControl bwControl = getSubWindowControl("Infos");
 		
 		RepositoryEntry entry = loadRepositoryEntry();
-		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), entry, true);
+		RepositoryEntryInfosController ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, true);
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;
@@ -1035,7 +1036,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					if(acResult.isAccessible()) {
 						launchContent(ureq);
 					} else {
-						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
+						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
 						listenTo(accessController);
 						toolbarPanel.rootController(re.getDisplayname(), accessController);
 					}

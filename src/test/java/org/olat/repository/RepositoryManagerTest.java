@@ -1002,6 +1002,46 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, reloaded.getOrganisations().size());// check repository entry to organization relations
 		Assert.assertEquals(2, reloaded.getGroups().size());// check repository entry to group relations
 	}
+	
+	@Test
+	public void setStatus_statusPublishedDate() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.preparation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.deleted);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.deleted);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(re.getStatusPublishedDate());
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re.getStatusPublishedDate());
+	}
 
 	@Test
 	public void setAllowToLeaveOption() {

@@ -1,4 +1,4 @@
-<div class="o_repo_entry_card #if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
+<div class="o_repo_entry_list_item #if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
 	<div class="o_visual">
 		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())

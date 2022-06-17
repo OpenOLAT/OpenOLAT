@@ -1,0 +1,41 @@
+#if ($licSwitch)
+	<div class="o_license_info">
+		#if ($licenseIconCss != "")
+			<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
+		#end
+		<div class="o_license">
+			$license
+		</div>
+		<div class="o_licensor">
+			– $licensor
+		</div>
+		#if($licenseText)
+		<div class="o_license_text">
+			$licenseText
+		</div>
+		#end
+	</div>
+#end
+<div class="o_extlink clearfix o_block_large_bottom">
+	<h4>$r.translate("details.extlinkheader")</h4>
+	<div class="o_copy_code o_nowrap">
+		<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+		<input type="text" value="$extlink" onclick="this.select()"/>
+		<script>
+		jQuery(function() {
+			o_QRCodePopup('o_extlink', '$extlink', 'right');
+		});
+		</script>
+	</div>
+	#if ($isGuestAllowed)
+		<div class="o_copy_code o_nowrap">
+			<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+			<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>
+			<script>
+			jQuery(function() {
+				o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
+			});
+			</script>
+		</div>
+	#end
+</div>

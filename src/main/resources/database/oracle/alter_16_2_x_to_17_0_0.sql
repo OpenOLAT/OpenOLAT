@@ -26,6 +26,31 @@ create index idx_offer_open_idx on o_ac_offer (open_access);
 alter table o_repositoryentry add publicvisible number default 0 not null;
 
 
+-- Catalog V2
+create table o_ca_launcher (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   c_type varchar2(50),
+   c_identifier varchar2(32),
+   c_sort_order number(20),
+   c_enabled number default 1 not null,
+   c_config varchar2(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   c_type varchar2(50),
+   c_sort_order number(20),
+   c_enabled number default 1 not null,
+   c_config varchar2(1024),
+   primary key (id)
+);
+
+alter table o_repositoryentry add status_published_date date;
+
 -- Practice
 alter table o_qti_assessmentitem_session add q_attempts number(20) default null;
 alter table o_qti_assessmentitem_session add q_externalrefidentifier varchar2(64) default null;

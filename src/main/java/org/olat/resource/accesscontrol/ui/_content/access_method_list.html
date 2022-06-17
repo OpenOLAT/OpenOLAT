@@ -1,12 +1,14 @@
 <div class="o_access_method_list">
-	<h3>
-		<i class="o_icon o_icon-fw o_icon_booking"></i> $r.translate("access.title")
-	</h3>
-	<p class="o_info">
+	#if($title)
+		<h3>
+			<i class="o_icon o_icon-fw o_icon_booking"></i> $r.translate("access.title")
+		</h3>
+	#end
+	<p>
 		$r.translate("access.desc")
 	</p>
 	#foreach($link in $links)
-		<div class="clearfix">
+		<div class="o_access_method">
 			$r.render("ac_$link.key")
 		</div>
 	#end

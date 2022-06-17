@@ -509,6 +509,7 @@ create table if not exists o_repositoryentry (
    teaser varchar(255),
    initialauthor varchar(128) not null,
    status varchar(16) default 'preparation' not null,
+   status_published_date datetime,
    allusers bit default 0 not null,
    guests bit default 0 not null,
    bookable bit default 0 not null,
@@ -1123,6 +1124,31 @@ create table o_ac_checkout_transaction (
    p_paypal_invoice_id varchar(64),
    primary key (id)
 );
+
+
+-- Catalog V2
+create table o_ca_launcher (
+   id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   c_type varchar(50),
+   c_identifier varchar(32),
+   c_sort_order integer,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   c_type varchar(50),
+   c_sort_order integer,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+
 
 -- openmeetings
 create table if not exists o_om_room_reference (
@@ -3858,6 +3884,8 @@ alter table o_ac_transaction ENGINE = InnoDB;
 alter table o_ac_reservation ENGINE = InnoDB;
 alter table o_ac_paypal_transaction ENGINE = InnoDB;
 alter table o_ac_auto_advance_order ENGINE = InnoDB;
+alter table o_ca_launcher ENGINE = InnoDB;
+alter table o_ca_filter ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;

@@ -17,113 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.resource.accesscontrol.provider.token.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
-import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.olat.resource.accesscontrol.ui.FormController;
-
+import org.olat.resource.accesscontrol.ui.AbstractAccessController;
 
 /**
  * 
- * Description:<br>
- * Ask for the token
- * 
- * <P>
- * Initial Date:  15 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 7 Jun 2022<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
  */
-public class TokenAccessController extends FormBasicController implements FormController {
-	
-	private TextElement tokenEl;
-	private final OfferAccess link;
-	private final ACService acService;
+public class TokenAccessController extends AbstractAccessController {
 
 	public TokenAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		super(ureq, wControl);
-		
-		this.link = link;
-		acService = CoreSpringFactory.getImpl(ACService.class);
-			
-		initForm(ureq);
-	}
-	
-	public TokenAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
-		
-		this.link = link;
-		acService = CoreSpringFactory.getImpl(ACService.class);
-			
-		initForm(ureq);
+		super(ureq, wControl, link);
+		init(ureq);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("access.token.title");
-		setFormDescription("access.token.desc");
-		setFormTitleIconCss("o_icon o_icon-fw " + TokenAccessHandler.METHOD_CSS_CLASS + "_icon");
-		formLayout.setElementCssClass("o_sel_accesscontrol_form");
-		
-		String description = link.getOffer().getDescription();
-		if(StringHelper.containsNonWhitespace(description)) {
-			description = StringHelper.xssScan(description);
-			uifactory.addStaticTextElement("offer.description", description, formLayout);
-		}
-			
-		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, "", formLayout);
-		tokenEl.setElementCssClass("o_sel_accesscontrol_token_entry");
-			
-		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		buttonGroupLayout.setRootForm(mainForm);
-		formLayout.add(buttonGroupLayout);
-			
-		uifactory.addFormSubmitButton("access.button", formLayout);
+	protected String getTitle() {
+		return getTranslator().translate("access.token.title");
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-		
-		String token = tokenEl.getValue();
-		tokenEl.clearError();
-		if(token == null || token.length() < 2) {
-			tokenEl.setErrorKey("invalid.token.format", null);
-			allOk = false;
-		}
-		
-		return allOk && super.validateFormLogic(ureq);
+	protected String getMethodDescription() {
+		return getTranslator().translate("access.token.desc");
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		String token = tokenEl.getValue();
-		AccessResult result = acService.accessResource(getIdentity(), link, token);
-		
-		if(result.isAccessible()) {
-			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
-		} else {
-			String msg = translate("invalid.token");
-			fireEvent(ureq, new AccessEvent(AccessEvent.ACCESS_FAILED, msg));
-		}
+	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new TokenSubmitController(ureq, wControl, link);
 	}
 
-	@Override
-	public FormItem getInitialFormItem() {
-		return flc;
-	}
 }

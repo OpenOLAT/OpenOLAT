@@ -717,6 +717,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {
 		methodManager.enableMethod(type, enable);
 	}
+	
+	@Override
+	public List<AccessMethod> getAvailableMethods() {
+		return methodManager.getAvailableMethods();
+	}
 
 	@Override
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {

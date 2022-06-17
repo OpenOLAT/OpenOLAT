@@ -232,6 +232,8 @@ public interface ACService {
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);
 
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles);
+	
+	public List<AccessMethod> getAvailableMethods();
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method);
 

@@ -27,6 +27,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.catalog.ui.CatalogRepositoryEntryRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -52,6 +53,8 @@ public class TypeRenderer implements FlexiCellRenderer {
 			type = ((RepositoryEntry)cellValue).getOlatResource().getResourceableTypeName();
 		} else if(cellValue instanceof RepositoryEntryRow) {
 			type = ((RepositoryEntryRow)cellValue).getOLATResourceable().getResourceableTypeName();
+		} else if(cellValue instanceof CatalogRepositoryEntryRow) {
+			type = ((CatalogRepositoryEntryRow)cellValue).getOlatResource().getResourceableTypeName();
 		}
 		
 		if(type == null) {
@@ -81,6 +84,11 @@ public class TypeRenderer implements FlexiCellRenderer {
 		} else if (cellValue instanceof RepositoryEntryRow) {
 			RepositoryEntryRow re = (RepositoryEntryRow) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getOLATResourceable().getResourceableTypeName());
+			managed = false;// no indication for this type of row
+			status = re.getStatus();
+		} else if(cellValue instanceof CatalogRepositoryEntryRow) {
+			CatalogRepositoryEntryRow re = (CatalogRepositoryEntryRow) cellValue;
+			cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());
 			managed = false;// no indication for this type of row
 			status = re.getStatus();
 		}

@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -90,19 +91,12 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		PaypalCheckoutModule paypalModule = CoreSpringFactory.getImpl(PaypalCheckoutModule.class);
 		if(paypalModule.isSmartButtons()) {
-			if(form == null) {
-				return new PaypalSmartButtonAccessController(ureq, wControl, link);
-			} else {
-				return new PaypalSmartButtonAccessController(ureq, wControl, link, form);
-			}
-		} else if(form == null) {
-			return new PaypalCheckoutAccessController(ureq, wControl, link);
-		} else {
-			return new PaypalCheckoutAccessController(ureq, wControl, link, form);
+			return new PaypalSmartButtonAccessController(ureq, wControl, link);
 		}
+		return new PaypalCheckoutAccessController(ureq, wControl, link);
 	}
 
 	@Override

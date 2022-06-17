@@ -396,7 +396,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if(acResult.isAccessible()) {
 				needActivation = false;
 			}  else if (businessGroup != null && !acResult.getAvailableMethods().isEmpty()) {
-				accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
+				accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
 				listenTo(accessController);
 				mainPanel.setContent(accessController.getInitialComponent());
 				bgTree.setTreeModel(new GenericTreeModel());

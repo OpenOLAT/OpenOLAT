@@ -41,26 +41,6 @@
 		</property>
 	</bean>
 	
-	<!-- Catalog admin. panel -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8211" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.repository.ui.admin.CatalogAdminController"/>
-			</bean>
-		</property>
-		<property name="navigationKey" value="catalog" />
-		<property name="i18nActionKey" value="admin.menu.title"/>
-		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
-		<property name="translationPackage" value="org.olat.repository.ui.admin"/>
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
-			</list>
-		</property>
-	</bean>
-	
 	<!-- Repository admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8212" />

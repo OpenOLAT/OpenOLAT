@@ -46,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -80,6 +81,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private CatalogV2Module catalogModule;
 	@Autowired
 	private OrganisationModule organisationModule;
 	
@@ -124,12 +127,20 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		}
 		
 		SelectionValues catalogSV = new SelectionValues();
-		catalogSV.add(SelectionValues.entry(CATALOG_OO, translate("offer.catalog.openolat")));
-		catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
+		if (catalogModule.isEnabled()) {
+			catalogSV.add(SelectionValues.entry(CATALOG_OO, translate("offer.catalog.openolat")));
+			if (catalogModule.isWebPublishEnabled()) {
+				catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
+			}
+		}
 		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
-		catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
-		catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
-		catalogEl.setVisible(catalogSupported);
+		if (catalogEl.getKeys().contains(CATALOG_OO)) {
+			catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
+		}
+		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
+			catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
+		}
+		catalogEl.setVisible(catalogSupported && !catalogEl.getKeys().isEmpty());
 		
 		String[] onValues = new String[] { translate("on") };
 		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys, onValues);

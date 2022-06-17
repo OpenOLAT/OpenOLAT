@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -64,7 +65,7 @@ public interface AccessMethodHandler {
 	
 	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles);
 	
-	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link);
 	
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,

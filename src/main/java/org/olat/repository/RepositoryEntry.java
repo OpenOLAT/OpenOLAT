@@ -176,6 +176,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	@Column(name="status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Column(name="status_published_date", nullable=true, insertable=true, updatable=true)
+	private Date statusPublishedDate;
 	@Column(name="publicvisible", nullable=false, insertable=true, updatable=true)
 	private boolean publicVisible;
 	@Column(name="allusers", nullable=false, insertable=true, updatable=true)
@@ -454,8 +456,19 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		return RepositoryEntryStatusEnum.valueOf(status);
 	}
 	
-	public void setEntryStatus(RepositoryEntryStatusEnum status) {
-		this.status = status.name();
+	public void setEntryStatus(RepositoryEntryStatusEnum entryStatus) {
+		RepositoryEntryStatusEnum previousStatus = StringHelper.containsNonWhitespace(status)? getEntryStatus(): RepositoryEntryStatusEnum.preparation;
+		if (RepositoryEntryStatusEnum.isInArray(entryStatus, RepositoryEntryStatusEnum.preparationToCoachPublished())) {
+			statusPublishedDate = null;
+		} else if (statusPublishedDate == null && RepositoryEntryStatusEnum.published == entryStatus && RepositoryEntryStatusEnum.published != previousStatus) {
+			statusPublishedDate = new Date();
+		}
+		
+		this.status = entryStatus.name();
+	}
+	
+	public Date getStatusPublishedDate() {
+		return statusPublishedDate;
 	}
 
 	/*

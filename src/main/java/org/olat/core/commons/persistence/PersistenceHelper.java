@@ -208,6 +208,16 @@ public class PersistenceHelper {
 	}
 	
 
+	public static String getOrderByRandom(DB dbInstance) {
+		if (dbInstance.isPostgreSQL()){
+			return "random()";
+		} else if (dbInstance.isMySQL()){
+			return "rand()";
+		} else if (dbInstance.isOracle()) {
+			return "DBMS_RANDOM.VALUE()";
+		}
+		return "";
+	}
 
 	/**
 	 * 

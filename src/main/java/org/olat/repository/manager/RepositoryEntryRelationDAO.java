@@ -457,21 +457,6 @@ public class RepositoryEntryRelationDAO {
 		return dateMap;
 	}
 	
-	
-	public List<Long> getAuthorKeys(RepositoryEntryRef re) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select members.identity.key from ").append(RepositoryEntry.class.getName()).append(" as v")
-		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as members on members.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" where v.key=:repoKey");
-		
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("repoKey", re.getKey());
-		return query.getResultList();
-	}
-	
 	public List<Identity> getMembers(RepositoryEntryRef re, RepositoryEntryRelationType type, String... roles) {
 		return getMembers(Collections.singletonList(re), type, roles);
 	}

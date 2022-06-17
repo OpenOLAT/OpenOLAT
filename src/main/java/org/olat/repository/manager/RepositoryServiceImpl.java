@@ -765,11 +765,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public List<Long> getAuthors(RepositoryEntryRef re) {
-		return reToGroupDao.getAuthorKeys(re);
-	}
-
-	@Override
 	public List<Identity> getMembers(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles) {
 		return reToGroupDao.getMembers(Collections.singletonList(re), relationType, roles);
 	}
@@ -777,6 +772,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public List<Identity> getMembers(List<? extends RepositoryEntryRef> res, RepositoryEntryRelationType relationType, String... roles) {
 		return reToGroupDao.getMembers(res, relationType, roles);
+	}
+	
+	@Override
+	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles) {
+		return reToGroupDao.getMemberKeys(re, relationType, roles);
 	}
 
 	@Override

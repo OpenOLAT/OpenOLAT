@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -45,6 +46,7 @@ import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalAccessController;
+import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalSubmitController;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalTransactionDetailsController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
@@ -80,7 +82,7 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(PaypalAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
 		return translator.translate("paypal.method");
 	}
 	
@@ -90,12 +92,8 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		if(form == null) {
-			return new PaypalAccessController(ureq, wControl, link);
-		} else {
-			return new PaypalAccessController(ureq, wControl, link, form);
-		}
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new PaypalAccessController(ureq, wControl, link);
 	}
 
 	@Override

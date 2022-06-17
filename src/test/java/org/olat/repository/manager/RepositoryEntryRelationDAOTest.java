@@ -394,24 +394,6 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getAuthorKeys() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-1-");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("part-2-");
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
-		dbInstance.commit();
-		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
-		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
-		dbInstance.commit();
-		
-		List<Long> authorKeys = repositoryEntryRelationDao.getAuthorKeys(re);
-		Assert.assertNotNull(authorKeys);
-		Assert.assertEquals(1, authorKeys.size());
-		Assert.assertEquals(id1.getKey(), authorKeys.get(0));
-	}
-	
-	@Test
 	public void isMember() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");

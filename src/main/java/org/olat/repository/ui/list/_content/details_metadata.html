@@ -1,0 +1,126 @@
+<div class="o_overview o_subcolumn">
+	<h4>$r.translate("details.overview")</h4>
+	#if($closed)
+		<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+	#end
+	#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
+		<div title="$r.translateInAttribute("cif.dates")">
+			<i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i> 
+			#if(!$v.lifecycle.privateCycle)
+				#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
+				#else $r.escapeHtml($v.lifecycle.label) #end
+			#else
+				#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
+				#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+			#end
+		</div>
+	#end
+	#if($v.location && !${v.location.isEmpty()})
+		<div title="$r.translateInAttribute("cif.location")">
+			<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($v.location)
+		</div>
+	#end
+	#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
+		<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
+			<i class="o_icon o_icon-fw o_icon_expenditure"></i>
+			$r.escapeHtml($v.expenditureOfWork)
+		</div>
+	#end
+	#if($v.mainLanguage)
+		<div title="$r.translateInAttribute("cif.mainLanguage")">
+			<i class="o_icon o_icon-fw o_icon_language"></i> 
+			$r.escapeHtml($v.mainLanguage)
+		</div>
+	#end
+</div>	
+#if($ac)
+	<div class="o_subcolumn o_bookings">
+		<h4>$r.translate("details.orders")</h4>
+		<ul class="list-unstyled">
+		#foreach($ac_type in $ac)
+			<li>
+				<i class='o_icon $ac_type.type o_icon-fw'></i>
+				$ac_type.displayName
+				#if($ac_type.price && $ac_type.price.length() > 0) ($ac_type.price)#end
+			</li>
+		#end
+		</ul>
+	</div>
+#end	
+
+#if($r.available("rating") || $r.available("comments"))
+	<div class="o_subcolumn o_social">
+		<h4>$r.translate("ratings")</h4>
+		#if($r.available("rating")) $r.render("rating") #end
+		#if($r.available("comments")) $r.render("comments") #end
+	</div>
+#end
+#if($taxonomyLevels && !$taxonomyLevels.empty)
+	<div class="o_subcolumn o_taxonomy_levels">
+		<h4>$r.translate("cif.taxonomy.levels")</h4>
+		#foreach($taxonomyLevel in $taxonomyLevels)
+		<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
+			$taxonomyLevel.displayName
+		</span>
+		#end
+	</div>
+#end
+#if($categories && $categories.size() > 0)
+	<div class="o_subcolumn o_categories">
+		<h4>$r.translate("cif.categories")</h4>
+		<ul class="list-unstyled">
+		#foreach($category in $categories)
+			<li>$r.render($category)</li>
+		#end
+		</ul>
+	</div>
+#end
+#if(!$guestOnly)
+	<div class="o_subcolumn o_personal">
+		<h4>$r.translate("details.personal")</h4>
+		#if($passed || $failed)
+		<div class="o_state #if($passed) o_passed #else o_failed #end">
+			<strong>$r.translate("details.label.status"):</strong>
+			#if($passed)
+				<span class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.true")</span>
+			#elseif($failed)
+				<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.false")</span>
+			#end
+		</div>
+		#end
+
+		#if($score) 
+		<div class="o_score">
+			<strong>$r.translate("details.label.score"):</strong>
+			$score 
+		</div> 
+		#end
+
+		#if($recentLaunch)
+		<div class="o_recent">
+			<strong>$r.translate("cif.lastusage"):</strong>
+			$r.formatDateAndTime($recentLaunch)
+		</div>
+		#end
+		#if($groups && $groups.size() > 0)
+		<div class="o_groups">
+			<strong>$r.translate("cif.groups"):</strong>
+			<ul class="list-unstyled">
+			#foreach($group in $groups)
+				<li>$r.render($group)</li>
+			#end
+			</ul>
+		</div>
+		#end
+		#if($r.available("mark"))
+		<div class="o_bookmark">
+			$r.render("mark")
+		</div>
+		#end
+		#if($r.available("sign.out"))
+		<div class="o_signout">	
+			$r.render("sign.out")
+		</div>
+		#end
+	</div>
+#end

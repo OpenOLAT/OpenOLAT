@@ -26,6 +26,32 @@ create index idx_offer_open_idx on o_ac_offer (open_access);
 alter table o_repositoryentry add publicvisible bool default false not null;
 
 
+-- Catalog V2
+create table o_ca_launcher (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(50),
+   c_identifier varchar(32),
+   c_sort_order int8,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(50),
+   c_sort_order int8,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+
+alter table o_repositoryentry add status_published_date timestamp;
+
+
 -- Practice
 alter table o_qti_assessmentitem_session add column q_attempts int8 default null;
 alter table o_qti_assessmentitem_session add column q_externalrefidentifier varchar(64) default null;

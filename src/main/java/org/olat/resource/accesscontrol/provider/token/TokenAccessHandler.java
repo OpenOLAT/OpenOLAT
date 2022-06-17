@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -85,12 +86,8 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public TokenAccessController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		if(form == null) {
-			return new TokenAccessController(ureq, wControl, link);
-		} else {
-			return new TokenAccessController(ureq, wControl, link, form);
-		}
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new TokenAccessController(ureq, wControl, link);
 	}
 
 	@Override
