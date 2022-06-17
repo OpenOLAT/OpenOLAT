@@ -1201,7 +1201,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			// sort by date
 			Collections.sort(notices, (n1, n2) -> n1.getCreationDate().compareTo(n2.getCreationDate()));
 			
-			for(int i=notices.size(); i-->=0 && preferedNotice == null;) {
+			for(int i=notices.size(); i-->0 && preferedNotice == null;) {
 				AbsenceNotice notice = notices.get(i);
 				if(notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue()) {
 					preferedNotice = notice;
