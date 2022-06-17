@@ -740,6 +740,23 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotEquals(specificNotice, notice);
 	}
 	
+	@Test
+	public void getAbsenceNoticePreferedOneNot() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-4");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.entries,
+				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2), null, null, null, List.of(entry), null, null);
+		lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				block.getStartDate(), block.getEndDate(), null, null, null, null, List.of(block), null);
+		dbInstance.commitAndCloseSession();
+		
+		AbsenceNotice notice = lectureService.getAbsenceNotice(participant, block);
+		Assert.assertNotNull(notice);
+	}
+	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
