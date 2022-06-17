@@ -226,6 +226,7 @@ public class ContactTeachersController extends FormBasicController {
 		subjectEl.setVisible(sendMail);
 		bodyEl.setVisible(sendMail);
 		teachersEl.setVisible(sendMail);
+		masterCoachesEl.setVisible(sendMail);
 	}
 
 	@Override
