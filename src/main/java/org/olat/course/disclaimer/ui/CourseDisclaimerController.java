@@ -446,7 +446,7 @@ public class CourseDisclaimerController extends FormBasicController {
 				&& !(
 						// Check if any disclaimer is still disabled
 						!courseConfig.isDisclaimerEnabled() && (
-								// Check if the values are emtpy
+								// Check if the values are empty
 								!StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTitel(1)) && 
 								!StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(1))) || (
 										!StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTitel(2)) && 

@@ -76,7 +76,7 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 	@Override
 	public void setCustomCSS(CustomCSS newCustomCSS) {
 		if (isLogDebugEnabled()) {
-			if (newCustomCSS == null) logDebug("Setting emtpy custom CSS for this main layout");
+			if (newCustomCSS == null) logDebug("Setting empty custom CSS for this main layout");
 			else logDebug("Setting custom CSS for this main layout, pointing to URL::" + newCustomCSS.getCSSURL());	
 		}
 		// cleanup if one already exists

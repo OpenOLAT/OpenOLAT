@@ -186,7 +186,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		}
 		if (syncConfiguration.getLdapUserFilter() != null) {
 			if (!syncConfiguration.getLdapUserFilter().startsWith("(") || !syncConfiguration.getLdapUserFilter().endsWith(")")) {
-				log.error("Wrong configuration 'ldapUserFilter'. Set filter to emtpy value or enclose filter in brackets like '(objectClass=person)'. Disabling LDAP");
+				log.error("Wrong configuration 'ldapUserFilter'. Set filter to empty value or enclose filter in brackets like '(objectClass=person)'. Disabling LDAP");
 				setEnableLDAPLogins(false);
 				return;
 			}
@@ -325,7 +325,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * Internal helper to check for emtpy config variables
+	 * Internal helper to check for empty config variables
 	 * 
 	 * @param param
 	 * @return true: not empty; false: empty or null

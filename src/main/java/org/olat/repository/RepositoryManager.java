@@ -518,7 +518,7 @@ public class RepositoryManager {
     /**
      * Check if (and which) external IDs already exist.
      * @param a collection of external IDs to check if already existing
-     * @return a list of already existing external IDs (or an emtpy list).
+     * @return a list of already existing external IDs (or an empty list).
      */
 	public List<String> lookupExistingExternalIds(Collection<String> externalIds) {
 		if (externalIds == null || externalIds.isEmpty()) {

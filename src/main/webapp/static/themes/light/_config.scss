@@ -85,10 +85,10 @@ $o-table-edit-bg				: #fefbf6;
 
 $o-table-filter-collapse-color	: #e7e7e7;
 
-/* Emty state in various modules */
-$o-emtpy-indicator-color		: #495057 !default;
-$o-emtpy-icon-color				: #C6C9CD !default;
-$o-emtpy-msg-color				: $text-color !default;
+/* Empty state in various modules */
+$o-empty-indicator-color		: #495057 !default;
+$o-empty-icon-color				: #C6C9CD !default;
+$o-empty-msg-color				: $text-color !default;
 
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;

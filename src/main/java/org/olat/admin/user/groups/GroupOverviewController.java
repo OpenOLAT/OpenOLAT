@@ -108,7 +108,7 @@ public class GroupOverviewController extends BasicController {
 		vc = createVelocityContainer("groupoverview");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("table.emtpy"), (canEdit ? translate("table.empty.hint") : null), "o_icon_group");
+		tableConfig.setTableEmptyMessage(translate("table.empty"), (canEdit ? translate("table.empty.hint") : null), "o_icon_group");
 		tableConfig.setTableEmptyNextPrimaryAction(translate("add.groups"), "o_icon_add");
 		groupListCtr = new TableController(tableConfig, ureq, control, getTranslator());
 		listenTo(groupListCtr);

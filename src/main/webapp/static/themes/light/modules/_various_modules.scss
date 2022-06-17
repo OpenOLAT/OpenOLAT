@@ -170,7 +170,7 @@ ul.o_dropdown {
 			bottom: 10%; 
 			font-weight: bold;
 			font-size: 4em;
-			color: $o-emtpy-indicator-color;
+			color: $o-empty-indicator-color;
 			text-shadow: 5px 10px 10px rgba(0,0,0,.2);
 		}
 		
@@ -178,13 +178,13 @@ ul.o_dropdown {
 		i:nth-child(2) {
 			font-weight: bold;
 			font-size: 8em;
-			color: $o-emtpy-icon-color;
+			color: $o-empty-icon-color;
 			min-width: 96px;
 		}
 	}
 	.o_empty_msg {
 		margin-top: 1.5em;
-		color: $o-emtpy-msg-color;	
+		color: $o-empty-msg-color;	
 		font-size: 1.5em;
 	}
 	.o_empty_hint {

@@ -337,7 +337,7 @@ public class MailListController extends BasicController implements Activateable2
 				BitSet selectedMails = tmse.getSelection();
 				if(selectedMails.isEmpty()){
 					tableVC.setDirty(true);
-					showWarning("mail.action.emtpy");
+					showWarning("mail.action.empty");
 					return;					
 				}
 				String actionid = tmse.getAction();

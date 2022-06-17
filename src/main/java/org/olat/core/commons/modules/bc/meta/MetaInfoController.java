@@ -302,7 +302,7 @@ public class MetaInfoController extends FormBasicController {
 	}
 
 	/**
-	 * @return True if one or more metadata fields are non-emtpy.
+	 * @return True if one or more metadata fields are non-empty.
 	 */
 	private boolean hasMetadata(VFSMetadata meta) {
 		if (meta != null) { return StringHelper.containsNonWhitespace(meta.getCreator())

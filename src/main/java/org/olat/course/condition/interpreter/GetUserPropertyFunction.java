@@ -44,17 +44,11 @@ public class GetUserPropertyFunction extends AbstractFunction {
 
 	public static final String name = "getUserProperty";
 
-	/**
-	 * Constructor
-	 * @param userCourseEnv
-	 */
 	public GetUserPropertyFunction(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see org.olat.course.condition.interpreter.AbstractFunction#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -76,7 +70,7 @@ public class GetUserPropertyFunction extends AbstractFunction {
 		
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			// return emtyp string to continue with condition evaluation test
+			// return empty string to continue with condition evaluation test
 			return defaultValue();
 		}
 
@@ -94,9 +88,7 @@ public class GetUserPropertyFunction extends AbstractFunction {
 		return (propertyValue == null ? defaultValue() : propertyValue);
 	}
 
-	/**
-	 * @see org.olat.course.condition.interpreter.AbstractFunction#defaultValue()
-	 */
+	@Override
 	protected Object defaultValue() {
 		return "";
 	}

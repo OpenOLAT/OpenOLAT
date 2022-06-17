@@ -20,9 +20,9 @@
 
 package org.olat.course.db.interpreter;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
@@ -79,7 +79,7 @@ public class GetUserCourseDBFunction extends AbstractFunction {
 		
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			// return emtyp string to continue with condition evaluation test
+			// return empty string to continue with condition evaluation test
 			return defaultValue();
 		}
 		

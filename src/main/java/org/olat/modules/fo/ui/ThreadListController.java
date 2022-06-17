@@ -151,9 +151,9 @@ public class ThreadListController extends FormBasicController {
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
 		if(foCallback.mayOpenNewThread()) {
-			threadTable.setEmptyTableSettings("forum.emtpy", "forum.emtpy.hint", "o_forum_status_thread_icon", "msg.create", "o_forum_status_thread_icon", true);
+			threadTable.setEmptyTableSettings("forum.empty", "forum.empty.hint", "o_forum_status_thread_icon", "msg.create", "o_forum_status_thread_icon", true);
 		} else {
-			threadTable.setEmptyTableSettings("forum.emtpy", null, "o_forum_status_thread_icon");			
+			threadTable.setEmptyTableSettings("forum.empty", null, "o_forum_status_thread_icon");
 		}
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));
