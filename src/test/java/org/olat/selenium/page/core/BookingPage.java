@@ -193,7 +193,7 @@ public class BookingPage {
 		By tokenEntryBy = By.cssSelector(".o_sel_accesscontrol_token_entry input[type='text']");
 		browser.findElement(tokenEntryBy).sendKeys(token);
 		
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_form button.btn-primary");
+		By submitBy = By.cssSelector(".o_method_token button.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 	}
