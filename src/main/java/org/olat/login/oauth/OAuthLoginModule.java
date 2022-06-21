@@ -26,6 +26,9 @@ import java.util.Set;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.login.oauth.model.OAuthAttributeMapping;
+import org.olat.login.oauth.model.OAuthAttributesMapping;
+import org.olat.login.oauth.spi.GenericOAuth2Provider;
 import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +44,7 @@ import org.springframework.stereotype.Service;
 public class OAuthLoginModule extends AbstractSpringModule {
 	
 	private static final String OPEN_ID_IF_START_MARKER = "openIdConnectIF.";
+	private static final String GENERIC_OAUTH_START_MARKER = "oauth.generic.";
 	private static final String OPEN_ID_IF_END_MARKER = ".Enabled";
 	
 	private static final String KEYCLOAK_ENABLED = "keycloakEnabled";
@@ -254,6 +258,9 @@ public class OAuthLoginModule extends AbstractSpringModule {
 				if(key.startsWith(OPEN_ID_IF_START_MARKER) && key.endsWith(OPEN_ID_IF_END_MARKER)) {
 					OAuthSPI spi = getAdditionalOpenIDConnectIF(key);
 					otherOAuthSPies.add(spi);
+				} else if(key.startsWith(GENERIC_OAUTH_START_MARKER) && key.endsWith(OPEN_ID_IF_END_MARKER)) {
+					OAuthSPI spi = getGenericOAuth(key);
+					otherOAuthSPies.add(spi);
 				}
 			}
 		}
@@ -263,16 +270,39 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private OAuthSPI getAdditionalOpenIDConnectIF(String enableKey) {
 		String providerName = enableKey.substring(OPEN_ID_IF_START_MARKER.length(), enableKey.length() - OPEN_ID_IF_END_MARKER.length());
 
-		String rootEnabledObj = getStringPropertyValue("openIdConnectIF." + providerName + ".RootEnabled", true);
+		String rootEnabledObj = getStringPropertyValue(OPEN_ID_IF_START_MARKER + providerName + ".RootEnabled", true);
 		boolean rootEnabled = "true".equals(rootEnabledObj);
-		String apiKey = getStringPropertyValue("openIdConnectIF." + providerName + ".ApiKey", true);
-		String apiSecret = getStringPropertyValue("openIdConnectIF." + providerName + ".ApiSecret", true);
-		String issuer = getStringPropertyValue("openIdConnectIF." + providerName + ".Issuer", true);
-		String endPoint = getStringPropertyValue("openIdConnectIF." + providerName + ".AuthorizationEndPoint", true);
-		String displayName = getStringPropertyValue("openIdConnectIF." + providerName + ".DisplayName", true);
+		String apiKey = getStringPropertyValue(OPEN_ID_IF_START_MARKER + providerName + ".ApiKey", true);
+		String apiSecret = getStringPropertyValue(OPEN_ID_IF_START_MARKER + providerName + ".ApiSecret", true);
+		String issuer = getStringPropertyValue(OPEN_ID_IF_START_MARKER + providerName + ".Issuer", true);
+		String endPoint = getStringPropertyValue(OPEN_ID_IF_START_MARKER + providerName + ".AuthorizationEndPoint", true);
+		String displayName = getStringPropertyValue(OPEN_ID_IF_START_MARKER + providerName + ".DisplayName", true);
 		
 		return new OpenIdConnectFullConfigurableProvider(providerName, displayName, providerName,
 				apiKey, apiSecret, issuer, endPoint, rootEnabled, this);
+	}
+	
+	private OAuthSPI getGenericOAuth(String enableKey) {
+		String providerName = enableKey.substring(GENERIC_OAUTH_START_MARKER.length(), enableKey.length() - OPEN_ID_IF_END_MARKER.length());
+
+		String rootEnabledObj = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".RootEnabled", true);
+		boolean rootEnabled = "true".equals(rootEnabledObj);
+		String apiKey = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".ApiKey", true);
+		String apiSecret = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".ApiSecret", true);
+		String responseType = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".ResponseType", true);
+		String scope = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".Scope", true);
+		String issuer = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".Issuer", true);
+		String displayName = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".DisplayName", true);
+		String authorizationEndPoint = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".AuthorizationEndPoint", true);
+		String tokenEndpoint = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".TokenEndPoint", true);
+		String userInfoEndPoint = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".UserInfoEndpoint", true);
+
+		String prefix = GENERIC_OAUTH_START_MARKER + providerName + ".attr.";
+		OAuthAttributesMapping mapping = getMappings(prefix);
+		return  new GenericOAuth2Provider(providerName, displayName, providerName,
+				apiKey, apiSecret, responseType, scope, issuer,
+				authorizationEndPoint, tokenEndpoint, userInfoEndPoint,
+				mapping, rootEnabled, this);
 	}
 	
 	public List<OAuthSPI> getAllSPIs() {
@@ -533,7 +563,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 	public void setAdfsApiSecret(String adfsApiSecret) {
 		this.adfsApiSecret = adfsApiSecret;
-		setStringProperty("adfsApiSecret", adfsApiSecret, true);
+		setSecretStringProperty("adfsApiSecret", adfsApiSecret, true);
 	}
 
 	public String getAdfsOAuth2Endpoint() {
@@ -578,7 +608,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 	public void setAzureAdfsApiSecret(String azureAdfsApiSecret) {
 		this.azureAdfsApiSecret = azureAdfsApiSecret;
-		setStringProperty("azureAdfsApiSecret", azureAdfsApiSecret, true);
+		setSecretStringProperty("azureAdfsApiSecret", azureAdfsApiSecret, true);
 	}
 
 	public String getAzureAdfsTenant() {
@@ -623,7 +653,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 	public void setSwitchEduIDApiSecret(String secret) {
 		this.switchEduIDApiSecret = secret;
-		setStringProperty("switchEduIDApiSecret", secret, true);
+		setSecretStringProperty("switchEduIDApiSecret", secret, true);
 	}
 
 	public boolean isDatenlotsenEnabled() {
@@ -659,7 +689,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 	public void setDatenlotsenApiSecret(String apiSecret) {
 		this.datenlotsenApiSecret = apiSecret;
-		setStringProperty("datenlotsenApiSecret", apiSecret, true);
+		setSecretStringProperty("datenlotsenApiSecret", apiSecret, true);
 	}
 
 	public String getDatenlotsenEndpoint() {
@@ -695,7 +725,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 	public void setTequilaApiSecret(String tequilaApiSecret) {
 		this.tequilaApiSecret = tequilaApiSecret;
-		setStringProperty("tequilaApiSecret", tequilaApiSecret, true);
+		setSecretStringProperty("tequilaApiSecret", tequilaApiSecret, true);
 	}
 
 	public String getTequilaOAuth2Endpoint() {
@@ -740,7 +770,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	
 	public void setKeycloakClientSecret(String clientSecret) {
 		keycloakClientSecret = clientSecret;
-		setStringProperty(KEYCLOAK_CLIENT_SECRET, clientSecret, true);
+		setSecretStringProperty(KEYCLOAK_CLIENT_SECRET, clientSecret, true);
 	}
 	
 	public String getKeycloakEndpoint() {
@@ -794,7 +824,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 	public void setOpenIdConnectIFApiSecret(String openIdConnectIFApiSecret) {
 		this.openIdConnectIFApiSecret = openIdConnectIFApiSecret;
-		setStringProperty("openIdConnectIFApiSecret", openIdConnectIFApiSecret, true);
+		setSecretStringProperty("openIdConnectIFApiSecret", openIdConnectIFApiSecret, true);
 	}
 
 	public String getOpenIdConnectIFIssuer() {
@@ -815,25 +845,96 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		setStringProperty("openIdConnectIFAuthorizationEndPoint", openIdConnectIFAuthorizationEndPoint, true);
 	}
 	
-	public void setAdditionalOpenIDConnectIF(String providerName, String displayName, boolean rootEnabled, String issuer, String endPoint, String apiKey, String apiSecret) {
-		setStringProperty("openIdConnectIF." + providerName + ".Enabled", "true", true);
-		setStringProperty("openIdConnectIF." + providerName + ".RootEnabled", rootEnabled ? "true" : "false", true);
-		setStringProperty("openIdConnectIF." + providerName + ".ApiKey", apiKey, true);
-		setStringProperty("openIdConnectIF." + providerName + ".ApiSecret", apiSecret, true);
-		setStringProperty("openIdConnectIF." + providerName + ".Issuer", issuer, true);
-		setStringProperty("openIdConnectIF." + providerName + ".DisplayName", displayName, true);
-		setStringProperty("openIdConnectIF." + providerName + ".AuthorizationEndPoint", endPoint, true);
+	public void setAdditionalOpenIDConnectIF(String providerName, String displayName, boolean rootEnabled,
+			String issuer, String endPoint, String apiKey, String apiSecret) {
+		setStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".Enabled", "true", true);
+		setStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".RootEnabled", rootEnabled ? "true" : "false", true);
+		setStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".ApiKey", apiKey, true);
+		setSecretStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".ApiSecret", apiSecret, true);
+		setStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".Issuer", issuer, true);
+		setStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".DisplayName", displayName, true);
+		setStringProperty(OPEN_ID_IF_START_MARKER + providerName + ".AuthorizationEndPoint", endPoint, true);
+		updateProperties();
+	}
+
+	public void removeAdditionalOpenIDConnectIF(String providerName) {
+		String prefix = OPEN_ID_IF_START_MARKER + providerName + ".";
+		removeSetOfProperties(prefix);
 		updateProperties();
 	}
 	
-	public void removeAdditionalOpenIDConnectIF(String providerName) {
-		removeProperty("openIdConnectIF." + providerName + ".Enabled", true);
-		removeProperty("openIdConnectIF." + providerName + ".RootEnabled", true);
-		removeProperty("openIdConnectIF." + providerName + ".ApiKey", true);
-		removeProperty("openIdConnectIF." + providerName + ".ApiSecret", true);
-		removeProperty("openIdConnectIF." + providerName + ".Issuer", true);
-		removeProperty("openIdConnectIF." + providerName + ".DisplayName", true);
-		removeProperty("openIdConnectIF." + providerName + ".AuthorizationEndPoint", true);
+	public void setGenericOAuth(String providerName, String displayName, boolean rootEnabled,
+			String issuer, String authorizationEndPoint, String tokenEndPoint, String userInfoEndPoint,
+			String responseType, String scope, String apiKey, String apiSecret) {
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".Enabled", "true", true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".RootEnabled", rootEnabled ? "true" : "false", true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ApiKey", apiKey, true);
+		setSecretStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ApiSecret", apiSecret, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ResponseType", responseType, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".Scope", scope, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".Issuer", issuer, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".DisplayName", displayName, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".AuthorizationEndPoint", authorizationEndPoint, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".TokenEndPoint", tokenEndPoint, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".UserInfoEndpoint", userInfoEndPoint, true);
 		updateProperties();
+	}
+	
+	public void removeGenericOAuth(String providerName) {
+		String prefix = GENERIC_OAUTH_START_MARKER + providerName + ".";
+		removeSetOfProperties(prefix);
+		updateProperties();
+	}
+	
+	private void removeSetOfProperties(String prefix) {
+		Set<Object> allPropertyKeys = getPropertyKeys();
+		for(Object propertyKey:allPropertyKeys) {
+			if(propertyKey instanceof String) {
+				String key = (String)propertyKey;
+				if(key.startsWith(prefix)) {
+					removeProperty(key, true);
+				}
+			}
+		}
+	}
+	
+	private String getAttributePrefix(OAuthSPI spi) {
+		if(spi instanceof GenericOAuth2Provider) {
+			return GENERIC_OAUTH_START_MARKER + spi.getProviderName() + ".attr.";
+		}
+		if(spi instanceof OpenIdConnectFullConfigurableProvider) {
+			return OPEN_ID_IF_START_MARKER + spi.getProviderName() + ".attr.";
+		}
+		return null;
+	}
+	
+	public OAuthAttributesMapping getMappings(String prefix) {
+		List<OAuthAttributeMapping> attributes = new ArrayList<>();
+		
+		Set<Object> allPropertyKeys = getPropertyKeys();
+		for(Object propertyKey:allPropertyKeys) {
+			if(propertyKey instanceof String) {
+				String key = (String)propertyKey;
+				if(key.startsWith(prefix)) {
+					String external = key.substring(prefix.length());
+					int index = external.indexOf('.') + 1;
+					external = external.substring(index);
+					String internal = getStringPropertyValue(key, true);
+					attributes.add(new OAuthAttributeMapping(external, internal));
+				}
+			}
+		}
+		
+		return new OAuthAttributesMapping(attributes);
+	}
+	
+	public void setMapping(OAuthSPI spi, List<OAuthAttributeMapping> mapping) {
+		String prefix = getAttributePrefix(spi);
+		
+		removeSetOfProperties(prefix);
+		for(int i=0; i<mapping.size(); i++) {
+			OAuthAttributeMapping map = mapping.get(i);
+			setStringProperty(prefix + i + "." + map.getExternalAttribute(), map.getOpenolatAttribute(), true);
+		}
 	}
 }
