@@ -367,7 +367,9 @@ public class AnalysisSearchParameter {
 	public AnalysisSearchParameter clone() {
 		AnalysisSearchParameter clone = new AnalysisSearchParameter();
 		clone.formEntryRef = this.formEntryRef;
-		clone.dataCollectionOrganisationRefs = new ArrayList<>(this.dataCollectionOrganisationRefs);
+		clone.dataCollectionOrganisationRefs = this.dataCollectionOrganisationRefs != null
+				? new ArrayList<>(this.dataCollectionOrganisationRefs)
+				: null;
 		clone.dateRangeFrom = this.dateRangeFrom;
 		clone.dateRangeTo = this.dateRangeTo;
 		clone.dataCollectionRefs = this.dataCollectionRefs != null ? new ArrayList<>(this.dataCollectionRefs) : null;
