@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -63,13 +64,18 @@ import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.test.JunitTestHelper;
@@ -93,6 +99,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -566,6 +574,107 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
 	}
 	
+	@Test
+	public void updatePublicAccess() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+
+		// Check that the course is not public
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("public-access-1");
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
+		params.setIdAndRefs(re.getKey().toString());
+		List<RepositoryEntryMyView> views = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertTrue(views.isEmpty());
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		// Add a public offer
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("access").path("public")
+				.queryParam("allUsers", "true")
+				.build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// Check if the resource is public
+		List<RepositoryEntryMyView> resources = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertEquals(1, resources.size());
+	}
+	
+	@Test
+	public void removePublicAccess() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		
+		Set<Organisation> rootOrganisations = organisationService.getOrganisations().stream()
+				.filter(org -> org.getParent() == null)
+				.collect(Collectors.toSet());
+
+		Offer newOffer = acService.createOffer(re.getOlatResource(), re.getDisplayname());
+		newOffer.setOpenAccess(true);
+		newOffer = acService.save(newOffer);
+		acService.updateOfferOrganisations(newOffer, rootOrganisations);
+		dbInstance.commitAndCloseSession();
+
+		// Check that the course is not public
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("public-access-1");
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
+		params.setIdAndRefs(re.getKey().toString());
+		List<RepositoryEntryMyView> views = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertEquals(1, views.size());
+		Assert.assertEquals(re.getKey(), views.get(0).getKey());
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		// Add a public offer
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("access").path("public")
+				.queryParam("allUsers", "false")
+				.build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// Check if the resource is public
+		List<RepositoryEntryMyView> resources = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertTrue(resources.isEmpty());
+	}
+	
+	@Test
+	public void updateStatus() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		dbInstance.commitAndCloseSession();
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// Changed the status
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("status")
+				.queryParam("newStatus", RepositoryEntryStatusEnum.coachpublished.name())
+				.build();
+
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		conn.shutdown();
+		
+		// Check database value
+		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
+		Assert.assertEquals(RepositoryEntryStatusEnum.coachpublished, updatedRe.getEntryStatus());
+	}
 	
 	@Test
 	public void updateMetadata() throws IOException, URISyntaxException {

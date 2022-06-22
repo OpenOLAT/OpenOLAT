@@ -593,7 +593,6 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertTrue(isParticipant2);
 	}
 	
-	
 	@Test
 	public void getMetadata() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
@@ -610,7 +609,6 @@ public class CourseTest extends OlatRestTestCase {
 		course.getCourseEnvironment().updateCourseEntry(courseEntry);
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -642,15 +640,35 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
 	}
 	
-	
 	@Test
-	public void updateMetadata() throws IOException, URISyntaxException {
+	public void updateStatus() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
+
+		// Set the course to coach published
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString())
+				.path("status")
+				.queryParam("newStatus", RepositoryEntryStatusEnum.review.name())
+				.build();
 		
-		RestConnection conn = new RestConnection();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		RepositoryEntry updatedEntry = repositoryService.loadByKey(courseEntry.getKey());
+		Assert.assertEquals(RepositoryEntryStatusEnum.review, updatedEntry.getEntryStatus());
+	}
+	
+	@Test
+	public void updateMetadata() throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -809,7 +827,7 @@ public class CourseTest extends OlatRestTestCase {
 		HttpGet method = conn.createGet(request, "application/zip", true);
 		HttpResponse response = conn.execute(method);
 
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 	}
 	

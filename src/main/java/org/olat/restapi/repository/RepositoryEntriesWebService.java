@@ -327,8 +327,6 @@ public class RepositoryEntriesWebService {
 				
 				Long accessRaw = partsReader.getLongValue("access");
 				String statusRaw = partsReader.getValue("status");
-				String allUsersRaw = partsReader.getValue("allUsers");
-				String guestsRaw = partsReader.getValue("guests");
 				
 				if(RepositoryEntryStatusEnum.isValid(statusRaw)) {
 					status = RepositoryEntryStatusEnum.valueOf(statusRaw);
