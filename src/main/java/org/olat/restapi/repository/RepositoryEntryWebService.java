@@ -874,7 +874,7 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The learn resource not found")
 	@Path("status")
-	public Response putStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
+	public Response putStatus(@QueryParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
