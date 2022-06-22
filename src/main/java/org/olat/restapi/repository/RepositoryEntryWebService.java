@@ -645,10 +645,15 @@ public class RepositoryEntryWebService {
 		}
 
 		RepositoryEntryLifecycle lifecycle = updateLifecycle(vo.getLifecycle());
-		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
+		entry = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
 				vo.getTeaser(), vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
 				lifecycle);
-		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
+		
+		if(vo.getEntryStatus() != null && !vo.getEntryStatus().equals(entry.getEntryStatus().name())) {
+			updateStatus(vo.getEntryStatus(), request);
+		}
+		
+		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(entry);
 		return Response.ok(rvo).build();
 	}
 	
@@ -845,7 +850,11 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "404", description = "The learn resource not found")
 	@Path("status")
 	public Response postStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
-		return updateStatus(newStatus, request);
+		if (!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		updateStatus(newStatus, request);
+		return Response.ok().build();
 	}
 	
 	@PUT
@@ -866,43 +875,42 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "404", description = "The learn resource not found")
 	@Path("status")
 	public Response putStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
-		return updateStatus(newStatus, request);
-	}
-	
-	private Response updateStatus(String newStatus, HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		
+		updateStatus(newStatus, request);
+		return Response.ok().build();
+	}
+	
+	private void updateStatus(String newStatus, HttpServletRequest request) {
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
-			repositoryService.closeRepositoryEntry(entry, null, false);
+			entry = repositoryService.closeRepositoryEntry(entry, null, false);
 			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
-			repositoryService.uncloseRepositoryEntry(entry);
+			entry = repositoryService.uncloseRepositoryEntry(entry);
 			log.info(Tracing.M_AUDIT, "REST unclosing course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if(RepositoryEntryStatusEnum.deleted.name().equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.deleteSoftly(entry, identity, true, false);
+			entry = repositoryService.deleteSoftly(entry, identity, true, false);
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			repositoryService.restoreRepositoryEntry(entry);
+			entry = repositoryService.restoreRepositoryEntry(entry);
 			log.info(Tracing.M_AUDIT, "REST restoring course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if(RepositoryEntryStatusEnum.isValid(newStatus)) {
 			RepositoryEntryStatusEnum nStatus = RepositoryEntryStatusEnum.valueOf(newStatus);
-			repositoryManager.setStatus(entry, nStatus);
+			entry = repositoryManager.setStatus(entry, nStatus);
 			log.info("Change status of {} to {}", entry, newStatus);
 			ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(nStatus), getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		}
-		return Response.ok().build();
 	}
 	
 	@PUT

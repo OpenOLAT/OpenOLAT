@@ -153,6 +153,7 @@ public class ObjectFactory {
 		vo.setNodeAccessType(course.getCourseConfig().getNodeAccessType().getType());
 		vo.setSoftKey(re.getSoftkey());
 		vo.setRepoEntryKey(re.getKey());
+		vo.setRepoEntryStatus(re.getEntryStatus().name());
 		OLATResource resource = re.getOlatResource();
 		if(resource != null) {
 			vo.setOlatResourceKey(resource.getKey());

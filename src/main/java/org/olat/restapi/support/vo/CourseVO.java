@@ -44,7 +44,10 @@ public class CourseVO {
 	private String displayName;
 	private String description;
 	private String teaser;
+	
 	private Long repoEntryKey;
+	private String repoEntryStatus;
+	
 	@XmlAttribute(name="organisationKey", required=false)
 	private Long organisationKey;
 	@XmlAttribute(name="authors", required=false)
@@ -239,6 +242,14 @@ public class CourseVO {
 
 	public void setNodeAccessType(String nodeAccessType) {
 		this.nodeAccessType = nodeAccessType;
+	}
+
+	public String getRepoEntryStatus() {
+		return repoEntryStatus;
+	}
+
+	public void setRepoEntryStatus(String repoEntryStatus) {
+		this.repoEntryStatus = repoEntryStatus;
 	}
 
 	public RepositoryEntryLifecycleVO getLifecycle() {

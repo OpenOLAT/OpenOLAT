@@ -38,7 +38,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @XmlRootElement(name = "repositoryEntryVO")
 public class RepositoryEntryVO {
 	
-	
 	private Long key;
 	private String softkey;
 	private String resourcename;
@@ -87,6 +86,8 @@ public class RepositoryEntryVO {
 	private Long olatResourceId;
 	private String olatResourceTypeName;
 	
+	private String entryStatus;
+	
 	private RepositoryEntryLifecycleVO lifecycle;
 	
 	public RepositoryEntryVO() {
@@ -114,6 +115,7 @@ public class RepositoryEntryVO {
 		vo.setExternalId(entry.getExternalId());
 		vo.setExternalRef(entry.getExternalRef());
 		vo.setManagedFlags(entry.getManagedFlagsString());
+		vo.setEntryStatus(entry.getEntryStatus().name());
 		if(entry.getLifecycle() != null) {
 			vo.setLifecycle(new RepositoryEntryLifecycleVO(entry.getLifecycle()));
 		}
@@ -246,6 +248,14 @@ public class RepositoryEntryVO {
 
 	public void setOlatResourceTypeName(String olatResourceTypeName) {
 		this.olatResourceTypeName = olatResourceTypeName;
+	}
+
+	public String getEntryStatus() {
+		return entryStatus;
+	}
+
+	public void setEntryStatus(String entryStatus) {
+		this.entryStatus = entryStatus;
 	}
 
 	public RepositoryEntryLifecycleVO getLifecycle() {

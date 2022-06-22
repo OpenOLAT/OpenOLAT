@@ -358,9 +358,12 @@ public class CoursesWebService {
 		UserRequest ureq = getUserRequest(request);
 
 		CourseConfigVO configVO = new CourseConfigVO();
+		
+		RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.isValid(courseVo.getRepoEntryStatus()) ?
+				RepositoryEntryStatusEnum.valueOf(courseVo.getRepoEntryStatus()) : RepositoryEntryStatusEnum.preparation;
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
 				null, courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), courseVo.getTeaser(), null, null, null, null,
-				courseVo.getSoftKey(), RepositoryEntryStatusEnum.preparation, false, courseVo.getOrganisationKey(),
+				courseVo.getSoftKey(), status, false, courseVo.getOrganisationKey(),
 				courseVo.getAuthors(), courseVo.getLocation(), courseVo.getExternalId(), courseVo.getExternalRef(), 
 				courseVo.getManagedFlags(), courseVo.getNodeAccessType(), configVO);
 		CourseVO vo = ObjectFactory.get(course);
