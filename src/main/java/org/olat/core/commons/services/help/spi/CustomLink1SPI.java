@@ -47,6 +47,9 @@ public class CustomLink1SPI implements HelpLinkSPI  {
 	@Autowired
 	private HelpModule helpModule;
 	
+	@Autowired
+	private OpenOlatDocsHelper openOlatDocsHelper;
+	
 	@Override
 	public UserTool getHelpUserTool(WindowControl wControl) {
 		return new Custom1LinkUserTool();
@@ -79,14 +82,14 @@ public class CustomLink1SPI implements HelpLinkSPI  {
 	@Override
 	public String getURL(Locale locale, String page) {
 		// Fallback to OpenOlat-docs context help
-		return OpenOlatDocsHelper.getURL(locale, page);
+		return openOlatDocsHelper.getURL(locale, page);
 	}
 
 	@Override
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
 		// Fallback to OpenOlat-docs context help
-		return OpenOlatDocsHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
+		return openOlatDocsHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 	
 	@Override

@@ -1562,7 +1562,7 @@
 								<Implementation-Build>${buildNumber}</Implementation-Build>
 							</manifestEntries>
 						</archive>
-						<warSourceExcludes>**/*.pxm, **/*.psd, **/*.sh, static/bootstrap/**, **/*.README</warSourceExcludes>
+						<warSourceExcludes>**/*.pxm, **/*.psd, **/*.sh, **/*.README</warSourceExcludes>
 						<webResources>
 							<resource>
 								<directory>src/main/webapp</directory>
