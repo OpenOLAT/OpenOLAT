@@ -648,6 +648,19 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult) {
+		if (identity != null && entry != null && !entry.getEntryStatus().decommissioned() && !acResult.getAvailableMethods().isEmpty()) {
+			if (acResult.getAvailableMethods().size() == 1) {
+				OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
+				if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
+					return accessResource(identity, offerAccess, null).isAccessible();
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public String resolveDisplayName(OLATResource resource) {

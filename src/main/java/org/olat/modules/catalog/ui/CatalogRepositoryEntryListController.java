@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.ui;
 
+import static org.olat.modules.catalog.ui.CatalogMainController.ORES_TYPE_INFOS;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,6 +81,8 @@ import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.ACRenderer;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -111,6 +115,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	protected ACService acService;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
@@ -174,8 +180,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogRepositoryEntryCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogRepositoryEntryCols.educationalType, new EducationalTypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogRepositoryEntryCols.offers, new ACRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogRepositoryEntryCols.details));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogRepositoryEntryCols.start));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogRepositoryEntryCols.detailsSmall));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogRepositoryEntryCols.startSmall));
 
 		dataModel = new CatalogRepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -189,7 +195,6 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		VelocityContainer row = createVelocityContainer("catalog_repository_entry_row");
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
-		
 		
 		initFilters();
 		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist");
@@ -211,6 +216,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		}
 		if (!flexiTableFilters.isEmpty()) {
 			tableEl.setFilters(true, flexiTableFilters, false, false);
+			tableEl.expandFilters(true);
 		}
 	}
 	
@@ -247,35 +253,50 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	public void forgeStartLink(CatalogRepositoryEntryRow row) {
 		String cmd;
 		String label;
-		String iconCss;
-		FormLink link = null;
+		String css;
+		String cssSmall;
 		if(!row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty()) {
 			cmd = "book";
 			label = "book";
-			iconCss = "btn btn-sm btn-primary o_book ";
+			css = "btn btn-sm btn-primary o_book ";
+			cssSmall = "btn btn-xs btn-primary o_book ";
 		} else {
 			cmd = "start";
 			label = "start";
-			iconCss = "btn btn-sm btn-primary o_start";
+			css = "btn btn-sm btn-primary o_start";
+			cssSmall = "btn btn-xs btn-primary o_start";
 		}
-		link = uifactory.addFormLink("start_" + row.getKey(), cmd, label, null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("start_" + row.getKey(), cmd, label, null, flc, Link.LINK);
 		link.setUserObject(row);
-		link.setCustomEnabledLinkCSS(iconCss);
+		link.setCustomEnabledLinkCSS(css);
 		link.setIconRightCSS("o_icon o_icon_start");
 		link.setTitle(label);
 		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
-		link.setUrl(BusinessControlFactory.getInstance()
-				.getAuthenticatedURLFromBusinessPathString(businessPath));
+		link.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
 		row.setStartLink(link);
-	}	
+		
+		FormLink linkSmall = uifactory.addFormLink("start_" + row.getKey(), cmd, label, null, null, Link.LINK);
+		linkSmall.setUserObject(row);
+		linkSmall.setCustomEnabledLinkCSS(cssSmall);
+		linkSmall.setIconRightCSS("o_icon o_icon_start");
+		linkSmall.setTitle(label);
+		linkSmall.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
+		row.setStartSmallLink(linkSmall);
+	}
 	
 	@Override
 	public void forgeDetailsLink(CatalogRepositoryEntryRow row) {
-		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
+		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, flc, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
 		detailsLink.setTitle("details");
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
+		
+		FormLink detailsSmallLink = uifactory.addFormLink("details_small_" + row.getKey(), "details", "details", null, null, Link.LINK);
+		detailsSmallLink.setCustomEnabledLinkCSS("btn btn-xs btn-default o_details");
+		detailsSmallLink.setTitle("details");
+		detailsSmallLink.setUserObject(row);
+		row.setDetailsSmallLink(detailsSmallLink);
 	}
 	
 	@Override
@@ -288,7 +309,18 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
+		List<Component> cmps = null;
+		if (rowObject instanceof CatalogRepositoryEntryRow) {
+			cmps = new ArrayList<>(2);
+			CatalogRepositoryEntryRow catalogRow = (CatalogRepositoryEntryRow)rowObject;
+			if (catalogRow.getDetailsLink() != null) {
+				cmps.add(catalogRow.getDetailsLink().getComponent());
+			}
+			if (catalogRow.getStartLink() != null) {
+				cmps.add(catalogRow.getStartLink().getComponent());
+			}
+		}
+		return cmps;
 	}
 
 	@Override
@@ -305,7 +337,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if ("Infos".equalsIgnoreCase(type)) {
+		if (ORES_TYPE_INFOS.equalsIgnoreCase(type)) {
 			Long key = entry.getOLATResourceable().getResourceableId();
 			tableEl.resetSearch(ureq);
 			dataModel.clear();
@@ -336,6 +368,17 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == infosCtrl) {
+			if (event instanceof BookedEvent) {
+				Long repositoryEntryKey = ((BookedEvent)event).getRepositoryEntry().getKey();
+				doBooked(ureq, repositoryEntryKey);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ("ONCLICK".equals(event.getCommand())) {
 			String key = ureq.getParameter("select_taxonomy");
@@ -353,7 +396,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			String cmd = link.getCmd();
 			if ("start".equals(cmd)){
 				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();
-				doStart(ureq, row);
+				doStart(ureq, row.getKey());
 			} else if ("book".equals(cmd)){
 				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();
 				doBook(ureq, row);
@@ -373,41 +416,64 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		//
 	}
 	
-	private void doStart(UserRequest ureq, CatalogRepositoryEntryRow row) {
+	private void doStart(UserRequest ureq, Long repositoryEntrykey) {
 		try {
-			String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+			String businessPath = "[RepositoryEntry:" + repositoryEntrykey + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} catch (CorruptedCourseException e) {
 			showError("error.corrupted");
 		}
 	}
-
-	private void doBook(UserRequest ureq, CatalogRepositoryEntryRow row) {
-		doOpenDetails(ureq, row);
-		
-		if (infosCtrl != null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
-			ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
-			infosCtrl.activate(ureq, List.of(contextEntry), null);
-		}
-	}
 	
 	protected void doOpenDetails(UserRequest ureq, CatalogRepositoryEntryRow row) {
-		removeAsListenerAndDispose(infosCtrl);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", row.getKey());
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getKey());
-		if(entry != null) {
+		doOpenDetails(ureq, entry);
+	}
+
+	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
+		if (entry != null) {
+			removeAsListenerAndDispose(infosCtrl);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_INFOS, entry.getKey());
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			
 			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
-			String displayName = row.getDisplayName();
+			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, infosCtrl);
 		} else {
 			tableEl.reloadData();
+		}
+	}
+
+	private void doBook(UserRequest ureq, CatalogRepositoryEntryRow row) {
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getKey());
+		if (entry != null) {
+			AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), false);
+			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
+				doStart(ureq, row.getKey());
+			} else {
+				doOpenDetails(ureq, row);
+				if (infosCtrl != null) {
+					OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
+					ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
+					infosCtrl.activate(ureq, List.of(contextEntry), null);
+				}
+			}
+		} else {
+			tableEl.reloadData();
+		}
+	}
+
+	private void doBooked(UserRequest ureq, Long repositoryEntryKey) {
+		stackPanel.popUpToController(this);
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(repositoryEntryKey);
+		if (entry != null) {
+			doOpenDetails(ureq, entry);
+			if (repositoryManager.isAllowed(ureq, entry).canLaunch()) {
+				doStart(ureq, entry.getKey());
+			}
 		}
 	}
 	

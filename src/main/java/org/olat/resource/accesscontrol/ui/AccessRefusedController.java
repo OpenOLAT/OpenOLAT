@@ -39,12 +39,8 @@ public class AccessRefusedController extends BasicController {
 	
 	@Autowired
 	private ACService acService;
-
-	public AccessRefusedController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
 	
-	public AccessRefusedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public AccessRefusedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean showTitle) {
 		super(ureq, wControl);
 		
 		String template = "access_refused";
@@ -57,6 +53,7 @@ public class AccessRefusedController extends BasicController {
 		}
 		
 		VelocityContainer mainVC = createVelocityContainer(template);
+		mainVC.contextPut("showTitle", Boolean.valueOf(showTitle));
 		putInitialPanel(mainVC);
 	}
 

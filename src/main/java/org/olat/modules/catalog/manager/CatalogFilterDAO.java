@@ -50,6 +50,7 @@ public class CatalogFilterDAO {
 		filter.setType(type);
 		filter.setSortOrder(getNextSortOrder());
 		filter.setEnabled(true);
+		filter.setDefaultVisible(true);
 		dbInstance.getCurrentEntityManager().persist(filter);
 		return filter;
 	}

@@ -115,7 +115,8 @@ public class ACMethodHandler implements CatalogFilterHandler {
 						acModule.getAccessMethodHandler(method.getType()).getMethodName(translator.getLocale()))));
 		accessMethodKV.sort(SelectionValues.VALUE_ASC);
 		accessMethodKV.add(entry(OPEN_ACCESS, translator.translate("filter.acmethod.open.access")));
-		return new FlexiTableMultiSelectionFilter(translator.translate("filter.acmethod.type"), TYPE, accessMethodKV, true);
+		return new FlexiTableMultiSelectionFilter(translator.translate("filter.acmethod.type"), TYPE, accessMethodKV,
+				catalogFilter.isDefaultVisible());
 	}
 
 	@Override

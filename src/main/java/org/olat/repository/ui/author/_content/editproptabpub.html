@@ -3,6 +3,8 @@ $r.render("accessAndBooking")
 	$r.render("offers")
 #end
 #if($r.available("lti13Access"))
-	$r.render("lti13Access")
+	<div class="o_block_bottom">
+		$r.render("lti13Access")
+	</div>
 #end
 $r.render("accessOverview")

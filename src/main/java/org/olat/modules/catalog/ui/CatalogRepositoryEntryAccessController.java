@@ -25,6 +25,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -35,7 +36,7 @@ import org.olat.repository.ui.list.RepositoryEntryDetailsLinkController;
 import org.olat.repository.ui.list.RepositoryEntryDetailsMetadataController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.AccessListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,20 +48,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogRepositoryEntryAccessController extends BasicController {
 	
-	public static final Event START_EVENT = new Event("start");
-	
 	private final RepositoryEntryDetailsHeaderController headerCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private AccessListController accessCtrl;
 	
+	private final RepositoryEntry entry;
+	
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private ACService acService;
-
 	public CatalogRepositoryEntryAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
+		this.entry = entry;
 		List<String> memberRoles = repositoryService.getRoles(getIdentity(), entry);
 		boolean isOwner = memberRoles.contains(GroupRoles.owner.name());
 		boolean isParticipant = memberRoles.contains(GroupRoles.participant.name());
@@ -85,37 +86,30 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		}
 		
 		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), false);
-		if (acResult.isAccessible()) {
-			fireEvent(ureq, START_EVENT);
-		} else if (!entry.getEntryStatus().decommissioned() && !acResult.getAvailableMethods().isEmpty()) {
-			boolean autoBooking = autoBooking(acResult);
-			if (autoBooking) {
-				fireEvent(ureq, START_EVENT);
-			} else {
-				accessCtrl = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
-				listenTo(accessCtrl);
-				mainVC.put("access", accessCtrl.getInitialComponent());
-			}
+		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
+			fireEvent(ureq, new BookedEvent(entry));
+		} else {
+			accessCtrl = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+			listenTo(accessCtrl);
+			mainVC.put("access", accessCtrl.getInitialComponent());
 		}
 		
 		putInitialPanel(mainVC);
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
-	
-	private boolean autoBooking(AccessResult acResult) {
-		for (OfferAccess offerAccess : acResult.getAvailableMethods()) {
-			if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
-				acResult = acService.accessResource(getIdentity(), offerAccess, null);
-				if (acResult.isAccessible()) {
-					return true;
-				}
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == accessCtrl) {
+			if (event == AccessEvent.ACCESS_OK_EVENT) {
+				fireEvent(ureq, new BookedEvent(entry));
 			}
 		}
-		return false;
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 }

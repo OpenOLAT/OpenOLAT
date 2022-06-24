@@ -35,6 +35,7 @@ import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,6 +51,7 @@ public class CatalogLaunchersController extends BasicController {
 	private List<Controller> launcherCtrls;
 	
 	private final CatalogRepositoryEntrySearchParams defaultSearchParams;
+	private final List<CatalogLauncher> taxonomyLevelCatalogLaunchers = new ArrayList<>(2);
 
 	@Autowired
 	private CatalogV2Service catalogService;
@@ -82,6 +84,9 @@ public class CatalogLaunchersController extends BasicController {
 					String componentName = "launcher_" + launcher.getKey();
 					componentNames.add(componentName);
 					mainVC.put(componentName, launcherCtrl.getInitialComponent());
+					if (TaxonomyLevelLauncherHandler.TYPE.equals(launcher.getType())) {
+						taxonomyLevelCatalogLaunchers.add(launcher);
+					}
 				}
 			}
 		}
@@ -94,6 +99,10 @@ public class CatalogLaunchersController extends BasicController {
 				removeAsListenerAndDispose(launcherCtrl);
 			}
 		}
+	}
+	
+	public List<CatalogLauncher> getTaxonomyLevelCatalogLaunchers() {
+		return taxonomyLevelCatalogLaunchers;
 	}
 
 	@Override

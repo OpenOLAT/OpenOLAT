@@ -170,6 +170,8 @@ public interface ACService {
 	public boolean allowAccesToResource(Identity identity, Offer offer);
 
 	public boolean denyAccesToResource(Identity identity, Offer offer);
+	
+	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult);
 
 
 	/**

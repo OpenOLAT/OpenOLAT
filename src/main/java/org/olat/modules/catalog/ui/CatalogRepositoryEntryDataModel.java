@@ -86,7 +86,9 @@ public class CatalogRepositoryEntryDataModel extends DefaultFlexiTableDataSource
 			case educationalType: return catalogRepositoryEntryRow.getEducationalType();
 			case offers: return catalogRepositoryEntryRow;
 			case details: return catalogRepositoryEntryRow.getDetailsLink();
+			case detailsSmall: return catalogRepositoryEntryRow.getDetailsSmallLink();
 			case start: return catalogRepositoryEntryRow.getStartLink();
+			case startSmall: return catalogRepositoryEntryRow.getStartSmallLink();
 		}
 		return null;
 	}
@@ -105,7 +107,9 @@ public class CatalogRepositoryEntryDataModel extends DefaultFlexiTableDataSource
 		educationalType("table.header.educational.type"),
 		offers("table.header.offers"),
 		details("table.header.details"),
-		start("table.header.start");
+		detailsSmall("table.header.details"),
+		start("table.header.start"),
+		startSmall("table.header.start");
 		
 		private final String i18nHeaderKey;
 		
@@ -118,7 +122,9 @@ public class CatalogRepositoryEntryDataModel extends DefaultFlexiTableDataSource
 			return this != educationalType
 					&& this != offers
 					&& this != details
-					&& this != start;
+					&& this != detailsSmall
+					&& this != start
+					&& this != startSmall;
 		}
 
 		@Override

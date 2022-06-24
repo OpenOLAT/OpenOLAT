@@ -1,41 +1,48 @@
-#if($r.available("thumbnail"))
-	<div class="o_media o_flex_item_fix">
-		$r.render("thumbnail")
-	</div>
-#end
-<div class="o_meta">
-	#if($v.getExternalRef())
-		<div class="o_ext_ref o_nowrap">
-			$r.escapeHtml($v.getExternalRef())
-		</div>
-	#end
-	<h2>
-		<i class="o_icon $cssClass o_icon-lg"> </i>
-		$r.escapeHtml($v.displayname)
-	</h2>
-	
-	#if($r.isNotEmpty($v.teaser))
-		<p class="o_teaser">$r.escapeHtml($v.teaser)</p>
-	#end
-	
-	#if($educationalType)
-		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
-			<span>$educationalType</span>
-		</span>
-	#end
-	
-	#if($v.authors && !$v.authors.empty)
-		<div class="o_author">
-			<span class="text-muted">$r.translate("course.made.by")</span> 
-			$r.escapeHtml($v.authors)
-		</div>
-	#end
-	
-	#if($r.available("start"))
-		<div class="o_start_wrapper">
-			<div class="o_start_inner">
-				$r.render("start")
+<div class="o_header">
+	<div class="o_lead">
+		#if($r.available("thumbnail"))
+			<div class="o_media o_flex_item_fix">
+				$r.render("thumbnail")
 			</div>
+		#end
+		<div class="o_meta">
+			#if($v.getExternalRef())
+				<div class="o_ext_ref o_nowrap">
+					$r.escapeHtml($v.getExternalRef())
+				</div>
+			#end
+			<h2>
+				<i class="o_icon $cssClass o_icon-lg"> </i>
+				$r.escapeHtml($v.displayname)
+			</h2>
+			
+			#if($r.isNotEmpty($v.teaser))
+				<p class="o_teaser">$r.escapeHtml($v.teaser)</p>
+			#end
+			
+			#if($educationalType)
+				<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
+					<span>$educationalType</span>
+				</span>
+			#end
+			
+			#if($v.authors && !$v.authors.empty)
+				<div class="o_author">
+					<span class="text-muted">$r.translate("course.made.by")</span> 
+					$r.escapeHtml($v.authors)
+				</div>
+			#end
+			
+			#if($r.available("start"))
+				<div class="o_start_wrapper">
+					<div class="o_start_inner">
+						$r.render("start")
+					</div>
+				</div>
+			#end
 		</div>
+	</div>
+	#if($r.available("access.refused"))
+		$r.render("access.refused")
 	#end
 </div>

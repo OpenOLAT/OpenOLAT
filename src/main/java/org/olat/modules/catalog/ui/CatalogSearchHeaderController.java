@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -55,12 +56,19 @@ public class CatalogSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchEl = uifactory.addTextElement("search", 100, null, formLayout);
+		FormLayoutContainer searchCont = FormLayoutContainer.createInputGroupLayout("searchWrapper", getTranslator(), null, null);
+		searchCont.contextPut("inputGroupSizeCss", "input-group-lg");
+		formLayout.add("searchWrapper", searchCont);
+		searchCont.setRootForm(mainForm);
+		
+		searchEl = uifactory.addTextElement("search", 100, null, searchCont);
 		searchEl.setPlaceholderText(translate("search.placeholder"));
 		searchEl.setDomReplacementWrapperRequired(false);
 		
-		searchLink = uifactory.addFormLink("search.icon", null, "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
-		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_search");
+		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
+		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
+		String searchLabel = getTranslator().translate("search");
+		searchLink.setLinkTitle(searchLabel);
 		
 		if (catalogModule.hasHeaderBgImage()) {
 			String mapperUri = registerMapper(ureq, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
@@ -82,7 +90,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		fireEvent(ureq, new CatalogSearchEvent(searchEl.getValue()));
 	}
 
 }

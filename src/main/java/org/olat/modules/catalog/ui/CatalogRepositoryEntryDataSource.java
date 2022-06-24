@@ -32,7 +32,9 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
@@ -42,6 +44,7 @@ import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 
 /**
@@ -148,6 +151,10 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 					.flatMap(ra -> ra.getMethods().stream())
 					.map(this::toPriceMethod)
 					.collect(Collectors.toList());
+			if (catalogRepositoryEntry.isOpenAccess()) {
+				Translator translator = Util.createPackageTranslator(OpenAccessOfferController.class, locale);
+				accessTypes.add(new PriceMethod(null, "o_ac_openaccess_icon", translator.translate("open.access.name")));
+			}
 			if (!accessTypes.isEmpty()) {
 				row.setAccessTypes(accessTypes);
 			}

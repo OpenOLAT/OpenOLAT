@@ -18,7 +18,7 @@
 			#foreach($row in $items)
 				<div class="swiper-slide">
 					<div class="o_repo_entry_card o_card_hover #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
-						<div class="o_visual" onClick="$r.openJavaScriptCommand("select"), 'key', '$row.key');" role="link">
+						<div class="o_visual" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
 							#if($row.isThumbnailAvailable())
 								<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 							#else
@@ -43,6 +43,7 @@
 								<div class="o_teaser">$r.escapeHtml($r.xssScan($row.teaser))</div>
 							#end
 						</div>
+						<div class="o_flex_spacer"></div>
 						<div class="o_card_cmd">
 							<div class="o_learn_more">
 								$r.render("$row.getLearnMoreLinkName()")
@@ -54,29 +55,45 @@
 		</div>
 		<div class="swiper-button-prev"></div>
 		<div class="swiper-button-next"></div>
+		<div class="swiper-pagination"></div>
 	</div>
 </div>
 <script>
-	new Swiper('.swiper', {
+## If we have to change the number of slides dynamically:
+## https://stackoverflow.com/questions/10612024/event-trigger-on-a-class-change
+## https://stackoverflow.com/questions/64459585/can-you-modify-the-number-of-slidesperview-in-swiperjs-after-it-was-init
+var bp = document.querySelector('body.o_width_full')
+		? {
+			606: { slidesPerView: 2, slidesPerGroup: 2 },
+			914: { slidesPerView: 3, slidesPerGroup: 3 },
+			1212: { slidesPerView: 4, slidesPerGroup: 4 },
+			1510: { slidesPerView: 5, slidesPerGroup: 5 },
+			1808: { slidesPerView: 6, slidesPerGroup: 6 },
+			2106: { slidesPerView: 7, slidesPerGroup: 7 },
+			2404: { slidesPerView: 8, slidesPerGroup: 8 },
+			2702: { slidesPerView: 9, slidesPerGroup: 9 },
+			3000: { slidesPerView: 10, slidesPerGroup: 10 },
+			3298: { slidesPerView: 11, slidesPerGroup: 11 },
+			3596: { slidesPerView: 12, slidesPerGroup: 12 }
+		}
+		: {
+			606: { slidesPerView: 2, slidesPerGroup: 2 },
+			914: { slidesPerView: 3, slidesPerGroup: 3 },
+			1212: { slidesPerView: 4, slidesPerGroup: 4 }
+		}
+	;
+new Swiper('.swiper', {
 	slidesPerView: 1,
 	spaceBetween: 10,
 	## numCards * cardWidth + numCards * spaceBetween + mainLayoutPadding (e.g.: 3*288 + 2*10 + 2*15)
-	breakpoints: {
-		606: { slidesPerView: 2, slidesPerGroup: 2 },
-		914: { slidesPerView: 3, slidesPerGroup: 3 },
-		1212: { slidesPerView: 4, slidesPerGroup: 4 },
-		1510: { slidesPerView: 5, slidesPerGroup: 5 },
-		1808: { slidesPerView: 6, slidesPerGroup: 6 },
-		2106: { slidesPerView: 7, slidesPerGroup: 7 },
-		2404: { slidesPerView: 8, slidesPerGroup: 8 },
-		2702: { slidesPerView: 9, slidesPerGroup: 9 },
-		3000: { slidesPerView: 10, slidesPerGroup: 10 },
-		3298: { slidesPerView: 11, slidesPerGroup: 11 },
-		3596: { slidesPerView: 12, slidesPerGroup: 12 }
-	},
+	breakpoints: bp,
 	navigation: {
 		prevEl: '.swiper-button-prev',
 		nextEl: '.swiper-button-next'
+	},
+	pagination: {
+		el: ".swiper-pagination",
+		dynamicBullets: true
 	}
 });
 </script>

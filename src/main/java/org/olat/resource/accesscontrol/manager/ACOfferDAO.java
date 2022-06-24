@@ -201,6 +201,8 @@ public class ACOfferDAO {
 		offer.setResource(resource);
 		offer.setValid(true);
 		offer.setConfirmationEmail(false);
+		offer.setCatalogPublish(true);
+		offer.setCatalogWebPublish(false);
 		if(resourceName != null && resourceName.length() > 255) {
 			resourceName = resourceName.substring(0, 250);
 		}

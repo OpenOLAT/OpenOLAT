@@ -69,7 +69,9 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	private String thumbnailRelPath;
 	private FormLink selectLink;
 	private FormLink startLink;
+	private FormLink startSmallLink;
 	private FormLink detailsLink;
+	private FormLink detailsSmallLink;
 	
 	public CatalogRepositoryEntryRow(CatalogRepositoryEntry catalogRepositoryEntry) {
 		key = catalogRepositoryEntry.getKey();
@@ -257,6 +259,14 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 		this.startLink = startLink;
 	}
 	
+	public FormLink getStartSmallLink() {
+		return startSmallLink;
+	}
+
+	public void setStartSmallLink(FormLink startSmallLink) {
+		this.startSmallLink = startSmallLink;
+	}
+
 	public String getDetailsLinkName() {
 		return detailsLink.getComponent().getComponentName();
 	}
@@ -267,6 +277,14 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setDetailsLink(FormLink detailsLink) {
 		this.detailsLink = detailsLink;
+	}
+
+	public FormLink getDetailsSmallLink() {
+		return detailsSmallLink;
+	}
+
+	public void setDetailsSmallLink(FormLink detailsSmallLink) {
+		this.detailsSmallLink = detailsSmallLink;
 	}
 
 	@Override

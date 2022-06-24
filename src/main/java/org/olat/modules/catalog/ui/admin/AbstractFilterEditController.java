@@ -45,6 +45,7 @@ public abstract class AbstractFilterEditController extends FormBasicController {
 	private static final String[] ON_KEYS = new String[] { "on" };
 	
 	private MultipleSelectionElement enabledEl;
+	private MultipleSelectionElement defaultVisibleEl;
 	
 	private final CatalogFilterHandler handler;
 	private CatalogFilter catalogFilter;
@@ -73,6 +74,9 @@ public abstract class AbstractFilterEditController extends FormBasicController {
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.filter.enabled", formLayout, ON_KEYS, onValues);
 		enabledEl.select(ON_KEYS[0], catalogFilter == null || catalogFilter.isEnabled());
 		
+		defaultVisibleEl = uifactory.addCheckboxesHorizontal("admin.filter.default.visible", formLayout, ON_KEYS, onValues);
+		defaultVisibleEl.select(ON_KEYS[0], catalogFilter == null || catalogFilter.isDefaultVisible());
+		
 		initForm(formLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -93,6 +97,7 @@ public abstract class AbstractFilterEditController extends FormBasicController {
 		}
 		
 		catalogFilter.setEnabled(enabledEl.isAtLeastSelected(1));
+		catalogFilter.setDefaultVisible(defaultVisibleEl.isAtLeastSelected(1));
 		catalogFilter.setConfig(getConfig());
 		catalogFilter = catalogService.update(catalogFilter);
 		

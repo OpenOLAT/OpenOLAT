@@ -123,6 +123,7 @@ public class CatalogFilterListController extends FormBasicController {
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));
 		
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(CatalogFilterCols.tools);
+		toolsColumn.setAlwaysVisible(true);
 		toolsColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsColumn);
 		

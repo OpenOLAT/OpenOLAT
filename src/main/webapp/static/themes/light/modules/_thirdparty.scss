@@ -205,5 +205,22 @@
  */
  body {
 	--swiper-theme-color: #{$o-swiper-color};
+	
+	.swiper-button-next,
+	.swiper-button-prev {
+		width: initial;
+		padding: 6px 14px;
+		color: #333;
+		background-color: #fcfcfc;
+		border-radius: 4px;
+		border: 1px solid #ccc;
+		&::after {
+			font-size: 24px;
+			font-weight: bold;
+		}
+		&:hover {
+			color: $btn-primary-bg;
+		}
+	}
  }
 

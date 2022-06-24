@@ -70,7 +70,7 @@ public class CatalogLayoutController extends FormBasicController {
 		
 		headerBgImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "admin.header.bg.image", "admin.header.bg.image", formLayout);
 		headerBgImageEl.setExampleKey("admin.header.bg.image.example", null);
-		headerBgImageEl.limitToMimeType(HEADER_BG_IMAGE_MIME_TYPES,  "error.mimetype", new String[]{ HEADER_BG_IMAGE_MIME_TYPES.toString()} );
+		headerBgImageEl.limitToMimeType(HEADER_BG_IMAGE_MIME_TYPES, "error.mimetype", null);
 		headerBgImageEl.setMaxUploadSizeKB(2048, null, null);
 		headerBgImageEl.setPreview(ureq.getUserSession(), true);
 		headerBgImageEl.setDeleteEnabled(true);

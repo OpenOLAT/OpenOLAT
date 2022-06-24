@@ -714,10 +714,11 @@ $fa-css-prefix: "o_icon" !default;
 /* Access control icons */
 .o_ac_guest_icon:before { content: $fa-var-user-circle;}
 .o_ac_token_icon{ @include fa-icon-rotate(180deg, 1); &:before { content: $fa-var-key; }}
-.o_ac_free_icon:before { content: $fa-var-gift;}
+.o_ac_free_icon:before { content: $fa-var-percent;}
 .o_ac_group_icon:before { content: $fa-var-group;}
 .o_ac_membersonly_icon:before { content: $fa-var-lock;}
-.o_ac_guests_icon:before { content: $fa-var-user-secret;}
+.o_ac_guests_icon:before { content: $fa-var-user-circle-o;}
+.o_ac_openaccess_icon:before { content: $fa-var-user-secret;}
 .o_ac_paypal_icon:before { content: $fa-var-cc-paypal;}
 .o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}

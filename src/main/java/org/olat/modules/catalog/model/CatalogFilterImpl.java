@@ -65,6 +65,8 @@ public class CatalogFilterImpl implements CatalogFilter, Persistable, CreateInfo
 	private int sortOrder;
 	@Column(name="c_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean enabled;
+	@Column(name="c_default_visible", nullable=false, insertable=true, updatable=true)
+	private boolean defaultVisible;
 	@Column(name="c_config", nullable=true, insertable=true, updatable=true)
 	private String config;
 	
@@ -125,6 +127,16 @@ public class CatalogFilterImpl implements CatalogFilter, Persistable, CreateInfo
 		this.enabled = enabled;
 	}
 	
+	@Override
+	public boolean isDefaultVisible() {
+		return defaultVisible;
+	}
+
+	@Override
+	public void setDefaultVisible(boolean defaultVisible) {
+		this.defaultVisible = defaultVisible;
+	}
+
 	@Override
 	public String getConfig() {
 		return config;

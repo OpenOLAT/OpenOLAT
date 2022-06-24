@@ -36,6 +36,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,6 +51,9 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	private final BreadcrumbedStackedPanel stackPanel;
 	
 	private CatalogRepositoryEntryAccessController accessCtrl;
+	
+	@Autowired
+	protected ACService acService;
 
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry) {
 		super(ureq, wControl, entry);
@@ -67,8 +73,8 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessCtrl) {
-			if (event == CatalogRepositoryEntryAccessController.START_EVENT) {
-				doBook(ureq);
+			if (event instanceof BookedEvent) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -87,6 +93,17 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	@Override
 	protected void doBook(UserRequest ureq) {
+		if (getEntry() != null) {
+			AccessResult acResult = acService.isAccessible(getEntry(), getIdentity(), Boolean.FALSE, ureq.getUserSession().getRoles().isGuestOnly(), false);
+			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), getEntry(), acResult)) {
+				doStart(ureq);
+			} else {
+				doOpenBooking(ureq);
+			}
+		}
+	}
+	
+	private void doOpenBooking(UserRequest ureq) {
 		removeAsListenerAndDispose(accessCtrl);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Offers", 0l);

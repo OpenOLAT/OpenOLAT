@@ -17,32 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.catalog;
+package org.olat.modules.catalog.ui;
+
+import org.olat.core.gui.control.Event;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 1 Jun 2022<br>
+ * Initial date: 23 Jun 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface CatalogFilter extends CatalogFilterRef, Comparable<CatalogFilter> {
+public class BookedEvent extends Event {
 
-	String getType();
+	private static final long serialVersionUID = -5960027431617295771L;
+	
+	private final RepositoryEntry repositoryEntry;
 
-	int getSortOrder();
+	public BookedEvent(RepositoryEntry repositoryEntry) {
+		super("booked");
+		this.repositoryEntry = repositoryEntry;
+	}
 
-	void setSortOrder(int sortOrder);
-
-	boolean isEnabled();
-
-	void setEnabled(boolean enabled);
-
-	boolean isDefaultVisible();
-
-	void setDefaultVisible(boolean defaultVisible);
-
-	String getConfig();
-
-	void setConfig(String config);
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
+	}
 
 }

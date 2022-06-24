@@ -1050,7 +1050,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void accessRefused(UserRequest ureq) {
-		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), re);
+		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), re, true);
 		listenTo(ctrl);
 		toolbarPanel.rootController(re.getDisplayname(), ctrl);
 	}
@@ -1195,7 +1195,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				userCourseInfoMgr.updateUserCourseInformations(re.getOlatResource(), getIdentity());
 			}
 		} else {
-			runtimeController = new AccessRefusedController(ureq, getWindowControl(), re);
+			runtimeController = new AccessRefusedController(ureq, getWindowControl(), re, true);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		}

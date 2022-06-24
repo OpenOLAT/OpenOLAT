@@ -109,7 +109,7 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 		SelectionValues childrenSV = new SelectionValues();
 		childrenSV.add(SelectionValues.entry(KEY_SHOW, translator.translate("filter.taxonomy.children.show")));
 		FlexiTableMultiSelectionFilter flexiTableFilter = new FlexiTableMultiSelectionFilter(
-				translator.translate("filter.taxonomy.children.label"), TYPE, childrenSV, true);
+				translator.translate("filter.taxonomy.children.label"), TYPE, childrenSV, catalogFilter.isDefaultVisible());
 		if (KEY_SHOW.equals(catalogFilter.getConfig())) {
 			flexiTableFilter.setValues(List.of(KEY_SHOW));
 		}
@@ -119,6 +119,6 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 	@Override
 	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
 		List<String> taxonomyLevelKeys = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		searchParams.setTaxonomyLevelChildren(taxonomyLevelKeys.contains(KEY_SHOW));
+		searchParams.setTaxonomyLevelChildren(taxonomyLevelKeys != null && taxonomyLevelKeys.contains(KEY_SHOW));
 	}
 }

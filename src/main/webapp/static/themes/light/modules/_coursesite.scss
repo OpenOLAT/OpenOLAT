@@ -374,6 +374,9 @@
 			margin: 0;
 			padding-bottom: 0.1em;
 			overflow: hidden;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
 		}
 		
 		.o_meta {
@@ -661,8 +664,10 @@
 		}
 	}
 	.o_catalog_search_header {
+		height: 200px;
 		display: flex;
 		justify-content: center;
+		align-items: center;
 		
 		.o_search_box {
 			background-color: $input-bg;

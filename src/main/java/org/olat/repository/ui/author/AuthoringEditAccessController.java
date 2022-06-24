@@ -30,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -186,9 +185,8 @@ public class AuthoringEditAccessController extends BasicController {
 			boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 			Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
 			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(),
-					true, true, guestSupported, true, defaultOfferOrganisations, true, readOnly, managedBookings, url, null);
+					true, true, guestSupported, true, defaultOfferOrganisations, true, readOnly, managedBookings, null);
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
 			mainVC.put("offers", accessOffersCtrl.getInitialComponent());
@@ -202,8 +200,6 @@ public class AuthoringEditAccessController extends BasicController {
 		listenTo(lti13AccessCtrl);
 		mainVC.put("lti13Access", lti13AccessCtrl.getInitialComponent());
 	}
-	
-
 	
 	private void initAccessOverview(UserRequest ureq) {
 		if (accessOverviewCtrl != null) {

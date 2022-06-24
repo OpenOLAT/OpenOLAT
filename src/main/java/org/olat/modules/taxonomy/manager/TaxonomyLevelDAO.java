@@ -320,17 +320,34 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
 		  .append(" left join fetch level.type as type")
-		  .append(" where level.taxonomy.key=:taxonomyKey")
-		  .append(" and level.key!=:levelKey and level.materializedPathKeys like :materializedPath");
-		  
-		List<TaxonomyLevel> levels = dbInstance.getCurrentEntityManager()
+		  .append(" where level.key!=:levelKey and level.materializedPathKeys like :materializedPath");
+		if (taxonomy != null) {
+			sb.append(" and level.taxonomy.key=:taxonomyKey");
+		}
+		
+		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class)
 			.setParameter("materializedPath", taxonomyLevel.getMaterializedPathKeys() + "%")
-			.setParameter("levelKey", taxonomyLevel.getKey())
-			.setParameter("taxonomyKey", taxonomy.getKey())
-			.getResultList();
+			.setParameter("levelKey", taxonomyLevel.getKey());
+		if (taxonomy != null) {
+			query.setParameter("taxonomyKey", taxonomy.getKey());
+		}
+		List<TaxonomyLevel> levels = query.getResultList();
 		Collections.sort(levels, new PathMaterializedPathLengthComparator());
 		return levels;
+	}
+	
+	public List<TaxonomyLevel> getChildren(TaxonomyRef taxonomy) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level from ctaxonomylevel as level")
+		  .append(" inner join level.taxonomy as taxonomy")
+		  .append(" where level.parent.key is null")
+		  .append("   and taxonomy.key = :taxonomyKey");
+		  
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TaxonomyLevel.class)
+			.setParameter("taxonomyKey", taxonomy.getKey())
+			.getResultList();
 	}
 	
 	public List<TaxonomyLevel> getChildren(TaxonomyLevel taxonomyLevel) {

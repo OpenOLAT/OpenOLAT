@@ -112,7 +112,8 @@ public class EducationalTypeHandler implements CatalogFilterHandler {
 						type.getKey().toString(),
 						repositoryTranslator.translate(RepositoyUIFactory.getI18nKey(type)))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.educational.type"), TYPE, educationalTypeKV, true);
+		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.educational.type"), TYPE,
+				educationalTypeKV, catalogFilter.isDefaultVisible());
 	}
 
 	@Override

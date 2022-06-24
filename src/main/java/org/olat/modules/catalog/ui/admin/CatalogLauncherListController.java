@@ -124,6 +124,7 @@ public class CatalogLauncherListController extends FormBasicController {
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));
 		
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(CatalogLauncherCols.tools);
+		toolsColumn.setAlwaysVisible(true);
 		toolsColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsColumn);
 		

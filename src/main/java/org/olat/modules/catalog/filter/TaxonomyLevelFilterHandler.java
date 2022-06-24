@@ -135,7 +135,7 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 		
 		SelectionValues taxonomyValues = getTaxonomyLevelsSV(taxonomyLevel, descendants);
 		FlexiTableMultiSelectionFilter flexiTableFilter = new FlexiTableMultiSelectionFilter(
-				taxonomyLevel.getDisplayName(), TYPE, taxonomyValues, true);
+				taxonomyLevel.getDisplayName(), TYPE, taxonomyValues, catalogFilter.isDefaultVisible());
 		flexiTableFilter.setUserObject(taxonomyLevelUserObject);
 		return flexiTableFilter;
 	}

@@ -37,6 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
@@ -48,6 +49,7 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.ui.AccessRefusedController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,10 +68,13 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 
 	private final RepositoryEntry entry;
 	private final boolean isMember;
+	private final RepositoryEntrySecurity reSecurity;
 	private final boolean guestOnly;
 	private final boolean showStart;
 	private List<PriceMethod> types = new ArrayList<>(1);
 	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	protected RepositoryService repositoryService;
 	@Autowired
@@ -83,6 +88,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 		this.entry = entry;
 		this.isMember = isMember;
 		this.showStart = showStart;
+		this.reSecurity = repositoryManager.isAllowed(ureq, entry);
 		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		initForm(ureq);
@@ -125,51 +131,61 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 				layoutCont.contextPut("educationalType", educationalType);
 			}
 			
-			if(entry.isPublicVisible()) {
-				AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
-				if(acResult.isAccessible()) {
-					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setElementCssClass("o_start btn-block");
-				} else if (!acResult.getAvailableMethods().isEmpty()) {
-					for(OfferAccess access:acResult.getAvailableMethods()) {
-						AccessMethod method = access.getMethod();
-						String type = (method.getMethodCssClass() + "_icon").intern();
-						Price p = access.getOffer().getPrice();
-						String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-						AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
-						String displayName = amh.getMethodName(getLocale());
-						types.add(new PriceMethod(price, type, displayName));
-					}
-					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
-					startLink.setElementCssClass("o_book btn-block");
-					startLink.setVisible(!guestOnly);
-				} else {
-					// booking not available -> button not visible
-					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setVisible(false);
-				}
+			if (reSecurity .isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
+				startLink = createStartLink(layoutCont);
 			} else {
-				// visible only to members only
-				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-				startLink.setElementCssClass("o_start btn-block");
-				startLink.setVisible(isMember);
+				if (reSecurity.canLaunch()) {
+					startLink = createStartLink(layoutCont);
+				} else if (!isMember && entry.isPublicVisible()) {
+					AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
+					if (acResult.isAccessible()) {
+						startLink = createStartLink(layoutCont);
+					} else if (!acResult.getAvailableMethods().isEmpty()) {
+						for(OfferAccess access:acResult.getAvailableMethods()) {
+							AccessMethod method = access.getMethod();
+							String type = (method.getMethodCssClass() + "_icon").intern();
+							Price p = access.getOffer().getPrice();
+							String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
+							AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
+							String displayName = amh.getMethodName(getLocale());
+							types.add(new PriceMethod(price, type, displayName));
+						}
+						String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+						startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+						startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
+						startLink.setElementCssClass("o_book btn-block");
+						startLink.setVisible(!guestOnly);
+					}
+				} else {
+					accessRefused(ureq);
+				}
 			}
 			
-			startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
-			startLink.setPrimary(true);
-			startLink.setFocus(true);
-			startLink.setVisible(showStart);
+			if (startLink != null) {
+				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+				startLink.setPrimary(true);
+				startLink.setFocus(true);
+				startLink.setVisible(showStart);
+			}
 		}
+	}
+	
+	private FormLink createStartLink(FormLayoutContainer layoutCont) {
+		String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+		FormLink link = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+		link.setElementCssClass("o_start btn-block");
+		return link;
+	}
+	
+	private void accessRefused(UserRequest ureq) {
+		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), entry, false);
+		listenTo(ctrl);
+		flc.put("access.refused", ctrl.getInitialComponent());
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if ("start".equals(cmd)) {

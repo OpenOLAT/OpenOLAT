@@ -10,7 +10,7 @@
 	<div class="o_taxonomy_launchers #if($square)o_launchers_square#end">
 		#foreach($row in $items)
 			<div class="o_taxonomy_launcher o_card_hover">
-				<a $r.hrefAndOnclick("select",false,false,"key","$row.key")>
+				<a $r.hrefAndOnclick("select",false,true,"key","$row.key")>
 					<div class="o_visual">
 						<span class="o_visual_not_available" #if($row.thumbnailRelPath) style="background-image:url('$row.thumbnailRelPath');" #end></span>
 					</div>

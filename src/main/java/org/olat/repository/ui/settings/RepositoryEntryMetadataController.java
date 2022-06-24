@@ -56,6 +56,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseModule;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -119,6 +120,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private CatalogV2Module catalogModule;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -317,6 +320,9 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 				keyValues.keys(), keyValues.values(), null, null);
 		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);
 		taxonomyLevelEl.setEnabled(!readOnly);
+		if (catalogModule.isEnabled()) {
+			taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
+		}
 	}
 
 	@Override

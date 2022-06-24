@@ -43,10 +43,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -66,6 +68,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 
@@ -300,6 +303,10 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 							types.add(new PriceMethod(price, type, displayName));
 						}
 					}
+				}
+				if (openAccess) {
+					Translator translator = Util.createPackageTranslator(OpenAccessOfferController.class, uifactory.getTranslator().getLocale());
+					types.add(new PriceMethod(null, "o_ac_openaccess_icon", translator.translate("open.access.name")));
 				}
 			} else {
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));

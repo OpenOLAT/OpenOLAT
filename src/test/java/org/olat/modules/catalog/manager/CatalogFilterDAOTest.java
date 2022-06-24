@@ -60,6 +60,7 @@ public class CatalogFilterDAOTest extends OlatTestCase {
 		softly.assertThat(catalogFilter.getType()).isEqualTo(type);
 		softly.assertThat(catalogFilter.getSortOrder()).isNotNull();
 		softly.assertThat(catalogFilter.isEnabled()).isTrue();
+		softly.assertThat(catalogFilter.isDefaultVisible()).isTrue();
 		softly.assertThat(catalogFilter.getConfig()).isNull();
 		softly.assertAll();
 	}
@@ -81,6 +82,7 @@ public class CatalogFilterDAOTest extends OlatTestCase {
 		
 		catalogFilter.setSortOrder(3);
 		catalogFilter.setEnabled(false);
+		catalogFilter.setDefaultVisible(false);
 		String config = random();
 		catalogFilter.setConfig(config);
 		catalogFilter = sut.save(catalogFilter);
@@ -88,6 +90,7 @@ public class CatalogFilterDAOTest extends OlatTestCase {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(catalogFilter.getSortOrder()).isEqualTo(3);
 		softly.assertThat(catalogFilter.isEnabled()).isFalse();
+		softly.assertThat(catalogFilter.isDefaultVisible()).isFalse();
 		softly.assertThat(catalogFilter.getConfig()).isEqualTo(config);
 		softly.assertAll();
 	}

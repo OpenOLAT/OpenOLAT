@@ -26,7 +26,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.helpers.Settings;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.ims.lti13.LTI13Module;
@@ -61,10 +60,8 @@ public class BusinessGroupEditAccessController extends BasicController {
 			OLATResource resource = businessGroup.getResource();
 			boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
 			boolean waitingList = businessGroup.getWaitingListEnabled();
-			String url =  Settings.getServerContextPathURI() + "/url/BusinessGroup/" + businessGroup.getKey();
 			accessCtrl = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(),
-					!waitingList, false, false, false, null, false, false, managed, url,
-					"manual_user/groups/Group_Administration/#booking");
+					!waitingList, false, false, false, null, false, false, managed, "manual_user/groups/Group_Administration/#booking");
 			listenTo(accessCtrl);
 			mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());
 		}

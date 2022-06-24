@@ -45,11 +45,16 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.ui.CatalogMainController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -80,6 +85,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private static final String[] accessKey = new String[] { KEY_PRIVATE, KEY_PUBLIC };
 	
 	private SingleSelection accessEl;
+	private FormLayoutContainer catalogLinksCont;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
 	private MultipleSelectionElement organisationsEl;
@@ -101,6 +107,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private CatalogV2Module catalogModule;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
 	
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
@@ -205,7 +215,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		};
 		accessEl = uifactory.addRadiosVertical("entry.access.type", "rentry.access.type", formLayout, accessKey, accessValues);
 		accessEl.setEnabled(!readOnly);
-		if (embbeded) {
+		if (embbeded || catalogModule.isEnabled()) {
 			accessEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		if(entry.isPublicVisible()) {
@@ -213,6 +223,12 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		} else {
 			accessEl.select(KEY_PRIVATE, true);
 		}
+		
+		catalogLinksCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/catalog_links.html");
+		catalogLinksCont.setLabel("cif.catalog.links", null);
+		catalogLinksCont.setRootForm(mainForm);
+		formLayout.add("catalogLinks", catalogLinksCont);
+		updateCatalogLinksUI();
 		
 		initLeaveOption(formLayout);
 		
@@ -365,11 +381,36 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == accessEl) {
-			fireEvent(ureq, new PublicVisibleEvent(accessEl.isKeySelected(KEY_PUBLIC)));
+			updateCatalogLinksUI();
+			if (embbeded) {
+				fireEvent(ureq, new PublicVisibleEvent(accessEl.isKeySelected(KEY_PUBLIC)));
+			}
 		} else if (source == statusEl) {
 			fireEvent(ureq, new StatusEvent(getEntryStatus()));
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void updateCatalogLinksUI() {
+		catalogLinksCont.setVisible(catalogModule.isEnabled() && accessEl.isKeySelected(KEY_PUBLIC));
+		if (catalogLinksCont.isVisible()) {
+			String url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_SEARCH
+					+ "/0/" + CatalogMainController.ORES_TYPE_INFOS + "/" + entry.getKey();
+			catalogLinksCont.contextPut("searchLink", new ExtLink(entry.getKey().toString(), url, null));
+			
+			if (taxonomyModule.isEnabled()) {
+				HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(entry));
+				List<ExtLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
+				for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+					url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_TAXONOMY
+							+ "/" + taxonomyLevel.getKey();
+					String name = translate("cif.catalog.links.microsite", taxonomyLevel.getDisplayName());
+					ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString(), url, name);
+					taxonomyLinks.add(extLink);
+					catalogLinksCont.contextPut("taxonomyLinks", taxonomyLinks);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -431,5 +472,31 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		public RepositoryEntryStatusEnum getStatus() {
 			return status;
 		}
+	}
+	
+	public static class ExtLink {
+		
+		private final String key;
+		private final String url;
+		private final String name;
+		
+		public ExtLink(String key, String url, String name) {
+			this.key = key;
+			this.url = url;
+			this.name = name;
+		}
+
+		public String getKey() {
+			return key;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public String getName() {
+			return name;
+		}
+		
 	}
  }

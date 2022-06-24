@@ -31,7 +31,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.editor.ChooseNodeController;
@@ -77,10 +76,9 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 		Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
 				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,
-				defaultOfferOrganisations, true, false, managedBookings, url, null);
+				defaultOfferOrganisations, true, false, managedBookings, null);
 		accessOffersCtrl.setReStatus(RepositoryEntryStatusEnum.preparation);
 		listenTo(accessOffersCtrl);
 		

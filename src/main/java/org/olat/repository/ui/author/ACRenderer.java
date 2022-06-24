@@ -69,11 +69,6 @@ public class ACRenderer implements FlexiCellRenderer {
 				try(StringOutput methodsSb = new StringOutput()) {
 					renderPriceMethods(renderer, methodsSb, entry.getAccessTypes());
 					sb.append(methodsSb);
-					if (methodsSb.length() == 0 && entry.isOpenAccess()) {
-						sb.append(" <span class='o_small text-muted'>");
-						sb.append(translator.translate("table.allusers"));
-						sb.append("</span>");
-					}
 				} catch(IOException e) {
 					log.error("", e);
 				}

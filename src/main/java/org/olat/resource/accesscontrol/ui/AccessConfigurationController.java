@@ -104,7 +104,6 @@ public class AccessConfigurationController extends FormBasicController {
 	private final boolean catalogSupported;
 	private final boolean readOnly;
 	private final boolean managedBookings;
-	private final String resourceUrl;
 	private final String helpUrl;
 	private final Formatter formatter;
 
@@ -118,7 +117,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
-			boolean catalogSupported, boolean readOnly, boolean managedBookings, String resourceUrl, String helpUrl) {
+			boolean catalogSupported, boolean readOnly, boolean managedBookings, String helpUrl) {
 		super(ureq, wControl, "access_configuration");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
@@ -131,7 +130,6 @@ public class AccessConfigurationController extends FormBasicController {
 		this.catalogSupported = catalogSupported;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
-		this.resourceUrl = resourceUrl;
 		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
@@ -141,7 +139,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, Form form, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
-			boolean catalogSupported, boolean readOnly, boolean managedBookings, String resourceUrl, String helpUrl) {
+			boolean catalogSupported, boolean readOnly, boolean managedBookings, String helpUrl) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
@@ -154,7 +152,6 @@ public class AccessConfigurationController extends FormBasicController {
 		this.catalogSupported = catalogSupported;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
-		this.resourceUrl = resourceUrl;
 		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
@@ -216,7 +213,6 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		loadOffers();
 		offersContainer.contextPut("offers", accessInfos);
-		offersContainer.contextPut("extlink", resourceUrl);
 		
 		EmptyState emptyState = EmptyStateFactory.create("empty", offersContainer.getFormItemComponent(), this);
 		emptyState.setIconCss("o_icon o_icon_booking");
@@ -241,13 +237,13 @@ public class AccessConfigurationController extends FormBasicController {
 					String title = handler.getMethodName(getLocale());
 					FormLink addLink = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
 					addLink.setUserObject(method);
-					addLink.setIconLeftCSS( ("o_icon " + method.getMethodCssClass() + "_icon o_icon-fw"));
+					addLink.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-fw");
 					addMethodDropdown.addElement(addLink);
 					formLayout.add(addLink.getName(), addLink);
 					
 					FormLink addButton = uifactory.addFormLink("create.b." + handler.getType(), title, null, offersContainer, Link.BUTTON | Link.NONTRANSLATED);
 					addButton.setUserObject(method);
-					addButton.setIconLeftCSS( ("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg"));
+					addButton.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg");
 					addOfferLinks.add(addButton);
 				}
 			}
@@ -257,24 +253,28 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			
 			addOpenAccessLink = uifactory.addFormLink("create.offer.open.link", "create.offer.open", null, formLayout, Link.LINK);
+			addOpenAccessLink.setIconLeftCSS("o_icon o_ac_openaccess_icon o_icon-fw");
 			addOpenAccessLink.setElementCssClass("o_sel_ac_add_open");
 			addOpenAccessLink.setVisible(openAccessSupported);
 			addMethodDropdown.addElement(addOpenAccessLink);
 			formLayout.add(addOpenAccessLink.getName(), addOpenAccessLink);
 			
 			addOpenAccessButton = uifactory.addFormLink("create.offer.open", offersContainer, Link.BUTTON);
+			addOpenAccessButton.setIconLeftCSS( ("o_icon o_ac_openaccess_icon o_icon-lg"));
 			addOpenAccessButton.setElementCssClass("o_sel_ac_add_open");
 			addOpenAccessButton.setVisible(openAccessSupported);
 			addOfferLinks.add(addOpenAccessButton);
 			
 			boolean addGuest = isAddGuest();
 			addGuestLink = uifactory.addFormLink("create.offer.guest.link", "create.offer.guest", null, formLayout, Link.LINK);
+			addGuestLink.setIconLeftCSS( ("o_icon o_ac_guests_icon o_icon-fw"));
 			addGuestLink.setElementCssClass("o_sel_ac_add_guest");
 			addGuestLink.setVisible(addGuest);
 			addMethodDropdown.addElement(addGuestLink);
 			formLayout.add(addGuestLink.getName(), addGuestLink);
 			
 			addGuestButton = uifactory.addFormLink("create.offer.guest", offersContainer, Link.BUTTON);
+			addGuestButton.setIconLeftCSS("o_icon o_ac_guests_icon o_icon-lg");
 			addGuestButton.setElementCssClass("o_sel_ac_add_guest");
 			addGuestButton.setVisible(addGuest);
 			addOfferLinks.add(addGuestButton);
@@ -462,6 +462,7 @@ public class AccessConfigurationController extends FormBasicController {
 			infos.setOffer(offer);
 			infos.setOfferOrganisations(offerOrganisations);
 			infos.setName(translate("offer.open.access.name"));
+			infos.setIconCss("o_ac_openaccess");
 			accessInfos.add(infos);
 			if (!readOnly) {
 				forgeLinks(infos);

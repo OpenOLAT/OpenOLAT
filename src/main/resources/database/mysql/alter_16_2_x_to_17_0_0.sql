@@ -44,6 +44,7 @@ create table o_ca_filter (
    c_type varchar(50),
    c_sort_order integer,
    c_enabled bool not null default true,
+   c_default_visible bool not null default true,
    c_config varchar(1024),
    primary key (id)
 );

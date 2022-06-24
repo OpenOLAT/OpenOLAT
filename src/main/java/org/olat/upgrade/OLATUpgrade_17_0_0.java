@@ -28,12 +28,14 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,8 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private ACService acService;
 	@Autowired
 	private OrganisationService organisationServics;
+	@Autowired
+	private CatalogManager catalogV1Manager;
 	
 	public OLATUpgrade_17_0_0() {
 		super();
@@ -205,6 +209,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		AtomicInteger migrationCounter = new AtomicInteger(0);
 		for (Offer offer : offers) {
 			initOfferToOrg(offer);
+			updateOfferCatalog(offer);
 			migrationCounter.incrementAndGet();
 			dbInstance.commitAndCloseSession();
 			if(migrationCounter.get() % 100 == 0) {
@@ -213,7 +218,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		}
 	}
 
-	public List<Offer> loadOffers() {
+	private List<Offer> loadOffers() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select offer from acoffer offer")
 		  .append(" left join fetch offer.resource resource");
@@ -224,12 +229,13 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	}
 	
 	private void initOfferToOrg(Offer offer) {
-		List<Organisation> organisations = offer.getResource() == null || "BusinessGroup".equals(offer.getResource().getResourceableTypeName())
-				? Collections.emptyList()
-				: getReOfferOrgansation(offer);
+		if (offer.getResource() == null || "BusinessGroup".equals(offer.getResource().getResourceableTypeName())) {
+			return;
+		}
+		List<Organisation> organisations = getReOfferOrgansation(offer);
 		
 		if (organisations.isEmpty()) {
-			log.error("Offer has no organisation: {}, {}::{}, {}", offer.getKey(), offer.getResourceTypeName(),
+			log.warn("Offer has no organisation: {}, {}::{}, {}", offer.getKey(), offer.getResourceTypeName(),
 					offer.getResourceId(), offer.getResourceDisplayName());
 		}
 		acService.updateOfferOrganisations(offer, organisations);
@@ -241,6 +247,27 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 			return repositoryService.getOrganisations(repositoryEntry);
 		}
 		return Collections.emptyList();
+	}
+
+	private void updateOfferCatalog(Offer offer) {
+		boolean hasCatalogV1Entry = hasCatalogV1Entry(offer);
+		offer.setCatalogPublish(hasCatalogV1Entry);
+		offer.setCatalogWebPublish(false);
+		acService.save(offer);
+	}
+	
+	public boolean hasCatalogV1Entry(Offer offer) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select cei.key");
+		sb.append("  from catalogentry as cei");
+		sb.append("   inner join cei.repositoryEntry as re");
+		sb.append("   inner join re.olatResource as resource");
+		sb.and().append("resource.key = :resourceKey");
+		
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", offer.getResource().getKey())
+				.getResultList().isEmpty();
 	}
 	
 }

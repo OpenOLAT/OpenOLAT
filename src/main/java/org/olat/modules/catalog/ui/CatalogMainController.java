@@ -37,7 +37,9 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.resource.accesscontrol.ACService;
@@ -50,6 +52,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CatalogMainController extends BasicController implements Activateable2 {
+	
+	public static final String ORES_TYPE_SEARCH = "Search";
+	public static final String ORES_TYPE_TAXONOMY = "Microsite";
+	public static final String ORES_TYPE_INFOS = "Infos";
 	
 	private final VelocityContainer mainVC;
 	private final CatalogSearchHeaderController headerSearchCtrl;
@@ -64,6 +70,8 @@ public class CatalogMainController extends BasicController implements Activateab
 	private ACService acService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private TaxonomyLevelLauncherHandler taxonomyLevelLauncherHandler;
 	
 	public CatalogMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -100,11 +108,14 @@ public class CatalogMainController extends BasicController implements Activateab
 		if (entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if ("Search".equalsIgnoreCase(type)) {
+		if (ORES_TYPE_SEARCH.equalsIgnoreCase(type)) {
 			headerSearchCtrl.setSearchString(null);
 			doSearch(ureq, null, true);
 			entries = entries.subList(1, entries.size());
 			catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
+		} else if (ORES_TYPE_TAXONOMY.equalsIgnoreCase(type)) {
+			Long key = entries.get(0).getOLATResourceable().getResourceableId();
+			doActivateTaxonomy(ureq, key);
 		}
 	}
 
@@ -122,7 +133,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				doSearch(ureq, null, true);
 				List<ContextEntry> entries = null;
 				if (ose.getInfoRepositoryEntryKey() != null) {
-					OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", ose.getInfoRepositoryEntryKey());
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_INFOS, ose.getInfoRepositoryEntryKey());
 					entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
 				}
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, ose.getState());
@@ -176,7 +187,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				removeAsListenerAndDispose(catalogRepositoryEntryListCtrl);
 				stackPanel.popUpToRootController(ureq);
 			
-				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Search"), null);
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_SEARCH), null);
 				CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
 				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, null, false);
 				listenTo(catalogRepositoryEntryListCtrl);
@@ -188,10 +199,29 @@ public class CatalogMainController extends BasicController implements Activateab
 
 	private void doOpenTaxonomy(UserRequest ureq, Long taxonomyLevelKey) {
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> taxonomyLevelKey);
+		doOpenTaxonomyLevel(ureq, taxonomyLevel);
+	}
+
+	private void doOpenTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
 		if (taxonomyLevel != null) {
 			popUpToTaxonomyCtrl();
 			doOpenTaxonomyHeader(ureq, taxonomyLevel);
 			doOpenTaxonomyList(ureq, taxonomyLevel);
+		}
+	}
+	
+	/**
+	 * Open all taxonomy level microsites until the requested level.
+	 * It takes the first launcher which contains the requested taxonomy level.
+	 */
+	private void doActivateTaxonomy(UserRequest ureq, Long key) {
+		for (CatalogLauncher catalogLauncher : launchersCtrl.getTaxonomyLevelCatalogLaunchers()) {
+			List<TaxonomyLevel> taxonomyLevels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key);
+			if (taxonomyLevels != null) {
+				stackPanel.popUpToRootController(ureq);
+				taxonomyLevels.forEach(level -> doOpenTaxonomyLevel(ureq, level));
+				break;
+			}
 		}
 	}
 	
@@ -214,7 +244,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		removeAsListenerAndDispose(catalogRepositoryEntryListCtrl);
 		catalogRepositoryEntryListCtrl = null;
 	
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Taxonomy", taxonomyLevel.getKey()), null);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_TAXONOMY, taxonomyLevel.getKey()), null);
 		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
 		searchParams.getIdentToTaxonomyLevels().put("launcher", Collections.singletonList(taxonomyLevel));
 		CatalogRepositoryEntryListController taxonomyListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, taxonomyLevel, true);
