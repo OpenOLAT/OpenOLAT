@@ -56,6 +56,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -534,7 +535,6 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 	
 	private void loadCourseElements(List<GradingAssignmentWithInfos> rows) {
-		Map<CourseElementKey,String> elementsTitle = new HashMap<>();
 		for(GradingAssignmentWithInfos row:rows) {
 			if(!StringHelper.containsNonWhitespace(row.getSubIdent())) {
 				continue;
@@ -542,11 +542,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			
 			final String subIdent = row.getSubIdent();
 			final RepositoryEntry entry = row.getEntry();
-			final CourseElementKey elementKey = new CourseElementKey(entry.getKey(), subIdent);
-
-			String title = elementsTitle.computeIfAbsent(elementKey, key ->
-				getCachedCourseElementTitle(entry, key.getSubIdent())
-			);
+			String title = getCachedCourseElementTitle(entry, subIdent);
+			if(title == null) {
+				title = "???";
+			}
 			row.setCourseElementTitle(title);
 		}
 	}
@@ -1160,10 +1159,14 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			elementTitle = courseElementTitleCache.computeIfAbsent(elementKey, key -> {
 				OLATResource courseResource = entry.getOlatResource();
 				if("CourseModule".equals(courseResource.getResourceableTypeName())) {
-					ICourse course = CourseFactory.loadCourse(courseResource);
-					CourseNode node = course.getRunStructure().getNode(subIdent);
-					if(node != null) {
-						return node.getShortTitle();
+					try {
+						ICourse course = CourseFactory.loadCourse(courseResource);
+						CourseNode node = course.getRunStructure().getNode(subIdent);
+						if(node != null) {
+							return node.getShortTitle();
+						}
+					} catch (CorruptedCourseException e) {
+						log.error("Course corrupted: {} ({})", entry.getKey(), entry.getOlatResource().getResourceableId(), e);
 					}
 				}
 				return null;
