@@ -145,7 +145,7 @@ public class CourseTest extends Deployments {
 		publisher
 			.assertOnPublisher()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.guest, false)
+			.selectAccess(UserAccess.guest)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found
@@ -603,7 +603,7 @@ public class CourseTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.registred, false)
+			.selectAccess(UserAccess.registred)
 			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)
@@ -1493,7 +1493,7 @@ public class CourseTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.membersOnly, false)
+			.selectAccess(UserAccess.membersOnly)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found

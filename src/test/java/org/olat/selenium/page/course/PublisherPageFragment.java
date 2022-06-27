@@ -66,7 +66,7 @@ public class PublisherPageFragment {
 	public void quickPublish(UserAccess access) {
 		assertOnPublisher()
 			.nextSelectNodes()
-			.selectAccess(access, false)
+			.selectAccess(access)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found
@@ -109,7 +109,7 @@ public class PublisherPageFragment {
 	 * @param catalog Web publishing for guest access
 	 * @return Itself
 	 */
-	public PublisherPageFragment selectAccess(UserAccess access, boolean catalog) {
+	public PublisherPageFragment selectAccess(UserAccess access) {
 		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
 		OOGraphene.scrollTo(publishStatusBy, browser);
 		WebElement publishStatusEl = browser.findElement(publishStatusBy);
@@ -137,7 +137,7 @@ public class PublisherPageFragment {
 			new BookingPage(browser)
 				.openAddDropMenu()
 				.addGuestMethod()
-				.configureGuestMethod("Hello", catalog);
+				.configureGuestMethod("Hello");
 		}
 		
 		return this;
