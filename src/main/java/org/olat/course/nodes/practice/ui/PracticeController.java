@@ -130,6 +130,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	private final UserCourseEnvironment userCourseEnv;
 	
 	private EndController endCtrl;
+	private ErrorController errorCtrl;
 	private CloseableModalController cmc;
 	private FeedbackController feedbackCtrl;
 	private ConfirmCancelController cancelCtrl;
@@ -219,7 +220,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			} else if(event instanceof SkipEvent) {
 				doNextQuestion(ureq);
 			}
-		} else if(feedbackCtrl == source) {
+		} else if(feedbackCtrl == source || errorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doNextQuestion(ureq);
 			}
@@ -264,7 +265,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		for(int i=nextIndex; i<runningPracticeItems.size(); i++) {
 			RunningPracticeItem item = runningPracticeItems.get(i);
 			currentIndex = i;
-			if((item.getAttempts() == 0 || !item.isCorrect()) && !item.isSkip()) {
+			if((item.getAttempts() == 0 || !item.isCorrect()) && !item.isSkip() && !item.isError()) {
 				return item;
 			}
 		}
@@ -405,8 +406,10 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		
 		removeAsListenerAndDispose(assessmentItemCtrl);
 		removeAsListenerAndDispose(feedbackCtrl);
+		removeAsListenerAndDispose(errorCtrl);
 		assessmentItemCtrl = null;
 		feedbackCtrl = null;
+		errorCtrl = null;
 	}
 	
 	private void updateUIQuestion(UserRequest ureq, RunningPracticeItem runningItem) {
@@ -450,16 +453,24 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		} else {
 			return;
 		}
+		
+		if(resolvedAssessmentItem != null && resolvedAssessmentItem.getRootNodeLookup().wasSuccessful()) {
+			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null,
+					courseEntry, courseNode.getIdent(), Boolean.FALSE, courseEntry);
 
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null,
-				courseEntry, courseNode.getIdent(), Boolean.FALSE, courseEntry);
-
-		assessmentItemCtrl = new PracticeAssessmentItemController(ureq, getWindowControl(),
-				courseEntry, courseNode.getIdent(), courseEntry,
-				assessmentEntry, authorMode, resolvedAssessmentItem, fUnzippedDirRoot, itemFile,
-				runningItem, options, this, candidateAuditLogger);
-		listenTo(assessmentItemCtrl);
-		mainVC.put("assessmentItemCmp", assessmentItemCtrl.getInitialComponent());
+			assessmentItemCtrl = new PracticeAssessmentItemController(ureq, getWindowControl(),
+					courseEntry, courseNode.getIdent(), courseEntry,
+					assessmentEntry, authorMode, resolvedAssessmentItem, fUnzippedDirRoot, itemFile,
+					runningItem, options, this, candidateAuditLogger);
+			listenTo(assessmentItemCtrl);
+			mainVC.put("assessmentItemCmp", assessmentItemCtrl.getInitialComponent());
+		} else {
+			runningItem.setError(true);
+			
+			errorCtrl = new ErrorController(ureq, getWindowControl());
+			listenTo(errorCtrl);
+			mainVC.put("assessmentItemCmp", errorCtrl.getInitialComponent());
+		}
 	}
 	
 	private static class RunningPracticeItem {
@@ -469,6 +480,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		private boolean correct;
 		private boolean correctAtFirstAttempts;
 		private boolean skip = false;
+		private boolean error = false;
 		
 		public RunningPracticeItem(PracticeItem item) {
 			this.item = item;
@@ -488,6 +500,14 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		public void setCorrect(boolean correct) {
 			this.correct = correct;
+		}
+
+		public boolean isError() {
+			return error;
+		}
+
+		public void setError(boolean error) {
+			this.error = error;
 		}
 
 		public int getAttempts() {
@@ -621,6 +641,25 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		}	
 	}
 	
+	private class ErrorController extends FormBasicController {
+		
+		public ErrorController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl, "item_error", Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
+			
+			initForm(ureq);
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			FormSubmit nextButton = uifactory.addFormSubmitButton("next.question", formLayout);
+			nextButton.setFocus(true);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+	}
 	
 	private class FeedbackController extends FormBasicController {
 		
