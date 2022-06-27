@@ -57,10 +57,13 @@
 @import "modules/course";
 @import "modules/courseeditor";
 @import "modules/curriculum";
+@import "modules/coaching";
 @import "modules/group";
 @import "modules/qti21";
+@import "modules/practice";
 @import "modules/devel";
 @import "modules/wiki";
+@import "modules/scorm";
 @import "modules/portfolio_v2";
 @import "modules/evaluation_form";
 @import "modules/exportarea";
@@ -75,7 +78,6 @@
 @import "modules/imscp";
 @import "modules/portal";
 @import "modules/library";
-@import "modules/translationtool";
 @import "modules/user";
 @import "modules/members";
 @import "modules/grouptask";
@@ -86,6 +88,7 @@
 @import "modules/taxonomy";
 @import "modules/appointments";
 @import "modules/tags";
+@import "modules/mathlive";
 
 @import "modules/thirdparty";
 

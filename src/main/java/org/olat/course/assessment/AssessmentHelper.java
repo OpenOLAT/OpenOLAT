@@ -39,6 +39,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
@@ -46,6 +47,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -64,6 +66,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * Description:<br>
@@ -79,12 +82,14 @@ public class AssessmentHelper {
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_IDENTIFYER = "identifyer";
 	public static final String KEY_INDENT = "indent";
-
 	public static final String KEY_TITLE_SHORT = "short.title";
 	public static final String KEY_TITLE_LONG = "long.title";
 	public static final String KEY_PASSED = "passed";
 	public static final String KEY_SCORE = "score";
 	public static final String KEY_SCORE_F = "fscore";
+	public static final String KEY_GRADE = "grade";
+	public static final String KEY_GRADE_SYSTEM_IDENT = "gradeSystemIdent";
+	public static final String KEY_PERFORMANCE_CLASS_IDENT = "performanceClassIdent";
 	public static final String KEY_ATTEMPTS = "attempts";
 	public static final String KEY_DETAILS = "details";
 	public static final String KEY_SELECTABLE = "selectable";
@@ -152,12 +157,13 @@ public class AssessmentHelper {
 
 	/**
 	 * check the given node for assessability.
+	 * @param courseEntry
 	 * @param node
 	 * @return
 	 */
-	public static boolean checkIfNodeIsAssessable(CourseNode node) {
+	public static boolean checkIfNodeIsAssessable(RepositoryEntryRef courseEntry, CourseNode node) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, node);
 		if (node instanceof STCourseNode) {
 			if (Mode.none != assessmentConfig.getPassedMode() || Mode.none != assessmentConfig.getScoreMode()) {
 				return true;
@@ -177,48 +183,36 @@ public class AssessmentHelper {
 	 * or for structure course nodes (subtype of assessable node), which
 	 * 'hasPassedConfigured' or 'hasScoreConfigured' is true. If founds the first
 	 * node that meets the criterias, it returns true.
-	 * 
+	 * @param courseEntry
 	 * @param node
+	 * 
 	 * @return boolean
 	 */
-	public static boolean checkForAssessableNodes(CourseNode node) {
-		if(checkIfNodeIsAssessable(node)) {
+	public static boolean checkForAssessableNodes(RepositoryEntryRef courseEntry, CourseNode node) {
+		if(checkIfNodeIsAssessable(courseEntry, node)) {
 			return true;
 		}
 		// check children now
 		int count = node.getChildCount();
 		for (int i = 0; i < count; i++) {
 			CourseNode cn = (CourseNode) node.getChildAt(i);
-			if (checkForAssessableNodes(cn)) {
+			if (checkForAssessableNodes(courseEntry, cn)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public static int countAssessableNodes(CourseNode node) {
-		int count = 0;
-		if(checkIfNodeIsAssessable(node)) {
-			count++;
-		}
-		// check children now
-		int numOfChildren = node.getChildCount();
-		for (int i = 0; i<numOfChildren; i++) {
-			CourseNode cn = (CourseNode) node.getChildAt(i);
-			count += countAssessableNodes(cn);
-		}
-		return count;
-	}
-
 	/**
 	 * Get all assessable nodes including the root node (if assessable)
-	 * 
+	 * @param courseEntry
 	 * @param editorModel
 	 * @param excludeNode Node that should be excluded in the list, e.g. the
 	 *          current node or null if all assessable nodes should be used
+	 * 
 	 * @return List of assessable course nodes
 	 */
-	public static List<CourseNode> getAssessableNodes(final CourseEditorTreeModel editorModel, final CourseNode excludeNode) {
+	public static List<CourseNode> getAssessableNodes(RepositoryEntryRef courseEntry, CourseEditorTreeModel editorModel, CourseNode excludeNode) {
 		CourseEditorTreeNode rootNode = (CourseEditorTreeNode) editorModel.getRootNode();
 		final List<CourseNode> nodes = new ArrayList<>();
 		// visitor class: takes all assessable nodes if not the exclude node and
@@ -230,7 +224,7 @@ public class AssessmentHelper {
 				CourseEditorTreeNode editorNode = (CourseEditorTreeNode) node;
 				CourseNode courseNode = editorModel.getCourseNode(node.getIdent());
 				if (!editorNode.isDeleted() && (courseNode != excludeNode)) {
-					if(checkIfNodeIsAssessable(courseNode)) {
+					if(checkIfNodeIsAssessable(courseEntry, courseNode)) {
 						nodes.add(courseNode);
 					}
 				}
@@ -285,7 +279,21 @@ public class AssessmentHelper {
 		}
 	}
 	
-	public static TreeModel assessmentTreeModel(ICourse course) {
+	/**
+	 * @param translator Package translator org.olat.modules.assessment.ui e.g. translator
+	 * @param minScore
+	 * @param maxScore
+	 */
+	public static String getMinMax(Translator translator, Float minScore, Float maxScore) {
+		if (minScore != null || maxScore != null) {
+			String min = minScore != null? getRoundedScore(minScore): translator.translate("assessment.value.not.visible");
+			String max = maxScore != null? getRoundedScore(maxScore): translator.translate("assessment.value.not.visible");
+			return translator.translate("score.min.max.value", min, max);
+		}
+		return null;
+	}
+	
+	public static TreeModel assessmentTreeModel(ICourse course, Locale locale) {
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		GenericTreeModel gtm = new GenericTreeModel();
 		GenericTreeNode node = new GenericTreeNode();
@@ -294,23 +302,25 @@ public class AssessmentHelper {
 		node.setIconCssClass("o_CourseModule_icon");
 		gtm.setRootNode(node);
 		
-		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
+		List<GenericTreeNode> children = addAssessableNodesToList(new CourseEntryRef(course), rootNode, locale);
 		children.forEach(child -> node.addChild(child));
 		return gtm;
 	}
 	
-	private static List<GenericTreeNode> addAssessableNodesToList(CourseNode parentCourseNode) {
+	private static List<GenericTreeNode> addAssessableNodesToList(RepositoryEntryRef courseEntry, CourseNode parentCourseNode, Locale locale) {
 		List<GenericTreeNode> result = new ArrayList<>();
 		for(int i=0; i<parentCourseNode.getChildCount(); i++) {
 			CourseNode courseNode = (CourseNode)parentCourseNode.getChildAt(i);
-			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseNode);
+			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseEntry, courseNode, locale);
 			
-			if (assessableChildren.size() > 0 || isAssessable(courseNode)) {
+			if (assessableChildren.size() > 0 || isAssessable(courseEntry, courseNode)) {
 				GenericTreeNode node = new GenericTreeNode();
 				node.setTitle(courseNode.getShortTitle());
 				node.setUserObject(courseNode);
 				CourseNodeConfiguration nodeconfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
-				node.setIconCssClass(nodeconfig.getIconCSSClass());
+				node.setIconCssClass(nodeconfig.getIconCSSClass());								
+				String translatedType = nodeconfig.getLinkText(locale);
+				node.setAltText(translatedType + ": "  + courseNode.getLongTitle() + " (id:" + courseNode.getIdent() + ")");							
 				result.add(node);
 				assessableChildren.forEach(child -> node.addChild(child));
 			}
@@ -318,9 +328,9 @@ public class AssessmentHelper {
 		return result;
 	}
 	
-	private static boolean isAssessable(CourseNode courseNode) {
+	private static boolean isAssessable(RepositoryEntryRef courseEntry, CourseNode courseNode) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		return assessmentConfig.isAssessable() &&
 				(  assessmentConfig.hasEditableDetails()
 				|| assessmentConfig.hasAttempts()
@@ -388,7 +398,7 @@ public class AssessmentHelper {
 		boolean hasDisplayableValuesConfigured = false;
 		boolean hasDisplayableUserValues = false;
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(courseNode);
 		if (isNotExcluded(scoreEvaluation) && (numOfChildren > 0 || assessmentConfig.isAssessable())) {
 			 if (assessmentConfig.isAssessable()) {
@@ -404,7 +414,7 @@ public class AssessmentHelper {
 					lastModifications.addLastCoachModified(scoreEvaluation.getLastCoachModified());
 				}
 				
-				if(!followUserVisibility || scoreEvaluation.getUserVisible() == null || scoreEvaluation.getUserVisible().booleanValue()) {
+				if(!followUserVisibility || (scoreEvaluation.getUserVisible() != null && scoreEvaluation.getUserVisible().booleanValue())) {
 					// attempts
 					if (assessmentConfig.hasAttempts()) {
 						hasDisplayableValuesConfigured = true;
@@ -432,15 +442,21 @@ public class AssessmentHelper {
 						if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}
+						if (assessmentConfig.hasGrade()) {
+							assessmentNodeData.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());
+							assessmentNodeData.setGrade(scoreEvaluation.getGrade());
+							assessmentNodeData.setGradeSystemIdent(scoreEvaluation.getGradeSystemIdent());
+						}
 						assessmentNodeData.setIgnoreInCourseAssessment(assessmentConfig.ignoreInCourseAssessment());
 					}
 					// passed
+					assessmentNodeData.setPassedMode(assessmentConfig.getPassedMode());
 					if (Mode.none != assessmentConfig.getPassedMode()) {
 						hasDisplayableValuesConfigured = true;
 						Boolean passed = scoreEvaluation.getPassed();
 						if (passed != null) {
 							assessmentNodeData.setPassed(passed);
-							assessmentNodeData.setPassedOverriden(scoreEvaluation.getPassedOverriden());
+							assessmentNodeData.setPassedOverridable(scoreEvaluation.getPassedOverridable());
 							hasDisplayableUserValues = true;
 						}
 					}

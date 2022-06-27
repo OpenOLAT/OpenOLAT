@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -184,11 +185,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select avg(aentry.score) as scoreAverage, ")
+		  .append(" max(aentry.score) as scoreMax,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
 		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
 		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
 		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
+		  .append(" sum(case when aentry.score=null then 0 else 1 end) as numOfScores,")
 		  .append(" v.key as repoKey")
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
@@ -252,19 +255,23 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(results != null && !results.isEmpty()) {
 			Object[] result = results.get(0);
 			Double averageScore = (Double)result[0];
-			Long numOfPassed = (Long)result[1];
-			Long numOfFailed = (Long)result[2];
-			Long numOfUndefined = (Long)result[3];
-			Long numDone = (Long)result[4];
-			Long numNotDone = (Long)result[5];
+			BigDecimal maxScore = (BigDecimal)result[1];
+			Long numOfPassed = (Long)result[2];
+			Long numOfFailed = (Long)result[3];
+			Long numOfUndefined = (Long)result[4];
+			Long numDone = (Long)result[5];
+			Long numNotDone = (Long)result[6];
+			Long numNotScores = (Long)result[7];
 			
 			entry.setAverageScore(averageScore);
+			entry.setMaxScore(maxScore);
 			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
 			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
 			entry.setCountUndefined(numOfUndefined == null ? 0 : numOfUndefined.intValue());
 			entry.setCountTotal(entry.getCountPassed() + entry.getCountFailed() + entry.getCountUndefined());
 			entry.setCountDone(numDone == null ? 0 : numDone.intValue());
 			entry.setCountNotDone(numNotDone == null ? 0 : numNotDone.intValue());
+			entry.setCountScore(numNotScores == null ? 0 : numNotScores.intValue());
 		}
 		return entry;
 	}
@@ -705,6 +712,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			list.setParameter("assessmentObligations", params.getAssessmentObligations());
 		}
+		if(params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
+			for(Map.Entry<String, String> entry:params.getUserProperties().entrySet()) {
+				String fuzzyValue = PersistenceHelper.makeFuzzyQueryString(entry.getValue());
+				list.setParameter("uprop" + entry.getKey(), fuzzyValue);
+			}
+		}
 	}
 	
 	private void applySearchAssessedIdentityParams(QueryBuilder sb, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
@@ -717,6 +730,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
+		}
+		if(params.getScoreNull() != null) {
+			sb.append(" and aentry.score is").append(" not", !params.getScoreNull()).append(" null");
+		}
+		if(params.getGradeNull() != null) {
+			sb.append(" and aentry.grade is").append(" not", !params.getGradeNull()).append(" null");
 		}
 		if(params.getUserVisibility() != null) {
 			sb.append(" and (");
@@ -756,6 +775,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 		}
 		sb.append(" )");
+		
+		if(params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
+			for(Map.Entry<String, String> entry:params.getUserProperties().entrySet()) {
+				sb.append(" and ")
+				  .appendFuzzyLike("assessedUser." + entry.getKey(), "uprop" + entry.getKey());
+			}
+		}
 	}
 
 	@Override
@@ -798,11 +824,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable = params.isUserVisibilitySettable()
 				? getCoachUserVisibleSettable(repositoryEntries)
 				: Collections.emptyMap();
+		Map<Long, Boolean> repoKeyToCoachGradeApplicable = params.isGradeApplicable()
+				? getCoachGradeApplicable(repositoryEntries)
+				: Collections.emptyMap();
 		
 		List<CoachingAssessmentEntry> coachedEntries = new ArrayList<>();
 		for (CoachingAssessmentEntryImpl coachedEntry : loadedCoachedEntries) {
 			filterAndAppend(coachedEntries, params, coachedEntry, assessedIdentityKeyToIdentity,
-					statusDoneByIdentityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable);
+					statusDoneByIdentityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable,
+					repoKeyToCoachGradeApplicable);
 		}
 		
 		return coachedEntries;
@@ -811,7 +841,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	private void filterAndAppend(List<CoachingAssessmentEntry> coachedEntries, CoachingAssessmentSearchParams params,
 			CoachingAssessmentEntryImpl coachedEntry, Map<Long, Identity> assessedIdentityKeyToIdentity,
 			Map<Long, Identity> statusDoneByIdentityKeyToIdentity, Map<Long, RepositoryEntry> repoKeyToEntry,
-			Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable) {
+			Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable, Map<Long, Boolean> repoKeyToCoachGradeApplicable) {
 		if (!coachedEntry.isOwner() && !coachedEntry.isCoach()) {
 			return;
 		}
@@ -828,8 +858,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			return;
 		}
 		coachedEntry.setRepositoryEntryName(repositoryEntry.getDisplayname());
+		coachedEntry.setRepositoryEntryExternalId(repositoryEntry.getExternalId());
+		coachedEntry.setRepositoryEntryExternalRef(repositoryEntry.getExternalRef());
 		
 		if (params.isUserVisibilitySettable() && !canSetUserVisibility(coachedEntry, repoKeyToCoachUserVisibilitySettable)) {
+			return;
+		}
+		
+		if (params.isGradeApplicable() && !canApplyGrade(coachedEntry, repoKeyToCoachGradeApplicable)) {
 			return;
 		}
 		
@@ -871,6 +907,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append("              and courseele.assesseable is true");
 		sb.append("              and (courseele.scoreMode = '").append(Mode.setByNode).append("'");
 		sb.append("                   or courseele.passedMode = '").append(Mode.setByNode).append("')");
+		if (params.getConfigHasGrade() != null) {
+			sb.append(" and courseele.grade = ").append(params.getConfigHasGrade());
+		}
+		if (params.getConfigIsAutoGrade() != null) {
+			sb.append(" and courseele.autoGrade = ").append(params.getConfigIsAutoGrade());
+		}
+		if (params.getConfigScoreModes() != null && !params.getConfigScoreModes().isEmpty()) {
+			sb.append(" and courseele.scoreMode in :scoreModes");
+		}
 		sb.and().append("(aentry.obligation is null or aentry.obligation <> '").append(AssessmentObligation.excluded).append("')");
 		sb.and().append(" exists (select 1");
 		sb.append("                 from repoentrytogroup as rtg, bgroupmember as rtgm");
@@ -878,6 +923,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append("                  and rtg.group=rtgm.group and rtgm.role").in(GroupRoles.owner, GroupRoles.coach);
 		sb.append("                  and rtgm.identity.key=:identityKey");
 		sb.append(")");
+		if(params.getScoreNull() != null) {
+			sb.append(" and aentry.score is").append(" not", !params.getScoreNull()).append(" null");
+		}
+		if(params.getGradeNull() != null) {
+			sb.append(" and aentry.grade is").append(" not", !params.getGradeNull()).append(" null");
+		}
 		if (params.getStatus() != null) {
 			sb.and().append("aentry.status = :status");
 		}
@@ -888,6 +939,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		TypedQuery<CoachingAssessmentEntryImpl> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CoachingAssessmentEntryImpl.class)
 				.setParameter("identityKey", params.getCoach().getKey());
+		if (params.getConfigScoreModes() != null && !params.getConfigScoreModes().isEmpty()) {
+			query.setParameter("scoreModes", params.getConfigScoreModes());
+		}
 		if (params.getStatus() != null) {
 			query.setParameter("status", params.getStatus().name());
 		}
@@ -958,7 +1012,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				.getResultList();
 	}
 
-	private HashMap<Long, Boolean>  getCoachUserVisibleSettable(List<RepositoryEntry> repositoryEntries) {
+	private HashMap<Long, Boolean> getCoachUserVisibleSettable(List<RepositoryEntry> repositoryEntries) {
 		HashMap<Long, Boolean> repoEntryKeyToCoachUserVisibilitySettable = new HashMap<>(repositoryEntries.size());
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry);
@@ -973,6 +1027,25 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			return true;
 		} else if (coachedEntry.isCoach()) {
 			return repoEntryKeyToCoachUserVisibilitySettable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
+		}
+		return false;
+	}
+
+	private HashMap<Long, Boolean> getCoachGradeApplicable(List<RepositoryEntry> repositoryEntries) {
+		HashMap<Long, Boolean> repoEntryKeyToCoachGradeApplicable = new HashMap<>(repositoryEntries.size());
+		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+			ICourse course = CourseFactory.loadCourse(repositoryEntry);
+			Boolean gradeApplicable = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY, true);
+			repoEntryKeyToCoachGradeApplicable.put(repositoryEntry.getKey(), gradeApplicable);
+		}
+		return repoEntryKeyToCoachGradeApplicable;
+	}
+	
+	private boolean canApplyGrade(CoachingAssessmentEntry coachedEntry, Map<Long, Boolean> repoEntryKeyToCoachGradeApplicable) {
+		if (coachedEntry.isOwner()) {
+			return true;
+		} else if (coachedEntry.isCoach()) {
+			return repoEntryKeyToCoachGradeApplicable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
 		}
 		return false;
 	}

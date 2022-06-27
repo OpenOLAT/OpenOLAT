@@ -163,8 +163,9 @@ public class UserEfficiencyStatementWebService {
 					return Response.serverError().status(Response.Status.CONFLICT).build();
 				}
 				efficiencyStatementManager.createUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
-						efficiencyStatementVO.getScore(), efficiencyStatementVO.getPassed(),
-						assessedIdentity, courseEntry.getOlatResource());
+						efficiencyStatementVO.getScore(), efficiencyStatementVO.getGrade(),
+						efficiencyStatementVO.getGradeSystemIdent(), efficiencyStatementVO.getPerfromanceClassIdent(),
+						efficiencyStatementVO.getPassed(), assessedIdentity, courseEntry.getOlatResource());
 			}
 		} else {
 			createStandalone(assessedIdentity, efficiencyStatementVO);
@@ -174,9 +175,12 @@ public class UserEfficiencyStatementWebService {
 	
 	private void createStandalone(Identity assessedIdentity, UserEfficiencyStatementVO efficiencyStatementVO) {
 		efficiencyStatementManager.createStandAloneUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
-				efficiencyStatementVO.getScore(), efficiencyStatementVO.getPassed(),
-				efficiencyStatementVO.getTotalNodes(), efficiencyStatementVO.getAttemptedNodes(), efficiencyStatementVO.getPassedNodes(),
-				efficiencyStatementVO.getStatementXml(), assessedIdentity, null, efficiencyStatementVO.getCourseTitle());
+				efficiencyStatementVO.getScore(), efficiencyStatementVO.getGrade(),
+				efficiencyStatementVO.getGradeSystemIdent(), efficiencyStatementVO.getPerfromanceClassIdent(),
+				efficiencyStatementVO.getPassed(), efficiencyStatementVO.getTotalNodes(),
+				efficiencyStatementVO.getAttemptedNodes(), efficiencyStatementVO.getPassedNodes(),
+				efficiencyStatementVO.getStatementXml(), assessedIdentity, null,
+				efficiencyStatementVO.getCourseTitle());
 	}
 	
 	private boolean isAdminOf(Identity assessedIdentity, HttpServletRequest httpRequest) {

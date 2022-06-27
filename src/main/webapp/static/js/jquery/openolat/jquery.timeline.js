@@ -1,23 +1,24 @@
 (function ($) {
+	"use strict";
 	$.fn.timeline = function(options) {
 		var settings = this.data("data-oo-timeline");
-    		if(typeof timeline === "undefined") {
-    			settings = $.extend({
-    				parentContainerId:'',
-    				startTime: null,
-    				endTime: null,
-    				dateFormat: '%d.%m.%y',
-    				dateLabel: 'Date',
-    				status: { draft: "Draft", published: "Published", inRevision: "In revision", closed: "Closed", deleted: "Deleted"},
-	            values: []
-	        }, options );
-	    	
-    			this.data("data-oo-timeline", settings);
-    			createButtons(this, settings);
-    			createGraph(this, settings);
-    			timelineItems(this, settings);
-    			addHandlers(this, settings);
-    		}
+		if(typeof timeline === "undefined") {
+			settings = $.extend({
+ 				parentContainerId:'',
+ 				startTime: null,
+ 				endTime: null,
+ 				dateFormat: '%d.%m.%y',
+ 				dateLabel: 'Date',
+ 				status: { draft: "Draft", published: "Published", inRevision: "In revision", closed: "Closed", deleted: "Deleted"},
+ 				values: []
+ 			}, options);
+    	
+			this.data("data-oo-timeline", settings);
+			createButtons(this, settings);
+			createGraph(this, settings);
+			timelineItems(this, settings);
+			addHandlers(this, settings);
+		}
         return this;
 	};
 
@@ -25,7 +26,7 @@
 	var maxCurveY = 10;
 	var x, y, xAxis, yAxis;
 	var margin, width, height;
-	var lineGenerator, lineX, lineY, curveX, curveY;
+	var lineGenerator, lineX, lineY, curveY;
 	var formatDates;
 	var startTime, endTime;
 	var data, statusTranslations;
@@ -37,10 +38,10 @@
 		var parentContainer = jQuery('#' + settings.parentContainerId);
 		parentContainer.prepend( "<div class='o_timeline_up'><a href='javascript:;' onclick=''><i class='o_icon o_icon-lg o_icon o_icon_slide_up'> </i></a></div>" );
 		parentContainer.append("<div class='o_timeline_down'><a href='javascript:;' onclick=''><i class='o_icon o_icon-lg o_icon o_icon_slide_down'> </i></a></div>")
-	};
+	}
 
 	function createGraph ($obj, settings) {
-		this.parentContainer = jQuery('#' + settings.parentContainerId);
+		var parentContainer = jQuery('#' + settings.parentContainerId);
 		var placeholderwidth = parentContainer.width();
 		$obj.width(placeholderwidth);
 		var placeholderheight = $obj.height();
@@ -94,7 +95,7 @@
 		     .x(function(d) { return lineX(curvedX(d.y)); })
 		     .y(function(d) { return lineY(d.y); })
 		     .curve(d3.curveLinear);
-	};
+	}
 	
 	function addHandlers($obj, settings) {
 		jQuery('#' + settings.parentContainerId + " .o_timeline_up a").on('click', function() {
@@ -103,7 +104,7 @@
 		jQuery('#' + settings.parentContainerId + " .o_timeline_down a").on('click', function() {
 			slideDown();
 		});
-	};
+	}
 	
 	function slideUp() {
 		if(sliding) return;
@@ -112,7 +113,7 @@
 		endTime = endTime + slideDelta;
 		startTime = startTime + slideDelta;
 		updateTimeline(true);
-	};
+	}
 	
 	function slideDown() {
 		if(sliding) return;
@@ -121,7 +122,7 @@
 		endTime = endTime - slideDelta;
 		startTime = startTime - slideDelta;
 		updateTimeline(false);
-	};
+	}
 	
 	function updateTimeline(up) {
 		try {
@@ -133,11 +134,11 @@
 		} catch(e) {
 			if(window.console) console.log(e);
 		}
-	};
+	}
 	
 	function drawAxis() {
   		svg.select('.y').call(yAxis);
-	};
+	}
 	
 	function drawDots(up) {	
 		var dots = svg.selectAll('.dot')
@@ -158,7 +159,7 @@
 		   	.on("end", function() {
 		   		sliding = false;
 		   	});
-	};
+	}
   
 	function timelineItems($obj, settings) {
 		// x-axis
@@ -219,13 +220,13 @@
 					}
 			});
 		dots.exit();
-	};
+	}
 	
 	function idKey(d) {
   		return d.id;
-	};
+	}
 	
-	function curvedX(y) {
-		return (1.5 + Math.sin(y * 1.1)) / 3;
-	};
+	function curvedX(cy) {
+		return (1.5 + Math.sin(cy * 1.1)) / 3;
+	}
 }( jQuery ));

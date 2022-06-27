@@ -68,14 +68,7 @@ var BPlayer = {
 		}
 
 		// Finally, load player library and play video
-		if(BPlayer._needJWPlayerFallback(args)) {
-			// After loading immediately insert JW player
-			args.flashplayer = BPlayer._jwPlayerBaseUrl() + "movieViewer.swf";
-			var afterloadCallback = function() {
-				jwplayer(domId).setup(args);
-			};			
-			BPlayer._loadJWPlayer(afterloadCallback);
-		} else if(provider == "nanoo" || videoUrl.indexOf('nanoo.tv/') >= 0) {
+		if(provider == "nanoo" || videoUrl.indexOf('nanoo.tv/') >= 0) {
 			BPlayer._loadNanooTv(domId, args);
 		} else {
 			// After loading immediately insert HTML5 player
@@ -229,29 +222,6 @@ var BPlayer = {
 	/*
 	 * Internal helper methods
 	 */
-	
-	_loadJWPlayer : function(afterloadCallback) {
-		if(BPlayer._isIE8() && domId != 'prev_container' && jQuery('#' + domId).is("span")) {
-			alert('This is video is not supported on Internet Explorer 8. Sorry for the inconvenience');
-		} else {
-			jQuery.getScript(BPlayer._jwPlayerBaseUrl() + "player.jw.js", function() {
-				if (afterloadCallback) {
-					afterloadCallback();					
-				}
-			});
-		}		
-	},
-
-	_needJWPlayerFallback : function(config) {
-		if(config.provider == 'rtmp') {
-			if(config.file.match(/(.*)\/((flv|mp4|mp3):.*)/)) {
-				return false;
-			} else {
-				return true;
-			}
-		}
-		return false;
-	},
 	
 	_insertHTML5MediaElementPlayerWorker: function(domId, config) {
 		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();

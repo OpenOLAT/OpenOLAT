@@ -33,6 +33,7 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.MaxScoreCumulator.MaxScore;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -44,6 +45,8 @@ public class MaxScoreCumulatorTest {
 
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
+	@Mock
+	private RepositoryEntryRef courseEntry;
 	
 	private MaxScoreCumulator sut = new MaxScoreCumulator();
 	
@@ -59,39 +62,39 @@ public class MaxScoreCumulatorTest {
 		CourseNode child1 = new Card2BrainCourseNode();
 		parent.addChild(child1);
 		AssessmentConfig child1Config = new TestAssessmentConfig(Mode.setByNode, Float.valueOf(10), false);
-		when(courseAssessmentService.getAssessmentConfig(child1)).thenReturn(child1Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child1)).thenReturn(child1Config);
 		
 		CourseNode child2 = new Card2BrainCourseNode();
 		parent.addChild(child2);
 		AssessmentConfig child2Config = new TestAssessmentConfig(Mode.setByNode, Float.valueOf(20), false);
-		when(courseAssessmentService.getAssessmentConfig(child2)).thenReturn(child2Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child2)).thenReturn(child2Config);
 		
 		CourseNode child3 = new Card2BrainCourseNode();
 		parent.addChild(child3);
 		AssessmentConfig child3Config = new TestAssessmentConfig(Mode.setByNode, Float.valueOf(5), true);
-		when(courseAssessmentService.getAssessmentConfig(child3)).thenReturn(child3Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child3)).thenReturn(child3Config);
 		
 		CourseNode child4 = new Card2BrainCourseNode();
 		parent.addChild(child4);
 		AssessmentConfig child4Config = new TestAssessmentConfig(Mode.setByNode, null, false);
-		when(courseAssessmentService.getAssessmentConfig(child4)).thenReturn(child4Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child4)).thenReturn(child4Config);
 		
 		CourseNode child5 = new Card2BrainCourseNode();
 		parent.addChild(child5);
 		AssessmentConfig child5Config = new TestAssessmentConfig(Mode.none, Float.valueOf(10), false);
-		when(courseAssessmentService.getAssessmentConfig(child5)).thenReturn(child5Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child5)).thenReturn(child5Config);
 		
 		CourseNode child6 = new Card2BrainCourseNode();
 		parent.addChild(child6);
 		AssessmentConfig child6Config = new TestAssessmentConfig(Mode.evaluated, Float.valueOf(10), false);
-		when(courseAssessmentService.getAssessmentConfig(child6)).thenReturn(child6Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child6)).thenReturn(child6Config);
 		
 		CourseNode child11 = new Card2BrainCourseNode();
 		child6.addChild(child11);
 		AssessmentConfig child11Config = new TestAssessmentConfig(Mode.setByNode, Float.valueOf(50), false);
-		when(courseAssessmentService.getAssessmentConfig(child11)).thenReturn(child11Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child11)).thenReturn(child11Config);
 		
-		MaxScore maxScore = sut.getMaxScore(parent, courseAssessmentService);
+		MaxScore maxScore = sut.getMaxScore(courseEntry, parent, courseAssessmentService);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(maxScore.getSum()).isEqualTo(80);
@@ -106,9 +109,9 @@ public class MaxScoreCumulatorTest {
 		CourseNode child1 = new Card2BrainCourseNode();
 		parent.addChild(child1);
 		AssessmentConfig child1Config = new TestAssessmentConfig(Mode.evaluated, Float.valueOf(10), false);
-		when(courseAssessmentService.getAssessmentConfig(child1)).thenReturn(child1Config);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child1)).thenReturn(child1Config);
 		
-		MaxScore maxScore = sut.getMaxScore(parent, courseAssessmentService);
+		MaxScore maxScore = sut.getMaxScore(courseEntry, parent, courseAssessmentService);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(maxScore.getSum()).isNull();
@@ -157,6 +160,16 @@ public class MaxScoreCumulatorTest {
 		public Float getMinScore() {
 			return null;
 		}
+		
+		@Override
+		public boolean hasGrade() {
+			return false;
+		}
+		
+		@Override
+		public boolean isAutoGrade() {
+			return false;
+		}
 
 		@Override
 		public Mode getPassedMode() {
@@ -171,6 +184,11 @@ public class MaxScoreCumulatorTest {
 		@Override
 		public boolean isPassedOverridable() {
 			return false;
+		}
+		
+		@Override
+		public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+			return Boolean.FALSE;
 		}
 
 		@Override
@@ -237,7 +255,7 @@ public class MaxScoreCumulatorTest {
 		public boolean isObligationOverridable() {
 			return false;
 		}
-
+		
 	}
 
 }

@@ -44,7 +44,7 @@ import com.github.scribejava.core.oauth.OAuthService;
 @Service
 public class OpenIdConnectProvider implements OAuthSPI {
 	
-	private static final Logger log = Tracing.createLoggerFor(Google2Provider.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenIdConnectProvider.class);
 
 	@Autowired
 	private OAuthLoginModule oauthModule;

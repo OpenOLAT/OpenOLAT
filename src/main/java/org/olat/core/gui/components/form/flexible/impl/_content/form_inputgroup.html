@@ -1,6 +1,6 @@
 <div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="form-group $f.getElementCssClass($formitemnames.get(0)) #if($f.hasError($formitemnames.get(0))) has-feedback has-error #end">
 	#if ($f.isVisible($formitemnames.get(0)))
-		<div class="input-group">
+		<div class="input-group #if($inputGroupSizeCss)$inputGroupSizeCss#end">
 		#if($leftAddOn)
 			<label class="input-group-addon" for="$f.getItemId($formitemnames.get(0))" title="$f.getLabelText($formitemnames.get(0))" aria-label="$f.getLabelText($formitemnames.get(0))">$leftAddOn</label>
 		#elseif ($formitemnames.size() > 1 && $formitemnames.get(1) == "leftAddOn")

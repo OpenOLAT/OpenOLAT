@@ -46,6 +46,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +101,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("Assessment mode");
+		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
 		setFormDescription("form.mode.description");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
@@ -126,19 +127,22 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		nameEl = uifactory.addTextElement("mode.name", "mode.name", 255, name, formLayout);
 		nameEl.setElementCssClass("o_sel_assessment_mode_name");
 		nameEl.setMandatory(true);
-		nameEl.setEnabled(status != Status.followup && status != Status.end);
+		nameEl.setEnabled(status != Status.followup && status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.name));
 		
 		String desc = assessmentMode.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringData("mode.description", "mode.description",
 				desc, 6, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.setEnabled(status != Status.followup && status != Status.end);
+		descriptionEl.setEnabled(status != Status.followup && status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.description));
 		
 		beginEl = uifactory.addDateChooser("mode.begin", assessmentMode.getBegin(), formLayout);
 		beginEl.setElementCssClass("o_sel_assessment_mode_begin");
 		beginEl.setDateChooserTimeEnabled(true);
 		beginEl.setMandatory(true);
-		beginEl.setEnabled(status == Status.none || status == Status.leadtime);
+		beginEl.setEnabled((status == Status.none || status == Status.leadtime)
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.begin));
 		
 		int leadTime = assessmentMode.getLeadTime();
 		if(leadTime < 0) {
@@ -147,14 +151,15 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		leadTimeEl = uifactory.addIntegerElement("mode.leadTime", leadTime, formLayout);
 		leadTimeEl.setElementCssClass("o_sel_assessment_mode_leadtime");
 		leadTimeEl.setDisplaySize(3);
-		leadTimeEl.setEnabled(status == Status.none || status == Status.leadtime);
+		leadTimeEl.setEnabled((status == Status.none || status == Status.leadtime)
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.leadTime));
 		
 		endEl = uifactory.addDateChooser("mode.end", assessmentMode.getEnd(), formLayout);
 		endEl.setElementCssClass("o_sel_assessment_mode_end");
 		endEl.setDateChooserTimeEnabled(true);
 		endEl.setDefaultValue(beginEl);
 		endEl.setMandatory(true);
-		endEl.setEnabled(status != Status.end);
+		endEl.setEnabled(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.end));
 		
 		int followupTime = assessmentMode.getFollowupTime();
 		if(followupTime < 0) {
@@ -163,7 +168,8 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followupTime, formLayout);
 		followupTimeEl.setElementCssClass("o_sel_assessment_mode_followuptime");
 		followupTimeEl.setDisplaySize(3);
-		followupTimeEl.setEnabled(status != Status.end);
+		followupTimeEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.followupTime));
 		
 		String[] startModeValues = new String[] {
 				translate("mode.beginend.automatic"), translate("mode.beginend.manual")
@@ -175,12 +181,13 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		} else {
 			startModeEl.select(startModeKeys[0], true);
 		}
-		startModeEl.setEnabled(status != Status.end);
+		startModeEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.mode));
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		if(status != Status.end) {
+		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.general)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
 	}

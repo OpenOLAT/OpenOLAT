@@ -126,8 +126,9 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		options.setEnableAssessmentItemSkip(question.isAllowSkipping());
 	
 		assessmentItemCtrl = new VideoAssessmentItemsDisplayController(ureq, getWindowControl(),
-				entry, subIdent, videoEntry, assessmentEntry, authorMode, resolvedAssessmentItem,
-				resourceDirectory, resourceFile, options, this, candidateAuditLogger);
+				entry, subIdent, videoEntry, assessmentEntry, authorMode,
+				resolvedAssessmentItem, resourceDirectory, resourceFile, question.getId(),
+				options, this, candidateAuditLogger);
 		if(!authorMode) {
 			assessmentItemCtrl.setTimeLimit(question.getTimeLimit());
 		}
@@ -226,10 +227,11 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		
 		public VideoAssessmentItemsDisplayController(UserRequest ureq, WindowControl wControl,
 				RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
-				ResolvedAssessmentItem resolvedAssessmentItem, File fUnzippedDirRoot, File itemFile,
+				ResolvedAssessmentItem resolvedAssessmentItem, File fUnzippedDirRoot, File itemFile, String videoQuestionId,
 				QTI21DeliveryOptions deliveryOptions, OutcomesAssessmentItemListener outcomesListener,
 				AssessmentSessionAuditLogger candidateAuditLogger) {
-			super(ureq, wControl, entry, subIdent, testEntry, assessmentEntry, authorMode, resolvedAssessmentItem, fUnzippedDirRoot, itemFile,
+			super(ureq, wControl, entry, subIdent, testEntry, assessmentEntry, authorMode,
+					resolvedAssessmentItem, fUnzippedDirRoot, itemFile, videoQuestionId,
 					deliveryOptions, outcomesListener, candidateAuditLogger);
 		}
 		

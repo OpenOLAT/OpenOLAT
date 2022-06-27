@@ -154,14 +154,14 @@
 		#end
 		#if(${testResults.hasPass()})
 		<tr class="o_qti_stateinfo #if(${testResults.getCalculatedPassed().booleanValue()}) o_passed #elseif(!${testResults.getCalculatedPassed().booleanValue()}) o_failed #else o_unknown #end">
-			<th scope="row">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
+			<th scope="row">$r.translateInAttribute("passed.success.status")</th>
 			<td> 
 				#if(${testResults.getCalculatedPassed().booleanValue()})	
-					<i class="o_icon o_icon_passed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
+					<i class="o_icon o_icon_passed"> </i> $r.translateInAttribute("passed.yes")
 				#elseif(!${testResults.getCalculatedPassed().booleanValue()})		
-					<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
+					<i class="o_icon o_icon_failed"> </i> $r.translateInAttribute("passed.no")
 				#else
-					<i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
+					<i class="o_icon o_icon_passed_undefined"> </i> $r.translateInAttribute("passed.nopassed")
 				#end
 			</td>
 		</tr>
@@ -207,9 +207,9 @@
 		<span class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getCalculatedPassed().booleanValue()}) radial-progress-success o_progress_passed #elseif(!${testResults.getCalculatedPassed().booleanValue()}) radial-progress-danger o_progress_failed #end #end " id="o_performance_summary_visual" data-progress="0"
 			#if(${testResults.hasPass()})
 				#if(${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.yes") " 
+					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.yes") " 
 				#elseif(!${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no") " 
+					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.no") " 
 				#end
 			#end											
 		>
@@ -265,9 +265,9 @@
 			<span class="radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success o_progress_passed #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger o_progress_failed #end #end " id="$foreach.count" data-progress="0"
 			#if(${testResults.hasPass()})
 				#if(${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.yes") " 
+					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.yes") " 
 				#elseif(!${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no") " 
+					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.no") " 
 				#end
 			#end											
 			>
@@ -457,16 +457,16 @@
 			#end
 			#if(${itemResult.hasPass()})
 			<tr class="o_state #if(${testResults.getPass().booleanValue()}) o_passed #elseif(!${testResults.getPass().booleanValue()}) o_failed #else o_unknown #end">
-				<th scope="row">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
+				<th scope="row">$r.translate("passed.success.status")</th>
 				<td> 
 				#if(${itemResult.getPass().booleanValue()})	
 					<i class="o_icon o_icon_passed"></i> 
-					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
+					$r.translate("passed.yes")
 				#elseif(!${itemResult.getPass().booleanValue()})		
 					<i class="o_icon o_icon_failed"> </i> 
-					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
+					$r.translate("passed.no")
 				#else
-					<i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
+					<i class="o_icon o_icon_passed_undefined"> </i> $r.translate("passed.nopassed")
 				#end
 				</td>
 			</tr>

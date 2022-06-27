@@ -55,7 +55,7 @@ public class Panel extends AbstractComponent implements ComponentCollection {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = " + ureq);
+		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = {}", ureq);
 	}
 
 	/**
@@ -91,9 +91,6 @@ public class Panel extends AbstractComponent implements ComponentCollection {
 		return Collections.singletonList(curContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
 	@Override
 	public String getExtendedDebugInfo() {
 		StringBuilder sb = new StringBuilder();
@@ -102,6 +99,7 @@ public class Panel extends AbstractComponent implements ComponentCollection {
 		return "stacksize:1, active:" + sb.toString();
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}

@@ -119,6 +119,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 		context = new CopyCourseContext();
 		context.setExecutingIdentity(author);
 		context.setSourceRepositoryEntry(source);
+		context.setDisplayName(source.getDisplayname());
 		
 		loadCopyConfig(context);
 		
@@ -176,7 +177,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 			row.setEnd(learningPathConfigs.getEndDateConfig());
 			row.setLearningPathConfigs(learningPathConfigs);
 		}
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(source, courseNode);
 		row.setAssessmentConfig(assessmentConfig);
 		return row;
 	}

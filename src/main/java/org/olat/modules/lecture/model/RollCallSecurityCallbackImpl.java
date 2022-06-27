@@ -62,6 +62,16 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 	}
 
 	@Override
+	public boolean canExport() {
+		return repoAdmin || teacher || masterCoach;
+	}
+
+	@Override
+	public boolean canViewDetails() {
+		return repoAdmin || teacher || masterCoach;
+	}
+
+	@Override
 	public boolean canClose(List<LectureBlock> blocks) {
 		if(blocks == null || blocks.isEmpty()) return false;
 		

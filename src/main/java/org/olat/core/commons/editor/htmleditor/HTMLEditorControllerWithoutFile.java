@@ -107,18 +107,13 @@ public class HTMLEditorControllerWithoutFile extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		htmlElement = uifactory.addRichTextElementForStringData("rtfElement", null, body, -1, -1, true ,baseContainer, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
 
 		// Add resize handler
 		RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
-		editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor");
-		editorConfiguration.enableEditorHeight();
+		editorConfiguration.setEditorHeight("full");
 
 		// The buttons
 		save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);

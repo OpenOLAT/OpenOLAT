@@ -56,6 +56,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
@@ -64,6 +65,7 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -72,6 +74,7 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupMembershipImpl;
+import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.BusinessGroupQueryParams;
@@ -99,6 +102,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -142,6 +146,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private RepositoryEntryQueries repositoryEntryQueries;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private DB dbInstance;
 
@@ -288,13 +294,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
+	public BusinessGroupMembershipInfos getMembershipInfos(BusinessGroup businessGroup, IdentityRef identity) {
+		return this.businessGroupDAO.getMembershipInfos(businessGroup, identity);
+	}
+
+	@Override
 	public BusinessGroup setLastUsageFor(final Identity identity, final BusinessGroup group) {
 		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group);
 		BusinessGroup mergedGroup = null;
 		if(reloadedBusinessGroup != null) {
 			reloadedBusinessGroup.setLastUsage(new Date());
-			if(identity != null) {
-				businessGroupRelationDAO.touchMembership(identity, group);
+			if(identity != null && businessGroupRelationDAO.touchMembership(identity, group)
+					&& reloadedBusinessGroup.getReactivationDate() != null
+					&& reloadedBusinessGroup.getGroupStatus() == BusinessGroupStatusEnum.active) {
+				((BusinessGroupImpl)reloadedBusinessGroup).setReactivationDate(null);
 			}
 			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
 		}
@@ -1480,6 +1493,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 		params.setRoles(Roles.administratorRoles());
 		params.setResourceTypes(Collections.singletonList("CourseModule"));
+		params.setOfferOrganisations(acService.getOfferOrganisations(ureqIdentity));
+		params.setOfferValidAt(new Date());
 		
 		float ratio = -1.0f;
 		if(delegate != null) {

@@ -188,8 +188,11 @@ public class CourseController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select",
 					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
-		
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoKey));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));

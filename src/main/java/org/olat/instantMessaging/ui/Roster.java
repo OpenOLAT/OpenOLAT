@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
@@ -37,12 +38,14 @@ import org.olat.instantMessaging.model.BuddyGroup;
  */
 public class Roster {
 	
+	private final boolean withMe;
 	private final Long meIdentityKey;
 	private final List<Buddy> entries = new CopyOnWriteArrayList<>();
 	private final List<BuddyGroup> groups = new CopyOnWriteArrayList<>();
 	
-	public Roster(Long identityKey) {
+	public Roster(Long identityKey, boolean withMe) {
 		this.meIdentityKey = identityKey;
+		this.withMe = withMe;
 	}
 	
 	public List<BuddyGroup> getGroups() {
@@ -136,11 +139,19 @@ public class Roster {
 	}
 	
 	public synchronized int size() {
-		return entries == null ? 0: entries.size();
+		return entries.size();
 	}
 
 	public synchronized List<Buddy> getEntries() {
-		return entries;
+		List<Buddy> copy;
+		if(withMe) {
+			copy = new ArrayList<>(entries);
+		} else {
+			copy = entries.stream()
+					.filter(b -> !meIdentityKey.equals(b.getIdentityKey()))
+					.collect(Collectors.toList());
+		}
+		return copy;
 	}
 	
 	public synchronized void update(List<Buddy> newBuddies) {

@@ -66,8 +66,8 @@ import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.ActivityProgress;
 import org.olat.ims.lti13.LTI13Constants.GradingProgress;
 import org.olat.ims.lti13.LTI13JsonUtil;
-import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Platform;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.LTI13SharedToolService;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
@@ -268,7 +268,7 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 			return;
 		}
 	
-		AssessmentConfig rootConfig = courseAssessmentService.getAssessmentConfig(rootNode);
+		AssessmentConfig rootConfig = courseAssessmentService.getAssessmentConfig(entry, rootNode);
 		Double maxScore = LTI13JsonUtil.convert(rootConfig.getMaxScore());
 		if(maxScore == null) {
 			maxScore = Double.valueOf(100.0d);// value is mandatory

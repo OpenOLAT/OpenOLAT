@@ -1,0 +1,6 @@
+#foreach($message in $messages)
+<div class="o_assessment_message">
+	<p class="o_assessment_message_content"><i class="o_icon o_icon_info"> </i> $r.xssScan($message.content) <small>$r.formatTimeShort($message.publicationDate)</small></p>
+	<div class="o_assessment_message_infos">$r.render($message.readButton)</div>
+</div>
+#end

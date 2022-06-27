@@ -1,18 +1,8 @@
 <script>
 function resize_${panelName}() {	
-	var win = jQuery('#${panelName}');
-	jQuery('.o_im_chat_history', win).each(function(index, el){
-		## maximize chat history height, but not higher than window (mobile phone)
-		var viewportH = jQuery(window).height() - 50;
-		var panelH = win.height();
-		jQuery(el).height((viewportH < panelH ? viewportH : panelH) - 100);
+	jQuery('#${panelName} .o_im_chat_history').each(function(index, el){
 		jQuery(el).scrollTop(el.scrollHeight);
 	});
-}
-function tweak_${panelName}() {
-	try {
-		resize_${panelName}();
-	} catch (e) { if(window.console) console.log(e) }
 }
 function focus_${panelName}() {
 	try {
@@ -30,24 +20,50 @@ function focus_${panelName}() {
 	} catch (e) { if(window.console) console.log(e) }
 }
 </script>
-<div class="o_im_chat">
-	<div class="clearfix">
-		#if (!$isAjaxMode)
-			<div class="pull-right">$r.render("refresh")</div>
-		#end
-		<div class="o_im_load_history">
-			<span class="o_label">
-				$r.translate("chat.load.history")
-			</span>
+#set($hasResourceInfos = $r.isNotEmpty($resourceInfos))
+<div class='o_im #if($rosterDisplay == "supervised") o_im_roster_top #elseif($r.visible("roster")) o_im_roster_left #end  #if($hasResourceInfos) o_im_with_header #end'>
+	#if($r.isNotEmpty($resourceInfos))
+		<div class="o_im_resource_infos">
+			<h5><i class='o_icon $resourceIconCssClass'> </i> $r.escapeHtml($resourceInfos)</h5>
+		</div>
+	#end
+	#if($r.isNotEmpty($rosterNonVipEntries))
+		<div class="o_im_entries">
+			<div class="o_im_entries_non_vip">
+			#foreach($entry in $rosterNonVipEntries)
+				<span class="o_portrait"><span class="o_portrait">
+				#if($message.anonym) 
+					<img src="$r.staticLink("images/transparent.gif")" alt='$r.translate("portrait.generic=")' class="o_portrait_anonymous_small" aria-hidden="true" />
+				#elseif ($message.avatarKey != "-1") 
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$entry.name)" title="$r.translate("portrait.alt",$entry.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${entry.avatarKey}/portrait_small.jpg')" />
+				#else
+					<img src="$r.staticLink("images/transparent.gif")" alt='$r.translate("portrait.generic=")' class="o_portrait_dummy_small" aria-hidden="true" />
+				#end 
+				</span></span> <span><i class='o_icon o_icon-fw ${entry.onlineCssStatus}'> </i> $r.escapeHtml($entry.name)</span>
+			#end
+			</div>
+			<div class="o_im_entries_number">$numOfAllEntriesMsg</div>
+		</div>
+	#elseif($r.isNotEmpty($resourceInfos))
+		<div class="o_im_entries"></div>
+	#end 
+	#if($r.visible("roster"))
+		<div class="o_im_roster">
+		$r.render("roster")
+		</div>
+	#end
+	<div class="o_im_chat">
+		<div class="o_im_load_history clearfix">
+			<span class="o_label">$r.translate("chat.load.history")</span>
 			<div class="btn-group btn-group-xs">
 				$r.render("im.today")
 				$r.render("im.lastweek") 
 				$r.render("im.lastmonth")	
 			</div>
 		</div>
-	</div>
-	$r.render("chatMsgFieldPanel")
-	<div class="o_im_chat_form">
-		$r.render("sendMessageForm")
+		$r.render("chatMsgFieldPanel")
+		<div class="o_im_chat_form">
+			$r.render("sendMessageForm")
+		</div>
 	</div>
 </div>

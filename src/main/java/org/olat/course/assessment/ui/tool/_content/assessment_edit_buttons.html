@@ -1,0 +1,22 @@
+<div class="btn-group">
+	#if($r.available("save.intermediate"))
+		$r.render("save.intermediate")
+	#end
+	#if($r.available("save.intermediate.more"))
+		$r.render("save.intermediate.more")
+	#end
+</div>
+<div class="btn-group">
+	#if($r.available("save.done"))
+		$r.render("save.done")
+	#end
+	#if($r.available("save.done.more"))
+		$r.render("save.done.more")
+	#end
+</div>
+#if($r.available("reopen"))
+	$r.render("reopen")
+#end
+#if($r.available("cancel"))
+	$r.render("cancel")
+#end

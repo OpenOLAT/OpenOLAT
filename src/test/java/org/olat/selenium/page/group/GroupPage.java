@@ -235,7 +235,6 @@ public class GroupPage {
 		By waitingListCheckBy = By.xpath("//div[contains(@class,'o_sel_group_edit_waiting_list')]//input[@type='checkbox']");
 		WebElement waitingListCheckEl = browser.findElement(waitingListCheckBy);
 		OOGraphene.check(waitingListCheckEl, Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -280,9 +279,11 @@ public class GroupPage {
 	}
 	
 	public MembersWizardPage addMember() {
-		By addMemberBy = By.className("o_sel_group_add_member");
+		By buttonsBy = By.cssSelector("fieldset.o_sel_group_members_mgmt div.o_sel_group_members_buttons");
+		OOGraphene.moveTo(buttonsBy, browser);
+
+		By addMemberBy = By.cssSelector("fieldset.o_sel_group_members_mgmt a.o_sel_group_add_member");
 		browser.findElement(addMemberBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalWizard(browser);
 		return new MembersWizardPage(browser);
 	}

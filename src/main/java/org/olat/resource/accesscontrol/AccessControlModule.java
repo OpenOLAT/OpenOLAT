@@ -58,6 +58,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 
 	public static final String AC_ENABLED = "resource.accesscontrol.enabled";
 	public static final String AC_HOME_ENABLED = "resource.accesscontrol.home.overview";
+	private static final String AC_OFFER_ORG_SELECTION = "resource.accesss.org.selection";
 	private static final String VAT_ENABLED = "vat.enabled";
 	private static final String VAT_RATE = "vat.rate";
 	private static final String VAT_NR = "vat.number";
@@ -76,6 +77,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean enabled;
 	@Value("${resource.accesscontrol.home.overview:true}")
 	private boolean homeOverviewEnabled;
+	@Value("${resource.accesss.offer.org.selection}")
+	private OfferOrganisationSelection offerOrganisationSelection;
 	@Value("${method.free.enabled:true}")
 	private boolean freeEnabled;
 	@Value("${method.auto.enabled:false}")
@@ -183,6 +186,11 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		String homeEnabledObj = getStringPropertyValue(AC_HOME_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(homeEnabledObj)) {
 			homeOverviewEnabled = "true".equals(homeEnabledObj);
+		}
+		
+		String offerOrgSelectionObj = getStringPropertyValue(AC_OFFER_ORG_SELECTION, true);
+		if(StringHelper.containsNonWhitespace(offerOrgSelectionObj)) {
+			offerOrganisationSelection = OfferOrganisationSelection.valueOf(offerOrgSelectionObj);
 		}
 
 		String vatEnabledObj = getStringPropertyValue(VAT_ENABLED, true);
@@ -318,6 +326,15 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		if(this.homeOverviewEnabled != homeOverviewEnabled) {
 			setStringProperty(AC_HOME_ENABLED, Boolean.toString(homeOverviewEnabled), true);
 		}
+	}
+
+	public OfferOrganisationSelection getOfferOrganisationSelection() {
+		return offerOrganisationSelection;
+	}
+
+	public void setOfferOrganisationSelection(OfferOrganisationSelection offerOrganisationSelection) {
+		this.offerOrganisationSelection = offerOrganisationSelection;
+		setStringProperty(AC_OFFER_ORG_SELECTION, offerOrganisationSelection.name(), true);
 	}
 
 	public boolean isVatEnabled() {

@@ -85,10 +85,10 @@ $o-table-edit-bg				: #fefbf6;
 
 $o-table-filter-collapse-color	: #e7e7e7;
 
-/* Emty state in various modules */
-$o-emtpy-indicator-color		: #495057 !default;
-$o-emtpy-icon-color				: #C6C9CD !default;
-$o-emtpy-msg-color				: $text-color !default;
+/* Empty state in various modules */
+$o-empty-indicator-color		: #495057 !default;
+$o-empty-icon-color				: #C6C9CD !default;
+$o-empty-msg-color				: $text-color !default;
 
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
@@ -392,6 +392,15 @@ $o-repo-trash-color					: #5A5958;	/* gray */
 $o-repo-deleted-color				: #888;		/* black */
 $o-repo-status-color-dark			: #333;
 $o-repo-status-color-bright			: #fff;
+
+/* Access control */
+$o-ac-offer-active-color			: #3c763d !default;
+$o-ac-offer-inactive-color			: #8A6D40 !default;
+$o-ac-method-border					: 1px solid #e7e7e7 !default;
+$o-ac-method-border-radius			: $panel-border-radius !default;
+$o-ac-config-offer-border			: 1px solid #e7e7e7 !default;
+$o-ac-config-offer-border-radius	: $panel-border-radius !default;
+$o-ac-config-offer-icon-bg-color	: #fcfcfc !default;
 
 /* Curriculum in course site */
 $o-coursesite-curriculum-rowelem-height-md :	40px !default;
@@ -732,7 +741,14 @@ $o-im-chat-load-font-size		: $font-size-small !default;
 $o-im-chat-history-border		: $gray-lighter !default;
 $o-im-chat-message-bg			: #fff !default;
 $o-im-chat-message-bg-alt		: #F4F4F4 !default;
-$o-im-chat-message-border		: #eee !default;
+$o-im-chat-message-border			: #eee !default;
+$o-im-chat-message-bg-me			: $gray-lighter !default;
+$o-im-chat-message-bg-status		: $state-warning-bg !default;
+$o-im-chat-message-bg-error			: $state-danger-bg !default;
+$o-im-chat-message-border-radius	: $border-radius-base !default;
+$o-im-chat-roster-bg				: lighten($gray-lighter, 5%) !default;
+$o-im-chat-border				: $gray-lighter !default;
+
 $o-im-chat-from-color			: $gray-light !default;
 $o-im-chat-from-font-size		: floor($font-size-base * 0.9) !default;
 $o-im-chat-date-color			: $text-muted !default;
@@ -1053,7 +1069,7 @@ $o-edu-type-exam-course-color 				: $o-cn-style-cat-red-color !default;
 $o-edu-type-certification-course-color		: $o-cn-style-cat-orange-color !default;
 $o-edu-type-date-course-color				: $o-cn-style-cat-purple-color !default;
 $o-edu-type-seminar-course-color			: $o-cn-style-cat-light-blue-color !default;
-$o-edu-type-lecture-course-color				: $o-cn-style-cat-light-green-color !default;
+$o-edu-type-lecture-course-color			: $o-cn-style-cat-light-green-color !default;
 $o-edu-type-blendedlearning-course-color	: $o-cn-style-cat-yellow-color !default;
 $o-edu-type-selfstudy-course-color			: $o-cn-style-cat-dark-green-color !default;
 
@@ -1061,4 +1077,23 @@ $o-edu-type-selfstudy-course-color			: $o-cn-style-cat-dark-green-color !default
 $o-export-area-meta-color					: #777;
 $o-export-area-rowelem-space-md				: 10px !default;
 
+/* Practice */
+$o-practice-play-main-border-color			: $brand-primary;
+$o-practice-play-main-bg-color				: rgba($brand-primary,0.1);
+$o-practice-play-bg-color					: #fcfcfc;
+$o-practice-play-border-color				: #e5e5e5;
+$o-practice-play-border-radius				: $border-radius-base !default;
+$o-practice-play-start-link-bg-color		: #F7F6F6;
+$o-practice-challenge-progress-bg-color		: $brand-primary;
+$o-practice-progress-not-bg-color			: #CCCCCC;
+$o-practice-progress-l1-bg-color			: $o-cn-style-cat-light-blue-color ;
+$o-practice-progress-l2-bg-color			: $o-cn-style-cat-purple-color;
+$o-practice-progress-l3-bg-color			: $o-cn-style-cat-orange-color;
+$o-practice-progress-l4-bg-color			: $o-cn-style-cat-yellow-color;
+$o-practice-progress-l5-bg-color			: $o-cn-style-cat-light-green-color;
+$o-practice-level-disc-color				: $brand-primary;
+$o-practice-rank-me-color					: $brand-primary;
+
+/* Swiper */
+$o-swiper-color								: $btn-primary-bg !default;
 

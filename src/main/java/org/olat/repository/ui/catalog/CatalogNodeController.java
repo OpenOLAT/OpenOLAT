@@ -23,6 +23,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,7 @@ import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.CatalogEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryListController;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,6 +82,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private MapperService mapperService;
 	@Autowired
 	private CatalogManager catalogManager;
+	@Autowired
+	private ACService acService;
 	
 	public CatalogNodeController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
 			CatalogEntry catalogEntry, BreadcrumbedStackedPanel stackPanel, boolean wrapInMainPanel) {
@@ -164,6 +168,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setParentEntry(catalogEntry);
 		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+		searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
+		searchParams.setOfferValidAt(new Date());
 		
 		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, false, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {

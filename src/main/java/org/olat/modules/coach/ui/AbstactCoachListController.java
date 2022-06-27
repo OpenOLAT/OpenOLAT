@@ -91,23 +91,6 @@ public abstract class AbstactCoachListController extends FormBasicController imp
         stackPanel.addListener(this);
     }
 
-//    public ListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RelationRole relationRole) {
-//        this.relationRole = identityRelationshipService.getRole(relationRole.getKey());
-//        this.securityCallback = UserRelationSecurityCallbackFactory.create(this.relationRole.getRights());
-//        boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-//        userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
-//
-//        initForm(ureq);
-//        loadModel();
-//    }
-//
-//    public ListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Organisation organisation) {
-//        this.organisation = organisation;
-//        this.securityCallback = UserRelationSecurityCallbackFactory.create(this.relationRole.getRights());
-//        boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-//        userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
-//    }
-
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         //add the table

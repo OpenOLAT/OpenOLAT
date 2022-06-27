@@ -38,6 +38,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -58,13 +59,13 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private Float cutValue;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
-	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, CourseNode courseNode, Locale locale) {
+	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, RepositoryEntry courseEntry, CourseNode courseNode, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	
 		if (courseNode != null) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 			if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 				maxScore = assessmentConfig.getMaxScore();
 				minScore = assessmentConfig.getMinScore();
@@ -102,10 +103,11 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 			switch(COLS[col]) {
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();
-				case score: return row.getScore();
+				case score: return row;
 				case min: return minScore;
 				case max: return getMaxScore(row);
 				case cut: return cutValue;
+				case grade: return row;
 				case status: return "";
 				case passedOverriden: return row.getPassedOverriden();
 				case passed: return row.getPassed();
@@ -151,6 +153,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		score("table.header.score"),
 		min("table.header.min"),
 		max("table.header.max"),
+		grade("table.header.grade"),
 		status("table.header.status"),
 		passedOverriden("table.header.passed.overriden"),
 		passed("table.header.passed"),

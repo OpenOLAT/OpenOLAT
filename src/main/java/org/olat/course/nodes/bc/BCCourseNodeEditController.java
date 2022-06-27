@@ -35,6 +35,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -86,7 +87,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			Condition uploadCondition = bcNode.getPreConditionUploaders();
 			uploaderCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
 					uploadCondition, AssessmentHelper
-							.getAssessableNodes(course.getEditorTreeModel(), bcNode));		
+							.getAssessableNodes(new CourseEntryRef(course), course.getEditorTreeModel(), bcNode));		
 			listenTo(uploaderCondContr);
 
 			CourseConfig courseConfig = course.getCourseConfig();
@@ -102,7 +103,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			Condition downloadCondition = bcNode.getPreConditionDownloaders();
 			downloaderCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
 					downloadCondition, AssessmentHelper
-							.getAssessableNodes(course.getEditorTreeModel(), bcNode));
+							.getAssessableNodes(new CourseEntryRef(course), course.getEditorTreeModel(), bcNode));
 			listenTo(downloaderCondContr);
 			accessibilityContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
 		}

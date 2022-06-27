@@ -170,7 +170,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		columnsModel.addFlexiColumnModel(toolsCol);
 
 
-		tableModel = new CourseDisclaimerConsentTableModel(columnsModel, getLocale());
+		tableModel = new CourseDisclaimerConsentTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "consents", tableModel, 25, false, getTranslator(),
 				formLayout);
 		tableEl.setCustomizeColumns(true);
@@ -179,6 +179,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course_disclaimer_consents_table-v2");
+		tableEl.setCssDelegate(tableModel);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
@@ -240,7 +241,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 				if (event.getCommand().equals(FlexiTableSearchEvent.QUICK_SEARCH)) {
 					FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
 					String searchString = ftse.getSearch();
-					tableModel.search(searchString, ureq);
+					tableModel.search(searchString);
 					tableEl.setEmptyTableSettings("error.no.consent.found.filter", null, "o_icon_disclaimer");
 				} else if (event.getCommand().equals(FlexiTableSearchEvent.RESET.getCommand())) {
 					tableModel.resetSearch();

@@ -500,15 +500,18 @@ create table o_repositoryentry (
    fk_lifecycle int8,
    fk_olatresource int8 unique,
    description text,
+   teaser varchar(255),
    initialauthor varchar(128) not null,
    allowtoleave varchar(16),
    candownload bool not null,
    cancopy bool not null,
    canreference bool not null,
    status varchar(16) default 'preparation' not null,
+   status_published_date timestamp,
    allusers boolean default false not null,
    guests boolean default false not null,
    bookable boolean default false not null,
+   publicvisible bool default false not null,
    deletiondate timestamp default null,
    fk_deleted_by int8 default null,
    fk_educational_type bigint default null,
@@ -853,12 +856,25 @@ create table o_ac_offer (
   resourcedisplayname varchar(255),
   autobooking bool not null default false,
   confirmation_email bool default false,
+  open_access bool default false not null,
+  guest_access bool default false not null,
+  catalog_publish bool default false not null,
+  catalog_web_publish bool default false not null,
   token varchar(255),
   price_amount DECIMAL,
   price_currency_code VARCHAR(3),
   offer_desc VARCHAR(2000),
   fk_resource_id int8,
   primary key (offer_id)
+);
+
+create table o_ac_offer_to_organisation (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  fk_offer int8 not null,
+  fk_organisation int8 not null,
+  primary key (id)
 );
 
 create table o_ac_method (
@@ -1022,6 +1038,30 @@ create table o_ac_checkout_transaction (
    p_capture_currency_code varchar(3),
    p_capture_amount decimal,
    p_paypal_invoice_id varchar(64),
+   primary key (id)
+);
+
+-- Catalog V2
+create table o_ca_launcher (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(50),
+   c_identifier varchar(32),
+   c_sort_order int8,
+   c_enabled bool not null default true,
+   c_config varchar(1024),
+   primary key (id)
+);
+create table o_ca_filter (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(50),
+   c_sort_order int8,
+   c_enabled bool not null default true,
+   c_default_visible bool not null default true,
+   c_config varchar(1024),
    primary key (id)
 );
 
@@ -1362,6 +1402,9 @@ create table o_as_eff_statement (
    creationdate timestamp,
    passed boolean,
    score float4,
+   grade varchar(100),
+   grade_system_ident varchar(64),
+   performance_class_ident varchar(50),
    total_nodes int4,
    attempted_nodes int4,
    passed_nodes int4,
@@ -1401,13 +1444,17 @@ create table o_as_entry (
    a_last_attempt timestamp,
    a_score decimal default null,
    a_max_score decimal default null,
+   a_grade varchar(100),
+   a_grade_system_ident varchar(64),
+   a_performance_class_ident varchar(50),
    a_passed bool default null,
    a_passed_original bool,
    a_passed_mod_date timestamp,
    a_status varchar(16) default null,
    a_date_done timestamp,
    a_details varchar(1024) default null,
-   a_user_visibility bool default true,
+   a_user_visibility bool,
+   a_share bool,
    a_fully_assessed bool default null,
    a_date_fully_assessed timestamp,
    a_assessment_id int8 default null,
@@ -1496,6 +1543,8 @@ create table o_as_mode_course (
    lastmodified timestamp not null,
    a_name varchar(255),
    a_description text,
+   a_external_id varchar(64),
+   a_managed_flags varchar(255),
    a_status varchar(16),
    a_end_status varchar(32),
    a_manual_beginend bool not null default false,
@@ -1545,6 +1594,33 @@ create table o_as_mode_course_to_cur_el (
    primary key (id)
 );
 
+-- Assessment message
+create table o_as_message (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   a_message varchar(2000) not null,
+   a_publication_date timestamp not null,
+   a_expiration_date timestamp not null,
+   a_publication_type varchar(32) not null default 'asap',
+   a_message_sent bool not null default false,
+   fk_entry int8 not null,
+   fk_author int8,
+   a_ressubpath varchar(255),
+   primary key (id)
+);
+
+create table o_as_message_log (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   a_read bool not null default false,
+   fk_message int8 not null,
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+-- Certificate
 create table o_cer_template (
    id int8 not null,
    creationdate timestamp not null,
@@ -1571,6 +1647,58 @@ create table o_cer_certificate (
    c_archived_resource_id int8 not null,
    fk_olatresource int8,
    fk_identity int8 not null,
+   primary key (id)
+);
+
+-- Grade
+create table o_gr_grade_system (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_identifier varchar(64) not null,
+   g_predefined bool not null default false,
+   g_has_passed bool not null default false,
+   g_type varchar(32) not null,
+   g_enabled bool not null default true,
+   g_resolution varchar(32),
+   g_rounding varchar(32),
+   g_best_grade int8,
+   g_lowest_grade int8,
+   g_cut_value decimal(65,30),
+   primary key (id)
+);
+
+create table o_gr_performance_class (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_identifier varchar(50),
+   g_best_to_lowest int8,
+   g_passed bool not null default false,
+   fk_grade_system int8 not null,
+   primary key (id)
+);
+
+create table o_gr_grade_scale (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_min_score decimal(65,30),
+   g_max_score decimal(65,30),
+   fk_grade_system int8,
+   fk_entry int8 not null,
+   g_subident varchar(64) not null,
+   primary key (id)
+);
+
+create table o_gr_breakpoint (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_score decimal(65,30),
+   g_grade varchar(50),
+   g_best_to_lowest int8,
+   fk_grade_scale int8 not null,
    primary key (id)
 );
 
@@ -1701,10 +1829,15 @@ create table o_im_message (
    creationdate timestamp,
    msg_resname varchar(50) not null,
    msg_resid int8 not null,
+   msg_ressubpath varchar(255),
+   msg_channel varchar(255),
+   msg_type varchar(16) not null default 'text',
    msg_anonym bool default false,
    msg_from varchar(255) not null,
    msg_body text,
    fk_from_identity_id int8 not null,
+   fk_meeting_id int8,
+   fk_teams_id int8,
    primary key (id)
 );
 
@@ -1713,6 +1846,9 @@ create table o_im_notification (
    creationdate timestamp,
    chat_resname varchar(50) not null,
    chat_resid int8 not null,
+   chat_ressubpath varchar(255),
+   chat_channel varchar(255),
+   chat_type varchar(16) not null default 'message',
    fk_to_identity_id int8 not null,
    fk_from_identity_id int8 not null,
    primary key (id)
@@ -1723,10 +1859,15 @@ create table o_im_roster_entry (
    creationdate timestamp,
    r_resname varchar(50) not null,
    r_resid int8 not null,
+   r_ressubpath varchar(255),
+   r_channel varchar(255),
    r_nickname varchar(255),
    r_fullname varchar(255),
    r_vip bool default false,
    r_anonym bool default false,
+   r_persistent bool not null default false,
+   r_active bool not null default true,
+   r_read_upto timestamp default null,
    fk_identity_id int8 not null,
    primary key (id)
 );
@@ -1795,6 +1936,8 @@ create table o_qti_assessmentitem_session (
    q_to_review bool default false,
    q_passed bool default null,
    q_storage varchar(1024),
+   q_attempts int8 default null,
+   q_externalrefidentifier varchar(64) default null,
    fk_assessmenttest_session int8 not null,
    primary key (id)
 );
@@ -1821,6 +1964,34 @@ create table o_qti_assessment_marks (
    fk_reference_entry int8 not null,
    fk_entry int8,
    q_subident varchar(64),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+create table o_practice_resource (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   fk_entry int8 not null,
+   p_subident varchar(64) not null,
+   fk_test_entry int8,
+   fk_item_collection int8,
+   fk_pool int8,
+   fk_resource_share int8,
+   primary key (id)
+);
+
+create table o_practice_global_item_ref (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   p_identifier varchar(64) not null,
+   p_level int8 default 0,
+   p_attempts int8 default 0,
+   p_correct_answers int8 default 0,
+   p_incorrect_answers int8 default 0,
+   p_last_attempt_date timestamp,
+   p_last_attempt_passed bool default null,
    fk_identity int8 not null,
    primary key (id)
 );
@@ -3369,6 +3540,8 @@ create table o_course_element (
    c_long_title varchar(1024) not null,
    c_assesseable bool not null,
    c_score_mode varchar(16) not null,
+   c_grade bool not null default false,
+   c_auto_grade bool not null default false,
    c_passed_mode varchar(16) not null,
    c_cut_value decimal,
    fk_entry int8 not null,
@@ -3622,24 +3795,6 @@ create view o_gp_contactext_v as (
       (bgroup.participantsintern=true and bg_member.g_role='participant')
 );
 
-
--- instant messaging
-create or replace view o_im_roster_entry_v as (
-   select
-      entry.id as re_id,
-      entry.creationdate as re_creationdate,
-      ident.id as ident_id,
-      ident.name as ident_name,
-      entry.r_nickname as re_nickname,
-      entry.r_fullname as re_fullname,
-      entry.r_anonym as re_anonym,
-      entry.r_vip as re_vip,
-      entry.r_resname as re_resname,
-      entry.r_resid as re_resid
-   from o_im_roster_entry as entry
-   inner join o_bs_identity as ident on (entry.fk_identity_id = ident.id)
-);
-
 -- question pool
 create or replace view o_qp_pool_2_item_short_v as (
    select
@@ -3890,6 +4045,13 @@ create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
+create index idx_offer_guest_idx on o_ac_offer (guest_access);
+create index idx_offer_open_idx on o_ac_offer (open_access);
+
+alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
+alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_oto_org_idx on o_ac_offer_to_organisation (fk_organisation);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);
@@ -4124,16 +4286,24 @@ create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mim
 alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_msg_from_idx on o_im_message(fk_from_identity_id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
+create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
+
+alter table o_im_message add constraint im_msg_bbb_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_im_msg_bbb_idx on o_im_message(fk_meeting_id);
+alter table o_im_message add constraint im_msg_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
+create index idx_im_msg_teams_idx on o_im_message(fk_teams_id);
 
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 create index idx_im_chat_to_idx on o_im_notification (fk_to_identity_id);
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_chat_from_idx on o_im_notification (fk_from_identity_id);
 create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
+create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);
 
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
 create index idx_im_rost_ident_idx on o_im_roster_entry (fk_identity_id);
+create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressubpath);
 
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_prefs_ident_idx on o_im_preferences (fk_from_identity_id);
@@ -4169,6 +4339,15 @@ create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisat
 create index idx_satrigger_curle_idx on o_as_score_accounting_trigger (e_curriculum_element_key) where e_curriculum_element_key is not null;
 create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name) where e_user_property_value is not null;
 
+-- Assessment message
+alter table o_as_message add constraint as_msg_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_as_msg_entry_idx on o_as_message (fk_entry);
+
+alter table o_as_message_log add constraint as_msg_log_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_as_msg_log_identity_idx on o_as_message_log (fk_identity);
+alter table o_as_message_log add constraint as_msg_log_msg_idx foreign key (fk_message) references o_as_message (id);
+create index idx_as_msg_log_msg_idx on o_as_message_log (fk_message);
+
 -- disadvantage compensation
 alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_compensation_ident_idx on o_as_compensation(fk_identity);
@@ -4179,6 +4358,17 @@ create index idx_compensation_entry_idx on o_as_compensation(fk_entry);
 
 create index comp_log_entry_idx on o_as_compensation_log (fk_entry_id);
 create index comp_log_ident_idx on o_as_compensation_log (fk_identity_id);
+
+-- Grade
+create unique index idx_grade_system_ident on o_gr_grade_system (g_identifier);
+alter table o_gr_grade_scale add constraint grscale_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+create index idx_grscale_to_grsys_idx on o_gr_grade_scale (fk_grade_system);
+alter table o_gr_performance_class add constraint perf_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+create index idx_perf_to_grsys_idx on o_gr_performance_class (fk_grade_system);
+alter table o_gr_grade_scale add constraint grscale_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_grscale_entry_idx on o_gr_grade_scale (fk_entry);
+alter table o_gr_breakpoint add constraint grbp_to_grscale_idx foreign key (fk_grade_scale) references o_gr_grade_scale (id);
+create index idx_grbp_to_grscale_idx on o_gr_breakpoint (fk_grade_scale);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
@@ -4236,6 +4426,7 @@ create index idx_qti_sess_to_as_entry_idx on o_qti_assessmenttest_session (fk_as
 alter table o_qti_assessmentitem_session add constraint qti_itemsess_to_testsess_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
 create index idx_itemsess_to_testsess_idx on o_qti_assessmentitem_session (fk_assessmenttest_session);
 create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemidentifier);
+create index idx_item_ext_ref_idx on o_qti_assessmentitem_session (q_externalrefidentifier);
 
 alter table o_qti_assessment_response add constraint qti_resp_to_testsession_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
 create index idx_resp_to_testsession_idx on o_qti_assessment_response (fk_assessmenttest_session);
@@ -4249,6 +4440,24 @@ alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx 
 create index idx_qti_marks_to_centry_idx on o_qti_assessment_marks (fk_reference_entry);
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identity);
+
+-- Practice
+alter table o_practice_resource add constraint pract_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_pract_entry_idx on o_practice_resource (fk_entry);
+
+alter table o_practice_resource add constraint pract_test_entry_idx foreign key (fk_test_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_pract_test_entry_idx on o_practice_resource (fk_test_entry);
+alter table o_practice_resource add constraint pract_item_coll_idx foreign key (fk_item_collection) references o_qp_item_collection (id);
+create index idx_pract_item_coll_idx on o_practice_resource (fk_item_collection);
+alter table o_practice_resource add constraint pract_poll_idx foreign key (fk_pool) references o_qp_pool (id);
+create index idx_poll_idx on o_practice_resource (fk_pool);
+alter table o_practice_resource add constraint pract_rsrc_share_idx foreign key (fk_resource_share) references o_olatresource(resource_id);
+create index idx_rsrc_share_idx on o_practice_resource (fk_resource_share);
+
+alter table o_practice_global_item_ref add constraint pract_global_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_pract_global_ident_idx on o_practice_global_item_ref (fk_identity);
+
+create index idx_pract_global_id_uu_idx on o_practice_global_item_ref (fk_identity,p_identifier);
 
 -- portfolio
 alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);

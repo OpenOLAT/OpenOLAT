@@ -1,6 +1,5 @@
-
 <!DOCTYPE HTML>
-<html>
+<html lang="$r.getLanguageCode()">
 <head>
 	<title>$rootTitle</title>	
 	<link rel='stylesheet' href='../../../css/offline/qti/theme.css' />
@@ -24,6 +23,9 @@
 	<script>
 var o_info = new Object();
 o_info.latexit = false;
+
+$r.mathJaxJavascriptConfig();
+
 function setFlexiFormDirtyByListener(e){
 	//
 }
@@ -33,49 +35,13 @@ function o_ffSetFocus() {
 function o_animateRadialProgress() {
 	//
 }
-function o_mathjax() {
-	window.MathJax = {
-		tex: {
-			inlineMath: [['$', '$'], ['\\(', '\\)']]
-		},
-		options: {
-			enableMenu: false,
-			renderActions: {
-				findScripts: [11, function (doc) {
-					for (var node of document.querySelectorAll('.math')) {
-						var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
-						var text = document.createTextNode('');
-						node.parentNode.replaceChild(text, node);
-						math.start = {node: text, delim: '', n: 0};
-						math.end = {node: text, delim: '', n: 0};
-						doc.math.push(math);
-					}
-				}, '']
-			}
-		}
-	}
-	jQuery.ajax("${r.mathJaxCdnFullUrl()}tex-mml-chtml.js", {
-		cache: true,
-		dataType: "script",
-		async: false,
-		success: function() {
-			//
-		}
-	});
-}
+
 var BFormatter = {
 	// format on load
 	formatLatexFormulas : function(domId) {}
 };
-jQuery(function() {
-	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
-		var count = jQuery('div.math,span.math,math,div.mathEntryInteraction').length;
-		if (o_info.latexit || count > 0) {
-		    o_mathjax();
-		}
-	}
-});
 	</script>
+	<script src='${r.mathJaxCdnFullUrl()}tex-mml-chtml.js'></script>
 </head>
 <body class="o_page_margins">
 	<div id="o_main">$r.render("results")</div>

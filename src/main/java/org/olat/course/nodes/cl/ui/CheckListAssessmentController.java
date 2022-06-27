@@ -204,7 +204,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("coach.desc");
-		setFormContextHelp("Assessment#_checklist_manage");
+		setFormContextHelp("manual_user/course_elements/Course_Element_Checklist/");
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
@@ -616,7 +616,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity assessedIdentity:assessedIdentities) {
 				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
+				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, getLocale());
 			}
 		}
 		

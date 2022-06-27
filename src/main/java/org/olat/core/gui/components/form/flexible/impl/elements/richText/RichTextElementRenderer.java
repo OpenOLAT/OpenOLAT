@@ -98,7 +98,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			
 			switch(currentTextMode) {
 				case formatted:
-					renderTinyMCE_4(renderer, sb, domID, teC, ubu, source.getTranslator());
+					renderTinyMCE(renderer, sb, domID, teC, ubu, source.getTranslator());
 					break;
 				case multiLine:
 					renderMultiLine(sb, domID, teC);
@@ -190,19 +190,19 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append(FormJSHelper.getJSEnd());
 	}
 
-	private void renderTinyMCE_4(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
+	private void renderTinyMCE(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
 		te.setRenderingMode(TextMode.formatted);
 		RichTextConfiguration config = te.getEditorConfiguration();
-		List<String> onInit = config.getOnInit();
 
 		StringOutput configurations = new StringOutput();
-		config.appendConfigToTinyJSArray_4(configurations, translator);
+		config.appendConfigToTinyJSArray(configurations, translator);
 		if(config.getAdditionalConfiguration() != null) {
 			config.getAdditionalConfiguration().appendConfigToTinyJSArray_4(configurations, translator);
 		}
 		
 		String baseUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/tinymce/tinymce.min.js");
+		String iconsUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/BTinyIcons.js");
 		
 		// Read write view
 		renderTinyMCETextarea(sb, domID, teC);
@@ -215,37 +215,66 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
 			configurations.append("mathJaxUrl: \"").append(WebappHelper.getMathJaxCdn()).append("\",\n");
 		}
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathLiveCdn())) {
+			configurations.append("mathLiveUrl: \"").append(WebappHelper.getMathLiveCdn()).append("\",\n");
+		}
 		if(te.getMaxLength() > 0) {
 			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");
 		}
 		
 		Integer currentHeight = teC.getCurrentHeight();
 		String uploadUrl = getImageUploadURL(renderer, teC, ubu);
+		String height = config.getEditorHeight();
 		
 		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
 		sb.append("<script>\n");
-		//file browser url
-		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
-		ubu.buildURI(sb, null, null);
-		sb.append("');\n");
-		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
+		sb.append(" setTimeout(function() {");
+		if("full".equals(height)) {
+			sb.append("  var oTop = jQuery('#").append(domID).append("_diw").append("').offset().top;\n")
+			  .append("  var cssHeight = 'calc(100vh - ' + (oTop + 53) + 'px)';\n");
+		}
+		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
-		  .append("    script_url: '").append(baseUrl).append("',\n");
+		  .append("    script_url: '").append(baseUrl).append("',\n")
+		  .append("    icons_url: '").append(iconsUrl).append("',\n")
+		  .append("    image_uploadtab: false,\n")
+		  .append("    icons: 'openolat',\n");
 		if(uploadUrl != null) {
-			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n");
+			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n")
+			  .append("    automatic_uploads: true,\n");
 		}
-		if(currentHeight != null && currentHeight.intValue() > 20) {
+		if("full".equals(height)) {
+			sb.append("    height: cssHeight,\n");
+		} else if(StringHelper.containsNonWhitespace(height)) {
+			sb.append("    height: '").append(config.getEditorHeight()).append("',\n");
+		} else if(currentHeight != null && currentHeight.intValue() > 20) {
 			sb.append("    height: ").append(currentHeight).append(",\n");
+		} else if(teC.getRows() > 0) {
+			int heightInPx = teC.getRows() * 40;
+			sb.append("    height: '").append(heightInPx).append("px',\n");
 		}
+		
 		sb.append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
-		  .append("        BTinyHelper.startFormDirtyObserver('").append(te.getRootForm().getDispatchFieldId()).append("','").append(domID).append("');\n");
-		for (String initFunction:onInit) {
-			sb.append("        ").append(initFunction.replace(".curry(", "(")).append(";\n");
-		}
+		  .append("        var updateDirty = function() {\n")
+		  .append("          o_extraTinyDirty(ed);")
+		  .append("          if(ed.isDirty()) {\n")
+		  .append("            setFlexiFormDirty('").append(form.getDispatchFieldId()).append("', false);\n")
+		  .append("          }\n")
+		  .append("        }\n")
+		  
+		  .append("        var global = tinymce.util.Tools.resolve('tinymce.util.Delay');\n")
+		  .append("        var debouncedUpdate = global.debounce(function () {\n")
+		  .append("          return updateDirty();\n")
+		  .append("        }, 300);\n")
+		  .append("        ed.on('SetContent BeforeAddUndo Undo Redo ViewUpdate keyup', debouncedUpdate);\n");
+		
 		sb.append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
-		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")
+		  .append("        var domElem = jQuery('#").append(domID).append("');\n")
+		  .append("        if (domElem && domElem.onchange) {\n")
+		  .append("          domElem.onchange();\n")
+		  .append("        };\n")
 		  .append("      });\n")
 		  .append("      ed.on('ResizeEditor', function(e) {\n")
 		  .append("        try {\n")
@@ -254,8 +283,10 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("      });\n");
 		if(config.isSendOnBlur()) {
 			sb.append("      ed.on('blur', function(e) {\n")
-			  .append("        o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false, false, 'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
-	          .append("      });\n");
+			  .append("        if(jQuery('#mathlive').length == 0) {")// MathLive plug-in takes the focus and blur Tiny
+			  .append("          o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false, false, 'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
+	          .append("        }\n")
+			  .append("      });\n");
 		}
 		sb.append("    },\n")
 		  .append(configurations)
@@ -282,7 +313,6 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	
 	private void renderTinyMCETextarea(StringOutput sb, String domID, RichTextElementComponent teC) {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
-		int cols = teC.getCols();
 		int rows = teC.getRows();
 		String value = te.getRawValue(TextMode.formatted);
 		
@@ -295,13 +325,6 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		StringBuilder rawData = FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction());
 		sb.append(rawData.toString());
 		sb.append(" style=\"");
-		sb.append(" width:");
-		if (cols == -1) {
-			sb.append("100%;");
-		} else {
-			sb.append(cols);
-			sb.append("em;");
-		}
 		sb.append("height:");
 		if (rows == -1) {
 			sb.append("100%;");

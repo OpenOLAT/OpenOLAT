@@ -19,14 +19,19 @@
  */
 package org.olat.repository.manager;
 
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,18 +42,25 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -75,6 +87,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OLATResourceManager resourceManager;
@@ -86,6 +100,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private ACService acService;
 	
 	private static Identity admin;
 	private static Identity user1;
@@ -146,18 +162,16 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 			// create course and persist as OLATResourceImpl
 			
 			int rest = i%4;
-			boolean guests = false;
-			boolean allUsers = false;
+			boolean publicVisible = false;
 			Identity owner = null;
 			switch(rest) {
 				case 0: {
-					guests = true;
-					allUsers = true;
+					publicVisible = true;
 					owner = user1;
 					break;
 				}
 				case 1: {
-					allUsers = true;
+					publicVisible = true;
 					owner = id2;
 					break;
 				}
@@ -173,8 +187,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 
 			RepositoryEntry re = createCourseRepositoryEntry(owner, i, organisation);
 			re.setEntryStatus(RepositoryEntryStatusEnum.published);
-			re.setAllUsers(allUsers);
-			re.setGuests(guests);
+			re.setPublicVisible(publicVisible);
 			repositoryService.update(re);
 			if (i % 20 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -306,7 +319,16 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-gen-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-gen-2");
 		
+		// Open access
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryManager.setAccess(re1, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		Offer offer = acService.createOffer(re1.getOlatResource(), re1.getDisplayname());
+		offer.setOpenAccess(true);
+		acService.save(offer);
+		List<OrganisationRef> offerOrganisations = acService.getOfferOrganisations(id1);
+		Organisation organisation = organisationService.getOrganisation(offerOrganisations.get(0));
+		acService.updateOfferOrganisations(offer, List.of(organisation));
+		// Group participant
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id1, re2, GroupRoles.participant.name());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", BusinessGroup.BUSINESS_TYPE,
@@ -322,14 +344,12 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertNotNull(entries1);
 		Assert.assertFalse(entries1.contains(re1));
 		Assert.assertFalse(entries1.contains(re2));
-		for(RepositoryEntry entry:entries1) {
-			Assert.assertTrue(entry.isAllUsers());
-		}
 		
 		//check for identity 1 (participant re2 + re1 accessible to all users)
 		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
 		params2.setIdentity(id1);
 		params2.setRoles(Roles.userRoles());
+		params2.setOfferOrganisations(offerOrganisations);
 		List<RepositoryEntry> entries2 = repositoryEntryQueries.searchEntries(params2, 0, -1, true);
 		Assert.assertNotNull(entries2);
 		Assert.assertFalse(entries2.isEmpty());
@@ -337,7 +357,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries2.contains(re2));
 		for(RepositoryEntry entry:entries2) {
 			if(!entry.equals(re2)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -352,8 +371,9 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries3.contains(re1));
 		Assert.assertFalse(entries3.contains(re2));
 		for(RepositoryEntry entry:entries3) {
-			Assert.assertTrue(entry.isAllUsers());
-			Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
+			if (!entry.isPublicVisible()) {
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
+			}
 		}
 	}
 	
@@ -382,7 +402,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries1.contains(re));
 		for(RepositoryEntry entry:entries1) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -398,7 +417,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries2.contains(re));
 		for(RepositoryEntry entry:entries2) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -412,7 +430,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertNotNull(entries3);
 		Assert.assertFalse(entries3.contains(re));
 		for(RepositoryEntry entry:entries3) {
-			Assert.assertTrue(entry.isAllUsers());
 			Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 		}
 	}
@@ -435,7 +452,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries.contains(re));
 		for(RepositoryEntry entry:entries) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -459,7 +475,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries.contains(re));
 		for(RepositoryEntry entry:entries) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -490,7 +505,6 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries.contains(re));
 		for(RepositoryEntry entry:entries) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.isAllUsers());
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
@@ -504,4 +518,301 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 				"Description of learning by OLAT " + i, r, RepositoryEntryStatusEnum.preparation, organisation);
 		return re;
 	}
+
+	
+	@Test
+	public void searchViews_offer_bookable() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		
+		// Not bookable
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re,  RepositoryEntryStatusEnum.published);
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		Offer offer = acService.createOffer(re.getOlatResource(), random());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
+		acService.saveOfferAccess(offerAccess);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).isEmpty();
+		
+		// Bookable
+		re = repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(re.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_status() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Date now = new Date();
+		Date inPast = DateUtils.addDays(now, -2);
+		Date inFuture = DateUtils.addDays(now, 2);
+		
+		// Offer without date has to be published
+		RepositoryEntry rePreparation = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.preparation, inPast, inFuture);
+		RepositoryEntry reReview = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.review, inPast, inFuture);
+		RepositoryEntry reCoachPublished = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.coachpublished, inPast, inFuture);
+		RepositoryEntry rePublished = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.closed, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.trash, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.deleted, inPast, inFuture);
+		// Offer with date has to be prepared to published
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.preparation, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.review, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.coachpublished, null, null);
+		RepositoryEntry rePublishedNoDates = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.closed, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.trash, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.deleted, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(now);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(
+				rePreparation.getKey(),
+				reReview.getKey(),
+				reCoachPublished.getKey(),
+				rePublished.getKey(),
+				rePublishedNoDates.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_organisation() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		
+		RepositoryEntry reOfferOrg1 = createReOffer(method, reOrgs, singletonList(organisation1), RepositoryEntryStatusEnum.published, null, null);
+		RepositoryEntry reOfferOrg2 = createReOffer(method, reOrgs, singletonList(organisation2), RepositoryEntryStatusEnum.published, null, null);
+		createReOffer(method, reOrgs, singletonList(otherOganisation), RepositoryEntryStatusEnum.published, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(List.of(organisation1, organisation2));
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(
+				reOfferOrg1.getKey(),
+				reOfferOrg2.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_period() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Date now = new Date();
+		Date inPast = DateUtils.addDays(now, -2);
+		Date inFuture = DateUtils.addDays(now, 2);
+		
+		RepositoryEntry reNoDates = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
+		RepositoryEntry reFromInPast = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inFuture, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, inPast);
+		RepositoryEntry reToInFuture = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, DateUtils.addDays(inPast, -2), inPast);
+		RepositoryEntry reToInRange = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inFuture, DateUtils.addDays(inFuture, 2));
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(now);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(
+				reNoDates.getKey(),
+				reFromInPast.getKey(),
+				reToInFuture.getKey(),
+				reToInRange.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_method() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		RepositoryEntry re = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		// Method enabled
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(re.getKey());
+		
+		// Method disabled
+		acService.enableMethod(FreeAccessMethod.class, false);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).isEmpty();
+		
+		// Method enabled
+		acService.enableMethod(FreeAccessMethod.class, true);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(re.getKey());
+	}
+	
+	private RepositoryEntry createReOffer(AccessMethod method, List<Organisation> reOrgs,
+			List<Organisation> offerOrganisations, RepositoryEntryStatusEnum status, Date validFrom, Date validTo) {
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
+		rePreparation = repositoryManager.setStatus(rePreparation, status);
+		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
+		offer.setValidFrom(validFrom);
+		offer.setValidTo(validTo);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
+		acService.saveOfferAccess(offerAccess);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		return rePreparation;
+	}
+	
+	@Test
+	public void searchViews_openaccess() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		dbInstance.commitAndCloseSession();
+		
+		// Open access enabled, repository entry public visible, status published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
+		offer.setOpenAccess(true);
+		offer = acService.save(offer);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).contains(repositoryEntry.getKey());
+		
+		// repository entry not public visible
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
+		
+		// repository entry not published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
+
+		// Open access not enabled
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		offer.setOpenAccess(false);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
+	}
+	
+	@Test
+	public void searchViews_openaccess_organisations() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		
+		RepositoryEntry reOfferOrg1 = createReOpenAccess(reOrgs, singletonList(organisation1));
+		RepositoryEntry reOfferOrg2 = createReOpenAccess(reOrgs, singletonList(organisation2));
+		createReOpenAccess(reOrgs, singletonList(otherOganisation));
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(List.of(organisation1, organisation2));
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(
+				reOfferOrg1.getKey(),
+				reOfferOrg2.getKey());
+	}
+	
+	private RepositoryEntry createReOpenAccess(List<Organisation> reOrgs, List<Organisation> offerOrganisations) {
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.published);
+		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
+		offer.setOpenAccess(true);
+		offer = acService.save(offer);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		return rePreparation;
+	}
+	
+	@Test
+	public void searchViews_guest() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		// Guest enabled, repository entry public visible, status published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
+		offer.setGuestAccess(true);
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.guestRoles());
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).contains(repositoryEntry.getKey());
+		
+		// repository entry not public visible
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
+		
+		// repository entry not published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
+
+		// guest not enabled
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		offer.setGuestAccess(false);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
+	}
+	
 }

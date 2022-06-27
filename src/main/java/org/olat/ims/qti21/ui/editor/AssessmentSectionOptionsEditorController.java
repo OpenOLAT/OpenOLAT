@@ -101,7 +101,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_section_options");
-		setFormContextHelp("Configure tests#testeditor_section");
+		setFormContextHelp("manual_user/tests/Configure_tests/#section");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}

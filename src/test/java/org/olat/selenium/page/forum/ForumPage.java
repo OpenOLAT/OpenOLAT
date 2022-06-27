@@ -133,17 +133,17 @@ public class ForumPage {
 	
 	public ForumPage openThread(String title) {
 		By threadBy = By.xpath("//table[contains(@class,'table')]//tr//a[text()='" + title + "']");
-		OOGraphene.waitElement(threadBy, 5, browser);
+		OOGraphene.waitElement(threadBy, browser);
 		OOGraphene.click(threadBy, browser);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_forum_message"), browser);
 		return this;
 	}
 	
 	public ForumPage openThreadInPeekview(String title) {
 		By threadBy = By.xpath("//div[contains(@class,'o_forum_peekview_message')]//a[span[text()='" + title + "']]");
-		OOGraphene.waitElement(threadBy, 5, browser);
+		OOGraphene.waitElement(threadBy, browser);
 		browser.findElement(threadBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_forum_message"), browser);
 		return this;
 	}
 	
@@ -196,15 +196,16 @@ public class ForumPage {
 
 	public ForumPage replyToMessage(String reference, String title, String reply) {
 		replyToMessageNoWait(reference, title, reply);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public ForumPage replyToMessageNoWait(String reference, String title, String reply) {
 		By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + reference + "')]]//a[contains(@class,'o_sel_forum_reply')]");
-		OOGraphene.waitElement(replyBy, browser);
+		OOGraphene.waitElementPresence(replyBy, 5, browser);
 		OOGraphene.click(replyBy, browser);
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		
 		if(title != null) {
 			By titleBy = By.cssSelector(".o_sel_forum_message_title input[type='text']");

@@ -208,7 +208,7 @@ class NewUserForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.newuser");
 		setFormDescription("new.form.please.enter");
-		setFormContextHelp("User management");
+		setFormContextHelp("manual_admin/usermanagement/");
 		formLayout.setElementCssClass("o_sel_id_create");
 		
 		usernameTextElement = uifactory.addTextElement(LOGINNAME, "username", 128, "", formLayout);

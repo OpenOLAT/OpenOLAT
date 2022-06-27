@@ -38,12 +38,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @XmlRootElement(name = "repositoryEntryVO")
 public class RepositoryEntryVO {
 	
-	
 	private Long key;
 	private String softkey;
 	private String resourcename;
 	private String displayname;
 	private String description;
+	private String teaser;
 	@XmlAttribute(name="authors",required=false)
 	private String authors;
 	@XmlAttribute(name="location",required=false)
@@ -86,6 +86,8 @@ public class RepositoryEntryVO {
 	private Long olatResourceId;
 	private String olatResourceTypeName;
 	
+	private String entryStatus;
+	
 	private RepositoryEntryLifecycleVO lifecycle;
 	
 	public RepositoryEntryVO() {
@@ -99,6 +101,7 @@ public class RepositoryEntryVO {
 		vo.setResourcename(entry.getResourcename());
 		vo.setDisplayname(entry.getDisplayname());
 		vo.setDescription(entry.getDescription());
+		vo.setTeaser(entry.getTeaser());
 		vo.setAuthors(entry.getAuthors());
 		vo.setLocation(entry.getLocation());
 		vo.setResourceableId(entry.getResourceableId());
@@ -112,6 +115,7 @@ public class RepositoryEntryVO {
 		vo.setExternalId(entry.getExternalId());
 		vo.setExternalRef(entry.getExternalRef());
 		vo.setManagedFlags(entry.getManagedFlagsString());
+		vo.setEntryStatus(entry.getEntryStatus().name());
 		if(entry.getLifecycle() != null) {
 			vo.setLifecycle(new RepositoryEntryLifecycleVO(entry.getLifecycle()));
 		}
@@ -156,6 +160,14 @@ public class RepositoryEntryVO {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
 	}
 
 	public String getAuthors() {
@@ -236,6 +248,14 @@ public class RepositoryEntryVO {
 
 	public void setOlatResourceTypeName(String olatResourceTypeName) {
 		this.olatResourceTypeName = olatResourceTypeName;
+	}
+
+	public String getEntryStatus() {
+		return entryStatus;
+	}
+
+	public void setEntryStatus(String entryStatus) {
+		this.entryStatus = entryStatus;
 	}
 
 	public RepositoryEntryLifecycleVO getLifecycle() {

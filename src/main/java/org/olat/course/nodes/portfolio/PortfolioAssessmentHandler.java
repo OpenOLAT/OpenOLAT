@@ -43,6 +43,7 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.stereotype.Service;
 
 /**
@@ -60,8 +61,8 @@ public class PortfolioAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		return new PortfolioAssessmentConfig(courseNode.getModuleConfiguration());
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		return new PortfolioAssessmentConfig(courseEntry, courseNode);
 	}
 
 	@Override
@@ -102,15 +103,16 @@ public class PortfolioAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public boolean hasCustomIdentityList() {
-		return false;
+		return true;
 	}
-
+	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return null;
+		return new PortfolioIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 }

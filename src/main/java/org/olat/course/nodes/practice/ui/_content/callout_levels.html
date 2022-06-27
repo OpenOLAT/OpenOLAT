@@ -1,0 +1,8 @@
+<div class="o_practice_statistics_legend o_practice_callout_levels">
+	#if($r.isNotNull($levels))
+		#foreach($i in ${levels.getLevels()})
+		   <span><i class='o_icon o_icon_circle_color ${levels.getCssClass($i)}'> </i></span> <span class="o_practice_num">${levels.getLevel($i)}</span> <span>$r.translate("level.stat.percent") $i</span>
+		#end
+	#end
+	<span><i class='o_icon o_icon_circle_color ${levels.getCssClass(0)}'> </i></span> <span class="o_practice_num">${levels.getNot()}</span> <span>$r.translate("level.stat.not")</span>
+</div>

@@ -58,7 +58,7 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		FormLayoutContainer configCont = FormLayoutContainer.createDefaultFormLayout("config", getTranslator());
 		configCont.setRootForm(mainForm);
 		configCont.setFormTitle(translate("editor.revisions.title"));
-		configCont.setFormContextHelp("Three Steps to Your Task#_task_configuration");
+		configCont.setFormContextHelp("manual_user/task/Three_Steps_to_Your_Task/#configuration");
 		formLayout.add(configCont);
 
 		minNumberOfDocsEl = uifactory.addTextElement("min.documents", "min.documents", 5, "", configCont);

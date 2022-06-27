@@ -42,38 +42,55 @@ public class PassedCellRenderer extends IconCssCellRenderer {
 
 	@Override
 	protected String getIconCssClass(Object val) {
-		if (val instanceof Boolean) {
-			Boolean passed = (Boolean)val;
+		Boolean passed = getPassed(val);
+		if (passed != null) {
 			if (passed.booleanValue()) {
 				return "o_icon o_icon-fw o_icon_passed";
 			}
 			return "o_icon o_icon-fw o_icon_failed";
+		} else if (isShowNull(val)) {
+			return "o_icon o_icon-fw o_icon_passed_undefined";
 		}
-		return "o_icon o_icon-fw o_icon_passed_undefined";
+		return null;
 	}
 
 	@Override
 	protected String getCellValue(Object val) {
-		if (val instanceof Boolean) {
-			Boolean passed = (Boolean)val;
+		Boolean passed = getPassed(val);
+		if (passed != null) {
 			if (passed.booleanValue()) {
 				return translator.translate("passed.true");
 			}
 			return translator.translate("passed.false");
+		} else if (isShowNull(val)) {
+			return translator.translate("passed.undefined");
 		}
-		return translator.translate("passed.undefined");
+		return null;
 	}
 	
 	@Override
 	protected String getCssClass(Object val) {
-		if (val instanceof Boolean) {
-			Boolean passed = (Boolean)val;
+		Boolean passed = getPassed(val);
+		if (passed != null) {
 			if (passed.booleanValue()) {
 				return "o_state o_passed";
 			}
 			return "o_state o_failed";
+		} else if (isShowNull(val)) {
+			return "o_state o_noinfo";
 		}
-		return "o_state o_noinfo";
+		return null;
+	}
+	
+	protected boolean isShowNull(@SuppressWarnings("unused") Object val)  {
+		return true;
+	}
+	
+	protected Boolean getPassed(Object val) {
+		if (val instanceof Boolean) {
+			return (Boolean)val;
+		}
+		return null;
 	}
 
 }

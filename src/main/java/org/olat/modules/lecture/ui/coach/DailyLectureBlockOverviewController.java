@@ -104,6 +104,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	
 	private int counter = 0;
 	private Date currentDate;
+	private final boolean withSelect;
 	private final Formatter formatter;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean dailyRecordingEnabled;
@@ -125,11 +126,13 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public DailyLectureBlockOverviewController(UserRequest ureq, WindowControl wControl, Date currentDate, Identity profiledIdentity, LecturesSecurityCallback secCallback) {
+	public DailyLectureBlockOverviewController(UserRequest ureq, WindowControl wControl, Date currentDate,
+			Identity profiledIdentity, LecturesSecurityCallback secCallback, boolean withSelect) {
 		super(ureq, wControl, "lectureblocks_daily_overview", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
 		this.currentDate = currentDate;
 		this.secCallback = secCallback;
+		this.withSelect = withSelect;
 		boolean teacher = secCallback.viewAs() == LectureRoles.teacher;
 		boolean masterCoach = secCallback.viewAs() == LectureRoles.mastercoach;
 		rollCallSecCallback = new RollCallSecurityCallbackImpl(false, masterCoach, teacher, null, lectureModule);
@@ -163,7 +166,8 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(new LectureBlockTimesCellRenderer(true, getLocale()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.times, treeNodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.entry, "open.course"));
+		String select = withSelect ? "open.course" : null;
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.entry, select));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		DefaultFlexiColumnModel participantsCol = new DefaultFlexiColumnModel(BlockCols.numOfParticipants);
@@ -181,15 +185,20 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		DefaultFlexiColumnModel alertCol = new DefaultFlexiColumnModel(BlockCols.alerts, new LectureBlockAbsenceAlertCellRenderer());
 		alertCol.setIconHeader("o_icon o_absences_col_alert");
 		columnsModel.addFlexiColumnModel(alertCol);
-		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details.i18nHeaderKey(), BlockCols.details.ordinal(), "details",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
-		// set sort key even though we do not sort - added as css classes to column headers for styling
-		detailsCol.setSortKey(TeachCols.details.name());
-		columnsModel.addFlexiColumnModel(detailsCol);
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(BlockCols.tools);
-
-		toolsCol.setSortable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		
+		if(rollCallSecCallback.canViewDetails() && withSelect) {
+			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details.i18nHeaderKey(), BlockCols.details.ordinal(), "details",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
+			// set sort key even though we do not sort - added as css classes to column headers for styling
+			detailsCol.setSortKey(TeachCols.details.name());
+			columnsModel.addFlexiColumnModel(detailsCol);
+		}
+		
+		if(rollCallSecCallback.canExport()) {
+			StickyActionColumnModel toolsCol = new StickyActionColumnModel(BlockCols.tools);
+			toolsCol.setSortable(false);
+			columnsModel.addFlexiColumnModel(toolsCol);
+		}
 		
 		tableModel = new DailyLectureBlockTableModel(columnsModel, dailyRecordingEnabled);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);

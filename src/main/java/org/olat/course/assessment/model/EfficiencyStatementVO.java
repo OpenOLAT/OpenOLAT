@@ -34,6 +34,9 @@ public class EfficiencyStatementVO {
 	private Long identityKey;
 	
 	private Float score;
+	private String grade;
+	private String gradeSystemIdent;
+	private String performanceClassIdent;
 	private Boolean passed;
 	private Date creationDate;
 	private String courseTitle;
@@ -47,6 +50,9 @@ public class EfficiencyStatementVO {
 		creationDate = efficiencyStatement.getCreationDate();
 		passed = efficiencyStatement.getPassed();
 		score = efficiencyStatement.getScore();
+		grade = efficiencyStatement.getGrade();
+		gradeSystemIdent = efficiencyStatement.getGradeSystemIdent();
+		performanceClassIdent = efficiencyStatement.getPerformanceClassIdent();
 		identityKey = efficiencyStatement.getIdentity().getKey();
 	}
 	
@@ -72,6 +78,30 @@ public class EfficiencyStatementVO {
 
 	public void setScore(Float score) {
 		this.score = score;
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
 	}
 
 	public Boolean getPassed() {

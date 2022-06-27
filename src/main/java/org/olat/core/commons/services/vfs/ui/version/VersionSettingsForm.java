@@ -74,7 +74,7 @@ public class VersionSettingsForm extends FormBasicController {
 		// First add title and context help
 		setFormTitle("version.title");
 		setFormDescription("version.intro");
-		setFormContextHelp("Versioning");
+		setFormContextHelp("manual_admin/administration/Files_and_Folders/");
 
 		numOfVersions = uifactory.addDropdownSingleselect("version.numOfVersions", formLayout, keys, values, null);
 		numOfVersions.addActionListener(FormEvent.ONCHANGE);

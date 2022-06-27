@@ -110,7 +110,7 @@ public class ItemListMySharesController extends AbstractItemListController {
 			}
 		}
 
-		myShareEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout, myShareKeys, myShareValues, null);
+		myShareEl = uifactory.addDropdownSingleselect("source.selector", "my.share", formLayout, myShareKeys, myShareValues, null);
 		myShareEl.setDomReplacementWrapperRequired(false);
 		myShareEl.getLabelC().setDomReplaceable(false);
 		myShareEl.addActionListener(FormEvent.ONCHANGE);

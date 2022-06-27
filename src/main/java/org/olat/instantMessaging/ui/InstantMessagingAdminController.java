@@ -76,7 +76,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		//enable all
 		FormLayoutContainer moduleFlc = FormLayoutContainer.createDefaultFormLayout("flc_module", getTranslator());
 		moduleFlc.setFormTitle(translate("im.module.enable.title"));
-		moduleFlc.setFormContextHelp("Instant Messaging");
+		moduleFlc.setFormContextHelp("manual_admin/administration/Instant_Messaging/");
 		formLayout.add(moduleFlc);
 	
 		String[] enabledValues = new String[]{ translate("enabled") };

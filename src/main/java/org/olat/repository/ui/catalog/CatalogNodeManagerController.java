@@ -478,6 +478,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		List<CatalogEntry> detachedChildren = catalogManager.getChildrenOf(catalogEntry);
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles());
+		params.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
+		params.setOfferValidAt(new Date());
 		params.setParentEntry(catalogEntry);
 		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 		
@@ -485,15 +487,16 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		for (RepositoryEntry entry : repoEntries) {
 			resourceKeys.add(entry.getOlatResource().getKey());
 		}
-
-		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
+		
+		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date(), null);
 		
 		List<CatalogEntryRow> items = new ArrayList<>();
 		List<CatalogEntryRow> closedItems = new ArrayList<>();
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
 			for (CatalogEntry catEntry : detachedChildren) {
-				if (catEntry != null && catEntry.getType() == CatalogEntry.TYPE_LEAF && catEntry.getRepositoryEntry().equals(entry)) {
+				if (catEntry != null && catEntry.getType() == CatalogEntry.TYPE_LEAF
+						&& catEntry.getRepositoryEntry() != null && catEntry.getRepositoryEntry().equals(entry)) {
 					row = new CatalogEntryRow(entry, catEntry);
 					break;
 				} 
@@ -501,7 +504,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			
 			List<PriceMethod> types = new ArrayList<>(3);
 			
-			if(entry.isBookable()) {
+			if(entry.isPublicVisible()) {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -515,8 +518,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 						}
 					}
 				}
-			} else if (!entry.isAllUsers() && !entry.isGuests()) {
-				// members only always show lock icon
+			} else {
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 			} 
 			
@@ -991,7 +993,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				CatalogEntryRow row = (CatalogEntryRow)dialogDeleteLink.getUserObject();
 				catalogManager.deleteCatalogEntry(row, catalogEntry);
 				loadResources(ureq);
-				fireEvent(ureq, Event.BACK_EVENT);
 			}
 		} else if(entryResourceMoveCtrl == source) {
 			CatalogEntry moveMe = entryResourceMoveCtrl.getMoveMe();

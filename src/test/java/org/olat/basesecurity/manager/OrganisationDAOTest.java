@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -483,6 +484,38 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(parentLineDef);
 		Assert.assertEquals(1, parentLineDef.size());
 		Assert.assertEquals(defOrganisation, parentLineDef.get(0));
+	}
+	
+	@Test
+	public void getParentLineRefs() {
+		String identifier = UUID.randomUUID().toString();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 4", identifier, null, defOrganisation, null);
+		Organisation organisation2_1 = organisationDao.createAndPersistOrganisation("Tree4 2.1", identifier, null, rootOrganisation, null);
+		Organisation organisation2_2 = organisationDao.createAndPersistOrganisation("Tree4 2.2", identifier, null, rootOrganisation, null);
+		dbInstance.commitAndCloseSession();
+		Organisation organisation2_1_1 = organisationDao.createAndPersistOrganisation("Tree4 3.1", identifier, null, organisation2_1, null);
+		Organisation organisation2_1_2 = organisationDao.createAndPersistOrganisation("Tree4 3.2", identifier, null, organisation2_1, null);
+		Organisation organisation2_2_1 = organisationDao.createAndPersistOrganisation("Tree4 3.4", identifier, null, organisation2_2, null);
+		dbInstance.commitAndCloseSession();
+		Organisation organisation2_2_1_1 = organisationDao.createAndPersistOrganisation("Tree4 4-1", identifier, null, organisation2_2_1, null);
+		dbInstance.commitAndCloseSession();
+		Organisation root2Organisation = organisationDao.createAndPersistOrganisation("Tree4 5", identifier, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		// check parent line of the deepest node
+		List<Long> parentLineKeys = organisationDao.getParentLineRefs(List.of(organisation2_1, organisation2_2_1)).stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+		parentLineKeys.forEach(System.out::println);
+		Assert.assertEquals(5, parentLineKeys.size());
+		Assert.assertTrue(parentLineKeys.contains(defOrganisation.getKey()));
+		Assert.assertTrue(parentLineKeys.contains(rootOrganisation.getKey()));
+		Assert.assertTrue(parentLineKeys.contains(organisation2_1.getKey()));
+		Assert.assertTrue(parentLineKeys.contains(organisation2_2.getKey()));
+		Assert.assertTrue(parentLineKeys.contains(organisation2_2_1.getKey()));
+		Assert.assertFalse(parentLineKeys.contains(organisation2_1_1.getKey()));
+		Assert.assertFalse(parentLineKeys.contains(organisation2_1_2.getKey()));
+		Assert.assertFalse(parentLineKeys.contains(organisation2_2_1_1.getKey()));
+		Assert.assertFalse(parentLineKeys.contains(root2Organisation.getKey()));
 	}
 
 	@Test

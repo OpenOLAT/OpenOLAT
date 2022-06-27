@@ -37,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.instantMessaging.ui.event.StartMeetingEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,35 +49,87 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SendMessageForm extends FormBasicController {
 
 	private TextElement msg;
+	private FormLink meetingLink;
+	private FormLink closeChatLink;
+	private FormLink reactivateChatLink;
 	private FormLink submit;
 	private final String panelId;
+	private final ChatViewConfig chatViewConfig;
 	
 	@Autowired
 	private DB dbInstance;
 
-	public SendMessageForm(UserRequest ureq, WindowControl wControl, String panelId) {
+	public SendMessageForm(UserRequest ureq, WindowControl wControl, ChatViewConfig chatViewConfig, String panelId) {
 		super(ureq, wControl, "sendMessageForm");
 		this.panelId = panelId;
+		this.chatViewConfig = chatViewConfig;
 		initForm(ureq);
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
+	
+	public FormLink getCloseChatLink() {
+		return closeChatLink;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addTextElement("input_" + panelId, "msg", null, 1024, null, formLayout);
+		msg = uifactory.addTextElement("input_" + panelId, "msg", null, 4096, null, formLayout);
+		msg.setDomReplacementWrapperRequired(false);
+		msg.setPlaceholderText(chatViewConfig.getSendMessagePlaceholder());
 		msg.setFocus(true);//always focus to the message field
 		msg.setDisplaySize(40);
-		submit = uifactory.addFormLink("subm", "msg.send", "msg.send", formLayout, Link.BUTTON);
+
+		submit = uifactory.addFormLink("subm", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		submit.setElementCssClass("o_im_send_button");
+		submit.setAriaLabel(translate("msg.send"));
+		submit.setTitle(translate("msg.send"));
+		submit.setIconLeftCSS("o_icon o_icon-fw o_icon_show_send");
+
+		meetingLink = uifactory.addFormLink("start.meeting", formLayout, Link.LINK);
+		meetingLink.setIconLeftCSS("o_icon o_icon-fw o_livestream_icon");
+		meetingLink.setVisible(chatViewConfig.isCanMeeting());
+
+		String closeLabel = "close.chat";
+		if(chatViewConfig.isCanClose() && chatViewConfig.getRosterDisplay() != RosterFormDisplay.supervisor) {
+			closeLabel = "close.chat.close";
+		}
+		closeChatLink = uifactory.addFormLink("close.chat", closeLabel, null, formLayout, Link.LINK);
+		closeChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
+		closeChatLink.setVisible(chatViewConfig.isCanClose());
+		reactivateChatLink = uifactory.addFormLink("reactivate.chat", formLayout, Link.LINK);
+		reactivateChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reactivate");
+		reactivateChatLink.setVisible(chatViewConfig.isCanReactivate());
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == submit) {
 			flc.getRootForm().submit(ureq);
+		} else if(closeChatLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+		} else if(reactivateChatLink == source) {
+			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(meetingLink == source) {
+			fireEvent(ureq, new StartMeetingEvent());
+		}
+	}
+	
+	protected void setCloseableChat(boolean message, boolean close, boolean reactivate) {
+		updateVisibility(msg, message);
+		updateVisibility(meetingLink, message && chatViewConfig.isCanMeeting());
+		updateVisibility(submit, message);
+		updateVisibility(closeChatLink, close && chatViewConfig.isCanClose());
+		updateVisibility(reactivateChatLink, reactivate && chatViewConfig.isCanReactivate());
+	}
+	
+	private void updateVisibility(FormItem item, boolean visible) {
+		if(item.isVisible() != visible) {
+			item.setVisible(visible);
+			flc.setDirty(true);
 		}
 	}
 

@@ -87,7 +87,9 @@ import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.ExecutionType;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,6 +155,20 @@ public class CopyCourseWizardController extends BasicController {
         copyContext.setSourceRepositoryEntry(repositoryEntry);
         copyContext.setCourse(course);
 		copyContext.setLearningPath(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType()));
+		RepositoryEntryLifecycle lifecycle = repositoryEntry.getLifecycle();
+		if (lifecycle != null) {
+			if (lifecycle.isPrivateCycle()) {
+				copyContext.setInitialBeginDate(lifecycle.getValidFrom());
+				copyContext.setBeginDate(lifecycle.getValidFrom());
+				copyContext.setEndDate(lifecycle.getValidTo());
+				copyContext.setExecutionType(ExecutionType.beginAndEnd);
+			} else {
+				copyContext.setExecutionType(ExecutionType.semester);
+				copyContext.setSemesterKey(lifecycle.getKey());
+			}
+		} else {
+			copyContext.setExecutionType(ExecutionType.none);
+		}
 		
 		// Load copy mode defaults
 		copySteps.loadFromWizardConfig(wizardModule);
@@ -245,7 +261,7 @@ public class CopyCourseWizardController extends BasicController {
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 			row.setLearningPathConfigs(learningPathConfigs);
 		}
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(sourceEntry, courseNode);
 		row.setAssessmentConfig(assessmentConfig);
 		return row;
 	}

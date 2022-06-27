@@ -39,7 +39,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 
 /**
@@ -149,8 +148,7 @@ public class AutoCompleterController extends BasicController {
 	 * string
 	 */
 	public void resetAutocompleter() {
-		JSCommand resetCmd = new JSCommand("jQuery('#o_so_autocomplete_input" + myContent.getDispatchID()  +"').val('');");
-		getWindowControl().getWindowBackOffice().sendCommandTo(resetCmd);
+		myContent.contextPut("inputValue", "");
 	}
 
 	/**

@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -132,6 +133,9 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 		jsa.addRequiredStaticJsFile("js/tinymce4/BTinyHelper.js");
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathLiveCdn())) {
+			jsa.addRequiredStaticJsFile(WebappHelper.getMathLiveCdn());
+		}
 	}
 
 	@Override

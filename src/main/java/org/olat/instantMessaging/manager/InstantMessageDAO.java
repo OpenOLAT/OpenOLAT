@@ -25,16 +25,18 @@ import java.util.List;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.instantMessaging.InstantMessage;
-import org.olat.instantMessaging.InstantMessageNotification;
+import org.olat.instantMessaging.InstantMessageTypeEnum;
 import org.olat.instantMessaging.model.InstantMessageImpl;
-import org.olat.instantMessaging.model.InstantMessageNotificationImpl;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,14 +53,21 @@ public class InstantMessageDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public InstantMessage createMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
+	public InstantMessage createMessage(Identity from, String fromNickName, boolean anonym,
+			String body, BigBlueButtonMeeting bigBlueButtonMeeting, TeamsMeeting teamsMeeting,
+			OLATResourceable chatResource, String resSubPath, String channel, InstantMessageTypeEnum type) {
 		InstantMessageImpl msg = new InstantMessageImpl();
 		msg.setBody(body);
+		msg.setBbbMeeting(bigBlueButtonMeeting);
+		msg.setTeamsMeeting(teamsMeeting);
 		msg.setFromKey(from.getKey());
 		msg.setFromNickName(fromNickName);
 		msg.setAnonym(anonym);
+		msg.setType(type == null ? InstantMessageTypeEnum.text : type);
 		msg.setResourceTypeName(chatResource.getResourceableTypeName());
 		msg.setResourceId(chatResource.getResourceableId());
+		msg.setResSubPath(resSubPath);
+		msg.setChannel(channel);
 		msg.setCreationDate(new Date());
 		dbInstance.getCurrentEntityManager().persist(msg);
 		return msg;
@@ -84,10 +93,28 @@ public class InstantMessageDAO {
 				.getResultList();
 	}
 
-	public List<InstantMessage> getMessages(OLATResourceable ores, Date from, int firstResult, int maxResults) {
-		String queryName = (from == null ? "loadIMessageByResource" : "loadIMessageByResourceAndDate");
+	public List<InstantMessage> getMessages(OLATResourceable ores, String resSubPath, String channel, Date from, int firstResult, int maxResults) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select msg from instantmessage msg")
+		  .where().append("msg.resourceId=:resid and msg.resourceTypeName=:resname");
+		if(from != null) {
+			sb.and().append(" msg.creationDate>=:from");
+		}
+		if(resSubPath == null) {
+			sb.and().append(" msg.resSubPath is null");
+		} else {
+			sb.and().append(" msg.resSubPath=:ressubPath");
+		}
+		if(channel == null) {
+			sb.and().append(" msg.channel is null");
+		} else {
+			sb.and().append(" msg.channel=:channel");
+		}
+		sb.append(" order by msg.creationDate desc");
+		
+		
 		TypedQuery<InstantMessage> query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery(queryName, InstantMessage.class)
+				.createQuery(sb.toString(), InstantMessage.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setFirstResult(firstResult);
@@ -96,6 +123,12 @@ public class InstantMessageDAO {
 		}
 		if(from != null) {
 			query.setParameter("from", from, TemporalType.TIMESTAMP);
+		}
+		if(resSubPath != null) {
+			query.setParameter("ressubPath", resSubPath);
+		}
+		if(channel != null) {
+			query.setParameter("channel", channel);
 		}
 		return query.getResultList();
 	}
@@ -107,9 +140,17 @@ public class InstantMessageDAO {
 				.setParameter("resname", ores.getResourceableTypeName())
 				.executeUpdate();
 		if(count > 0) {
-			log.info(Tracing.M_AUDIT, count + " IM messages delete for resource: " + ores);
+			log.info(Tracing.M_AUDIT, "{} IM messages delete for resource: {}", count, ores);
 		}
 		return count;
+	}
+	
+	public List<InstantMessage> getAllResourcesMessages(OLATResourceable ores) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadAllRsourceMessages", InstantMessage.class)
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.getResultList();
 	}
 	
 	public int deleteMessages(IdentityRef identity) {
@@ -118,42 +159,8 @@ public class InstantMessageDAO {
 				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();
 		if(count > 0) {
-			log.info(Tracing.M_AUDIT, count + " IM messages delete for identity: " + identity.getKey());
+			log.info(Tracing.M_AUDIT, "{} IM messages delete for identity: {}", count, identity.getKey());
 		}
 		return count;
-	}
-	
-	public InstantMessageNotification createNotification(Long fromIdentityKey, Long toIdentityKey, OLATResourceable chatResource) {
-		InstantMessageNotificationImpl notification = new InstantMessageNotificationImpl();
-		notification.setToIdentityKey(toIdentityKey);
-		notification.setFromIdentityKey(fromIdentityKey);
-		notification.setResourceTypeName(chatResource.getResourceableTypeName());
-		notification.setResourceId(chatResource.getResourceableId());
-		notification.setCreationDate(new Date());
-		dbInstance.getCurrentEntityManager().persist(notification);
-		return notification;
-	}
-	
-	public void deleteNotification(Long notificationId) {
-		InstantMessageNotificationImpl notification = dbInstance.getCurrentEntityManager()
-				.getReference(InstantMessageNotificationImpl.class, notificationId);
-		dbInstance.getCurrentEntityManager().remove(notification);
-	}
-	
-	public void deleteNotification(Identity identity, OLATResourceable ores) {
-		dbInstance.getCurrentEntityManager()
-			.createQuery("delete from imnotification notification where notification.toIdentityKey=:identityKey and notification.resourceId=:resid and notification.resourceTypeName=:resname")
-			.setParameter("identityKey", identity.getKey())
-			.setParameter("resid", ores.getResourceableId())
-			.setParameter("resname", ores.getResourceableTypeName())
-			.executeUpdate();
-	}
-	
-	public List<InstantMessageNotification> getNotifications(Identity identity) {
-		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadIMNotificationByIdentity", InstantMessageNotification.class)
-				.setParameter("identityKey", identity.getKey())
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getResultList();
 	}
 }

@@ -1,0 +1,13 @@
+$r.render("disclaimer")
+
+<div class='o_info'>
+	<p>
+		$r.translate("consent.date", "$r.formatDateAndTime($consentDate)")
+	</p>
+	<p>
+		$r.translate("withdraw.msg")
+	</p>
+	<p class="o_button_group o_block_large_top">
+		$r.render("withdraw.action")
+	</p>
+</div>

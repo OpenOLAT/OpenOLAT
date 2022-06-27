@@ -24,6 +24,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -40,6 +42,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.nodes.video.VideoPeekviewController;
@@ -65,7 +68,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -3808867902051897291L;
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
@@ -107,11 +110,12 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
 		boolean comments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
 		boolean ratings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
+		boolean courseCommentsRatings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS);
 		boolean forwardSeekingRestrictred = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
 		boolean title = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
 		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 
-		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, title, false, false, null, false, readOnly, forwardSeekingRestrictred);
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, courseCommentsRatings, title, false, false, null, false, readOnly, forwardSeekingRestrictred);
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
 			case "customDescription":
 				displayOptions.setShowDescription(true);
@@ -168,10 +172,27 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS, false);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, false);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, false);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS, true);
 		} else if (version == 1) {
 			// Set defaults as it was in version 1 for newly added options
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, true);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, false);			
+		} else if (version == 2) {
+			if (config.getBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS) || config.getBooleanEntry(VideoEditController.CONFIG_KEY_RATING)) {
+				// check if any comment or rating actually exist. 
+				// If yes, mark to use old storage strategy (on video)
+				// In no, use new storage strategy (on course)
+				RepositoryEntry videoEntry = VideoEditController.getVideoReference(config, false);
+				long countComments = 0;
+				if (videoEntry != null) {					
+					CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
+					countComments = commentAndRatingService.countComments(videoEntry.getOlatResource(), this.getIdent());
+				}
+				config.setBooleanEntry(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS, countComments == 0);												
+			} else {
+				config.setBooleanEntry(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS, true);								
+			}
+			
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
@@ -215,5 +236,24 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 				getReferencedRepositoryEntry().getOlatResource(),
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),
 				getIdent());
+	}
+	
+	
+	@Override
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
+		// Mark copied video node to use new comments storage strategy (store on course repo entry instead of video repo entry)
+		ModuleConfiguration config = getModuleConfiguration();
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS, true);
+	}
+
+
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		// delete all comments created in this course
+		CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		commentAndRatingService.deleteAll(courseEntry.getOlatResource(), this.getIdent());
 	}
 }

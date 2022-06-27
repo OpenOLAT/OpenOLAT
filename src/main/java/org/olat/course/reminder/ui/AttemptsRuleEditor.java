@@ -174,12 +174,12 @@ public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNode
 
 	private void addAttempteableNode(CourseNode courseNode, List<CourseNode> nodes) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 		if (assessmentConfig.hasAttempts() && !nodes.contains(courseNode)) {
 			nodes.add(courseNode);
 		} else if (courseNode instanceof QTICourseNode) {
 			QTICourseNode assessableCourseNode = (QTICourseNode) courseNode;
-			if (assessableCourseNode.hasAttemptsConfigured() && !nodes.contains(courseNode)) {
+			if (assessableCourseNode.hasAttemptsConfigured(entry) && !nodes.contains(courseNode)) {
 				nodes.add(courseNode);
 			}
 		}

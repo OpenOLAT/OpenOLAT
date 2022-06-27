@@ -66,6 +66,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		
 		AuthorListConfiguration config = AuthorListConfiguration.allEnabled();
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		searchParams.setCanCopy(true);
+		searchParams.setCanDownload(true);
+		searchParams.setCanReference(true);
 		authorListCtrl = new AuthorListController(ureq, wControl, searchParams, config);
 		listenTo(authorListCtrl);
 		

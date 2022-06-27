@@ -19,7 +19,6 @@
  */
 package org.olat.instantMessaging.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,6 +32,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.manager.ChatLogHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,6 +46,9 @@ public class ChatToolController extends BasicController {
 	private final boolean isAdmin;
 	private final Link openChatLink;
 	private Link logLink;
+	
+	@Autowired
+	private ChatLogHelper chatLog;
 
 	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource, boolean isAdmin, boolean readOnly) {
 		super(ureq, wControl);
@@ -67,7 +70,8 @@ public class ChatToolController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(openChatLink == source) {
-			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, resource, resource.getName(), isAdmin);
+			ChatViewConfig viewConfig = ChatViewConfig.room(resource.getName(), RosterFormDisplay.left);
+			OpenInstantMessageEvent e = new OpenInstantMessageEvent(resource, null, null, viewConfig, isAdmin, false);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		} else if(logLink == source) {
 			downloadChatLog(ureq);
@@ -75,8 +79,7 @@ public class ChatToolController extends BasicController {
 	}
 	
 	private void downloadChatLog(UserRequest ureq) {
-		ChatLogHelper helper = CoreSpringFactory.getImpl(ChatLogHelper.class);
-		MediaResource download = helper.logMediaResource(resource, getLocale());
+		MediaResource download = chatLog.logMediaResource(resource, null, null, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(download);
 	}
 }

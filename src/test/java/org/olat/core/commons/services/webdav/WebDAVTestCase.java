@@ -29,17 +29,19 @@ package org.olat.core.commons.services.webdav;
 import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import static io.undertow.servlet.Servlets.servlet;
-import io.undertow.Undertow;
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DeploymentManager;
 
 import javax.servlet.ServletException;
 
-import org.junit.BeforeClass;
 import org.apache.logging.log4j.Logger;
+import org.junit.BeforeClass;
+import org.olat.core.helpers.SettingsTest;
 import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.OpenOLATServlet;
 import org.olat.test.OlatTestCase;
+
+import io.undertow.Undertow;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
 
 /**
  * 
@@ -61,10 +63,10 @@ public abstract class WebDAVTestCase extends OlatTestCase {
 	
 	@BeforeClass
 	public static void setUp() throws Exception {
-
-		
 		try {
 			if(webServer == null) {
+				SettingsTest.createHttpDefaultPortSettings();
+				
 				DeploymentInfo servletBuilder = deployment()
 	                    .setClassLoader(WebDAVTestCase.class.getClassLoader())
 	                    .setContextPath("/")

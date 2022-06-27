@@ -107,12 +107,10 @@ public class MembersPage {
 		if(waitingList) {
 			By waitingListBy = By.cssSelector(".o_sel_group_edit_waiting_list input[type='checkbox']");
 			browser.findElement(waitingListBy).click();
-			OOGraphene.waitBusy(browser);
 		}
 		if(auto) {
 			By autoBy = By.cssSelector(".o_sel_group_edit_auto_close_ranks input[type='checkbox']");
 			browser.findElement(autoBy).click();
-			OOGraphene.waitBusy(browser);
 		}
 		
 		//save

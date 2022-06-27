@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -54,7 +53,7 @@ public class CourseEditorPageFragment {
 	
 	public static final By tabNavTabsBy = By.cssSelector("ul.nav.nav-tabs");
 	
-	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
+	/*public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
 	static {
 		chooseRepoEntriesButtonList.add(chooseCpButton);
 		chooseRepoEntriesButtonList.add(chooseWikiButton);
@@ -63,7 +62,7 @@ public class CourseEditorPageFragment {
 		chooseRepoEntriesButtonList.add(chooseScormButton);
 		chooseRepoEntriesButtonList.add(choosePortfolioButton);
 		chooseRepoEntriesButtonList.add(chooseSurveyButton);
-	}
+	}*/
 	
 	private WebDriver browser;
 	
@@ -290,7 +289,7 @@ public class CourseEditorPageFragment {
 		
 		By saveBy = By.cssSelector("div.modal-content div.o_button_group a.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -323,29 +322,48 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment openChangeNodeToolsMenu() {
+		OOGraphene.scrollTop(browser);
 		By changeNodeToolsMenuCaret = By.cssSelector("div.o_title_cmds button.o_sel_course_editor_change_node");
+		OOGraphene.waitElement(changeNodeToolsMenuCaret, browser);
 		browser.findElement(changeNodeToolsMenuCaret).click();
 		By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
 		OOGraphene.waitElement(changeNodeToolsMenu, browser);
 		return this;
 	}
 	
-	/**
-	 * Loop the tabs of the course element configuration to find
-	 * the one with a button to select a repository entry.
-	 * 
-	 * @return Itself
-	 */
-	public CourseEditorPageFragment selectTabLearnContent() {
-		OOGraphene.selectTab("o_node_config", b -> {
-			for(By chooseRepoEntriesButton: chooseRepoEntriesButtonList) {
-				List<WebElement> chooseRepoEntry = b.findElements(chooseRepoEntriesButton);
-				if(!chooseRepoEntry.isEmpty()) {
-					return true;
-				}
-			}
-			return false;
-		}, false, browser);
+	public CourseEditorPageFragment selectTabTestContent() {
+		return selectTabContent(chooseTestButton);
+	}
+	
+	public CourseEditorPageFragment selectTabSurveyContent() {
+		return selectTabContent(chooseSurveyButton);
+	}
+	
+	public CourseEditorPageFragment selectTabCPContent() {
+		return selectTabContent(chooseCpButton);
+	}
+	
+	public CourseEditorPageFragment selectTabScormContent() {
+		return selectTabContent(chooseScormButton);
+	}
+	
+	public CourseEditorPageFragment selectTabFeedContent() {
+		return selectTabContent(chooseFeedButton);
+	}
+	
+	public CourseEditorPageFragment selectTabPortfolioContent() {
+		return selectTabContent(choosePortfolioButton);
+	}
+	
+	public CourseEditorPageFragment selectTabWikiContent() {
+		return selectTabContent(chooseWikiButton);
+	}
+	
+	private CourseEditorPageFragment selectTabContent(By selectButtonBy) {
+		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
+		OOGraphene.waitElement(tabBy, browser);
+		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(selectButtonBy, browser);
 		return this;
 	}
 	
@@ -374,15 +392,6 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseSurvey(String resourceTitle) {
 		return chooseResource(chooseSurveyButton, resourceTitle);
-	}
-	
-	/**
-	 * @see chooseResource
-	 * @param resourceTitle The title of the test
-	 * @return Itself
-	 */
-	public CourseEditorPageFragment chooseTest(String resourceTitle) {
-		return chooseResource(chooseTestButton, resourceTitle);
 	}
 	
 	/**
@@ -450,7 +459,7 @@ public class CourseEditorPageFragment {
 	 * @param resourceTitle
 	 * @return
 	 */
-	public CourseEditorPageFragment createQTI12Test(String  resourceTitle) {
+	public CourseEditorPageFragment createQTITest(String  resourceTitle) {
 		return createResource(chooseTestButton, resourceTitle, "FileResource.TEST");
 	}
 	
@@ -461,15 +470,6 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment createFeed(String resourceTitle) {
 		return createResource(chooseFeedButton, resourceTitle, null);
-	}
-	
-	/**
-	 * Create a portfolio template
-	 * @param resourceTitle
-	 * @return
-	 */
-	public CourseEditorPageFragment createPortfolio(String resourceTitle) {
-		return createResource(choosePortfolioButton, resourceTitle, null);
 	}
 	
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {
@@ -498,20 +498,14 @@ public class CourseEditorPageFragment {
 		} else {
 			browser.findElement(createResourceBy).click();	
 		}
-		OOGraphene.waitBusy(browser);
 
-		//fill the create form
-		return fillCreateForm(resourceTitle);
-	}
-	
-	private CourseEditorPageFragment fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		OOGraphene.waitElement(inputBy, browser);
-		browser.findElement(inputBy).sendKeys(displayName);
+		browser.findElement(inputBy).sendKeys(resourceTitle);
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -531,7 +525,7 @@ public class CourseEditorPageFragment {
 		//auto publish
 		By autoPublishBy = By.cssSelector("div.modal  a.o_sel_course_quickpublish_auto");
 		browser.findElement(autoPublishBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return new CoursePageFragment(browser);
 	}
@@ -542,6 +536,7 @@ public class CourseEditorPageFragment {
 	 */
 	public PublisherPageFragment publish() {
 		OOGraphene.waitElement(publishButtonBy, browser);
+		OOGraphene.waitingALittleLonger();
 		browser.findElement(publishButtonBy).click();
 		OOGraphene.waitModalWizard(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_nodes"), browser);
@@ -558,7 +553,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitBusy(browser);
 		
 		By mainId = By.id("o_main");
-		OOGraphene.waitElement(mainId, 5, browser);
+		OOGraphene.waitElement(mainId, browser);
 		return new CoursePageFragment(browser);
 	}
 }

@@ -101,7 +101,7 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	
 	private boolean isNickNameUnique(String val) {
 		Identity identity= securityManager.findIdentityByNickName(val);
-		return identity != null;
+		return identity == null;
 	}
 
 	/**

@@ -97,14 +97,14 @@ public class ACOrderManagerTest extends OlatTestCase {
 	@Before
 	public void setUp() {
 		if(!isInitialized) {
-			ident1 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident2 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident3 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident4 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident5 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident6 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident7 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
-			ident8 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
+			ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-1");
+			ident2 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-2");
+			ident3 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-3");
+			ident4 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-4");
+			ident5 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-5");
+			ident6 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-6");
+			ident7 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-7");
+			ident8 = JunitTestHelper.createAndPersistIdentityAsRndUser("order-8");
 		}
 	}
 	

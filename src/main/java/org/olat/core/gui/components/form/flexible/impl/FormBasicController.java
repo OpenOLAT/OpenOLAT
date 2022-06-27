@@ -42,7 +42,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
@@ -442,7 +442,7 @@ public abstract class FormBasicController extends BasicController {
 			if(!link.isPopup() && !link.isNewWindow()) {
 				flc.setDirty(true);
 				// Trigger re-focusing of current focused element										
-				JSCommand focusCommand = FormJSHelper.getFormFocusCommand(this.flc.getRootForm().getFormName(), null);						
+				Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
 				getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 			}
 		} else if(fiSrc instanceof InlineElement) {
@@ -454,10 +454,15 @@ public abstract class FormBasicController extends BasicController {
 				//the layout which glue the different components stay visible
 				flc.setDirty(true);
 				// Trigger re-focusing of current focused element
-				JSCommand focusCommand = FormJSHelper.getFormFocusCommand(this.flc.getRootForm().getFormName(), null);						
+				Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
 				getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 			}
 		}
+	}
+	
+	public final void markDirty() {
+		Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(flc.getRootForm());
+		getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
 	}
 	
 	public String getAndRemoveFormTitle() {

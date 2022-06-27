@@ -98,6 +98,31 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 		return levelsMap;
 	}
 	
+	public Map<Long,List<TaxonomyLevel>> getTaxonomyLevelsByEntryKeys(List<Long> entryKeys) {
+		if(entryKeys == null || entryKeys.isEmpty()) return new HashMap<>();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel.entry.key, level from repositoryentrytotaxonomylevel rel")
+		  .append(" inner join rel.taxonomyLevel as level")
+		  .append(" left join fetch level.type as type")
+		  .append(" where rel.entry.key in (:entryKeys)");
+
+		List<Object[]> entryToLevels = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("entryKeys", entryKeys)
+				.getResultList();
+
+		Map<Long, List<TaxonomyLevel>> levelsMap = new HashMap<>();
+		for(Object[] entryToLevel:entryToLevels) {
+			Long entryKey = (Long)entryToLevel[0];
+			TaxonomyLevel level = (TaxonomyLevel)entryToLevel[1];
+			List<TaxonomyLevel> levels = levelsMap
+					.computeIfAbsent(entryKey, ref -> new ArrayList<>());
+			levels.add(level);
+		}
+		return levelsMap;
+	}
+	
 	public List<RepositoryEntry> getRepositoryEntries(TaxonomyLevelRef level) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select v from repositoryentrytotaxonomylevel rel")

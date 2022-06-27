@@ -80,7 +80,7 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		// Create course
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Learning Path",
-				RepositoryEntryStatusEnum.published, true, false);
+				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
@@ -271,7 +271,7 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		// Create course
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Learning Path",
-				RepositoryEntryStatusEnum.published, true, false);
+				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
@@ -469,7 +469,7 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		// Create course
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Learning Path",
-				RepositoryEntryStatusEnum.published, true, false);
+				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();

@@ -31,6 +31,8 @@ public class CourseStatEntry {
 	// s.repoKey, 
 	private Long repoKey;
 	private String repoDisplayName;
+	private String repoExternalId;
+	private String repoExternalRef;
 	private RepositoryEntryStatusEnum status;
 	private int countStudents;
 	private int countPassed;
@@ -42,6 +44,10 @@ public class CourseStatEntry {
 	
 	private double totalScore;
 	private int totalScoredStudents;
+	
+	public CourseStatEntry() {
+		//
+	}
 	
 	public double getTotalScore() {
 		return totalScore;
@@ -75,6 +81,22 @@ public class CourseStatEntry {
 		this.repoDisplayName = repoDisplayName;
 	}
 	
+	public String getRepoExternalId() {
+		return repoExternalId;
+	}
+
+	public void setRepoExternalId(String repoExternalId) {
+		this.repoExternalId = repoExternalId;
+	}
+
+	public String getRepoExternalRef() {
+		return repoExternalRef;
+	}
+
+	public void setRepoExternalRef(String repoExternalRef) {
+		this.repoExternalRef = repoExternalRef;
+	}
+
 	public RepositoryEntryStatusEnum getRepoStatus() {
 		return status;
 	}

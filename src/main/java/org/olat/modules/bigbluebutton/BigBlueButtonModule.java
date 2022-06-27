@@ -45,6 +45,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_ENABLED = "vc.bigbluebutton.enabled";
 	private static final String PROP_GROUP_ENABLED = "vc.bigbluebutton.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.bigbluebutton.courses";
+	private static final String PROP_CHAT_EXAM_ENABLED = "vc.bigbluebutton.chat.exams";
 	private static final String PROP_APPOINTMENTS_ENABLED = "vc.bigbluebutton.appointments";
 	private static final String PROP_AVATAR_ENABLED = "vc.bigbluebutton.avatar";
 	private static final String PROP_SECRET = "vc.bigbluebutton.secret";
@@ -81,6 +82,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String groupsEnabled;
 	@Value("${vc.bigbluebutton.courses:true}")
 	private String coursesEnabled;
+	@Value("${vc.bigbluebutton.chat.exams:true}")
+	private String chatExamsEnabled;
 	@Value("${vc.bigbluebutton.appointments:true}")
 	private String appointmentsEnabled;
 	@Value("${vc.bigbluebutton.avatar:true}")
@@ -138,6 +141,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
+		chatExamsEnabled = getStringPropertyValue(PROP_CHAT_EXAM_ENABLED, chatExamsEnabled);
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
 		avatarEnabled = getStringPropertyValue(PROP_AVATAR_ENABLED, avatarEnabled);
 
@@ -188,6 +192,15 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		setStringProperty(PROP_COURSE_ENABLED, coursesEnabled, true);
 	}
 	
+	public boolean isChatExamsEnabled() {
+		return "true".equals(chatExamsEnabled);
+	}
+
+	public void setChatExamsEnabled(boolean enabled) {
+		chatExamsEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_CHAT_EXAM_ENABLED, chatExamsEnabled, true);
+	}
+
 	public boolean isAppointmentsEnabled() {
 		return "true".equals(appointmentsEnabled);
 	}

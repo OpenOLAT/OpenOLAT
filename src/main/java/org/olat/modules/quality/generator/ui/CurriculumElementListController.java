@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.ui;
 
 import static java.util.stream.Collectors.joining;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -228,7 +229,8 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 	}
 
 	private void doSelectCurriculumElement(UserRequest ureq) {
-		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
+		List<Organisation> organisations = new ArrayList<>();
+		generatorService.loadGeneratorOrganisations(generator).forEach(org -> addOrganisationAndChildren(organisations, org));
 		
 		selectCtrl = new CurriculumElementSelectionController(ureq, getWindowControl(), organisations);
 		listenTo(selectCtrl);
@@ -237,6 +239,15 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 				selectCtrl.getInitialComponent(), true, translate("curriculum.element.select.title"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void addOrganisationAndChildren(List<Organisation> organisations, Organisation organisation) {
+		organisations.add(organisation);
+		if (!organisation.getChildren().isEmpty()) {
+			for (Organisation child : organisation.getChildren()) {
+				addOrganisationAndChildren(organisations, child);
+			}
+		}
 	}
 
 	private void doAddCurriculumElement(String elementKey) {

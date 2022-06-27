@@ -63,6 +63,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -131,7 +132,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	
 	@Override
 	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, AssessmentEntryStatus status, boolean excludeZeroScore) {
-		return assessmentService.loadAssessmentEntriesBySubIdentWithStatus(cgm.getCourseEntry(), courseNode.getIdent(), status, excludeZeroScore);
+		return assessmentService.loadAssessmentEntriesBySubIdentWithStatus(cgm.getCourseEntry(), courseNode.getIdent(), status, excludeZeroScore, true);
 	}
 
 	@Override
@@ -163,6 +164,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
+		initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, by);
 		if(by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
 		} else if(by == Role.user) {
@@ -194,6 +196,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
+		initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, Role.coach);
 		nodeAssessment.setComment(comment);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
@@ -233,6 +236,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			Boolean entryRoot = isEntryRoot(course, courseNode);
 			AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
+			initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, Role.coach);
 			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
@@ -341,7 +345,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		DBFactory.getInstance().commit();
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode);
 		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
@@ -356,27 +360,6 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				getClass(), 
 				LoggingResourceable.wrap(assessedIdentity), 
 				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));
-	}
-
-	@Override
-	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv) {
-		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
-		
-		Boolean entryRoot = isEntryRoot(course, courseNode);
-		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
-		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
-		nodeAssessment.setAttempts(attempts);
-		assessmentService.updateAssessmentEntry(nodeAssessment);
-		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if(assessmentConfig.isAssessable()) {
-			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
-		}
-		
-		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED,
-				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 	}
 	
 	@Override
@@ -394,7 +377,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode);
 		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
@@ -508,6 +491,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		} else {
 			assessmentEntry.setScore(new BigDecimal(Float.toString(score)));
 		}
+		assessmentEntry.setGrade(scoreEvaluation.getGrade());
+		assessmentEntry.setGradeSystemIdent(scoreEvaluation.getGradeSystemIdent());
+		assessmentEntry.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());
 		assessmentEntry.setPassed(passed);
 		if(assessmentId != null) {
 			assessmentEntry.setAssessmentId(assessmentId);
@@ -521,8 +507,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				assessmentEntry.setAssessmentDoneBy(null);
 			}
 		}
-		if(scoreEvaluation.getUserVisible() != null) {
-			assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());
+		assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());
+		if(assessmentEntry.getScore() != null || assessmentEntry.getPassed() != null) {
+			initUserVisibility(assessmentEntry, courseEnv, courseNode, identity, by);
 		}
 		if(scoreEvaluation.getCurrentRunCompletion() != null) {
 			assessmentEntry.setCurrentRunCompletion(scoreEvaluation.getCurrentRunCompletion());
@@ -554,9 +541,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		// node log
+		UserNodeAuditManager am = courseEnv.getAuditManager();
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "score set to: " + String.valueOf(scoreEvaluation.getScore()), by);
+		if (StringHelper.containsNonWhitespace(scoreEvaluation.getGrade())) {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "grade set to: " + String.valueOf(scoreEvaluation.getGrade()), by);
+		}
 		logAuditPassed(courseNode, identity, by, userCourseEnv, scoreEvaluation.getPassed());
 		if(scoreEvaluation.getAssessmentID()!=null) {
-			UserNodeAuditManager am = courseEnv.getAuditManager();
 			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString(), by);
 		}
 		
@@ -573,7 +564,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					LoggingResourceable.wrap(assessedIdentity), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiScore, "", String.valueOf(scoreEvaluation.getScore())));
 		}
+		if (scoreEvaluation.getGrade()!=null) {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_GRADE_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiGrade, "", String.valueOf(scoreEvaluation.getGrade())));
+		}
 		if (incrementUserAttempts && attempts!=null) {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + attempts, by);
 			if(identity != null) {
 				ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
 						getClass(), 
@@ -865,6 +863,23 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	private Boolean isEntryRoot(ICourse course, CourseNode courseNode) {
 		return course.getCourseEnvironment().getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
+	}
+	
+	/**
+	 * The userVisibility is set when assessment data are set the first time.
+	 * Assessment data is: score (and grade), passed, user comment, documents.
+	 */
+	public void initUserVisibility(AssessmentEntry assessmentEntry, CourseEnvironment courseEnv, CourseNode courseNode, Identity coach, Role by) {
+		if (assessmentEntry.getUserVisibility() != null) return;
+		
+		boolean done = assessmentEntry.getAssessmentStatus() != null &&  AssessmentEntryStatus.done == assessmentEntry.getAssessmentStatus();
+		boolean coachCanNotEdit = Role.coach == by
+				&& !courseEnv.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY)
+				&& !cgm.isIdentityAnyCourseAdministrator(coach);
+		
+		Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode)
+				.getInitialUserVisibility(done, coachCanNotEdit);
+		assessmentEntry.setUserVisibility(initialUserVisibility);
 	}
 	
 }

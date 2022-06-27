@@ -29,13 +29,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.registration.SelfRegistrationAutoAccessMethod;
@@ -43,6 +44,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -72,6 +74,8 @@ public class ACMethodDAO {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ACOfferToOrganisationDAO offerToOrganisationDAO;
 
 	public void enableAutoMethods(boolean autoEnabled) {
 		enableMethod(ShibbolethAutoAccessMethod.class, autoEnabled);
@@ -113,6 +117,8 @@ public class ACMethodDAO {
 			.append(" inner join offer.resource oResource")
 			.append(" where access.valid=true")
 			.append(" and offer.valid=true")
+			.append(" and offer.openAccess=false")
+			.append(" and offer.guestAccess=false")
 			.append(" and oResource.key=:resourceKey");
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
@@ -199,6 +205,7 @@ public class ACMethodDAO {
 		return query.getResultList();
 	}
 
+	//TOOD uh check
 	public List<OfferAccess> getOfferAccess(Collection<Offer> offers, boolean valid) {
 		if(offers == null || offers.isEmpty()) return Collections.emptyList();
 
@@ -210,7 +217,7 @@ public class ACMethodDAO {
 		  .append(" where offer.key in (:offersKey)")
 		  .append(" and access.valid=:valid");
 
-		List<Long> offersKey = PersistenceHelper.toKeys(offers);
+		List<Long> offersKey = offers.stream().map(Offer::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), OfferAccess.class)
 				.setParameter("offersKey", offersKey)
@@ -218,13 +225,15 @@ public class ACMethodDAO {
 				.getResultList();
 	}
 
+	@SuppressWarnings("null")
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
-			String resourceType, String excludedResourceType, boolean valid, Date atDate) {
+			String resourceType, String excludedResourceType, boolean valid, Date atDate, List<? extends OrganisationRef> organisations) {
 
 		final int maxResourcesEntries = 250;//quicker to filter in java, numerous keys in "in" are slow
-
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select access.method, resource, offer.price from acofferaccess access, ")
+		sb.append("select access.method, resource, offer.key, offer.price")
+			.append(" from acofferaccess access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
@@ -252,7 +261,7 @@ public class ACMethodDAO {
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
-
+		
 		Set<Long> resourceKeysSet = null;
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
 			if(resourceKeys.size() < maxResourcesEntries) {
@@ -269,6 +278,18 @@ public class ACMethodDAO {
 		}
 
 		List<Object[]> rawResults = query.getResultList();
+		
+		Set<Long> organisationKeys = organisations != null && !organisations.isEmpty()
+				? organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toSet())
+				: Collections.emptySet();
+		Map<Long, List<Long>> offerKeyToOrganisationKey = null;
+		if (organisations != null && !organisations.isEmpty()) {
+			List<OfferRef> offerKeys = rawResults.stream()
+					.map(rawResult -> (OfferRef)() -> (Long)rawResult[2])
+					.collect(Collectors.toList());
+			offerKeyToOrganisationKey = offerToOrganisationDAO.getOfferKeyToOrganisations(offerKeys);
+		}
+		
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
@@ -279,15 +300,22 @@ public class ACMethodDAO {
 			if(!method.isVisibleInGui()) {
 				continue;
 			}
-
-			Price price = (Price)rawResult[2];
+			if (organisations != null && !organisations.isEmpty()) {
+				Long offerKey = (Long)rawResult[2];
+				List<Long> offerOrganisationKeys = offerKeyToOrganisationKey.get(offerKey);
+				if (offerOrganisationKeys != null && !offerOrganisationKeys.stream().anyMatch(offerOrgKey -> organisationKeys.contains(offerOrgKey))) {
+					continue;
+				}
+			}
+			
+			Price price = (Price)rawResult[3];
 			if(rawResultsMap.containsKey(resource.getKey())) {
 				rawResultsMap.get(resource.getKey()).addBundle(price, method);
 			} else {
 				rawResultsMap.put(resource.getKey(), new OLATResourceAccess(resource, price, method));
 			}
 		}
-
+		
 		return new ArrayList<>(rawResultsMap.values());
 	}
 

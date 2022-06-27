@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.olat.core.commons.persistence.PersistenceHelper.appendAnd;
 import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
 
 import java.util.ArrayList;
@@ -88,31 +87,25 @@ public class AssessmentModeDAO {
 	}
 	
 	public List<AssessmentMode> findAssessmentMode(SearchAssessmentModeParams params) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select mode from courseassessmentmode mode")
 		  .append(" inner join fetch mode.repositoryEntry v")
 		  .append(" inner join fetch v.olatResource res");
 		
-		boolean where = false;
-		
 		Date dateFrom = params.getDateFrom();
 		Date dateTo = params.getDateTo();
 		if(dateFrom != null && dateTo != null) {
-			where = appendAnd(sb, where);
-			sb.append("mode.beginWithLeadTime>=:dateFrom and mode.endWithFollowupTime<=:dateTo");
+			sb.and().append("mode.beginWithLeadTime>=:dateFrom and mode.endWithFollowupTime<=:dateTo");
 		} else if(dateFrom != null) {
-			where = appendAnd(sb, where);
-			sb.append("mode.beginWithLeadTime>=:dateFrom");
+			sb.and().append("mode.beginWithLeadTime>=:dateFrom");
 		} else if(dateTo != null) {
-			where = appendAnd(sb, where);
-			sb.append("mode.endWithFollowupTime<=:dateTo");
+			sb.and().append("mode.endWithFollowupTime<=:dateTo");
 		}
 		
 		String name = params.getName();
 		if(StringHelper.containsNonWhitespace(name)) {
 			name = PersistenceHelper.makeFuzzyQueryString(name);
-			where = appendAnd(sb, where);
-			sb.append("(");
+			sb.and().append("(");
 			appendFuzzyLike(sb, "v.displayname", "name", dbInstance.getDbVendor());
 			sb.append(" or ");
 			appendFuzzyLike(sb, "mode.name", "name", dbInstance.getDbVendor());
@@ -125,8 +118,7 @@ public class AssessmentModeDAO {
 		if(StringHelper.containsNonWhitespace(params.getIdAndRefs())) {
 			refs = params.getIdAndRefs();
 			fuzzyRefs = PersistenceHelper.makeFuzzyQueryString(refs);
-			where = appendAnd(sb, where);
-			sb.append(" (v.externalId=:ref or ");
+			sb.and().append(" (v.externalId=:ref or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "fuzzyRefs", dbInstance.getDbVendor());
 			sb.append(" or v.softkey=:ref");
 			if(StringHelper.isLong(refs)) {
@@ -138,6 +130,36 @@ public class AssessmentModeDAO {
 				}
 			}
 			sb.append(")");	
+		}
+		
+		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
+			sb.and().append(" mode.externalId=:externalId");
+		}
+		
+		if(params.getManaged() != null) {
+			if(params.getManaged().booleanValue()) {
+				sb.and().append(" mode.managedFlagsString is not null");
+			} else {
+				sb.and().append(" mode.managedFlagsString is null");
+			}
+		}
+		
+		if(params.getWithExternalId() != null) {
+			if(params.getWithExternalId().booleanValue()) {
+				sb.and().append(" mode.externalId is not null");
+			} else {
+				sb.and().append(" mode.externalId is null");
+			}
+		}
+		
+		if(params.getRunning() != null && params.getRunning().booleanValue()) {
+			sb.and()
+			  .append("(mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
+			  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append("))");
+		}
+		
+		if(params.getRepositoryEntryKey() != null) {
+			sb.and().append("mode.repositoryEntry.key=:entryKey");
 		}
 		
 		sb.append(" order by mode.beginWithLeadTime desc ");
@@ -161,6 +183,12 @@ public class AssessmentModeDAO {
 		}
 		if(dateTo != null) {
 			query.setParameter("dateTo", dateTo, TemporalType.TIMESTAMP);
+		}
+		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
+			query.setParameter("externalId", params.getExternalId());
+		}
+		if(params.getRepositoryEntryKey() != null) {
+			query.setParameter("entryKey", params.getRepositoryEntryKey());
 		}
 		return query.getResultList();
 	}

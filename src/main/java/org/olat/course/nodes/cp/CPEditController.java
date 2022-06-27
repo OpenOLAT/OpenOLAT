@@ -166,7 +166,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions,
-				"In Five Steps to Your Content Package#_cp_layout", parentConfig, false);
+				"manual_user/resource_cp/In_Five_Steps_to_Your_Content_Package/", parentConfig, false);
 		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);
@@ -264,8 +264,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main);
-		tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), "o_sel_repo_entry", main);
+		tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), "o_sel_cp_layout_options", deliveryOptionsCtrl.getInitialComponent());
 	}
 
 	/**

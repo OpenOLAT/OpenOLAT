@@ -19,11 +19,11 @@
  */
 package org.olat.instantMessaging;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.ui.ChatViewConfig;
 
 /**
  * 
@@ -39,46 +39,61 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = -7767366726634855700L;
 	
-	private final UserRequest ureq;
 	private Buddy buddy;
 	private boolean vip;
-	private String roomName;
-	private OLATResourceable ores;
+	private boolean persistent;
 
-	public OpenInstantMessageEvent(UserRequest ureq) {
+	private OLATResourceable ores;
+	private String resSubPath;
+	private String channel;
+	
+	private ChatViewConfig viewConfig;
+
+	public OpenInstantMessageEvent() {
 		super("openim");
-		this.ureq = ureq;
 	}
 	
-	public OpenInstantMessageEvent(UserRequest ureq, Buddy buddy) {
-		this(ureq);
+	public OpenInstantMessageEvent(Buddy buddy) {
+		this();
 		this.buddy = buddy;
 	}
 	
-	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores, String roomName, boolean vip) {
-		this(ureq);
+	public OpenInstantMessageEvent(OLATResourceable ores, String resSubPath, String channel,
+			ChatViewConfig viewConfig, boolean vip, boolean persistent) {
+		this();
 		this.ores = OresHelper.clone(ores);
-		this.roomName = roomName;
+		this.resSubPath = resSubPath;
+		this.channel = channel;
+		this.viewConfig = viewConfig;
 		this.vip = vip;
+		this.persistent = persistent;
 	}
 
 	public Buddy getBuddy() {
 		return buddy;
 	}
 
-	public UserRequest getUserRequest() {
-		return ureq;
-	}
-
 	public OLATResourceable getOres() {
 		return ores;
 	}
 	
-	public String getRoomName() {
-		return roomName;
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public ChatViewConfig getViewConfig() {
+		return viewConfig;
 	}
 	
 	public boolean isVip() {
 		return vip;
+	}
+
+	public boolean isPersistent() {
+		return persistent;
 	}
 }

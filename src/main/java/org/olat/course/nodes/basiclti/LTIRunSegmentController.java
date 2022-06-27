@@ -39,6 +39,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
@@ -103,7 +104,7 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		
 		// Participants
 		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
-			if (courseAssessmentService.getAssessmentConfig(courseNode).isEditable()) {
+			if (courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode).isEditable()) {
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
 				overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, false);
 				listenTo(overviewCtrl);
@@ -133,9 +134,8 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl,
-					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					courseNode.getReminderProvider(false));
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
 				remindersLink = LinkFactory.createLink("segment.reminders", mainVC, this);

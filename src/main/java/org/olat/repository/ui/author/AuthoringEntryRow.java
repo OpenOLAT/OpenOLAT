@@ -56,9 +56,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	private final String shortenedDescription;
 	
 	private RepositoryEntryStatusEnum status;
-	private final boolean allUsers;
-	private final boolean guests;
-	private final boolean bookable;
+	private final boolean publicVisible;
 
 	private final Date lastUsage;
 	private final Date creationDate;
@@ -81,6 +79,8 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	private final String deletedByFullName;
 	private final Date deletionDate;
 	
+	private boolean openAccess;
+	private boolean guestAccess;
 	private List<PriceMethod> accessTypes;
 	private List<TaxonomyLevel> taxonomyLevels;
 	private final RepositoryEntryEducationalType educationalType;
@@ -119,9 +119,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 		managedFlags = view.getManagedFlags();
 		
 		status = view.getEntryStatus();
-		allUsers = view.isAllUsers();
-		guests = view.isGuests();
-		bookable = view.isBookable();
+		publicVisible = view.isPublicVisible();
 		
 		olatResource = OresHelper.clone(view.getOlatResource());
 		
@@ -166,18 +164,8 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	}
 
 	@Override
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-
-	@Override
-	public boolean isGuests() {
-		return guests;
-	}
-	
-	@Override
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
 	public Date getLastUsage() {
@@ -252,6 +240,22 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 
 	public Date getDeletionDate() {
 		return deletionDate;
+	}
+
+	public boolean isOpenAccess() {
+		return openAccess;
+	}
+
+	public void setOpenAccess(boolean openAccess) {
+		this.openAccess = openAccess;
+	}
+
+	public boolean isGuestAccess() {
+		return guestAccess;
+	}
+
+	public void setGuestAccess(boolean guestAccess) {
+		this.guestAccess = guestAccess;
 	}
 
 	public List<PriceMethod> getAccessTypes() {

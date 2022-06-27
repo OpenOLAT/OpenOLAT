@@ -56,7 +56,9 @@ public class InformStepController extends StepFormBasicController {
 		EditAbsenceNoticeWrapper noticeWrapper = (EditAbsenceNoticeWrapper)getFromRunContext("absence");
 		List<Identity> teachers = lectureService.getTeachers(noticeWrapper.getIdentity(), noticeWrapper.getLectureBlocks(),
 				noticeWrapper.getEntries(), noticeWrapper.getStartDate(), noticeWrapper.getEndDate());
-		teachersCtrl = new ContactTeachersController(ureq, getWindowControl(), teachers, secCallback, rootForm);
+		List<Identity> masterCoaches = lectureService.getMasterCoaches(noticeWrapper.getIdentity(), noticeWrapper.getLectureBlocks(),
+				noticeWrapper.getEntries(), noticeWrapper.getStartDate(), noticeWrapper.getEndDate());
+		teachersCtrl = new ContactTeachersController(ureq, getWindowControl(), teachers, masterCoaches, secCallback, rootForm);
 		listenTo(teachersCtrl);
 		
 		initForm(ureq);
@@ -83,7 +85,7 @@ public class InformStepController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		EditAbsenceNoticeWrapper noticeWrapper = (EditAbsenceNoticeWrapper)getFromRunContext("absence");
-		List<Identity> teachers = teachersCtrl.getSelectedTeacher();
+		List<Identity> teachers = teachersCtrl.getRecipients();
 		if(!teachers.isEmpty() && teachersCtrl.isSendMail()) {
 			noticeWrapper.setIdentitiesToContact(teachers);
 			noticeWrapper.setContactSubject(teachersCtrl.getSubject());

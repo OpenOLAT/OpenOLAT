@@ -193,26 +193,14 @@ public class GlossaryMainController extends BasicController implements Activatea
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addButton) {
-			removeAsListenerAndDispose(glossEditCtrl);
-			glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, null, true);
-			listenTo(glossEditCtrl);
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), "close", glossEditCtrl.getInitialComponent());
-			cmc.activate();
-			listenTo(cmc);
+			doItem(ureq, null);
 		} else if (source instanceof Link) {
 			Link button = (Link) source;
 			String cmd = button.getCommand();
 			if (button.getUserObject() instanceof GlossaryItem){
 				GlossaryItem currentGlossaryItem = (GlossaryItem) button.getUserObject();
 				if (cmd.startsWith(CMD_EDIT)) {
-					removeAsListenerAndDispose(glossEditCtrl);
-					glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, currentGlossaryItem, false);
-					listenTo(glossEditCtrl);
-					removeAsListenerAndDispose(cmc);
-					cmc = new CloseableModalController(getWindowControl(), "close", glossEditCtrl.getInitialComponent());
-					cmc.activate();
-					listenTo(cmc);
+					doItem(ureq, currentGlossaryItem);
 				} else if (button.getCommand().startsWith(CMD_DELETE)) {
 					currentDeleteItem = currentGlossaryItem;
 					if (deleteDialogCtr != null) {
@@ -236,6 +224,21 @@ public class GlossaryMainController extends BasicController implements Activatea
 				openProfil(ureq, url, false);
 			}
 		}
+	}
+	
+	private void doItem(UserRequest ureq, GlossaryItem glossaryItem) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(glossEditCtrl);
+		
+		boolean add = glossaryItem == null;
+		glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, glossaryItem, add);
+		listenTo(glossEditCtrl);
+		
+		String title = add ? translate("glossary.add.title") : translate("glossary.edit.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", glossEditCtrl.getInitialComponent(), true, title, true);
+		cmc.setContextHelp(getTranslator(), "manual_user/course_operation/Using_Additional_Course_Features/#glossary");
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	private void openProfil(UserRequest ureq, String pos, boolean author) {
@@ -280,6 +283,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 			glossaryItemManager.saveGlossaryItemList(glossaryFolder, glossaryItemList);
 			glossaryItemList = glossaryItemManager.getGlossaryItemListByVFSItem(glossaryFolder);
 			updateRegisterAndGlossaryItems();
+			cleanUp();
 		} else if(source == cmcUserInfo) {
 			removeAsListenerAndDispose(cmcUserInfo);
 			removeAsListenerAndDispose(uimc);
@@ -292,7 +296,19 @@ public class GlossaryMainController extends BasicController implements Activatea
 				// back to glossary view
 				updateRegisterAndGlossaryItems();
 			}
+		} else if(source == glossEditCtrl) {
+			if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(glossEditCtrl);
+		removeAsListenerAndDispose(cmc);
+		glossEditCtrl = null;
+		cmc = null;
 	}
 
 	@Override

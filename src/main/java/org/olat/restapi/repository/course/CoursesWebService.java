@@ -26,6 +26,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -84,6 +85,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
@@ -133,6 +135,8 @@ public class CoursesWebService {
 	private OLATResourceManager olatResourceManager;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
+	@Autowired
+	private ACService acService;
 
 
 	/**
@@ -175,6 +179,8 @@ public class CoursesWebService {
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
+		params.setOfferOrganisations(acService.getOfferOrganisations(identity));
+		params.setOfferValidAt(new Date());
 		params.setManaged(managed);
 
 		if(StringHelper.containsNonWhitespace(externalId)) {
@@ -264,10 +270,10 @@ public class CoursesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
 			@QueryParam("displayName") String displayName, @QueryParam("description") String description,
-			@QueryParam("objectives") String objectives, @QueryParam("requirements") String requirements,
-			@QueryParam("credits") String credits, @QueryParam("expenditureOfWork") String expenditureOfWork,
-			@QueryParam("softKey") String softKey, @QueryParam("status") String status,
-			@QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
+			@QueryParam("teaser") String teaser, @QueryParam("objectives") String objectives,
+			@QueryParam("requirements") String requirements, @QueryParam("credits") String credits,
+			@QueryParam("expenditureOfWork") String expenditureOfWork, @QueryParam("softKey") String softKey,
+			@QueryParam("status") String status, @QueryParam("publicVisible") Boolean publicVisible,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
 			@QueryParam("authors") String authors, @QueryParam("location") String location,
@@ -282,18 +288,15 @@ public class CoursesWebService {
 		CourseConfigVO configVO = new CourseConfigVO();
 		configVO.setSharedFolderSoftKey(sharedFolderSoftKey);
 		
-		boolean accessGuests = false;
-		boolean accessAllUsers = false;
+		boolean accessPublicVisible = false;
 		RepositoryEntryStatusEnum accessStatus = RepositoryEntryStatusEnum.preparation;
 		if(StringHelper.containsNonWhitespace(status) && RepositoryEntryStatusEnum.isValid(status)) {
 			accessStatus = RepositoryEntryStatusEnum.valueOf(status);
-			accessAllUsers = allUsers != null && allUsers.booleanValue();
-			accessGuests = guests != null && guests.booleanValue();
+			accessPublicVisible = publicVisible != null && publicVisible.booleanValue();
 		} else if(access != null) {
 			boolean accessMembersOnly = membersOnly != null && membersOnly.booleanValue();
 			accessStatus = RestSecurityHelper.convertToEntryStatus(access.intValue(), accessMembersOnly);
-			accessAllUsers = access.intValue() >= 3;
-			accessGuests = access.intValue() >= 4;
+			accessPublicVisible = access.intValue() >= 3;
 		}
 		
 		if(!StringHelper.containsNonWhitespace(displayName)) {
@@ -316,15 +319,13 @@ public class CoursesWebService {
 		}
 
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description,
-					objectives, requirements, credits, expenditureOfWork,
-					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
+			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description, teaser, objectives,
+					requirements, credits, expenditureOfWork, softKey, accessStatus, accessPublicVisible, organisationKey,
 					authors, location, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(id, shortTitle, title, displayName, description,
-					objectives, requirements, credits, expenditureOfWork,
-					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
-					authors, location, externalId, externalRef, managedFlags, nodeAccessType, 
+			course = createEmptyCourse(id, shortTitle, title, displayName, description, teaser, objectives,
+					requirements, credits, expenditureOfWork, softKey, accessStatus, accessPublicVisible,
+					organisationKey, authors, location, externalId, externalRef, managedFlags, nodeAccessType,
 					configVO);
 		}
 		if(course == null) {
@@ -357,9 +358,12 @@ public class CoursesWebService {
 		UserRequest ureq = getUserRequest(request);
 
 		CourseConfigVO configVO = new CourseConfigVO();
+		
+		RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.isValid(courseVo.getRepoEntryStatus()) ?
+				RepositoryEntryStatusEnum.valueOf(courseVo.getRepoEntryStatus()) : RepositoryEntryStatusEnum.preparation;
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
-				null, courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), null, null, null, null,
-				courseVo.getSoftKey(), RepositoryEntryStatusEnum.preparation, false, false, courseVo.getOrganisationKey(),
+				null, courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), courseVo.getTeaser(), null, null, null, null,
+				courseVo.getSoftKey(), status, false, courseVo.getOrganisationKey(),
 				courseVo.getAuthors(), courseVo.getLocation(), courseVo.getExternalId(), courseVo.getExternalRef(), 
 				courseVo.getManagedFlags(), courseVo.getNodeAccessType(), configVO);
 		CourseVO vo = ObjectFactory.get(course);
@@ -407,22 +411,14 @@ public class CoursesWebService {
 			if(length > 0) {
 				Long accessRaw = partsReader.getLongValue("access");
 				String statusRaw = partsReader.getValue("status");
-				String allUsersRaw = partsReader.getValue("allUsers");
-				String guestsRaw = partsReader.getValue("guests");
 
-				boolean accessGuests = false;
-				boolean accessAllUsers = false;
 				RepositoryEntryStatusEnum accessStatus = RepositoryEntryStatusEnum.preparation;
 				if(StringHelper.containsNonWhitespace(statusRaw) && RepositoryEntryStatusEnum.isValid(statusRaw)) {
 					accessStatus = RepositoryEntryStatusEnum.valueOf(statusRaw);
-					accessAllUsers = "true".equals(allUsersRaw);
-					accessGuests = "true".equals(guestsRaw);
 				} else if(accessRaw != null) {
 					String membersOnlyRaw = partsReader.getValue("membersOnly");
 					boolean membersonly = "true".equals(membersOnlyRaw);
 					accessStatus = RestSecurityHelper.convertToEntryStatus(accessRaw.intValue(), membersonly);
-					accessAllUsers = accessRaw.intValue() >= 3;
-					accessGuests = accessRaw.intValue() >= 4;
 				}
 			
 				String softKey = partsReader.getValue("softkey");
@@ -433,8 +429,7 @@ public class CoursesWebService {
 					organisationKey = Long.valueOf(organisation);
 				}
 				
-				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey,
-						accessStatus, accessAllUsers, accessGuests, organisationKey);
+				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, accessStatus, organisationKey);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
@@ -460,7 +455,7 @@ public class CoursesWebService {
 	}
 
 	private ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP, String displayName,
-			String softKey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Long organisationKey) {
+			String softKey, RepositoryEntryStatusEnum status, Long organisationKey) {
 
 		log.info("REST Import course {} START", displayName);
 		if(!StringHelper.containsNonWhitespace(displayName)) {
@@ -495,15 +490,17 @@ public class CoursesWebService {
 		//publish
 		log.info("REST Publish course {} START", displayName);
 		ICourse course = CourseFactory.loadCourse(re);
-		CourseFactory.publishCourse(course, status, allUsers, guests, identity, ureq.getLocale());
+		CourseFactory.publishCourse(course, status, identity, ureq.getLocale());
 		log.info("REST Publish course {} END", displayName);
 		return course;
 	}
 
-	private ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle, String longTitle, String displayName,
-			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Long organisationKey,
-			String authors, String location, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
+	private ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle,
+			String longTitle, String displayName, String description, String teaser, String objectives,
+			String requirements, String credits, String expenditureOfWork, String softKey,
+			RepositoryEntryStatusEnum status, boolean publicVisible, Long organisationKey, String authors,
+			String location, String externalId, String externalRef, String managedFlags,
+			CourseConfigVO courseConfigVO) {
 
 		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
 		RepositoryEntry src = repositoryManager.lookupRepositoryEntry(originalOresTrans, false);
@@ -562,6 +559,11 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(externalRef)) {
 				preparedEntry.setExternalRef(externalRef);
 			}
+			if(StringHelper.containsNonWhitespace(teaser)) {
+				preparedEntry.setTeaser(teaser);
+			} else {
+				preparedEntry.setTeaser(src.getTeaser());
+			}
 			if(StringHelper.containsNonWhitespace(authors)) {
 				preparedEntry.setAuthors(authors);
 			} else {
@@ -596,8 +598,7 @@ public class CoursesWebService {
 				preparedEntry.setExpenditureOfWork(src.getExpenditureOfWork());
 			}
 			preparedEntry.setEntryStatus(status);
-			preparedEntry.setAllUsers(allUsers);
-			preparedEntry.setGuests(guests);
+			preparedEntry.setPublicVisible(publicVisible);
 			preparedEntry.setAllowToLeaveOption(src.getAllowToLeaveOption());
 			preparedEntry.setTechnicalType(src.getTechnicalType());
 			preparedEntry.setEducationalType(src.getEducationalType());
@@ -631,8 +632,8 @@ public class CoursesWebService {
 	 * @return
 	 */
 	private ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
-			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
+			String description, String teaser, String objectives, String requirements, String credits,
+			String expenditureOfWork, String softKey, RepositoryEntryStatusEnum status, boolean publicVisible,
 			Long organisationKey, String authors, String location, String externalId, String externalRef,
 			String managedFlags, String nodeAccessType, CourseConfigVO courseConfigVO) {
 
@@ -666,6 +667,7 @@ public class CoursesWebService {
 			addedEntry.setExternalRef(externalRef);
 			addedEntry.setManagedFlagsString(managedFlags);
 			addedEntry.setDescription(description);
+			addedEntry.setTeaser(teaser);
 			addedEntry.setObjectives(objectives);
 			addedEntry.setRequirements(requirements);
 			addedEntry.setCredits(credits);
@@ -675,8 +677,7 @@ public class CoursesWebService {
 			} else {
 				addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.atAnyTime);//default
 			}
-			addedEntry.setAllUsers(allUsers);
-			addedEntry.setGuests(guests);
+			addedEntry.setPublicVisible(publicVisible);
 			addedEntry = repositoryService.update(addedEntry);
 
 			// create an empty course

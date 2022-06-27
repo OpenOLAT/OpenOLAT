@@ -41,6 +41,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -88,6 +89,7 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 	private void pullSession(ICourse course, Long testSessionKey) {
 		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		AssessmentTestSession session = qtiService.getAssessmentTestSession(testSessionKey);
 		if(session == null || session.isCancelled() || session.isExploded()
 				|| session.getFinishTime() != null || session.getTerminationTime() != null) {
@@ -122,10 +124,13 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 					.createAndInitUserCourseEnvironment(session.getIdentity(), courseEnv);
 			
 			if(actor != null) {
-				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, actor, Role.coach);
+				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, actor, Role.coach, locale);
 			} else {
-				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, null, Role.auto);
+				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, null, Role.auto, locale);
 			}
+			
+			Identity imActor = actor == null ? identity : actor;
+			imService.endChannel(imActor, courseEntry.getOlatResource(), node.getIdent(), identifier.toString());
 		}
 	}
 }

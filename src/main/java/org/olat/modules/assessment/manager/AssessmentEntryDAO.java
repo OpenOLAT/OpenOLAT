@@ -76,7 +76,6 @@ public class AssessmentEntryDAO {
 		data.setSubIdent(subIdent);
 		data.setEntryRoot(entryRoot);
 		data.setReferenceEntry(referenceEntry);
-		data.setUserVisibility(Boolean.TRUE);
 		dbInstance.getCurrentEntityManager().persist(data);
 		return data;
 	}
@@ -194,6 +193,38 @@ public class AssessmentEntryDAO {
 				.setParameter("identityKey", assessedIdentity.getKey())
 				.getSingleResult();
 		return exists.booleanValue();
+	}
+
+	public boolean hasGrades(RepositoryEntryRef remositoryEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.key");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+		sb.and().append(" data.subIdent=:subIdent");
+		sb.and().append(" data.grade is not null");
+		
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("repositoryEntryKey", remositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setMaxResults(1)
+				.getResultList()
+				.isEmpty();
+	}
+	
+	public Long getScoreCount(RepositoryEntryRef repositoryEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(data.key)");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+		sb.and().append(" data.subIdent=:subIdent");
+		sb.and().append(" data.score is not null");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getSingleResult();
 	}
 	
 	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
@@ -347,17 +378,17 @@ public class AssessmentEntryDAO {
 	 * @param subIdent The subIdent (mandatory)
 	 * @param status The status of the assessment entry (optional)
 	 * @param excludeZeroScore disallow zero (0) scores
+	 * @param userVisibleOnly 
 	 * @return A list of assessment entries
 	 */
 	public List<AssessmentEntry> loadAssessmentEntryBySubIdentWithStatus(RepositoryEntryRef entry, String subIdent,
-			AssessmentEntryStatus status, boolean excludeZeroScore) {
+			AssessmentEntryStatus status, boolean excludeZeroScore, boolean userVisibleOnly) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data ")
 		   .append(" inner join fetch data.identity ident") 
 		   .append(" inner join fetch ident.user identuser")
 		   .append(" where data.repositoryEntry.key=:repositoryEntryKey")
 		   .append(" and data.subIdent=:subIdent")
-		   .append(" and data.userVisibility is true")
 		   .append(" and data.score is not null")
 		   .append(" and ident.key in ( select membership.identity.key from repoentrytogroup as rel, bgroupmember membership ")
 		   .append(" where rel.entry.key=:repositoryEntryKey and rel.group.key=membership.group.key and membership.role='")
@@ -369,6 +400,9 @@ public class AssessmentEntryDAO {
 		}		
 		if(excludeZeroScore) {
 			sb.append(" and data.score > 0");
+		}
+		if(userVisibleOnly) {
+			sb.append("and data.userVisibility is true");
 		}
 		
 		TypedQuery<AssessmentEntry> typedQuery = dbInstance.getCurrentEntityManager()
@@ -589,10 +623,12 @@ public class AssessmentEntryDAO {
 		sb.append("  from assessmententry ae");
 		sb.append("       inner join fetch ae.repositoryEntry re");
 		sb.append("       inner join fetch ae.identity identity");
+		sb.append("       inner join fetch identity.user user");
 		sb.append(" where ae.entryRoot = true");
 		sb.append("   and (ae.repositoryEntry.key, ae.identity.key) in (");
 		sb.append("       select subae.repositoryEntry.key, subae.identity.key");
 		sb.append("          from assessmententry subae");
+		sb.append("          inner join courseelement as subelem on (subelem.repositoryEntry.key=subae.repositoryEntry.key and  subelem.subIdent=subae.subIdent)");
 		sb.append("         where subae.startDate <= :start");
 		sb.append("       )");
 		sb.append("   and re.status").in(RepositoryEntryStatusEnum.preparationToClosed());
@@ -600,6 +636,22 @@ public class AssessmentEntryDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)
 				.setParameter("start", start)
+				.getResultList();
+	}
+
+	public List<AssessmentEntry> loadRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae");
+		sb.append("  from assessmententry ae");
+		sb.append("       inner join fetch ae.identity identity");
+		sb.append("       inner join fetch identity.user user");
+		sb.and().append("ae.entryRoot = true");
+		sb.and().append("ae.passed is null");
+		sb.and().append("ae.repositoryEntry.key = :repositoryEntryKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
 				.getResultList();
 	}
 

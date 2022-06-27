@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -87,16 +88,17 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			editAccessVc.put("remove", conditionRemoveCtrl.getInitialComponent());
 			
 			// Accessibility precondition
+			CourseEntryRef courseEntry = new CourseEntryRef(euce);
 			Condition accessCondition = wikiCourseNode.getPreConditionAccess();
 			accessCondCtrl = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, wikiCourseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, wikiCourseNode));
 			listenTo(accessCondCtrl);
 			editAccessVc.put("readerCondition", accessCondCtrl.getInitialComponent());
 			
 			//wiki read / write preconditions
 			Condition editCondition = wikiCourseNode.getPreConditionEdit();
 			editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition, AssessmentHelper
-					.getAssessableNodes(editorModel, wikiCourseNode));
+					.getAssessableNodes(courseEntry, editorModel, wikiCourseNode));
 			listenTo(editCondContr);
 			editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 		}
@@ -136,7 +138,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), editAccessVc);
 			
 		}
-		tabbedPane.addTab(translate(PANE_TAB_WIKICONFIG), configCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_WIKICONFIG), "o_sel_repo_entry", configCtrl.getInitialComponent());
 	}
 
 	@Override

@@ -250,11 +250,11 @@ public class MemberViewQueries {
 		sb.append("select ident from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" where reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
+		  .append(" where (reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
 		  .append(" or reservation.resource.key in (select grp.resource.key from businessgroup as grp")
 		  .append("   inner join repoentrytogroup as rel on (grp.baseGroup.key=rel.group.key)")
 		  .append("   where rel.entry.key=:repoEntryKey")
-		  .append(" )");
+		  .append(" ))");
 		searchByIdentity(sb, params);
 
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()

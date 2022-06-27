@@ -145,7 +145,7 @@ public class CourseTest extends Deployments {
 		publisher
 			.assertOnPublisher()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.guest)
+			.selectAccess(UserAccess.guest, false)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found
@@ -603,7 +603,7 @@ public class CourseTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.registred)
+			.selectAccess(UserAccess.registred, false)
 			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)
@@ -627,6 +627,7 @@ public class CourseTest extends Deployments {
 			.start();
 		
 		By courseTitleBy = By.cssSelector("div.o_course_run h2");
+		OOGraphene.waitElement(courseTitleBy, userBrowser);
 		WebElement courseTitleEl = userBrowser.findElement(courseTitleBy);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
 	}
@@ -969,7 +970,6 @@ public class CourseTest extends Deployments {
 			.addTokenMethod()
 			.configureTokenMethod("secret", "The password is secret");
 		courseAccess
-			.save()
 			.clickToolbarBack();
 		// publish the course
 		course
@@ -1068,6 +1068,7 @@ public class CourseTest extends Deployments {
 			.configureFreeBooking("It's free");
 		courseAccess
 			.save()
+			.cleanBlueBox()
 			.clickToolbarBack();
 		course
 			.publish();
@@ -1290,8 +1291,7 @@ public class CourseTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.quickOpenAccess()
 			.clickToolbarBack();
 		//publish
 		course
@@ -1493,7 +1493,7 @@ public class CourseTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.membersOnly)
+			.selectAccess(UserAccess.membersOnly, false)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found
@@ -1541,6 +1541,7 @@ public class CourseTest extends Deployments {
 			.selectUser(rei)
 			.selectUsersCourseNode(msTitle.substring(0, 20))
 			.setAssessmentScore(5.5f)
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(msTitle.substring(0, 20));
 		
 		//student can see info
@@ -1652,8 +1653,7 @@ public class CourseTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.quickOpenAccess()
 			.clickToolbarBack();
 		
 		String courseUrl = authorBrowser.getCurrentUrl();
@@ -1752,7 +1752,7 @@ public class CourseTest extends Deployments {
 		cpPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.quickOpenAccess()
 			.save()
 			.clickToolbarBack();
 		//publish

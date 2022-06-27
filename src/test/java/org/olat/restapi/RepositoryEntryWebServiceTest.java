@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -63,6 +64,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
@@ -71,7 +73,9 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
-import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.test.JunitTestHelper;
@@ -95,6 +99,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -531,7 +537,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
 		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
 		re = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), "Ext-REF", "Auth",
-				"RE description", "RE objectives", "RE requirements", "RE credits", "DE", "Zurich", "3 days",
+				"RE description", "RE teaser", "RE objectives", "RE requirements", "RE credits", "DE", "Zurich", "3 days",
 				null, null, null, educationalType);
 		dbInstance.commitAndCloseSession();
 
@@ -554,6 +560,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Ext-REF", metadataVo.getExternalRef());
 		Assert.assertEquals("Auth", metadataVo.getAuthors());
 		Assert.assertEquals("RE description", metadataVo.getDescription());
+		Assert.assertEquals("RE teaser", metadataVo.getTeaser());
 		Assert.assertEquals("RE objectives", metadataVo.getObjectives());
 		Assert.assertEquals("RE requirements", metadataVo.getRequirements());
 		Assert.assertEquals("RE credits", metadataVo.getCredits());
@@ -567,6 +574,107 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
 	}
 	
+	@Test
+	public void updatePublicAccess() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+
+		// Check that the course is not public
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("public-access-1");
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
+		params.setIdAndRefs(re.getKey().toString());
+		List<RepositoryEntryMyView> views = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertTrue(views.isEmpty());
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		// Add a public offer
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("access").path("public")
+				.queryParam("allUsers", "true")
+				.build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// Check if the resource is public
+		List<RepositoryEntryMyView> resources = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertEquals(1, resources.size());
+	}
+	
+	@Test
+	public void removePublicAccess() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
+		
+		Set<Organisation> rootOrganisations = organisationService.getOrganisations().stream()
+				.filter(org -> org.getParent() == null)
+				.collect(Collectors.toSet());
+
+		Offer newOffer = acService.createOffer(re.getOlatResource(), re.getDisplayname());
+		newOffer.setOpenAccess(true);
+		newOffer = acService.save(newOffer);
+		acService.updateOfferOrganisations(newOffer, rootOrganisations);
+		dbInstance.commitAndCloseSession();
+
+		// Check that the course is not public
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("public-access-1");
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
+		params.setIdAndRefs(re.getKey().toString());
+		List<RepositoryEntryMyView> views = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertEquals(1, views.size());
+		Assert.assertEquals(re.getKey(), views.get(0).getKey());
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		// Add a public offer
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("access").path("public")
+				.queryParam("allUsers", "false")
+				.build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// Check if the resource is public
+		List<RepositoryEntryMyView> resources = repositoryService.searchMyView(params, 0, -1);
+		Assert.assertTrue(resources.isEmpty());
+	}
+	
+	@Test
+	public void updateStatus() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		dbInstance.commitAndCloseSession();
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// Changed the status
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("status")
+				.queryParam("newStatus", RepositoryEntryStatusEnum.coachpublished.name())
+				.build();
+
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		conn.shutdown();
+		
+		// Check database value
+		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
+		Assert.assertEquals(RepositoryEntryStatusEnum.coachpublished, updatedRe.getEntryStatus());
+	}
 	
 	@Test
 	public void updateMetadata() throws IOException, URISyntaxException {
@@ -638,71 +746,6 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Biel/Bienne", updatedRe.getLocation());
 		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
 		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
-	}
-	
-	
-	@Test
-	public void getAccess() throws IOException, URISyntaxException {
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-
-		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		URI request = UriBuilder.fromUri(getContextURI())
-				.path("repo/entries").path(re.getKey().toString()).path("access").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		RepositoryEntryAccessVO accessVo = conn.parse(response, RepositoryEntryAccessVO.class);
-		conn.shutdown();
-		
-		//check
-		Assert.assertNotNull(accessVo);
-		Assert.assertEquals(re.getKey(), accessVo.getRepoEntryKey());
-		Assert.assertEquals(re.getStatus(), accessVo.getStatus());
-		Assert.assertEquals(re.isAllUsers(), accessVo.isAllUsers());
-		Assert.assertEquals(re.isGuests(), accessVo.isGuests());
-	}
-	
-	@Test
-	public void updateAccess() throws IOException, URISyntaxException {
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
-		dbInstance.commitAndCloseSession();
-		Assert.assertTrue(re.isAllUsers());
-		Assert.assertFalse(re.isGuests());
-
-		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		RepositoryEntryAccessVO accessVo = new RepositoryEntryAccessVO();
-		accessVo.setStatus(RepositoryEntryStatusEnum.published.name());
-		accessVo.setAllUsers(false);
-		accessVo.setGuests(false);
-		
-		URI request = UriBuilder.fromUri(getContextURI())
-				.path("repo/entries").path(re.getKey().toString()).path("access").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, accessVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		RepositoryEntryAccessVO updatedAccessVo = conn.parse(response, RepositoryEntryAccessVO.class);
-		conn.shutdown();
-		
-		// check return value
-		Assert.assertNotNull(updatedAccessVo);
-		Assert.assertEquals(re.getKey(), updatedAccessVo.getRepoEntryKey());
-		Assert.assertEquals(RepositoryEntryStatusEnum.published.name(), updatedAccessVo.getStatus());
-		Assert.assertFalse(updatedAccessVo.isAllUsers());
-		Assert.assertFalse(updatedAccessVo.isGuests());
-		
-		// check database value
-		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
-		Assert.assertEquals(RepositoryEntryStatusEnum.published, updatedRe.getEntryStatus());
-		Assert.assertFalse(updatedRe.isAllUsers());
-		Assert.assertFalse(updatedRe.isGuests());
 	}
 	
 	@Test

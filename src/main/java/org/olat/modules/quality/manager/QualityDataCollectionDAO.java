@@ -37,6 +37,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -433,7 +434,8 @@ public class QualityDataCollectionDAO {
 		sb.append("            when '").append(QualityDataCollectionTopicType.CUSTOM).append("'");
 		sb.append("            then collection.topicCustom");
 		sb.append("            when '").append(QualityDataCollectionTopicType.IDENTIY).append("'");
-		sb.append("            then concat(user.lastName, ' ', user.firstName)");
+		sb.append("              then case when collection.topicIdentity.status < ").append(Identity.STATUS_DELETED);
+		sb.append("                then concat(user.lastName, ' ', user.firstName) end");
 		sb.append("            when '").append(QualityDataCollectionTopicType.ORGANISATION).append("'");
 		sb.append("            then organisation.displayName");
 		sb.append("            when '").append(QualityDataCollectionTopicType.CURRICULUM).append("'");

@@ -53,6 +53,7 @@ import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
@@ -131,7 +132,7 @@ public class CSVToAssessmentItemConverter {
 					lines.add(stripedLine);
 				}
 			}
-		} catch (IOException e) {
+		} catch (IOException | CsvValidationException e) {
 			log.error("", e);
 		}
 		return lines;

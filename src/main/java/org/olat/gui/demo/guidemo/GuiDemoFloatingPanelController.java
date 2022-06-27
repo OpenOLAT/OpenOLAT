@@ -67,12 +67,14 @@ public class GuiDemoFloatingPanelController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == open) {
 			UserSearchController userSearch = new UserSearchController(ureq, getWindowControl(), true);
-			dialog = new FloatingResizableDialogController(ureq, getWindowControl(), userSearch.getInitialComponent(), "Your title", 350, 350, 400, 200, null, "", true, false);
+			dialog = new FloatingResizableDialogController(ureq, getWindowControl(), userSearch.getInitialComponent(),
+					"Your title", null, 350, 350, 400, 200, true, false, false, null);
 			dialog.addControllerListener(this);
 			panelVc.put("panel", dialog.getInitialComponent());
 			panel.setContent(panelVc);
 		} else if (source == open2) {
-			dialog = new FloatingResizableDialogController(ureq, getWindowControl(), localContent, "Your title", 350, 350, 400, 200, createVelocityContainer("localContent2"), "", true, false);
+			dialog = new FloatingResizableDialogController(ureq, getWindowControl(), localContent,
+					"Your title", null, 350, 350, 400, 200, true, false, false, null);
 			dialog.addControllerListener(this);
 			panelVc.put("panel", dialog.getInitialComponent());
 			contentLink = LinkFactory.createLink("link4", localContent, this);

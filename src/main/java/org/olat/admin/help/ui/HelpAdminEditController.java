@@ -127,17 +127,17 @@ public class HelpAdminEditController extends FormBasicController {
 			iconEl.setValue("o_icon_video");
 			setElementVisible(inputEl, true, true, true);
 			break;
-		case HelpModule.CONFLUENCE:
-			String[] confluenceKeys = new String[displayKeys.length + 1];
-			System.arraycopy(displayKeys, 0, confluenceKeys, 1, displayKeys.length);
-			confluenceKeys[0] = "help.admin.display.context";
-			String[] confluenceValues = TranslatorHelper.translateAll(getTranslator(), confluenceKeys);
+		case HelpModule.OODOCS:
+			String[] ooDocsKeys = new String[displayKeys.length + 1];
+			System.arraycopy(displayKeys, 0, ooDocsKeys, 1, displayKeys.length);
+			ooDocsKeys[0] = "help.admin.display.context";
+			String[] ooDocsValues = TranslatorHelper.translateAll(getTranslator(), ooDocsKeys);
 			
-			displayEl.setKeysAndValues(confluenceKeys, confluenceValues);
+			displayEl.setKeysAndValues(ooDocsKeys, ooDocsValues);
 			displayEl.setEnabled("help.admin.display.context", false);
 			displayEl.select("help.admin.display.context", true);
 			
-			inputEl.setLabel("help.admin.input.confluence", null);
+			inputEl.setLabel("help.admin.input.ooDocs", null);
 			iconEl.setValue("o_icon_manual");
 			setElementVisible(inputEl, false, false, false);
 			break;

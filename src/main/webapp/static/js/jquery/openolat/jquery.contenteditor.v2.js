@@ -136,6 +136,13 @@
 		return null;
 	}
 	
+	function closeMathLive() {
+		var mf = document.getElementById('mathlive');
+		if(mf) {
+			mf.executeCommand("hideVirtualKeyboard");
+		}
+	}
+	
 	function initWindowListener(settings) {
 		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
 			o_info.contentEditorWindowListener = function(e) {
@@ -147,26 +154,27 @@
 					var jTarget = jQuery(e.target);
 					var excludedEls = jTarget.closest(".o_popover").length > 0
 						|| jTarget.closest(".o_page_add_in_container").length > 0
-						|| jTarget.closest(".mce-menu").length > 0
-						|| jTarget.closest(".mce-window").length > 0
-						|| jTarget.closest(".mce-container").length > 0
-						|| jTarget.closest(".mce-widget").length > 0
+						|| jTarget.closest(".tox-tinymce").length > 0
+						|| jTarget.closest(".tox-dialog").length > 0
+						|| jTarget.closest(".mce-content-body").length > 0
 						|| jTarget.closest(".o_layered_panel .popover").length > 0
 						|| jTarget.closest(".o_layered_panel .modal-dialog").length > 0
 						|| jTarget.closest(".o_evaluation_editor_form").length > 0
 						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
+						|| jTarget.closest(".tox-dialog-wrap__backdrop").length > 0
 						|| e.target.nodeName == 'BODY';
 					
 					if(!excludedEls) {	
 						var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
 							|| jQuery(e.target).closest(".o_page_side_options").length > 0;
 						var parts = jQuery(e.target).closest(".o_page_part");
-						
 						if(parts.length == 1) {
 							var element = jQuery(parts.get(0));
 							var elementUrl = element.data("oo-content-editor-url");
+							closeMathLive();
 							o_XHREvent(elementUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
 						} else if(!edited) {
+							closeMathLive();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment');
 						}
 					}

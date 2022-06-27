@@ -65,12 +65,12 @@ public class TextEntryInteractionStatistics extends AbstractTextEntryInteraction
 		if((value1 != null && value1.isEmpty()) && (value2 == null || value2.isEmpty())) return true;
 		
 		if(caseSensitive) {
-			if(value1.equals(value2)
-					|| (value2 != null && value1.trim().equals(value2.trim()))) {
+			if((value1 != null && value1.equals(value2))
+					|| (value1 != null && value2 != null && value1.trim().equals(value2.trim()))) {
 				return true;
 			}
-		} else if(value1.equalsIgnoreCase(value2)
-				|| (value2 != null && value1.trim().equalsIgnoreCase(value2.trim()))) {
+		} else if((value1 != null && value1.equalsIgnoreCase(value2))
+				|| (value1 != null && value2 != null && value1.trim().equalsIgnoreCase(value2.trim()))) {
 			return true;
 		}
 		return false;

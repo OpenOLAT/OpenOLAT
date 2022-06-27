@@ -110,4 +110,31 @@ public class DisadvantageCompensationAuditLogDAOTest extends OlatTestCase {
 		Assert.assertEquals(subIdent, auditLog.getSubIdent());
 		Assert.assertEquals(doer.getKey(), auditLog.getAuthorKey());	
 	}
+	
+	@Test
+	public void deleteAuditLogs() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("dcomp-audit-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Date approval = DateUtils.addDays(new Date(), -5);
+		
+		DisadvantageCompensation compensation = disadvantageCompensationDao
+				.createDisadvantageCompensation(id, 15, "By me", approval, id, entry, subIdent, "Test");
+		dbInstance.commitAndCloseSession();
+		
+		disadvantageCompensationAuditLogDao.create("update", "Before changes", "After changes", compensation, id);
+		disadvantageCompensationAuditLogDao.create("update", "Before changes", "After changes", compensation, id);
+		dbInstance.commit();
+		
+		List<DisadvantageCompensationAuditLog> auditLogs = disadvantageCompensationAuditLogDao.getAuditLogs(id, entry, subIdent);
+		Assert.assertNotNull(auditLogs);
+		Assert.assertEquals(2, auditLogs.size());
+		
+		disadvantageCompensationAuditLogDao.deleteDisadvantageCompensationsAuditLogsByEntry(entry);
+		dbInstance.commit();
+		
+		List<DisadvantageCompensationAuditLog> deletedAuditLogs = disadvantageCompensationAuditLogDao.getAuditLogs(id, entry, subIdent);
+		Assert.assertNotNull(deletedAuditLogs);
+		Assert.assertTrue(deletedAuditLogs.isEmpty());
+	}
 }

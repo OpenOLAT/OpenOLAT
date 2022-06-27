@@ -29,11 +29,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.NavigableSet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -46,8 +50,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,9 +58,12 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -66,12 +71,18 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -82,26 +93,39 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentForm extends FormBasicController {
 	
-	private static final String KEY_VISIBLE = "visible";
-	private static final String KEY_HIDDEN = "hidden";
+	private static final Logger log = Tracing.createLoggerFor(AssessmentForm.class);
 	
+	private static final String CMD_INTERMEDIATE_VISIBLE = "intermediate.visible";
+	private static final String CMD_INTERMEDIATE_HIDDEN = "intermediate.hidden";
+	private static final String CMD_DONE_VISIBLE = "done.visible";
+	private static final String CMD_DONE_HIDDEN = "done.hidden";
+	
+	private StaticTextElement statusEl;
+	private StaticTextElement userVisibilityEl;
 	private TextElement score;
+	private FormLayoutContainer gradeCont;
+	private StaticTextElement gradeEl;
+	private FormLink gradeApplyLink;
 	private IntegerElement attempts;
 	private StaticTextElement cutVal;
 	private SingleSelection passed;
-	private SingleSelection userVisibility;
 	private TextElement userComment;
 	private TextElement coachComment;
 	private FormLayoutContainer docsLayoutCont;
 	private FileElement uploadDocsEl;
 	private FormLink reopenLink;
 	private FormLink intermediateSaveLink;
-	private FormLink saveAndDoneButton;
+	private DropdownItem intermediateSaveDropdown;
+	private FormLink intermediateSaveUserVisibilityLink;
+	private FormLink saveAndDoneLink;
+	private DropdownItem saveAndDoneDropdown;
+	private FormLink saveAndDoneAdditionalLink;
 	private List<DocumentWrapper> assessmentDocuments;
 	
 	private DialogBoxController confirmDeleteDocCtrl;
 	
-	private final boolean hasScore, hasPassed, hasComment, hasIndividualAssessmentDocs, hasAttempts;
+	private final AssessmentConfig assessmentConfig;
+	private final boolean hasScore, hasGrade, autoGrade, hasPassed, hasComment, hasIndividualAssessmentDocs, hasAttempts;
 	private Float min, max, cut;
 	private final Integer maxAttempts;
 
@@ -114,11 +138,19 @@ public class AssessmentForm extends FormBasicController {
 	private Integer attemptsValue;
 	private Float scoreValue;
 	private String userCommentValue, coachCommentValue;
+	private Boolean userVisibilityValue;
+	private GradeScale gradeScale;
+	private NavigableSet<GradeScoreRange> gradeScoreRanges;
+	private boolean gradeApplied;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 
-	
+
 	/**
 	 * Constructor for an assessment detail form. The form will be configured according
 	 * to the assessable course node parameters
@@ -129,12 +161,18 @@ public class AssessmentForm extends FormBasicController {
 	 */
 	public AssessmentForm(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		hasAttempts = assessmentConfig.hasAttempts();
 		hasScore = Mode.none != assessmentConfig.getScoreMode();
+		hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		autoGrade = assessmentConfig.isAutoGrade();
+		gradeApplied = autoGrade;
 		hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		hasComment = assessmentConfig.hasComment();
 		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
@@ -241,14 +279,22 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(intermediateSaveLink == source) {
+		if (source == score) {
+			updateGradeUI();
+		} else if (source == gradeApplyLink) {
+			doApplyGrade();
+		} else if(intermediateSaveLink == source || intermediateSaveUserVisibilityLink == source) {
 			if(validateFormLogic(ureq)) {
-				doUpdateAssessmentData(false);
+				FormLink link = (FormLink)source;
+				boolean visible = CMD_INTERMEDIATE_VISIBLE.equals(link.getCmd());
+				doUpdateAssessmentData(false, visible);
 				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
 			}
-		} else if(saveAndDoneButton == source) {
+		} else if(saveAndDoneLink == source || saveAndDoneAdditionalLink == source) {
 			if(validateFormLogic(ureq)) {
-				doUpdateAssessmentData(true);
+				FormLink link = (FormLink)source;
+				boolean visible = CMD_DONE_VISIBLE.equals(link.getCmd());
+				doUpdateAssessmentData(true, visible);
 				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_DONE, true));
 			}
 		} else if(reopenLink == source) {
@@ -287,6 +333,9 @@ public class AssessmentForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		if (score != null) {
+			score.clearError();
+		}
 		if (hasScore && score.isEnabled()) {
 			Float fscore = null;
 			try {
@@ -314,12 +363,6 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		userVisibility.clearError();
-		if(!userVisibility.isOneSelected()) {
-			userVisibility.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		if(attempts != null) {
 			attempts.clearError();
 			allOk &= attempts.validateIntValue();
@@ -343,10 +386,10 @@ public class AssessmentForm extends FormBasicController {
 	private void doReopen() {
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval != null) {
-			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(),
-					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 			updateStatus(reopenedEval);
@@ -366,8 +409,12 @@ public class AssessmentForm extends FormBasicController {
 				assessedUserCourseEnv, getIdentity());
 	}
 	
-	protected void doUpdateAssessmentData(boolean setAsDone) {
+	protected void doUpdateAssessmentData(boolean setAsDone, boolean visibility) {
 		Float updatedScore = null;
+		GradeScoreRange gradeScoreRange = null;
+		String updateGrade = null;
+		String updateGradeSystemIdent = null;
+		String updatePerformanceClassIdent = null;
 		Boolean updatedPassed = null;
 
 		if (isHasAttempts() && isAttemptsDirty()) {
@@ -386,8 +433,19 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
+		if (hasGrade && gradeApplied && score != null) {
+			gradeScoreRange = gradeService.getGradeScoreRange(getGradeScoreRanges(), updatedScore);
+			updateGrade = gradeScoreRange.getGrade();
+			updateGradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+			updatePerformanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+		}
+		
 		if (isHasPassed()) {
-			if (getCut() != null && getScore() != null) {
+			if (hasGrade) {
+				if (gradeApplied && gradeScoreRange != null) {
+					updatedPassed = gradeScoreRange.getPassed();
+				}
+			} else if (getCut() != null && getScore() != null) {
 				updatedPassed = updatedScore.floatValue() >= getCut().floatValue() ? Boolean.TRUE : Boolean.FALSE;
 			} else {
 				//"passed" info was changed or not 
@@ -398,16 +456,16 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		Boolean visibility = userVisibility.isVisible()
-				? Boolean.valueOf(userVisibility.isKeySelected(KEY_VISIBLE))
-				: assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode).getUserVisible();
+		userVisibilityValue = Boolean.valueOf(visibility);
 		
 		// Update score,passed properties in db
 		ScoreEvaluation scoreEval;
 		if(setAsDone) {
-			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, visibility, null, null, null, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
+					updatedPassed, AssessmentEntryStatus.done, userVisibilityValue, null, null, null, null);
 		} else {
-			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, null, visibility, null, null, null, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
+					updatedPassed, null, userVisibilityValue, null, null, null, null);
 		}
 		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
@@ -421,50 +479,6 @@ public class AssessmentForm extends FormBasicController {
 			String newCoachComment = getCoachComment().getValue();
 			courseAssessmentService.updateCoachComment(courseNode, newCoachComment, assessedUserCourseEnv);
 		}
-	}
-	
-	/**
-	 * Reload the data in the controller
-	 * @param updateScoreAccounting Force a recalculation of the whole scoring in the course for the assessed user.
-	 */
-	public void reloadData() {
-		ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
-		scoreAccounting.evaluateAll(true);
-		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
-		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
-		
-		if (hasAttempts) {
-			attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
-			attempts.setIntValue(attemptsValue == null ? 0 : attemptsValue.intValue());
-		}
-		
-		if (hasScore) {
-			scoreValue = scoreEval.getScore();
-			if (scoreValue != null) {
-				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
-			} 
-		}
-		
-		if (hasPassed) {
-			Boolean passedValue = scoreEval.getPassed();
-			passed.select(passedValue == null ? "undefined" : passedValue.toString(), true);
-			passed.setEnabled(cut == null);
-			passed.getComponent().setDirty(true);//force the dirty
-		}
-		
-		if(hasComment) {
-			userCommentValue = courseAssessmentService.getUserComment(courseNode, assessedUserCourseEnv);
-			userComment.setValue(userCommentValue);
-		}
-		
-		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
-			userVisibility.select(KEY_VISIBLE, true);
-		} else {
-			userVisibility.select(KEY_HIDDEN, true);
-		}
-		
-		reloadAssessmentDocs();
-		updateStatus(scoreEval);
 	}
 	
 	private void reloadAssessmentDocs() {
@@ -490,11 +504,15 @@ public class AssessmentForm extends FormBasicController {
 		boolean closed = (scoreEval != null && scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done);
 		
 		if(hasPassed) {
-			passed.setEnabled(!closed && cut == null && !coachCourseEnv.isCourseReadOnly());
+			passed.setEnabled(!closed && !hasGrade && cut == null && !coachCourseEnv.isCourseReadOnly());
 		}
 		
 		if(hasScore) {
 			score.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
+		}
+		
+		if(gradeApplyLink != null) {
+			gradeApplyLink.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
 		}
 		
 		if(hasComment) {
@@ -520,29 +538,56 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		saveAndDoneButton.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		saveAndDoneLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		if (saveAndDoneDropdown != null) {
+			saveAndDoneDropdown.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		}
+		if (saveAndDoneAdditionalLink != null) {
+			saveAndDoneAdditionalLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		}
 		intermediateSaveLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		if (intermediateSaveDropdown != null) {
+			intermediateSaveDropdown.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		}
+		if (intermediateSaveUserVisibilityLink != null) {
+			intermediateSaveUserVisibilityLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		}
 		reopenLink.setVisible(closed && !coachCourseEnv.isCourseReadOnly());
 		flc.setDirty(true);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_assessment_form");
-		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval == null) {
 			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
 		}
-
+		
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setRootForm(mainForm);
+		formLayout.add("general", generalCont);
+		
+		String statusText = new AssessmentStatusCellRenderer(getTranslator(), true).render(scoreEval.getAssessmentStatus());
+		statusEl = uifactory.addStaticTextElement("status", statusText, generalCont);
+		statusEl.setDomWrapperElement(DomWrapperElement.div);
+		
+		String userVisibilityText = new UserVisibilityCellRenderer(true).render(scoreEval.getUserVisible(), getTranslator());
+		userVisibilityEl = uifactory.addStaticTextElement("user.visibility", userVisibilityText, generalCont);
+		userVisibilityEl.setDomWrapperElement(DomWrapperElement.div);
+		
+		FormLayoutContainer assessmentCont = FormLayoutContainer.createDefaultFormLayout("assessment", getTranslator());
+		assessmentCont.setElementCssClass("o_sel_assessment_form");
+		assessmentCont.setFormTitle(translate("personal.title"));
+		assessmentCont.setRootForm(mainForm);
+		formLayout.add("assessment", assessmentCont);
+		
 		if (hasAttempts) {
 			attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
 			if(attemptsValue == null) {
 				attemptsValue = Integer.valueOf(0);
 			}
-			attempts = uifactory.addIntegerElement("attempts", "form.attempts", attemptsValue.intValue(), formLayout);
+			attempts = uifactory.addIntegerElement("attempts", "form.attempts", attemptsValue.intValue(), assessmentCont);
 			attempts.setDisplaySize(3);
 			attempts.setMinValueCheck(0, null);
 			if (maxAttempts != null) {
@@ -553,18 +598,18 @@ public class AssessmentForm extends FormBasicController {
 		if (hasScore) {
 			min = assessmentConfig.getMinScore();
 			max = assessmentConfig.getMaxScore();
-			if (hasPassed) {
+			if (hasPassed && !hasGrade) {
 				cut = assessmentConfig.getCutValue();
 			}
 			
-			String minStr = AssessmentHelper.getRoundedScore(min);
-			String maxStr = AssessmentHelper.getRoundedScore(max);
-			uifactory.addStaticTextElement("minval", "form.min", ((min == null) ? translate("form.valueUndefined") : minStr), formLayout);
-			uifactory.addStaticTextElement("maxval", "form.max", ((max == null) ? translate("form.valueUndefined") : maxStr), formLayout);
-
+			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
+			if (scoreMinMax != null) {
+				uifactory.addStaticTextElement("score.min.max", scoreMinMax, assessmentCont);
+			}
+			
 			// Use init variables from wrapper, already loaded from db
 			scoreValue = scoreEval.getScore();
-			score = uifactory.addTextElement("score","form.score" , 10, "", formLayout);
+			score = uifactory.addTextElement("score","form.score" , 10, "", assessmentCont);
 			score.setDisplaySize(4);
 			score.setElementCssClass("o_sel_assessment_form_score");
 			score.setExampleKey("form.score.rounded", null);
@@ -573,15 +618,35 @@ public class AssessmentForm extends FormBasicController {
 			} 
 			// assessment overview with max score
 			score.setRegexMatchCheck("(\\d+)||(\\d+\\.\\d{1,3})||(\\d+\\,\\d{1,3})", "form.error.wrongFloat");
+			if (hasGrade) {
+				score.addActionListener(FormEvent.ONCHANGE);
+			}
 		}
-
+		
+		if (hasGrade) {
+			gradeCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
+			gradeCont.setElementCssClass("o_inline_cont");
+			gradeCont.setLabel(GradeUIFactory.translateGradeSystemLabel(getTranslator(), getGradeScale().getGradeSystem()), null, false);
+			gradeCont.setRootForm(mainForm);
+			assessmentCont.add(gradeCont);
+			
+			gradeEl = uifactory.addStaticTextElement("grade", "", gradeCont);
+			gradeEl.setDomWrapperElement(DomWrapperElement.span);
+			
+			gradeApplyLink = uifactory.addFormLink("grade.apply.button", gradeCont, Link.BUTTON);
+			
+			if (!autoGrade) {
+				gradeApplied = StringHelper.containsNonWhitespace(scoreEval.getGrade());
+			}
+		}
+		
 		if (hasPassed) {
 			if (cut != null) {
 				// Display cut value if defined
 				cutVal = uifactory.addStaticTextElement(
 						"cutval","form.cut" ,
 						((cut == null) ? translate("form.valueUndefined") : AssessmentHelper.getRoundedScore(cut)),
-						formLayout
+						assessmentCont
 				);
 			}
 			
@@ -592,18 +657,17 @@ public class AssessmentForm extends FormBasicController {
 					translate("form.passed.false")
 			};
 
-			passed = uifactory.addRadiosVertical("passed", "form.passed", formLayout, trueFalseKeys, passedNotPassedValues);	
+			passed = uifactory.addRadiosVertical("passed", "form.passed", assessmentCont, trueFalseKeys, passedNotPassedValues);	
 			passed.setElementCssClass("o_sel_assessment_form_passed");
 			
 			Boolean passedValue = scoreEval.getPassed();
 			passed.select(passedValue == null ? "undefined" :passedValue.toString(), true);
-			// When cut value is defined, no manual passed possible
-			passed.setEnabled(cut == null);
+			passed.setEnabled(!hasGrade && cut == null);
 		}
 
 		if (hasComment) {
 			userCommentValue = courseAssessmentService.getUserComment(courseNode, assessedUserCourseEnv);
-			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, userCommentValue, formLayout);
+			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, userCommentValue, assessmentCont);
 			userComment.setNotLongerThanCheck(2500, "input.toolong");
 		}
 		
@@ -613,41 +677,93 @@ public class AssessmentForm extends FormBasicController {
 			docsLayoutCont = FormLayoutContainer.createCustomFormLayout("form.individual.assessment.docs", getTranslator(), page);
 			docsLayoutCont.setLabel("form.individual.assessment.docs", null);
 			docsLayoutCont.contextPut("mapperUri", mapperUri);
-			formLayout.add(docsLayoutCont);
+			assessmentCont.add(docsLayoutCont);
 
-			uploadDocsEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.upload", null, formLayout);
+			uploadDocsEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.upload", null, assessmentCont);
 			uploadDocsEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
 		coachCommentValue = courseAssessmentService.getCoachComment(courseNode, assessedUserCourseEnv);
-		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, formLayout);
+		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, assessmentCont);
 		coachComment.setNotLongerThanCheck(2500, "input.toolong");
 		
-		SelectionValues visibilitySV = new SelectionValues();
-		visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("user.visibility.hidden"), translate("user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
-		visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("user.visibility.visible"), translate("user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
-		userVisibility = uifactory.addCardSingleSelectHorizontal("user.visibility.release", formLayout, visibilitySV.keys(),
-				visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
-		userVisibility.setElementCssClass("o_sel_assessment_form_visibility");
-		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
-			userVisibility.select(KEY_VISIBLE, true);
-		} else {
-			userVisibility.select(KEY_HIDDEN, true);
-		}
 		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
 				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		userVisibility.setVisible(canChangeUserVisibility);
 		
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
-		formLayout.add(buttonGroupLayout);
+		userVisibilityValue = scoreEval.getUserVisible();
+		if (userVisibilityValue == null) {
+			userVisibilityValue = assessmentConfig.getInitialUserVisibility(true, !canChangeUserVisibility);
+		}
 		
-		intermediateSaveLink = uifactory.addFormLink("save.intermediate", buttonGroupLayout, Link.BUTTON);
+		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createCustomFormLayout("buttons", getTranslator(), velocity_root + "/assessment_edit_buttons.html");
+		assessmentCont.add(buttonGroupLayout);
+		
+		String intermediateName = "save.intermediate";
+		String intermediateSaveIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+		String cmdIntermediate = CMD_INTERMEDIATE_HIDDEN;
+		String toggleUserVisibility = "save.intermediate.set.visible";
+		String intermediateSaveUserVisibilityIconCSS = "o_icon o_icon-fw o_icon_results_visible";
+		String cmdIntermediateToggle = CMD_INTERMEDIATE_VISIBLE;
+		if (scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
+			intermediateSaveIconCSS = "o_icon o_icon-fw o_icon_results_visible";
+			cmdIntermediate = CMD_INTERMEDIATE_VISIBLE;
+			intermediateSaveUserVisibilityIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+			cmdIntermediateToggle = CMD_INTERMEDIATE_HIDDEN;
+			toggleUserVisibility = "save.intermediate.set.hidden";
+		}
+		
+		intermediateSaveLink = uifactory.addFormLink("save.intermediate", cmdIntermediate, intermediateName, null, buttonGroupLayout, Link.BUTTON);
 		intermediateSaveLink.setElementCssClass("o_sel_assessment_form_save_and_close");
+		intermediateSaveLink.setIconLeftCSS(intermediateSaveIconCSS);
 		
-		saveAndDoneButton = uifactory.addFormLink("assessment.set.status.done", buttonGroupLayout, Link.BUTTON);
-		saveAndDoneButton.setElementCssClass("o_sel_assessment_form_save_and_done");
-		saveAndDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
-		saveAndDoneButton.setPrimary(true);
+		if (canChangeUserVisibility) {
+			intermediateSaveDropdown = uifactory.addDropdownMenu("save.intermediate.more", null, buttonGroupLayout, getTranslator());
+			intermediateSaveDropdown.setOrientation(DropdownOrientation.right);
+			
+			intermediateSaveUserVisibilityLink = uifactory.addFormLink(toggleUserVisibility, cmdIntermediateToggle, toggleUserVisibility, null, buttonGroupLayout, Link.LINK);
+			intermediateSaveUserVisibilityLink.setIconLeftCSS(intermediateSaveUserVisibilityIconCSS);
+			intermediateSaveDropdown.addElement(intermediateSaveUserVisibilityLink);
+		}
+		
+		String doneName = "assessment.set.status.done.visible";
+		String doneIconCSS = "o_icon o_icon-fw o_icon_results_visible";
+		String doneCmd = CMD_DONE_VISIBLE;
+		String doneAddName = "assessment.set.status.done";
+		String donAddIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+		String doneAddCmd = CMD_DONE_HIDDEN;
+		if (!canChangeUserVisibility) {
+			doneName = "assessment.set.status.done";
+			if (scoreEval.getUserVisible() == null || !scoreEval.getUserVisible().booleanValue()) {
+				doneIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+				doneCmd = CMD_DONE_HIDDEN;
+			}
+		} else {
+			 if (scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
+				doneName = "assessment.set.status.done";
+				doneAddName = "assessment.set.status.done.hidden";
+			} else if (scoreEval.getUserVisible() == null && !userVisibilityValue.booleanValue()) {
+				doneName = "assessment.set.status.done";
+				doneIconCSS = "o_icon o_icon-fw o_icon_results_hidden";
+				doneCmd = CMD_DONE_HIDDEN;
+				doneAddName = "assessment.set.status.done.visible";
+				donAddIconCSS = "o_icon o_icon-fw o_icon_results_visible";
+				doneAddCmd = CMD_DONE_VISIBLE;
+			}
+		}
+		saveAndDoneLink = uifactory.addFormLink("save.done", doneCmd, doneName, null, buttonGroupLayout, Link.BUTTON);
+		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_done");
+		saveAndDoneLink.setIconLeftCSS(doneIconCSS);
+		saveAndDoneLink.setPrimary(true);
+		
+		if (canChangeUserVisibility) {
+			saveAndDoneDropdown = uifactory.addDropdownMenu("save.done.more", null, buttonGroupLayout, getTranslator());
+			saveAndDoneDropdown.setOrientation(DropdownOrientation.right);
+			saveAndDoneDropdown.setPrimary(true);
+			
+			saveAndDoneAdditionalLink = uifactory.addFormLink("save.done.add", doneAddCmd, doneAddName, null, buttonGroupLayout, Link.LINK);
+			saveAndDoneAdditionalLink.setIconLeftCSS(donAddIconCSS);
+			saveAndDoneDropdown.addElement(saveAndDoneAdditionalLink);
+		}
 		
 		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
@@ -657,8 +773,77 @@ public class AssessmentForm extends FormBasicController {
 
 		reloadAssessmentDocs();
 		updateStatus(scoreEval);
+		updateGradeUI();
+	}
+
+	private void doApplyGrade() {
+		gradeApplied = true;
+		updateGradeUI();
 	}
 	
+	private void updateGradeUI() {
+		if (!hasGrade) return;
+		
+		GradeScoreRange gradeScoreRange = null;
+		String grade = null;
+		String performanceClassIdent = null;
+		try {
+			Float newScore = Float.valueOf(score.getValue().replace(',', '.'));
+			gradeScoreRange = gradeService.getGradeScoreRange(getGradeScoreRanges(), newScore);
+			grade = gradeScoreRange.getGrade();
+			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+		} catch (NumberFormatException e) {
+			//
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		setGradeValue(grade, performanceClassIdent);
+		
+		if (passed != null) {
+			if (gradeScoreRange == null || gradeScoreRange.getPassed() == null) {
+				passed.select("undefined", true);
+			} else if (gradeScoreRange.getPassed().booleanValue()) {
+				passed.select("true", true);
+			} else {
+				passed.select("false", true);
+			}
+		}
+	}
+	
+	private void setGradeValue(String grade, String performanceClassIdent) {
+		if (StringHelper.containsNonWhitespace(grade) && getGradeScale() != null) {
+			GradeSystem gradeSystem = getGradeScale().getGradeSystem();
+			String translatedGrade = GradeUIFactory.translatePerformanceClass(getTranslator(), performanceClassIdent, grade, gradeSystem.getIdentifier());
+			String translateGradeSystem = GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem);
+			String gradeValue = translate("grade.with.system", translatedGrade, translateGradeSystem);
+			if (!gradeApplied) {
+				gradeValue = translate("grade.not.applied", gradeValue);
+			}
+			gradeEl.setValue(gradeValue);
+		} else {
+			gradeEl.setValue("");
+		}
+		
+		gradeApplyLink.setVisible(!gradeApplied && StringHelper.containsNonWhitespace(gradeEl.getValue())
+				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY)));
+	}
+
+	private NavigableSet<GradeScoreRange> getGradeScoreRanges() {
+		if (gradeScoreRanges == null) {
+			gradeScoreRanges = gradeService.getGradeScoreRanges(getGradeScale(), getLocale());
+		}
+		return gradeScoreRanges;
+	}
+	
+	private GradeScale getGradeScale() {
+		if (gradeScale == null) {
+			gradeScale = gradeService.getGradeScale(
+					assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					courseNode.getIdent());
+		}
+		return gradeScale;
+	}
+
 	public static class DocumentWrapper {
 		
 		private final File document;

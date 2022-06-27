@@ -93,3 +93,10 @@
 .o_lectures div#o_main_toolbar.o_toolbar {
 	margin-top: 0px;
 }
+
+.o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning,
+.o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_left,
+.o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_right {
+	background-color: $alert-warning-bg !important;
+}
+	

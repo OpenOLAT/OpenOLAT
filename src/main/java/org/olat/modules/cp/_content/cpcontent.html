@@ -10,6 +10,9 @@
 			#if($r.available("print"))
 				$r.render("print")
 			#end
+			#if($r.available("pdf"))
+				$r.render("pdf")
+			#end
 			#if($r.available("search_input"))
 				<div class="o_search_wrapper">
 				$r.render("search_input")

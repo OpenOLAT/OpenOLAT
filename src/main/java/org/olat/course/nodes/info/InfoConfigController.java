@@ -87,7 +87,7 @@ public class InfoConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("pane.tab.infos_config.title"));
-		generalCont.setFormContextHelp("Administration and Organisation#_mitteilung_zugang");
+		generalCont.setFormContextHelp("manual_user/course_elements/Administration_and_Organisation/#notification");
 		generalCont.setElementCssClass("o_sel_course_info_form");
 		formLayout.add(generalCont);
 		

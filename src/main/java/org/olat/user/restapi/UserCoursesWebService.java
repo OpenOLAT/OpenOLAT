@@ -149,6 +149,43 @@ public class UserCoursesWebService {
 		}
 	}
 	
+    /**
+     * Retrieves the list of "My owned courses" but limited to courses.
+     * 
+     * @param start The first result
+     * @param limit Max result
+     * @param httpRequest The HTTP request
+     * @param request The REST request
+     * @return The list of my supervised entries
+     */
+    @GET
+    @Path("owned")
+    @Operation(summary = "Retrieves the list of \"My owned courses\"", description = "Retrieves the list of \"My owned courses\" but limited to courses")
+    @ApiResponse(responseCode = "200", description = "The courses", content = {
+            @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+            @Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) })
+    @ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response getOwnedCourses(@QueryParam("start") @DefaultValue("0") Integer start,
+            @QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
+            @Context Request request) {
+        
+        if(MediaTypeVariants.isPaged(httpRequest, request)) {
+            List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsOwner(identity, start, limit, RepositoryEntryOrder.nameAsc);
+            int totalCount= repositoryManager.countLearningResourcesAsOwner(identity);
+
+            CourseVO[] vos = toCourseVo(repoEntries);
+            CourseVOes voes = new CourseVOes();
+            voes.setCourses(vos);
+            voes.setTotalCount(totalCount);
+            return Response.ok(voes).build();
+        } else {
+            List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsOwner(identity, 0, -1);
+            CourseVO[] vos = toCourseVo(repoEntries);
+            return Response.ok(vos).build();
+        }
+    }
+	
 	/**
 	 * Retrieves the list of my favorite courses.
 	 * 
@@ -202,11 +239,11 @@ public class UserCoursesWebService {
 				if(course != null) {
 					voList.add(ObjectFactory.get(repoEntry, course));
 				}
-				if(count++ % 33 == 0) {
+				if(count % 33 == 0) {
 					dbInstance.commitAndCloseSession();
 				}
 			} catch (Exception e) {
-				log.error("Cannot load the course with this repository entry: " + repoEntry, e);
+				log.error("Cannot load the course with this repository entry: {}", repoEntry, e);
 			}
 		}
 		return voList.toArray(new CourseVO[voList.size()]);

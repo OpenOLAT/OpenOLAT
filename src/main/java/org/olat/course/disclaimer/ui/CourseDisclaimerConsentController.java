@@ -24,13 +24,19 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.disclaimer.CourseDisclaimerConsent;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
+import org.olat.course.disclaimer.event.CourseDisclaimerEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Date: 11 Mar 2020<br>
  * @author Alexander Boeckle
  */
-public class CourseDisclaimerConsentController extends FormBasicController {
+public class CourseDisclaimerConsentController extends FormBasicController {	
 	private static final String[] onKeys = {"on"};
 
 	private MultipleSelectionElement disc1check1;
@@ -46,8 +52,14 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 	private MultipleSelectionElement disc2check1;
 	private MultipleSelectionElement disc2check2;
 
+	private FormSubmit submitBtn;
+	private FormCancel cancelBtn;
+	
+	
 	private RepositoryEntry repositoryEntry;
 	private CourseConfig courseConfig;
+
+	private DialogBoxController dbc;
 
 	@Autowired
 	private CourseDisclaimerManager disclaimerManager;
@@ -64,8 +76,31 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		disclaimerManager.acceptDisclaimer(repositoryEntry, getIdentity(), ureq.getUserSession().getRoles(), courseConfig.isDisclaimerEnabled(1), courseConfig.isDisclaimerEnabled(2));
+		// notify course to continue
+		fireEvent(ureq, CourseDisclaimerEvent.ACCEPTED);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		super.formCancelled(ureq);
+		String message = "<div class='o_warning'><i class='o_icon o_icon_warn o_icon-fw'> </i> " + translate("course.disclaimer.cancel.message") + "</div>";
+		dbc = activateYesNoDialog(ureq, translate("course.disclaimer.cancel.confirmation"), message, dbc);
+	}
 
-		fireEvent(ureq, Event.DONE_EVENT);
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
+		if (source == dbc) {
+			if (DialogBoxUIFactory.isYesEvent(event) ){
+				// mark DB that user denied by setting the checkboxes to false
+				disclaimerManager.acceptDisclaimer(repositoryEntry, getIdentity(), ureq.getUserSession().getRoles(), false, false);
+				// notify course to close the window
+				fireEvent(ureq, CourseDisclaimerEvent.REJECTED);			
+			}
+			// else do nothing, user can still accept
+			removeAsListenerAndDispose(dbc);
+			dbc = null;
+		}
 	}
 
 	@Override
@@ -151,6 +186,33 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		buttonLayout.setElementCssClass("o_sel_disclaimer_buttons");
 
-		uifactory.addFormSubmitButton("course.disclaimer.continue", buttonLayout);
+		submitBtn = uifactory.addFormSubmitButton("course.disclaimer.continue", buttonLayout);
+		cancelBtn = uifactory.addFormCancelButton("course.disclaimer.cancel", buttonLayout, ureq, getWindowControl());
+	}
+	
+	
+	/**
+	 * Call this method to setup the form in a read-only view for the given consent
+	 * object
+	 * 
+	 * @param consent
+	 */
+	protected void initForConsentReview(CourseDisclaimerConsent consent) {
+		if (courseConfig.isDisclaimerEnabled(1)) {
+			disc1check1.selectAll();
+			if (disc1check2 != null) {
+				disc1check2.selectAll();
+				
+			}
+		}
+		if (courseConfig.isDisclaimerEnabled(2)) {
+			disc2check1.selectAll();
+			if (disc2check2 != null) {
+				disc2check2.selectAll();
+			}
+		}			
+		submitBtn.setVisible(false);
+		cancelBtn.setVisible(false);
+		this.flc.setEnabled(false);	
 	}
 }

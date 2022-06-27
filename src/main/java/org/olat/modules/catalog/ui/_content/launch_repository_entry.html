@@ -1,0 +1,99 @@
+<div class="o_catalog_re_launcher">
+	<div class="o_title">
+		<div>
+			<h3>
+				#if($title)
+					$title
+				#else
+					$r.render("title")
+				#end
+			</h3>
+		</div>
+	</div>
+	#if($r.available("emptyState"))
+		$r.render("emptyState")
+	#end
+	<div class="swiper o_entry_cards">
+		<div class="swiper-wrapper">
+			#foreach($row in $items)
+				<div class="swiper-slide">
+					<div class="o_repo_entry_card o_card_hover #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
+						<div class="o_visual" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
+							#if($row.isThumbnailAvailable())
+								<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
+							#else
+								<div class="o_visual_not_available"></div>
+							#end
+						</div>
+						<div class="o_meta">
+							#if ($row.getExternalRef())
+								<div class="o_ext_ref">
+									$r.escapeHtml($r.xssScan($row.getExternalRef()))
+								</div>
+							#end
+							<h4 class="o_title">#if($row.closed)#end$r.xssScan($row.displayName)</h4>
+							#if($row.getEducationalType())
+								<div class="o_edu_type o_flex_block_one_line_left">
+								<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
+									<span>$r.translate($row.getEducationalTypei18nKey())</span>
+								</span>
+								</div>
+							#end
+							#if($r.isNotEmpty($row.teaser))
+								<div class="o_teaser">$r.escapeHtml($r.xssScan($row.teaser))</div>
+							#end
+						</div>
+						<div class="o_flex_spacer"></div>
+						<div class="o_card_cmd">
+							<div class="o_learn_more">
+								$r.render("$row.getLearnMoreLinkName()")
+							</div>
+						</div>
+					</div>
+				</div>
+			#end
+		</div>
+		<div class="swiper-button-prev"></div>
+		<div class="swiper-button-next"></div>
+		<div class="swiper-pagination"></div>
+	</div>
+</div>
+<script>
+## If we have to change the number of slides dynamically:
+## https://stackoverflow.com/questions/10612024/event-trigger-on-a-class-change
+## https://stackoverflow.com/questions/64459585/can-you-modify-the-number-of-slidesperview-in-swiperjs-after-it-was-init
+var bp = document.querySelector('body.o_width_full')
+		? {
+			606: { slidesPerView: 2, slidesPerGroup: 2 },
+			914: { slidesPerView: 3, slidesPerGroup: 3 },
+			1212: { slidesPerView: 4, slidesPerGroup: 4 },
+			1510: { slidesPerView: 5, slidesPerGroup: 5 },
+			1808: { slidesPerView: 6, slidesPerGroup: 6 },
+			2106: { slidesPerView: 7, slidesPerGroup: 7 },
+			2404: { slidesPerView: 8, slidesPerGroup: 8 },
+			2702: { slidesPerView: 9, slidesPerGroup: 9 },
+			3000: { slidesPerView: 10, slidesPerGroup: 10 },
+			3298: { slidesPerView: 11, slidesPerGroup: 11 },
+			3596: { slidesPerView: 12, slidesPerGroup: 12 }
+		}
+		: {
+			606: { slidesPerView: 2, slidesPerGroup: 2 },
+			914: { slidesPerView: 3, slidesPerGroup: 3 },
+			1212: { slidesPerView: 4, slidesPerGroup: 4 }
+		}
+	;
+new Swiper('.swiper', {
+	slidesPerView: 1,
+	spaceBetween: 10,
+	## numCards * cardWidth + numCards * spaceBetween + mainLayoutPadding (e.g.: 3*288 + 2*10 + 2*15)
+	breakpoints: bp,
+	navigation: {
+		prevEl: '.swiper-button-prev',
+		nextEl: '.swiper-button-next'
+	},
+	pagination: {
+		el: ".swiper-pagination",
+		dynamicBullets: true
+	}
+});
+</script>

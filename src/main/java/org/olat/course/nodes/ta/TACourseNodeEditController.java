@@ -73,6 +73,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -174,15 +175,16 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		
 		accessabilityVC = this.createVelocityContainer("edit");
 		// Task precondition
+		CourseEntryRef courseEntry = new CourseEntryRef(euce);
 		taskConditionC = new ConditionEditController(ureq, getWindowControl(), euce, node.getConditionTask(),
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));		
+				AssessmentHelper.getAssessableNodes(courseEntry, course.getEditorTreeModel(), node));		
 		this.listenTo(taskConditionC);
 		if (((Boolean) config.get(TACourseNode.CONF_TASK_ENABLED)).booleanValue()) accessabilityVC.put("taskCondition", taskConditionC
 				.getInitialComponent());
 
 		// DropBox precondition
 		dropConditionC = new ConditionEditController(ureq, getWindowControl(), euce, node.getConditionDrop(),
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));		
+				AssessmentHelper.getAssessableNodes(courseEntry, course.getEditorTreeModel(), node));		
 		this.listenTo(dropConditionC);
 		Boolean hasDropboxValue = ((Boolean) config.get(TACourseNode.CONF_DROPBOX_ENABLED)!=null) ? (Boolean) config.get(TACourseNode.CONF_DROPBOX_ENABLED) : false;
 		if (hasDropboxValue) accessabilityVC.put("dropCondition", dropConditionC.getInitialComponent());
@@ -197,7 +199,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			node.setConditionReturnbox(returnboxCondition);			
 		}
 		returnboxConditionC = new ConditionEditController(ureq, getWindowControl(), euce, returnboxCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));
+				AssessmentHelper.getAssessableNodes(courseEntry, course.getEditorTreeModel(), node));
 		listenTo(returnboxConditionC);
 		Object returnBoxConf = config.get(TACourseNode.CONF_RETURNBOX_ENABLED);
 		//use the dropbox config if none specified for the return box
@@ -206,14 +208,14 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Scoring precondition
 		scoringConditionC = new ConditionEditController(ureq, getWindowControl(), euce, node.getConditionScoring(),
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));		
+				AssessmentHelper.getAssessableNodes(courseEntry, course.getEditorTreeModel(), node));		
 		listenTo(scoringConditionC);
 		if (((Boolean) config.get(TACourseNode.CONF_SCORING_ENABLED)).booleanValue()) accessabilityVC.put("scoringCondition", scoringConditionC
 				.getInitialComponent());
 
 		// SolutionFolder precondition
 		solutionConditionC = new ConditionEditController(ureq, getWindowControl(), euce, node.getConditionSolution(),
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));		
+				AssessmentHelper.getAssessableNodes(courseEntry, course.getEditorTreeModel(), node));		
 		listenTo(solutionConditionC);
     if (((Boolean) config.get(TACourseNode.CONF_SOLUTION_ENABLED)).booleanValue()) accessabilityVC.put("solutionCondition", solutionConditionC
     		.getInitialComponent());
@@ -245,7 +247,8 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		editScoring = this.createVelocityContainer("editScoring");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", editScoring, this);
 
-		scoringController = new MSEditFormController(ureq, wControl, config, NodeAccessType.of(course));
+		scoringController = new MSEditFormController(ureq, wControl,
+				euce.getCourseEditorEnv().getCourseGroupManager().getCourseEntry(), node, NodeAccessType.of(course));
 		listenTo(scoringController);
 		editScoring.put("scoringController", scoringController.getInitialComponent());
 		

@@ -96,6 +96,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.ContainerHandler;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
+import org.olat.modules.portfolio.handler.MathPageElementHandler;
 import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
 import org.olat.modules.portfolio.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.handler.TablePageElementHandler;
@@ -581,6 +582,9 @@ public class ExportBinderAsCPResource implements MediaResource {
 			//handler for table
 			TablePageElementHandler tableHandler = new TablePageElementHandler();
 			handlers.add(tableHandler);
+			//handler for LaTeX
+			MathPageElementHandler mathHandler = new MathPageElementHandler();
+			handlers.add(mathHandler);
 			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {

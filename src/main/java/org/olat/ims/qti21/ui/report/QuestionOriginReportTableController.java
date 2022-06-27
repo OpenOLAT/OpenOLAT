@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.report;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +51,7 @@ import org.olat.repository.ui.RepositoryEntryACColumnDescriptor;
 import org.olat.repository.ui.RepositoryFlexiTableModel;
 import org.olat.repository.ui.RepositoryFlexiTableModel.RepoCols;
 import org.olat.repository.ui.author.TypeRenderer;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,6 +69,8 @@ public class QuestionOriginReportTableController extends FormBasicController {
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private ACService acService;
 	
 	public QuestionOriginReportTableController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "report_list", Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale(),
@@ -101,6 +105,8 @@ public class QuestionOriginReportTableController extends FormBasicController {
 		params.addResourceTypes(ImsQTI21Resource.TYPE_NAME);
 		params.setIdentity(getIdentity());
 		params.setRoles(ureq.getUserSession().getRoles());
+		params.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
+		params.setOfferValidAt(new Date());
 		params.setIdRefsAndTitle(searchString);
 		params.setAuthor(author);
 		

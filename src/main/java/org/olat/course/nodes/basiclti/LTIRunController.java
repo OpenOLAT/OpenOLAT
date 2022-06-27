@@ -40,13 +40,16 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
@@ -77,12 +80,14 @@ public class LTIRunController extends BasicController {
 	
 	private boolean fullScreen;
 	private ChiefController thebaseChief;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
 	private final LTIDisplayOptions display;
 	private final BasicLTICourseNode courseNode;
 	private final ModuleConfiguration config;
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment userCourseEnv;
+	private final AssessmentConfig assessmentConfig;
 	
 	private LTIDisplayContentController ltiCtrl;
 	private LTIDataExchangeDisclaimerController disclaimerCtrl;
@@ -110,6 +115,7 @@ public class LTIRunController extends BasicController {
 		this.courseEnv = courseEnv;
 		this.userCourseEnv = userCourseEnv;
 		display = LTIDisplayOptions.iframe;
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 		
 		ltiCtrl = new LTI10DisplayController(ureq, getWindowControl(), courseNode, userCourseEnv, courseEnv, display);
 		listenTo(ltiCtrl);
@@ -135,6 +141,7 @@ public class LTIRunController extends BasicController {
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		String displayStr = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		display = LTIDisplayOptions.valueOfOrDefault(displayStr); 
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 		
 		ltiCtrl = new LTI10DisplayController(ureq, getWindowControl(), courseNode, userCourseEnv, courseEnv, display);
 		listenTo(ltiCtrl);
@@ -151,6 +158,7 @@ public class LTIRunController extends BasicController {
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
@@ -223,7 +231,8 @@ public class LTIRunController extends BasicController {
 		startPage.contextPut("menuTitle", courseNode.getShortTitle());
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
 		
-		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false)){
+		boolean hasScore = AssessmentConfig.Mode.none != assessmentConfig.getScoreMode();
+		if (hasScore){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -234,25 +243,18 @@ public class LTIRunController extends BasicController {
 		startButton = LinkFactory.createButton("start", startPage, this);
 		startButton.setPrimary(true);
 
-		boolean assessable = config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false)
-				&& userCourseEnv.isParticipant();
-		if(assessable) {
-			startPage.contextPut("isassessable", assessable);
-	    
-			Integer attempts = courseAssessmentService.getAttempts(courseNode, userCourseEnv);
-			startPage.contextPut("attempts", attempts);
-	    
-			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
-			Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-			if(cutValue != null) {
-				startPage.contextPut("hasPassedValue", Boolean.TRUE);
-				startPage.contextPut("passed", eval.getPassed());
-			}
-			startPage.contextPut("score", eval.getScore());
-			startPage.contextPut("hasScore", Boolean.TRUE);
-			boolean resultsVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
-			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
-			startPage.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == eval.getAssessmentStatus()));
+		boolean assessable = hasScore && userCourseEnv.isParticipant();
+		if(hasScore && userCourseEnv.isParticipant()) {
+			startPage.contextPut("isassessable", Boolean.valueOf(assessable));
+			
+			AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+			startPage.contextPut("attempts", assessmentEval.getAttempts());
+			
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig, null, null, null);
+			listenTo(assessmentParticipantViewCtrl);
+			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+
 			mainPanel.setContent(startPage);
 		}
 		
@@ -272,7 +274,6 @@ public class LTIRunController extends BasicController {
 			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
-				courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 				openBasicLTIContent(ureq);
 			} else {
 				// or show the start button
@@ -284,6 +285,8 @@ public class LTIRunController extends BasicController {
 	}
 	
 	private void openBasicLTIContent(UserRequest ureq) {
+		updateAssessmentData();
+		
 		// container is "run", "runFullscreen" or "runPopup" depending in configuration
 		ltiCtrl.openLtiContent(ureq);
 		if (display == LTIDisplayOptions.fullscreen) {
@@ -297,6 +300,25 @@ public class LTIRunController extends BasicController {
 			getWindowControl().pushToMainArea(ltiCtrl.getInitialComponent());
 		} else {
 			mainPanel.setContent(ltiCtrl.getInitialComponent());
+		}
+	}
+	
+	private void updateAssessmentData() {
+		// No preview? Data are stores as coach, author as well.
+		
+		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
+		
+		// Set status in Progress
+		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		if (currentEval.getAssessmentStatus() == null
+				|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
+				|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
+			ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getGrade(),
+					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(),
+					currentEval.getPassed(), AssessmentEntryStatus.inProgress,
+					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+			courseAssessmentService.saveScoreEvaluation(courseNode, getIdentity(), scoreEval, userCourseEnv, false, Role.user);
 		}
 	}
 	
@@ -323,7 +345,6 @@ public class LTIRunController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
-			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 			openBasicLTIContent(ureq);
 		}  else if(source == back) {
 			closeBasicLTI();

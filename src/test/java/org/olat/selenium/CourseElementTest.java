@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
@@ -148,7 +149,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("cp")
 			.nodeTitle(cpNodeTitle)
-			.selectTabLearnContent()
+			.selectTabCPContent()
 			.chooseCP(cpTitle);
 
 		//publish the course
@@ -300,7 +301,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("wiki")
 			.nodeTitle(wikiNodeTitle)
-			.selectTabLearnContent()
+			.selectTabWikiContent()
 			.chooseWiki(wikiTitle);
 
 		//publish the course
@@ -357,7 +358,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("wiki")
 			.nodeTitle(wikiNodeTitle)
-			.selectTabLearnContent()
+			.selectTabWikiContent()
 			.createWiki(wikiTitle);
 
 		//publish the course
@@ -408,8 +409,8 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("iqtest")
 			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.createQTI12Test(testTitle);
+			.selectTabTestContent()
+			.createQTITest(testTitle);
 
 		//publish the course
 		courseEditor
@@ -464,7 +465,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("podcast")
 			.nodeTitle(podcastNodeTitle)
-			.selectTabLearnContent()
+			.selectTabFeedContent()
 			.createFeed(podcastTitle);
 
 		//publish the course
@@ -522,7 +523,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
-			.selectTabLearnContent()
+			.selectTabFeedContent()
 			.createFeed(blogTitle);
 
 		//publish the course
@@ -591,7 +592,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
-			.selectTabLearnContent()
+			.selectTabFeedContent()
 			.createFeed(blogTitle);
 		//publish the course
 		courseEditor
@@ -1528,9 +1529,9 @@ public class CourseElementTest extends Deployments {
 			.replyToMessageNoWait("The best anime ever", null, kanuReply);
 	
 		//wait the responses
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitBusy(kanuBrowser);
-		OOGraphene.waitBusy(reiBrowser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitModalDialogDisappears(kanuBrowser);
+		OOGraphene.waitModalDialogDisappears(reiBrowser);
 		
 		//check own responses
 		authorForum.assertMessageBody(authorReply);
@@ -1606,7 +1607,7 @@ public class CourseElementTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.guest)
+			.selectAccess(UserAccess.guest, true)
 			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(null, node1)
@@ -2053,16 +2054,16 @@ public class CourseElementTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void survey(@Drone @User WebDriver userBrowser)
+	public void survey(@Drone @Author WebDriver authorBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Maximilien");
-		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		LoginPage authorLoginPage = LoginPage.load(authorBrowser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a survey
 		String surveyTitle = "Survey-1-" + UUID.randomUUID();
-		NavigationPage navBar = NavigationPage.load(browser);
+		NavigationPage navBar = NavigationPage.load(authorBrowser);
 		navBar
 			.openAuthoringEnvironment()
 			.createSurvey(surveyTitle)
@@ -2070,7 +2071,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		SurveyPage survey = SurveyPage
-			.loadPage(browser);
+			.loadPage(authorBrowser);
 		SurveyEditorPage surveyEditor = survey
 			.edit();
 		surveyEditor
@@ -2108,12 +2109,12 @@ public class CourseElementTest extends Deployments {
 		
 		String surveyNodeTitle = "SurveyNode-1";
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(authorBrowser)
 			.edit();
 		courseEditor
 			.createNode("survey")
 			.nodeTitle(surveyNodeTitle)
-			.selectTabLearnContent()
+			.selectTabSurveyContent()
 			.chooseSurvey(surveyTitle);
 
 		//publish the course
@@ -2140,24 +2141,24 @@ public class CourseElementTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(surveyNodeTitle);
 		
-		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
 			.loginAs(user.getLogin(), user.getPassword())
 			.resume();
 		
 		//open the course
-		NavigationPage userNavBar = NavigationPage.load(userBrowser);
+		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment userCourse = new CoursePageFragment(userBrowser);
+		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
 			.clickTree()
 			.selectWithTitle(surveyNodeTitle);
 		
-		SurveyPage userSurvey = SurveyPage.loadPage(userBrowser)
+		SurveyPage userSurvey = SurveyPage.loadPage(browser)
 			.assertOnSurvey();
 		
 		userSurvey

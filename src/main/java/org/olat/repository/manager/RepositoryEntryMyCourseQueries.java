@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,12 +35,12 @@ import javax.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -48,6 +49,8 @@ import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -58,6 +61,8 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.resource.OLATResourceImpl;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,9 +85,15 @@ public class RepositoryEntryMyCourseQueries {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
 	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -138,6 +149,13 @@ public class RepositoryEntryMyCourseQueries {
 			repoKeys.add(re.getKey());
 		}
 		
+		Map<Long,List<TaxonomyLevel>> levelsMap;
+		if(!viewImpls.isEmpty() && taxonomyModule.isEnabled() && StringHelper.containsNonWhitespace(repositoryModule.getTaxonomyTreeKey())) {
+			levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevelsByEntryKeys(repoKeys);
+		} else {
+			levelsMap = Collections.emptyMap();
+		}
+		
 		Map<Long, AssessmentEntryScoring> repoKeyToAssessmentEntry = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(params.getIdentity(), repoKeys).stream()
 				.collect(Collectors.toMap(AssessmentEntryScoring::getRepositoryEntryKey, Function.identity(), (u, v) -> u));
@@ -149,6 +167,13 @@ public class RepositoryEntryMyCourseQueries {
 				view.setScore(score != null? Float.valueOf(score.floatValue()): null);
 				view.setPassed(assessmentEntry.getPassed());
 				view.setCompletion(assessmentEntry.getCompletion());
+			}
+			
+			List<TaxonomyLevel> levels = levelsMap.get(view.getKey());
+			if(levels == null) {
+				view.setTaxonomyLevels(Set.of());
+			} else {
+				view.setTaxonomyLevels(Set.copyOf(levels));
 			}
 			views.add(view);
 		}
@@ -183,10 +208,13 @@ public class RepositoryEntryMyCourseQueries {
 				  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
 			}
-			sb.append(" (select count(offer.key) from acoffer as offer ")
-			  .append("   where offer.resource=res and offer.valid=true")
-			  //TODO validity
-			  .append(" ) as offers, ");
+			if (acModule.isEnabled()) {
+				sb.append(" (select count(offer.key) from acoffer as offer ")
+				  .append("   where offer.resource=res and offer.valid=true and offer.openAccess=false and offer.guestAccess=false")
+				  .append(" ) as offers, ");
+			} else {
+				sb.append(" 0 as offers,");
+			}
 			if(repositoryModule.isRatingEnabled()) {
 				needIdentityKey = true;
 				sb.append(" (select rating.rating from userrating as rating")
@@ -217,7 +245,8 @@ public class RepositoryEntryMyCourseQueries {
 		}
 
 		sb.append(" where ");
-		needIdentityKey |= appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
+		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory(), params.getOfferValidAt(),  params.getOfferOrganisations());
+		needIdentityKey |= addParams.isIdentity();
 
 		if(params.getEntryStatus() != null) {
 			sb.append(" and v.status ").in(params.getEntryStatus());
@@ -228,7 +257,29 @@ public class RepositoryEntryMyCourseQueries {
 				needIdentityKey |= appendFiltersInWhereClause(filter, sb);
 			}
 		}
-
+		if(params.isLifecycleFilterDefined()) {
+			boolean or = false;
+			sb.append(" and (");
+			if (params.getFilters().contains(Filter.currentCourses)) {
+				sb.append(" lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
+				or = true;
+			}
+			if (params.getFilters().contains(Filter.upcomingCourses)) {
+				if (or) {
+					sb.append(" or ");
+				}
+				sb.append(" lifecycle.validFrom>=:now");
+				or = true;
+			}
+			if (params.getFilters().contains(Filter.oldCourses)) {
+				if (or) {
+					sb.append(" or ");
+				}
+				sb.append(" lifecycle.validTo<=:now");
+			}
+			sb.append(")");
+		}
+		
 		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
 			sb.append(" and exists (select el.key from curriculumelement el, repoentrytogroup rel")
 			  .append("   where el.curriculum.key in (:curriculumKeys) and rel.entry.key=v.key and el.group.key=rel.group.key")
@@ -328,6 +379,12 @@ public class RepositoryEntryMyCourseQueries {
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
+		if (addParams.isOfferValidAt() && params.getOfferValidAt() != null) {
+			dbQuery.setParameter( "offerValidAt", params.getOfferValidAt());
+		}
+		if (addParams.isOfferOrganisations() && params.getOfferOrganisations() != null && !params.getOfferOrganisations().isEmpty()) {
+			dbQuery.setParameter("organisationKeys", params.getOfferOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+		}
 		if(params.getParentEntry() != null) {
 			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
 		}
@@ -375,10 +432,18 @@ public class RepositoryEntryMyCourseQueries {
 		return dbQuery;
 	}
 	
-	private boolean appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
+	private AddParams appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters,
+			boolean membershipMandatory, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations) {
 		if(roles.isGuestOnly()) {
-			sb.append(" v.guests=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
-			return false;
+			sb.append(" v.publicVisible=true and v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
+			sb.append(" and res.key in (");
+			sb.append("   select resource.key");
+			sb.append("     from acoffer offer");
+			sb.append("     inner join offer.resource resource");
+			sb.append("    where offer.valid = true");
+			sb.append("      and offer.guestAccess = true");
+			sb.append(")");
+			return new AddParams(false, false, false);
 		}
 
 		List<GroupRoles> inRoles = new ArrayList<>();
@@ -401,41 +466,85 @@ public class RepositoryEntryMyCourseQueries {
 			inRoles.add(GroupRoles.participant);
 		}
 
-		//make sure that in all case the role is mandatory
+		sb.append("(");
+		//make sure that in all case the role is mandator
 		if(dbInstance.isMySQL()) {
 			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("    and (");
 		} else {
 			sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("    and (");
 		}
+		sb.append("membership.role").in(inRoles.stream().toArray(GroupRoles[]::new)).append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+		sb.append(")");
+		sb.append(")");
 		
-		boolean or = false;
-		if(inRoles.contains(GroupRoles.owner)) {
-			sb.append(" (membership.role='").append(GroupRoles.owner).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
-			or = true;
-		}
-		if(inRoles.contains(GroupRoles.coach)) {
-			if(or) sb.append(" or ");
-			sb.append(" (membership.role='").append(GroupRoles.coach).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")");
-			or = true;
-		}
-		if(inRoles.contains(GroupRoles.participant)) {
-			if(or) sb.append(" or ");
-			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
-			or = true;
-		}
+		boolean offerValidAtUsed = false;
+		boolean offerOrganisationsUsed = false;
 		if(emptyRoles && !membershipMandatory) {
-			if(or) sb.append(" or ");
-			sb.append(" ((v.allUsers=true or v.bookable=true) and membership.role not ")
-			  .in(OrganisationRoles.guest, GroupRoles.invitee, GroupRoles.waiting)
-			  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+			// Open access
+			sb.append(" or (");
+			sb.append(" res.key in (");
+			sb.append("   select resource.key");
+			sb.append("     from acoffer offer");
+			sb.append("     inner join offer.resource resource");
+			sb.append("     inner join repositoryentry re2");
+			sb.append("        on re2.olatResource.key = resource.key");
+			sb.append("       and re2.publicVisible = true");
+			sb.append("     inner join offertoorganisation oto");
+			sb.append("        on oto.offer.key = offer.key");
+			sb.append("    where offer.valid = true");
+			sb.append("      and offer.openAccess = true");
+			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
+			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+				sb.append("      and oto.organisation.key in :organisationKeys");
+				offerOrganisationsUsed = true;
+			}
+			sb.append(")"); // in
+			sb.append(")"); // or
+			
+			// Access methods
+			if (acModule.isEnabled()) {
+				sb.append(" or (");
+				sb.append(" res.key in (");
+				sb.append("   select resource.key");
+				sb.append("     from acofferaccess access");
+				sb.append("     inner join access.offer offer");
+				sb.append("     inner join offer.resource resource");
+				sb.append("     inner join repositoryentry re2");
+				sb.append("        on re2.olatResource.key = resource.key");
+				sb.append("       and re2.publicVisible = true");
+				sb.append("     inner join offertoorganisation oto");
+				sb.append("        on oto.offer.key = offer.key");
+				sb.append("   where offer.valid = true");
+				sb.append("     and offer.openAccess = false");
+				sb.append("     and offer.guestAccess = false");
+				sb.append("     and access.method.enabled = true");
+				if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+					sb.append("     and oto.organisation.key in :organisationKeys");
+					offerOrganisationsUsed = true;
+				}
+				if (offerValidAt != null) {
+					sb.append(" and (");
+					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+					sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
+					sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
+					sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+					sb.append(" or");
+					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
+					sb.append(" and offer.validFrom is null and offer.validTo is null");
+					sb.append(" )");
+					offerValidAtUsed = true;
+				}
+				sb.append(")"); // in
+				sb.append(")"); // or
+			}
 		}
 		
-		sb.append("))");
-		return true;
+		sb.append(")");
+		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed);
 	}
 	
 	private boolean appendFiltersInWhereClause(Filter filter, QueryBuilder sb) {
@@ -447,15 +556,6 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" and exists (select oresname.key from ").append(OLATResourceImpl.class.getName()).append(" as oresname")
 				  .append("    where oresname.key=v.olatResource.key and oresname.resName='CourseModule'")
 				  .append(" )");
-				break;
-			case currentCourses:
-				sb.append(" and lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
-				break;
-			case upcomingCourses:
-				sb.append(" and lifecycle.validFrom>=:now");
-				break;
-			case oldCourses:
-				sb.append(" and lifecycle.validTo<=:now");
 				break;
 			case passed:
 				needIdentityKey = true;
@@ -527,7 +627,6 @@ public class RepositoryEntryMyCourseQueries {
 		return needIdentityKey;
 	}
 	
-//	private void appendOrderBy(OrderBy orderBy, boolean asc, QueryBuilder sb, SearchMyRepositoryEntryViewParams params) {
 	private void appendOrderBy(SearchMyRepositoryEntryViewParams params, QueryBuilder sb) {
 		OrderBy orderBy = params.getOrderBy();
 		boolean asc = params.isOrderByAsc();
@@ -684,5 +783,31 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append(" desc");
 		}
 		return sb;
+	}
+	
+	private final static class AddParams {
+		
+		private final boolean identity;
+		private final boolean offerValidAt;
+		private final boolean offerOrganisations;
+		
+		public AddParams(boolean identity, boolean offerValidAt, boolean offerOrganisations) {
+			this.identity = identity;
+			this.offerValidAt = offerValidAt;
+			this.offerOrganisations = offerOrganisations;
+		}
+		
+		public boolean isIdentity() {
+			return identity;
+		}
+		
+		public boolean isOfferValidAt() {
+			return offerValidAt;
+		}
+		
+		public boolean isOfferOrganisations() {
+			return offerOrganisations;
+		}
+		
 	}
 }

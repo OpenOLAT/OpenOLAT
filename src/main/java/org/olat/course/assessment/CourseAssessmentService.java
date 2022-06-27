@@ -58,7 +58,7 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface CourseAssessmentService {
 	
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode);
 	
 	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig);
 
@@ -104,13 +104,13 @@ public interface CourseAssessmentService {
 	 * ScoreEvaluation.NA has to be returned!
 	 * 
 	 * @param courseNode
-	 * @param userCourseEnvironment
+	 * @param userCourseEnviornment
 	 * @return null, if this node cannot deliver any useful scoring info (this is
 	 *         not the case for a test never tried or manual scoring: those have
 	 *         default values 0.0f / false for score/passed; currently only the
 	 *         STNode returns null, if there are no scoring rules defined.
 	 */
-	public AssessmentEvaluation getAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public AssessmentEvaluation getAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnviornment);
 	
 	public void updateScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);
@@ -355,5 +355,11 @@ public interface CourseAssessmentService {
 	 * @param start
 	 */
 	public void evaluateStartOver(Date start);
+
+	/**
+	 * Evaluate the assessment entries of users without a passed root value in
+	 * courses where the lifecycle is over.
+	 */
+	public void evaluateLifecycleOver(Date validToBefore);
 
 }

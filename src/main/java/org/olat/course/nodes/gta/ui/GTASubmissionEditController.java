@@ -68,7 +68,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		FormLayoutContainer configCont = FormLayoutContainer.createDefaultFormLayout("config", getTranslator());
 		configCont.setRootForm(mainForm);
 		configCont.setFormTitle(translate("editor.title"));
-		configCont.setFormContextHelp("Three Steps to Your Task#_task_configuration");
+		configCont.setFormContextHelp("manual_user/task/Three_Steps_to_Your_Task/#configuration");
 		formLayout.add(configCont);
 		
 		String[] enableValues = new String[]{ translate("enabled") };

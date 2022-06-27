@@ -173,7 +173,7 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 
 	private void addPassedNode(List<CourseNode> nodes, CourseNode courseNode) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 		if (Mode.none != assessmentConfig.getPassedMode() && !nodes.contains(courseNode)) {
 			nodes.add(courseNode);
 		}

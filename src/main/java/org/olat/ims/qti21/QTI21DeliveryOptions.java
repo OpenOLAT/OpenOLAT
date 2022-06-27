@@ -65,7 +65,11 @@ public class QTI21DeliveryOptions {
 	private ShowResultsOnFinish showResultsOnFinish;
 	private PassedType passedType;
 	private QTI21AssessmentResultsOptions assessmentResultsOptions;
-
+	
+	private boolean chatCoaches;
+	private boolean chatOwners;
+	private boolean canStartChat;
+	
 	public boolean isEnableCancel() {
 		return enableCancel;
 	}
@@ -309,6 +313,30 @@ public class QTI21DeliveryOptions {
 		this.enableAssessmentItemSkip = enable;
 	}
 
+	public boolean isChatCoaches() {
+		return chatCoaches;
+	}
+
+	public void setChatCoaches(boolean chatCoaches) {
+		this.chatCoaches = chatCoaches;
+	}
+
+	public boolean isChatOwners() {
+		return chatOwners;
+	}
+
+	public void setChatOwners(boolean chatOwners) {
+		this.chatOwners = chatOwners;
+	}
+
+	public boolean isCanStartChat() {
+		return canStartChat;
+	}
+
+	public void setCanStartChat(boolean canStartChat) {
+		this.canStartChat = canStartChat;
+	}
+
 	public static final QTI21DeliveryOptions defaultSettings() {
 		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
 		defaultSettings.enableCancel = false;
@@ -332,6 +360,9 @@ public class QTI21DeliveryOptions {
 		defaultSettings.enableAssessmentItemSkip = false;
 		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		defaultSettings.showAssessmentResultsOnFinish = Boolean.FALSE;
+		defaultSettings.chatCoaches = false;
+		defaultSettings.chatOwners = false;
+		defaultSettings.canStartChat = false;
 		return defaultSettings;
 	}
 	
@@ -360,6 +391,9 @@ public class QTI21DeliveryOptions {
 		defaultSettings.enableAssessmentItemSkip = false;
 		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.allOptions();
 		defaultSettings.showAssessmentResultsOnFinish = Boolean.TRUE;
+		defaultSettings.chatCoaches = false;
+		defaultSettings.chatOwners = false;
+		defaultSettings.canStartChat = false;
 		return defaultSettings;
 	}
 	
@@ -388,6 +422,9 @@ public class QTI21DeliveryOptions {
 		defaultSettings.enableAssessmentItemSkip = false;
 		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		defaultSettings.showAssessmentResultsOnFinish = Boolean.FALSE;
+		defaultSettings.chatCoaches = false;
+		defaultSettings.chatOwners = false;
+		defaultSettings.canStartChat = false;
 		return defaultSettings;
 	}
 
@@ -417,6 +454,9 @@ public class QTI21DeliveryOptions {
 		clone.enableAssessmentItemResetSoft = enableAssessmentItemResetSoft;
 		clone.enableAssessmentItemResetHard = enableAssessmentItemResetHard;
 		clone.enableAssessmentItemSkip = enableAssessmentItemSkip;
+		clone.chatCoaches = chatCoaches;
+		clone.chatOwners = chatOwners;
+		clone.canStartChat = canStartChat;
 		return clone;
 	}
 	

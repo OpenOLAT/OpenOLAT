@@ -346,7 +346,7 @@ public class PersistedProperties implements Initializable, Destroyable{
 	 * Return a string value for certain propertyName-parameter.
 	 * 
 	 * @param propertyName
-	 * @param allowEmptyString true: empty strings are valid values; false: emtpy
+	 * @param allowEmptyString true: empty strings are valid values; false: empty
 	 *          strings are discarded
 	 * @return the value from the configuration or the default value or ""/NULL
 	 *         (depending on allowEmptyString flag)

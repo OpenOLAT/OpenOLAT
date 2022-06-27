@@ -52,7 +52,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.resource.accesscontrol.ACService;
@@ -93,7 +92,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final RepositoryModule repositoryModule;
-	private final RepositoryEntryLifecycleDAO lifecycleDao;
 	private final UserManager userManager;
 	private final AccessRenderer accessRenderer;
 	
@@ -105,13 +103,12 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param translator
 	 */
 	public RepositoryTableModel(Locale locale) {
-		super(new ArrayList<RepositoryEntry>());
+		super(new ArrayList<>());
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		accessRenderer = new AccessRenderer(locale);
 	}
 
@@ -121,7 +118,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param enableDirectLaunch
 	 * @return the position of the display name column
 	 */
-	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, boolean selectTitle, boolean selectIcon, boolean remove, boolean infos) {
+	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, boolean selectTitle, boolean selectIcon, boolean remove, boolean infos, boolean lifecycle) {
 		Locale loc = translator.getLocale();
 
 		CustomCellRenderer acRenderer = new RepositoryEntryACColumnDescriptor();
@@ -137,11 +134,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepositoryEntry re1 = (RepositoryEntry)o1;
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				
-				if(!re1.isAllUsers() && !re1.isGuests()) {
-					if(re2.isAllUsers() || re2.isGuests()) {
+				if(!re1.isPublicVisible()) {
+					if(re2.isPublicVisible()) {
 						return 1;
 					}
-				} else if(!re1.isAllUsers() && !re1.isGuests()) {
+				} else if(!re1.isPublicVisible()) {
 					return -1;
 				}
 				
@@ -174,9 +171,8 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		String selectAction = selectTitle ? TABLE_ACTION_SELECT_LINK : null;
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), selectAction, loc));
 		tableCtr.addColumnDescriptor(repositoryModule.isManagedRepositoryEntries(), new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), selectAction, loc));
-
-			boolean lfVisible = lifecycleDao.countPublicLifecycle() > 0;
-		tableCtr.addColumnDescriptor(lfVisible, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
+		
+		tableCtr.addColumnDescriptor(lifecycle, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.softkey", RepoCols.lifecycleSoftKey.ordinal(), null, loc));
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), selectAction, loc) {
 			@Override
@@ -234,12 +230,12 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				
 				int ar1 = re1.getEntryStatus().ordinal();
-				if(!re1.isAllUsers() && !re1.isGuests()) {
+				if(!re1.isPublicVisible()) {
 					ar1 = 99;
 				}
 				
 				int ar2 = re2.getEntryStatus().ordinal();
-				if(!re2.isAllUsers() && !re2.isGuests()) {
+				if(!re2.isPublicVisible()) {
 					ar2 = 99;
 				}
 				if(ar1 < ar2) return -1;
@@ -279,8 +275,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		RepositoryEntry re = getObject(row);
 		switch (RepoCols.values()[col]) {
 			case ac: {
-				if (!re.isAllUsers() && !re.isGuests()) {
-					// members only always show lock icon
+				if (!re.isPublicVisible()) {
 					return Collections.singletonList("o_ac_membersonly");
 				}
 				OLATResourceAccess access = repoEntriesWithOffer.get(re.getOlatResource().getKey());
@@ -288,9 +283,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 					return null;						
 				}
 				return access;
-			}
-			case acGuest: {
-				return re.isGuests();
 			}
 			case repoEntry: return re; 
 			case displayname: return getDisplayName(re, translator.getLocale());
@@ -322,7 +314,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	
 	public enum RepoCols {
 		ac,
-		acGuest,
 		repoEntry,
 		displayname,
 		author,

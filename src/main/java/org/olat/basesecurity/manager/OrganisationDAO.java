@@ -149,7 +149,6 @@ public class OrganisationDAO {
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-
 		  .append(" where org.key=:key");
 		
 		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
@@ -157,6 +156,19 @@ public class OrganisationDAO {
 				.setParameter("key", key)
 				.getResultList();
 		return organisations == null || organisations.isEmpty() ? null : organisations.get(0);
+	}
+	
+	public List<Organisation> loadByIdentifier(String identifier) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where lower(org.identifier)=:identifier");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("identifier", identifier.toLowerCase())
+				.getResultList();
 	}
 	
 	public List<Organisation> loadDefaultOrganisation() {
@@ -457,7 +469,27 @@ public class OrganisationDAO {
 		return levels;
 	}
 	
-
+	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations) {
+		if(organisations.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct new org.olat.basesecurity.model.OrganisationRefImpl(org.key) from organisation as org")
+		  .append(" where ");
+		for (int i = 0; i < organisations.size(); i++) {
+			if (i > 0) {
+				sb.append(" or ");
+			}
+			sb.append("locate(org.materializedPathKeys, :orgPath").append(i).append(") = 1");
+		}
+		  
+		TypedQuery<OrganisationRef> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), OrganisationRef.class);
+		for (int i = 0; i < organisations.size(); i++) {
+			query.setParameter( "orgPath" + i, organisations.get(i).getMaterializedPathKeys());
+		}
+		return query.getResultList();
+	}
+	
 	public boolean hasAnyRole(IdentityRef identity, String excludeRole) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select membership.key from organisation org")

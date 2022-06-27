@@ -1,0 +1,338 @@
+.o_practice_run {
+	display: grid;
+	grid-template-columns: 3fr 1fr;
+	column-gap: 15px;
+}
+
+.o_practice_play {
+	border-radius: 50%;
+	padding: 4px 6px 4px 6px;
+	margin: 1px;
+	@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+	
+	>i:before {
+		margin: 1px -3px -1px 3px;
+	}
+}
+
+.progress-bar {
+	&.o_practice_progress_not {
+		background-color: $o-practice-progress-not-bg-color;
+	}
+	&.o_practice_progress_l1 {
+		background-color: $o-practice-progress-l1-bg-color;
+	}
+	&.o_practice_progress_l2 {
+		background-color: $o-practice-progress-l2-bg-color;
+	}
+	&.o_practice_progress_l3 {
+		background-color: $o-practice-progress-l3-bg-color;
+	}
+	&.o_practice_progress_l4 {
+		background-color: $o-practice-progress-l4-bg-color;
+	}
+	&.o_practice_progress_l5 {
+		background-color: $o-practice-progress-l5-bg-color;
+	}
+}
+
+.o_practice_statistics_legend i {
+	&.o_practice_progress_not {
+		color: $o-practice-progress-not-bg-color;
+	}
+	&.o_practice_progress_l1 {
+		color: $o-practice-progress-l1-bg-color;
+	}
+	&.o_practice_progress_l2 {
+		color: $o-practice-progress-l2-bg-color;
+	}
+	&.o_practice_progress_l3 {
+		color: $o-practice-progress-l3-bg-color;
+	}
+	&.o_practice_progress_l4 {
+		color: $o-practice-progress-l4-bg-color;
+	}
+	&.o_practice_progress_l5 {
+		color: $o-practice-progress-l5-bg-color;
+	}
+}
+
+svg {
+	.o_practice_progress_not {
+		fill: $o-practice-progress-not-bg-color;
+		stroke: $o-practice-progress-not-bg-color;
+	}
+	.o_practice_progress_l1 {
+		fill: $o-practice-progress-l1-bg-color;
+		stroke: $o-practice-progress-l1-bg-color;
+	}
+	.o_practice_progress_l2 {
+		fill: $o-practice-progress-l2-bg-color;
+		stroke: $o-practice-progress-l2-bg-color;
+	}
+	.o_practice_progress_l3 {
+		fill: $o-practice-progress-l3-bg-color;
+		stroke: $o-practice-progress-l3-bg-color;
+	}
+	.o_practice_progress_l4 {
+		fill: $o-practice-progress-l4-bg-color;
+		stroke: $o-practice-progress-l4-bg-color;
+	}
+	.o_practice_progress_l5 {
+		fill: $o-practice-progress-l5-bg-color;
+		stroke: $o-practice-progress-l5-bg-color;
+	}
+}
+
+.o_practice_progress {
+	display: flex;
+	align-items: center;
+	padding: 15px 0;
+	line-height: 14px;
+	
+	.o_progress {
+		flex: 3 0 auto;
+	}
+	
+	.o_progress_numbers {
+		flex: 0 0 60px;
+		text-align: center;
+	}
+	
+	>a {
+		flex: 0 0 auto;
+	}
+}
+
+.o_practice_correct {
+	margin: 0;
+	padding: $o-box-padding;
+	border-left: $o-box-border-left-size solid $o-box-success-color;
+	border-right: 1px solid $o-qti-item-border-color;
+	background-color: $o-box-success-bg;
+	color: $o-box-success-color;
+}
+
+.o_practice_incorrect {
+	margin: 0;
+	padding: $o-box-padding;
+	border-left: $o-box-border-left-size solid $o-box-error-color;
+	border-right: 1px solid $o-qti-item-border-color;
+	background-color: $o-box-error-bg;
+	color: $o-box-error-color;
+}
+
+.o_practice_ranklist {
+	padding: 1em;
+	margin-top: 1em;
+	border: 1px solid $o-practice-play-border-color;
+	border-radius: $o-practice-play-border-radius;
+	background-color: $o-practice-play-bg-color;
+	
+	table>tbody>tr>td {
+		line-height: 2em;
+		vertical-align: middle;
+	}
+	
+	.o_practice_rank_me {
+		background-color: $o-practice-play-main-bg-color;
+		
+		
+		td {
+			color: $o-practice-rank-me-color;
+		}
+	}
+}
+
+.o_practice_challenge {
+	min-width: 200px;
+
+	i.o_challenge {	
+		position: absolute;
+		width: 1em;
+		height: 1em;
+		background-image: url('#{$o-images-path}practise/trophybadge.svg');
+		background-repeat:no-repeat;
+		background-position:50% 50%;		
+		background-size: contain;
+	}
+	
+	.o_practice_series_progress {
+		position: relative;
+		margin: 15px 25px 0 0;
+		
+		.progress-bar {
+			background-color: $o-practice-challenge-progress-bg-color;
+		}
+		
+		i.o_challenge {
+			font-size: 280%;
+			top: -0.25em;
+			right: -1.1em;
+		}
+	}
+	
+	.o_practice_challenges_progress {
+		position: relative;
+
+		i.o_challenge {
+			font-size: 300%;
+		}
+		
+		span {
+			display: block;
+			padding-left: 50px;
+			font-size: 85%;
+		}
+		
+		strong {
+			display: block;
+			padding-left: 50px;
+			font-size: 200%;
+		}
+	}
+}
+
+.o_practice_end .o_practice_data.o_practice_challenge {
+	margin-top: -1em;
+}
+
+
+.o_practice_play_card {
+	padding: 1em 2em;
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	column-gap: 15px;
+	
+	border: 1px solid $o-practice-play-main-border-color;
+	border-radius: $o-practice-play-border-radius;
+	background-color: $o-practice-play-main-bg-color;
+	
+	.o_practice_shuffle_play {
+		border-right: 1px solid $o-practice-play-main-border-color;
+		padding-right: 15px;
+		
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+	
+	h3, h4 {
+		margin-top: 0;
+		padding-top: 0;
+	}
+	
+	a {
+		width: 100%;
+		max-width: 200px;
+	}
+}
+
+@media all and (max-width: $screen-sm-min) {
+	.o_practice_run {
+		grid-template-columns: 1fr;
+	}
+}
+
+.o_practice_play_modes_card {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	column-gap: 15px;
+	
+	.o_practice_play_mode_card {
+		padding: 1em;
+		display: flex;
+		text-align: center;
+		flex-direction: column;
+		justify-content: space-between;
+		
+		border: 1px solid $o-practice-play-border-color;
+		border-radius: $o-practice-play-border-radius;
+		background-color: $o-practice-play-bg-color;
+	
+		span>i {
+			color: #ccc;
+			font-size: 500%;
+		}
+		
+		>a {
+			width: 100%;
+			max-width: 200px;
+			margin: 0 auto;
+			background-color: $o-practice-play-start-link-bg-color;
+		}
+	}
+}
+
+.o_practice_statistics {
+	padding: 1em;
+	position: relative;
+	
+	span {
+		position: absolute;
+		top: 1em;
+		right: 1em;
+	
+		>i {
+			color: #ccc;
+			font-size: 500%;
+		}
+	}
+}
+
+.o_practice_metrics_progress {
+	display: grid;
+	grid-template-columns: 6fr 1fr;
+	column-gap: 15px;
+}
+
+.o_practice_statistics_graph {
+	padding: 1em 2em;
+	border: 1px solid $o-practice-play-border-color;
+	border-radius: $o-practice-play-border-radius;
+	background-color: $o-practice-play-bg-color;
+	
+	.o_practice_statistics_legend {
+		margin: 0.5em 2em;
+	}
+	
+	.o_pie_chart {
+		margin: 1em 2em;
+	}
+}
+
+.o_practice_statistics_legend.o_practice_callout_levels {
+	display: grid;
+	grid-template-columns: 1fr 1fr 5fr;
+	column-gap: 5px;
+	
+	.o_practice_num {
+		text-align: right;
+	}
+}
+
+.o_practice_end {
+	text-align: center;
+	max-width: 480px;
+	margin: 0 auto;
+	
+	.o_practice_label {
+		text-align: right;
+	}
+	
+	.o_practice_data {
+		text-align: left;
+	}
+	
+	.o_practice_data_correct {
+		color: $brand-success;
+	}
+}
+
+.o_practice_configuration .o_note .table-striped > tbody > tr:nth-child(odd) {
+	background-color: transparent;
+}
+
+.o_assessmentitem_level>i {
+	color: $o-practice-level-disc-color;
+}

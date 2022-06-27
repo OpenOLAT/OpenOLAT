@@ -35,6 +35,8 @@ import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.render.velocity.VelocityComponent;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 
@@ -289,6 +291,10 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 			jsa.addRequiredStaticJsFile("js/jquery/taboverride/jquery.taboverride.min.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.qti.min.js");
 			jsa.addRequiredStaticJsFile("js/fabricjs/paint.fabric.min.js");
+		}
+		
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathLiveCdn())) {
+			jsa.addRequiredStaticJsFile(WebappHelper.getMathLiveCdn());
 		}
 	}
 	

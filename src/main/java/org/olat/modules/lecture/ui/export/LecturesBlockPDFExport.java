@@ -154,15 +154,14 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		addMetadata(lectureBlockTitle, resourceTitle, teacher);
 	
 		String title = resourceTitle + " - " + lectureBlockTitle;
-		title = translator.translate("attendance.list.title", new String[] { title });
+		title = translator.translate("attendance.list.title", title);
 		addParagraph(title, 16, true, width);
 	
 		Formatter formatter = Formatter.getInstance(translator.getLocale());
-		String dates = translator.translate("pdf.table.dates", new String[] {
+		String dates = translator.translate("pdf.table.dates",
 			formatter.formatDate(lectureBlock.getStartDate()),
 			formatter.formatTimeShort(lectureBlock.getStartDate()),
-			formatter.formatTimeShort(lectureBlock.getEndDate())
-		});
+			formatter.formatTimeShort(lectureBlock.getEndDate()));
 	
 		addParagraph(dates, 12, true, width);
 	  	
@@ -426,7 +425,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			
 			if(rowHeights[i] > rowHeight + 1) {
 				//can do 2 lines
-				String[] texts = splitText(text, nameMaxSize, fontSize);
+				String[] texts = splitTextInTwo(text, nameMaxSize, fontSize);
 				float lineTexty = texty;
 				for(int k=0; k<2 && k<texts.length; k++) {
 					String textLine = texts[k];

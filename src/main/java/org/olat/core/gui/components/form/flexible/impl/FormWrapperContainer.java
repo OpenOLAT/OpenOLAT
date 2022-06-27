@@ -34,6 +34,7 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.CsrfDelegate;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 
 class FormWrapperContainer extends AbstractComponent implements ComponentCollection, CsrfDelegate {
@@ -75,6 +76,10 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 	 */
 	ComponentCollection getFormLayout() {
 		return form.getFormLayout();
+	}
+	
+	public WindowControl getWindowControl() {
+		return form.getWindowControl();
 	}
 
 	@Override

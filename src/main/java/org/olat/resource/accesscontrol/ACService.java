@@ -22,14 +22,17 @@ package org.olat.resource.accesscontrol;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -42,6 +45,11 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface ACService {
+	
+	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_GUEST = RepositoryEntryStatusEnum.publishedAndClosed();
+	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_OPEN = RepositoryEntryStatusEnum.publishedAndClosed();
+	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
+	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD_PERIOD = RepositoryEntryStatusEnum.preparationToPublished();
 
 	/**
 	 *
@@ -63,35 +71,72 @@ public interface ACService {
 	 */
 	public AccessResult isAccessible(BusinessGroup group, Identity forId, boolean allowNonInteractiveAccess);
 
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess);
-
 	/**
 	 *
 	 * @param entry
 	 * @param forId
 	 * @param knowMember If you know that the forId is a member
+	 * @param isGuest
 	 * @param allowNonInteractiveAccess
 	 * @return
 	 */
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean allowNonInteractiveAccess);
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest, boolean allowNonInteractiveAccess);
+	
+	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus);
 	
 	public boolean isAccessToResourcePending(OLATResource resource, IdentityRef identity);
 
-
+	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity);
+	
+	/**
+	 * A user can see and book the offers of this organisations.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<OrganisationRef> getOfferOrganisations(IdentityRef identity);
+	
+	/**
+	 * An author can select these organisations when he edits an offer.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<Organisation> getSelectionOfferOrganisations(Identity identity);
+	
 	public Offer createOffer(OLATResource resource, String resourceName);
 
 	public Offer save(Offer offer);
 
 	public void deleteOffer(Offer offer);
-
+	
+	public void deleteOffers(OLATResource resource);
+	
+	/**
+	 * Manages the relation of the offer to the organisations.
+	 * Creates missing relations and deletes unneeded relations.
+	 * Does not save the offer.
+	 * 
+	 * @param offer
+	 * @param organisations
+	 */
+	public void updateOfferOrganisations(Offer offer, Collection<Organisation> organisations);
+	
+	public List<Organisation> getOfferOrganisations(OfferRef offer);
+	
+	public Map<Long, List<Organisation>> getOfferKeyToOrganisations(Collection<? extends OfferRef> offers);
 
 	public List<OLATResourceAccess> filterRepositoryEntriesWithAC(List<RepositoryEntry> repoEntries);
 
-	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources);
+	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources, List<? extends OrganisationRef> offerOrganisations);
+	
+	public List<OLATResource> filterResourceWithOpenAccess(List<OLATResource> resources, List<? extends OrganisationRef> offerOrganisations);
 
-	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys);
+	public List<OLATResource> filterResourceWithGuestAccess(List<OLATResource> resources);
 
-	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate);
+	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations);
+	
+	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, List<? extends OrganisationRef> offerOrganisations);
 
 	/**
 	 *
@@ -99,9 +144,11 @@ public interface ACService {
 	 * @param resourceType
 	 * @param valid
 	 * @param atDate
+	 * @param offerOrganisations
 	 * @return
 	 */
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate);
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType,
+			boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations);
 
 	/**
 	 * Get the list of access methods for a business group that are currently available
@@ -123,6 +170,8 @@ public interface ACService {
 	public boolean allowAccesToResource(Identity identity, Offer offer);
 
 	public boolean denyAccesToResource(Identity identity, Offer offer);
+	
+	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult);
 
 
 	/**
@@ -185,6 +234,8 @@ public interface ACService {
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);
 
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles);
+	
+	public List<AccessMethod> getAvailableMethods();
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method);
 
@@ -199,8 +250,6 @@ public interface ACService {
 	public List<AccessTransaction> findAccessTransactions(Order order);
 
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
-
-	public List<Order> findOrder(OLATResource resource, Identity identity, AccessMethod method);
 
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] statuss);

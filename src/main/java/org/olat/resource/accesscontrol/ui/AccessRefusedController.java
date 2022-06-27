@@ -39,19 +39,21 @@ public class AccessRefusedController extends BasicController {
 	
 	@Autowired
 	private ACService acService;
-
-	public AccessRefusedController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
 	
-	public AccessRefusedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public AccessRefusedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean showTitle) {
 		super(ureq, wControl);
 		
-		boolean pending = entry != null && acService
-				.isAccessToResourcePending(entry.getOlatResource(), getIdentity());
+		String template = "access_refused";
+		if (entry != null) {
+			if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())) {
+				template = "access_pending";
+			} else if (acService.isAccessRefusedByStatus(entry, getIdentity())) {
+				template = "access_refused_status";
+			}
+		}
 		
-		String template = pending ? "access_pending" : "access_refused";
 		VelocityContainer mainVC = createVelocityContainer(template);
+		mainVC.contextPut("showTitle", Boolean.valueOf(showTitle));
 		putInitialPanel(mainVC);
 	}
 

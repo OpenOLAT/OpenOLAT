@@ -139,6 +139,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			displayNameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 				displayNameEl.setErrorKey("input.mandatory", null);
+				allOk &= false;
 			}
 			
 			return allOk;
@@ -169,7 +170,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			// Course reference
 			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, context.getSourceRepositoryEntry().getExternalRef(), referenceAndTitleLayout);
 			externalRefEl.setHelpText(translate("cif.externalref.hover"));
-			externalRefEl.setHelpUrlForManualPage("Set up info page");
+			externalRefEl.setHelpUrlForManualPage("manual_user/authoring/Set_up_info_page/");
 			externalRefEl.addActionListener(FormEvent.ONCHANGE);
 			
 			// Spacer
@@ -184,7 +185,6 @@ public class CopyCourseGeneralStep extends BasicStep {
 			
 			// Metadata
 			formLayout.add("metaData", metadataController.getInitialFormItem());
-			metadataController.loadFromContext(context);
 			
 			// Spacer
 			uifactory.addSpacerElement("space_3", formLayout, false);
@@ -231,6 +231,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 				SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 				params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
 				params.setExactSearch(true);
+				params.setCanCopy(true);
 				
 				if (textElement == displayNameEl) {
 					String displayName = textElement.getValue();

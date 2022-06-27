@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -35,8 +36,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class BulkAssessment_3_ValidationStep extends BasicStep {
 	
-	public BulkAssessment_3_ValidationStep(UserRequest ureq) {
+	private final RepositoryEntry courseEntry;
+
+	public BulkAssessment_3_ValidationStep(UserRequest ureq, RepositoryEntry courseEntry) {
 		super(ureq);
+		this.courseEntry = courseEntry;
 		setI18nTitleAndDescr("validation.title", "validation.title");
 		setNextStep(new BulkAssessment_4_ScheduleStep(ureq));
 	}
@@ -48,6 +52,6 @@ public class BulkAssessment_3_ValidationStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		return new ValidationStepForm(ureq, wControl, context, form);
+		return new ValidationStepForm(ureq, wControl, context, form, courseEntry);
 	}
 }

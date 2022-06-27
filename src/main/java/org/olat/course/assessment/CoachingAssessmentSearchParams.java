@@ -19,7 +19,10 @@
  */
 package org.olat.course.assessment;
 
+import java.util.Collection;
+
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -32,9 +35,15 @@ public class CoachingAssessmentSearchParams {
 	
 	private String searchString;
 	private Identity coach;
+	private Boolean scoreNull;
+	private Boolean gradeNull;
+	private Collection<Mode> configScoreModes;
+	private Boolean configHasGrade;
+	private Boolean configIsAutoGrade;
 	private AssessmentEntryStatus status;
 	private Boolean userVisibility;
 	private boolean userVisibilitySettable;
+	private boolean gradeApplicable;
 	
 	public String getSearchString() {
 		return searchString;
@@ -50,6 +59,46 @@ public class CoachingAssessmentSearchParams {
 
 	public void setCoach(Identity coach) {
 		this.coach = coach;
+	}
+
+	public Boolean getScoreNull() {
+		return scoreNull;
+	}
+
+	public void setScoreNull(Boolean scoreNull) {
+		this.scoreNull = scoreNull;
+	}
+
+	public Boolean getGradeNull() {
+		return gradeNull;
+	}
+
+	public void setGradeNull(Boolean gradeNull) {
+		this.gradeNull = gradeNull;
+	}
+
+	public Collection<Mode> getConfigScoreModes() {
+		return configScoreModes;
+	}
+
+	public void setConfigScoreModes(Collection<Mode> configScoreModes) {
+		this.configScoreModes = configScoreModes;
+	}
+
+	public Boolean getConfigHasGrade() {
+		return configHasGrade;
+	}
+
+	public void setConfigHasGrade(Boolean configHasGrade) {
+		this.configHasGrade = configHasGrade;
+	}
+
+	public Boolean getConfigIsAutoGrade() {
+		return configIsAutoGrade;
+	}
+
+	public void setConfigIsAutoGrade(Boolean configIsAutoGrade) {
+		this.configIsAutoGrade = configIsAutoGrade;
 	}
 
 	public AssessmentEntryStatus getStatus() {
@@ -74,6 +123,14 @@ public class CoachingAssessmentSearchParams {
 
 	public void setUserVisibilitySettable(boolean userVisibilitySettable) {
 		this.userVisibilitySettable = userVisibilitySettable;
+	}
+
+	public boolean isGradeApplicable() {
+		return gradeApplicable;
+	}
+
+	public void setGradeApplicable(boolean gradeApplicable) {
+		this.gradeApplicable = gradeApplicable;
 	}
 
 }

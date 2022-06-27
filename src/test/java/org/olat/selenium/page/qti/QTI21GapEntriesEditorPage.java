@@ -54,7 +54,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage addGapEntry(String solution, String placeholder) {
-		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_fib_text')]//button[i[contains(@class,'mce-i-gaptext')]]");
+		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_fib_text')]//button[contains(@title,'L\u00FCckentext')]");
 		browser.findElement(addGapBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
@@ -77,7 +77,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage editGapEntry(String solution, String placeholder, int index) {
-		By frameBy = By.cssSelector("div.o_sel_assessment_item_fib_text div.mce-edit-area iframe");
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_fib_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
 		
@@ -105,7 +105,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21GapEntriesEditorPage saveGapEntry() {
 		By saveBy = By.cssSelector(".o_sel_gap_entry_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -119,7 +119,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 */
 	public QTI21GapEntriesEditorPage addNumericalInput(String solution, String placeholder,
 			ToleranceMode toleranceMode, String uperrBound, String lowerBound) {
-		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_fib_text')]//button[i[contains(@class,'mce-i-gapnumerical')]]");
+		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_fib_text')]//button[contains(@title,'Numeri')]");
 		browser.findElement(addGapBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return fillNumericalInputSettings(solution, placeholder, toleranceMode, uperrBound, lowerBound);
@@ -136,7 +136,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 */
 	public QTI21GapEntriesEditorPage editNumericalInput(String solution, String placeholder,
 			ToleranceMode toleranceMode, String uperrBound, String lowerBound, int index) {
-		By frameBy = By.cssSelector("div.o_sel_assessment_item_fib_text div.mce-edit-area iframe");
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_fib_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
 		
@@ -184,7 +184,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21GapEntriesEditorPage saveNumericInput() {
 		By saveBy = By.cssSelector("fieldset.o_sel_gap_numeric_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 
@@ -207,7 +207,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return The score page
 	 */
 	public QTI21GapEntriesScoreEditorPage selectScores() {
-		selectTab(By.className("o_sel_assessment_item_options"));
+		selectTab("o_sel_assessment_item_score", By.className("o_sel_assessment_item_options"));
 		return new QTI21GapEntriesScoreEditorPage(browser);
 	}
 	
@@ -217,7 +217,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return the feedback page
 	 */
 	public QTI21FeedbacksEditorPage selectFeedbacks() {
-		selectTab(By.className("o_sel_assessment_item_feedbacks"));
+		selectTab("o_sel_assessment_item_feedback", By.className("o_sel_assessment_item_feedbacks"));
 		return new QTI21FeedbacksEditorPage(browser);
 	}
 }

@@ -103,6 +103,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	public static final String CONFIG_DELIVERY_OPTIONS = "deliveryOptions";
 	public static final String CONFIG_FULLWINDOW = "fullwindow";
 	public static final String CONFIG_FULLWINDOW_WIDTH_HEIGHT = "fullwindow-width-height";
+	public static final String CONFIG_FULLWINDOW_WIDTH_HEIGHT_WITH_BACK = "fullwindow-width-height-with-back";
 	public static final String CONFIG_CLOSE_ON_FINISH = "CLOSEONFINISH";
 	
 	public static final String CONFIG_MAXATTEMPTS = "attempts";
@@ -208,10 +209,12 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean fullWindowWidthHeight = config.getBooleanSafe(CONFIG_FULLWINDOW_WIDTH_HEIGHT, false);
+		boolean fullWindowWidthHeightWithBack = config.getBooleanSafe(CONFIG_FULLWINDOW_WIDTH_HEIGHT_WITH_BACK, false);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
 		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, maxScore,
-				cutvalue, ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment, fullWindow, fullWindowWidthHeight,
+				cutvalue, ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment,
+				fullWindow, fullWindowWidthHeight, fullWindowWidthHeightWithBack,
 				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
@@ -250,7 +253,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 				ScormAPIandDisplayController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
 						showMenu, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
-						ScormConstants.SCORM_MODE_NOCREDIT, null, true, fullWindow, false, true, null);				
+						ScormConstants.SCORM_MODE_NOCREDIT, null, true, fullWindow, true, null);				
 				// configure some display options
 				boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 				previewController.showNavButtons(showNavButtons);
@@ -300,8 +303,10 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, scorevarform.isIgnoreInCourseAssessment());
 				boolean fullWindow = scorevarform.isFullWindow();
 				boolean fullWindowWidthHeight = scorevarform.isFullWindowWidthHeight();
+				boolean fullWindowWidthHeightWithback = scorevarform.isFullWindowWidthHeightWithBack();
 				config.setBooleanEntry(CONFIG_FULLWINDOW, fullWindow);
 				config.setBooleanEntry(CONFIG_FULLWINDOW_WIDTH_HEIGHT, fullWindowWidthHeight);
+				config.setBooleanEntry(CONFIG_FULLWINDOW_WIDTH_HEIGHT_WITH_BACK, fullWindowWidthHeightWithback);
 				config.setBooleanEntry(CONFIG_SHOWNAVBUTTONS, scorevarform.isShowNavButtons() && !fullWindowWidthHeight);
 				config.setBooleanEntry(CONFIG_SHOWMENU, scorevarform.isShowMenu() && !fullWindowWidthHeight);
 				// <OLATCE-289>
@@ -337,9 +342,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main); // the choose learning content tab
-		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), deliveryOptionsCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), "o_sel_repo_entry", main); // the choose learning content tab
+		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), "o_sel_scorm_layout", deliveryOptionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 	}
 
@@ -407,7 +412,9 @@ class VarForm extends FormBasicController {
 	private MultipleSelectionElement advanceScoreEl;
 	private MultipleSelectionElement scoreAttemptsEl;
 	
-	private boolean showMenu, showNavButtons, skipLaunchPage;
+	private boolean showMenu;
+	private boolean showNavButtons;
+	private boolean skipLaunchPage;
 	private String assessableType;
 	private Integer maxScore;
 	private int cutValue;
@@ -415,8 +422,10 @@ class VarForm extends FormBasicController {
 	private boolean ignoreInCourseAssessment;
 	private boolean fullWindow;
 	private boolean fullWindowWidthHeight;
+	private boolean fullWindowWidthHeightWithBack;
 	private boolean closeOnFinish;
-	private String[] assessableKeys, assessableValues;
+	private String[] assessableKeys;
+	private String[] assessableValues;
 	
 	private boolean advanceScore;
 	private boolean scoreAttempts;
@@ -425,7 +434,7 @@ class VarForm extends FormBasicController {
 	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
 			boolean showNavButtons, String assessableType, int maxScore, int cutValue,
 			boolean ignoreInCourseAssessmentAvailable, boolean ignoreInCourseAssessment,
-			boolean fullWindow, boolean fullWindowWidthHeight,
+			boolean fullWindow, boolean fullWindowWidthHeight, boolean fullWindowWidthHeightWithBack,
 			boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore) {
 		super(ureq, wControl);
 		this.showMenu = showMenu;
@@ -438,6 +447,7 @@ class VarForm extends FormBasicController {
 		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
 		this.fullWindow = fullWindow;
 		this.fullWindowWidthHeight = fullWindowWidthHeight;
+		this.fullWindowWidthHeightWithBack = fullWindowWidthHeightWithBack;
 		this.closeOnFinish = closeOnFinish;
 
 		this.advanceScore = advanceScore;
@@ -482,6 +492,10 @@ class VarForm extends FormBasicController {
 		return fullWindowEl.isOneSelected() && "fullwidthheight".equals(fullWindowEl.getSelectedKey());
 	}
 	
+	public boolean isFullWindowWidthHeightWithBack() {
+		return fullWindowEl.isOneSelected() && "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey());
+	}
+	
 	public boolean isCloseOnFinish() {
 		return closeOnFinishEl.isMultiselect() && closeOnFinishEl.isSelected(0);
 	}
@@ -521,7 +535,8 @@ class VarForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(isAssessableEl == source || advanceScoreEl == source || fullWindowEl == source) {
-			updateUI();
+			updateUI();		
+			markDirty();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -534,8 +549,8 @@ class VarForm extends FormBasicController {
 		if(maxScoreEl.isVisible() && maxScoreEl.isEnabled()) {
 			if(StringHelper.containsNonWhitespace(maxScoreEl.getValue())) {
 				try {
-					int maxScore = Integer.parseInt(maxScoreEl.getValue());
-					if (maxScore < 0 || maxScore > 100) {
+					int score = Integer.parseInt(maxScoreEl.getValue());
+					if (score < 0 || score > 100) {
 						maxScoreEl.setErrorKey("max.score.validation", null);
 						allOk &= false;
 					}
@@ -571,6 +586,7 @@ class VarForm extends FormBasicController {
 		SelectionValues windowValues = new SelectionValues();
 		windowValues.add(new SelectionValue("none", translate("mode.window.none"), translate("mode.window.none.desc")));
 		windowValues.add(new SelectionValue("fullwindow", translate("mode.window.fullwindow"), translate("mode.window.fullwindow.desc")));
+		windowValues.add(new SelectionValue("fullwidthheightwithback", translate("mode.window.fullscreen.with.back"), translate("mode.window.fullscreen.with.back.desc")));
 		windowValues.add(new SelectionValue("fullwidthheight", translate("mode.window.fullscreen"), translate("mode.window.fullscreen.desc")));
 		fullWindowEl = uifactory.addCardSingleSelectHorizontal("mode.window", formLayout,
 				windowValues.keys(), windowValues.values(), windowValues.descriptions(), null);
@@ -580,6 +596,8 @@ class VarForm extends FormBasicController {
 			fullWindowEl.select("fullwindow", true);
 		} else if(fullWindowWidthHeight) {
 			fullWindowEl.select("fullwidthheight", true);
+		} else if(fullWindowWidthHeightWithBack) {
+			fullWindowEl.select("fullwidthheightwithback", true);
 		} else {
 			fullWindowEl.select("none", true);
 		}
@@ -655,7 +673,8 @@ class VarForm extends FormBasicController {
 		cutValueEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
 		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable);
 		
-		boolean fullWidthHeight = "fullwidthheight".equals(fullWindowEl.getSelectedKey());
+		boolean fullWidthHeight = fullWindowEl.isOneSelected()
+				&& ("fullwidthheight".equals(fullWindowEl.getSelectedKey()) || "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey()));
 		showMenuEl.setVisible(!fullWidthHeight);
 		showNavButtonsEl.setVisible(!fullWidthHeight);
 	}

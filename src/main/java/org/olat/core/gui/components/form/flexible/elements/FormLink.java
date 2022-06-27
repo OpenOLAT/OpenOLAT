@@ -102,7 +102,12 @@ public interface FormLink extends FormItem {
 	public void setTitle(String linkTitle);
 	
 	public void setAriaLabel(String label);
-
+	
+	/**
+	 * Use the aria role to override the link behavior. E.g. set it to 'button' if the link is a button
+	 * @param ariaRole
+	 */
+	public void setAriaRole(String role);
 
 	public void setDomReplacementWrapperRequired(boolean required);
 	

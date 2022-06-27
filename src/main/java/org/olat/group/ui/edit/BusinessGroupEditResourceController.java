@@ -128,7 +128,7 @@ public class BusinessGroupEditResourceController extends BasicController {
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		
-		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, false, false, !managed, true);	
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, false, false, !managed, true, true);	
 		resourcesCtr.setTableDataModel(repoTableModel);
 		resourcesCtr.setSortColumn(sortCol, true);
 		

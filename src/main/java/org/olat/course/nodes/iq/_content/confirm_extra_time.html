@@ -7,7 +7,6 @@
 		</ul>
 	</div>
 #end
-<div class="o_error">$r.translate("extra.time.warning")</div>
 <p>$r.translate("extra.time.explain.1", $fullnames) <span class="form-inline">$r.render("extra.time.minutes")#if($f.hasError("extra.time.minutes")) <span class="o_icon o_icon_error"></span>#end</span> $r.translate("extra.time.explain.2", $fullnames)</p>
 #if($f.hasError("extra.time.minutes"))
 <p>$r.render("extra.time.minutes_ERROR")</p>

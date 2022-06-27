@@ -45,4 +45,11 @@ public interface PopupBrowserWindow {
 	 */
 	public WindowControl getPopupWindowControl();
 	
+	/**
+	 * Optimize the output for print service like AthenPDF.
+	 * 
+	 * @param forPrint true to optimize the output for print service
+	 */
+	public void setForPrint(boolean forPrint);
+	
 }

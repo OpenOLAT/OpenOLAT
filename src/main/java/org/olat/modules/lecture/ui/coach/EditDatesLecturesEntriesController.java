@@ -19,27 +19,39 @@
  */
 package org.olat.modules.lecture.ui.coach;
 
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -62,7 +74,10 @@ import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.coach.EditDatesLecturesEntriesTableModel.DateCols;
 import org.olat.modules.lecture.ui.component.LectureBlockWithTeachersComparator;
+import org.olat.modules.lecture.ui.component.StartEndDayCellRenderer;
+import org.olat.modules.lecture.ui.component.StartEndTimeCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +100,8 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private SingleSelection durationEl;
 	private FormLink prolongateButton;
 	private MultipleSelectionElement entriesEl;
-	private MultipleSelectionElement lectureBlocksEl;
+	private FlexiTableElement lectureBlocksEl;
+	private EditDatesLecturesEntriesTableModel lectureBlocksTableModel;
 
 	private final boolean wizard;
 	private final Formatter formatter;
@@ -94,6 +110,10 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private final EditAbsenceNoticeWrapper noticeWrapper;
 	private List<RepositoryEntry> loadedRepositoryEntries;
 	private List<LectureBlockWithTeachers> loadedLectureBlocks;
+	/**
+	 * First default selection which stays until user deselect and go to the next step
+	 */
+	private List<EditDatesLecturesEntryRow> wrapSelection;
 
 	@Autowired
 	private UserManager userManager;
@@ -102,7 +122,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	
 	public EditDatesLecturesEntriesController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			EditAbsenceNoticeWrapper noticeWrapper, LecturesSecurityCallback secCallback, boolean wizard) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
 		setTranslator(Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.wizard = wizard;
 		this.secCallback = secCallback;
@@ -112,16 +132,22 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		initForm(ureq);
 		updateDuration();
 		updateTargets();
+		updateAnalyseCollision();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		FormLayoutContainer defaultCont = FormLayoutContainer.createDefaultFormLayout("def-cont", getTranslator());
+		formLayout.add(defaultCont);
+		defaultCont.setRootForm(mainForm);
+		
 		if(wizard) {
-			formLayout.setElementCssClass("o_sel_absence_edit_dates_lectures");
+			defaultCont.setElementCssClass("o_sel_absence_edit_dates_lectures");
 			setFormTitle("notice.dates.lectures.title");
 			
 			String fullName = userManager.getUserDisplayName(noticedIdentity);
-			uifactory.addStaticTextElement("noticed.identity", fullName, formLayout);
+			uifactory.addStaticTextElement("noticed.identity", fullName, defaultCont);
 		}
 		
 		// dates: today, day, exact (with minute hour)
@@ -175,12 +201,12 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		String[] durationValues = new String[] {
 			currentDateLabel, translate("noticed.duration.days"), translate("noticed.duration.exact")
 		};
-		durationEl = uifactory.addRadiosHorizontal("noticed.duration", "noticed.duration", formLayout, durationKeys, durationValues);
+		durationEl = uifactory.addRadiosHorizontal("noticed.duration", "noticed.duration", defaultCont, durationKeys, durationValues);
 		durationEl.addActionListener(FormEvent.ONCHANGE);
 		durationEl.select(selectedDurationKey, true);
 		durationEl.setMandatory(true);
 
-		datesEl = uifactory.addDateChooser("noticed.start", null, startDate, formLayout);
+		datesEl = uifactory.addDateChooser("noticed.start", null, startDate, defaultCont);
 		datesEl.addActionListener(FormEvent.ONCHANGE);
 		datesEl.setDomReplacementWrapperRequired(false);
 		datesEl.setSecondDate(endDate);
@@ -188,7 +214,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		datesEl.setMandatory(true);
 
 		if(noticeWrapper.getAbsenceNotice() == null) {
-			prolongateButton = uifactory.addFormLink("prolongate.notice", formLayout, Link.BUTTON);
+			prolongateButton = uifactory.addFormLink("prolongate.notice", defaultCont, Link.BUTTON);
 			prolongateButton.setVisible(false);
 		}
 
@@ -196,7 +222,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		String[] targetValues = new String[] {
 			translate("noticed.target.all"), translate("noticed.target.courses"), translate("noticed.target.lectureblocks")
 		};
-		targetsEl = uifactory.addRadiosHorizontal("noticed.targets", "noticed.targets", formLayout, targetKeys, targetValues);
+		targetsEl = uifactory.addRadiosHorizontal("noticed.targets", "noticed.targets", defaultCont, targetKeys, targetValues);
 		targetsEl.addActionListener(FormEvent.ONCHANGE);
 		if(noticeWrapper.getAbsenceNoticeTarget() != null) {
 			targetsEl.select(noticeWrapper.getAbsenceNoticeTarget().name(), true);
@@ -205,14 +231,72 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		}
 
 		SelectionValues entriesKeyValues = new SelectionValues();
-		entriesEl = uifactory.addCheckboxesVertical("noticed.entries", formLayout, entriesKeyValues.keys(), entriesKeyValues.values(), 1);
+		entriesEl = uifactory.addCheckboxesVertical("noticed.entries", defaultCont, entriesKeyValues.keys(), entriesKeyValues.values(), 1);
 		entriesEl.setEscapeHtml(false);
 		entriesEl.setMandatory(true);
+		
+		FormLayoutContainer lectureTableCont = FormLayoutContainer.createVerticalFormLayout("lectures-table-cont", getTranslator());
+		formLayout.add(lectureTableCont);
+		lectureTableCont.setRootForm(mainForm);
 
-		SelectionValues lecturesKeyValues = new SelectionValues();
-		lectureBlocksEl = uifactory.addCheckboxesVertical("noticed.lectures", formLayout, lecturesKeyValues.keys(), lecturesKeyValues.values(), 1);
-		lectureBlocksEl.setEscapeHtml(false);
+		initLecturesTable(ureq, lectureTableCont);
+	}
+	
+	private void initLecturesTable(UserRequest ureq, FormItemContainer formLayout) {
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DateCols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DateCols.courseTitle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DateCols.courseExternalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DateCols.courseExternalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DateCols.date,
+				new StartEndDayCellRenderer(getTranslator(), getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DateCols.time,
+				new StartEndTimeCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DateCols.numOfLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DateCols.lectureTitle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DateCols.teachers));
+
+		lectureBlocksTableModel = new EditDatesLecturesEntriesTableModel(columnsModel, userManager, getLocale());
+		lectureBlocksEl = uifactory.addTableElement(getWindowControl(), "noticed.lecture", lectureBlocksTableModel, 24, false, getTranslator(), formLayout);
+		lectureBlocksEl.setLabel("noticed.lectures", durationKeys);
 		lectureBlocksEl.setMandatory(true);
+		lectureBlocksEl.setMultiSelect(true);
+		lectureBlocksEl.setSelectAllEnable(true);
+		lectureBlocksEl.setSearchEnabled(true);
+		lectureBlocksEl.setExtendedSearch(null);
+		lectureBlocksEl.setSearchEnabled(false);
+		lectureBlocksEl.setCssDelegate(lectureBlocksTableModel);
+		lectureBlocksEl.setElementCssClass("o_sel_absence_lectures_table");
+		lectureBlocksEl.setAndLoadPersistedPreferences(ureq, "absence-lecture-table");
+		initLecturesTableFilters();
+	}
+	
+	private void initLecturesTableFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// courses
+		if(loadedLectureBlocks != null) {
+			Set<RepositoryEntry> entries = loadedLectureBlocks.stream()
+					.map(LectureBlockWithTeachers::getLectureBlock)
+					.map(LectureBlock::getEntry)
+					.collect(Collectors.toSet());
+			List<RepositoryEntry> entriesList = new ArrayList<>(entries);
+			SelectionValues entryValues = new SelectionValues();
+			for(RepositoryEntry entry:entriesList) {
+				entryValues.add(SelectionValues.entry(entry.getKey().toString(), StringHelper.escapeHtml(entry.getDisplayname())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.entry"), EditDatesLecturesEntriesTableModel.ENTRY_FILTER, entryValues, true));
+		}
+		
+		// days of week
+		SelectionValues dayValues = new SelectionValues();
+		for(DayOfWeek dayOfWeek:DayOfWeek.values()) {
+			dayValues.add(SelectionValues.entry(dayOfWeek.name(), dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("day.week"), EditDatesLecturesEntriesTableModel.DAY_FILTER, dayValues, true));
+		
+		lectureBlocksEl.setFilters(true, filters, false, true);
 	}
 	
 	private void updateDuration() {
@@ -330,7 +414,15 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		return  translate(i18nKey, args);
 	}
 	
+	private void searchLectureBlocks(FlexiTableSearchEvent event) {
+		List<EditDatesLecturesEntryRow> selected = getSelectedLectures();
+		Map<Long,EditDatesLecturesEntryRow> lectureKeys = new HashMap<>();
+		lectureBlocksTableModel.filter(event.getFilters());
+		loadLectureBlocks(lectureKeys, selected);
+	}
+	
 	private void loadLectureBlocks() {
+		List<EditDatesLecturesEntryRow> selected = getSelectedLectures();
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		if(noticeWrapper.getPredefinedLectureBlocks() != null && !noticeWrapper.getPredefinedLectureBlocks().isEmpty()) {
 			searchParams.setLectureBlocks(noticeWrapper.getPredefinedLectureBlocks());
@@ -349,27 +441,30 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 					searchParams.setEndDate(datesEl.getSecondDate());
 				}
 			}
-	
 		}
 		loadedLectureBlocks = lectureService.getLectureBlocksWithTeachers(searchParams);
 		Collections.sort(loadedLectureBlocks, new LectureBlockWithTeachersComparator());
 		
-		SelectionValues keyValues = new SelectionValues();
+		Map<Long,EditDatesLecturesEntryRow> lectureKeys = new HashMap<>();
+		List<EditDatesLecturesEntryRow> keyValues = new ArrayList<>();
 		for(LectureBlockWithTeachers lectureBlock:loadedLectureBlocks) {
-			String key = lectureBlock.getLectureBlock().getKey().toString();
-			String value = getLectureBlockLabel(lectureBlock);
-			keyValues.add(SelectionValues.entry(key, value));
+			EditDatesLecturesEntryRow row = new EditDatesLecturesEntryRow(lectureBlock);
+			keyValues.add(row);
+			lectureKeys.put(lectureBlock.getLectureBlock().getKey(), row);
 		}
-		lectureBlocksEl.setKeysAndValues(keyValues.keys(), keyValues.values());
+		lectureBlocksTableModel.setObjects(keyValues);
+		loadLectureBlocks(lectureKeys, selected);
+		initLecturesTableFilters();
+	}
 		
+	private void loadLectureBlocks(Map<Long, EditDatesLecturesEntryRow> lectureKeys, List<EditDatesLecturesEntryRow> selected) {
 		if(noticeWrapper.getLectureBlocks() != null && !noticeWrapper.getLectureBlocks().isEmpty()) {
+			selected = getSelectedLectures();
 			List<LectureBlock> currentBlocks = noticeWrapper.getLectureBlocks();
 			if(currentBlocks != null) {
-				for(String key:keyValues.keys()) {
-					for(LectureBlock currentBlock:currentBlocks) {
-						if(key.equals(currentBlock.getKey().toString())) {
-							lectureBlocksEl.select(key, true);
-						}
+				for(LectureBlock currentBlock:currentBlocks) {
+					if(lectureKeys.containsKey(currentBlock.getKey())) {
+						selected.add(lectureKeys.get(currentBlock.getKey()));
 					}
 				}
 			}
@@ -380,47 +475,34 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 						noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
 				if(autoProlongate(notices)) {
 					noticeWrapper.wrap(notices.get(0));
+					wrapSelection = new ArrayList<>();
 					List<LectureBlockWithNotice> currentBlocks = lectureService.getLectureBlocksWithAbsenceNotices(notices);
 					for(LectureBlockWithNotice currentBlock:currentBlocks) {
-						String key = currentBlock.getLectureBlock().getKey().toString();
-						if(keyValues.containsKey(key)) {
-							lectureBlocksEl.select(key, true);
+						if(lectureKeys.containsKey(currentBlock.getLectureBlock().getKey())) {
+							wrapSelection.add(lectureKeys.get(currentBlock.getLectureBlock().getKey()));
 						}
 					}
 					datesEl.setExampleKey("update.notice", null);
 				}
 			}
 		}
-	}
-	
-	private String getLectureBlockLabel(LectureBlockWithTeachers lectureBlock) {
-		LectureBlock block = lectureBlock.getLectureBlock();
-		RepositoryEntry entry = block.getEntry();
 		
-		String entryExternalRef = StringHelper.containsNonWhitespace(entry.getExternalRef())
-				? StringHelper.escapeHtml(entry.getExternalRef()) : "";
-		
-		String[] args = new String[] {
-			StringHelper.escapeHtml(entry.getDisplayname()),	// 0
-			StringHelper.escapeHtml(entryExternalRef),			// 1
-			formatter.formatDate(block.getStartDate()), 		// 2
-			formatter.formatTimeShort(block.getStartDate()), 	// 3
-			formatter.formatTimeShort(block.getEndDate()), 		// 4
-			Integer.toString(block.getPlannedLecturesNumber()),	// 5
-			StringHelper.escapeHtml(block.getTitle()),			// 6
-			getTeachers(lectureBlock)							// 7	
-		};
-		return translate("wizard.lectureblock.label", args);
-	}
-	
-	private String getTeachers(LectureBlockWithTeachers lectureBlock) {
-		StringBuilder sb = new StringBuilder();
-		for(Identity teacher:lectureBlock.getTeachers()) {
-			if(sb.length() > 0) sb.append("; ");
-			String fullName = userManager.getUserDisplayName(teacher);
-			sb.append(StringHelper.escapeHtml(fullName));
+		lectureBlocksEl.reset(true, true, true);
+		if(!selected.isEmpty()) {
+			lectureBlocksTableModel.sort(new SortKey("selected", true), Set.copyOf(selected));
 		}
-		return sb.toString();
+		
+		Set<Integer> indexes = new HashSet<>();
+		if(wrapSelection != null) {
+			selected.addAll(wrapSelection);
+		}
+		for(EditDatesLecturesEntryRow row:selected) {
+			Integer index = lectureBlocksTableModel.indexOf(row);
+			if(index != null) {
+				indexes.add(index);
+			}
+		}
+		lectureBlocksEl.setMultiSelectedIndex(indexes);
 	}
 
 	@Override
@@ -432,7 +514,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		lectureBlocksEl.clearError();
 		if(!targetsEl.isOneSelected()
 				|| (targetsEl.isSelected(1) && !entriesEl.isAtLeastSelected(1))
-				|| (targetsEl.isSelected(3) && !lectureBlocksEl.isAtLeastSelected(1))) {
+				|| (targetsEl.isSelected(3) && getSelectedLectures().isEmpty())) {
 			targetsEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
@@ -452,11 +534,40 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
 					noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
 			if(!notices.isEmpty()) {
-				allOk &= analyseCollision(notices);
+				analyseCollision(notices);
 			}
 		}
 
 		return allOk;
+	}
+	
+	private List<EditDatesLecturesEntryRow> getSelectedLectures() {
+		Set<Integer> selectedIndexes = lectureBlocksEl.getMultiSelectedIndex();
+		List<EditDatesLecturesEntryRow> blocks = new ArrayList<>();
+		for(Integer index:selectedIndexes) {
+			EditDatesLecturesEntryRow row = lectureBlocksTableModel.getObject(index.intValue());
+			if(row != null) {
+				blocks.add(row);
+			}
+		}
+		return blocks;
+	}
+	
+	private List<Long> getSelectedLecturesKeys() {
+		return getSelectedLectures().stream()
+				.map(EditDatesLecturesEntryRow::getLectureBlockKey)
+				.collect(Collectors.toList());
+	}
+	
+	private void updateAnalyseCollision() {
+		Dates dates = getDates();
+		if(dates.getStartDate() != null && dates.getEndDate() != null) {
+			List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
+					noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
+			if(!notices.isEmpty()) {
+				analyseCollision(notices);
+			}
+		}
 	}
 	
 	private boolean analyseCollision(List<AbsenceNotice> notices) {
@@ -466,7 +577,8 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			return true;
 		}
 
-		datesEl.setErrorKey("error.collision", null);
+		String explanation = getNoticesExplaination(notices);
+		datesEl.setErrorKey("error.collision", true, explanation);
 		if(prolongateButton != null) {
 			prolongateButton.setVisible(true);
 			prolongateButton.setUserObject(notices);
@@ -477,6 +589,34 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			markLectureBlocksCollisions(notices);
 		}
 		return false;
+	}
+	
+	private String getNoticesExplaination(List<AbsenceNotice> notices) {
+		StringBuilder sb = new StringBuilder(128);
+		for(AbsenceNotice notice: notices) {
+			if(sb.length() > 0) {
+				sb.append("; ");
+			}
+			
+			String type = translate("noticed.type." + notice.getNoticeType().name());
+			sb.append(type).append(" (");
+			
+			Date start = notice.getStartDate();
+			Date end = notice.getEndDate();
+			if(start != null && end != null) {
+				if(DateUtils.isSameDate(start, end)) {
+					sb.append(formatter.formatDate(start));
+				} else {
+					sb.append(formatter.formatDate(start)).append(" - ").append(formatter.formatDate(end));
+				}
+			} else if(start != null) {
+				sb.append(formatter.formatDate(start));
+			} else if(end != null) {
+				sb.append(formatter.formatDate(end));
+			}
+			sb.append(")");
+		}
+		return sb.toString();
 	}
 	
 	private boolean autoProlongate(List<AbsenceNotice> notices) {
@@ -494,10 +634,11 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	}
 	
 	private void clearMarkColissions() {
-		Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
-		for(String lectureBlocksKey:lectureBlocksKeys) {
-			lectureBlocksEl.setCssClass(lectureBlocksKey, null);
+		List<EditDatesLecturesEntryRow> lectureBlocks = lectureBlocksTableModel.getObjects();
+		for(EditDatesLecturesEntryRow lectureBlock:lectureBlocks) {
+			lectureBlock.setCssClass(null);
 		}
+		lectureBlocksEl.reset(false, false, true);
 		Set<String> entriesKeys = entriesEl.getKeys();
 		for(String entryKey:entriesKeys) {
 			entriesEl.setCssClass(entryKey, null);
@@ -513,7 +654,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		
 		Set<String> entriesKeys = entriesEl.getKeys();
 		for(String entryKey:entriesKeys) {
-			String cssClass = collisionKeys.contains(entryKey) ? "o_checkbox_error" : null;
+			String cssClass = collisionKeys.contains(entryKey) ? "o_checkbox_warning" : null;
 			entriesEl.setCssClass(entryKey, cssClass);
 		}
 		entriesEl.getComponent().setDirty(true);
@@ -521,17 +662,17 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	
 	private void markLectureBlocksCollisions(List<AbsenceNotice> notices) {
 		List<LectureBlockWithNotice> noticeToLectureBlocks = lectureService.getLectureBlocksWithAbsenceNotices(notices);
-		Set<String> collisionKeys = noticeToLectureBlocks.stream()
+		Set<Long> collisionKeys = noticeToLectureBlocks.stream()
 				.filter(noticeToLectureBlock -> noticeToLectureBlock.getLectureBlock() != null)
-				.map(noticeToLectureBlock -> noticeToLectureBlock.getLectureBlock().getKey().toString())
+				.map(noticeToLectureBlock -> noticeToLectureBlock.getLectureBlock().getKey())
 				.collect(Collectors.toSet());
 
-		Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
-		for(String lectureBlocksKey:lectureBlocksKeys) {
-			String cssClass = collisionKeys.contains(lectureBlocksKey) ? "o_checkbox_error" : null;
-			lectureBlocksEl.setCssClass(lectureBlocksKey, cssClass);
+		List<EditDatesLecturesEntryRow> lectureBlocks = lectureBlocksTableModel.getObjects();
+		for(EditDatesLecturesEntryRow lectureBlock:lectureBlocks) {
+			String cssClass = collisionKeys.contains(lectureBlock.getLectureBlockKey()) ? "o_lecture_warning" : null;
+			lectureBlock.setCssClass(cssClass);
 		}
-		lectureBlocksEl.getComponent().setDirty(true);
+		lectureBlocksEl.reset(false, false, true);
 	}
 	
 	private boolean validate(MultipleSelectionElement el) {
@@ -543,15 +684,30 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		
 		return allOk;
 	}
+	
+	private boolean validate(FlexiTableElement el) {
+		boolean allOk = true;
+		if(el.isVisible() && el.getMultiSelectedIndex().isEmpty()) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		return allOk;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(durationEl == source) {
 			updateDuration();
+			updateAnalyseCollision();
 		} else if(targetsEl == source || datesEl == source) {
 			updateTargets();
+			updateAnalyseCollision();
 		} else if(prolongateButton == source) {
 			doProlongate(ureq);
+		} else if(lectureBlocksEl == source) {
+			if(event instanceof FlexiTableSearchEvent) {
+				searchLectureBlocks((FlexiTableSearchEvent)event);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -571,9 +727,9 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 					.collect(Collectors.toList());
 			noticeWrapper.setEntries(entries);
 		} else if(selectedTarget == AbsenceNoticeTarget.lectureblocks) {
-			final Collection<String> selectedLectureBlockKeys = lectureBlocksEl.getSelectedKeys();
+			final List<Long> selectedLectureBlockKeys = getSelectedLecturesKeys();
 			List<LectureBlock> blocks = loadedLectureBlocks.stream()
-					.filter(b -> selectedLectureBlockKeys.contains(b.getLectureBlock().getKey().toString()))
+					.filter(b -> selectedLectureBlockKeys.contains(b.getLectureBlock().getKey()))
 					.map(LectureBlockWithTeachers::getLectureBlock)
 					.collect(Collectors.toList());
 			noticeWrapper.setLectureBlocks(blocks);
@@ -599,14 +755,19 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			}
 			updateTargets();
 			
+			Set<Integer> currentSelectedIndexes = lectureBlocksEl.getMultiSelectedIndex();
 			List<AbsenceNoticeToLectureBlock> noticesToBlocks = lectureService.getAbsenceNoticeToLectureBlocks(notice);
-			Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
+			List<Long> lectureBlocksKeys = getSelectedLecturesKeys();
 			for(AbsenceNoticeToLectureBlock noticeToBlock:noticesToBlocks) {
-				String lectureBlockKey = noticeToBlock.getLectureBlock().getKey().toString();
+				Long lectureBlockKey = noticeToBlock.getLectureBlock().getKey();
 				if(lectureBlocksKeys.contains(lectureBlockKey)) {
-					lectureBlocksEl.select(lectureBlockKey, true);
+					Integer index = lectureBlocksTableModel.indexOf(lectureBlockKey);
+					if(index != null) {
+						currentSelectedIndexes.add(index);
+					}
 				}
 			}
+			lectureBlocksEl.setMultiSelectedIndex(currentSelectedIndexes);
 			
 			List<AbsenceNoticeToRepositoryEntry> noticesToEntries = lectureService.getAbsenceNoticeToRepositoryEntries(notice);
 			Set<String> entriesKeys = entriesEl.getKeys();

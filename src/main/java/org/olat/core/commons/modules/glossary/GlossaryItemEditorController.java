@@ -59,13 +59,10 @@ public class GlossaryItemEditorController extends BasicController {
 		super(ureq, control);
 		editorVC = createVelocityContainer("editor");
 		
-		boolean addNewItem = false;
-		if (glossaryItem == null){
-			addNewItem = true;
+		if (glossaryItem == null) {
 			glossaryItem = new GlossaryItem("", "");
 			glossaryItemList.add(glossaryItem);
 		}
-		editorVC.contextPut("addNewItem", addNewItem);
 
 		glossEditTabP = new TabbedPane("tp", ureq.getLocale());
 		
@@ -103,6 +100,10 @@ public class GlossaryItemEditorController extends BasicController {
 			} else if (event.getCommand().equals("termNOK")){
 				enableDisableTermDependentTabs(false);
 			}	
+		} else if(source == defCtrl) {
+			if(event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, event);
+			}
 		}
 	}
 }

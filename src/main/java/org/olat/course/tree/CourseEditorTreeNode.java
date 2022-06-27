@@ -25,7 +25,10 @@
 
 package org.olat.course.tree;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
@@ -83,8 +86,16 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	}
 
 	@Override
-	public String getAltText() {
-		return cn.getLongTitle() + " (id:" + getIdent() + ")";
+	public String getAltText() {		
+		String translatedType = null;
+		Locale locale = I18nManager.getInstance().getCurrentThreadLocale();
+		if (locale != null) {
+			CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(cn.getType());
+			if (nodeConfig != null) {
+				translatedType = nodeConfig.getLinkText(locale);
+			}
+		}
+		return (translatedType != null ? translatedType + ": " : "")  + cn.getLongTitle() + " (id:" + getIdent() + ")";			
 	}
 
 	@Override

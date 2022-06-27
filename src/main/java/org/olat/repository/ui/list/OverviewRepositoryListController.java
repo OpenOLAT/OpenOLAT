@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -58,6 +59,7 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.catalog.CatalogNodeController;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,6 +98,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private ACService acService;
 	
 	public OverviewRepositoryListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -254,7 +258,9 @@ public class OverviewRepositoryListController extends BasicController implements
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			searchParams.setMembershipMandatory(true);
 			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
-	
+			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
+			searchParams.setOfferValidAt(new Date());
+			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());

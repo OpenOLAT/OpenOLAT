@@ -33,6 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.config.CourseConfig;
@@ -47,6 +48,7 @@ import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,9 +77,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 		ObligationContext obligationContext = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType())
 				? new SingleUserObligationContext()
 				: NullObligationContext.create();
-		this.exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(
-				userCourseEnvironment.getIdentityEnvironment().getIdentity(),
-				userCourseEnvironment.getCourseEnvironment().getRunStructure(), this);
+		this.exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(getIdentity(),
+				getCourseEntry(), userCourseEnvironment.getCourseEnvironment().getRunStructure(), this);
 		this.exceptionalObligationEvaluator.setObligationContext(obligationContext);
 	
 		CoreSpringFactory.autowireObject(this);
@@ -180,15 +181,11 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setObligation(obligation);
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
-		Date startDate = startDateEvaluator.evaluate(result, courseNode, 
-				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), 
-				userCourseEnvironment.getIdentityEnvironment().getIdentity(), blocker);
+		Date startDate = startDateEvaluator.evaluate(result, courseNode, getCourseEntry(), getIdentity(), blocker);
 		result.setStartDate(startDate);
 		
 		EndDateEvaluator endDateEvaluator = evaluators.getEndDateEvaluator();
-		Overridable<Date> endDate = endDateEvaluator.getEndDate(result, courseNode, 
-				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), 
-				userCourseEnvironment.getIdentityEnvironment().getIdentity(), blocker);
+		Overridable<Date> endDate = endDateEvaluator.getEndDate(result, courseNode, getCourseEntry(), getIdentity(), blocker);
 		result.setEndDate(endDate);
 		
 		DurationEvaluator durationEvaluator = evaluators.getDurationEvaluator();
@@ -230,25 +227,24 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setObligation(obligation);
 		
 		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
-		Float score = scoreEvaluator.getScore(result, courseNode, this, userCourseEnvironment.getConditionInterpreter());
+		Float score = scoreEvaluator.getScore(result, courseNode, this, getCourseEntry(), userCourseEnvironment.getConditionInterpreter());
 		result.setScore(score);
 		
 		MaxScoreEvaluator maxScoreEvaluator = evaluators.getMaxScoreEvaluator();
-		Float maxScore = maxScoreEvaluator.getMaxScore(result, courseNode, this);
+		Float maxScore = maxScoreEvaluator.getMaxScore(result, courseNode, this, getCourseEntry());
 		result.setMaxScore(maxScore);
 		
 		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
-		Boolean passed = passedEvaluator.getPassed(result, courseNode,
-				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+		Overridable<Boolean> passed = passedEvaluator.getPassed(result, courseNode, getCourseEntry(),
 				userCourseEnvironment.getConditionInterpreter());
-		result.setPassed(passed);
+		result.setPassedOverridable(passed);
 		
 		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
 		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children, blocker);
 		result.setFullyAssessed(fullyAssessed);
 		
 		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();
-		Double completion = completionEvaluator.getCompletion(result, courseNode, this);
+		Double completion = completionEvaluator.getCompletion(result, courseNode, this, getCourseEntry());
 		result.setCompletion(completion);
 		
 		status = statusEvaluator.getStatus(result, children);
@@ -256,9 +252,17 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		if (courseNode.getParent() == null) {
 			RootPassedEvaluator rootPassedEvaluator = evaluators.getRootPassedEvaluator();
-			Boolean rootPassed = rootPassedEvaluator.getPassed(result, courseNode, this,
-					userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
-			result.setPassed(rootPassed);
+			Boolean rootPassed = rootPassedEvaluator.getPassed(result, courseNode, this, getCourseEntry());
+			result.getPassedOverridable().setCurrent(rootPassed);
+		}
+		
+		// STCourseNode may have a calculated score.
+		if (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null)) {
+			boolean done = result.getAssessmentStatus() != null && AssessmentEntryStatus.done == result.getAssessmentStatus();
+			Boolean initialUserVisibility = courseAssessmentService
+					.getAssessmentConfig(new CourseEntryRef(userCourseEnvironment), courseNode)
+					.getInitialUserVisibility(done, false);
+			result.setUserVisible(initialUserVisibility);
 		}
 		
 		if (result.hasChanges()) {
@@ -278,7 +282,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setScore(score);
 		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
 		entry.setMaxScore(maxScore);
-		entry.setPassed(result.getPassed());
+		entry.setPassedOverridable(result.getPassedOverridable());
+		entry.setUserVisibility(result.getUserVisible());
 		entry.setCompletion(result.getCompletion());
 		entry.setDuration(result.getDuration());
 		entry.setLastUserModified(result.getLastUserModified());
@@ -299,6 +304,10 @@ public class AssessmentAccounting implements ScoreAccounting {
 
 	private AssessmentManager getAssessmentManager() {
 		return userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+	}
+
+	private RepositoryEntry getCourseEntry() {
+		return userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 	}
 	
 }

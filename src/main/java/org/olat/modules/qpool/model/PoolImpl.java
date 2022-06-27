@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -51,9 +50,7 @@ import org.olat.modules.qpool.Pool;
  */
 @Entity(name="qpool")
 @Table(name="o_qp_pool")
-@NamedQueries({
-	@NamedQuery(name="loadQPoolByKey", query="select pool from qpool pool where pool.key=:poolKey")
-})
+@NamedQuery(name="loadQPoolByKey", query="select pool from qpool pool where pool.key=:poolKey")
 public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 581458115174074849L;

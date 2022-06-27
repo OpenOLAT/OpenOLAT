@@ -39,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -48,7 +47,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -540,7 +538,7 @@ public class NodeLayoutController extends FormBasicController {
 			overviewBuilder.withNodeIdent(courseNode.getIdent());
 			overviewBuilder.withIconCss(iconCSSClass);
 			overviewBuilder.withTitle(courseNode.getLongTitle());
-			overviewBuilder.withSubTitle(CourseNodeHelper.getDifferentlyStartingShortTitle(courseNode));
+			overviewBuilder.withSubTitle(CourseNodeHelper.getFuzzyDifferentShortTitle(courseNode));
 			overviewBuilder.withDescription(courseNode.getDescription());
 			overviewBuilder.withColorCategoryCss(colorCategoryCss);
 			if (previewMapper != null) {
@@ -559,8 +557,7 @@ public class NodeLayoutController extends FormBasicController {
 		previewCtrl.update(ureq, header, overview);
 		
 		if (dirty) {
-			String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
-			getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
+			markDirty();
 		}
 	}
 

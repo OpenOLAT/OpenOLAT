@@ -77,9 +77,8 @@ import org.olat.modules.edusharing.EdusharingProvider;
  */
 public class RichTextConfiguration implements Disposable {
 	private static final Logger log = Tracing.createLoggerFor(RichTextConfiguration.class);
-	private static final String MODE = "mode";
-	private static final String MODE_VALUE_EXACT = "exact";
-	private static final String ELEMENTS = "elements";
+
+	private static final String SELECTOR = "selector";
 
 	// Doctype and language
 	private static final String LANGUAGE = "language";
@@ -92,7 +91,6 @@ public class RichTextConfiguration implements Disposable {
 	private static final String IMPORTCSS_SELECTOR_FILTER = "importcss_selector_filter";
 	private static final String IMPORTCSS_GROUPS = "importcss_groups";
 	private static final String IMPORTCSS_GROUPS_VALUE_MENU = "[{title: 'Paragraph', filter: /^(p)\\./},{title: 'Div', filter: /^(div|p)\\./},{title: 'Table', filter: /^(table|th|td|tr)\\./},{title: 'Url', filter: /^(a)\\./},{title: 'Style'}]";
-	private static final String HEIGHT = "height";
 	// Window appearance
 	private static final String DIALOG_TYPE = "dialog_type";
 	private static final String DIALOG_TYPE_VALUE_MODAL = "modal";
@@ -109,6 +107,11 @@ public class RichTextConfiguration implements Disposable {
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
 	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
+	
+	private static final String SHORT_ENDED_ELEMENTS = "area base basefont br col frame hr img input isindex link"
+			+ " meta param embed source wbr track" // Copy from TinyMCE code
+			+ " textentryinteraction"; // Our own short ended tag
+	
 	private static final String INVALID_ELEMENTS = "invalid_elements";
 	private static final String INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
 	private static final String INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
@@ -121,25 +124,21 @@ public class RichTextConfiguration implements Disposable {
 	private static final String DOCUMENT_BASE_URL = "document_base_url";
 	private static final String PASTE_DATA_IMAGES = "paste_data_images";
 	private static final String AUTORESIZE_BOTTOM_MARGIN = "autoresize_bottom_margin";
-	private static final String AUTORESIZE_MAX_HEIGHT = "autoresize_max_height";
-	private static final String AUTORESIZE_MIN_HEIGHT = "autoresize_min_height";
+	private static final String AUTORESIZE_MAX_HEIGHT = "max_height";
+	private static final String AUTORESIZE_MIN_HEIGHT = "min_height";
 
 	//
 	// Generic boolean true / false values
 	private static final String VALUE_FALSE = "false";
 
 	// Callbacks
-	private static final String ONCHANGE_CALLBACK = "onchange_callback";
-	private static final String ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE = "BTinyHelper.triggerOnChangeOnFormElement";
-
-	private static final String FILE_BROWSER_CALLBACK = "file_browser_callback";
+	private static final String FILE_BROWSER_CALLBACK = "file_picker_callback";
 	private static final String FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER = "BTinyHelper.openLinkBrowser";
 	private static final String URLCONVERTER_CALLBACK = "urlconverter_callback";
 	private static final String URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER = "BTinyHelper.linkConverter";
 
 	private Map<String, String> quotedConfigValues = new HashMap<>();
 	private Map<String, String> nonQuotedConfigValues = new HashMap<>();
-	private List<String> onInit = new ArrayList<>();
 
 	// Supported image and media suffixes
 	private static final String[] IMAGE_SUFFIXES_VALUES = { "jpg", "gif", "jpeg", "png" };
@@ -157,6 +156,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
 	private boolean pathInStatusBar = true;
+	private boolean statusBar = true;
 	private boolean figCaption = true;
 	private boolean allowCustomMediaFactory = true;
 	private boolean sendOnBlur;
@@ -166,6 +166,7 @@ public class RichTextConfiguration implements Disposable {
 	private CustomLinkTreeModel toolLinkTreeModel;
 	// DOM ID of the flexi form element
 	private String domID;
+	private String height;
 
 	private String mapperUri;
 	private MapperKey contentMapperKey;
@@ -194,11 +195,7 @@ public class RichTextConfiguration implements Disposable {
 	public RichTextConfiguration(String domID, Locale locale) {
 		this.domID = domID;
 		this.locale = locale;
-		// use exact mode that only applies to this DOM element
-		setQuotedConfigValue(MODE, MODE_VALUE_EXACT);
-		setQuotedConfigValue(ELEMENTS, domID);
-		// set the on change handler to delegate to flexi element on change handler
-		setQuotedConfigValue(ONCHANGE_CALLBACK, ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE);
+		setQuotedConfigValue(SELECTOR, "#".concat(domID));
 		// set custom url converter to deal with framework and content urls properly
 		setNonQuotedConfigValue(URLCONVERTER_CALLBACK, URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER);
 		setNonQuotedConfigValue("allow_script_urls", "true");
@@ -470,6 +467,19 @@ public class RichTextConfiguration implements Disposable {
 		this.pathInStatusBar = pathInStatusBar;
 	}
 
+	public boolean isStatusBar() {
+		return statusBar;
+	}
+
+	/**
+	 * Don't use this too often, we need the show the "Powered by Tiny".
+	 * 
+	 * @param statusBar
+	 */
+	public void setStatusBar(boolean statusBar) {
+		this.statusBar = statusBar;
+	}
+
 	public boolean isReadOnly() {
 		return readOnly;
 	}
@@ -500,24 +510,6 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setAdditionalConfiguration(RichTextConfigurationDelegate additionalConfiguration) {
 		this.additionalConfiguration = additionalConfiguration;
-	}
-
-	/**
-	 * Add a function name that has to be executed after initialization. <br>
-	 * E.g: myFunctionName, (alert('loading successfull')) <br>
-	 * Don't add something like this: function() {alert('loading successfull')}, use
-	 * the following notation instead: (alert('loading successfull'))
-	 * 
-	 * @param functionName
-	 */
-	public void addOnInitCallbackFunction(String functionName) {
-		if (functionName != null) {
-			onInit.add(functionName);
-		}
-	}
-
-	protected List<String> getOnInit() {
-		return onInit;
 	}
 
 	/**
@@ -560,10 +552,28 @@ public class RichTextConfiguration implements Disposable {
 	private void setLanguage(Locale loc) {
 		// tiny does not support country or variant codes, only language code
 		String langKey = loc.getLanguage();
-		String path = "/static/js/tinymce4/tinymce/langs/" + langKey + ".js";
-		String realPath = WebappHelper.getContextRealPath(path);
-		if (realPath == null || !(new File(realPath).exists())) {
+		
+		// Some special cases
+		if("de".equals(langKey)) {
+			langKey = "de";
+		} else if("en".equals(langKey)) {
 			langKey = "en";
+		} else if("fr".equals(langKey)) {
+			langKey = "fr_FR";
+		} else if("it".equals(langKey)) {
+			langKey = "it_IT";
+		} else if("pt".equals(langKey)) {
+			if("BR".equals(loc.getCountry())) {
+				langKey = "pt_BR";
+			} else {
+				langKey = "pt_PT";
+			}
+		} else {
+			String path = "/static/js/tinymce4/tinymce/langs/" + langKey + ".js";
+			String realPath = WebappHelper.getContextRealPath(path);
+			if (realPath == null || !(new File(realPath).exists())) {
+				langKey = "en";
+			}
 		}
 		setQuotedConfigValue(LANGUAGE, langKey);
 	}
@@ -759,8 +769,9 @@ public class RichTextConfiguration implements Disposable {
 			CustomLinkTreeModel toolLinkTreeModel, String[] supportedImageSuffixes, String[] supportedMediaSuffixes,
 			String[] supportedFlashPlayerSuffixes) {
 		// Add dom ID variable using prototype curry method
-		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK,
-				FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue("block_unsupported_drop", "false");
+		
 		linkBrowserImageSuffixes = supportedImageSuffixes;
 		linkBrowserMediaSuffixes = supportedMediaSuffixes;
 		linkBrowserFlashPlayerSuffixes = supportedFlashPlayerSuffixes;
@@ -777,6 +788,7 @@ public class RichTextConfiguration implements Disposable {
 		linkBrowserCustomTreeModel = null;
 		toolLinkTreeModel = null;
 		nonQuotedConfigValues.remove(FILE_BROWSER_CALLBACK);
+		nonQuotedConfigValues.put("block_unsupported_drop", "false");
 	}
 
 	/**
@@ -899,12 +911,15 @@ public class RichTextConfiguration implements Disposable {
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
+		//TINYMCE6 void_elements
+		setQuotedConfigValue("short_ended_elements", SHORT_ENDED_ELEMENTS);
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*]");
 	}
 
 	public void enableEdusharing(Identity identity, EdusharingProvider provider) {
-		if (identity == null || provider == null)
+		if (identity == null || provider == null) {
 			return;
+		}
 
 		EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
 		if (edusharingModule.isEnabled()) {
@@ -945,9 +960,13 @@ public class RichTextConfiguration implements Disposable {
 		// add or overwrite new value
 		nonQuotedConfigValues.put(key, value);
 	}
+	
+	public String getEditorHeight() {
+		return height;
+	}
 
-	public void enableEditorHeight() {
-		setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
+	public void setEditorHeight(String height) {
+		this.height = height;
 	}
 
 	/**
@@ -1056,7 +1075,7 @@ public class RichTextConfiguration implements Disposable {
 		return toolLinkTreeModel;
 	}
 
-	protected void appendConfigToTinyJSArray_4(StringOutput out, Translator translator) {
+	protected void appendConfigToTinyJSArray(StringOutput out, Translator translator) {
 		// Now add the quoted values
 		Map<String, String> copyValues = new HashMap<>(quotedConfigValues);
 
@@ -1094,13 +1113,21 @@ public class RichTextConfiguration implements Disposable {
 		// new with menu
 		StringOutput tinyMenuSb = new StringOutput();
 		tinyMenuSb
+			//new TinyMCE 5
+		    .append("theme: 'silver',\n")
+			.append("removed_menuitems: 'newdocument',\n")
+			.append("elementpath: false,\n")
+			.append("element_format: 'xhtml',\n") // it's the default
+			.append("deprecation_warnings: ").append(!Settings.isDebuging()).append(",\n")
+			.append("browser_spellcheck: true,\n")
+			// classic
 			.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
 			.append("image_advtab:true,\n")
 			.append("image_caption:").append(figCaption).append(",\n")
 			.append("image_title:true,\n")
 			.append("relative_urls:").append(isRelativeUrls()).append(",\n")
 			.append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
-			.append("statusbar:").append(true).append(",\n")
+			.append("statusbar:").append(isStatusBar()).append(",\n")
 			.append("resize:").append(true).append(",\n")
 			.append("menubar:").append(tinyConfig.hasMenu()).append(",\n")
 			.append("fontsize_formats:").append("'").append(tinyMceConfig.getFontSizes()).append("',\n")
@@ -1155,8 +1182,8 @@ public class RichTextConfiguration implements Disposable {
 		// default table style
 		tinyMenuSb.append("table_default_attributes: { class: 'b_default' },\n");
 		// prevent cloning custom elements (especially QTI related)
-		tinyMenuSb.append("table_clone_elements: \"strong em b i span[data-qti!='textentryinteraction'][data-qti!='hottext'] font h1 h2 h3 h4 h5 h6 p div\",\n");
-
+		tinyMenuSb.append("table_clone_elements: 'h1 h2 h3 h4 h5 h6 strong em p',\n");
+		
 		if (tinyConfig.getTool1() != null) {
 			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");
 		} else {

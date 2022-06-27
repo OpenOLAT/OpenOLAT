@@ -280,7 +280,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
+		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, getLocale());
 	}
 	
 	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {

@@ -86,7 +86,7 @@ public class ToolsPrefsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("usertools.title");
 		setFormDescription("usertools.descr");
-		setFormContextHelp("Configuration#_tools");
+		setFormContextHelp("manual_user/personal/Personal_Menu/");
 
 		String[] toolKeys;
 		String[] toolValues;

@@ -381,7 +381,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		forumNode.setNoAccessExplanation("You don't have access");
 		Forum courseForum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(forumNode, rootNode);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id.getIdentity(), Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, id.getIdentity(), Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
 		//add message and publisher
@@ -432,7 +432,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), folderNode);
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer(folderNode, course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(folderNode, rootNode);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id.getIdentity(), Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, id.getIdentity(), Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
 		//add message and publisher

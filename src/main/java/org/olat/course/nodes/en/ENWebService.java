@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.en;
 
-import static org.olat.restapi.support.ObjectFactory.get;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -225,7 +223,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		List<GroupVO> voes = new ArrayList<>();
 		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
 		for(BusinessGroup group:groups) {
-			voes.add(get(group));
+			voes.add(GroupVO.valueOf(group));
 		}
 		GroupVO[] voArr = new GroupVO[voes.size()];
 		voes.toArray(voArr);

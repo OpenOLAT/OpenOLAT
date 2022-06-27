@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -27,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -35,11 +38,13 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentStatsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.PercentStat;
 import org.olat.modules.assessment.ui.ScoreStat;
+import org.olat.modules.grade.GradeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +64,8 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
 
 	public AssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
@@ -74,9 +81,12 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
+		if(assessmentCallback.canAssessBusinessGoupMembers() && assessmentCallback.getCoachedGroups() != null && !assessmentCallback.getCoachedGroups().isEmpty()) {
+			params.setBusinessGroupKeys(assessmentCallback.getCoachedGroups().stream().map(BusinessGroup::getKey).collect(Collectors.toList()));
+		}
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		PercentStat percentStat = null;
 		if (Mode.none != assessmentConfig.getPassedMode()) {
 			percentStat = PercentStat.passed;
@@ -87,7 +97,8 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		if (Mode.none != assessmentConfig.getScoreMode()) {
 			Double minScore = assessmentConfig.getMinScore()!= null? Double.valueOf(assessmentConfig.getMinScore().doubleValue()): null;
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
-			scoreStat = ScoreStat.of(minScore, maxScore);
+			boolean gradeEnabled = gradeModule.isEnabled() && assessmentConfig.hasGrade();
+			scoreStat = ScoreStat.of(minScore, maxScore, gradeEnabled);
 		}
 		
 		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, percentStat, scoreStat, courseInfoLaunch, readOnly, false);

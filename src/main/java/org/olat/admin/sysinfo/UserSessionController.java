@@ -139,7 +139,7 @@ public class UserSessionController extends BasicController implements Breadcrumb
 				UserSessionView usessw = (UserSessionView)tableCtr.getTableDataModel().getObject(selRow);
 				if("sess.chat".equals(te.getActionId())) {
 					Buddy buddy = imService.getBuddyById(usessw.getIdentityKey());
-					OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+					OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 					ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 				} else if("sess.details".equals(te.getActionId())) {
 					UserSession usess = usessw.getUserSession();

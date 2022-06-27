@@ -6,3 +6,9 @@
 		$r.render("form")
 	</div>
 </div>
+#if($r.available("participantView"))
+	<fieldset>
+		<legend>$r.translate("participant.view")</legend>
+		$r.render("participantView")
+	</fieldset>
+#end

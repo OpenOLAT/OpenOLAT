@@ -189,12 +189,12 @@ public class DisplayPortraitController extends BasicController implements Generi
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);
 				} else if (isAnonymous || forceAnonymous || isDeletedUser) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_BIG_CSS_CLASS);
-				} else if (gender.equals("-")) {
-					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
 				} else if (gender.equals("male")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS);
 				} else if (gender.equals("female")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
+				} else {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
 				}
 			} else {
 				image = displayPortraitManager.getSmallPortrait(portraitIdent);
@@ -202,12 +202,12 @@ public class DisplayPortraitController extends BasicController implements Generi
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
 				} else if (isAnonymous || forceAnonymous || isDeletedUser) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_SMALL_CSS_CLASS);
-				} else if (gender.equals("-")) {
-					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
 				} else if (gender.equals("male")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_SMALL_CSS_CLASS);
 				} else if (gender.equals("female")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_SMALL_CSS_CLASS);
+				} else {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
 				}
 			}
 			

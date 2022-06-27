@@ -201,11 +201,11 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 	
 	private RepositoryEntry createRepositoryEntry(String displayName, RepositoryEntryStatusEnum status, int startDays, int endDays) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		entry = repositoryManager.setAccess(entry, status, false, false);
+		entry = repositoryManager.setStatus(entry, status);
 		Date start = DateUtils.addDays(new Date(), startDays);
 		Date end = DateUtils.addDays(new Date(), endDays);
 		RepositoryEntryLifecycle cycle = repositoryEntryLifecycleDao.create("Sem.", null, true, start, end);
-		entry = repositoryManager.setDescriptionAndName(entry, displayName, "Fake course to close", null, null, null, null, null, cycle);
+		entry = repositoryManager.setDescriptionAndName(entry, displayName, "Fake course to close", null, null, null, null, null, null, cycle);
 		dbInstance.commitAndCloseSession();
 		return entry;
 	}

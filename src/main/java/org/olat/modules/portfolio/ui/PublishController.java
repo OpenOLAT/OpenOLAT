@@ -517,7 +517,7 @@ public class PublishController extends BasicController implements TooledControll
 				fullName = userManager.getUserDisplayName(rights.getIdentity());
 			} else {
 				Invitation invitation = rights.getInvitation();
-				fullName = userManager.getUserDisplayName(invitation.getFirstName(), invitation.getLastName()) + " :: " + invitation.getKey();
+				fullName = userManager.getUserDisplayName(invitation.getFirstName(), invitation.getLastName());
 			}
 			
 			if(editLink != null) {

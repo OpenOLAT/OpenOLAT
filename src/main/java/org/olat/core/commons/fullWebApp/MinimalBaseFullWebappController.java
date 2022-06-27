@@ -104,6 +104,11 @@ public class MinimalBaseFullWebappController extends BaseFullWebappController im
 	}
 	
 	@Override
+	public void setForPrint(boolean forPrint) {
+		super.setForPrint(forPrint);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(disclaimerCtrl == source) {
 			cmc.deactivate();

@@ -170,12 +170,13 @@ public class CopyServiceImpl implements CopyService {
 		target.setAuthors(context.getAuthors());
 		
 		// Copy taxonomy levels
-		List<TaxonomyLevel> taxonomyLevels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(sourceEntry);
-		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-			RepositoryEntryToTaxonomyLevel relation = repositoryEntryToTaxonomyLevelDao.createRelation(target, taxonomyLevel);
-			target.getTaxonomyLevels().add(relation);
+		if (context.getTaxonomyLevels() != null) {
+			for (TaxonomyLevel taxonomyLevel : context.getTaxonomyLevels()) {
+				RepositoryEntryToTaxonomyLevel relation = repositoryEntryToTaxonomyLevelDao.createRelation(target, taxonomyLevel);
+				target.getTaxonomyLevels().add(relation);
+			}
 		}
-
+		
 		// Add to organisations
 		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
 		if (sourceOrganisations != null) {
@@ -244,11 +245,10 @@ public class CopyServiceImpl implements CopyService {
 				LoggingResourceable.wrap(target, OlatResourceableType.genRepoEntry));
 
 		target = repositoryManager.setDescriptionAndName(target,
-				target.getDisplayname(), target.getExternalRef(), target.getAuthors(),
-				target.getDescription(), target.getObjectives(), target.getRequirements(),
-				target.getCredits(), target.getMainLanguage(), target.getLocation(),
-				target.getExpenditureOfWork(), target.getLifecycle(), null, null,
-				target.getEducationalType());
+				target.getDisplayname(), target.getExternalRef(), target.getAuthors(), target.getDescription(),
+				target.getTeaser(), target.getObjectives(), target.getRequirements(), target.getCredits(),
+				target.getMainLanguage(), target.getLocation(), target.getExpenditureOfWork(), target.getLifecycle(),
+				null, null, target.getEducationalType());
 		
 		// Open course editing session
 		OLATResourceable targetCourseOres = target.getOlatResource();

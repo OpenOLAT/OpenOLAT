@@ -122,11 +122,11 @@ public class CoursesTest extends OlatRestTestCase {
 
 			externalId = UUID.randomUUID().toString();
 			externalRef = UUID.randomUUID().toString();
-			re2 = repositoryManager.setDescriptionAndName(re2, "courses2", "courses2 desc", null, null, externalId, externalRef, null, null);
+			re2 = repositoryManager.setDescriptionAndName(re2, "courses2", "courses2 desc", null, null, null, externalId, externalRef, null, null);
 			
 			externalId3 = UUID.randomUUID().toString();
 			RepositoryEntryLifecycle lifecycle3 = reLifecycleDao.create("course3 lifecycle", UUID.randomUUID().toString(), true, new Date(), new Date());
-			re3 = repositoryManager.setDescriptionAndName(re3, "courses3", "courses3 desc", null, null, externalId3, null, "all", lifecycle3);
+			re3 = repositoryManager.setDescriptionAndName(re3, "courses3", "courses3 desc", null, null, null, externalId3, null, "all", lifecycle3);
 			dbInstance.commitAndCloseSession();
 			
 			course2 = CourseFactory.loadCourse(re2);
@@ -286,9 +286,9 @@ public class CoursesTest extends OlatRestTestCase {
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published, false, false);
 		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published, false, false);
 		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published, false, false);
-		repositoryManager.setDescriptionAndName(entry1, null, null, null, null, null, ref, null, null);
-		repositoryManager.setDescriptionAndName(entry2, null, null, null, null, null, ref, null, null);
-		repositoryManager.setDescriptionAndName(entry3, null, null, null, null, null, ref, null, null);
+		repositoryManager.setDescriptionAndName(entry1, null, null, null, null, null, null, ref, null, null);
+		repositoryManager.setDescriptionAndName(entry2, null, null, null, null, null, null, ref, null, null);
+		repositoryManager.setDescriptionAndName(entry3, null, null, null, null, null, null, ref, null, null);
 		dbInstance.commitAndCloseSession();
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -353,7 +353,7 @@ public class CoursesTest extends OlatRestTestCase {
 	}
 
 	@Test
-	public void testCreateEmpty_withoutAuthorCourse() throws IOException, URISyntaxException {
+	public void testCreateEmptyWithoutAuthorCourse() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -387,7 +387,7 @@ public class CoursesTest extends OlatRestTestCase {
 	}
 
 	@Test
-	public void testCreateEmpty_withInitialAuthor() throws IOException, URISyntaxException {
+	public void testCreateEmptyWithInitialAuthor() throws IOException, URISyntaxException {
 		Identity adhocAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("adhoc-author");
 		dbInstance.commit();
 
@@ -426,7 +426,7 @@ public class CoursesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testCreateEmpty_withMetadata() throws IOException, URISyntaxException {
+	public void testCreateEmptyWithMetadata() throws IOException, URISyntaxException {
 		Identity adhocAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("adhoc-author");
 		dbInstance.commit();
 
@@ -443,6 +443,7 @@ public class CoursesTest extends OlatRestTestCase {
 			.queryParam("location", "Zurich")
 			.queryParam("externalId", "825761")
 			.queryParam("externalRef", "AC-825761")
+			.queryParam("teaser", "Little teaser")
 			.build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 
@@ -464,10 +465,11 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertEquals("Zurich", re.getLocation());
 		Assert.assertEquals("825761", re.getExternalId());
 		Assert.assertEquals("AC-825761", re.getExternalRef());
+		Assert.assertEquals("Little teaser", re.getTeaser());
 	}
 
 	@Test
-	public void testCreateEmpty_nodeAccessType() throws IOException, URISyntaxException {
+	public void testCreateEmptyNodeAccessType() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -529,7 +531,7 @@ public class CoursesTest extends OlatRestTestCase {
 	}
 
 	@Test
-	public void testImportCourse_owner() throws IOException, URISyntaxException {
+	public void testImportCourseOwner() throws IOException, URISyntaxException {
 		URL cpUrl = CoursesTest.class.getResource("Course_with_blog.zip");
 		File cp = new File(cpUrl.toURI());
 
@@ -591,7 +593,7 @@ public class CoursesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testCopyCourse_metadata() throws IOException, URISyntaxException {
+	public void testCopyCourseMetadata() throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		Assert.assertNotNull(entry);
@@ -599,8 +601,8 @@ public class CoursesTest extends OlatRestTestCase {
 		// set some metadata
 		RepositoryEntryEducationalType educationalType = repositoryManager.getAllEducationalTypes().get(0);
 		repositoryManager.setDescriptionAndName(entry, "REST Course copy", "external-ref", "Prof.Dr. Mueller",
-				"A very descriptive course", "With high objectives", "Lots of requirements", "But credited", "English", "Bienne",
-				"Expedited in 2 hours", null, null, null, educationalType);
+				"A very descriptive course", "Tease", "With high objectives", "Lots of requirements", "But credited",
+				"English", "Bienne", "Expedited in 2 hours", null, null, null, educationalType);
 		dbInstance.commitAndCloseSession();
 		
 		conn = new RestConnection();
@@ -627,6 +629,7 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertNull(courseEntry.getExternalId());
 		Assert.assertNull(courseEntry.getExternalRef());
 		Assert.assertEquals("A very descriptive course", courseEntry.getDescription());
+		Assert.assertEquals("Tease", courseEntry.getTeaser());
 		Assert.assertEquals("With high objectives", courseEntry.getObjectives());
 		Assert.assertEquals("Lots of requirements", courseEntry.getRequirements());
 		Assert.assertEquals("But credited", courseEntry.getCredits());
@@ -638,7 +641,7 @@ public class CoursesTest extends OlatRestTestCase {
 	}
 
 	@Test
-	public void testCopyCourse_unkownCourse() throws IOException, URISyntaxException {
+	public void testCopyCourseUnkownCourse() throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		Assert.assertNotNull(entry);
@@ -654,7 +657,7 @@ public class CoursesTest extends OlatRestTestCase {
 				.build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 404);
+		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 	}
 	

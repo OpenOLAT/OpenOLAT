@@ -23,6 +23,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import org.hibernate.LazyInitializationException;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -32,6 +34,7 @@ import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.ui.RepositoryEntryLifecycleAfterValidRuleEditor;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.stereotype.Service;
 
@@ -89,7 +92,7 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	public boolean evaluate(RepositoryEntry entry, ReminderRule rule) {
 		boolean allOk = true;
 		if(rule instanceof ReminderRuleImpl) {
-			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+			RepositoryEntryLifecycle lifecycle = getRepositoryEntryLifecycle(entry);
 			if(lifecycle != null && lifecycle.getValidFrom() != null) {
 				allOk &= evaluate(lifecycle, rule);
 			} else {
@@ -111,6 +114,20 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 		LaunchUnit unit = LaunchUnit.valueOf(r.getRightUnit());
 		Date referenceDate = getDate(lifecycle.getValidFrom(), distance, unit);
 		return now.compareTo(referenceDate) >= 0;
+	}
+	
+	private RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry entry) {
+		try {
+			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+			if(lifecycle != null) {
+				lifecycle.getValidTo();
+			}
+			return lifecycle;
+		} catch (LazyInitializationException e) {
+			RepositoryEntry reloadedEntry = CoreSpringFactory.getImpl(RepositoryService.class)
+					.loadByKey(entry.getKey());
+			return reloadedEntry.getLifecycle();
+		}
 	}
 
 	private Date cleanNow() {

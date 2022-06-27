@@ -48,6 +48,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -59,6 +63,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -84,7 +89,9 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -110,7 +117,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "st";
 	private static final String ICON_CSS_CLASS = "o_st_icon";
 	
-	private static final int CURRENT_VERSION = 7;
+	private static final int CURRENT_VERSION = 8;
 	
 	// Score calculation without conditions.
 	public static final String CONFIG_SCORE_KEY = "score.key";
@@ -125,6 +132,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	// Defines whether the COACH can override the passed.
 	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
 	public static final String CONFIG_COACH_USER_VISIBILITY = "coach.user.visibility";
+	public static final String CONFIG_COACH_GRADE_APPLY = "coach.user.grade.apply";
 
 	// Score calculation with conditions.
 	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";
@@ -433,6 +441,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		if (config.getConfigurationVersion() < 7) {
 			config.setBooleanEntry(CONFIG_COACH_USER_VISIBILITY, true);
 		}
+		if (config.getConfigurationVersion() < 8) {
+			config.setBooleanEntry(CONFIG_COACH_GRADE_APPLY, true);
+		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
@@ -533,6 +544,30 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			getScoreCalculator().setScoreExpression(KeyAndNameConverter
 					.replaceIdsInCondition(getScoreCalculator().getScoreExpression(), envMapper));			
 		}
+		
+		// Copy files
+		boolean editorEnabled = (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(sourceCourseNode.getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE)));
+		if(settings.getCopyType() == CopyType.copy && editorEnabled) {
+			VFSContainer sourceCourseFolderCont = sourceCourse.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			VFSContainer targetCourseFolderCont = course.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			
+			String relPath = STCourseNodeEditController.getFileName(sourceCourseNode.getModuleConfiguration());
+			VFSLeaf sourceLeaf = (VFSLeaf)sourceCourseFolderCont.resolve(relPath);
+			
+			String targetRelPath = envMapper.getRenamedPathOrSource(relPath);
+			VFSItem targetItem = targetCourseFolderCont.resolve(targetRelPath);
+			if(targetItem == null && sourceLeaf.exists()) {
+				// document is copied by the process before this step
+				log.warn("Preview page's file not copied: {}", targetRelPath);
+			}
+			if(StringHelper.containsNonWhitespace(targetRelPath)) {
+				targetRelPath = VFSManager.appendLeadingSlash(targetRelPath);
+				getModuleConfiguration().setStringValue(STCourseNodeEditController.CONFIG_KEY_FILE, targetRelPath);
+				getModuleConfiguration().setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE);	
+			}
+		}
 	}
 
 	@Override
@@ -596,12 +631,12 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		// Only supported on root nodes. The STAssessmentHandler needs the course node hierarchy.
 		// We do not have this hierarchy when we are in the editor or the hierarchy is different than
 		// the hierarchy in the run model.
 		if (rootNode) {
-			return new STReminderProvider(this);
+			return new STReminderProvider(courseEntry, this);
 		}
 		return null;
 	}

@@ -242,6 +242,22 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldNotCreateLicenseForDirectories() {
+		VFSLeaf file = createFile();
+		VFSMetadata meta = vfsRepositoryService.getMetadataFor(file);
+		License license = vfsRepositoryService.getLicense(meta);
+		meta.setLicenseTypeName(random());
+		meta.setLicensor(random());
+		
+		VFSContainer directory = VFSManager.olatRootContainer(VFS_TEST_DIR, null).createChildContainer(random());
+		meta = vfsRepositoryService.getMetadataFor(directory);
+		meta.setLicenseTypeName(random());
+		meta.setLicensor(random());
+		license = vfsRepositoryService.getLicense(meta);
+		assertThat(license).isNull();
+	}
+	
+	@Test
 	public void readWriteBinary() {
 		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);

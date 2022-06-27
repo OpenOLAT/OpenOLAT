@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -68,7 +69,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -88,11 +91,16 @@ import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -134,6 +142,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private final boolean readOnly;
 	private final IQTESTCourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 
 	private ToolsController toolsCtrl;
@@ -156,9 +165,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Autowired
 	protected QTI21Service qtiService;
 	@Autowired
+	private InstantMessagingService imService;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
 	/**
 	 * The constructor used by the assessment tool of the course.
@@ -177,13 +192,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		entry = assessableEntry;
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		
-		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
+		reSecurity = repositoryManager.isAllowed(ureq, assessableEntry);
 
 		initForm(ureq);
 		updateModel();
@@ -204,6 +218,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		subIdent = null;
 		readOnly = false;
 		courseNode = null;
+		coachCourseEnv = null;
 		assessedUserCourseEnv = null;
 		this.stackPanel = stackPanel;
 		this.assessedIdentity = assessedIdentity;
@@ -510,22 +525,45 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest, AssessmentEntryStatus entryStatus) {
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
+		String grade = scoreEval.getGrade();
+		String gradeSystemIdent = scoreEval.getGradeSystemIdent();
+		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 		Boolean passed = scoreEval.getPassed();
-		if(session.getManualScore() != null && finalScore != null && cutValue != null) {
-			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-			passed = Boolean.valueOf(calculated);
+		if(session.getManualScore() != null && finalScore != null) {
+			if (assessmentConfig.hasGrade() && gradeModule.isEnabled()) {
+				if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(scoreEval.getGrade())) {
+					GradeScale gradeScale = gradeService.getGradeScale(
+							assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+							courseNode.getIdent());
+					NavigableSet<GradeScoreRange> gradeScoreRanges = null;
+					gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+					passed = gradeScoreRange.getPassed();
+				}
+			} else if (cutValue != null) {
+				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+				passed = Boolean.valueOf(calculated);
+			}
 		}
 		AssessmentEntryStatus finalStatus = entryStatus == null ? scoreEval.getAssessmentStatus() : entryStatus;
 		Boolean userVisible = scoreEval.getUserVisible();
-		if(finalStatus == AssessmentEntryStatus.done) {
-			userVisible = Boolean.valueOf(courseNode.isScoreVisibleAfterCorrection());
+		if(userVisible == null && finalStatus == AssessmentEntryStatus.done) {
+			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+			userVisible = canChangeUserVisibility
+					? courseNode.isScoreVisibleAfterCorrection()
+					: Boolean.FALSE;
 		}
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-				finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(), 
-				scoreEval.getCurrentRunStatus(), session.getKey());
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+				passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), 
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
@@ -556,7 +594,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
 		String title = translate("pull");
 		String fullname = userManager.getUserDisplayName(session.getIdentity());
-		String text = translate("retrievetest.confirm.text", new String[]{ fullname });
+		String text = translate("retrievetest.confirm.text", fullname);
 		retrieveConfirmationCtr = activateOkCancelDialog(ureq, title, text, retrieveConfirmationCtr);
 		retrieveConfirmationCtr.setUserObject(session);
 	}
@@ -566,7 +604,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		session = qtiService.getAssessmentTestSession(session.getKey());
 		session = qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
 		if(courseNode != null) {
-			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach, getLocale());
+
+			String channel = assessedIdentity == null ? session.getAnonymousIdentifier() : assessedIdentity.getKey().toString();
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			imService.endChannel(getIdentity(), courseEntry.getOlatResource(), courseNode.getIdent(), channel);
 		}
 		updateModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);

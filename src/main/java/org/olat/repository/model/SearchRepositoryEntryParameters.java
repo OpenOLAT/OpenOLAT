@@ -20,10 +20,12 @@
 package org.olat.repository.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.repository.CatalogEntry;
 
@@ -41,6 +43,7 @@ public class SearchRepositoryEntryParameters {
 	private String author;
 	private String desc;
 	private String idRefsAndTitle;
+	private boolean idRefsOnly;
 	private List<String> resourceTypes;
 	private Identity identity;
 	private Roles roles;
@@ -51,6 +54,8 @@ public class SearchRepositoryEntryParameters {
 	private List<Long> repositoryEntryKeys;
 	private CatalogEntry parentEntry;
 	private IdentityRef asParticipant;
+	private List<? extends OrganisationRef> offerOrganisations;
+	private Date offerValidAt;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -85,7 +90,20 @@ public class SearchRepositoryEntryParameters {
 	}
 
 	public void setIdRefsAndTitle(String idRefsAndTitle) {
+		setIdRefsAndTitle(idRefsAndTitle, false);
+	}
+
+	public void setIdRefsAndTitle(String idRefsAndTitle, boolean idRefsOnly) {
 		this.idRefsAndTitle = idRefsAndTitle;
+		this.idRefsOnly = idRefsOnly;
+	}
+
+	public boolean isIdRefsOnly() {
+		return idRefsOnly;
+	}
+
+	public void setIdRefsOnly(boolean idRefsOnly) {
+		this.idRefsOnly = idRefsOnly;
 	}
 
 	public String getDisplayName() {
@@ -202,4 +220,21 @@ public class SearchRepositoryEntryParameters {
 	public void setAsParticipant(IdentityRef asParticipant) {
 		this.asParticipant = asParticipant;
 	}
+
+	public List<? extends OrganisationRef> getOfferOrganisations() {
+		return offerOrganisations;
+	}
+
+	public void setOfferOrganisations(List<? extends OrganisationRef> offerOrganisations) {
+		this.offerOrganisations = offerOrganisations;
+	}
+
+	public Date getOfferValidAt() {
+		return offerValidAt;
+	}
+
+	public void setOfferValidAt(Date offerValidAt) {
+		this.offerValidAt = offerValidAt;
+	}
+	
 }

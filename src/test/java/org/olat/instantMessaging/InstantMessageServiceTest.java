@@ -39,7 +39,6 @@ import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
 import org.olat.instantMessaging.manager.RosterDAO;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyStats;
-import org.olat.instantMessaging.model.RosterEntryImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserLifecycleManager;
@@ -77,12 +76,12 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-1-");
 		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-2-");
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
-		imService.listenChat(chatter1, chatResource, null, false, false, dummyListener);
-		imService.listenChat(chatter2, chatResource, "Chatter-2", true, true, dummyListener);
+		imService.listenChat(chatter1, chatResource, null, null, null, false, false, false, true, dummyListener);
+		imService.listenChat(chatter2, chatResource, null, null, "Chatter-2", true, true, false, true, dummyListener);
 		dbInstance.commitAndCloseSession();
 
 		//check if the buddies listen to the chat
-		List<Buddy> buddies = imService.getBuddiesListenTo(chatResource);
+		List<Buddy> buddies = imService.getBuddiesListenTo(chatResource, null, null);
 		Assert.assertNotNull(buddies);
 		Assert.assertEquals(2, buddies.size());
 		
@@ -105,7 +104,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		//create a chat
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-3-");
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
-		imService.listenChat(chatter1, chatResource, null, false, false, new DummyListener());
+		imService.listenChat(chatter1, chatResource, null, null, null, false, false, false, true, new DummyListener());
 		dbInstance.commitAndCloseSession();
 		
 		BuddyStats stats = imService.getBuddyStats(chatter1);
@@ -166,14 +165,14 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-9");
 
 		OLATResourceable chat = imService.getPrivateChatResource(chatter1.getKey(), chatter2.getKey());
-		imService.sendPresence(chatter1, "Me", false, true, chat);
-		imService.sendPresence(chatter2, "Me", false, true, chat);
+		imService.sendPresence(chatter1, chat, null, null, "Me", false, true, false);
+		imService.sendPresence(chatter2, chat, null, null, "Me", false, true, false);
 		ImPreferences preferences1 = imService.getImPreferences(chatter1);
 		ImPreferences preferences2 = imService.getImPreferences(chatter2);
 		dbInstance.commit();
 		Assert.assertNotNull(preferences1);
 		Assert.assertNotNull(preferences2);
-		InstantMessage message = imService.sendMessage(chatter1, "Me", false, "Hello", chat);
+		InstantMessage message = imService.sendMessage(chatter1, "Me", false, "Hello", InstantMessageTypeEnum.text, chat, null, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(message);
 
@@ -185,7 +184,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Assert.assertNull(instantMessagePreferencesDao.getStatus(chatter1.getKey()));
 		Assert.assertNotNull(instantMessagePreferencesDao.getStatus(chatter2.getKey()));
 		// check roster
-		List<RosterEntryImpl> entries = rosterDao.getRoster(chat, 0, -1);
+		List<RosterEntry> entries = rosterDao.getRoster(chat, null, null);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(chatter2.getKey(), entries.get(0).getIdentityKey());
 		// check messages

@@ -65,6 +65,7 @@ import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.RepositoryEntry;
 
 /**
  *
@@ -88,24 +89,28 @@ public class DataStepForm extends StepFormBasicController {
 
 	private VFSLeaf targetArchive;
 	private BulkAssessmentDatas savedDatas;
+	private final RepositoryEntry courseEntry;
 	private final CourseNode courseNode;
 	private final boolean canEditUserVisibility;
 	private VFSContainer bulkAssessmentTmpDir;
 
-	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
+	public DataStepForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
+		this.courseEntry = courseEntry;
 		this.canEditUserVisibility = canEditUserVisibility;
 		courseNode = (CourseNode)getFromRunContext("courseNode");
 
 		initForm(ureq);
 	}
 
-	public DataStepForm(UserRequest ureq, WindowControl wControl, CourseNode courseNode, BulkAssessmentDatas savedDatas,
+	public DataStepForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode, BulkAssessmentDatas savedDatas,
 			StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 		this.savedDatas = savedDatas;
+		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.canEditUserVisibility = canEditUserVisibility;
 		addToRunContext("courseNode", courseNode);
@@ -117,14 +122,14 @@ public class DataStepForm extends StepFormBasicController {
 		formLayout.setElementCssClass("o_sel_bulk_assessment_data");
 		
 		// hide data input field in case the element does not have any score, passed or comment field enabled
-		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
 		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());
 
 		setFormTitle("data.title");
 		if (!onlyReturnFiles) {
 			setFormDescription("data.description");
 		}
-		setFormContextHelp("... create a bulk assessment for submission tasks");
+		setFormContextHelp("manual_user/how-to/create_a_bulk_assessment_for_submission_tasks/");
 
 		String dataVal = "";
 		if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getDataBackupFile())) {
@@ -380,12 +385,12 @@ public class DataStepForm extends StepFormBasicController {
 
 		if(target.exists()) {
 			File parentTarget = ((LocalImpl)target).getBasefile().getParentFile();
-
+			
 			ZipEntry entry;
 			try(InputStream is = target.getInputStream();
 					ZipInputStream zis = new ZipInputStream(is)) {
 				byte[] b = new byte[FileUtils.BSIZE];
-				while ((entry = zis.getNextEntry()) != null) {//TODO zip
+				while ((entry = zis.getNextEntry()) != null) {
 					if(!entry.isDirectory()) {
 						while (zis.read(b) > 0) {
 							//continue
@@ -408,7 +413,7 @@ public class DataStepForm extends StepFormBasicController {
 							}
 
 							if(row.getReturnFiles() == null) {
-								row.setReturnFiles(new ArrayList<String>(2));
+								row.setReturnFiles(new ArrayList<>(2));
 							}
 							row.getReturnFiles().add(filename);
 						}

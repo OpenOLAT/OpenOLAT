@@ -84,6 +84,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -116,6 +117,8 @@ public class FeedManagerImpl extends FeedManager {
 	private FeedDAO feedDAO;
 	@Autowired
 	private ItemDAO itemDAO;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private QuotaManager quotaManager;
 	@Autowired
@@ -720,7 +723,7 @@ public class FeedManagerImpl extends FeedManager {
 			}
 
 			boolean isPrivate = true;
-			if (entry != null && entry.isGuests()) {
+			if (entry != null && entry.isPublicVisible() && acService.isGuestAccessible(entry, false)) {
 				isPrivate = false;
 			}
 			if (isPrivate && !roles.isGuestOnly()) {

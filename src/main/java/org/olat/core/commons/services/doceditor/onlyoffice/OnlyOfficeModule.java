@@ -66,6 +66,8 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	
 	@Value("${onlyoffice.enabled:false}")
 	private boolean enabled;
+	@Value("${onlyoffice.priority:100}")
+	private int priority;
 	@Value("${onlyoffice.baseUrl}")
 	private String baseUrl;
 	@Value("${onlyoffice.api.path}")
@@ -193,6 +195,10 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(ONLYOFFICE_ENABLED, Boolean.toString(enabled), true);
 	}
 	
+	public int getPriority() {
+		return priority;
+	}
+
 	public String getBaseUrl() {
 		return baseUrl;
 	}

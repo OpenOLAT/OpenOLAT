@@ -717,7 +717,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		Date validTo = cal.getTime();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("Cycle 1", "Cycle soft 1", false, validFrom, validTo);
-		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, cycle);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, null, cycle);
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
@@ -801,7 +801,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		Date validTo = cal.getTime();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("Cycle 2", "Cycle soft 2", false, validFrom, validTo);
-		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, cycle);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, null, null, cycle);
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
@@ -882,9 +882,9 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		String nodeIdent = assessmentData(tutor, id1, new ScoreEvaluation(1.0f, false), re);
-		assessmentData(tutor, id2, new ScoreEvaluation(5.0f, true), re);
-		assessmentData(tutor, id3, new ScoreEvaluation(10.0f, true), re);
+		String nodeIdent = assessmentData(tutor, id1, createScoreEvaluation(1.0f, false), re);
+		assessmentData(tutor, id2, createScoreEvaluation(5.0f, true), re);
+		assessmentData(tutor, id3, createScoreEvaluation(10.0f, true), re);
 		
 		List<Identity> identities = new ArrayList<>();
 		identities.add(id1);
@@ -934,11 +934,11 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		String nodeIdent = assessmentData(tutor, id1, new ScoreEvaluation(1.0f, false), re);
-		assessmentData(tutor, id2, new ScoreEvaluation(5.0f, true), re);
-		assessmentData(tutor, id3, new ScoreEvaluation(10.0f, true), re);
-		assessmentData(tutor, id3, new ScoreEvaluation(11.0f, true), re);
-		assessmentData(tutor, id3, new ScoreEvaluation(12.0f, true), re);
+		String nodeIdent = assessmentData(tutor, id1, createScoreEvaluation(1.0f, false), re);
+		assessmentData(tutor, id2, createScoreEvaluation(5.0f, true), re);
+		assessmentData(tutor, id3, createScoreEvaluation(10.0f, true), re);
+		assessmentData(tutor, id3, createScoreEvaluation(11.0f, true), re);
+		assessmentData(tutor, id3, createScoreEvaluation(12.0f, true), re);
 		
 		List<Identity> identities = new ArrayList<>();
 		identities.add(id1);
@@ -991,9 +991,9 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		String nodeIdent = assessmentData(tutor, id1, new ScoreEvaluation(1.0f, false), re);
-		assessmentData(tutor, id2, new ScoreEvaluation(5.0f, true), re);
-		assessmentData(tutor, id3, new ScoreEvaluation(10.0f, true), re);
+		String nodeIdent = assessmentData(tutor, id1, createScoreEvaluation(1.0f, false), re);
+		assessmentData(tutor, id2, createScoreEvaluation(5.0f, true), re);
+		assessmentData(tutor, id3, createScoreEvaluation(10.0f, true), re);
 		
 		List<Identity> identities = new ArrayList<>();
 		identities.add(id1);
@@ -1036,9 +1036,9 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		String nodeIdent = assessmentData(tutor, id1, new ScoreEvaluation(1.0f, false), re);
-		assessmentData(tutor, id2, new ScoreEvaluation(5.0f, true), re);
-		assessmentData(tutor, id3, new ScoreEvaluation(10.0f, true), re);
+		String nodeIdent = assessmentData(tutor, id1, createScoreEvaluation(1.0f, false), re);
+		assessmentData(tutor, id2, createScoreEvaluation(5.0f, true), re);
+		assessmentData(tutor, id3, createScoreEvaluation(10.0f, true), re);
 		
 		List<Identity> identities = new ArrayList<>();
 		identities.add(id1);
@@ -1080,7 +1080,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	private String assessmentData(Identity tutor, Identity student, ScoreEvaluation scoreEval, RepositoryEntry re) {
 		//create user course infos
 		ICourse course = CourseFactory.loadCourse(re);
-		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), null);
+		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(re, course.getEditorTreeModel(), null);
 		CourseNode testNode = null; 
 		for(CourseNode currentNode: assessableNodeList) {	
 			if (currentNode.getType().equalsIgnoreCase("iqtest")) {
@@ -1089,7 +1089,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 			}
 		}
 		Assert.assertNotNull(testNode);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(testNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(re, testNode);
 		Assert.assertTrue(Mode.none != assessmentConfig.getScoreMode());
 		
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
@@ -1100,6 +1100,10 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		return testNode.getIdent();
+	}
+	
+	private ScoreEvaluation createScoreEvaluation(float score, boolean passed) {
+		return new ScoreEvaluation(Float.valueOf(score), null, null, null, Boolean.valueOf(passed), null, null, null, null, null, null);
 	}
 	
 	@Test

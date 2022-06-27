@@ -62,6 +62,7 @@ public class CourseScoreController extends FormBasicController {
 	private static final String[] UNTRANSLATED = { "" };
 
 	private SingleSelection scoreEl;
+	private MultipleSelectionElement gradeApplyEl;
 	private MultipleSelectionElement userVisibilityEl;
 	private MultipleSelectionElement passedManuallyEl;
 	private MultipleSelectionElement passedProgressEl;
@@ -147,6 +148,11 @@ public class CourseScoreController extends FormBasicController {
 		
 		// Coach rights
 		uifactory.addStaticTextElement("options.coach.can", null, formLayout);
+		
+		gradeApplyEl = uifactory.addCheckboxesHorizontal("options.grade.apply", formLayout, ONE_OPTION, UNTRANSLATED);
+		boolean gradeApply = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY);
+		gradeApplyEl.select(gradeApplyEl.getKey(0), gradeApply);
+		gradeApplyEl.setEnabled(editable);
 		
 		userVisibilityEl = uifactory.addCheckboxesHorizontal("options.user.visibility", formLayout, ONE_OPTION, UNTRANSLATED);
 		userVisibilityEl.addActionListener(FormEvent.ONCHANGE);
@@ -350,6 +356,10 @@ public class CourseScoreController extends FormBasicController {
 			runConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, selectedScoreKey);
 			editorConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, selectedScoreKey);
 		}
+		
+		boolean gradeApply = gradeApplyEl.isAtLeastSelected(1);
+		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, gradeApply);
+		editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, gradeApply);
 		
 		boolean userVisibility = userVisibilityEl.isAtLeastSelected(1);
 		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);

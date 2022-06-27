@@ -27,7 +27,6 @@ package org.olat.fileresource.types;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
@@ -41,8 +40,6 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.id.OLATResourceable;
@@ -52,6 +49,7 @@ import org.olat.core.util.PathUtils;
 import org.olat.core.util.PathUtils.CopyVisitor;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ZipUtil;
 
 /**
  * Initial Date:  Apr 8, 2004
@@ -151,9 +149,9 @@ public class FileResource implements OLATResourceable {
 		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
 			//perhaps find root folder and return it
 			Map<String,String> env = new HashMap<>();
-			if(isEncodingOk(file, "UTF-8")) {
+			if(ZipUtil.isReadable(file, "UTF-8")) {
 				env.put("encoding", "UTF-8");
-			} else if(isEncodingOk(file, fallbackEncoding)) {
+			} else if(ZipUtil.isReadable(file, fallbackEncoding)) {
 				env.put("encoding", fallbackEncoding);
 			}
 			
@@ -178,18 +176,6 @@ public class FileResource implements OLATResourceable {
             }
         }
 		return null;
-	}
-	
-	private static boolean isEncodingOk(File file, String encoding) {
-		boolean ok = false;
-		try(ZipFile zFile = new ZipFile(file, Charset.forName(encoding))) {
-			zFile.stream().forEach(ZipEntry::toString);
-			ok = true;
-		} catch (IOException | IllegalArgumentException e) {
-			//this is what we check
-		}
-		
-		return ok;
 	}
 	
 	protected static  RootSearcher searchRootDirectory(Path fPath)

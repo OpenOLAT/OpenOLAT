@@ -88,7 +88,7 @@ public class IMArchiverController extends BasicController {
 	}
 
 	private void doExport(UserRequest ureq) {
-		MediaResource download = helper.logMediaResource(chatResource, getLocale());
+		MediaResource download = helper.logMediaResource(chatResource, null, null, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(download);
 	}
 	

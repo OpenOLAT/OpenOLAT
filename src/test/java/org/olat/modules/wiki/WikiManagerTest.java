@@ -27,7 +27,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -71,11 +70,12 @@ public class WikiManagerTest extends OlatTestCase {
 		Assert.assertTrue(indexPage.exists());
 	}
 	
-	@Test(expected=OLATRuntimeException.class)
+	@Test
 	public void importWikiSlide() throws URISyntaxException {
 		URL wikiUrl = WikiManagerTest.class.getResource("wiki_alt.zip");
 		File wikiFile = new File(wikiUrl.toURI());
-		wikiManager.importWiki(wikiFile, null, tmpWikiDir);
+		boolean imported = wikiManager.importWiki(wikiFile, null, tmpWikiDir);
+		Assert.assertFalse(imported);
 	}
 
 }

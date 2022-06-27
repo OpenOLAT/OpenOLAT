@@ -21,6 +21,7 @@ package org.olat.course.run.scoring;
 
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -32,7 +33,7 @@ public class StatusCompletionEvaluator implements CompletionEvaluator {
 
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
 		return getCompletion(currentEvaluation);
 	}
 

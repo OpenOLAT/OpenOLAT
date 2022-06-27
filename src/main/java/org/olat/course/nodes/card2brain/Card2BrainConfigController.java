@@ -77,7 +77,7 @@ public class Card2BrainConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
-		setFormContextHelp("Knowledge Transfer#_card2brain");
+		setFormContextHelp("manual_user/course_elements/Course_Element_card2brain_Flashcards/");
 
 		String flashcardAlias = config.getStringValue(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS);
 		flashcardAliasEl = uifactory.addTextElement("edit.flashcard.alias", "edit.flashcard.alias", 128, flashcardAlias,

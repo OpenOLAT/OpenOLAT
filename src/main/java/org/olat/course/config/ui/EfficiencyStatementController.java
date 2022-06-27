@@ -85,7 +85,7 @@ public class EfficiencyStatementController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("options.efficency.title");
-		setFormContextHelp("Course Settings#_leistungsnachweis");
+		setFormContextHelp("manual_user/course_create/Course_Settings/#assessment");
 		formLayout.setElementCssClass("o_sel_course_efficiency_statements");
 		
 		boolean effEnabled = courseConfig.isEfficencyStatementEnabled();

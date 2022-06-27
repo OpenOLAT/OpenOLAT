@@ -53,6 +53,7 @@ import org.olat.selenium.page.course.GroupTaskToCoachPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
+import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
@@ -129,7 +130,7 @@ public class AssessmentTest extends Deployments {
 		courseEditor
 			.createNode("scorm")
 			.nodeTitle(scormNodeTitle)
-			.selectTabLearnContent()
+			.selectTabScormContent()
 			.chooseScorm(scormTitle);
 
 		//publish the course
@@ -139,6 +140,7 @@ public class AssessmentTest extends Deployments {
 			.accessConfiguration()
 			.setUserAccess(UserAccess.membersOnly)
 			.save()
+			.cleanBlueBox()
 			.clickToolbarBack();
 
 		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
@@ -258,9 +260,12 @@ public class AssessmentTest extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false);
 
 		//publish the course
 		courseEditor
@@ -484,12 +489,17 @@ public class AssessmentTest extends Deployments {
 		//create a course element of type test with the QTI 2.1 test that we upload above
 		String testNodeTitle = "Test-QTI-2.1";
 		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
-		courseRuntime
+		CourseEditorPageFragment editor = courseRuntime
 			.edit()
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(testTitle)
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(testTitle, false);
+		
+		editor
 			.selectRoot()
 			.selectTabScore()
 			.enableRootScoreByNodes()
@@ -794,6 +804,7 @@ public class AssessmentTest extends Deployments {
 			.selectUser(ryomou)
 			.selectUsersCourseNode(assessmentNodeTitle)
 			.setAssessmentScore(8.0f)
+			.closeAndPublishAssessment()
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
 		//Ryomou login
@@ -1619,10 +1630,14 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(assessmentNodeTitle);
 		
 		//Ryomou -> passed
-		WebElement passedEl = ryomouBrowser.findElement(By.cssSelector("tr.o_state.o_passed"));
+		By passedBy = By.cssSelector("div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, ryomouBrowser);
+		WebElement passedEl = ryomouBrowser.findElement(passedBy);
 		Assert.assertTrue(passedEl.isDisplayed());
 		//Kanu -> failed
-		WebElement failedEl = kanuBrowser.findElement(By.cssSelector("tr.o_state.o_failed"));
+		By failedBy = By.cssSelector("div.o_state.o_failed");
+		OOGraphene.waitElement(failedBy, kanuBrowser);
+		WebElement failedEl = kanuBrowser.findElement(failedBy);
 		Assert.assertTrue(failedEl.isDisplayed());
 	}
 	
@@ -1927,7 +1942,7 @@ public class AssessmentTest extends Deployments {
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 		
-		LoginPage authorLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course

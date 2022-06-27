@@ -21,9 +21,11 @@ package org.olat.repository.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.CatalogEntry;
@@ -48,6 +50,8 @@ public class SearchMyRepositoryEntryViewParams {
 	private List<Filter> filters;
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
+	private List<? extends OrganisationRef> offerOrganisations;
+	private Date offerValidAt;
 	private Collection<Long> educationalTypeKeys;
 	private List<? extends CurriculumRef> curriculums;
 
@@ -76,6 +80,22 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setMembershipMandatory(boolean membershipMandatory) {
 		this.membershipMandatory = membershipMandatory;
+	}
+	
+	public List<? extends OrganisationRef> getOfferOrganisations() {
+		return offerOrganisations;
+	}
+
+	public void setOfferOrganisations(List<? extends OrganisationRef> offerOrganisations) {
+		this.offerOrganisations = offerOrganisations;
+	}
+
+	public Date getOfferValidAt() {
+		return offerValidAt;
+	}
+
+	public void setOfferValidAt(Date offerValidAt) {
+		this.offerValidAt = offerValidAt;
 	}
 
 	public List<? extends CurriculumRef> getCurriculums() {

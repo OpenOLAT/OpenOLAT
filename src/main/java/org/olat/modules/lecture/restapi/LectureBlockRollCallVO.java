@@ -48,6 +48,7 @@ public class LectureBlockRollCallVO {
 	private Date absenceSupervisorNotificationDate;
 	
 	private Long identityKey;
+	private String identityExternalId;
 	private Long lectureBlockKey;
 	
 	public LectureBlockRollCallVO() {
@@ -61,7 +62,15 @@ public class LectureBlockRollCallVO {
 		absenceAuthorized = rollCall.getAbsenceAuthorized();
 		absenceSupervisorNotificationDate = rollCall.getAbsenceSupervisorNotificationDate();
 		
+		if(rollCall.getLecturesAbsentNumber() > 0) {
+			lecturesAbsentNumber = Integer.valueOf(rollCall.getLecturesAbsentNumber());
+		}
+		if(rollCall.getLecturesAttendedNumber() > 0) {
+			lecturesAttendedNumber = Integer.valueOf(rollCall.getLecturesAttendedNumber());
+		}
+
 		identityKey = rollCall.getIdentity().getKey();
+		identityExternalId = rollCall.getIdentity().getExternalId();
 		lectureBlockKey = rollCall.getLectureBlock().getKey();		
 	}
 
@@ -127,6 +136,14 @@ public class LectureBlockRollCallVO {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public String getIdentityExternalId() {
+		return identityExternalId;
+	}
+
+	public void setIdentityExternalId(String identityExternalId) {
+		this.identityExternalId = identityExternalId;
 	}
 
 	public Long getLectureBlockKey() {

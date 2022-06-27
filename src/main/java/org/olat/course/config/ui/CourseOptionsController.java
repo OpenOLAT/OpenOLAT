@@ -261,7 +261,7 @@ public class CourseOptionsController extends FormBasicController {
 		folderNameEl = uifactory.addStaticTextElement("folderName", "sf.resourcetitle",
 				translate("sf.notconfigured"), sharedFolderCont);
 		folderNameEl.setHelpText(translate("sf.resourcetitle.helptext"));
-		folderNameEl.setHelpUrlForManualPage("Course Settings#_detail_ressourcen");
+		folderNameEl.setHelpUrlForManualPage("manual_user/course_create/Course_Settings/");
 		
 		String[] readOnlyValues = new String[]{ translate("sf.resource.readonly") };
 		folderReadOnlyEl = uifactory.addCheckboxesHorizontal("sf.resource.readonly", sharedFolderCont, onKeys, readOnlyValues);

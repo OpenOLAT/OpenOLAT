@@ -593,7 +593,7 @@ public class AssessmentResultController extends FormBasicController {
 
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator creator = getResultControllerCreator();
-		openInNewBrowserWindow(ureq, creator);
+		openInNewBrowserWindow(ureq, creator, true);
 	}
 	
 	private void doPdf(UserRequest ureq) {

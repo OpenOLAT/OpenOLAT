@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -418,10 +419,11 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		} else if(sourceCourseNode.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
 			// auto -> copy
 			if(settings.getCopyType() == CopyType.copy) {
+				File srcFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(sourceCourse.getCourseEnvironment(), sourceCourseNode));
+				LocalFolderImpl sourceFolder = new LocalFolderImpl(srcFolderNodeDir);
 				File targetFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
-				targetFolderNodeDir.mkdirs();
-				final File srcFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(sourceCourse.getCourseEnvironment(), sourceCourseNode));
-				FileUtils.copyDirContentsToDir(srcFolderNodeDir, targetFolderNodeDir, false, "");
+				LocalFolderImpl tagetFolder = new LocalFolderImpl(targetFolderNodeDir);
+				tagetFolder.copyContentOf(sourceFolder, envMapper.getAuthor());
 			}
 		} else if(StringHelper.containsNonWhitespace(sourceCourseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH))) {
 			String relPath = sourceCourseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH);

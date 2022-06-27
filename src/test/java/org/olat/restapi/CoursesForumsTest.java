@@ -91,7 +91,7 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		forumNode.setNoAccessExplanation("You don't have access");
 		course1.getEditorTreeModel().addCourseNode(forumNode, rootNode);
 		
-		CourseFactory.publishCourse(course1, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course1, RepositoryEntryStatusEnum.published, admin, Locale.ENGLISH);
 		
 		dbInstance.intermediateCommit();
 	}

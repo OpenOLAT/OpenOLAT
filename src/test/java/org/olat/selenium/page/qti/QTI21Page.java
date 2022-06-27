@@ -67,8 +67,13 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnStart() {
-		By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
-		OOGraphene.waitElement(startBy, browser);
+		try {
+			By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
+			OOGraphene.waitElement(startBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Assert on start", browser);
+			throw e;
+		}
 		return this;
 	}
 	
@@ -929,13 +934,13 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnCourseAssessmentTestWaitingCorrection() {
-		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td/span[@id='o_score_in_review']");
+		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//div[contains(@class,'panel-heading')]//span[contains(@class,'o_results_hidden')][i[contains(@class,'o_icon_status_in_review')]]");
 		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnCourseAssessmentTestPassed() {
-		By passedBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_state')][contains(@class,'o_passed')]/td/i[contains(@class,'o_icon_passed')]");
+		By passedBy = By.xpath("//div[contains(@class,'o_personal')]//tr/td/div[contains(@class,'o_state')][contains(@class,'o_passed')]/i[contains(@class,'o_icon_passed')]");
 		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}

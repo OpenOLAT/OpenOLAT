@@ -64,10 +64,12 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private static final String ORES_TYPE_ASSESSMENT_MODE = "AssessmentMode";
 	private static final String ORES_TYPE_PREVIEW = "Preview";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
+	private static final String ORES_TYPE_COMMUNICATION = "Communication";
 
 	private Link overviewLink;
 	private Link participantsLink;
 	private Link assessmentModeLink;
+	private Link communicationLink;
 	private Link previewLink;
 	private Link remindersLink;
 	private VelocityContainer mainVC;
@@ -78,6 +80,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private TooledStackedPanel participantsPanel;
 	private AssessmentCourseNodeController participantsCtrl;
 	private AssessmentModeOverviewListController assessmentModeCtrl;
+	private IQCommunicationController communicationCtrl;
 	private Controller previewCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
 	
@@ -120,8 +123,13 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		participantsCtrl.activate(ureq, null, null);
 		participantsPanel.pushController(translate("segment.participants"), participantsCtrl);
 		
+		courseNode.getModuleConfiguration();
+		
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
 		segmentView.addSegment(participantsLink, false);
+		
+		communicationLink = LinkFactory.createLink("segment.communication", mainVC, this);
+		segmentView.addSegment(communicationLink, false);
 		
 		// Assessment tool
 		swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ASSESSMENT_MODE), null);
@@ -139,7 +147,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(false));
+			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
 				remindersLink = LinkFactory.createLink("segment.reminders", mainVC, this);
@@ -168,6 +176,9 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			doOpenPreview(ureq);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq);
+		} else if(ORES_TYPE_COMMUNICATION.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenCommunication(ureq).activate(ureq, subEntries, state);
 		}
 	}
 
@@ -201,6 +212,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 					doOpenPreview(ureq);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq);
+				} else if (clickedLink == communicationLink) {
+					doOpenCommunication(ureq);
 				}
 			}
 		}
@@ -227,6 +240,22 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			segmentView.select(assessmentModeLink);
 			addToHistory(ureq, assessmentModeCtrl);
 		}
+	}
+	
+	private Activateable2 doOpenCommunication(UserRequest ureq) {
+		if(communicationCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_COMMUNICATION), null);
+			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			communicationCtrl = new IQCommunicationController(ureq, swControl, entry, courseNode, userCourseEnv.isAdmin());
+			listenTo(communicationCtrl);
+		} else {
+			communicationCtrl.reloadModels();
+		}
+		
+		addToHistory(ureq, communicationCtrl);
+		mainVC.put("segmentCmp", communicationCtrl.getInitialComponent());
+		segmentView.select(communicationLink);
+		return communicationCtrl;
 	}
 	
 	private void doOpenPreview(UserRequest ureq) {

@@ -26,14 +26,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -489,6 +493,52 @@ public class AssessmentTestSessionDAO {
 		return sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
+	public List<Identity> getRunningTestSessionIdentities(RepositoryEntryRef entry, String courseSubIdent,
+			Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assessedIdentity from qtiassessmenttestsession session")
+		  .append(" inner join session.identity assessedIdentity")
+		  .append(" inner join assessedIdentity.user assessedUser")
+		  .where().append("session.repositoryEntry.key=:repositoryEntryKey and session.finishTime is null and session.terminationTime is null");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.and().append("session.subIdent=:subIdent");
+		} else {
+			sb.and().append("session.subIdent is null");
+		}
+		
+		if(userPropertiesSearch != null && !userPropertiesSearch.isEmpty()) {
+			sb.and().append(" (");
+			
+			boolean append = false;
+			for(Map.Entry<String,String> userProperty: userPropertiesSearch.entrySet()) {
+				if(append) {
+					sb.append(" and ", " or ", userPropertiesAsIntersectionSearch);
+				} else {
+					append = true;
+				}
+				String prop = userProperty.getKey();
+				sb.appendFuzzyLike("assessedUser." + prop, "uprop" + prop);
+			}
+			sb.append(")");
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("repositoryEntryKey", entry.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		
+		if(userPropertiesSearch != null && !userPropertiesSearch.isEmpty()) {
+			for(Map.Entry<String, String> userProperty:userPropertiesSearch.entrySet()) {
+				String fuzzyValue = PersistenceHelper.makeFuzzyQueryString(userProperty.getValue());
+				query.setParameter("uprop" + userProperty.getKey(), fuzzyValue);
+			}
+		}
+		
+		return query.getResultList();
+	}
+	
 	public List<Long> getRunningTestSessionIdentitiesKey(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assessedIdentity.key from qtiassessmenttestsession session")
@@ -537,28 +587,37 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, List<String> courseSubIdents, List<? extends IdentityRef> identities) {
+		List<Long> identityKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		return getRunningTestSessionsByIdentityKeys(entry, courseSubIdents, identityKeys);
+	}
+	
+	/**
+	 * The query doesn't fetch the test entry, only the identities (no users).
+	 * 
+	 * @param entry The repository entry, the cours entry
+	 * @param courseSubIdents A list of elements ids, null searches all
+	 * @param identityKeys A list of assessed identities keys (mandatory)
+	 * @return A list of assessment test sessions without finished or termination time,
+	 * 		not exploded or cancelled
+	 */
+	public List<AssessmentTestSession> getRunningTestSessionsByIdentityKeys(RepositoryEntryRef entry, List<String> courseSubIdents, List<Long> identityKeys) {
+		if(identityKeys == null || identityKeys.isEmpty()) return new ArrayList<>();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
-		  .append(" left join session.testEntry testEntry")
-		  .append(" left join testEntry.olatResource testResource")
 		  .append(" inner join fetch session.identity assessedIdentity")
-		  .append(" inner join fetch assessedIdentity.user assessedUser")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey")
 		  .append(" and session.finishTime is null and session.terminationTime is null")
 		  .append(" and session.exploded=false and session.cancelled=false")
-		  .append(" and session.identity.key in (:identityKeys)");
+		  .append(" and assessedIdentity.key in (:identityKeys)");
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
 			sb.append(" and session.subIdent in (:subIdents)");
 		}
 		
-		List<Long> identityKeys = identities.stream()
-				.map(IdentityRef::getKey)
-				.collect(Collectors.toList());
-		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
-				.setFirstResult(0)
-				.setMaxResults(1)
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setParameter("identityKeys", identityKeys);		
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
@@ -815,6 +874,31 @@ public class AssessmentTestSessionDAO {
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class);
 		decorateTestSessionPermission(query, searchParams) ;
+		return query.getResultList();
+	}
+	
+	public List<AssessmentTestSession> getValidTestSessions(IdentityRef identity, RepositoryEntryRef courseEntry, String subIdent, Date from, Date to) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select session from qtiassessmenttestsession session ")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey")
+		  .append(" and session.exploded=false and session.cancelled=false")
+		  .append(" and session.creationDate>=:from and session.creationDate<=:to");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and session.subIdent=:subIdent");
+		} else {
+			sb.append(" and session.subIdent is null");
+		}
+			
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("from", from, TemporalType.TIMESTAMP)
+				.setParameter("to", to, TemporalType.TIMESTAMP);
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+
 		return query.getResultList();
 	}
 	

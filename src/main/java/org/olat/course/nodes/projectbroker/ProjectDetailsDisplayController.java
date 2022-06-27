@@ -240,16 +240,13 @@ public class ProjectDetailsDisplayController extends BasicController {
 				if (source instanceof Link) {
 					Link projectLeaderLink = (Link)source;
 					final Identity identity = (Identity)projectLeaderLink.getUserObject();
-					ControllerCreator ctrlCreator = new ControllerCreator() {
-						@Override
-						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							return new UserInfoMainController(lureq, lwControl, identity, true, false);
-						}
+					ControllerCreator ctrlCreator = (lureq, lwControl) -> {
+						return new UserInfoMainController(lureq, lwControl, identity, true, false);
 					};
 					// wrap the content controller into a full header layout
 					ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
 					// open in new browser window
-					this.openInNewBrowserWindow(ureq, layoutCtrlr);
+					openInNewBrowserWindow(ureq, layoutCtrlr, false);
 				}
 			} else if (source == attachedFileLink) {
 				doFileDelivery(ureq, project, courseEnv, courseNode);

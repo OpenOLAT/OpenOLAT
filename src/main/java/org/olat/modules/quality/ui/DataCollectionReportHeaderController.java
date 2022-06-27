@@ -42,7 +42,7 @@ public class DataCollectionReportHeaderController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("report_header");
 		mainVC.contextPut("title", dataCollectionView.getTitle());
 		mainVC.contextPut("topicTitle", translate("executor.participation.topic.title"));
-		mainVC.contextPut("topic", formatTopic(dataCollectionView));
+		mainVC.contextPut("topic", formatTopic(dataCollectionView, getLocale()));
 		
 		putInitialPanel(mainVC);
 	}

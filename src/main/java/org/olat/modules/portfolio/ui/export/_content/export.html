@@ -12,36 +12,17 @@
 	<script src='$r.staticFullLink("js/jquery/openolat/jquery.statistics.radarchart.js")'></script>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<script>
+var o_info = new Object();
+o_info.latexit = false;
+	
+$r.mathJaxJavascriptConfig();
+
 function setFlexiFormDirtyByListener(e){
 	//
 }
+
 function o_mathjax() {
-	jQuery.ajax("${r.mathJaxCdnFullUrl()}tex-mml-chtml.js", {
-		cache: true,
-		dataType: "script",
-		success: function() {
-			window.MathJax = {
-				tex: {
-					inlineMath: [['$', '$'], ['\\(', '\\)']]
-				},
-				options: {
-					enableMenu: false,
-					renderActions: {
-						findScripts: [11, function (doc) {
-							for (var node of document.querySelectorAll('.math')) {
-								var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
-								var text = document.createTextNode('');
-								node.parentNode.replaceChild(text, node);
-								math.start = {node: text, delim: '', n: 0};
-								math.end = {node: text, delim: '', n: 0};
-								doc.math.push(math);
-							}
-						}, '']
-					}
-				}
-			}
-		}
-	});
+	//
 }
 var BFormatter = {
 	// format on load
@@ -53,15 +34,8 @@ var BPlayer = {
 		jQuery('#' + domId).append(content);
 	}
 }
-jQuery(function() {
-	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
-		var count = jQuery('div.math,span.math,math,div.mathEntryInteraction').length;
-		if (count > 0) {
-		    o_mathjax();
-		}
-	}
-});
 </script>
+<script src='${r.mathJaxCdnFullUrl()}tex-mml-chtml.js'></script>
 </head>
 <body class="o_page_margins o_offline_export $bodyCssClass">
 	<div id="o_main">

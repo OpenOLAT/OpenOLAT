@@ -123,10 +123,6 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 
 	public void shutdown() {
 		timer.cancel();
-		taskExecutor.shutdownNow();
-		externalExecutor.shutdownNow();
-		sequentialTaskExecutor.shutdownNow();
-		lowPriorityTaskExecutor.shutdownNow();
 	}
 	
 	@Override

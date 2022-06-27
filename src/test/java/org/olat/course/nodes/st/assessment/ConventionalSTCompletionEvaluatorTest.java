@@ -33,6 +33,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -46,6 +47,8 @@ public class ConventionalSTCompletionEvaluatorTest {
 	private AssessmentConfig configWithPassed;
 	@Mock
 	private AssessmentConfig configWithoutPassed;
+	@Mock
+	private RepositoryEntryRef courseEntry;
 	
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
@@ -71,9 +74,9 @@ public class ConventionalSTCompletionEvaluatorTest {
 		root.addChild(child);
 		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
 		scoreAccounting.put(child, parrentEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(child)).thenReturn(configWithPassed);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, child, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, child, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isNull();
 	}
@@ -85,9 +88,9 @@ public class ConventionalSTCompletionEvaluatorTest {
 		CourseNode root = new STCourseNode();
 		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
 		scoreAccounting.put(root, parrentEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithoutPassed);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithoutPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isNull();
 	}
@@ -99,9 +102,9 @@ public class ConventionalSTCompletionEvaluatorTest {
 		CourseNode root = new STCourseNode();
 		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE);
 		scoreAccounting.put(root, parrentEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(0.0);
 	}
@@ -113,9 +116,9 @@ public class ConventionalSTCompletionEvaluatorTest {
 		CourseNode root = new STCourseNode();
 		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(null, Boolean.TRUE);
 		scoreAccounting.put(root, parrentEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(0.0);
 	}
@@ -127,9 +130,9 @@ public class ConventionalSTCompletionEvaluatorTest {
 		CourseNode root = new STCourseNode();
 		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, null);
 		scoreAccounting.put(root, parrentEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(0.0);
 	}
@@ -141,15 +144,15 @@ public class ConventionalSTCompletionEvaluatorTest {
 		CourseNode root = new STCourseNode();
 		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
 		scoreAccounting.put(root, parrentEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
 		
 		assertThat(completion).isEqualTo(1.0);
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility) {
-		return new AssessmentEvaluation(null, null, passed, null, null, null, null, null, userVisibility, null, null,
-				null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
+				null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
 	}
 }

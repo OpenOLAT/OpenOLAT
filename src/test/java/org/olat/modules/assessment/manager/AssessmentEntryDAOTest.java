@@ -21,6 +21,7 @@ package org.olat.modules.assessment.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
+import static org.olat.test.JunitTestHelper.miniRandom;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
@@ -43,6 +44,12 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.course.assessment.AssessmentConfigMock;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.core.CourseElement;
+import org.olat.course.core.manager.CourseElementDAO;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.SPCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -83,6 +90,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private CourseElementDAO couurseElementDao;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
@@ -219,6 +228,44 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldGetHasGrades() {
+		// No Grade
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.hasGrades(entry, subIdent)).isFalse();
+		
+		// Grade
+		ae.setGrade("Grade A");
+		assessmentEntryDao.updateAssessmentEntry(ae);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.hasGrades(entry, subIdent)).isTrue();
+	}
+	
+	@Test
+	public void shouldGetScoreCount() {
+		// No score
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.getScoreCount(entry, subIdent)).isEqualTo(0);
+		
+		// Score
+		ae.setScore(new BigDecimal("22"));
+		assessmentEntryDao.updateAssessmentEntry(ae);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.getScoreCount(entry, subIdent)).isEqualTo(1);
+	}
+	
+	@Test
 	public void resetAssessmentEntry() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -288,6 +335,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		ae.setLastAttempt(lastAttempt);
 		ae.setScore(BigDecimal.valueOf(2.0));
 		ae.setMaxScore(BigDecimal.valueOf(6.0));
+		String grade = random();
+		ae.setGrade(grade);
+		String performanceClassIdent = random();
+		ae.setPerformanceClassIdent(performanceClassIdent);
 		ae.setPassed(Boolean.TRUE);
 		ae.setUserVisibility(Boolean.TRUE);
 		ae.setCompletion(Double.valueOf(0.5));
@@ -309,6 +360,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		softly.assertThat(reloaded.getLastAttempt()).isCloseTo(lastAttempt, Duration.ofSeconds(2).toMillis());
 		softly.assertThat(reloaded.getScore()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
 		softly.assertThat(reloaded.getMaxScore()).isEqualByComparingTo(BigDecimal.valueOf(6.0));
+		softly.assertThat(reloaded.getGrade()).isEqualTo(grade);
+		softly.assertThat(reloaded.getPerformanceClassIdent()).isEqualTo(performanceClassIdent);
 		softly.assertThat(reloaded.getPassed()).isTrue();
 		softly.assertThat(reloaded.getUserVisibility()).isTrue();
 		softly.assertThat(reloaded.getCompletion()).isEqualTo(0.5d);
@@ -1009,9 +1062,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRootEntriesWithStartOverSubEntries() {
-		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("start-date-1");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("start-date-2");
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("start-date-3");
+		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("start-date-4");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry();
 		
@@ -1019,44 +1073,59 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Date start = new GregorianCalendar(2010, 2, 10).getTime();
 		Date after = new GregorianCalendar(2010, 2, 12).getTime();
 		
+		String re1RootElIdent = createCourseElement(re1, random()).getSubIdent();
+		String re1SubOver1ElIdent = createCourseElement(re1, random()).getSubIdent();
+		String re1SubOver2ElIdent = createCourseElement(re1, random()).getSubIdent();
+		
+		String reDeletedRootElIdent = createCourseElement(reDeleted, random()).getSubIdent();
+		String reDeletedSubOver1ElIdent = createCourseElement(reDeleted, random()).getSubIdent();
+		
 		// Root is (only once) in results
-		AssessmentEntry ae1Root = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, random(), Boolean.TRUE,
+		AssessmentEntry ae1Root = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, re1RootElIdent, Boolean.TRUE,
 				null);
-		AssessmentEntry ae1SubOver1 = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, random(),
+		AssessmentEntry ae1SubOver1 = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, re1SubOver1ElIdent,
 				Boolean.FALSE, null);
 		ae1SubOver1.setStartDate(before);
 		assessmentEntryDao.updateAssessmentEntry(ae1SubOver1);
-		AssessmentEntry ae1SubOver2 = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, random(),
+		AssessmentEntry ae1SubOver2 = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, re1SubOver2ElIdent,
 				Boolean.FALSE, null);
 		ae1SubOver2.setStartDate(before);
 		assessmentEntryDao.updateAssessmentEntry(ae1SubOver2);
 
 		// Root is in results: second identity
-		AssessmentEntry ae2Root = assessmentEntryDao.createAssessmentEntry(identity2, null, re1, random(), Boolean.TRUE,
+		AssessmentEntry ae2Root = assessmentEntryDao.createAssessmentEntry(identity2, null, re1, re1RootElIdent, Boolean.TRUE,
 				null);
-		AssessmentEntry ae2SubOver1 = assessmentEntryDao.createAssessmentEntry(identity2, null, re1, random(),
+		AssessmentEntry ae2SubOver1 = assessmentEntryDao.createAssessmentEntry(identity2, null, re1, re1SubOver1ElIdent,
 				Boolean.FALSE, null);
 		ae2SubOver1.setStartDate(before);
 		assessmentEntryDao.updateAssessmentEntry(ae2SubOver1);
 
 		// Root is not in list: no start date, start date not over
-		AssessmentEntry ae3Root = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, random(), Boolean.TRUE,
+		AssessmentEntry ae3Root = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, re1RootElIdent, Boolean.TRUE,
 				null);
-		AssessmentEntry ae3SubOver1 = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, random(),
+		AssessmentEntry ae3SubOver1 = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, re1SubOver1ElIdent,
 				Boolean.FALSE, null);
 		ae3SubOver1.setStartDate(null);
 		assessmentEntryDao.updateAssessmentEntry(ae3SubOver1);
-		AssessmentEntry ae3SubOver2 = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, random(),
+		AssessmentEntry ae3SubOver2 = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, re1SubOver2ElIdent,
 				Boolean.FALSE, null);
 		ae3SubOver2.setStartDate(after);
 		assessmentEntryDao.updateAssessmentEntry(ae3SubOver2);
 		
 		// Root is not in results: RepositoryEntry is deleted
 		repositoryService.deleteSoftly(reDeleted, identity3, false, false);
-		AssessmentEntry ae4Root = assessmentEntryDao.createAssessmentEntry(identity2, null, reDeleted, random(), Boolean.TRUE, null);
-		AssessmentEntry ae4SubOver1 = assessmentEntryDao.createAssessmentEntry(identity2, null, reDeleted, random(), Boolean.FALSE, null);
+		AssessmentEntry ae4Root = assessmentEntryDao.createAssessmentEntry(identity2, null, reDeleted, reDeletedRootElIdent, Boolean.TRUE, null);
+		AssessmentEntry ae4SubOver1 = assessmentEntryDao.createAssessmentEntry(identity2, null, reDeleted, reDeletedSubOver1ElIdent, Boolean.FALSE, null);
 		ae4SubOver1.setStartDate(before);
 		assessmentEntryDao.updateAssessmentEntry(ae4SubOver1);
+		
+		// As start date on element which doesn't exists in course
+		AssessmentEntry ae5Root = assessmentEntryDao.createAssessmentEntry(identity4, null, re1, re1RootElIdent, Boolean.TRUE,
+				null);
+		AssessmentEntry ae5SubOver1 = assessmentEntryDao.createAssessmentEntry(identity4, null, re1, random(),
+				Boolean.FALSE, null);
+		ae5SubOver1.setStartDate(before);
+		assessmentEntryDao.updateAssessmentEntry(ae5SubOver1);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -1064,7 +1133,33 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		assertThat(rootEntries)
 				.contains(ae1Root, ae2Root)
-				.doesNotContain(ae1SubOver1, ae1SubOver2, ae2SubOver1, ae3Root, ae3SubOver1, ae3SubOver2, ae4Root, ae4SubOver1);
+				.doesNotContain(ae1SubOver1, ae1SubOver2, ae2SubOver1, ae3Root, ae3SubOver1, ae3SubOver2, ae4Root, ae4SubOver1, ae5Root, ae5SubOver1);
+	}
+	
+	@Test
+	public void loadRootEntriesWithoutPassed() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19");
+		
+		AssessmentEntry aeRootNullPassed1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), Boolean.TRUE, null);
+		aeRootNullPassed1.setPassed(null);
+		aeRootNullPassed1 = assessmentEntryDao.updateAssessmentEntry(aeRootNullPassed1);
+		AssessmentEntry aeRootNullPassed2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, random(), Boolean.TRUE, null);
+		aeRootNullPassed2.setPassed(null);
+		aeRootNullPassed2 = assessmentEntryDao.updateAssessmentEntry(aeRootNullPassed2);
+		AssessmentEntry aeNotRootNullPassed = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), Boolean.FALSE, null);
+		aeNotRootNullPassed.setPassed(null);
+		aeNotRootNullPassed = assessmentEntryDao.updateAssessmentEntry(aeNotRootNullPassed);
+		AssessmentEntry aeRootPassed = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), Boolean.TRUE, null);
+		aeRootPassed.setPassed(Boolean.TRUE);
+		aeRootPassed = assessmentEntryDao.updateAssessmentEntry(aeRootPassed);
+		
+		List<AssessmentEntry> assessmentEntries = assessmentEntryDao.loadRootEntriesWithoutPassed(entry);
+		
+		assertThat(assessmentEntries)
+				.contains(aeRootNullPassed1, aeRootNullPassed2)
+				.doesNotContain(aeNotRootNullPassed, aeRootPassed);
 	}
 	
 	@Test
@@ -1145,7 +1240,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-23");
 		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-24");
 		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25");
-		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25");
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25a");
+		Identity assessedIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25b");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -1157,40 +1253,53 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(assessedIdentity2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity3, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity4, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity6, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity5, group, GroupRoles.coach.name());
 		
 		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId1.setScore(null);
+		nodeAssessmentId1.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId1);
 		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId2.setScore(BigDecimal.valueOf(0));
+		nodeAssessmentId2.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId2);
 		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
 				null, null, entry);
 		nodeAssessmentId3.setScore(BigDecimal.valueOf(2));
+		nodeAssessmentId3.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId3);
 		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, refEntry,
 				subIdent, null, refEntry);
 		nodeAssessmentId4.setScore(BigDecimal.valueOf(5));
+		nodeAssessmentId4.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId4);
 		AssessmentEntry nodeAssessmentId5 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId5.setScore(BigDecimal.valueOf(1));
+		nodeAssessmentId5.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId5);
 		AssessmentEntry nodeAssessmentId6 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId6.setScore(BigDecimal.valueOf(3.2));
+		nodeAssessmentId6.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId6);
 		AssessmentEntry nodeAssessmentId7 = assessmentEntryDao.createAssessmentEntry(assessedIdentity5, null, entry,
 				subIdent, null, refEntry);
 		nodeAssessmentId7.setScore(BigDecimal.valueOf(99));
+		nodeAssessmentId7.setUserVisibility(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId7);
+		AssessmentEntry nodeAssessmentId8 = assessmentEntryDao.createAssessmentEntry(assessedIdentity6, null, entry,
+				subIdent, null, refEntry);
+		nodeAssessmentId8.setScore(BigDecimal.valueOf(99));
+		nodeAssessmentId8.setUserVisibility(Boolean.FALSE);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId8);
 		dbInstance.commitAndCloseSession();
 		// load with our subIdent above
 		List<AssessmentEntry> assessmentEntries = assessmentEntryDao
-				.loadAssessmentEntryBySubIdentWithStatus(entry, subIdent, null, true);
+				.loadAssessmentEntryBySubIdentWithStatus(entry, subIdent, null, true, true);
 		Assert.assertNotNull(assessmentEntries);
 		Assert.assertEquals(2, assessmentEntries.size());
 		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId1));
@@ -1200,6 +1309,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertTrue(assessmentEntries.contains(nodeAssessmentId5));
 		Assert.assertTrue(assessmentEntries.contains(nodeAssessmentId6));
 		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId7));
+		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId8));
 	}
 	
 	@Test
@@ -1256,6 +1366,21 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, identityKeys.size());
 		Assert.assertTrue(identityKeys.contains(assessedIdentity1.getKey()));
 		Assert.assertTrue(identityKeys.contains(assessedIdentity2.getKey()));
+	}
+	
+	private CourseElement createCourseElement(RepositoryEntry entry, String subIdent) {
+		CourseNode courseNode = new SPCourseNode();
+		courseNode.setIdent(subIdent);
+		courseNode.setShortTitle(miniRandom());
+		courseNode.setLongTitle(random());
+		
+		AssessmentConfigMock assessmentConfig = new AssessmentConfigMock();
+		assessmentConfig.setAssessable(true);
+		assessmentConfig.setScoreMode(Mode.setByNode);
+		assessmentConfig.setPassedMode(Mode.setByNode);
+		assessmentConfig.setCutValue(Float.valueOf(2.4f));
+		
+		return couurseElementDao.create(entry, courseNode, assessmentConfig);
 	}
 
 }

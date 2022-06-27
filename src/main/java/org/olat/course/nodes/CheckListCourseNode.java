@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -57,6 +59,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -93,7 +96,13 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -169,7 +178,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 		
-		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
 		if(statusDescs.isEmpty()) {
 			statusDescs.add(StatusDescription.NOERROR);
 		}
@@ -187,12 +196,12 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			//isConfigValidWithTranslator add first
 			sds.remove(oneClickStatusCache[0]);
 		}
-		sds.addAll(validateInternalConfiguration());
+		sds.addAll(validateInternalConfiguration(cev));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
 	
-	private List<StatusDescription> validateInternalConfiguration() {
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(5);
 
 		ModuleConfiguration config = getModuleConfiguration();
@@ -208,26 +217,39 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			
 			Boolean passedSum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 			Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
-			if((manualCorr == null || !manualCorr.booleanValue()) && (passedSum == null || !passedSum.booleanValue())
+			boolean grade = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			if((manualCorr == null || !manualCorr.booleanValue()) && !grade && (passedSum == null || !passedSum.booleanValue())
 					&& config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE) == null) {
 				addStatusErrorDescription("error.missing.cutvalue.config", CheckListEditController.PANE_TAB_CLCONFIG, sdList);	
 			}
 		}
 		
-		if (isFullyAssessedScoreConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.score",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
-		}
-		if (isFullyAssessedPassedConfigError()) {
-			addStatusErrorDescription("error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		if (cev != null) {
+			CheckListAssessmentConfig assessmentConfig = new CheckListAssessmentConfig(new CourseEntryRef(cev), this);
+			
+			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.score",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.passed",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
+			if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+				if (gradeScale == null) {
+					addStatusErrorDescription("error.missing.grade.scale", CheckListEditController.PANE_TAB_CLCONFIG, sdList);
+				}
+			}
 		}
 		
 		return sdList;
 	}
 	
-	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new CheckListAssessmentConfig(getModuleConfiguration()).getScoreMode();
+	private boolean isFullyAssessedScoreConfigError(CheckListAssessmentConfig assessmentConfig) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(CLLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -235,8 +257,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		return isScoreTrigger && !hasScore;
 	}
 	
-	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new CheckListAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+	private boolean isFullyAssessedPassedConfigError(CheckListAssessmentConfig assessmentConfig) {
+		boolean hasPassed = assessmentConfig.getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(CLLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -317,7 +339,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
 		
 		//assessment documents
-		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(getModuleConfiguration());
+		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(new CourseEntryRef(course), this);
 		if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 			List<AssessmentEntry> assessmentEntries = course.getCourseEnvironment()
 					.getAssessmentManager().getAssessmentEntries(this);
@@ -387,6 +409,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		CoreSpringFactory.getImpl(CheckboxManager.class).deleteCheckbox(course, getIdent());
+		
+		// Delete GradeScales
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, getIdent());
 	}
 	
 	/**
@@ -395,14 +421,17 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	 * @param userCourseEnv
 	 * @param assessedIdentity
 	 */
-	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
+	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by, Locale locale) {
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean scoreField = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
+		boolean grade = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		Boolean manualCorrection = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
-		if(cutValue != null) {
+		if (grade && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+			doUpdateAssessmentByGrade(maxScore, identity, assessedUserCourseEnv, assessedIdentity, by, locale);
+		} else if(cutValue != null) {
 			doUpdateAssessment(cutValue, maxScore, identity, assessedUserCourseEnv, assessedIdentity, by);
 		} else if(sum != null && sum.booleanValue()) {
 			doUpdateAssessmentBySum(identity, assessedUserCourseEnv, assessedIdentity, by);
@@ -416,6 +445,40 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 	}
 	
+	private void doUpdateAssessmentByGrade(Float maxScore, Identity identity,
+			UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by, Locale locale) {
+		OLATResourceable courseOres = OresHelper
+				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		
+		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+		if(maxScore != null && maxScore.floatValue() < score) {
+			score = maxScore.floatValue();
+		}
+		
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		String grade = null;
+		String gradeSystemIdent = null;
+		String performanceClassIdent = null;
+		Boolean passed = null;
+		if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO) || (scoreEval != null && StringHelper.containsNonWhitespace(scoreEval.getGrade()))) {
+			GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+			GradeScale gradeScale = gradeService.getGradeScale(
+					assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
+			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+			grade = gradeScoreRange.getGrade();
+			gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+			passed = gradeScoreRange.getPassed();
+		}
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
+		
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), grade, gradeSystemIdent, performanceClassIdent, passed, status, null, null, null, null, null);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
+	}
+
 	private void doUpdateAssessment(Float cutValue, Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
@@ -431,7 +494,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			boolean aboveCutValue = score >= cutValue.floatValue();
 			passed = Boolean.valueOf(aboveCutValue);
 		}
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), passed);
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, null, passed, status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -460,8 +525,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				}
 			}
 		}
-
-		ScoreEvaluation sceval = new ScoreEvaluation(score, Boolean.valueOf(passed));
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
+		
+		ScoreEvaluation sceval = new ScoreEvaluation(score, null, null, null, Boolean.valueOf(passed), status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -476,11 +543,25 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		if(maxScore != null && maxScore.floatValue() < score) {
 			score = maxScore.floatValue();
 		}
+		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getPassed());
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
+				currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
+				status, currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+				currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
+				currentEval.getAssessmentID());
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
+	}
+	
+	private AssessmentEntryStatus getStartedStatus(ScoreEvaluation scoreEval) {
+		return scoreEval.getAssessmentStatus() == null
+				|| scoreEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
+				|| scoreEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted
+				? AssessmentEntryStatus.inProgress
+				: scoreEval.getAssessmentStatus();
 	}
 	
 	@Override
@@ -578,7 +659,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 
 		int count = 0;
 		for(Identity assessedIdentity: assessedUsers) {
-			updateScorePassedOnPublish(assessedIdentity, publisher, checkboxManager, course);
+			updateScorePassedOnPublish(assessedIdentity, publisher, checkboxManager, course, locale);
 			if(++count % 10 == 0) {
 				DBFactory.getInstance().commitAndCloseSession();
 			}
@@ -587,33 +668,53 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 	
-	private void updateScorePassedOnPublish(Identity assessedIdentity, Identity coachIdentity, CheckboxManager checkboxManager, ICourse course) {
+	private void updateScorePassedOnPublish(Identity assessedIdentity, Identity coachIdentity, CheckboxManager checkboxManager, ICourse course, Locale locale) {
 		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 		
 		Float currentScore = null;
+		String currentGrade = null;
+		String currentGradeSystemIdent = null;
+		String currentPerformanceClassIdent = null;
 		Boolean currentPassed = null;
 		AssessmentEntry ae = am.getAssessmentEntry(this, assessedIdentity);
 		if(ae != null) {
 			currentScore = ae.getScore() == null ? null : ae.getScore().floatValue();
+			currentGrade = ae.getGrade();
+			currentGradeSystemIdent = ae.getGradeSystemIdent();
+			currentPerformanceClassIdent = ae.getPerformanceClassIdent();
 			currentPassed = ae.getPassed();
 		}
 		
-		Float updatedScore;
+		Float updatedScore = null;
+		String updateGrade = null;
+		String updateGradeSystemIdent = null;
+		String updatePerformanceClassIdent = null;
 		Boolean updatedPassed = null;
 
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
 			updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
-		} else {
-			updatedScore = null;
 		}
 		
 		Boolean passedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 		if(passedBool != null && passedBool.booleanValue()) {
 			Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			Boolean sumCheckbox = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
-			if(sumCheckbox != null && sumCheckbox.booleanValue()) {
+			boolean gradeEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			if (gradeEnabled && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				if (updatedScore != null && (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO) || StringHelper.containsNonWhitespace(currentGrade))) {
+					GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+					GradeScale gradeScale = gradeService.getGradeScale(
+							course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
+					NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
+					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, updatedScore);
+					updateGrade = gradeScoreRange.getGrade();
+					updateGradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+					updatePerformanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+					updatedPassed = gradeScoreRange.getPassed();
+				}
+			} else if(sumCheckbox != null && sumCheckbox.booleanValue()) {
 				Integer minValue = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
 				int checkedBox = checkboxManager.countChecked(assessedIdentity, course, getIdent());
 				if(minValue != null && minValue.intValue() <= checkedBox) {
@@ -623,18 +724,12 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				}
 
 			} else if (cutValue != null) {
-				if(updatedScore == null) {
-					updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
-				}
-				
 				if(updatedScore != null && cutValue.floatValue() <= updatedScore.floatValue()) {
 					updatedPassed = Boolean.TRUE;
 				} else {
 					updatedPassed = Boolean.FALSE;
 				}
 			}
-		} else {
-			updatedPassed = null;
 		}
 		
 		boolean needUpdate = false;
@@ -655,8 +750,14 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			needUpdate = true;	
 		}
 		
+		needUpdate = needUpdate
+				|| !Objects.equals(updateGrade, currentGrade)
+				|| !Objects.equals(updateGradeSystemIdent, currentGradeSystemIdent)
+				|| !Objects.equals(updatePerformanceClassIdent, currentPerformanceClassIdent);
+		
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent,
+					updatePerformanceClassIdent, updatedPassed, null, null, null, null, null, null);
 			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
@@ -682,8 +783,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(getModuleConfiguration()));
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
+		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(courseEntry, this));
 	}
 	
 	@Override

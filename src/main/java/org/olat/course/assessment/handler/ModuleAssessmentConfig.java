@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.handler;
 
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
 
@@ -60,7 +59,7 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMaxScore() {
 		if (Mode.none == getScoreMode()) {
-			throw new OLATRuntimeException(ModuleAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
+			return null;
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 	}
@@ -68,9 +67,19 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMinScore() {
 		if (Mode.none == getScoreMode()) {
-			throw new OLATRuntimeException(ModuleAssessmentConfig.class, "getMinScore not defined when hasScore set to false", null);
+			return null;
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+	}
+	
+	@Override
+	public boolean hasGrade() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
 	}
 	
 	@Override
@@ -81,7 +90,7 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getCutValue() {
 		if (Mode.none == getPassedMode()) {
-			throw new OLATRuntimeException(ModuleAssessmentConfig.class, "getCutValue not defined when hasPassed set to false", null);
+			return null;
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 	}
@@ -89,6 +98,11 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	@Override
 	public boolean isPassedOverridable() {
 		return false;
+	}
+	
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return Boolean.TRUE;
 	}
 	
 	@Override

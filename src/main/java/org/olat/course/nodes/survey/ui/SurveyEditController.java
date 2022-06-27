@@ -40,7 +40,7 @@ import org.olat.course.nodes.SurveyCourseNode;
 public class SurveyEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_CONFIG = "pane.tab.config";
-	private final static String[] paneKeys = { PANE_TAB_CONFIG };
+	private static final String[] paneKeys = { PANE_TAB_CONFIG };
 
 	private Controller surveyConfigsController;
 	private TabbedPane tabPane;
@@ -56,7 +56,7 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CONFIG), surveyConfigsController.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CONFIG), "o_sel_repo_entry", surveyConfigsController.getInitialComponent());
 	}
 
 	@Override

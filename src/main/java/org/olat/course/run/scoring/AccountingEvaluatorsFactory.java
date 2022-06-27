@@ -33,6 +33,7 @@ import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -201,7 +202,7 @@ public class AccountingEvaluatorsFactory {
 	private static class UnchangingScoreEvaluator implements ScoreEvaluator {
 		
 		@Override
-		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter) {
+		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter) {
 			return currentEvaluation.getScore();
 		}
 		
@@ -210,7 +211,7 @@ public class AccountingEvaluatorsFactory {
 	private static class NullScoreEvaluator implements ScoreEvaluator {
 		
 		@Override
-		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter) {
+		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter) {
 			return null;
 		}
 		
@@ -219,9 +220,11 @@ public class AccountingEvaluatorsFactory {
 	private static class UnchangingPassedEvaluator implements PassedEvaluator {
 		
 		@Override
-		public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+		public Overridable<Boolean> getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 				RepositoryEntry courseEntry, ConditionInterpreter conditionInterpreter) {
-			return currentEvaluation.getPassed();
+			return currentEvaluation.getPassedOverridable() != null
+					? currentEvaluation.getPassedOverridable().clone()
+					: Overridable.of(currentEvaluation.getPassed());
 		}
 	}
 	
@@ -238,7 +241,7 @@ public class AccountingEvaluatorsFactory {
 
 		@Override
 		public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-				ScoreAccounting scoureAccounting) {
+				ScoreAccounting scoureAccounting, RepositoryEntryRef courseEntry) {
 			return currentEvaluation.getCompletion();
 		}
 		

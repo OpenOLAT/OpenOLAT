@@ -47,6 +47,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -64,13 +66,22 @@ import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
+import org.olat.instantMessaging.InstantMessageTypeEnum;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.model.RosterChannelInfos;
+import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
+import org.olat.instantMessaging.ui.ChatViewConfig;
+import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
 import org.olat.modules.dcompensation.ui.ConfirmDeleteDisadvantageCompensationController;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +102,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private Link extraTimeLink;
 	private Link pullTestLink;
 	private Link reopenLink;
+	private Link chatLink;
 	private Link deleteDataLink;
 	private Link exportPdfResultsLink;
 	private Link compensationExtraTimeLink;
@@ -122,6 +134,12 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private InstantMessagingService imService;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -187,6 +205,13 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		}
 		if(lastSessionActive) {
 			pullTestLink = addLink("tool.pull", "tool.pull", "o_icon o_icon-fw o_icon_pull");
+			
+			RosterChannelInfos channel = imService.getRoster(courseEntry.getOlatResource(), testCourseNode.getIdent(), assessedIdentity.getKey().toString(), getIdentity());
+			String i18nKey = "tool.chat.open";
+			if(channel == null || channel.getRosterStatus() == RosterStatus.completed || channel.getRosterStatus() == RosterStatus.ended) {
+				i18nKey = "tool.chat.new";
+			}
+			chatLink = addLink(i18nKey, "tool.chat", "o_icon o_icon-fw o_icon_chats");
 		}
 	}
 	
@@ -242,6 +267,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(exportPdfResultsLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doExportResults(ureq);
+		} else if(chatLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			doOpenChat(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -433,7 +461,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		listenTo(compensationExtraTimeCtrl);
 
 		String fullName  = userManager.getUserDisplayName(assessedIdentity);
-		String title = translate("extra.time.compensation", new String[] { fullName });
+		String title = translate("extra.time.compensation", fullName);
 		cmc = new CloseableModalController(getWindowControl(), null, compensationExtraTimeCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -447,7 +475,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		listenTo(removeCompensationExtraTimeCtrl);
 
 		String fullName  = userManager.getUserDisplayName(assessedIdentity);
-		String title = translate("remove.extra.time.compensation", new String[] { fullName });
+		String title = translate("remove.extra.time.compensation", fullName);
 		cmc = new CloseableModalController(getWindowControl(), null, removeCompensationExtraTimeCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -462,6 +490,35 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		cmc = new CloseableModalController(getWindowControl(), null, reopenCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doOpenChat(UserRequest ureq) {
+		final String channel = assessedIdentity.getKey().toString();
+		// Make sure the assessed used is in the roster
+		String assessedFullName = userManager.getUserDisplayName(assessedIdentity);
+		imService.addToRoster(assessedIdentity, courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, assessedFullName, false, false);
+		// Add the coach to the roster and go
+		final String from = userManager.getUserDisplayName(getIdentity());
+		imService.addToRoster(getIdentity(), courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, from, false, true);
+		imService.sendStatusMessage(getIdentity(), from, false, InstantMessageTypeEnum.join,
+				courseEntry.getOlatResource(), testCourseNode.getIdent(), channel);
+		imService.deleteNotifications(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel);
+
+		ChatViewConfig viewConfig = new ChatViewConfig();
+		viewConfig.setRoomName(translate("im.title"));
+		viewConfig.setResourceInfos(courseNode.getShortTitle());
+		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance()
+				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
+		viewConfig.setResourceIconCssClass(nodeConfig.getIconCSSClass());
+		viewConfig.setCanClose(true);
+		viewConfig.setCanReactivate(true);
+		viewConfig.setCanMeeting((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isChatExamsEnabled())
+				|| (teamsModule.isEnabled() && teamsModule.isChatExamsEnabled()));
+		viewConfig.setWidth(620);
+		viewConfig.setHeight(480);
+		viewConfig.setRosterDisplay(RosterFormDisplay.supervisor);
+		OpenInstantMessageEvent event = new OpenInstantMessageEvent(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, viewConfig, true, false);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	
 	public static class AssessmentTestSessionDetailsComparator implements Comparator<AssessmentTestSessionStatistics> {

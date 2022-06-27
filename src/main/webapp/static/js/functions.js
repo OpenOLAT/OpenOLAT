@@ -8,12 +8,9 @@ OPOL = {};
 
 //used to mark form dirty and warn user to save first.
 var o2c=0;
-var o3c=new Array();//array holds flexi.form id's
 var o2cExclusions=new Array();
 // o_info is a global object that contains global variables
-o_info.guibusy = false;
 o_info.linkbusy = false;
-o_info.scrolling = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
 // o_info.drake is supervised and linked to .o_drake DOM element
@@ -57,7 +54,7 @@ var BLoader = {
 					dataType: 'script',
 					cache: true,
 					success: function(script, textStatus, jqXHR) {
-						//BLoader.executeGlobalJS(script, 'loadJS');
+						//
 					}
 				});
 				this._ajaxLoadedJS.push(jsURL);
@@ -99,7 +96,7 @@ var BLoader = {
 				var sheets = doc.styleSheets;
 				var cnt = 0;
 				var pos = 0;
-				for (i = 0; i < sheets.length; i++) {
+				for (var i = 0; i < sheets.length; i++) {
 					var sh = sheets[i];
 					var h = sh.href; 
 					if (h == cssURL) {
@@ -164,7 +161,7 @@ var BLoader = {
 					//remove the base url form the style url
 					relCssURL = cssURL.substring(baseURL.length);
 				}
-				for (i = 0; i < sheets.length; i++) {
+				for (var i = 0; i < sheets.length; i++) {
 					var h = sheets[i].href;
 					if (h == cssURL || h == relCssURL) {
 						cnt++;
@@ -176,16 +173,13 @@ var BLoader = {
 					}
 				}
 				if (cnt != 1 && o_info.debug) o_logwarn("stylesheet: when removeing: num of stylesheets found was not 1:"+cnt);
-				
 			} else { // mozilla
 				var el = jQuery('#' +linkid);
 				if (el) {
 					el.href = ""; // fix unload problem in safari
 					el.remove();
-					el = null;
-					return;
-				} else {
-					if (o_info.debug) o_logwarn("no link with id found to remove, id:"+linkid+", url "+cssURL);
+				} else if (o_info.debug) {
+					o_logwarn("no link with id found to remove, id:"+linkid+", url "+cssURL);
 				}
 			}
 		} catch(e){
@@ -208,7 +202,7 @@ var BFormatter = {
 	// process element with given dom id using MathJax
 	formatLatexFormulas : function(domId) {
 		try {
-			if(typeof window.MathJax !== undefined && typeof window.MathJax.typeset !== undefined) {
+			if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
 				MathJax.typeset();
 			} else {
 				o_mathjax();
@@ -228,7 +222,7 @@ var BFormatter = {
 			var cellWidths = new Array();
 			// find all widest cells
 			jQuery(tableArray).each(function() {
-				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+				for(var j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
 					var cell = jQuery(this)[0].rows[0].cells[j];
 					if(!cellWidths[j] || cellWidths[j] < cell.clientWidth) {
 						cellWidths[j] = cell.clientWidth;
@@ -237,7 +231,7 @@ var BFormatter = {
 			});
 			// set same width to columns of all tables
 			jQuery(tableArray).each(function() {
-				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+				for(var j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
 					jQuery(this)[0].rows[0].cells[j].style.width = cellWidths[j]+'px';
 				}
 			});
@@ -316,10 +310,30 @@ function o_beforeserver() {
 	}
 }
 
-function o_afterserver() {
+function o_afterserver(responseData) {
 	o2c = 0;
 	o_info.linkbusy = false;
 	removeAjaxBusy();
+	
+	try {
+		if(responseData) {
+			var cmdcnt = responseData["cmdcnt"];
+			if (cmdcnt > 0) {
+				var cs = responseData["cmds"];
+				for (var i=0; i<cmdcnt; i++) {
+					var acmd = cs[i];
+					var co = acmd["cmd"];
+					if(co == 10) {
+						o2c = 1;
+						o_info.dirty_form = true;
+						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
+					}
+				}
+			}
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
+	}
 }
 
 function o2cl() {
@@ -358,21 +372,6 @@ function o2cl_noDirtyCheck() {
 	} else {
 		o_beforeserver();
 		return true;
-	}
-}
-
-function o3cl(formId) {
-	if (o_info.linkbusy) {
-		return false;
-	} else {
-		//detect if another flexi form on the screen is dirty too
-		var isRegistered = o3c1.indexOf(formId) > -1;
-		var flexiformdirty = (isRegistered && o3c1.length > 1) || o3c1.length > 0;
-		//check if no other flexi form is dirty
-		//otherwise ask if changes should be discarded.
-		var doreq = ( !flexiformdirty || confirm(o_info.dirty_form));
-		if (doreq) o_beforeserver();
-		return doreq;
 	}
 }
 
@@ -464,29 +463,6 @@ if(!Array.prototype.indexOf) {
 	}
 }
 
-
-// b_AddOnDomReplacementFinishedCallback is used to add callback methods that are executed after
-// the DOM replacement has occured. Note that when not in AJAX mode, those methods will not be 
-// executed. Use this callback to execute some JS code to cleanup eventhandlers or alike
-//DEPRECATED: listen to event "oo.dom.replacement.after"
-var b_onDomReplacementFinished_callbacks=new Array();//array holding js callback methods that should be executed after the next ajax call
-function b_AddOnDomReplacementFinishedCallback(funct) {
-	b_onDomReplacementFinished_callbacks.push(funct);
-}
-
-//same as above, but with a filter to prevent adding a funct. more than once
-//funct then has to be an array("identifier", funct) 
-// DEPRECATED: listen to event "oo.dom.replacement.after"
-function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
-	if (funct.constructor == Array){
-		//check if it has been added before
-		if (b_onDomReplacementFinished_callbacks.search(funct[0])){
-			return;
-		} 
-	}
-	b_AddOnDomReplacementFinishedCallback(funct);
-}
-
 function o_postInvoke(r, newWindow) {
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
@@ -524,7 +500,9 @@ function o_ainvoke(r) {
 		return;
 	}
 	
-	o_info.inainvoke = true;
+	var scrollTop = false;
+	var focus = { formName: null, formItemId: null };
+	
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
 		// let everybody know dom replacement has started
@@ -537,9 +515,7 @@ function o_ainvoke(r) {
 			var acmd = cs[i];
 			var co = acmd["cmd"];
 			var cda = acmd["cda"];
-			var wid = acmd["w"];
-			var wi = this.window; // for cross browser window: o_info.wins[wid]; 
-			var out;
+			var wi = this.window;
 			if (wi) {
 				switch (co) {
 					case 1: // Excecute JavaScript Code
@@ -558,7 +534,7 @@ function o_ainvoke(r) {
 							var jsol = c1["jsol"]; // javascript on load
 							var hdr = c1["hdr"]; // header
 							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
-
+							
 							var hdrco = hdr+"\n\n"+hfrag;
 							
 							var replaceElement = false;
@@ -638,14 +614,9 @@ function o_ainvoke(r) {
 							}
 						}
 						break;
-					case 3:  // createParentRedirectTo leads to a full page reload
-						wi.o2c = 0;//??
-						var rurl = cda["rurl"];
-						wi.o_afterserver();
-						wi.document.location.replace(rurl);
-						break;
+					case 3: // createParentRedirectTo leads to a full page reload
 					case 5: // create redirect for external resource mapper
-						wi.o2c = 0;//??
+						wi.o2c = 0;
 						var rurl = cda["rurl"];
 						//in case of a mapper served media resource (xls,pdf etc.)
 						wi.o_afterserver();
@@ -662,7 +633,7 @@ function o_ainvoke(r) {
 						if (loc.port != "" ) furlp += ":"+ loc.port; 
 						// 1. unload css file
 						var cssrm = cda["cssrm"];
-						for (j = 0; j<cssrm.length; j++) {
+						for (var j = 0; j<cssrm.length; j++) {
 							var ce = cssrm[j];
 							var id = ce["id"];
 							var url = furlp + ce["url"];
@@ -671,7 +642,7 @@ function o_ainvoke(r) {
 						}
 						// 2) load css file
 						var cssadd = cda["cssadd"];
-						for (k = 0; k<cssadd.length; k++) {
+						for (var k = 0; k<cssadd.length; k++) {
 							var ce = cssadd[k];
 							var id = ce["id"];
 							var url = furlp + ce["url"];
@@ -682,7 +653,7 @@ function o_ainvoke(r) {
 						
 						// 3) js lib adds
 						var jsadd = cda["jsadd"];
-						for (l=0; l<jsadd.length; l++) {
+						for (var l=0; l<jsadd.length; l++) {
 							var ce = jsadd[l];
 							// 3.1) execute before AJAX-code
 							var preJsAdd = ce["before"];
@@ -695,7 +666,18 @@ function o_ainvoke(r) {
 							if (jQuery.type(url) === "string") BLoader.loadJS(url, enc, true);
 							if (o_info.debug) o_log("c7: add js: "+url);
 						}	
-						break;	
+						break;
+					case 8: // new window / close window, executed in o_postInvoke
+						break;
+					case 9:
+						scrollTop = true;
+						break;
+					case 10: // dirty form, executed in o_afterserver
+						break;
+					case 11:
+						focus.formName = cda.formName;
+						focus.formItemId = cda.formItemId;
+						break;
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
 						break;
@@ -706,7 +688,7 @@ function o_ainvoke(r) {
 			
 			if(o_info.latexit) {
 				try {
-					if(window.MathJax !== undefined && window.MathJax.typeset !== undefined) {
+					if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
 						window.MathJax.typeset();
 						o_info.latexit = false;
 					} else {
@@ -718,33 +700,16 @@ function o_ainvoke(r) {
 			}	
 		}
 
-		// BEGIN DEPRECATED DOM REPLACEMENT CALLBACK: new style below
-		// execute onDomReplacementFinished callback functions
-		var stacklength = b_onDomReplacementFinished_callbacks.length;
-		for (mycounter = 0; stacklength > mycounter; mycounter++) {
-			
-			if (mycounter > 50) {
-				break; // emergency break
-			}
-			var func = b_onDomReplacementFinished_callbacks.shift();
-			if (typeof func.length === 'number'){
-				if (func[0] == "glosshighlighter") {
-					var tmpArr = func[1];
-					func = tmpArr;
-				 }				
-			}
-			// don't use execScript here - must be executed outside this function scope so that dom replacement elements are available
-			
-			//func.delay(0.01);
-			func();//TODO jquery
-		}
-		// END DEPRECATED DOM REPLACEMENT CALLBACK: new style on next line
-		
 		// let everybody know dom replacement has finished
 		jQuery(document).trigger("oo.dom.replacement.after");
 	}
-	o_info.inainvoke = false;
 	
+	// Scroll or focus, but not both to prevent jumping up and down
+	if(scrollTop) {
+		o_scrollTop();
+	} else if(focus.formName != null) {
+ 		o_ffSetFocus(focus.formName, focus.formItemId);
+	}
 /* minimalistic debugger / profiler	
 	BDebugger.logDOMCount();
 	BDebugger.logGlobalObjCount();
@@ -923,7 +888,7 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	// set focus to next element if available
 	var elements = fileInputElement.form.elements;
 	var fileInputCheckElement = (fakeInputElement ? fakeInputElement : fileInputElement);
-	for (i=0; i < elements.length; i++) {
+	for (var i=0; i < elements.length; i++) {
 		var elem = elements[i];
 		if (elem.name == fileInputCheckElement.name && i+1 < elements.length) {
 			elements[i+1].focus();
@@ -966,11 +931,11 @@ function gotonode(nodeid) {
 		// check if o_activateCourseNode method is available in this window
 		if (typeof o_activateCourseNode != 'undefined') {
 			o_activateCourseNode(nodeid);
-		} else {
+		} else if (typeof o_activateInfoNode != 'undefined') {
+			o_activateInfoNode(nodeid);
+		} else if (opener && typeof opener.o_activateCourseNode != 'undefined') {
 			// must be content opened using the clone controller - search in opener window
-			if (opener && typeof opener.o_activateCourseNode != 'undefined') {
-			  opener.o_activateCourseNode(nodeid);
-			}		
+			opener.o_activateCourseNode(nodeid);		
 		}
 	} catch (e) {
 		alert('Goto node error:' + e);
@@ -981,10 +946,10 @@ function gototool(toolname) {
 	try {
 		if (typeof o_activateCourseTool != 'undefined') {
 			o_activateCourseTool(toolname);
-		} else {
-			if (opener && typeof opener.o_activateCourseTool != 'undefined') {
-				opener.o_activateCourseTool(toolname);
-			}
+		} else if (typeof o_activateInfoTool != 'undefined') {
+			o_activateInfoTool(toolname);
+		} else if (opener && typeof opener.o_activateCourseTool != 'undefined') {
+			opener.o_activateCourseTool(toolname);
 		}
 	} catch (e) {
 		alert('Goto tool error:' + e);
@@ -1095,9 +1060,13 @@ OPOL.adjustContentHeightForAbsoluteElement = function(itemDomSelector) {
 		}
 		// Current available height
 		mainDom = jQuery(mainDom);
+		var mainOffsetTop = 0;
 		var mainOffset = mainDom.offset();
+		if(mainOffset) {
+			mainOffsetTop = mainOffset.top;
+		}
 		var mainHeight = mainDom.outerHeight(true);
-		var availableHeight = mainOffset.top + mainHeight;
+		var availableHeight = mainOffsetTop + mainHeight;
 		
 		// Calculate minimum required height based on the position of the previous DOM element 
 		// (e.g. the pull-down button). Absolute positioned element have not offset
@@ -1148,12 +1117,17 @@ jQuery().ready(OPOL.adjustHeight);
 
 function o_scrollToElement(elem) {
 	try {
-		o_info.scrolling = true;
 		jQuery('html, body').animate({
 			scrollTop : jQuery(elem).offset().top
-		}, 333, function(e, el) {
-			o_info.scrolling = false;
-		});
+		}, 333);
+	} catch (e) {
+		//console.log(e);
+	}
+}
+
+function o_scrollTop() {
+	try {
+		jQuery('html, body').animate({ scrollTop : 0 }, 300);
 	} catch (e) {
 		//console.log(e);
 	}
@@ -1567,7 +1541,7 @@ function o_onXHRSuccess (data, textStatus, jqXHR) {
 	} catch(e) {
 		if(window.console) console.log(e);
 	} finally {
-		o_afterserver();
+		o_afterserver(data);
 	}
 }
 
@@ -1636,6 +1610,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	}
 	
 	var openInNewWindow = false;
+	var openInNewWindowTarget = "_blank";
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
 	if(arguments.length > 8) {
@@ -1645,6 +1620,8 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 				data[arguments[j]] = arguments[j+1];
 				if(arguments[j] == "oo-opennewwindow-oo") {
 					openInNewWindow = true;
+				} else if(arguments[i] == "oo-opennewwindow-target") {
+					openInNewWindowTarget = arguments[i+1];
 				}
 			}
 		}
@@ -1652,7 +1629,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	
 	var newTargetWindow = null;
 	if(openInNewWindow) {
-		newTargetWindow = window.open("","_blank");
+		newTargetWindow = window.open("",openInNewWindowTarget);
 		newTargetWindow.blur();
 	}
 	
@@ -1678,7 +1655,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
-				o_afterserver();
+				o_afterserver(responseData);
 			}
 		},
 		error: o_onXHRError
@@ -1710,7 +1687,7 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 		data: data,
 		cache: false,
 		dataType: 'json',
-		success: function(data, textStatus, jqXHR) {
+		success: function(responseData, textStatus, jqXHR) {
 			//no response
 		}
 	})
@@ -1747,7 +1724,7 @@ function o_XHRScormEvent(targetUrl) {
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
-				o_afterserver();
+				o_afterserver(responseData);
 			}
 		},
 		error: o_onXHRError
@@ -1780,6 +1757,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 
 	var data = new Object();
 	var openInNewWindow = false;
+	var openInNewWindowTarget = "_blank";
 	if(arguments.length > 3) {
 		var argLength = arguments.length;
 		for(var i=3; i<argLength; i=i+2) {
@@ -1787,6 +1765,8 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 				data[arguments[i]] = arguments[i+1];
 				if(arguments[i] == "oo-opennewwindow-oo") {
 					openInNewWindow = true;
+				} else if(arguments[i] == "oo-opennewwindow-target") {
+					openInNewWindowTarget = arguments[i+1];
 				}
 			}
 		}
@@ -1794,7 +1774,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	
 	var targetWindow = null;
 	if(openInNewWindow) {
-		targetWindow = window.open("","_blank");
+		targetWindow = window.open("", openInNewWindowTarget);
 		targetWindow.blur();
 	} else {
 		targetWindow = window;
@@ -1825,7 +1805,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
-				o_afterserver();
+				o_afterserver(responseData);
 			}
 		},
 		error: o_onXHRError
@@ -1852,7 +1832,7 @@ function o_XHRNFEvent(targetUrl) {
 		data: data,
 		cache: false,
 		dataType: 'json',
-		success: function(data, textStatus, jqXHR) {
+		success: function(responseData, textStatus, jqXHR) {
 			//ok
 		},
 		error: o_onXHRError
@@ -2001,15 +1981,13 @@ function setFlexiFormDirtyByListener(e){
 }
 
 function setFlexiFormDirty(formId, hideMessage){
-	var isRegistered = o3c.indexOf(formId) > -1;
-	if(!isRegistered){
-		o3c.push(formId);
-	}
 	jQuery('#'+formId).each(function() {
 		var submitId = jQuery(this).data('FlexiSubmit');
+		console.log('Flexi dirty', submitId);
 		if(submitId != null) {
 			jQuery('#'+submitId).addClass('btn o_button_dirty');
 			o2c = (hideMessage ? 0 : 1);
+		console.log('Flexi dirty', submitId, o2c);
 		}
 	});
 }
@@ -2069,12 +2047,17 @@ function o_ffSetFocus(formId, formItemId){
 		var lastEl = jQuery('#' + o_info.lastFormFocusEl);
 		if (lastEl.length > 0) {
 			var jLastEl = jQuery(lastEl[0]);
-			if(jLastEl.hasClass('hasDatepicker')) {
-				jLastEl.datepicker('option', 'showOn', '');
-				jLastEl.focus();
-				jLastEl.datepicker('option', 'showOn', 'focus');
+			var tagName = lastEl[0].tagName;
+			if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
+				if(jLastEl.hasClass('hasDatepicker')) {
+					jLastEl.datepicker('option', 'showOn', '');
+					jLastEl.focus();
+					jLastEl.datepicker('option', 'showOn', 'focus');
+				} else {
+					jLastEl.focus();
+				}
 			} else {
-				jLastEl.focus();
+				o_info.lastFormFocusEl = 0;
 			}
 		} else {
 			o_info.lastFormFocusEl = 0;
@@ -2091,13 +2074,13 @@ function dismissInfoBox(uuid) {
 * renders an info msg that slides from top into the window
 * and hides automatically
 */
-function showInfoBox(title, content){
+function showInfoBox(title, content) {
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
 	var info = '<div id="' + uuid
 	     + '" class="o_alert_info"><div class="alert alert-info clearfix o_sel_info_message"><a class="o_alert_close o_sel_info_close" href="javascript:;" onclick="dismissInfoBox(\'' + uuid + '\')"><i class="o_icon o_icon_close"> </i></a><h3><i class="o_icon o_icon_info"> </i> '
 		 + title + '</h3><p>' + content + '</p></div></div>';
-    var msgCt = jQuery('#o_messages').prepend(info);
+    jQuery('#o_messages').prepend(info);
     // Hide message automatically based on content length
     var time = (content.length > 150) ? 10000 : ((content.length > 70) ? 8000 : 6000);
 
@@ -2109,18 +2092,12 @@ function showInfoBox(title, content){
     		});    	
     };
     // Show info box now
-    o_info.scrolling = true;
     jQuery('#' + uuid).show().transition({ top: 0 }, 333);
     // Visually remove message box immediately when user clicks on it
     jQuery('#' + uuid).click(function(e) {
     	cleanup();
     });
 	o_scrollToElement('#o_top');
-	
-    // Help GC, prevent cyclic reference from on-click closure
-    title = null;
-    content = null;
-    msgCt = null;
     
     setTimeout(function(){
 		try {
@@ -2161,6 +2138,26 @@ function showMessageBox(type, title, message, buttonCallback) {
 		o_scrollToElement('#o_top');
 		return msg;
 	}
+}
+
+function o_extraTinyDirty(editor) {
+	var dirty = editor.isDirty();
+	function o_extraTinyDirtyToggle(elm) {
+		if(dirty) {
+			o2c=1;
+			jQuery(elm).addClass('o_button_dirty');
+		} else {
+			jQuery(elm).removeClass('o_button_dirty');
+		}
+	}
+	jQuery('#o_save #o_button_save a').each(function(index,el) {
+		if (jQuery(el).hasClass('o_button_dirty') != dirty) {
+			o_extraTinyDirtyToggle(el);
+			jQuery('#o_save #o_button_saveclose a').each(function(index2, el2) {
+				o_extraTinyDirtyToggle(el2);
+			});
+		}
+	});
 }
 
 /*
@@ -2332,8 +2329,8 @@ function onTreeDrop(event, ui) {
 	} else if(droppableId.indexOf('dt') == 0) {
 		url += '%3Asne%3Aend';
 	}
-	jQuery('.ui-droppable').each(function(index, el) {
-		jQuery(el).droppable( "disable" );
+	jQuery('.ui-droppable').each(function(index, elem) {
+		jQuery(elem).droppable( "disable" );
 	});
 	o_XHREvent(url + '/', false, false);
 }
@@ -2380,13 +2377,11 @@ function treeNode_isDragNode(elId) {
  */
 function o_choice_toggleCheck(ref, checked) {
 	var checkboxes = document.forms[ref].elements;
-	len = checkboxes.length;
+	var len = checkboxes.length;
 	if (typeof(len) == 'undefined') {
 		checkboxes.checked = checked;
-	}
-	else {
-		var i;
-		for (i=0; i < len; i++) {
+	} else {
+		for (var i=0; i < len; i++) {
 			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'o_checkbox' && checkboxes[i].getAttribute('disabled') != 'disabled') {
 				checkboxes[i].checked=checked;
 			}
@@ -2398,10 +2393,9 @@ function o_choice_toggleCheck(ref, checked) {
  * For briefcase
  */
 function b_briefcase_isChecked(ref, warning_text) {
-	var i;
 	var myElement = document.getElementById(ref);
 	var numselected = 0;
-	for (i=0; myElement.elements[i]; i++) {
+	for (var i=0; myElement.elements[i]; i++) {
 		if (myElement.elements[i].type == 'checkbox' && myElement.elements[i].name == 'paths' && myElement.elements[i].checked) {
 			numselected++;
 		}
@@ -2415,9 +2409,8 @@ function b_briefcase_isChecked(ref, warning_text) {
 }
 function b_briefcase_toggleCheck(ref, checked) {
 	var myElement = document.getElementById(ref);
-	len = myElement.elements.length;
-	var i;
-	for (i=0; i < len; i++) {
+	var len = myElement.elements.length;
+	for (var i=0; i < len; i++) {
 		if (myElement.elements[i].name=='paths') {
 			myElement.elements[i].checked=checked;
 		}
@@ -2497,26 +2490,6 @@ function o_animateRadialProgress(radialProgessDomSelector, percent) {
 	}
 }
 
-
-/*
- * Attach event listeners to enable inline translation tool hover links
- */ 
-function b_attach_i18n_inline_editing() {
-	// Add hover handler to display inline edit links
-	jQuery('span.o_translation_i18nitem').hover(function() {
-		jQuery(this.firstChild).show();
-	},function(){
-		jQuery('a.o_translation_i18nitem_launcher').hide();
-	});
-	// Add highlight effect on link to show which element is affected by this link
-	jQuery('a.o_translation_i18nitem_launcher').hover(function() {	
-		var parent = jQuery(this).parent('span.o_translation_i18nitem')
-		parent.effect("highlight");
-	});
-	// Add to on ajax ready callback for next execution
-	b_AddOnDomReplacementFinishedCallback(b_attach_i18n_inline_editing);
-}
-
 function b_hideExtMessageBox() {
 	//for compatibility
 }
@@ -2537,7 +2510,7 @@ var BDebugger = {
 	},
 	_countGlobalObjects : function() {
 			var objCount=0; 
-			for (prop in window) {
+			for (var prop in window) {
 				objCount++;
 			} 
 			return objCount;
@@ -2549,7 +2522,6 @@ var BDebugger = {
 		var diff = DOMCount - self._lastDOMCount;
 		console.log( (diff > 0 ? "+" : "") + diff + " \t" + DOMCount + " \tDOM element count after DOM replacement");
 		self._lastDOMCount = DOMCount;
-		DOMCount = null;
 	},
 
 	logGlobalObjCount : function() {	
@@ -2558,13 +2530,12 @@ var BDebugger = {
 		var diff = objCount - self._lastObjCount;
 		console.log( (diff > 0 ? "+" : "") + diff + " \t" + objCount + " \tGlobal object count after DOM replacement");
 		self._lastObjCount = objCount;
-		objCount = null;
 	},
 	
 	logGlobalOLATObjects : function() {
 		var self = BDebugger;
 		var OLATObjects = new Array();
-		for (prop in window) {
+		for (var prop in window) {
 			if (prop.indexOf("o_") == 0 && self._knownGlobalOLATObjects.indexOf(prop) == -1) {
 				OLATObjects.push(prop);
 			}
@@ -2589,7 +2560,7 @@ var OOEdusharing = {
 	},
 		
 	replaceWithSpinner: function(node, width, height) {
-		var spinnerHtml = "<div style='";
+		var spinnerHtml = "<div class='BGlossarIgnore' style='";
 		if (width > 0) {
 			spinnerHtml += "width:" + width + "px;";
 		}
@@ -2626,7 +2597,7 @@ var OOEdusharing = {
 			url = url + "&height=" + height;
 		}
 		
-		var containerHtml = "<div class='o_edusharing_container";
+		var containerHtml = "<div class='o_edusharing_container BGlossarIgnore";
 		if (typeof esClass != 'undefined') {
 			containerHtml += " " + esClass;
 		}
@@ -2678,6 +2649,7 @@ var OOEdusharing = {
 	 */
 	render: function() {
 		var esNodes = jQuery("[data-es_identifier]");
+		esNodes.addClass("BGlossarIgnore");
 		if (esNodes.length > 0) {
 			esNodes.each(function() {
 				var node = jQuery( this );
@@ -2712,8 +2684,8 @@ var OOEdusharing = {
 			//clicked inside ".edusharing_metadata" - do nothing
 		} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
 			jQuery(".edusharing_metadata").hide();
-			toggle_button = jQuery(e.target);
-			metadata = toggle_button.parent().find(".edusharing_metadata");
+			var toggle_button = jQuery(e.target);
+			var metadata = toggle_button.parent().find(".edusharing_metadata");
 			if (metadata.hasClass('open')) {
 				metadata.toggleClass('open');
 				metadata.hide();

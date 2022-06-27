@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.basiclti;
 
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -62,7 +61,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMaxScore() {
 		if (Mode.none == getScoreMode()) {
-			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
+			return null;
+		}
+		
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION))) {
+			return null;
 		}
 		
 		Float scaleFactor = (Float) config.get(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
@@ -75,9 +78,19 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMinScore() {
 		if (Mode.none == getScoreMode()) { 
-			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
+			return null;
 		}
 		return 0.0f;
+	}
+	
+	@Override
+	public boolean hasGrade() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return false;
 	}
 	
 	@Override
@@ -88,7 +101,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getCutValue() {
 		if (Mode.none == getPassedMode()) { 
-			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getCutValue not defined when hasPassedConfigured set to false", null);
+			return null;
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 	}
@@ -96,6 +109,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	@Override
 	public boolean isPassedOverridable() {
 		return false;
+	}
+
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
 	}
 	
 	@Override
@@ -126,7 +144,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean hasIndividualAsssessmentDocuments() {
-		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		return false;
 	}
 
 	@Override

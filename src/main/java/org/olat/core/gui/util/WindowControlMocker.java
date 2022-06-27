@@ -81,6 +81,16 @@ public class WindowControlMocker implements WindowControl{
 	}
 
 	@Override
+	public void addInstanteMessagePanel(Component comp) {
+		//
+	}
+
+	@Override
+	public boolean removeInstanteMessagePanel(Component comp) {
+		return false;
+	}
+
+	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {
 		//
 	}
@@ -219,11 +229,6 @@ public class WindowControlMocker implements WindowControl{
 
 		@Override
 		public Controller createDebugDispatcherController(UserRequest ureq, WindowControl windowControl) {
-			return null;
-		}
-
-		@Override
-		public Controller createInlineTranslationDispatcherController(UserRequest ureq, WindowControl windowControl) {
 			return null;
 		}
 

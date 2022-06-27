@@ -124,27 +124,42 @@ public class LayoutModule extends AbstractSpringModule  {
 	}
 
 	public String getLogoUri() {
-		return logoUri + "/oo-logo@1x.png";
+		return logoUri + "/optimized_" + logoFilename;
 	}
 
-	public String getLogoFilename() {
-		return logoFilename;
-	}
-	//LogoUri
-	public void setLogoFilename(String filename) {
-		logoFilename = filename;
-		setStringProperty(LOGO_FILENAME, filename, true);
+	public boolean isLogo() {
+		return (logoFilename != null);
 	}
 	
-	public void updateLogo(String filename) {
-		setLogoFilename(filename);
+	//LogoUri
+	public void setLogoFilename(String filename) {
+		if (filename == null) {
+			File dir = getLogoDirectory();
+			FileUtils.deleteDirsAndFiles(dir, true, false);
+			logoFilename = null;
+			removeProperty(LOGO_FILENAME, true);
+		} else {			
+			// Move and rename file to something save			
+			int pos = filename. lastIndexOf(".");
+			String extension = "";
+			String normalizedName = filename;
+			if (pos > 0) {
+				extension = filename.substring(pos);
+				normalizedName = FileUtils.normalizeFilename(filename.substring(0, pos));
+			}
+			File origFile =  new File(getLogoDirectory(), filename);
+			File normalizedFile = new File(getLogoDirectory(), normalizedName + extension);
+			origFile.renameTo(normalizedFile);
+			
+			logoFilename = normalizedFile.getName();
+			setStringProperty(LOGO_FILENAME, logoFilename, true);			
+		}
 	}
 	
 	public File getLogo() {
 		File logo = null;
-		String filename = getLogoFilename();
-		if(StringHelper.containsNonWhitespace(filename)) {
-			logo = Paths.get(WebappHelper.getUserDataRoot(), "customizing", "logo", filename).toFile();
+		if(logoFilename != null) {
+			logo = Paths.get(WebappHelper.getUserDataRoot(), "customizing", "logo", logoFilename).toFile();
 		}
 		return logo;
 	}
@@ -158,20 +173,7 @@ public class LayoutModule extends AbstractSpringModule  {
 	}
 	
 	public void removeLogo() {
-		File logo = getLogo();
-		if(logo != null && logo.exists()) {
-			FileUtils.deleteFile(logo);
-		}
-		File dir = getLogoDirectory();
-		File logo1x = new File(dir, "oo-logo@1x.png");
-		if(logo1x.exists()) {
-			FileUtils.deleteFile(logo1x);
-		}
-		File logo2x = new File(dir, "oo-logo@2x.png");
-		if(logo2x.exists()) {
-			FileUtils.deleteFile(logo2x);
-		}
-		setLogoFilename("");
+		setLogoFilename(null);
 	}
 	
 	public String getLogoAlt() {

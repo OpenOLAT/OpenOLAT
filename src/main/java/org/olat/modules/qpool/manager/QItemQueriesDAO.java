@@ -65,7 +65,7 @@ public class QItemQueriesDAO {
 		  .append(" from questionitem item")
 		  .append(" left join item.type itemType")
 		  .append(" left join item.taxonomyLevel taxonomyLevel")
-		  .append(" left join item.educationalContext educationalContext");;
+		  .append(" left join item.educationalContext educationalContext");
 		appendIn(sb, params);
 		appendWhere(sb, params);
 		

@@ -89,6 +89,7 @@ import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -516,7 +517,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			ordersLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Booking:0]]"));
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
-			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
+			boolean booking = re.isPublicVisible() && acService.isResourceAccessControled(re.getOlatResource(), null);
 			ordersLink.setEnabled(booking);
 			toolsDropdown.addComponent(ordersLink);	
 		}
@@ -965,7 +966,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		WindowControl bwControl = getSubWindowControl("Infos");
 		
 		RepositoryEntry entry = loadRepositoryEntry();
-		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), entry, true);
+		RepositoryEntryInfosController ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, true);
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;
@@ -1018,11 +1019,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(security .isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
 			launchContent(ureq);
 		} else {
-			// guest are allowed to see resource with BARG
 			if(security.canLaunch()) {
 				launchContent(ureq);
-			} else if(re.isBookable() && canBook()) {
-				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
+			} else if(re.isPublicVisible()) {
+				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), false);
 				if(acResult.isAccessible()) {
 					launchContent(ureq);
 				} else if (re != null
@@ -1036,7 +1036,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					if(acResult.isAccessible()) {
 						launchContent(ureq);
 					} else {
-						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
+						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
 						listenTo(accessController);
 						toolbarPanel.rootController(re.getDisplayname(), accessController);
 					}
@@ -1049,13 +1049,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	private boolean canBook() {
-		// need to check organization too?
-		return !roles.isGuestOnly();
-	}
-	
 	private void accessRefused(UserRequest ureq) {
-		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), re);
+		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), re, true);
 		listenTo(ctrl);
 		toolbarPanel.rootController(re.getDisplayname(), ctrl);
 	}
@@ -1200,7 +1195,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				userCourseInfoMgr.updateUserCourseInformations(re.getOlatResource(), getIdentity());
 			}
 		} else {
-			runtimeController = new AccessRefusedController(ureq, getWindowControl(), re);
+			runtimeController = new AccessRefusedController(ureq, getWindowControl(), re, true);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		}

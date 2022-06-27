@@ -151,6 +151,7 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
@@ -217,6 +218,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink importLink;
 	private FormLink importUrlLink;
 	private FormLink copyButton;
+	private FormLink selectButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
@@ -795,6 +797,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			deletePermanentlyButton = uifactory.addFormLink("tools.delete.permanently", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(deletePermanentlyButton);
 		}
+		
+		if(configuration.isSelectRepositoryEntries() && configuration.getSelectRepositoryEntries() == SelectionMode.multi) {
+			selectButton = uifactory.addFormLink("tools.select.entries", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(selectButton);
+		}
 	}
 	
 	@Override
@@ -1084,6 +1091,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			doImport(ureq);
 		} else if(importUrlLink == source) {
 			doImportUrl(ureq);
+		} else if(selectButton == source) {
+			fireEvent(ureq, new AuthoringEntryRowsListSelectionEvent(getMultiSelectedRows()));
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -1348,7 +1357,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		return rows;
 	}
 	
-	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if(tab == null) return;
 		
 		tableEl.setSelectedFilterTab(ureq, tab);
@@ -1921,10 +1930,17 @@ public class AuthorListController extends FormBasicController implements Activat
 
 			if(isOwner) {
 				addLink("tools.edit.description", "description", "o_icon o_icon-fw o_icon_details", "/Settings/0/Info/0", links);
+				// Selenium for Firefox need this (cannot click reliably the edit button under the sticky action column)
+				EditionSupport editionSupport = handler.supportsEdit(row.getOLATResourceable(), getIdentity(), roles);
+				if((editionSupport == EditionSupport.yes || editionSupport == EditionSupport.embedded)
+						&& !entry.getEntryStatus().decommissioned()) {
+					addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", "/Editor/0", links);
+				}
+				
 				if(repositoryModule.isCatalogEnabled()) {
 					addLink("tools.edit.catalog", "catalog", "o_icon o_icon-fw o_icon_catalog", "/Settings/0/Catalog/0", links);
 				}
-				addLink("details.members", "members", "o_icon o_icon-fw o_icon_membersmanagement", "/MembersMgmt/0", links);
+				addLink("details.members", "members", "o_icon o_icon-fw o_icon_membersmanagement", "/MembersMgmt/0", links);	
 			}
 			
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
@@ -2020,6 +2036,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					launchCatalog(ureq, row);
 				}  else if("members".equals(cmd)) {
 					launchMembers(ureq, row);
+				} else if("edit".equals(cmd)) {
+					launchEditor(ureq, row);
 				} else if("copy".equals(cmd)) {
 					doCopy(ureq, row);
 				} else if("copy_with_wizard".equals(cmd)) {

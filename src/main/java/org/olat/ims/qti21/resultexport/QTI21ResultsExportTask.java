@@ -166,8 +166,8 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 			if(StringHelper.containsNonWhitespace(task.getCheckpoint())) {
 				export.setStartPoint(task.getCheckpoint());
 			}
-			export.exportExcelResults(zout);
 			export.exportTestResults(zout, progress);
+			export.exportExcelResults(zout);
 		} catch(Exception e) {
 			log.error("", e);
 		}

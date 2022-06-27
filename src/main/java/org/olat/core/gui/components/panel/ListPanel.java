@@ -66,7 +66,7 @@ public class ListPanel extends AbstractComponent implements ComponentCollection 
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
+		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = {}", ureq);
 	}
 
 	public String getCssClass() {
@@ -80,6 +80,12 @@ public class ListPanel extends AbstractComponent implements ComponentCollection 
 	public void addContent(Component newContent) {
 		content.add(newContent);
 		setDirty(true);
+	}
+	
+	public boolean removeContent(Component toRemove) {
+		boolean removed = content.remove(toRemove);
+		setDirty(true);
+		return removed;
 	}
 
 	@Override

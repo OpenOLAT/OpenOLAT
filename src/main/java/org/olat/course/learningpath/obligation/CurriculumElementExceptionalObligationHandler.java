@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -120,7 +121,7 @@ public class CurriculumElementExceptionalObligationHandler implements Exceptiona
 
 	@Override
 	public boolean matchesIdentity(ExceptionalObligation exceptionalObligation, Identity identity,
-			ObligationContext obligationContext, Structure runStructure, ScoreAccounting scoreAccounting) {
+			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
 		if (exceptionalObligation instanceof CurriculumElementExceptionalObligation) {
 			CurriculumElementExceptionalObligation curEleExceptionalObligation = (CurriculumElementExceptionalObligation)exceptionalObligation;
 			return obligationContext.isParticipant(identity, curEleExceptionalObligation.getCurriculumElementRef());

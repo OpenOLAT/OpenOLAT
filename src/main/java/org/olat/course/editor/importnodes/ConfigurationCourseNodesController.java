@@ -59,10 +59,14 @@ import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.DocumentCourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.PodcastCourseNode;
 import org.olat.course.nodes.SPCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.sp.SPEditController;
+import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.reminder.Reminder;
@@ -192,6 +196,10 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 			forgeReferenceOrEmptyRow(row, importNode, CopyType.reference);
 		} else if(courseNode instanceof LLCourseNode) {
 			forgeLinkListRow(importNode, (LLCourseNode)courseNode);
+		} else if(courseNode instanceof IQTESTCourseNode) {
+			forgeQTIRow(row, importNode, (IQTESTCourseNode)courseNode);
+		} else if(courseNode instanceof STCourseNode) {
+			forgeStructureRow(row, importNode, (STCourseNode)courseNode);
 		}
 
 		if(courseNode.hasBusinessGroups()) {
@@ -224,6 +232,28 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 	private void forgeSPRow(ConfigurationCourseNodeRow row, ImportCourseNode importNode, SPCourseNode courseNode) {
 		importNode.setImportSetting(CopyType.ignore);
 		String filePath = courseNode.getModuleConfiguration().getStringValue(SPEditController.CONFIG_KEY_FILE);
+		forgeSinglePageRow(filePath, row, importNode);
+	}
+	
+	private void forgeQTIRow(ConfigurationCourseNodeRow row, ImportCourseNode importNode, IQTESTCourseNode courseNode) {
+		String disclaimerFilePath = (String)courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_DISCLAIMER);
+		if(StringHelper.containsNonWhitespace(disclaimerFilePath)) {
+			importNode.setImportSetting(CopyType.copy);
+			forgeSinglePageRow(disclaimerFilePath, row, importNode);
+		}
+	}
+	
+	private void forgeStructureRow(ConfigurationCourseNodeRow row, ImportCourseNode importNode, STCourseNode courseNode) {
+		String relPath = STCourseNodeEditController.getFileName(courseNode.getModuleConfiguration());
+		boolean editorEnabled = (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(courseNode.getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE)));
+		
+		if(editorEnabled && StringHelper.containsNonWhitespace(relPath)) {
+			importNode.setImportSetting(CopyType.copy);
+			forgeSinglePageRow(relPath, row, importNode);
+		}
+	}
+
+	private void forgeSinglePageRow(String filePath, ConfigurationCourseNodeRow row, ImportCourseNode importNode) {
 		if(StringHelper.containsNonWhitespace(filePath)) {
 			VFSItem item = sourceCourseFolderCont.resolve(filePath);
 			if(item != null) {

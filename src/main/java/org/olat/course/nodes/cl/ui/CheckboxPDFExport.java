@@ -189,6 +189,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	for(Checkbox box:checkboxList.getList()) {
     		headerMaxSize = Math.max(headerMaxSize, getStringWidth(box.getTitle(), fontSize));
     	}
+    	headerMaxSize = Math.min(headerMaxSize, 200.0f);
     	
     	String[] headers = getHeaders(checkboxList);
     	String[][] content = getRows(checkboxList, rows);
@@ -345,17 +346,42 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 			if(text == null) {
 				text = "";
 			}
-			currentContentStream.beginText();
-			currentContentStream.setFont(font, fontSize);
+			
 			if (h == 0 || (h == lastColIndex)) {
+				currentContentStream.beginText();
+				currentContentStream.setFont(font, fontSize);
 				currentContentStream.newLineAtOffset(textx, texty - headerHeight + cellMargin);
 				textx += nameMaxSizeWithMargin;
+				showTextToStream(text, currentContentStream);
+				currentContentStream.endText();
 			} else {
-				currentContentStream.setTextMatrix(Matrix.getRotateInstance(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin));
+				String[] texts = splitTextInParts(text, maxHeaderSize, fontSize);
+				if(texts.length > 1) {
+					int maxNumOfLines = (int)(colWidth / (lineHeightFactory * fontSize));
+					if(maxNumOfLines < 1) {
+						maxNumOfLines = 1;
+					}
+					
+					int numOfLines = Math.min(texts.length, maxNumOfLines);
+					float lineTextx = textx + ((numOfLines - 1) * lineHeightFactory * fontSize);
+					for(int k=0; k<numOfLines; k++) {
+						String textLine = texts[k];
+						currentContentStream.beginText();
+						currentContentStream.setFont(font, fontSize);
+						currentContentStream.setTextMatrix(Matrix.getRotateInstance(3 * (Math.PI / 2), lineTextx + cellMargin, texty - cellMargin));
+						showTextToStream(textLine, currentContentStream);
+						currentContentStream.endText();
+						lineTextx -= (lineHeightFactory * fontSize);
+					}
+				} else {
+					currentContentStream.beginText();
+					currentContentStream.setFont(font, fontSize);
+					currentContentStream.setTextMatrix(Matrix.getRotateInstance(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin));
+					showTextToStream(text, currentContentStream);
+					currentContentStream.endText();
+				}
 				textx += colWidth;
 			}
-			showTextToStream(text, currentContentStream);
-			currentContentStream.endText();
 		}
 
 		currentY -= headerHeight;
@@ -374,7 +400,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 				if(text != null) {
 					if(rowHeights[i] > rowHeight + 1) {
 						//can do 2 lines
-						String[] texts = splitText(text, textWidth, fontSize);
+						String[] texts = splitTextInParts(text, textWidth, fontSize);
 						float lineTexty = texty;
 						for(int k=0; k<2 && k<texts.length; k++) {
 							String textLine = texts[k];

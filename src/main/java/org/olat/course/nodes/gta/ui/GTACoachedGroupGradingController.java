@@ -29,6 +29,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -55,6 +56,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -70,6 +72,7 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
+import org.olat.course.nodes.gta.ui.events.IntermediateSaveEvent;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -79,6 +82,10 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -117,6 +124,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final AssessmentManager assessmentManager;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final boolean withScore;
+	private final boolean withGrade;
 	private final boolean withPassed;
 	private final boolean withDocs;
 	private final boolean withComment;
@@ -134,12 +142,17 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
 	public GTACoachedGroupGradingController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			BusinessGroup assessedGroup, TaskList taskList, Task assignedTask) {
 		super(ureq, wControl, "coach_group_grading");
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.gtaNode = gtaNode;
 		this.taskList = taskList;
 		this.assessedGroup = assessedGroup;
@@ -148,8 +161,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentManager = courseEnv.getAssessmentManager();
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
+		withGrade = withScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		withPassed = Mode.none != assessmentConfig.getPassedMode();
 		withDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
 		withComment = assessmentConfig.hasComment();
@@ -217,12 +231,21 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			}
 		}
 
+		if(withScore) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreVal.i18nKey(), Cols.scoreVal.ordinal()));
+		}
+		if(withGrade) {
+			GradeSystem gradeSystem = gradeService.getGradeSystem(
+					coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), gtaNode.getIdent());
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+			DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(Cols.gradeVal.i18nKey(),
+					Cols.gradeVal.ordinal(), new TextFlexiCellRenderer(EscapeMode.none));
+			gradeColumn.setHeaderLabel(gradeSystemLabel);
+			columnsModel.addFlexiColumnModel(gradeColumn);
+		}
 		if(withPassed) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedVal.i18nKey(), Cols.passedVal.ordinal(),
 					new PassedCellRenderer(getLocale())));
-		}
-		if(withScore) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreVal.i18nKey(), Cols.scoreVal.ordinal()));
 		}
 		if (withDocs) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.assessmentDocsVal.i18nKey(), Cols.assessmentDocsVal.ordinal()));
@@ -256,6 +279,12 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			if(withScore && entry != null) {
 				String pointVal = AssessmentHelper.getRoundedScore(entry.getScore());
 				row.setScore(pointVal);
+			}
+			
+			if(withGrade && entry != null) {
+				row.setGrade(entry.getGrade());
+				row.setTranslatedGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
+						entry.getPerformanceClassIdent(), entry.getGrade(), entry.getGradeSystemIdent()));
 			}
 			
 			if(withPassed && entry != null) {
@@ -300,6 +329,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		if(assessmentCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadMembers();
+			} else if(event instanceof IntermediateSaveEvent) {
+				loadMembers();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CLOSE_EVENT) {
 				doGrading();
 				loadMembers();
@@ -362,7 +394,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		removeAsListenerAndDispose(assessmentCtrl);
 		
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), courseEntry, gtaNode, assessedGroup);
+		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), courseEntry, gtaNode, assessedGroup, coachCourseEnv);
 		listenTo(assessmentCtrl);
 		
 		String title = translate("grading");

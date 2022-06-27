@@ -22,14 +22,17 @@ package org.olat.modules.sharedfolder;
 import static org.olat.modules.sharedfolder.SharedFolderWebDAVProvider.readOnlyCallback;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.manager.WebDAVMergeSource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.SharedFolderFileResource;
@@ -37,6 +40,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.resource.accesscontrol.ACService;
 
 
 /**
@@ -61,6 +65,7 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<VFSContainer> containers = new ArrayList<>();
 		Set<Long> addedEntries = new HashSet<>();
+		List<OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(getIdentity());
 		
 		List<RepositoryEntry> ownerEntries = repoManager.queryByMembership(getIdentity(), true, true, false, SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry entry : ownerEntries) {
@@ -87,8 +92,9 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 			if (firstItem != null && firstItem.equals("*")) {
 				// fake role that represents normally logged in user
 				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), Roles.userRoles(), SharedFolderFileResource.TYPE_NAME);
-				List<RepositoryEntry> allEntries = repoManager
-						.genericANDQueryWithRolesRestriction(params, 0, -1, false);
+				params.setOfferOrganisations(offerOrganisations);
+				params.setOfferValidAt(new Date());
+				List<RepositoryEntry> allEntries = repoManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				for (RepositoryEntry entry : allEntries) {
 					addReadonlyFolder(entry, sfm, addedEntries, containers);
 				}

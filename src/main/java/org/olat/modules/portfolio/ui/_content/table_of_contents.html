@@ -1,10 +1,10 @@
 <div class="o_portfolio_content">
 	#if ($isTemplate)
-		$r.contextHelpWithWrapper("Portfolio template: Administration and editing")
+		$r.contextHelpWithWrapper("manual_user/portfolio/Portfolio_template_Administration_and_editing/")
 	#elseif ($isPersonalBinder)
-		$r.contextHelpWithWrapper("Three steps to your portfolio binder")
+		$r.contextHelpWithWrapper("manual_user/portfolio/Three_steps_to_your_portfolio_binder/")
 	#else 
-		$r.contextHelpWithWrapper("Portfolio task and assignment: Collecting and editing")
+		$r.contextHelpWithWrapper("manual_user/portfolio/Portfolio_task_and_assignment_Collecting_and_editing/")
 	#end
 	<h2><i class="o_icon o_icon_fw o_icon_pf_binder"> </i> $r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end </h2>
 	#if($r.available("to.ref.entry"))

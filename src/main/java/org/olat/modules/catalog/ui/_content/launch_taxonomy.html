@@ -1,0 +1,24 @@
+<div class="o_catalog_launcher">
+	<div class="o_title">
+		<div>
+			<h3>$title</h3>
+		</div>
+	</div>
+	#if($r.available("emptyState"))
+		$r.render("emptyState")
+	#end
+	<div class="o_taxonomy_launchers #if($square)o_launchers_square#end">
+		#foreach($row in $items)
+			<div class="o_taxonomy_launcher o_card_hover">
+				<a $r.hrefAndOnclick("select",false,true,"key","$row.key")>
+					<div class="o_visual">
+						<span class="o_visual_not_available" #if($row.thumbnailRelPath) style="background-image:url('$row.thumbnailRelPath');" #end></span>
+					</div>
+				</a>
+				<div class="o_meta">
+					<h4 class="o_title">$r.render($row.selectLinkName)</h4>
+				</div>
+			</div>
+		#end
+	</div>
+</div>

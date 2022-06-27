@@ -44,6 +44,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -89,7 +90,7 @@ public class CheckListExcelExport {
 		this.course = course;
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 		this.hasScore = Mode.none != assessmentConfig.getScoreMode();
 		this.hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		this.hasComment = assessmentConfig.hasComment();

@@ -44,6 +44,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.stereotype.Service;
 
 /**
@@ -64,11 +65,11 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
 		if (courseNode instanceof MSCourseNode) {
 			((MSCourseNode)courseNode).updateModuleDefaults(courseNode.getModuleConfiguration());
 		}
-		return new MSAssessmentConfig(courseNode.getModuleConfiguration());
+		return new MSAssessmentConfig(courseEntry, courseNode);
 	}
 
 	@Override

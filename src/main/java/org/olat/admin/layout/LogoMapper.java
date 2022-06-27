@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
@@ -39,6 +40,7 @@ class LogoMapper implements Mapper {
 	
 	private final LayoutModule layoutModule;
 	private long lastModified;
+	private boolean scalingFailed = false;
 	
 	public LogoMapper(LayoutModule layoutModule) {
 		this.layoutModule = layoutModule;
@@ -49,12 +51,18 @@ class LogoMapper implements Mapper {
 		File logo = layoutModule.getLogo();
 		File dir = layoutModule.getLogoDirectory();
 		File scaledLogo = new File(dir, relPath);
-		if(lastModified < logo.lastModified() || !scaledLogo.exists()) {
+		if (lastModified < logo.lastModified() || (!scaledLogo.exists() && scalingFailed)) {
+			// Serve logo resized to fit into a 400x200 box. Will be displayed
+			// normally with 50px height, so there are plenty of pixels for HD screens
 			ImageService imageService = CoreSpringFactory.getImpl(ImageService.class);
-			File logo1x = new File(dir, "oo-logo@1x.png");
-			imageService.scaleImage(logo, "png", logo1x, 104, 50, false);
-			File logo2x = new File(dir, "oo-logo@2x.png");
-			imageService.scaleImage(logo, "png", logo2x, 208, 50, false);
+			File logoScaled = new File(dir, "optimized_" + logo.getName());
+			Size size = imageService.scaleImage(logo, "png", logoScaled, 400, 200, false);
+			// try this only once for this image
+			if (size == null) {
+				scalingFailed = true;
+			} else {
+				lastModified = logo.lastModified();
+			}
 		}
 		return new FileMediaResource(scaledLogo);
 	}

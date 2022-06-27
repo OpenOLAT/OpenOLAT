@@ -44,6 +44,8 @@ import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.reminder.ui.CourseNodeReminderController;
 import org.olat.course.reminder.ui.ReminderDeletedEvent;
@@ -129,6 +131,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		descriptionVc.contextPut("intLink", intLink.toString());
 		descriptionVc.contextPut("nodeId", courseNode.getIdent());
 		
+		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType());
+		descriptionVc.contextPut("nodeTypeTranslated", nodeConfig.getLinkText(getLocale()));
+		
 		putInitialPanel(descriptionVc);
 
 		nodeConfigController = new NodeConfigController(ureq, wControl, courseNode, userCourseEnvironment);
@@ -158,7 +163,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		}
 		
 		boolean rootNode = course.getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
-		reminderProvider = courseNode.getReminderProvider(rootNode);
+		reminderProvider = courseNode.getReminderProvider(courseEntry, rootNode);
 		if (reminderProvider != null) {
 			reminderCtrl = new CourseNodeReminderController(ureq, wControl, stackPanel, courseEntry, reminderProvider, true);
 			listenTo(reminderCtrl);

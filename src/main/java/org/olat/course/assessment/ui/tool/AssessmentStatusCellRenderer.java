@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.Locale;
 
 import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -46,11 +47,28 @@ public class AssessmentStatusCellRenderer extends IconCssCellRenderer {
 		this.trans = trans;
 		this.showNoStatus = showNoStatus;
 	}
+	
+	public String render(AssessmentEntryStatus status) {
+		StringOutput stringOutput = new StringOutput();
+		render(stringOutput, status);
+		return stringOutput.toString();
+	}
+
+	protected boolean isShowNoStatus(@SuppressWarnings("unused") Object val) {
+		return showNoStatus;
+	}
+	
+	protected AssessmentEntryStatus getStatus(Object val) {
+		if(val instanceof AssessmentEntryStatus) {
+			return (AssessmentEntryStatus)val;
+		}
+		return null;
+	}
 
 	@Override
 	protected String getIconCssClass(Object val) {
-		if(val instanceof AssessmentEntryStatus) {
-			AssessmentEntryStatus status = (AssessmentEntryStatus)val;
+		AssessmentEntryStatus status = getStatus(val);
+		if(status != null) {
 			switch(status) {
 				case notReady: return "o_icon o_icon-fw o_icon_status_not_ready";
 				case notStarted: return "o_icon o_icon-fw o_icon_status_not_started";
@@ -58,7 +76,7 @@ public class AssessmentStatusCellRenderer extends IconCssCellRenderer {
 				case inReview: return "o_icon o_icon-fw o_icon_status_in_review";
 				case done: return "o_icon o_icon-fw o_icon_status_done";
 			}	
-		} else if (showNoStatus) {
+		} else if (isShowNoStatus(val)) {
 			return "o_icon o_icon-fw o_icon_status_not_started";
 		}
 		return null;
@@ -66,8 +84,8 @@ public class AssessmentStatusCellRenderer extends IconCssCellRenderer {
 
 	@Override
 	protected String getCellValue(Object val) {
-		if(val instanceof AssessmentEntryStatus) {
-			AssessmentEntryStatus status = (AssessmentEntryStatus)val;
+		AssessmentEntryStatus status = getStatus(val);
+		if(status != null) {
 			switch(status) {
 				case notReady: return trans.translate("assessment.status.notReady");
 				case notStarted: return trans.translate("assessment.status.notStart");
@@ -75,7 +93,7 @@ public class AssessmentStatusCellRenderer extends IconCssCellRenderer {
 				case inReview: return trans.translate("assessment.status.inReview");
 				case done: return trans.translate("assessment.status.done");
 			}	
-		} else if (showNoStatus) {
+		} else if (isShowNoStatus(val)) {
 			return trans.translate("assessment.status.notStart");
 		}
 		return null;

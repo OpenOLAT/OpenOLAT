@@ -61,7 +61,8 @@ public class DailyOverviewProfilController extends BasicController {
 		dayChooserCtrl = new DayChooserController(ureq, getWindowControl());
 		listenTo(dayChooserCtrl);
 		mainVC.put("day.chooser", dayChooserCtrl.getInitialComponent());
-		lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(), getCurrentDate(), profiledIdentity, secCallback);
+		lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(), getCurrentDate(),
+				profiledIdentity, secCallback, false);
 		listenTo(lectureBlocksCtrl);
 		mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
 		

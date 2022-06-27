@@ -120,8 +120,8 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	
 	@Override
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithStatus(RepositoryEntry entry, String subIdent,
-			AssessmentEntryStatus status, boolean excludeZeroScore) {
-		return assessmentEntryDao.loadAssessmentEntryBySubIdentWithStatus(entry, subIdent, status, excludeZeroScore);
+			AssessmentEntryStatus status, boolean excludeZeroScore, boolean userVisibleOnly) {
+		return assessmentEntryDao.loadAssessmentEntryBySubIdentWithStatus(entry, subIdent, status, excludeZeroScore, userVisibleOnly);
 	}
 
 	@Override
@@ -162,8 +162,23 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 	
 	@Override
+	public boolean hasGrades(RepositoryEntryRef remositoryEntry, String subIdent) {
+		return assessmentEntryDao.hasGrades(remositoryEntry, subIdent);
+	}
+	
+	@Override
+	public Long getScoreCount(RepositoryEntryRef repositoryEntry, String subIdent) {
+		return assessmentEntryDao.getScoreCount(repositoryEntry, subIdent);
+	}
+
+	@Override
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start) {
 		return assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
+	}
+	
+	@Override
+	public List<AssessmentEntry> getRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry) {
+		return assessmentEntryDao.loadRootEntriesWithoutPassed(repositoryEntry);
 	}
 
 	@Override

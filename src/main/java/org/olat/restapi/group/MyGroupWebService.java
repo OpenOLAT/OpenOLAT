@@ -177,7 +177,7 @@ public class MyGroupWebService {
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
 			for(BusinessGroup group:groups) {
-				groupVOs[count++] = ObjectFactory.get(group);
+				groupVOs[count++] = GroupVO.valueOf(group);
 			}
 			GroupVOes voes = new GroupVOes();
 			voes.setGroups(groupVOs);
@@ -189,7 +189,7 @@ public class MyGroupWebService {
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
 			for(BusinessGroup group:groups) {
-				groupVOs[count++] = ObjectFactory.get(group);
+				groupVOs[count++] = GroupVO.valueOf(group);
 			}
 			return Response.ok(groupVOs).build();
 		}

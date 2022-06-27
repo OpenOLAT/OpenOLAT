@@ -70,9 +70,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	private String shortenedDescription;
 	
 	private RepositoryEntryStatusEnum status;
-	private boolean guests;
-	private boolean allUsers;
-	private boolean bookable;
+	private boolean publicVisible;
 	private List<PriceMethod> accessTypes;
 
 	private boolean member;
@@ -121,10 +119,6 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 			// add ourself as level
 			level++;
 		}
-		
-		guests = repositoryEntryView.isGuests();
-		allUsers = repositoryEntryView.isAllUsers();
-		bookable = repositoryEntryView.isBookable();
 		status = repositoryEntryView.getEntryStatus();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
@@ -301,18 +295,14 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return status;
 	}
 	
-	public boolean isAllUsers() {
-		return allUsers;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
-	
-	public boolean isGuests() {
-		return guests;
+
+	public void setPublicVisible(boolean publicVisible) {
+		this.publicVisible = publicVisible;
 	}
-	
-	public boolean isBookable() {
-		return bookable;
-	}
-	
+
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailRelPath);
 	}

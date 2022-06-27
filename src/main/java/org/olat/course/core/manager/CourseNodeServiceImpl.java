@@ -116,7 +116,7 @@ public class CourseNodeServiceImpl implements CourseNodeService, GenericEventLis
 			if (identsToCreate.contains(nodeIdent)) {
 				createCourseElement(courseEntry, courseNode);
 			} else if (identsToUpdate.contains(nodeIdent)) {
-				updateCourseElement(courseElementIdentsToElement.get(nodeIdent), courseNode);
+				updateCourseElement(courseEntry, courseElementIdentsToElement.get(nodeIdent), courseNode);
 			}
 		}
 		courseElementDao.delete(courseEntry, identsToDelete);
@@ -128,12 +128,12 @@ public class CourseNodeServiceImpl implements CourseNodeService, GenericEventLis
 	}
 	
 	private CourseElement createCourseElement(RepositoryEntry courseEntry, CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		return courseElementDao.create(courseEntry, courseNode, assessmentConfig);
 	}
 
-	private CourseElement updateCourseElement(CourseElement courseElement, CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+	private CourseElement updateCourseElement(RepositoryEntry courseEntry, CourseElement courseElement, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (!isSame(courseElement, courseNode, assessmentConfig)) {
 			return courseElementDao.update(courseElement, courseNode, assessmentConfig);
 		}
@@ -145,6 +145,8 @@ public class CourseNodeServiceImpl implements CourseNodeService, GenericEventLis
 				&& Objects.equals(courseElement.getLongTitle(), courseNode.getLongTitle())
 				&& courseElement.isAssesseable() == assessmentConfig.isAssessable()
 				&& Objects.equals(courseElement.getScoreMode(), assessmentConfig.getScoreMode())
+				&& courseElement.hasGrade() == assessmentConfig.hasGrade()
+				&& courseElement.isAutoGrade() == assessmentConfig.isAutoGrade()
 				&& Objects.equals(courseElement.getPassedMode(), assessmentConfig.getPassedMode())
 				&& compareCutVaue(courseElement.getCutValue(), assessmentConfig.getCutValue())
 				;

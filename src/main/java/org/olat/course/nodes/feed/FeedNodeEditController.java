@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -83,23 +84,24 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			accessVC.put("remove", conditionRemoveCtrl.getInitialComponent());
 			
 			// Moderator precondition
+			CourseEntryRef courseEntry = new CourseEntryRef(uce);
 			Condition moderatorCondition = courseNode.getPreConditionModerator();
 			moderatroCtr = new ConditionEditController(ureq, getWindowControl(), uce, moderatorCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 			this.listenTo(moderatroCtr);
 			accessVC.put("moderatorCondition", moderatroCtr.getInitialComponent());
 			
 			// Poster precondition
 			Condition posterCondition = courseNode.getPreConditionPoster();
 			posterCtr = new ConditionEditController(ureq, getWindowControl(), uce, posterCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 			this.listenTo(posterCtr);
 			accessVC.put("posterCondition", posterCtr.getInitialComponent());
 			
 			// Reader precondition
 			Condition readerCondition = courseNode.getPreConditionReader();
 			readerCtr = new ConditionEditController(ureq, getWindowControl(), uce, readerCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 			this.listenTo(readerCtr);
 			accessVC.put("readerCondition", readerCtr.getInitialComponent());
 		}
@@ -159,7 +161,7 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			tabbedPane.addTab(translate(PANE_TAB_ACCESS), accessVC);
 		}
 		if (configCtrl != null) {
-			tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
+			tabbedPane.addTab(translate(PANE_TAB_CONFIG), "o_sel_repo_entry", configCtrl.getInitialComponent());
 		}
 	}
 }

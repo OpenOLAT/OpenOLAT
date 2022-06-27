@@ -73,8 +73,9 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		
 		configForm = new PortfolioConfigForm(ureq, wControl, stackPanel, course, node);
 		listenTo(configForm);
-		scoringController = new MSEditFormController(ureq, wControl, config, NodeAccessType.of(course),
-				translate("pane.tab.portfolio_scoring"), "Creating Portfolio Tasks");
+		scoringController = new MSEditFormController(ureq, wControl,
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), node, NodeAccessType.of(course),
+				translate("pane.tab.portfolio_scoring"), "manual_user/portfolio/Creating_Portfolio_Tasks/");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
 		textForm = new PortfolioTextForm(ureq, wControl, course, node);
@@ -91,12 +92,12 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	// if there is already user data available, make for read only
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
 		hasLogEntries = am.hasUserNodeLogs(node);
-		configContent.contextPut("hasLogEntries", new Boolean(hasLogEntries));
+		configContent.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
 		if (hasLogEntries) {
 			scoringController.setDisplayOnly(true);
 		}
 		//Initialstate
-		configContent.contextPut("isOverwriting", new Boolean(false));
+		configContent.contextPut("isOverwriting", Boolean.valueOf(false));
 	}
 	
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
@@ -118,6 +119,8 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				textForm.loadMapOrBinder();
 				textForm.updateUI();
 				configContent.setDirty(true);
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == textForm) {
 			if (event == Event.DONE_EVENT) {
@@ -132,8 +135,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 			if (event == Event.CANCELLED_EVENT) {
 				if (hasLogEntries) {
 					scoringController.setDisplayOnly(true);}
-				configContent.contextPut("isOverwriting", new Boolean(false));
-				return;				
+				configContent.contextPut("isOverwriting", Boolean.valueOf(false));			
 			} else if (event == Event.DONE_EVENT){
 				scoringController.updateModuleConfiguration(config);
 				updateHighscoreTab();
@@ -155,9 +157,9 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configContent);
-		tabbedPane.addTab(translate(PANE_TAB_SCORING), scoringContent);
-		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CONFIG), "o_sel_repo_entry", configContent);
+		tabbedPane.addTab(translate(PANE_TAB_SCORING), "o_sel_portfolio_assessment", scoringContent);
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 	}
 

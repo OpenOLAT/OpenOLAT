@@ -41,6 +41,7 @@ public class FlexiTableFilter {
 	private boolean selected;
 	private boolean showAll = false;
 	private boolean defaultVisible = true;
+	private Object userObject;
 	
 	public FlexiTableFilter(String label, String filter) {
 		this.label = label;
@@ -113,6 +114,14 @@ public class FlexiTableFilter {
 
 	public void setDefaultVisible(boolean defaultVisible) {
 		this.defaultVisible = defaultVisible;
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	public FlexiTableFilterIconRenderer getIconRenderer() {

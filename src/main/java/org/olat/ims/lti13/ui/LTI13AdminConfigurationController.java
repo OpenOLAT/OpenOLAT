@@ -74,7 +74,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("LTI Integrations");
+		setFormContextHelp("manual_admin/administration/LTI_Integrations/");
 		
 		String[] enabledValues = new String[]{ translate("enabled") };
 		

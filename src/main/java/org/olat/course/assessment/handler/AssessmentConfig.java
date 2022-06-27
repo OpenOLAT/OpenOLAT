@@ -54,16 +54,27 @@ public interface AssessmentConfig {
 	public Mode getScoreMode();
 	
 	/**
-	 * @return Returns the maximal score that can be achieved on this node. Throws 
-	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
+	 * @return Returns the maximal score that can be achieved on this node. Return
+	 *         NULL if ScoreMode set to Mode.none, maxScore is undefined in this case
 	 */
 	public Float getMaxScore();
 
 	/**
-	 * @return Returns the minimal score that can be achieved on this node. Throws 
-	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
+	 * @return Returns the minimal score that can be achieved on this node. Return
+	 *         NULL if ScoreMode set to Mode.none, minScore is undefined in this case
 	 */
 	public Float getMinScore();
+	
+	/**
+	 * @return if this course node produces a grade for the learner
+	 */
+	public boolean hasGrade();
+	
+	/**
+	 * @return true if the grade is set when the score is set of if the coach has to
+	 *         set the grade manually,
+	 */
+	public boolean isAutoGrade();
 	
 	/**
 	 * @return if this course node produces a passed variable for the learner
@@ -82,6 +93,13 @@ public interface AssessmentConfig {
 	 * @return if the produced passed can be overriden by the coach
 	 */
 	public boolean isPassedOverridable();
+	
+	/**
+	 * @param done Is the assessment done?
+	 * @param coachCanNotEdit Can the coach edit the user visibility?
+	 * @return Returns the initial user visibility.
+	 */
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit);
 	
 	/**
 	 * @return if this course node can produces a completion variable for the learner

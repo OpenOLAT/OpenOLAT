@@ -37,6 +37,7 @@ import org.olat.course.nodes.st.assessment.PassCounter.Counts;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -54,6 +55,8 @@ public class PassCounterTest {
 	private AssessmentConfig configEvaluated;
 	@Mock
 	private AssessmentConfig configNone;
+	@Mock
+	private RepositoryEntryRef courseEntry;
 
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
@@ -85,64 +88,64 @@ public class PassCounterTest {
 		parent.addChild(child11);
 		AssessmentEvaluation child11Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child11, child11Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child11)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child11)).thenReturn(configSetByNode);
 		// Child: set by node, not passed, user visible
 		CourseNode child12 = new Card2BrainCourseNode();
 		parent.addChild(child12);
 		AssessmentEvaluation child12Evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child12, child12Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child12)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child12)).thenReturn(configSetByNode);
 		// Child: set by node, not passed, not user visible
 		CourseNode child13 = new Card2BrainCourseNode();
 		parent.addChild(child13);
 		AssessmentEvaluation child13Evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.FALSE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child13, child13Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child13)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child13)).thenReturn(configSetByNode);
 		// Child: set by node, passed, not user visible
 		CourseNode child14 = new Card2BrainCourseNode();
 		parent.addChild(child14);
 		AssessmentEvaluation child14Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.FALSE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child14, child14Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child14)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child14)).thenReturn(configSetByNode);
 		// Child: none, passed, user visible
 		CourseNode child15 = new Card2BrainCourseNode();
 		parent.addChild(child15);
 		AssessmentEvaluation child15Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child15, child15Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child15)).thenReturn(configNone);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child15)).thenReturn(configNone);
 		// Child: set by node, null passed, not user visible
 		CourseNode child16 = new Card2BrainCourseNode();
 		parent.addChild(child16);
 		AssessmentEvaluation child16Evaluation = createAssessmentEvaluation(null, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child16, child16Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child16)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child16)).thenReturn(configSetByNode);
 		// Child: evaluated, passed, user visible
 		CourseNode child17 = new STCourseNode();
 		parent.addChild(child17);
 		AssessmentEvaluation child17Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child17, child17Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child17)).thenReturn(configEvaluated);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child17)).thenReturn(configEvaluated);
 		// Child: set by node, not passed, user visible, ignored
 		CourseNode child18 = new Card2BrainCourseNode();
 		parent.addChild(child18);
 		AssessmentEvaluation child18Evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child18, child18Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child18)).thenReturn(configSetByNodeIgnore);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child18)).thenReturn(configSetByNodeIgnore);
 		// Child: set by node, not passed, user visible, invisible obligation
 		CourseNode child19 = new Card2BrainCourseNode();
 		parent.addChild(child19);
 		AssessmentEvaluation child19Evaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE, AssessmentObligation.excluded);
 		scoreAccounting.put(child19, child19Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child19)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child19)).thenReturn(configSetByNode);
 		
 		// Child level 2: set by node, passed, user visible
 		CourseNode child21 = new Card2BrainCourseNode();
 		child17.addChild(child21);
 		AssessmentEvaluation child21Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child21, child21Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(child21)).thenReturn(configSetByNode);
+		when(courseAssessmentService.getAssessmentConfig(courseEntry, child21)).thenReturn(configSetByNode);
 		
-		Counts counts = sut.getCounts(parent, scoreAccounting, courseAssessmentService);
+		Counts counts = sut.getCounts(courseEntry, parent, scoreAccounting, courseAssessmentService);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(counts.getPassable()).isEqualTo(6);
@@ -152,7 +155,7 @@ public class PassCounterTest {
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, passed, null, null, null, null, null, userVisibility, null, null,
-				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
+				null, null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 }

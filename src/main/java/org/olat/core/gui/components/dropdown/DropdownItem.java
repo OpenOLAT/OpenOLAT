@@ -168,4 +168,8 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	public void setButtonSize(ButtonSize buttonSize) {
 		dropdown.setButtonSize(buttonSize);
 	}
+	
+	public void setPrimary(boolean primary) {
+		dropdown.setPrimary(primary);
+	}
 }

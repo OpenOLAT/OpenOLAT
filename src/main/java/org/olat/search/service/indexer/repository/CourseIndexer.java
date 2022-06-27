@@ -51,6 +51,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.Indexer;
@@ -171,7 +172,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
 		if (debug) log.debug("repositoryEntry={}", repositoryEntry);
 
-		if(roles.isGuestOnly() && repositoryEntry.isGuests()) {
+		if(roles.isGuestOnly() && !(repositoryEntry.isPublicVisible() && CoreSpringFactory.getImpl(ACService.class).isGuestAccessible(repositoryEntry, true))) {
 			return false;
 		}
 		

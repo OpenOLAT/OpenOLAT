@@ -2,10 +2,10 @@
 #if($r.available("add.meeting"))
 	<div class="o_button_group o_button_group_right">
 		$r.render("add.meeting")
-		$r.contextHelpWithWrapper("Course+element+BigBlueButton")
+		$r.contextHelpWithWrapper("manual_user/course_elements/Course_element_BigBlueButton/")
 	</div>
 #else
-	<div class="clearfix">$r.contextHelpWithWrapper("Course+element+BigBlueButton")</div>
+	<div class="clearfix">$r.contextHelpWithWrapper("manual_user/course_elements/Course_element_BigBlueButton/")</div>
 #end
 $r.render("meetings")
 </div>

@@ -34,9 +34,12 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	private Mode scoreMode;
 	private Float minScore;
 	private Float maxScore;
+	private boolean grade;
+	private boolean autoGrade;
 	private Mode passedMode;
 	private Float cutValue;
 	private boolean passedOverridable;
+	private Boolean initialUserVisibility;
 	private Mode completionMode;
 	private boolean attempts;
 	private boolean hasMaxAttempts;
@@ -98,6 +101,24 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean hasGrade() {
+		return grade;
+	}
+
+	public void setGrade(boolean grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public boolean isAutoGrade() {
+		return autoGrade;
+	}
+
+	public void setAutoGrade(boolean autoGrade) {
+		this.autoGrade = autoGrade;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		return passedMode;
 	}
@@ -122,6 +143,15 @@ public class AssessmentConfigMock implements AssessmentConfig {
 
 	public void setPassedOverridable(boolean passedOverridable) {
 		this.passedOverridable = passedOverridable;
+	}
+
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return initialUserVisibility;
+	}
+
+	public void setInitialUserVisibility(Boolean initialUserVisibility) {
+		this.initialUserVisibility = initialUserVisibility;
 	}
 
 	@Override

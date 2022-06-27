@@ -176,7 +176,7 @@ public class MetaInfoFormController extends FormBasicController {
 		if(isSubform) {
 			setFormTitle("mf.metadata.title");
 		}
-		setFormContextHelp("Course Element: Folder#_metadata_folder");
+		setFormContextHelp("manual_user/course_elements/Course_Element_Folder/#metadata");
 		
 		VFSMetadata meta = item == null ? null : item.getMetaInfo();
 
@@ -199,23 +199,24 @@ public class MetaInfoFormController extends FormBasicController {
 		// license
 		if (licenseModule.isEnabled(licenseHandler)) {
 			License license = vfsRepositoryService.getOrCreateLicense(meta, getIdentity());
-
-			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
-					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
-			licenseEl = uifactory.addDropdownSingleselect("mf.license", formLayout,
-					licenseSelectionConfig.getLicenseTypeKeys(),
-					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
-			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
-			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
-				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+			if (license != null) {
+				LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
+						.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
+				licenseEl = uifactory.addDropdownSingleselect("mf.license", formLayout,
+						licenseSelectionConfig.getLicenseTypeKeys(),
+						licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+				licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
+				if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
+					licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+				}
+				licenseEl.addActionListener(FormEvent.ONCHANGE);
+				
+				licensorEl = uifactory.addTextElement("mf.licensor", 1000, license.getLicensor(), formLayout);
+				
+				String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
+				licenseFreetextEl = uifactory.addTextAreaElement("mf.freetext", 4, 72, freetext, formLayout);
+				LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 			}
-			licenseEl.addActionListener(FormEvent.ONCHANGE);
-			
-			licensorEl = uifactory.addTextElement("mf.licensor", 1000, license.getLicensor(), formLayout);
-
-			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
-			licenseFreetextEl = uifactory.addTextAreaElement("mf.freetext", 4, 72, freetext, formLayout);
-			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 		}
 
 		// creator
@@ -359,7 +360,18 @@ public class MetaInfoFormController extends FormBasicController {
 			// a directory.
 			// Hide the metadata.
 			setMetaFieldsVisible(false);
-			if (moreMetaDataLink != null) moreMetaDataLink.setVisible(false);
+			if (licenseEl != null) {
+				licenseEl.setVisible(false);
+			}
+			if (licensorEl != null) {
+				licensorEl.setVisible(false);
+			}
+			if (licenseFreetextEl != null) {
+				licenseFreetextEl.setVisible(false);
+			}
+			if (moreMetaDataLink != null) {
+				moreMetaDataLink.setVisible(false);
+			}
 		}
 
 		// save and cancel buttons
@@ -374,7 +386,7 @@ public class MetaInfoFormController extends FormBasicController {
 	}
 
 	/**
-	 * @return True if one or more metadata fields are non-emtpy.
+	 * @return True if one or more metadata fields are non-empty.
 	 */
 	private boolean hasMetadata(VFSMetadata meta) {
 		if (meta != null) { return StringHelper.containsNonWhitespace(meta.getCreator())
@@ -435,15 +447,17 @@ public class MetaInfoFormController extends FormBasicController {
 		meta.setSource(sourceEl.getValue());
 		meta.setUrl(url.getValue());
 		meta.setPages(pages.getValue());
-		License license = getLicenseFromFormItems();
-		meta.setLicenseType(license.getLicenseType() == null ? null : license.getLicenseType());
-		meta.setLicenseTypeName(license.getLicenseType() != null? license.getLicenseType().getName(): "");
-		meta.setLicensor(license.getLicensor() != null? license.getLicensor(): "");
-		meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
+		License license = getLicenseFromFormItems(meta);
+		meta.setLicenseType(license != null && license.getLicenseType() != null ? license.getLicenseType() : null);
+		meta.setLicenseTypeName(license != null && license.getLicenseType() != null? license.getLicenseType().getName(): "");
+		meta.setLicensor(license != null && license.getLicensor() != null? license.getLicensor(): "");
+		meta.setLicenseText(license != null? LicenseUIFactory.getLicenseText(license): null);
 		return meta;
 	}
 	
-	private License getLicenseFromFormItems() {
+	private License getLicenseFromFormItems(VFSMetadata meta) {
+		if (meta.isDirectory()) return null;
+		
 		License license = licenseService.createLicense(null);
 		String licensor = "";
 		String freetext = "";

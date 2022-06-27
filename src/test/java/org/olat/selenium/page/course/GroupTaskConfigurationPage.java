@@ -42,8 +42,7 @@ public class GroupTaskConfigurationPage {
 	}
 	
 	public GroupTaskConfigurationPage selectWorkflow() {
-		By configBy = By.className("o_sel_course_gta_steps");
-		return selectTab(configBy);
+		return selectTab("o_sel_gta_workflow", By.className("o_sel_course_gta_steps"));
 	}
 	
 	public GroupTaskConfigurationPage optional(boolean optional) {
@@ -54,7 +53,7 @@ public class GroupTaskConfigurationPage {
 			optionalBy = By.cssSelector("div#o_coobligation input[type='radio'][value='mandatory']");
 		}
 		OOGraphene.waitElement(optionalBy, browser);
-		browser.findElement(optionalBy).click();
+		OOGraphene.check(browser.findElement(optionalBy), Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -144,18 +143,15 @@ public class GroupTaskConfigurationPage {
 	}
 	
 	public GroupTaskConfigurationPage selectAssessment() {
-		By configBy = By.className("o_sel_course_ms_form");
-		return selectTab(configBy);
+		return selectTab("o_sel_gta_assessment", By.className("o_sel_course_ms_form"));
 	}
 	
 	public GroupTaskConfigurationPage selectAssignment() {
-		By configBy = By.className("o_sel_course_gta_tasks");
-		return selectTab(configBy);
+		return selectTab("o_sel_gta_assignment", By.className("o_sel_course_gta_tasks"));
 	}
 	
 	public GroupTaskConfigurationPage selectSolution() {
-		By configBy = By.className("o_sel_course_gta_solutions");
-		return selectTab(configBy);
+		return selectTab("o_sel_gta_solution", By.className("o_sel_course_gta_solutions"));
 	}
 	
 	public GroupTaskConfigurationPage uploadTask(String title, File file) {
@@ -183,7 +179,7 @@ public class GroupTaskConfigurationPage {
 		//task.assignment.type
 		String type = enable ? "auto" : "manual";
 		By typeBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_task_config_form')]//input[@name='task.assignment.type'][@value='" + type + "']");
-		browser.findElement(typeBy).click();
+		OOGraphene.check(browser.findElement(typeBy), Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -223,14 +219,15 @@ public class GroupTaskConfigurationPage {
 	}
 	
 	public GroupTaskConfigurationPage saveAssessmentOptions() {
-		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		new AssessmentCEConfigurationPage(browser).saveAssessmentOptions();
 		return this;
 	}
 	
-	private GroupTaskConfigurationPage selectTab(By tabBy) {
-		OOGraphene.selectTab("o_node_config", tabBy, browser);
+	private GroupTaskConfigurationPage selectTab(String tabCssClass, By panelBy) {
+		By tabBy = By.cssSelector("ul.o_node_config li." + tabCssClass + ">a");
+		OOGraphene.waitElement(tabBy, browser);
+		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(panelBy, browser);
 		return this;
 	}
 }

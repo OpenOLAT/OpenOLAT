@@ -106,7 +106,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		
 		nodeIdentToCourseNode = new HashMap<>();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		new TreeVisitor(node -> {
 			if(node instanceof TreeNode) {
 				Object uobject = ((TreeNode)node).getUserObject();
@@ -118,7 +118,6 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		}, tm.getRootNode(), false).visitAll();
 		
 		initForm(ureq);
-		loadModel();
 	}
 
 	@Override
@@ -142,7 +141,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		tableEl.setEmptyTableSettings(getTableEmptyI18nKey(), null, getIconCssClass());
 	}
 	
-	private void loadModel() {
+	public void loadModel() {
 		Map<String, List<AssessmentEntry>> nodeIdentToEntries = loadNodeIdentToEntries();
 		
 		List<CourseNodeToReviewRow> rows = new ArrayList<>(nodeIdentToEntries.size());

@@ -97,6 +97,32 @@ public class CourseNodeServiceImplTest {
 	}
 	
 	@Test
+	public void shouldCompareCourseElementAndCourseNodeByHasGrade() {
+		CourseElementMock courseElement = new CourseElementMock();
+		courseElement.setGrade(false);
+		CourseNode courseNode = new SPCourseNode();
+		AssessmentConfigMock assessmentConfig = new AssessmentConfigMock();
+		assessmentConfig.setGrade(false);
+		assertThat(sut.isSame(courseElement, courseNode, assessmentConfig)).isTrue();
+		
+		assessmentConfig.setGrade(true);
+		assertThat(sut.isSame(courseElement, courseNode, assessmentConfig)).isFalse();
+	}
+	
+	@Test
+	public void shouldCompareCourseElementAndCourseNodeByIsAutoGrade() {
+		CourseElementMock courseElement = new CourseElementMock();
+		courseElement.setGrade(false);
+		CourseNode courseNode = new SPCourseNode();
+		AssessmentConfigMock assessmentConfig = new AssessmentConfigMock();
+		assessmentConfig.setAutoGrade(false);
+		assertThat(sut.isSame(courseElement, courseNode, assessmentConfig)).isTrue();
+		
+		assessmentConfig.setAutoGrade(true);
+		assertThat(sut.isSame(courseElement, courseNode, assessmentConfig)).isFalse();
+	}
+	
+	@Test
 	public void shouldCompareCourseElementAndCourseNodeByPassedMode() {
 		CourseElementMock courseElement = new CourseElementMock();
 		courseElement.setPassedMode(Mode.setByNode);

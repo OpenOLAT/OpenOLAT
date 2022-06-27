@@ -65,6 +65,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -86,6 +87,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
@@ -193,6 +195,7 @@ import uk.ac.ed.ph.qtiworks.mathassess.MathEntryInteraction;
  */
 public abstract class AssessmentObjectComponentRenderer extends DefaultComponentRenderer {
 	
+	private static final String[] wordCounterPlaceholder = new String[] { "xxx" };
 	private static final Logger log = Tracing.createLoggerFor(AssessmentObjectComponentRenderer.class);
 	private static final String velocity_root = Util.getPackageVelocityRoot(AssessmentObjectComponentRenderer.class);
 	private static final URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
@@ -416,7 +419,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		} else if(flow instanceof Inline) {
 			renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Inline)flow, ubu, translator);
 		} else {
-			log.error("What is it for a flow static object: " + flow);
+			log.error("What is it for a flow static object: {}", flow);
 		}
 	}
 	
@@ -427,7 +430,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		} else if(textOrVariable instanceof TextRun) {
 			sb.append(((TextRun)textOrVariable).getTextContent());
 		} else {
-			log.error("What is it for a textOrVariable object: " + textOrVariable);
+			log.error("What is it for a textOrVariable object: {}", textOrVariable);
 		}
 	}
 	
@@ -623,7 +626,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	public void renderLi(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Li li, URLBuilder ubu, Translator translator) {
 		renderStartHtmlTag(sb, component, resolvedAssessmentItem, li, null);
-		li.getFlows().forEach((flow)
+		li.getFlows().forEach(flow
 				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 		renderEndTag(sb, li);
 	}
@@ -1272,6 +1275,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		List<String> cssClasses = interaction.getClassAttr();
 		boolean copyPasteDisabled = cssClasses != null && cssClasses.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+		boolean richText = cssClasses != null && cssClasses.contains(QTI21Constants.CSS_ESSAY_RICHTEXT);
 		boolean hasPlaceholder = StringHelper.containsNonWhitespace(interaction.getPlaceholderText());
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
@@ -1312,7 +1316,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			if(StringHelper.containsNonWhitespace(checkJavascript)) {
 				sb.append(" onchange=\"").append(checkJavascript).append("\"");
 			}
-			sb.append(" class='form-control");
+			sb.append(" class='form-control").append(" o_richtext_mce", richText);
 		}
 		
 		if(isBadResponse(itemSessionState, interaction.getResponseIdentifier())
@@ -1327,10 +1331,13 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append(placeholder);
 			}
 		} else if(StringHelper.containsNonWhitespace(responseInputString)) {
-			if(ended) {
+			if(ended && !richText) {
 				sb.append(StringHelper.escapeHtml(responseInputString));
 			} else {
 				sb.append(responseInputString);
+				if(responseInputString.contains("math")) {
+					renderer.setMathJax(true);
+				}
 			}
 		}
 		
@@ -1339,13 +1346,16 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		} else {
 			sb.append("</textarea>");
 			
-			FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
-			//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
-			  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
-			  .append(FormJSHelper.getJSEnd());
+			if(richText) {
+				renderExtendedRichTextSetup(sb, "oo_".concat(responseUniqueId), responseUniqueId, expectedLines, copyPasteDisabled, component, translator);
+			} else {
+				FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
+				sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
+				//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
+				  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+				  .append(FormJSHelper.getJSEnd());
+			}
 			
-			String[] wordPlaceholder = new String[] { "xxx" };
 			Form form = component.getQtiItem().getRootForm();
 			sb.append(FormJSHelper.getJSStart())
 			  .append("jQuery(function() {\n")
@@ -1357,7 +1367,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
 			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
 			  .append(" })");
-			if(copyPasteDisabled) {
+			if(copyPasteDisabled && !richText) {
 				String errorHeader = translator.translate("essay.copypaste.disabled.header");
 				String errorMessage = translator.translate("essay.copypaste.disabled");
 				sb.append(".qtiCopyPaste({\n")
@@ -1365,14 +1375,86 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				  .append("  errorMessage:'").append(StringHelper.escapeJavaScript(errorMessage)).append("'")
 				  .append("})\n");
 			}
-			sb.append(".qtiCountWord({\n")
-			  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
-			  .append("  labelSingular:'").append(translator.translate("word.count", wordPlaceholder)).append("',\n")
-			  .append("  labelPlural:'").append(translator.translate("word.count.plural", wordPlaceholder)).append("'\n")
-			  .append(" }).tabOverride();\n")
-			  .append("})\n")
+			if(!richText) {
+				sb.append(".qtiCountWord({\n")
+				  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
+				  .append("  labelSingular:'").append(translator.translate("word.count", wordCounterPlaceholder)).append("',\n")
+				  .append("  labelPlural:'").append(translator.translate("word.count.plural", wordCounterPlaceholder)).append("'\n")
+				  .append(" }).tabOverride();\n");
+			}
+			sb.append("})\n")
 			  .append(FormJSHelper.getJSEnd());
 		}
+	}
+	
+	private void renderExtendedRichTextSetup(StringOutput sb, String domID, String responseUniqueId, int expectedLines, boolean copyPasteDisabled,
+			AssessmentObjectComponent component, Translator translator) {
+		String baseUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/tinymce/tinymce.min.js");
+		String iconsUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/BTinyIcons.js");
+		
+		sb.append("<script>\n");
+		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce + jQuery
+		  .append("  selector: '#").append(domID).append("',\n")
+		  .append("  script_url: '").append(baseUrl).append("',\n")
+		  .append("  icons_url: '").append(iconsUrl).append("',\n")
+		  .append("  icons: 'openolat',\n");
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
+			sb.append("mathJaxUrl: \"").append(WebappHelper.getMathJaxCdn()).append("\",\n");
+		}
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathLiveCdn())) {
+			sb.append("mathLiveUrl: \"").append(WebappHelper.getMathLiveCdn()).append("\",\n");
+		}
+		
+		sb.append("  theme: 'silver',\n")
+		  .append("  browser_spellcheck: true,\n")
+		  .append("  plugins: 'paste,advlist,lists,charmap,noneditable,olatmatheditor,hr',\n")
+		  .append("  menu:{},\n")
+		  .append("  menubar: false,")
+		  .append("  toolbar1: 'bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmatheditor charmap',\n")
+		  .append("  removed_menuitems: 'newdocument',\n")
+		  .append("  elementpath: false,\n");
+		
+		String height = Integer.toString((expectedLines * 40) + 60);
+		sb.append("  height: ").append(height).append(",\n");
+		if(copyPasteDisabled) {
+			String errorHeader = StringHelper.escapeJavaScript(translator.translate("essay.copypaste.disabled.header"));
+			String errorMessage = StringHelper.escapeJavaScript(translator.translate("essay.copypaste.disabled"));
+			sb.append("    paste_preprocess: function(plugin, args) {\n")
+			  .append("      if(!args.internal) {\n")
+			  .append("        args.stopImmediatePropagation();\n")
+			  .append("        args.stopPropagation();\n")
+			  .append("        args.preventDefault();\n")
+			  .append("        showMessageBox('warn', '").append(errorHeader).append("', '").append(errorMessage).append("');\n")
+			  .append("      }\n")
+			  .append("    },\n");
+		}
+		//setup the word counter
+		Form form = component.getQtiItem().getRootForm();
+		sb.append("    setup: function(ed){\n")
+		  .append("      var counter = jQuery('").append(domID).append("').qtiCountWord({\n")
+		  .append("        responseUniqueId:'").append(responseUniqueId).append("',\n")
+		  .append("        labelSingular:'").append(translator.translate("word.count", wordCounterPlaceholder)).append("',\n")
+		  .append("        labelPlural:'").append(translator.translate("word.count.plural", wordCounterPlaceholder)).append("'\n")
+		  .append("      });\n")
+		  
+		  .append("      var updateCountDirty = function() {\n")
+		  .append("        var richText = ed.getContent();\n")
+		  .append("        counter.countHtml(richText);\n")
+		  .append("        if(ed.isDirty()) {\n")
+		  .append("          setFlexiFormDirty('").append(form.getDispatchFieldId()).append("', false);\n")
+		  .append("        }\n")
+		  .append("      }\n")
+		  
+		  .append("      var global = tinymce.util.Tools.resolve('tinymce.util.Delay');\n")
+		  .append("      var debouncedUpdate = global.debounce(function () {\n")
+		  .append("       return updateCountDirty();\n")
+		  .append("      }, 300);\n")
+		  .append("      ed.on('SetContent BeforeAddUndo Undo Redo ViewUpdate keyup', debouncedUpdate);\n");
+		
+		sb.append("    },\n")
+		  .append("  });\n")
+		  .append("}, 1);\n")// end timeout
+		  .append("</script>\n");
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,

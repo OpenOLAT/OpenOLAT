@@ -655,7 +655,7 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 
 		for(OpenBusinessGroupRow accessGroup:accessGroupViews) {
 			OLATResource resource = resourceManager.findResourceById(accessGroup.getResourceKey());
-			List<Offer> offers = acService.findOfferByResource(resource, true, new Date());
+			List<Offer> offers = acService.findOfferByResource(resource, true, new Date(), null);
 			Assert.assertNotNull(offers);
 			Assert.assertFalse(offers.isEmpty());
 		}

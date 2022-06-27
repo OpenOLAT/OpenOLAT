@@ -1,4 +1,4 @@
-<div class="o_repo_entry_card #if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
+<div class="o_repo_entry_list_item #if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
 	<div class="o_visual">
 		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())
@@ -20,16 +20,22 @@
 		#end
 		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())</h4>
 
+		#if($r.isNotEmpty($row.teaser))
+		<div class="o_flex_block_one_line_left">
+			<div class="o_teaser o_flex_item_max">$r.escapeHtml($row.teaser)</div>
+		</div>
+		#end
+
 		<div class="o_flex_block_one_line_left">
 		#if($row.getEducationalType())
 		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
 		</span>
-		#end		
+		#end
 		#if($row.authors && !$row.authors.empty)
 			<div class="o_author o_flex_item_max"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
 		#end
-		</div>				
+		</div>
 		
 		#if($row.closed)
 			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>

@@ -1,6 +1,6 @@
 <fieldset class="o_sel_group_members_visibility">
   	<legend>
-  		$r.contextHelpWithWrapper("Group Administration#gruppensystem_members")
+  		$r.contextHelpWithWrapper("manual_user/groups/Group_Administration/#members")
   		$r.translate("fieldset.legend.displaymembers")</legend>
   	$r.render("displayMembers")
 </fieldset>
@@ -12,7 +12,7 @@
 <fieldset class="o_sel_group_members_mgmt">
 	<legend>
 		$r.translate("group.edit.tab.members")</legend>
-	<div class="o_button_group o_button_group_right">
+	<div class="o_button_group o_button_group_right o_sel_group_members_buttons">
 		#if($r.available("addMembers") && $r.available("importMembers"))<div class="btn-group">#end
 		#if($r.available("addMembers"))
 			$r.render("addMembers")

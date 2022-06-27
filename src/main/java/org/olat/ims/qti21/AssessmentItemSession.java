@@ -50,6 +50,12 @@ public interface AssessmentItemSession extends CreateInfo, ModifiedInfo, Assessm
 	 */
 	public String getTestPartIdentifier();
 	
+	/**
+	 * 
+	 * @return The reference identifier in assessment test or an external identifier
+	 */
+	public String getExternalRefIdentifier();
+	
 	public Boolean getPassed();
 
 	public void setPassed(Boolean passed);
@@ -71,6 +77,10 @@ public interface AssessmentItemSession extends CreateInfo, ModifiedInfo, Assessm
 	public BigDecimal getManualScore();
 	
 	public void setManualScore(BigDecimal score);
+	
+	public Integer getAttempts();
+	
+	public void setAttempts(Integer numAttempts);
 	
 	public String getCoachComment();
 	

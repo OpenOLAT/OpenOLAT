@@ -11,7 +11,7 @@
 	</div>
 	<div class="o_export_meta">
 		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew) || $r.isTrue($row.taskCancelled))
-			<h5>$row.title#if(${row.isTaskNew()}) $r.translate("row.new")#elseif(${row.isTaskCancelled()}) <span class="o_export_wait">$r.translate("row.cancelled")</span>#end</h5>
+			<h5>$row.title#if(${row.isTaskNew()}) <span class="o_export_wait">$r.translate("row.new")</span> #elseif(${row.isTaskCancelled()}) <span class="o_export_wait">$r.translate("row.cancelled")</span>#end</h5>
 			<span>$r.translate("row.running.by", $creationDate, $creatorFullName)</span><br>
 			$r.render($row.progressBar)
 		#else

@@ -53,6 +53,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
@@ -226,7 +227,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 
 	private String getDocumentKey(VFSMetadata metadata) {
 		String lastModified = LAST_MODIFIED.format(metadata.getFileLastModified());
-		return metadata.getUuid() + "-" + lastModified;
+		return WebappHelper.getInstanceId() + "-" + metadata.getUuid() + "-" + lastModified;
 	}
 	
 	@Override

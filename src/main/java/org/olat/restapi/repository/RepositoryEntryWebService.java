@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +48,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
@@ -101,10 +105,11 @@ import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
-import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -139,6 +144,8 @@ public class RepositoryEntryWebService {
 	
 	private RepositoryEntry entry;
 	
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -266,7 +273,7 @@ public class RepositoryEntryWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return getMembers(entry, GroupRoles.owner.name());
 	}
@@ -283,11 +290,11 @@ public class RepositoryEntryWebService {
 	@Path("owners/{identityKey}")
 	@Operation(summary = "Adds an owner to the repository entry", description = "Adds an owner to the repository entry")
 	@ApiResponse(responseCode = "200", description = "The user is added as owner of the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	public Response addOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
@@ -305,12 +312,12 @@ public class RepositoryEntryWebService {
 	@Path("owners")
 	@Operation(summary = "Add owners to the repository entry", description = "Add owners to the repository entry")
 	@ApiResponse(responseCode = "200", description = "The owners are added to the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addOwners(UserVO[] owners, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Identity> identityToAdd = loadIdentities(owners);
@@ -332,12 +339,12 @@ public class RepositoryEntryWebService {
 	@Path("owners/{identityKey}")
 	@Operation(summary = "Removes the owner from the repository entry", description = "Removes the owner from the repository entry")
 	@ApiResponse(responseCode = "200", description = "The user is removed as owner from the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	public Response removeOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if (!isAuthorEditor(request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
 			Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
@@ -371,7 +378,7 @@ public class RepositoryEntryWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCoaches(@Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return getMembers(entry, GroupRoles.coach.name());
 	}
@@ -392,7 +399,7 @@ public class RepositoryEntryWebService {
 	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
@@ -414,7 +421,7 @@ public class RepositoryEntryWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCoach(UserVO[] coaches, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Identity> identityToAdd = loadIdentities(coaches);
@@ -436,11 +443,11 @@ public class RepositoryEntryWebService {
 	@Path("coaches/{identityKey}")
 	@Operation(summary = "Removes the coach from the repository entry", description = "Removes the coach from the repository entry")
 	@ApiResponse(responseCode = "200", description = "The user is removed as owner from the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	public Response removeCoach(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
@@ -470,7 +477,7 @@ public class RepositoryEntryWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants( @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return getMembers(entry, GroupRoles.participant.name());
 	}
@@ -487,11 +494,11 @@ public class RepositoryEntryWebService {
 	@Path("participants/{identityKey}")
 	@Operation(summary = "Adds a participant to the repository entry", description = "Adds a participant to the repository entry")
 	@ApiResponse(responseCode = "200", description = "The user is added as participant of the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	public Response addParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
@@ -509,12 +516,12 @@ public class RepositoryEntryWebService {
 	@Path("participants")
 	@Operation(summary = "Adds participants to the repository entry", description = "Adds participants to the repository entry")
 	@ApiResponse(responseCode = "200", description = "The participants are added to the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addParticipants(UserVO[] participants, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Identity> participantList = loadIdentities(participants);
@@ -544,11 +551,11 @@ public class RepositoryEntryWebService {
 	@Path("participants/{identityKey}")
 	@Operation(summary = "Removes the participant from the repository entry", description = "Removes the participant from the repository entry")
 	@ApiResponse(responseCode = "200", description = "The user is removed as participant from the repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found")
 	public Response removeParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
@@ -572,7 +579,7 @@ public class RepositoryEntryWebService {
 	@Path("file")
 	@Operation(summary = "Download the export zip file of a repository entry", description = "Download the export zip file of a repository entry")
 	@ApiResponse(responseCode = "200", description = "Download the repository entry as export zip file")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry cannot be found")
 	@ApiResponse(responseCode = "406", description = "Download of this resource is not possible")
 	@ApiResponse(responseCode = "409", description = "The resource is locked")
@@ -594,7 +601,7 @@ public class RepositoryEntryWebService {
 				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name())) {
 			canDownload = true;
 		} else if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		if (!canDownload) {
@@ -634,14 +641,19 @@ public class RepositoryEntryWebService {
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response updateEntry(RepositoryEntryVO vo, @Context HttpServletRequest request) {
 		if (!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		RepositoryEntryLifecycle lifecycle = updateLifecycle(vo.getLifecycle());
-		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
-				vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
+		entry = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
+				vo.getTeaser(), vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
 				lifecycle);
-		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
+		
+		if(vo.getEntryStatus() != null && !vo.getEntryStatus().equals(entry.getEntryStatus().name())) {
+			updateStatus(vo.getEntryStatus(), request);
+		}
+		
+		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(entry);
 		return Response.ok(rvo).build();
 	}
 	
@@ -691,12 +703,12 @@ public class RepositoryEntryWebService {
 	@Operation(summary = "Replace a resource in the repository", description = "Replace a resource in the repository and update its display name. The implementation is\n" + 
 			"    limited to CP")
 	@ApiResponse(responseCode = "200", description = "Replace the resource and return the updated repository entry")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	public Response replaceResource(@Context HttpServletRequest request) {
 		if (!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		MultipartReader reader = null;
@@ -707,6 +719,7 @@ public class RepositoryEntryWebService {
 			String location = reader.getValue("location");
 			String authors = reader.getValue("authors");
 			String description = reader.getValue("description");
+			String teaser = reader.getValue("teaser");
 			String externalId = reader.getValue("externalId");
 			String externalRef = reader.getValue("externalRef");
 			String managedFlags = reader.getValue("managedFlags");
@@ -714,7 +727,7 @@ public class RepositoryEntryWebService {
 			Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
 			RepositoryEntry replacedRe;
 			if (tmpFile == null) {
-				replacedRe = repositoryManager.setDescriptionAndName(entry, displayname, description, location, authors,
+				replacedRe = repositoryManager.setDescriptionAndName(entry, displayname, description, teaser, location, authors,
 						externalId, externalRef, managedFlags, entry.getLifecycle());
 			} else {
 				long length = tmpFile.length();
@@ -725,7 +738,7 @@ public class RepositoryEntryWebService {
 				if (replacedRe == null) {
 					return Response.serverError().status(Status.NOT_FOUND).build();
 				} else {
-					replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description, location,
+					replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description, teaser, location,
 							authors, externalId, externalRef, managedFlags, replacedRe.getLifecycle());
 				}
 			}
@@ -781,16 +794,16 @@ public class RepositoryEntryWebService {
 	@DELETE
 	@Operation(summary = "Delete a resource by id", description = "Delete a resource by id")
 	@ApiResponse(responseCode = "200", description = "The metadatas of the deleted resource")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCourse(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		if (!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		UserRequest ureq = getUserRequest(request);
 		ErrorList errors = repositoryService.deletePermanently(entry, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
@@ -803,8 +816,12 @@ public class RepositoryEntryWebService {
 	}
 	
 	/**
-	 * Change the status of a course by id. The possible status are:
+	 * Change the status of a learn resource by id. The possible status are:
 	 * <ul>
+	 *  <li>preparation</li>
+	 *	<li>review</li>
+	 *	<li>coachpublished</li>
+	 *	<li>published</li>
 	 * 	<li>closed</li>
 	 * 	<li>unclosed</li>
 	 * 	<li>unpublished</li>
@@ -813,51 +830,190 @@ public class RepositoryEntryWebService {
 	 * </ul>
 	 * 
 	 * @param request The HTTP request
-	 * @return It returns the XML representation of the <code>Structure</code>
-	 *         object representing the course.
+	 * @return 200
 	 */
 	@POST
-	@Operation(summary = "Change the status of a course by id", description = "Change the status of a course by id. The possible status are:\n" + 
+	@Operation(summary = "Change the status of a learn resource by id", description = "Change the status of a learn resource by id. The possible status are:\n" + 
 			" <ul>\n" + 
+			"  <li>preparation</li>\n" + 
+			"  <li>review</li>\n" + 
+			"  <li>coachpublished</li>\n" + 
+			"  <li>published</li>\n" + 
 			"  <li>closed</li>\n" + 
 			"  <li>unclosed</li>\n" + 
 			"  <li>unpublished</li>\n" + 
 			"  <li>deleted</li>\n" + 
 			"  <li>restored</li>\n" + 
 			" </ul>")
-	@ApiResponse(responseCode = "200", description = "The metadatas of the deleted resource")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@ApiResponse(responseCode = "200", description = "Status of the learn resource updated")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The learn resource not found")
 	@Path("status")
 	public Response postStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		
-		if("closed".equals(newStatus)) {
-			repositoryService.closeRepositoryEntry(entry, null, false);
+		updateStatus(newStatus, request);
+		return Response.ok().build();
+	}
+	
+	@PUT
+	@Operation(summary = "Change the status of a learn resource by id", description = "Change the status of a learn resource by id. The possible status are:\n" + 
+			" <ul>\n" + 
+			"  <li>preparation</li>\n" + 
+			"  <li>review</li>\n" + 
+			"  <li>coachpublished</li>\n" + 
+			"  <li>published</li>\n" + 
+			"  <li>closed</li>\n" + 
+			"  <li>unclosed</li>\n" + 
+			"  <li>unpublished</li>\n" + 
+			"  <li>deleted</li>\n" + 
+			"  <li>restored</li>\n" + 
+			" </ul>")
+	@ApiResponse(responseCode = "200", description = "Status of the learn resource updated")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The learn resource not found")
+	@Path("status")
+	public Response putStatus(@QueryParam("newStatus") String newStatus, @Context HttpServletRequest request) {
+		if (!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		updateStatus(newStatus, request);
+		return Response.ok().build();
+	}
+	
+	private void updateStatus(String newStatus, HttpServletRequest request) {
+		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
+			entry = repositoryService.closeRepositoryEntry(entry, null, false);
 			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
-			repositoryService.uncloseRepositoryEntry(entry);
+			entry = repositoryService.uncloseRepositoryEntry(entry);
 			log.info(Tracing.M_AUDIT, "REST unclosing course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
-		} else if("deleted".equals(newStatus)) {
+		} else if(RepositoryEntryStatusEnum.deleted.name().equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.deleteSoftly(entry, identity, true, false);
+			entry = repositoryService.deleteSoftly(entry, identity, true, false);
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			repositoryService.restoreRepositoryEntry(entry);
+			entry = repositoryService.restoreRepositoryEntry(entry);
 			log.info(Tracing.M_AUDIT, "REST restoring course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
+		} else if(RepositoryEntryStatusEnum.isValid(newStatus)) {
+			RepositoryEntryStatusEnum nStatus = RepositoryEntryStatusEnum.valueOf(newStatus);
+			entry = repositoryManager.setStatus(entry, nStatus);
+			log.info("Change status of {} to {}", entry, newStatus);
+			ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(nStatus), getClass(),
+					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		}
-		return Response.ok().build();
+	}
+	
+	@PUT
+	@Operation(summary = "Update public access of a resource", description = "Update public access, all users and guests access, of a learn resource."
+			+ " The public viewing flag is set to true one of the access, users or guests, is enabled.")
+	@ApiResponse(responseCode = "200", description = "Some update happens")
+	@ApiResponse(responseCode = "404", description = "The learn resource not found")
+	@Path("access/public")
+	public Response putAccess(@QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
+			@Context HttpServletRequest request) {
+		return updatePublicAccess(allUsers, guests, request);
+	}
+	
+	@POST
+	@Operation(summary = "Update public access of a resource", description = "Update public access, all users and guests access, of a learn resource."
+			+ " The public viewing flag is set to true one of the access, users or guests, is enabled.")
+	@ApiResponse(responseCode = "200", description = "Some update happens")
+	@ApiResponse(responseCode = "404", description = "The learn resource not found")
+	@Path("access/public")
+	public Response postAccess(@QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
+			@Context HttpServletRequest request) {
+		return updatePublicAccess(allUsers, guests, request);
+	}
+	
+	private Response updatePublicAccess(Boolean allUsers, Boolean guests, HttpServletRequest request) {
+		if (!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		boolean updated = false;
+		if(allUsers != null) {
+			updated |= updatePublicAccess(allUsers.booleanValue());
+		}
+		if(guests != null) {
+			updated |= updateGuestAccess(guests.booleanValue());
+		}
+		return updated ? Response.ok().build() : Response.notModified().build();
+	}
+		
+	private boolean updatePublicAccess(boolean enableAllUsers) {
+		boolean updated = false;
+		
+		if(enableAllUsers) {
+			Set<Organisation> rootOrganisations = organisationService.getOrganisations().stream()
+						.filter(org -> org.getParent() == null)
+						.collect(Collectors.toSet());
+			
+			Offer offer= acService.getOffers(entry, true, false, null, null).stream()
+					.filter(Offer::isOpenAccess)
+					.findFirst()
+					.orElseGet(() -> {
+						Offer newOffer = acService.createOffer(entry.getOlatResource(), entry.getDisplayname());
+						newOffer.setOpenAccess(true);
+						newOffer = acService.save(newOffer);
+						return newOffer;
+					});
+			acService.updateOfferOrganisations(offer, rootOrganisations);
+			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
+					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), null);
+			updated = true;
+		} else {
+			List<Offer> offers = acService.getOffers(entry, true, false, null, null);
+			for(Offer offer:offers) {
+				if(offer.isOpenAccess()) {
+					acService.deleteOffer(offer);
+					updated = true;
+				}
+			}
+		}
+		
+
+		
+		return updated;
+	}
+	
+	private boolean updateGuestAccess(boolean enableGuests) {
+		final AtomicBoolean updated = new AtomicBoolean();
+		
+		if(enableGuests) {
+			acService.getOffers(entry, true, false, null, null).stream()
+				.filter(Offer::isGuestAccess)
+				.findFirst()
+				.orElseGet(() -> {
+					Offer newOffer = acService.createOffer(entry.getOlatResource(), entry.getDisplayname());
+					newOffer.setGuestAccess(true);
+					newOffer = acService.save(newOffer);
+					updated.set(true);
+					return newOffer;
+				});
+			
+			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
+					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), null);
+		} else {
+			List<Offer> offers = acService.getOffers(entry, true, false, null, null);
+			for(Offer offer:offers) {
+				if(offer.isGuestAccess()) {
+					acService.deleteOffer(offer);
+					updated.set(true);
+				}
+			}
+		}
+		
+		return updated.get();
 	}
 	
 	
@@ -867,15 +1023,15 @@ public class RepositoryEntryWebService {
 	@GET
 	@Path("metadata")
 	@Operation(summary = "Get lots of metadata of the repository entry", description = "Get lots of metadata of the repository entry from description up-to educational type and technical type")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+	@ApiResponse(responseCode = "200", description = "The metadata of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMetadata(@Context HttpServletRequest request) {
 		if(!isAuthor(request) && !isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		RepositoryEntryMetadataVO metadataVo = RepositoryEntryMetadataVO.valueOf(entry);
 		return Response.ok(metadataVo).build();
@@ -891,10 +1047,10 @@ public class RepositoryEntryWebService {
 	@PUT
 	@Path("metadata")
 	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values.")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+	@ApiResponse(responseCode = "200", description = "The metadata of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
@@ -911,10 +1067,10 @@ public class RepositoryEntryWebService {
 	@POST
 	@Path("metadata")
 	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+	@ApiResponse(responseCode = "200", description = "The metadata of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
@@ -923,7 +1079,7 @@ public class RepositoryEntryWebService {
 	
 	public Response updateMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		if(metadataVo.getKey() != null && !metadataVo.getKey().equals(entry.getKey())) {
 			return Response.serverError().status(Status.BAD_REQUEST).build();
@@ -935,67 +1091,10 @@ public class RepositoryEntryWebService {
 			educationalType = educationalTypeDao.loadByKey(metadataVo.getEducationalType().getKey());
 		}
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
-				metadataVo.getDescription(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
+				metadataVo.getDescription(), metadataVo.getTeaser(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
 				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
 		
 		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
-	}
-
-	
-	/**
-	 * Get the access configuration of the repository entry.
-	 * 
-	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the repository entry.
-	 */
-	@GET
-	@Path("access")
-	@Operation(summary = "Get the access configuration of the repository entry", description = "Get the access configuration of the repository entry")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAccess(@Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		RepositoryEntryAccessVO accessVo = RepositoryEntryAccessVO.valueOf(entry);
-		return Response.ok(accessVo).build();
-	}
-	
-	/**
-	 * Update the access configuration of the repository entry. Attention! It's
-	 * a low level method which only change the status without the stuff
-	 * done by the change status methods. Use it only if you know what you do.
-	 * 
-	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the repository entry.
-	 */
-	@POST
-	@Path("access")
-	@Operation(summary = "Update the access configuration of the repository entry", description = "Update the access configuration of the repository entry. Attention! It's\n" + 
-			" a low level method which only change the status without the stuff\n" + 
-			" done by the change status methods. Use it only if you know what you do")
-	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response updateAccess(RepositoryEntryAccessVO accessVo, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		if(accessVo.getRepoEntryKey() != null && !accessVo.getRepoEntryKey().equals(entry.getKey())) {
-			return Response.serverError().status(Status.BAD_REQUEST).build();
-		}
-		
-		boolean guests = accessVo.isGuests();
-		boolean allUsers = accessVo.isAllUsers();
-		RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.valueOf(accessVo.getStatus());
-		entry = repositoryManager.setAccess(entry, status, allUsers, guests);
-		return Response.ok(RepositoryEntryAccessVO.valueOf(entry)).build();
 	}
 	
 	@GET
@@ -1004,11 +1103,11 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "200", description = "The list of organisations", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
 		if (!isAuthorEditor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		List<Organisation> organisations = repositoryService.getOrganisations(entry);
@@ -1023,7 +1122,7 @@ public class RepositoryEntryWebService {
 	@Path("organisations/{organisationKey}")
 	@Operation(summary = "Put organisation", description = "Put organisation")
 	@ApiResponse(responseCode = "200", description = "Organisation was put")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		Organisation organisationToAdd = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
@@ -1048,7 +1147,7 @@ public class RepositoryEntryWebService {
 	@Path("organisations/{organisationKey}")
 	@Operation(summary = "Remove organisation", description = "Remove organisation")
 	@ApiResponse(responseCode = "200", description = "Organisation was deleted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response removeOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		Organisation organisationToRemove = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
@@ -1067,12 +1166,12 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "200", description = "The list of levels", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaxonomyLevels(@Context HttpServletRequest request) {	
 		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
@@ -1087,7 +1186,7 @@ public class RepositoryEntryWebService {
 	@Path("taxonomy/levels/{taxonomyLevelKey}")
 	@Operation(summary = "Get level", description = "Get level")
 	@ApiResponse(responseCode = "200", description = "The level put")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
@@ -1108,7 +1207,7 @@ public class RepositoryEntryWebService {
 	@Path("taxonomy/levels/{taxonomyLevelKey}")
 	@Operation(summary = "Remove level", description = "Remove level")
 	@ApiResponse(responseCode = "200", description = "The level was removed")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));

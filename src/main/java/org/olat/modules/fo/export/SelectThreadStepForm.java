@@ -207,7 +207,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
-		threadTable.setEmptyTableSettings("forum.emtpy", null, "o_forum_status_thread_icon");
+		threadTable.setEmptyTableSettings("forum.empty", null, "o_forum_status_thread_icon");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));

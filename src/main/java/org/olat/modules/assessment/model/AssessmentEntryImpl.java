@@ -91,6 +91,12 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private BigDecimal score;
 	@Column(name="a_max_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal maxScore;
+	@Column(name="a_grade", nullable=true, insertable=true, updatable=true)
+	private String grade;
+	@Column(name="a_grade_system_ident", nullable=true, insertable=true, updatable=true)
+	private String gradeSystemIdent;
+	@Column(name="a_performance_class_ident", nullable=true, insertable=true, updatable=true)
+	private String performanceClassIdent;
 	private transient Overridable<Boolean> passedOverridable;
 	@Column(name="a_passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
@@ -112,6 +118,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private String details;
 	@Column(name="a_user_visibility", nullable=true, insertable=true, updatable=true)
 	private Boolean userVisibility;
+	@Column(name="a_share", nullable=true, insertable=true, updatable=true)
+	private Boolean share;
 
 	@Column(name="a_completion", nullable=true, insertable=true, updatable=true)
 	private Double completion;
@@ -288,6 +296,36 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	}
 
 	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	@Override
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	@Override
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	@Override
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
+	}
+
+	@Override
 	public Overridable<Boolean> getPassedOverridable() {
 		if (passedOverridable == null) {
 			passedOverridable = new OverridableImpl<>(passed, passedOriginal, passedModificationIdentity, passedModificationDate);
@@ -390,6 +428,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setUserVisibility(Boolean visibility) {
 		this.userVisibility = visibility;
+	}
+
+	@Override
+	public Boolean getShare() {
+		return share;
+	}
+
+	@Override
+	public void setShare(Boolean share) {
+		this.share = share;
 	}
 
 	@Override

@@ -35,14 +35,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -57,6 +63,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -70,6 +77,9 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.AccessTransaction;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferOrganisationSelection;
+import org.olat.resource.accesscontrol.OfferRef;
+import org.olat.resource.accesscontrol.OfferToOrganisation;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -119,6 +129,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Autowired
 	private ACOfferDAO accessManager;
 	@Autowired
+	private ACOfferToOrganisationDAO offerToOrganisationDAO;
+	@Autowired
 	private ACMethodDAO methodManager;
 	@Autowired
 	private ACOrderDAO orderManager;
@@ -134,24 +146,20 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 
-	/**
-	 * The rule to access the repository entry:<br/>
-	 * -No offer, access is free<br/>
-	 * -Owners have always access to the resource<br/>
-	 * -Tutors have access to the resource<br/>
-	 * -Participants have access to the resource<br/>
-	 * @param entry
-	 * @param forId
-	 * @param knowMember give it if already know as a member
-	 * @return
-	 */
 	@Override
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean allowNonInteractiveAccess) {
-		if(!accessModule.isEnabled()) {
-			return new AccessResult(true);
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest, boolean allowNonInteractiveAccess) {
+		// Guests
+		if (isGuest) {
+			boolean guestAccessible = isGuestAccessible(entry, true);
+			return new AccessResult(guestAccessible);
 		}
-
+		
+		// Already member
 		boolean member;
 		if(knowMember == null) {
 			member = repositoryService.isMember(forId, entry);
@@ -161,51 +169,42 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if(member) {
 			return new AccessResult(true);
 		}
-
-		Date now = dateNow();
-		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), true, now);
-		if(offers.isEmpty()) {
-			if(methodManager.isValidMethodAvailable(entry.getOlatResource(), null)) {
-				//not open for the moment: no valid offer at this date but some methods are defined
-				return new AccessResult(false);
-			} else {
+		
+		// Open access
+		List<OrganisationRef> offerOrganisations = getOfferOrganisations(forId);
+		if (RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), ACService.RESTATUS_ACTIVE_OPEN)) {
+			boolean openAccessible = accessManager.isOpenAccessible(entry.getOlatResource(), offerOrganisations);
+			if (openAccessible) {
 				return new AccessResult(true);
 			}
 		}
+		
+		// Bookings
+		if(!accessModule.isEnabled()) {
+			return new AccessResult(false);
+		}
+		
+		Date now = new Date();
+		List<Offer> offers = getOffers(entry, true, true, now, offerOrganisations);
+		if(offers.isEmpty()) {
+			return new AccessResult(false);
+		}
 		return isAccessible(forId, offers, allowNonInteractiveAccess);
 	}
-
+	
 	@Override
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess) {
-		if(!accessModule.isEnabled()) {
-			return new AccessResult(true);
+	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus) {
+		if (filterStatus && !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), ACService.RESTATUS_ACTIVE_GUEST)) {
+			return false;
 		}
-
-		boolean member = repositoryService.isMember(forId, entry);
-		return isAccessible(entry, forId, Boolean.valueOf(member), allowNonInteractiveAccess);
+		return accessManager.isGuestAccessible(entry.getOlatResource());
 	}
 
-	/**
-	 *
-	 * @param resource
-	 * @param atDate
-	 * @return
-	 */
 	@Override
 	public boolean isResourceAccessControled(OLATResource resource, Date atDate) {
 		return methodManager.isValidMethodAvailable(resource, atDate);
 	}
 
-	/**
-	 * The rule to access a business group:<br/>
-	 * -No offer, access is free<br/>
-	 * -Owners have always access to the resource<br/>
-	 * -Tutors have access to the resource<br/>
-	 * -Participants have access to the resource<br/>
-	 * @param group
-	 * @param forId
-	 * @return
-	 */
 	@Override
 	public AccessResult isAccessible(BusinessGroup group, Identity forId, boolean allowNonInteractiveAccess) {
 		if(!accessModule.isEnabled()) {
@@ -222,7 +221,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 		Date now = dateNow();
 		OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
-		List<Offer> offers = accessManager.findOfferByResource(resource, true, now);
+		List<Offer> offers = accessManager.findOfferByResource(resource, true, now, null);
 		if(offers.isEmpty()) {
 			if(methodManager.isValidMethodAvailable(resource, null)) {
 				//not open for the moment: no valid offer at this date but some methods are defined
@@ -235,7 +234,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return isAccessible(forId, offers, allowNonInteractiveAccess);
 	}
 
-	protected AccessResult isAccessible(Identity identity, List<Offer> offers, boolean allowNonInteractiveAccess) {
+	private AccessResult isAccessible(Identity identity, List<Offer> offers, boolean allowNonInteractiveAccess) {
 		List<OfferAccess> offerAccess = methodManager.getOfferAccess(offers, true);
 		if(offerAccess.isEmpty()) {
 			return new AccessResult(false);
@@ -249,6 +248,26 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		return new AccessResult(false, offerAccess);
 	}
+	
+	@Override
+	public List<OrganisationRef> getOfferOrganisations(IdentityRef identity) {
+		if (!organisationModule.isEnabled()) return Collections.emptyList();
+		
+		List<Organisation> userOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.user);
+		return organisationService.getParentLineRefs(userOrganisations);
+	}
+	
+	@Override
+	public List<Organisation> getSelectionOfferOrganisations(Identity identity) {
+		OfferOrganisationSelection offerOrganisationSelection = accessModule.getOfferOrganisationSelection();
+		if (OfferOrganisationSelection.all == offerOrganisationSelection) {
+			return organisationService.getOrganisations();
+		} else if (OfferOrganisationSelection.sub == offerOrganisationSelection) {
+			return organisationService.getOrganisations(identity, OrganisationRoles.administrator,
+					OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		}
+		return new ArrayList<>(1);
+	}
 
 	@Override
 	public Offer createOffer(OLATResource resource, String resourceName) {
@@ -261,6 +280,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			// only delete persisted offers
 			accessManager.deleteOffer(offer);
 		}
+	}
+	
+	@Override
+	public void deleteOffers(OLATResource resource) {
+		accessManager.findOfferByResource(resource, true, null, null).forEach(offer -> accessManager.deleteOffer(offer));
 	}
 
 	@Override
@@ -281,11 +305,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			resourceType = resourceTypes.iterator().next();
 		}
 		Date now = dateNow();
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now);
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now, null);
 	}
 
 	@Override
-	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources) {
+	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources, List<? extends OrganisationRef> offerOrganisations) {
 		if(resources == null || resources.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -301,29 +325,54 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			resourceType = resourceTypes.iterator().next();
 		}
 		Date now = dateNow();
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now);
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now, offerOrganisations);
+	}
+	
+	@Override
+	public List<OLATResource> filterResourceWithOpenAccess(List<OLATResource> resources,  List<? extends OrganisationRef> offerOrganisations) {
+		return accessManager.loadOpenAccessibleResources(resources, offerOrganisations);
+	}
+	
+	@Override
+	public List<OLATResource> filterResourceWithGuestAccess(List<OLATResource> resources) {
+		return accessManager.loadGuestAccessibleResources(resources);
+	}
+	
+	@Override
+	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations) {
+		return accessManager.findOfferByResource(resource, valid, atDate, offerOrganisations);
+	}
+	
+	@Override
+	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, List<? extends OrganisationRef> offerOrganisations) {
+		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), valid, atDate, offerOrganisations);
+		if (filterByStatus) {
+			offers = offers.stream()
+					.filter(offer -> filterByStatus(offer, entry.getEntryStatus()))
+					.collect(Collectors.toList());
+		}
+		return offers;
 	}
 
-	@Override
-	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys) {
-		return accessManager.filterResourceWithOffer(resourceKeys);
+	private boolean filterByStatus(Offer offer, RepositoryEntryStatusEnum status) {
+		if (offer.isGuestAccess()) {
+			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_GUEST);
+		}
+		if (offer.isOpenAccess()) {
+			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_OPEN);
+		}
+		return offer.getValidFrom() == null && offer.getValidTo() == null
+				? RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD)
+				: RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
 	}
-
+	
 	@Override
-	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
-		return accessManager.findOfferByResource(resource, valid, atDate);
-	}
-
-	/**
-	 *
-	 * @param resourceKeys This parameter is mandatory and must not be empty!
-	 */
-	@Override
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType,
+			boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations) {
 		if(resourceKeys == null || resourceKeys.isEmpty()) {
 			return new ArrayList<>();
 		}
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, null, valid, atDate);
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, null, valid, atDate, offerOrganisations);
 	}
 
 	/**
@@ -335,7 +384,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	 */
 	@Override
 	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate) {
-		List<Offer> offers = accessManager.findOfferByResource(group.getResource(), valid, atDate);
+		List<Offer> offers = accessManager.findOfferByResource(group.getResource(), valid, atDate, null);
 		if(offers.isEmpty()) {
 			return Collections.<OfferAccess>emptyList();
 		}
@@ -368,6 +417,42 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			accessManager.saveOffer(link.getOffer());
 		}
 		return methodManager.save(link);
+	}
+	
+	@Override
+	public void updateOfferOrganisations(Offer offer, Collection<Organisation> organisations) {
+		if (organisations == null || organisations.isEmpty()) {
+			offerToOrganisationDAO.delete(offer);
+			return;
+		}
+		
+		List<OfferToOrganisation> currentRelations = offerToOrganisationDAO.loadRelations(offer, null);
+		List<Organisation> currentOrganisations = currentRelations.stream()
+				.map(OfferToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		
+		// Create relation for new organisations
+		organisations.stream()
+				.filter(org -> !currentOrganisations.contains(org))
+				.forEach(org -> offerToOrganisationDAO.createRelation(offer, org));
+
+		// Create relation of old organisations
+		currentRelations.stream()
+				.filter(rel -> !organisations.contains(rel.getOrganisation()))
+				.forEach(rel -> offerToOrganisationDAO.delete(rel));
+	}
+	
+	@Override
+	public List<Organisation> getOfferOrganisations(OfferRef offer) {
+		return offerToOrganisationDAO.loadOrganisations(offer);
+	}
+	
+	@Override
+	public Map<Long, List<Organisation>> getOfferKeyToOrganisations(Collection<? extends OfferRef> offers) {
+		return offerToOrganisationDAO.loadRelations(offers).stream()
+				.collect(Collectors.groupingBy(
+						oto -> oto.getOffer().getKey(),
+						Collectors.mapping(OfferToOrganisation::getOrganisation, Collectors.toList())));
 	}
 
 	@Override
@@ -486,6 +571,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		List<Order> orders = orderManager.findPendingOrders(resource, identity);
 		return !orders.isEmpty();
 	}
+	
+	@Override
+	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity) {
+		return !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
+					&& !findOrderItems(entry.getOlatResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED }, 0, 1, null).isEmpty();
+	}
 
 	@Override
 	public boolean allowAccesToResource(final Identity identity, final Offer offer) {
@@ -553,6 +644,19 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
 				}
 				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult) {
+		if (identity != null && entry != null && !entry.getEntryStatus().decommissioned() && !acResult.getAvailableMethods().isEmpty()) {
+			if (acResult.getAvailableMethods().size() == 1) {
+				OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
+				if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
+					return accessResource(identity, offerAccess, null).isAccessible();
+				}
 			}
 		}
 		return false;
@@ -626,6 +730,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {
 		methodManager.enableMethod(type, enable);
 	}
+	
+	@Override
+	public List<AccessMethod> getAvailableMethods() {
+		return methodManager.getAvailableMethods();
+	}
 
 	@Override
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
@@ -661,11 +770,6 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public List<Order> findOrders(Identity delivery, OrderStatus... status) {
 		return orderManager.findOrdersByDelivery(delivery, status);
-	}
-
-	@Override
-	public List<Order> findOrder(OLATResource resource, Identity identity, AccessMethod method) {
-		return orderManager.findOrdersByResource(resource, identity, method);
 	}
 
 	@Override

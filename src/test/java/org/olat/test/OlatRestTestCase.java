@@ -43,6 +43,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpEntity;
 import org.junit.Before;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.helpers.SettingsTest;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestApiLoginFilter;
@@ -98,6 +99,8 @@ public abstract class OlatRestTestCase extends OlatTestCase {
 	@Before
 	public void instantiateServer() {
 		if(webServer == null) {
+			SettingsTest.createHttpDefaultPortSettings();
+			
 			try {
 				DeploymentInfo servletBuilder = deployment()
 				        .setClassLoader(OlatRestTestCase.class.getClassLoader())

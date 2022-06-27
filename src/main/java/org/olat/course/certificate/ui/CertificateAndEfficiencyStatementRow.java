@@ -42,6 +42,7 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode 
 	
 	private Float score = 0f;
 	private Float scoreMax;
+	private String grade;
 	private Boolean passed;
 	private Date lastModified;
 	private String displayName;
@@ -123,6 +124,14 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode 
 		if (parent != null) {
 			parent.addToScore(maxScore, score, statementKey);
 		}
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
 	}
 
 	public Boolean getPassed() {

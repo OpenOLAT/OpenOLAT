@@ -50,12 +50,12 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -283,7 +283,6 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 			.addTextBody("filename", "cp-demo.zip")
 			.addTextBody("resourcename", "CP demo")
 			.addTextBody("displayname", "CP demo")
-			.addTextBody("access", "3")
 			.build();
 		method.setEntity(entity);
 		
@@ -297,8 +296,6 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
 		assertEquals("CP demo", re.getDisplayname());
-		Assert.assertTrue(re.isAllUsers());
-		Assert.assertFalse(re.isGuests());
 		
 		conn.shutdown();
 	}

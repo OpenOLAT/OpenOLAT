@@ -49,6 +49,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -145,7 +146,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		formLayout.add(enableCont);
 		
 		enableCont.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("Assessment mode");
+		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
 		setFormDescription("form.mode.description");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
@@ -167,7 +168,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		}
 
 		Status status = assessmentMode.getStatus();
-		boolean editable = isEditable();
+		boolean editable = isEditable() && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser);
 		
 		safeExamBrowserEl = uifactory.addCheckboxesHorizontal("safeexam", "mode.safeexambrowser", enableCont, onKeys, onValues);
 		safeExamBrowserEl.select(onKeys[0], assessmentMode.isSafeExamBrowser());
@@ -201,6 +202,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		downloadConfigEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.download.config", enableCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		downloadConfigEl.select(trueFalseKey(assessmentMode.isSafeExamBrowserConfigDownload()), true);
+		downloadConfigEl.setEnabled(!AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser));
 		
 		sebConfigCont = FormLayoutContainer.createDefaultFormLayout("seb.config", getTranslator());
 		sebConfigCont.setFormTitle(translate("mode.safeexambrowser.section.title"));
@@ -325,17 +327,19 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, keyConfigCont);
 		safeExamBrowserKeyEl.setMaxLength(16000);
 		safeExamBrowserKeyEl.setVisible(assessmentMode.isSafeExamBrowser());
-		safeExamBrowserKeyEl.setEnabled(status != Status.end);
+		safeExamBrowserKeyEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser));
 		String hint = assessmentMode.getSafeExamBrowserHint();
 		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
 				hint, 10, -1, false, null, null, keyConfigCont, ureq.getUserSession(), getWindowControl());
 		safeExamBrowserHintEl.setVisible(assessmentMode.isSafeExamBrowser());
-		safeExamBrowserHintEl.setEnabled(status != Status.end);
+		safeExamBrowserHintEl.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser));
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		keyConfigCont.add(buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		if(status != Status.end) {
+		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
 	}

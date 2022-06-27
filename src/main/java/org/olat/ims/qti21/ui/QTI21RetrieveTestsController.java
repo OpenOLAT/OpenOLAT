@@ -52,6 +52,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
@@ -85,6 +86,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private InstantMessagingService imService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -225,7 +228,11 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(session.getIdentity(), courseEnv);
-			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach, getLocale());
+			
+			// End chat
+			String channel = session.getIdentity() == null ? session.getAnonymousIdentifier() : session.getIdentity().getKey().toString();
+			imService.endChannel(getIdentity(), courseEntry.getOlatResource(), courseNode.getIdent(), channel);
 		}
 		dbInstance.commitAndCloseSession();
 	}

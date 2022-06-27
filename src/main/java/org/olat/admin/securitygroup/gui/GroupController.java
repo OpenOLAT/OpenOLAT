@@ -491,7 +491,7 @@ public class GroupController extends BasicController {
 	
 	private void doIm(UserRequest ureq, Identity identity) {
 		Buddy buddy = imService.getBuddyById(identity.getKey());
-		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+		OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 

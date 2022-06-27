@@ -33,6 +33,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -352,6 +353,46 @@ public class BusinessGroupDAO {
 				mb.setWaiting(true);
 			}
 		}
+	}
+
+	public BusinessGroupMembershipInfos getMembershipInfos(BusinessGroup businessGroup, IdentityRef identity) {
+		List<GroupMembership> memberships = groupDao.getMemberships(businessGroup.getBaseGroup(), identity);
+		if(!memberships.isEmpty()) {
+			Date creationDate = null;
+			Date lastModified = null;
+			String role = null;
+			if(memberships.size() == 1) {
+				role = memberships.get(0).getRole();
+				creationDate = memberships.get(0).getCreationDate();
+				lastModified = memberships.get(0).getLastModified();
+			} else {
+				// Last modified is set at creation of the membership, prefer a last modified which is not the same as the creation date
+				// but fallback to it because we do it everywhere
+				Date notEqualsLastModified = null;
+				for(GroupMembership membership:memberships) {
+					if(membership.getCreationDate() != null
+							&& (creationDate == null || creationDate.after(membership.getCreationDate()))) {
+						creationDate = membership.getCreationDate();
+					}
+					if(membership.getLastModified() != null
+							&& (lastModified == null || lastModified.before(membership.getLastModified()))) {
+						lastModified = membership.getLastModified();
+					}
+					if(membership.getLastModified() != null
+							&& !membership.getLastModified().equals(membership.getCreationDate()) 
+							&& (notEqualsLastModified == null || notEqualsLastModified.before(membership.getLastModified()))) {
+						notEqualsLastModified = membership.getLastModified();
+					}
+				}
+				
+				if(notEqualsLastModified != null) {
+					lastModified = notEqualsLastModified;
+				}
+			}
+			return new BusinessGroupMembershipInfos(identity.getKey(), businessGroup.getKey(), businessGroup.getName(),
+					role, creationDate, lastModified);
+		}
+		return null;
 	}
 	
 	public List<BusinessGroupMembershipInfos> getMemberships(IdentityRef identity) {
@@ -762,7 +803,7 @@ public class BusinessGroupDAO {
 				if(row.getBundles() == null) {
 					row.setBundles(new ArrayList<>(3));
 				}
-				row.getBundles().add(new PriceMethodBundle(price, method));	
+				row.getBundles().add(new PriceMethodBundle(price, method));
 			}
 		}
 	}

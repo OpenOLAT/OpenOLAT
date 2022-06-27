@@ -1,9 +1,14 @@
 <div class="o_login_form o_login_olat">
 	$r.render("loginForm")
 	#if ($r.available("menu.pw"))
+	<div class="o_login_pw_wrapper">
 		$r.render("menu.pw")
+	</div>
 	#end
 </div>
 #if ($r.available("menu.register"))
-	$r.render("menu.register")
+<div class="o_login_register_wrapper">
+	<hr />
+	$r.render("menu.register") ##$r.translate("menu.register.to.use")
+</div>
 #end

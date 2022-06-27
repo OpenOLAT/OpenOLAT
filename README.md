@@ -2,16 +2,19 @@
 
 <a href="https://www.openolat.org"><img src="src/main/webapp/static/images/openolat/openolat_logo_claim_small_rgb.png" align="left"></a>
 
- **OpenOlat** is a web-based e-learning platform for teaching, learning, assessment and communication, an LMS, a learning management system. OpenOlat impresses with its simple and intuitive operation.
+ **OpenOlat** is a web-based e-learning platform for teaching, learning, assessment and communication, an LMS, a learning management system. OpenOlat impresses with its simple and intuitive operation and rich feature set.
 
-A sophisticated modular toolkit provides course authors with a wide range of didactic  possibilities. Each OpenOlat installation can be individually extended, adapted to organizational needs, and integrated into existing IT infrastructures. The architecture is designed for minimal resource consumption, scalability and security in order to guarantee high system reliability.
+A sophisticated modular toolkit provides course authors with a wide range of didactic  possibilities. Each OpenOlat installation can be individually extended, adapted to organizational needs, and integrated into existing IT infrastructures. The architecture is designed for minimal resource consumption, scalability and security in order to guarantee high system reliability. 
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+Visit the [OpenOlat project homepage](https://www.openolat.com) and the [OpenOlat documentation](https://docs.openolat.org) for more information.
+
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/openolat/OpenOlat) [![Twitter Follow](https://img.shields.io/twitter/follow/openolat?style=social)](https://twitter.com/openolat)
 
 ## Table of Contents
 
 1. [Licensing](#licensing)
-2. [Ressources](#ressources)
+2. [Installation manual and user documentation](#installation-manual-and-user-documentation)
 3. [Community](#being-a-community-member)
 4. [Developers](#developers)
     * [Setting up OpenOlat in Eclipse](#setting-up-openolat-in-eclipse-and-postgresql)
@@ -26,22 +29,39 @@ A sophisticated modular toolkit provides course authors with a wide range of did
 
 With regard to licensing and copyright please refer to the file [LICENSE](LICENSE) and [NOTICE.TXT](NOTICE.TXT)
 
-## Ressources 
+***
 
-* [Installation](https://www.openolat.com/fileadmin/adminwiki/_START_.html)
-* [About OpenOlat](https://www.openolat.com)
+## Installation manual and user documentation
+
+The documentation can be found at [https://docs.openolat.org](https://docs.openolat.org)
+
+### User documentation
+ * [Release notes](https://docs.openolat.org/release_notes/)
+ * [User manual](https://docs.openolat.org/manual_user/)
+ * [Admin manual](https://docs.openolat.org/manual_admin/)
+
+### Technical documentation
+ * [Installation guide for production](https://docs.openolat.org/manual_admin/installation/installGuide/)
+ * [Developer cookbook manual](https://docs.openolat.org/manual_dev/)
+ * [Installation guide for developers](#developers)
+
+### Other ressources 
+
 * [Mailing list](https://groups.google.com/forum/#!forum/openolat)
 * [Issue management in Jira](https://jira.openolat.org/)
 * [OpenOlat for the community](https://community.openolat.org) An OpenOlat instance dedicated to the community
 
+***
 
 ## Being a community member
 
-We strongly suggest to participate in the OpenOlat community membership program. 
+We strongly suggest to participate in the **OpenOlat community membership program**. 
 Even though this software is free and open source, the development and management
 has to be funded by someone. If you like what we do and want the product to be
 maintained and developed in the long run you should consider purchasing a membership:
 [Partner program](https://www.openolat.com/open-source/).
+
+***
 
 ## Developers
 
@@ -425,7 +445,7 @@ when the test get slower over time.
 
 #### Execute Selenium functional tests
 
-The Selenium integration tests start the whole web application in Tomcat 8.0. They run with
+The Selenium integration tests start the whole web application in Tomcat 9.0. They run with
 Google Chrome or Firefox and their WebDrivers will be automatically downloaded (internet connection
 needed). The browsers need to be installed the standard way on Mac or Linux.
 
@@ -434,13 +454,13 @@ Execution time ca. 60 - 90m
 **For PostgreSQL:**
 
 ```bash
-mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.db.postgresql.pass=serial -Ptomcat
+mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=chrome -Dtest.env.webdriver.browserVersion=102.0.5005.61 -Dtest.env.webdriver.chrome.version=102.0.5005.61 -Dtest.env.db.postgresql.pass=serial -Ptomcat
 ```
 
 Or with Firefox
 
 ```bash
-mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=firefox -Dtest.env.db.postgresql.pass=serial -Ptomcat
+mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=firefox -Dtest.env.webdriver.browserVersion= -Dtest.env.db.postgresql.pass=serial -Ptomcat
 ```
 
 **For MySQL:**

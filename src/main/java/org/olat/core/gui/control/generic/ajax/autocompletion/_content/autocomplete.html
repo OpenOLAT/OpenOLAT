@@ -2,7 +2,7 @@
 	#if($flexi)
 		<div id='$r.getId("aj_ac_f")'>
 	#else
-		<form id='$r.getId("aj_ac_f")' action="$r.formURI('select')" method="post" onsubmit="o_XHRSubmit('$r.getId("aj_ac_f")');">
+		<form id='$r.getId("aj_ac_f")' action="javascript:;">
 	#end
     #if ($autocompleter_label)
 		$autocompleter_label 
@@ -76,6 +76,11 @@ jQuery(function(){
 	}).on('typeahead:change', function(e, value) {
 		$r.openJavaScriptCommand("change"),'key','',
 			'$r.getId("o_autocomplete_input")',jQuery('#$r.getId("o_autocomplete_input")').val());
-	});
+	}).on('keyup', this, function (e) {
+        if (e.keyCode == 13) {
+        	$r.openJavaScriptCommand("select"),'$r.getId("o_autocomplete_input")',jQuery('#$r.getId("o_autocomplete_input")').val());
+            return true;
+        }
+    });
 });
 </script>

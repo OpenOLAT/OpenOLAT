@@ -19,12 +19,16 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.date.TimeElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
@@ -45,10 +49,78 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 	@Override
 	protected void sort(List<AssessedIdentityElementRow> rows) {
 		int columnIndex = getColumnIndex();
-		if(columnIndex == IdentityCourseElementCols.currentCompletion.ordinal()) {
+		if(columnIndex == IdentityCourseElementCols.score.ordinal()) {
+			Collections.sort(rows, new ScoreComparator());
+		} else if(columnIndex == IdentityCourseElementCols.currentCompletion.ordinal()) {
 			Collections.sort(rows, new CurrentCompletionComparator());
+		}  else if(columnIndex == IdentityCourseElementCols.currentRunStart.ordinal()) {
+			Collections.sort(rows, new CurrentRunStartComparator());
 		} else {
 			super.sort(rows);
+		}
+	}
+	
+	private class ScoreComparator implements Comparator<AssessedIdentityElementRow> {
+		
+		@Override
+		public int compare(AssessedIdentityElementRow r1, AssessedIdentityElementRow r2) {
+			if(r1 == null || r2 == null) {
+				return compareNullObjects(r1, r2);
+			}
+			
+			BigDecimal s1 = r1.getScore();
+			BigDecimal s2 = r2.getScore();
+			if(s1 == null || s2 == null) {
+				return compareNullObjects(s1, s2);
+			}
+			return s1.compareTo(s2);
+		}
+		
+	}
+	
+	private class CurrentRunStartComparator implements Comparator<AssessedIdentityElementRow> {
+		
+		private final Calendar cal = Calendar.getInstance();
+
+		@Override
+		public int compare(AssessedIdentityElementRow r1, AssessedIdentityElementRow r2) {
+			Date d1 = extractDate(r1);
+			Date d2 = extractDate(r2);
+			
+			int c = 0;
+			if(d1 == null || d2 == null) {
+				c = compareNullObjects(d1, d2);
+			} else {
+				c = compareTime(d1, d2);
+			}
+			if(c == 0) {
+				Long k1 = r1.getIdentityKey();
+				Long k2 = r2.getIdentityKey();
+				c = compareLongs(k1, k2);
+			}
+			return c;
+		}
+		
+		private Date extractDate(AssessedIdentityElementRow r) {
+			if(r == null) {
+				return null;
+			}
+			TimeElement t = r.getCurrentRunStart();
+			return t == null ? null : t.getDate();
+		}
+		
+		private int compareTime(Date d1, Date d2) {
+			Date nd1 = normalize(d1);
+			Date nd2 = normalize(d2);
+			return compareDateAndTimestamps(nd1, nd2);
+		}
+		
+		private Date normalize(Date d) {
+			cal.setTime(d);
+			cal.set(Calendar.YEAR, 2022);
+			cal.set(Calendar.MONTH, 3);
+			cal.set(Calendar.DATE, 5);
+			return cal.getTime();
 		}
 	}
 

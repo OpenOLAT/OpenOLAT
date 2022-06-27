@@ -89,7 +89,7 @@ public class MailInboxAdminController extends FormBasicController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mail.admin.title");
 		setFormDescription("mail.admin.description");
-		setFormContextHelp("E-Mail Settings");
+		setFormContextHelp("manual_admin/administration/E-Mail_Settings/");
 
 		boolean internEnabled = mailModule.isInternSystem();
 		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values);

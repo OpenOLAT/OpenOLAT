@@ -165,14 +165,6 @@ public interface AssessmentManager {
 	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by);
 	
 	/**
-	 * Increment the users attempts for this course node, but without logging (aimed at background job).
-	 * @param courseNode
-	 * @param identity
-	 * @param userCourseEnvironment
-	 */
-	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment);
-
-	/**
 	 * @param courseNode The course node
 	 * @param identity The identity 
 	 * @return The achieved score or null if no score available

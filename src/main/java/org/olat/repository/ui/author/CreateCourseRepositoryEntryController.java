@@ -76,7 +76,7 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 		nodeAccessEl.addActionListener(FormEvent.ONCHANGE);
 		
 		nodeAccessEl.setHelpText(helpText);
-		nodeAccessEl.setHelpUrlForManualPage("Learning path course");
+		nodeAccessEl.setHelpUrlForManualPage("manual_user/course_create/Learning_path_course/");
 	}
 
 	@Override

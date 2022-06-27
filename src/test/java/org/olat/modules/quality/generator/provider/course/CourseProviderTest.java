@@ -282,7 +282,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsAuthor(JunitTestHelper.random());
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		RepositoryEntryLifecycle lifecycle = lifecycleDAO.create(null, null, false, lifecycleStart.getTime(), lifecycleEnd.getTime());
-		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, null, null, null, null, null, null, null, lifecycle);
+		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, null, null, null, null, null, null, null, null, lifecycle);
 		dbInstance.commitAndCloseSession();
 		return courseEntry;
 	}

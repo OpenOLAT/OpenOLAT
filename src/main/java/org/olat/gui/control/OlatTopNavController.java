@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.admin.user.tools.UserTool;
@@ -145,7 +146,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		if(!StringHelper.containsNonWhitespace(selectedTools)) {
 			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
 		}
-		Set<String> selectedToolSet = new HashSet<>();
+		final Set<String> selectedToolSet = new HashSet<>();
 		if(StringHelper.containsNonWhitespace(selectedTools)) {
 			String[] selectedToolArr = selectedTools.split(",");
 			for(String selectedTool:selectedToolArr) {
@@ -154,30 +155,30 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		}
 		
 		List<UserToolExtension> toolExtensions = userToolsModule.getUserToolExtensions(ureq);
+		toolExtensions = toolExtensions.stream()
+				.filter(extension -> extension.isShortCutOnly() || selectedToolSet.contains(extension.getUniqueExtensionID()))
+				.collect(Collectors.toList());
+		
 		for (UserToolExtension toolExtension : toolExtensions) {
-			// check for sites
-			if(toolExtension.isShortCutOnly() || selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
-				UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
-				if(tool != null) {
-					if (toolExtension.getUserToolCategory().equals(UserToolCategory.help)) {
-						for (HelpLinkSPI helpLinkSPI : helpModule.getUserToolHelpPlugins()) {
-							UserTool helpTool = helpLinkSPI.getHelpUserTool(getWindowControl());
-							if (helpTool != null) {
-								Component cmp = helpTool.getMenuComponent(ureq, topNavVC);
-								String CssId = toolExtension.getShortCutCssId() + "_" + helpLinkSPI.getPluginName();
-								String cssClass = toolExtension.getShortCutCssClass();
-								helpPluginLinksName.add(new Tool(CssId, cssClass, cmp.getComponentName()));
-								disposableTools.add(helpTool);
-							}
+			UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
+			if(tool != null) {
+				if (toolExtension.getUserToolCategory().equals(UserToolCategory.help)) {
+					for (HelpLinkSPI helpLinkSPI : helpModule.getUserToolHelpPlugins()) {
+						UserTool helpTool = helpLinkSPI.getHelpUserTool(getWindowControl());
+						if (helpTool != null) {
+							Component cmp = helpTool.getMenuComponent(ureq, topNavVC);
+							String cssId = toolExtension.getShortCutCssId() + "_" + helpLinkSPI.getPluginName();
+							String cssClass = toolExtension.getShortCutCssClass();
+							helpPluginLinksName.add(new Tool(cssId, cssClass, cmp.getComponentName()));
+							disposableTools.add(helpTool);
 						}
-					} else {
-						Component cmp = tool.getMenuComponent(ureq, topNavVC);
-						String cssId = toolExtension.getShortCutCssId();
-						String cssClass = toolExtension.getShortCutCssClass();
-						toolSetLinksName.add(new Tool(cssId, cssClass, cmp.getComponentName()));
-						disposableTools.add(tool);
 					}
-
+				} else {
+					Component cmp = tool.getMenuComponent(ureq, topNavVC);
+					String cssId = toolExtension.getShortCutCssId();
+					String cssClass = toolExtension.getShortCutCssClass();
+					toolSetLinksName.add(new Tool(cssId, cssClass, cmp.getComponentName()));
+					disposableTools.add(tool);
 				}
 			}
 		}

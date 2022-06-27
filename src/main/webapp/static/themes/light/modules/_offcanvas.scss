@@ -114,3 +114,31 @@ body.o_dmz #o_container_page_width_toggler {
     	width: 50%; /* 6 columns */
   	}
 }
+
+/*
+ * Helper to break out the width of the off canvas
+ * --------------------------------------------------
+ */
+.o_block_width_full {
+	// Reset horizontal width values of o_container_offcanvas
+	margin-left: min(calc(($o-page-width-max - 30px - 100vw)/2), -15px);
+	margin-right: min(calc(($o-page-width-max - 30px - 100vw)/2), -15px);
+	.o_fixed_width {
+		margin-left: max((0px - $o-page-width-max + 100vw)/2, 0px);
+		max-width: $o-page-width-max;
+	}
+}
+body.o_width_full {
+	.o_block_width_full {
+			margin-left: -15px;
+			margin-right: -15px;
+			@media (min-width: $o-page-width-max) {
+				margin-left: -35px;
+				margin-right: -35px;
+			}
+			.o_fixed_width {
+				margin-left: 15px;
+				max-width: $o-page-width-max;
+			}
+		}
+}

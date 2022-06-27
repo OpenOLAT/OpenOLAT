@@ -27,6 +27,7 @@ package org.olat.core.commons.fullWebApp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.OncePanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -98,15 +100,13 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -152,6 +152,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private Panel main;
 	private Panel modalPanel;
 	private Panel topModalPanel;
+	private Panel instantMessagePanel;
 	private final GUIMessage guiMessage;
 	private final OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
@@ -200,10 +201,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	@Autowired
 	private CSPModule cspModule;
-	@Autowired
-	private I18nModule i18nModule;
-	@Autowired
-	private I18nManager i18nManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -403,29 +400,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		mainVc.contextPut("o_winid", w.getDispatchID());
 		mainVc.contextPut("buildversion", Settings.getVersion());
 		
-
 		if (wbo.isDebuging()) {
 			debugC = wbo.createDebugDispatcherController(ureq, getWindowControl());
 			mainVc.put("guidebug", debugC.getInitialComponent());
-		}		
-		
-		// Inline translation interceptor. when the translation tool is enabled it
-		// will start the translation tool in translation mode, if the overlay
-		// feature is enabled it will start in customizing mode
-		// fxdiff: allow user-managers to use the inline translation also.
-		if (usess.isAuthenticated()
-				&& (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin())
-				&& (i18nModule.isTransToolEnabled() || i18nModule.isOverlayEnabled())) {
-			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
-			Preferences guiPrefs = usess.getGuiPreferences();
-			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED,
-					Boolean.FALSE);
-			i18nManager.setMarkLocalizedStringsEnabled(usess, isInlineTranslationEnabled);
-			mainVc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
-		}
-
-		// debug info if debugging
-		if (wbo.isDebuging()) {
+			// debug info if debugging
 			developmentC = wbo.createDevelopmentController(ureq, getWindowControl());
 			mainVc.put("development", developmentC.getInitialComponent());
 		}
@@ -561,6 +539,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		topModalPanel = new Panel("topmodalpanel");
 		mainVc.put("topmodalpanel", topModalPanel);
+		
+		instantMessagePanel = new Panel("impanel");
+		mainVc.put("instantmessagepanel", instantMessagePanel);
 
 		// main, mandatory (e.g. a LayoutMain3ColsController)
 		main = new Panel("mainContent");
@@ -642,6 +623,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			}
 			mainVc.setDirty(true);
 		}
+	}
+
+	protected void setForPrint(boolean forPrint) {
+		mainVc.contextPut("forPrint", Boolean.valueOf(forPrint));
+		mainVc.setDirty(true);
 	}
 	
 	@Override
@@ -807,6 +793,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		StackedPanel topModalStackP = currentGuiStack.getTopModalPanel();
 		topModalPanel.setContent(topModalStackP);
+		
+		ListPanel instantMessageP = currentGuiStack.getInstantMessagePanel();
+		instantMessagePanel.setContent(instantMessageP);
 	}
 
 	/**
@@ -1008,6 +997,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				bodyCssClasses.remove(getScreenMode().getFullScreenBodyClass());
 			}
 		}
+
+		// Reset logo infos
+		LayoutModule layoutModule = CoreSpringFactory.getImpl(LayoutModule.class);
+		LandingPagesModule landingPagesModule = CoreSpringFactory.getImpl(LandingPagesModule.class);
+		LogoInformations logoInfos = new LogoInformations(ureq, layoutModule, landingPagesModule);
+		mainVc.contextPut("logoInfos", logoInfos);
+		mainVc.setDirty(false); // prevent endless reloads
 		
 		boolean r = reload != null && reload.booleanValue();
 		if(erase && reload != null) {
@@ -1493,7 +1489,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		String cmd = event.getCommand();
 		switch(cmd) {
 			case AssessmentModeNotificationEvent.STOP_WARNING:
-				lockResourceMessage(event.getAssessementMode());
+				lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()));
 				break;
 			case AssessmentModeNotificationEvent.BEFORE:
 				if(asyncUnlockResource(event.getAssessementMode())) {
@@ -1657,15 +1653,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return unlock;
 	}
 	
-	private void lockResourceMessage(TransientAssessmentMode mode) {
+	private void lockResourceWarningMessage(TransientAssessmentMode mode, Integer extraTime) {
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			Translator trans = Util.createPackageTranslator(AssessmentModeGuardController.class, getLocale());
+			Date end = mode.getEnd();
+			if(extraTime != null && extraTime > 0) {
+				end = DateUtils.addSeconds(end, extraTime.intValue());
+			}
+			
 			if(stickyMessageCmp.getDelegateComponent() instanceof CountDownComponent) {
 				CountDownComponent cmp = (CountDownComponent)stickyMessageCmp.getDelegateComponent();
-				cmp.setDate(mode.getEnd());
+				cmp.setDate(end);
 			} else {
-				CountDownComponent cmp = new CountDownComponent("stickcountdown", mode.getEnd(), trans);
+				CountDownComponent cmp = new CountDownComponent("stickcountdown", end, trans);
 				cmp.setI18nKey("assessment.countdown");
+				cmp.setI18nKeySingular("assessment.countdown.singular");
+				cmp.setI18nKeyZero("assessment.countdown.zero");
 				stickyMessageCmp.setDelegateComponent(cmp);
 			}
 		}

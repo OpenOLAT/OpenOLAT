@@ -85,6 +85,12 @@
 		width: 3em;
 	}
 	
+	.o_inline_cont.form-inline {
+		> * {
+			display: inline-block;
+		}
+	}
+	
 	.has-feedback .o_date.form-inline .form-control.o_date_ms {
 		padding-right: 0;
 	}
@@ -526,6 +532,10 @@
 /* checkbox */
 .checkbox label.o_checkbox_error {
 	color: $state-danger-text;
+}
+
+.checkbox label.o_checkbox_warning {
+	color: $state-warning-text;
 }
 
 /* choice element */

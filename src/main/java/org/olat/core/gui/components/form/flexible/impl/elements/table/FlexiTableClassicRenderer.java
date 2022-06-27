@@ -427,13 +427,15 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			Component cmp = formItem.getComponent();
 			cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
 			cmp.setDirty(false);
+		} else if(formItem.getComponent() != null) {
+			formItem.getComponent().setDirty(false);
 		}
 		if(formItem.hasError()) {
 			Component errorCmp = formItem.getErrorC();
 			errorCmp.getHTMLRendererSingleton().render(renderer, target, formItem.getErrorC(),
 					ubu, translator, renderResult, null);
 			errorCmp.setDirty(false);
-		}
+		} 
 	}
 
 	@Override

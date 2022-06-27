@@ -47,6 +47,12 @@ public interface UserEfficiencyStatementShort {
 	
 	public Float getScore();
 	
+	public String getGrade();
+	
+	public String getGradeSystemIdent();
+	
+	public String getPerformanceClassIdent();
+	
 	public Boolean getPassed();
 	
 	public Integer getTotalNodes();

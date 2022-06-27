@@ -312,9 +312,7 @@ public class BusinessGroupTest extends Deployments {
 		group.openBookingConfig()
 			.openAddDropMenu()
 			.addTokenMethod()
-			.configureTokenMethod(token, description)
-			.assertOnToken(token)
-			.save();
+			.configureTokenMethod(token, description);
 		
 		//members see members
 		group = GroupPage.getGroup(browser)

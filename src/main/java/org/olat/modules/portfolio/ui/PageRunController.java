@@ -98,6 +98,7 @@ import org.olat.modules.portfolio.handler.ContainerHandler;
 import org.olat.modules.portfolio.handler.CreateFileHandler;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
+import org.olat.modules.portfolio.handler.MathPageElementHandler;
 import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
 import org.olat.modules.portfolio.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.handler.TablePageElementHandler;
@@ -729,7 +730,7 @@ public class PageRunController extends BasicController implements TooledControll
 			return layoutCtr;
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	private void openImportPageSelection(UserRequest ureq) {
@@ -784,6 +785,9 @@ public class PageRunController extends BasicController implements TooledControll
 			//handler for table
 			TablePageElementHandler tableHandler = new TablePageElementHandler();
 			handlers.add(tableHandler);
+			//handler for table
+			MathPageElementHandler mathHandler = new MathPageElementHandler();
+			handlers.add(mathHandler);
 			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
@@ -822,7 +826,11 @@ public class PageRunController extends BasicController implements TooledControll
 			TablePageElementHandler tableHandler = new TablePageElementHandler();
 			handlers.add(tableHandler);
 			creationHandlers.add(tableHandler);
-			
+			//handler for LaTeX code
+			MathPageElementHandler mathHandler = new MathPageElementHandler();
+			handlers.add(mathHandler);
+			creationHandlers.add(mathHandler);
+
 			// Handler only to create files
 			if (isCreateFilePossible(roles)) {
 				CreateFileHandler createFileHandler = new CreateFileHandler();

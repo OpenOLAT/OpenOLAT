@@ -143,7 +143,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	 * 
 	 * @param propertyName
 	 * @param allowEmptyString
-	 *            true: empty strings are valid values; false: emtpy strings are
+	 *            true: empty strings are valid values; false: empty strings are
 	 *            discarded
 	 * @return the value from the configuration or the default value or ""/NULL
 	 *         (depending on allowEmptyString flag)

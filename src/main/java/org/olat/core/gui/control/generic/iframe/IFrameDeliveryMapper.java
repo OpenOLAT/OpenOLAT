@@ -38,6 +38,7 @@ import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -638,26 +639,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		
 		public void appendJsMath() {
 			append("<script>\n");
-			append("window.MathJax = {\n");
-			append(" tex: {\n");
-			append("  inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]\n");
-			append(" },\n");
-			append(" options: {\n");
-			append("  enableMenu: false,\n");
-			append("  renderActions: {\n");
-			append("   findScripts: [11, function (doc) {\n");
-			append("    for (var node of document.querySelectorAll('.math')) {\n");
-			append("     var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));\n");
-			append("     var text = document.createTextNode('');\n");
-			append("     node.parentNode.replaceChild(text, node);\n");
-			append("     math.start = {node: text, delim: '', n: 0};\n");
-			append("     math.end = {node: text, delim: '', n: 0};\n");
-			append("     doc.math.push(math);\n");
-			append("    }\n");
-			append("   }, '']\n");
-			append("  }\n");
-			append(" }\n");
-			append("}");
+			append(Formatter.mathJaxConfiguration());
 			append("</script>");
 			append("<script src=\"");
 			append(WebappHelper.getMathJaxCdn());

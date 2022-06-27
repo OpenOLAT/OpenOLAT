@@ -121,7 +121,7 @@ public class HtmlPageHandler extends DefaultHandler {
 				String attrName = attributes.getLocalName(i);
 				String attrValue = attributes.getValue(i);
 				output.append(' ').append(attrName).append('=');
-				boolean useSingle =  (attrValue.indexOf('"') > 0);
+				boolean useSingle = attrValue.indexOf('"') > 0;
 				if(useSingle) {
 					output.append('\'');
 				} else {
@@ -150,12 +150,11 @@ public class HtmlPageHandler extends DefaultHandler {
 		}
 		
 		String contextPath = WebappHelper.getServletContextPath();
-		if(uri.startsWith(contextPath)) {
+		if(StringHelper.containsNonWhitespace(contextPath) && uri.startsWith(contextPath)) {
 			return uri;//absolute within olat
 		}
 		
 		if(uri.startsWith("..")) {
-			
 			VFSContainer startDir;
 			if(relativePath == null) {
 				startDir = rootContainer;

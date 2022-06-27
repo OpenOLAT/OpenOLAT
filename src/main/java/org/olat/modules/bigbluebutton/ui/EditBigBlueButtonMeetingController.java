@@ -74,6 +74,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -135,6 +136,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
@@ -358,7 +361,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		String[] guestValues = new String[] { translate("meeting.guest.on") };
 		guestEl = uifactory.addCheckboxesHorizontal("meeting.guest", formLayout, onKeys, guestValues);
 		guestEl.setElementCssClass("o_sel_bbb_edit_meeting_guest");
-		guestEl.setVisible(entry != null && entry.isGuests());
+		guestEl.setVisible(entry != null && entry.isPublicVisible() && acService.isGuestAccessible(entry, false));
 		guestEl.select(onKeys[0], meeting != null && meeting.isGuest());
 		guestEl.setEnabled(editable);
 		

@@ -580,7 +580,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		ControllerCreator printControllerCreator = getPrintControllerCreator();
 		if (printControllerCreator != null) {
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-			openInNewBrowserWindow(ureq, layoutCtrlr);
+			openInNewBrowserWindow(ureq, layoutCtrlr, true);
 		}
 	}
 	

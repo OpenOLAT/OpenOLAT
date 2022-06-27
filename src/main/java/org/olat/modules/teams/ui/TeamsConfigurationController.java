@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TeamsConfigurationController extends FormBasicController {
 
-	private static final String[] FOR_KEYS = { "courses", "appointments", "groups" };
+	private static final String[] FOR_KEYS = { "courses", "appointments", "groups", "chatexams" };
 	private static final String[] ENABLED_KEY = new String[]{ "on" };
 
 	private MultipleSelectionElement moduleEnabled;
@@ -83,7 +83,7 @@ public class TeamsConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("teams.title");
 		setFormInfo("teams.intro");
-		setFormContextHelp("Teams+module");
+		setFormContextHelp("manual_user/course_elements/Course_element_Microsoft_Teams/");
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("teams.module.enabled", formLayout, ENABLED_KEY, enabledValues);
@@ -92,12 +92,14 @@ public class TeamsConfigurationController extends FormBasicController {
 		
 		String[] forValues = new String[] {
 			translate("teams.module.enabled.for.courses"), translate("teams.module.enabled.for.appointments"),
-			translate("teams.module.enabled.for.groups")
+			translate("teams.module.enabled.for.groups"),
+			translate("teams.module.enabled.for.chat.exams")
 		};
 		enabledForEl = uifactory.addCheckboxesVertical("teams.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
 		enabledForEl.select(FOR_KEYS[0], teamsModule.isCoursesEnabled());
 		enabledForEl.select(FOR_KEYS[1], teamsModule.isAppointmentsEnabled());
 		enabledForEl.select(FOR_KEYS[2], teamsModule.isGroupsEnabled());
+		enabledForEl.select(FOR_KEYS[3], teamsModule.isChatExamsEnabled());
 		
 		String clientId = teamsModule.getApiKey();
 		clientIdEl = uifactory.addTextElement("client.id", "azure.adfs.id", 255, clientId, formLayout);
@@ -228,6 +230,7 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setCoursesEnabled(enabledForEl.isSelected(0));
 			teamsModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
 			teamsModule.setGroupsEnabled(enabledForEl.isSelected(2));
+			teamsModule.setChatExamsEnabled(enabledForEl.isSelected(3));
 			showInfo("info.saved");
 		} else {
 			teamsModule.setApiKey(null);

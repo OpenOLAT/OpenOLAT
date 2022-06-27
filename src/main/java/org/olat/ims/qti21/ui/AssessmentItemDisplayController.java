@@ -205,7 +205,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
-			ResolvedAssessmentItem resolvedAssessmentItem,  File fUnzippedDirRoot, File itemFile,
+			ResolvedAssessmentItem resolvedAssessmentItem, File fUnzippedDirRoot, File itemFile, String externalRefIdentifier,
 			QTI21DeliveryOptions deliveryOptions, OutcomesAssessmentItemListener outcomesListener, AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
 		
@@ -219,9 +219,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.outcomesListener = outcomesListener;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = initOrResumeAssessmentTestSession(entry, subIdent, testEntry, assessmentEntry, authorMode);
-		String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
-        		.extractIfSuccessful().getIdentifier();
-		itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+		itemSession = getItemSession(resolvedAssessmentItem, externalRefIdentifier);
 		
 		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
 		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), fUnzippedDirRoot, submissionDir));
@@ -237,6 +235,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			initQtiWorks(ureq);
 		}
 		putInitialPanel(mainVC);
+	}
+	
+	protected AssessmentItemSession getItemSession(ResolvedAssessmentItem rAssessmentItem, String externalRefIdentifier) {
+		String  assessmentItemIdentifier = rAssessmentItem.getRootNodeLookup().extractIfSuccessful().getIdentifier();
+		return qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, externalRefIdentifier);
 	}
 	
 	protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry, String subIdent, RepositoryEntry referenceEntry,
@@ -550,7 +553,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
         		.extractIfSuccessful().getIdentifier();
 		itemSession = qtiService
-				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, null);
         
         Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
         Map<Identifier, AssessmentResponse> removedCandidateResponseMap = new HashMap<>();
@@ -595,7 +598,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
         		.extractIfSuccessful().getIdentifier();
 		itemSession = qtiService
-				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, null);
         
 		List<Interaction> interactions = itemSessionController.getInteractions();
 		Map<Identifier,Interaction> interactionMap = new HashMap<>();
@@ -688,7 +691,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
         		.extractIfSuccessful().getIdentifier();
 		itemSession = qtiService
-				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier, null);
         
         Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
         for (Entry<Identifier, ResponseData> responseEntry : responseDataMap.entrySet()) {
@@ -733,10 +736,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			/* (We commit responses immediately here) */
 			itemSessionController.commitResponses(timestamp);
 
-			/* Invoke response processing (only if responses are valid) */
-			if (allResponsesValid) {
-				itemSessionController.performResponseProcessing(timestamp);
-			}
+			/* Invoke response processing (if responses are valid or not) */
+			itemSessionController.performResponseProcessing(timestamp);
 		} catch (final QtiCandidateStateException e) {
 	        candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED, null);
 			logError("RESPONSES_NOT_EXPECTED", e);
@@ -757,6 +758,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		
 		/* Record current result state, or finish session */
 		AssessmentResult assessmentResult = updateSessionFinishedStatus(ureq);
+		itemSession.setDuration(itemSessionState.getDurationAccumulated());
+		itemSession.setAttempts(itemSessionState.getNumAttempts());
 		ItemResult itemResult = assessmentResult.getItemResult(assessmentItemIdentifier);
 		collectOutcomeVariablesForItemSession(itemResult);
         /* Persist CandidateResponse entities */
@@ -836,8 +839,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 	
 	private void collectOutcomeVariablesForItemSession(ItemResult resultNode) {
-		BigDecimal score = null;
+
 		Boolean pass = null;
+		BigDecimal score = null;
+		BigDecimal maxScore = null;
 
 		for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
 			if (itemVariable instanceof OutcomeVariable) {
@@ -846,21 +851,30 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
 					Value value = itemVariable.getComputedValue();
 					if (value instanceof FloatValue) {
-						score = new BigDecimal(
-								((FloatValue) value).doubleValue());
+						score = BigDecimal.valueOf(((FloatValue) value).doubleValue());
 					} else if (value instanceof IntegerValue) {
-						score = new BigDecimal(
-								((IntegerValue) value).intValue());
+						score = BigDecimal.valueOf(((IntegerValue) value).intValue());
 					}
 				} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
 					Value value = itemVariable.getComputedValue();
 					if (value instanceof BooleanValue) {
 						pass = ((BooleanValue) value).booleanValue();
 					}
+				} else if (QTI21Constants.MAXSCORE_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof FloatValue) {
+						maxScore = BigDecimal.valueOf(((FloatValue) value).doubleValue());
+					} else if (value instanceof IntegerValue) {
+						maxScore = BigDecimal.valueOf(((IntegerValue) value).intValue());
+					}
 				}
 			}
 		}
-
+		
+		collectOutcomeVariablesForItemSession(score, maxScore, pass);
+	}
+	
+	protected void collectOutcomeVariablesForItemSession(BigDecimal score, @SuppressWarnings("unused") BigDecimal maxScore, Boolean pass) {
 		if (score != null) {
 			itemSession.setScore(score);
 		}
@@ -974,7 +988,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         lastEvent = candidateEvent;
     }
     
-	private void next(UserRequest ureq, QTIWorksAssessmentItemEvent event) {
+	protected void next(UserRequest ureq, QTIWorksAssessmentItemEvent event) {
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 		
@@ -1110,6 +1124,25 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			} else {
 				timerEl.setEnabled(false);
 			}
+		}
+		
+		/**
+		 * Show the level instead of the status.
+		 * 
+		 * @param level The level (0 to 5)
+		 */
+		public void showQuestionLevel(int level, int maxLevels) {
+			qtiEl.setQuestionLevel(level, maxLevels);
+			qtiEl.setShowQuestionLevel(true);
+			qtiEl.setShowStatus(false);
+		}
+		
+		public void setSubmitI18nKey(String i18nKey) {
+			qtiEl.getSubmitButton().setI18nKey(i18nKey, null);
+		}
+		
+		public void setEnableAlwaysSkip(boolean enable) {
+			qtiEl.setEnableAlwaysSkip(enable);
 		}
 
 		@Override

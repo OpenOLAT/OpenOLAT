@@ -152,7 +152,7 @@ public class PreferencesFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs");
-		setFormContextHelp("Configuration#_einstellungen");
+		setFormContextHelp("manual_user/personal/Configuration/#settings");
 		
 		// load preferences
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();

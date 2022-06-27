@@ -58,29 +58,33 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		if (StringHelper.containsNonWhitespace(css)) {
 			sb.append(" ").append(css);
 		}
-		sb.append("' role='navigation'>");
+		sb.append("'>");
 		for (int i = 0; i < cnt; i++) {
 			if(tb.isHideDisabledTab() && !tb.isEnabled(i)) {
 				continue;
 			}
 			
 			String tabName = tb.getDisplayNameAt(i);
+			String elementCssClass = tb.getElementCssAt(i);
 			// Render active tab as non clickable, passive tabs with link
-			sb.append("<li");
+			sb.append("<li class='");
+			if(elementCssClass != null) {
+				sb.append(elementCssClass);
+			}
 			if (i != selPane && cnt > 1) {
 				if (tb.isEnabled(i)) {
-					sb.append("><a ");
+					sb.append("'><a ");
 					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, tb.isDirtyCheck(), true, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
-					sb.append(">").append(tabName).append("</a></li>");				
+					sb.append(">");				
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
-					sb.append(" class='disabled'><a href='javascript:;' title='")
-					  .append(StringHelper.escapeHtml(tb.getCompTrans().translate("disabled"))).append("'>")
-					  .append(tabName).append("</a></li>");
+					sb.append(" disabled'><a href='javascript:;' title='")
+					  .append(StringHelper.escapeHtml(tb.getCompTrans().translate("disabled"))).append("'>");
 				}
 			} else {
-				sb.append(" class='active'><a href='javascript:;'>").append(tabName).append("</a></li>");
+				sb.append(" active' ><a href='javascript:;'>");
 			}
+			sb.append(tabName).append("</a></li>");
 		}
 		sb.append("</ul>");
 

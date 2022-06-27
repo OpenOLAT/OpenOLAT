@@ -77,6 +77,10 @@ public class SearchQuestionItemParams implements Cloneable {
 	private final Roles roles;
 	private final Locale locale;
 	
+	public SearchQuestionItemParams() {
+		this(null, null, null);
+	}
+	
 	public SearchQuestionItemParams(Identity identity, Roles roles, Locale locale) {
 		this.identity = identity;
 		this.roles = roles;
@@ -315,10 +319,6 @@ public class SearchQuestionItemParams implements Cloneable {
 	
 	public Roles getRoles() {
 		return roles;
-	}
-	
-	public Locale getLocale() {
-		return locale;
 	}
 	
 	public SearchQuestionItemParams copy() {

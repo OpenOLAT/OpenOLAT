@@ -54,7 +54,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	
 	@Test
 	public void testCreatePreferences() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-prefs-1-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-prefs-1-");
 		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.available.name(), true);
 		dbInstance.commitAndCloseSession();
 		
@@ -69,7 +69,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	@Test
 	public void testLoadPreferences() {
 		//create a message
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-prefs-2-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-prefs-2-");
 		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.unavailable.name(), true);
 		Assert.assertNotNull(prefs);
 		dbInstance.commitAndCloseSession();
@@ -86,7 +86,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	@Test
 	public void testUpdatePreferences_visibility() {
 		//create a message
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-prefs-3-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-prefs-3-");
 		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.unavailable.name(), true);
 		Assert.assertNotNull(prefs);
 		dbInstance.commitAndCloseSession();
@@ -106,7 +106,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	@Test
 	public void testUpdatePreferences_status() {
 		//create a message
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-prefs-4-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-prefs-4-");
 		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.dnd.name(), true);
 		Assert.assertNotNull(prefs);
 		dbInstance.commitAndCloseSession();
@@ -129,7 +129,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	@Test
 	public void testUpdateTwicePreferences_status() {
 		//create a message
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-prefs-6-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-prefs-6-");
 		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.dnd.name(), true);
 		Assert.assertNotNull(prefs);
 		dbInstance.commitAndCloseSession();
@@ -152,7 +152,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	@Test
 	public void testUpdatePreferences_concurrent() {
 		//create a message
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-prefs-4-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-prefs-4-");
 		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.dnd.name(), true);
 		Assert.assertNotNull(prefs);
 		dbInstance.commitAndCloseSession();

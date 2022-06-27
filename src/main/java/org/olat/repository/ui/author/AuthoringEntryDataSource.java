@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,10 +43,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -65,6 +68,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 
@@ -263,7 +267,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		}
 		
 		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
-		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, null);
+		List<OLATResource> resourcesWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null);
+		List<OLATResource> resourcesWithGuestAccess = acService.filterResourceWithGuestAccess(resourcesWithAC);
 		Map<Long, List<TaxonomyLevel>> entryKeyToTaxonomyLevels = getTaxonomyLevels(repoEntries);
 		Map<Resourceable,ResourceLicense> licenses = getLicenses(repoEntries);
 		
@@ -276,10 +282,15 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			AuthoringEntryRow row = new AuthoringEntryRow(entry, fullname);
 			// bookmark
 			row.setMarked(entry.isMarked());
-
+			
+			boolean openAccess = resourcesWithOpenAccess.contains(entry.getOlatResource());
+			row.setOpenAccess(openAccess);
+			boolean guestAccess = resourcesWithGuestAccess.contains(entry.getOlatResource());
+			row.setGuestAccess(guestAccess);
+			
 			// access control
 			List<PriceMethod> types = new ArrayList<>(3);
-			if(entry.isBookable()) {
+			if(entry.isPublicVisible()) {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -293,8 +304,11 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 						}
 					}
 				}
-			} else if(!entry.isAllUsers() && !entry.isGuests()) {
-				// members only always show lock icon
+				if (openAccess) {
+					Translator translator = Util.createPackageTranslator(OpenAccessOfferController.class, uifactory.getTranslator().getLocale());
+					types.add(new PriceMethod(null, "o_ac_openaccess_icon", translator.translate("open.access.name")));
+				}
+			} else {
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			}
 			
@@ -322,7 +336,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				? repositoryService.getTaxonomy(repoEntries, true)
 				: Collections.emptyMap();
 		return entryRefToTaxonomyLevels.entrySet().stream()
-				.collect(Collectors.toMap(e -> e.getKey().getKey(), e -> e.getValue()));
+				.collect(Collectors.toMap(e -> e.getKey().getKey(), Entry::getValue));
 	}
 
 	private Map<Resourceable,ResourceLicense> getLicenses(List<RepositoryEntryAuthorView> repoEntries) {

@@ -50,6 +50,8 @@ import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.nodes.practice.PracticeResource;
+import org.olat.course.nodes.practice.manager.PracticeResourceDAO;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
@@ -142,6 +144,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private QuestionItemAuditLogDAO auditLogDao;
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private PracticeResourceDAO practiceResourceDao;
 
 	@Override
 	public void deleteItems(List<? extends QuestionItemShort> items) {
@@ -595,6 +599,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public void deleteCollection(QuestionItemCollection coll) {
+		List<PracticeResource> resources = practiceResourceDao.getResources(coll);
+		for(PracticeResource resource:resources) {
+			practiceResourceDao.deleteResource(resource);
+		}
 		collectionDao.deleteCollection(coll);
 	}
 
@@ -630,6 +638,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public void deletePool(Pool pool) {
+		List<PracticeResource> resources = practiceResourceDao.getResources(pool);
+		for(PracticeResource resource:resources) {
+			practiceResourceDao.deleteResource(resource);
+		}
 		poolDao.deletePool(pool);
 	}
 
@@ -693,7 +705,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private TaxonomyRef getQPoolTaxonomyRef() {
 		String key = qpoolModule.getTaxonomyQPoolKey();
 		try {
-			return new TaxonomyRefImpl(new Long(key));
+			return new TaxonomyRefImpl(Long.valueOf(key));
 		} catch (NumberFormatException e) {
 			log.error("", e);
 			return null;

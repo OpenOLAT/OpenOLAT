@@ -101,6 +101,7 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.references.ReferenceManager;
@@ -131,6 +132,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
 	@Autowired
@@ -436,8 +439,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
 		// start delete
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
-		reloadedRe.setAllUsers(false);
-		reloadedRe.setGuests(false);
 		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
 		
 		if(reloadedRe.getDeletionDate() == null) {
@@ -446,8 +447,13 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			reloadedRe.setDeletionDate(new Date());
 		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		List<Identity> ownerList = reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
 		dbInstance.commit();
+		
+		acService.getOffers(reloadedRe, true, false, null, null).stream()
+				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
+				.forEach(offer -> acService.deleteOffer(offer));
+		
+		List<Identity> ownerList = reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
 		// first stop assessment mode if needed
 		assessmentModeCoordinationService.processRepositoryEntryChangedStatus(reloadedRe);
 		//remove from catalog
@@ -488,8 +494,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
-		reloadedRe.setAllUsers(false);
-		reloadedRe.setGuests(false);
+		acService.getOffers(entry, true, false, null, null).stream()
+				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
+				.forEach(offer -> acService.deleteOffer(offer));
+		
 		if("CourseModule".equals(reloadedRe.getOlatResource().getResourceableTypeName())) {
 			reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		} else {
@@ -740,6 +748,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {
 		return reToGroupDao.countMembers(res, excludeMe);
 	}
+	
+	@Override
+	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
+		return reToGroupDao.getRoleToCountMemebers(re);
+	}
 
 	@Override
 	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
@@ -752,11 +765,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public List<Long> getAuthors(RepositoryEntryRef re) {
-		return reToGroupDao.getAuthorKeys(re);
-	}
-
-	@Override
 	public List<Identity> getMembers(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles) {
 		return reToGroupDao.getMembers(Collections.singletonList(re), relationType, roles);
 	}
@@ -764,6 +772,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public List<Identity> getMembers(List<? extends RepositoryEntryRef> res, RepositoryEntryRelationType relationType, String... roles) {
 		return reToGroupDao.getMembers(res, relationType, roles);
+	}
+	
+	@Override
+	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles) {
+		return reToGroupDao.getMemberKeys(re, relationType, roles);
 	}
 
 	@Override

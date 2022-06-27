@@ -32,6 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFilterButton;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFiltersElementImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -109,7 +111,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		String scrollableWrapperId = "o_scroll_" + id;
 		sb.append("><div class='o_scrollable_wrapper' id=\"").append(scrollableWrapperId).append("\"><div class='o_scrollable'>")
-			.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered()).append("\">");
+			.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered());
+		if(ftE.getCssDelegate() != null) {
+			String tableCssClass = ftE.getCssDelegate().getTableCssClass(FlexiTableRendererType.classic);
+			if(tableCssClass != null) {
+				sb.append(" ").append(tableCssClass);
+			}
+		}
+		sb.append("\">");
 		
 		//render headers
 		renderHeaders(sb, ftC, translator);
@@ -349,9 +358,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		// all settings
 		if(ftE.getSettingsButton() != null) {
-			sb.append("<div class='btn-group o_table_settings'>");
-			renderFormItem(renderer, sb, ftE.getSettingsButton(), ubu, translator, renderResult, null);
-			sb.append("</div> ");
+			if(hasSettingsButton(ftE)) {
+				sb.append("<div class='btn-group o_table_settings'>");
+				renderFormItem(renderer, sb, ftE.getSettingsButton(), ubu, translator, renderResult, null);
+				sb.append("</div> ");
+			} else {
+				ftE.getSettingsButton().getComponent().setDirty(false);
+			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(filterIndication)) {
@@ -367,7 +380,30 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("</div>");
 		
 		sb.append("</div>");
+	}
+	
+	private boolean hasSettingsButton(FlexiTableElementImpl ftE) {
+		if(ftE.isCustomizeColumns()
+				|| (ftE.getAvailableRendererTypes() != null && ftE.getAvailableRendererTypes().length > 1)) {
+			return true;
+		}
 		
+		if(ftE.isSortEnabled()) {
+			List<FlexiTableSort> sorts = ftE.getSorts();
+			if(sorts != null && !sorts.isEmpty()) {
+				return true;
+			}
+		}
+		
+		FlexiFiltersElementImpl filtersEl = ftE.getFiltersElement();
+		if(filtersEl != null) {
+			List<FlexiFilterButton> filtersButtons = filtersEl.getFiltersButtons();
+			if(filtersButtons != null && !filtersButtons.isEmpty()) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	protected String renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters, Translator translator) {

@@ -22,6 +22,7 @@ package org.olat.modules.wiki.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,7 @@ import org.olat.modules.wiki.restapi.vo.WikiVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -67,6 +69,8 @@ public class WikisWebService {
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private ACService acService;
 
 	/**
 	 * export a specific wiki
@@ -115,6 +119,8 @@ public class WikisWebService {
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, WikiResource.TYPE_NAME);
+		params.setOfferOrganisations(acService.getOfferOrganisations(identity));
+		params.setOfferValidAt(new Date());
 		return repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 	}
 

@@ -33,6 +33,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.PassCounter.Counts;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.modules.assessment.Overridable;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
@@ -51,12 +52,12 @@ public class STRootPassedEvaluatorTest {
 	public void setUp() {
 		Counts counts = new CountsImpl(3, 2, 1);
 		oneHalfPassed = mock(PassCounter.class);
-		when(oneHalfPassed.getCounts(any(), any())).thenReturn(counts);
+		when(oneHalfPassed.getCounts(any(), any(), any())).thenReturn(counts);
 	}
 	
 	@Test
 	public void shouldReturnNullPerDefault() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
 		CourseNode courseNode = new STCourseNode();
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
@@ -68,7 +69,7 @@ public class STRootPassedEvaluatorTest {
 
 	@Test
 	public void shouldReturnCurrentTrueIfNoConfiguration() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, Boolean.TRUE, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, Boolean.TRUE, null);
 		CourseNode courseNode = new STCourseNode();
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
@@ -80,7 +81,7 @@ public class STRootPassedEvaluatorTest {
 
 	@Test
 	public void shouldReturnCurrentFalseIfNoConfiguration() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, Boolean.FALSE, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, Boolean.FALSE, null);
 		CourseNode courseNode = new STCourseNode();
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 
@@ -92,7 +93,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfFullyAssessed() {
-		AssessmentEvaluation currentEvaluation = createEvalaution(Boolean.FALSE, Boolean.TRUE);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, Boolean.FALSE, Boolean.TRUE);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -105,7 +106,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnCurrentIfNotFullyAssessed() {
-		AssessmentEvaluation currentEvaluation = createEvalaution(null, Boolean.FALSE);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, Boolean.FALSE);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -118,7 +119,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNotResetIfNotFullyAssessed() {
-		AssessmentEvaluation currentEvaluation = createEvalaution(Boolean.TRUE, Boolean.FALSE);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, Boolean.TRUE, Boolean.FALSE);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -128,15 +129,10 @@ public class STRootPassedEvaluatorTest {
 		
 		assertThat(passed).isTrue();
 	}
-
-	private AssessmentEvaluation createEvalaution(Boolean passed, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(null, null, passed, null, null, null, null, null, null, fullyAssessed, null,
-				null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
-	}
 	
 	@Test
 	public void shouldReturnTrueIfPointCutReached() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_POINTS, true);
 		courseNode.getModuleConfiguration().setIntValue(STCourseNode.CONFIG_PASSED_POINTS_CUT, 10);
@@ -150,7 +146,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfPointCutReachedExactly() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(10), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(10), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_POINTS, true);
 		courseNode.getModuleConfiguration().setIntValue(STCourseNode.CONFIG_PASSED_POINTS_CUT, 10);
@@ -164,7 +160,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnCurrentIfPointCutNotReached() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(2), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(2), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_POINTS, true);
 		courseNode.getModuleConfiguration().setIntValue(STCourseNode.CONFIG_PASSED_POINTS_CUT, 10);
@@ -178,7 +174,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldNotResetIfPointCutNotReached() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(2), Boolean.TRUE, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(2), Boolean.TRUE, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_POINTS, true);
 		courseNode.getModuleConfiguration().setIntValue(STCourseNode.CONFIG_PASSED_POINTS_CUT, 10);
@@ -192,14 +188,14 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfAllPassed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(3, 3, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -208,14 +204,14 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnFailedIfAllNotPassedAndOnlyCriterion() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(3, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -224,7 +220,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldNotReturnNullIfAllNotPassedAndMultipleCriterion() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
@@ -232,7 +228,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -241,7 +237,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfNumberPassed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
 		courseNode.getModuleConfiguration().setIntValue(STCourseNode.CONFIG_PASSED_NUMBER_CUT, 2);
@@ -249,7 +245,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(4, 2, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -258,7 +254,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNullIfNumberNotPassedAndOnlyCriterion() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
 		courseNode.getModuleConfiguration().setIntValue(STCourseNode.CONFIG_PASSED_NUMBER_CUT, 2);
@@ -266,7 +262,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(4, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -275,7 +271,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldNotReturnNullIfNumberNotPassedAndMultipleCriterion() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
@@ -284,7 +280,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(4, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -293,7 +289,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNullIfNotAllAssessed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(Float.valueOf(20), null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
@@ -301,7 +297,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -310,7 +306,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnFailedIfCourseHasEndedAndItIsNotPassed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -322,7 +318,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -332,7 +328,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNullIfCourseHasNotEndedAndItIsNotPassed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -344,7 +340,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, runningEntry);
 		
@@ -353,7 +349,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNullIfCourseHasEndedAndItIsNotPassedAndHasNoPassableNodes() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -365,7 +361,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(0, 0, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -375,7 +371,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNullIfCourseHasEndedAndItIsNotPassedAndHAsNoPassConfigs() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
 		CourseNode courseNode = new STCourseNode();
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
@@ -386,7 +382,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -396,51 +392,51 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnFailedIfCourseIsFullyAssessedAndItIsNotPassed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, Boolean.TRUE, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, Boolean.TRUE);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
-		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, null);
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
 		assertThat(passed).isFalse();
 	}
 	
 	@Test
 	public void shouldReturnNullIfCourseIsNotFullyAssessedAndItIsNotPassed() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, null, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
-		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, null);
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
 		assertThat(passed).isNull();
 	}
 	
 	@Test
 	public void shouldReturnNullIfCourseIsFullyAssessedButHasNoPassableNodes() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, Boolean.TRUE, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, Boolean.TRUE);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(0, 0, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
-		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, null);
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
 		assertThat(passed).isNull();
 	}
@@ -448,20 +444,25 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnNullIfCourseIsFullyAssessedButHassNoPassConfigs() {
-		AssessmentEvaluation currentEvaluation = new AssessmentEvaluation(null, null, Boolean.TRUE, null);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, Boolean.TRUE);
 		CourseNode courseNode = new STCourseNode();
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(3, 2, 0);
-		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any())).thenReturn(counts);
+			PassCounter passCounter = mock(PassCounter.class);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
-		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, null);
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
 		assertThat(passed).isNull();
-	}
+		}
 
+	private AssessmentEvaluation createAssessmentEvaluation(Float score, final Boolean passed, Boolean fullyAssessed) {
+		return new AssessmentEvaluation(score, null, null, null, null, passed, Overridable.of(passed), null, null, null,
+				null, null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
+				null, null, null, null, null);
+	}
 	
 	private final static class CountsImpl implements Counts {
 

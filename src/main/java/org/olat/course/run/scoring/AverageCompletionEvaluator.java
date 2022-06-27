@@ -29,6 +29,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -59,7 +60,7 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 	
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
 		
 		// get all children
 		CollectingVisitor visitor = CollectingVisitor.testing(cn -> !cn.getIdent().equals(courseNode.getIdent()));
@@ -73,7 +74,7 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 			AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(child);
 			if (isMandatory(assessmentEvaluation)) {
 				allOptional = false;
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(child);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, child);
 				int nodeCount = 0;
 				double nodeCompletion = 0.0;
 				if (Mode.evaluated.equals(assessmentConfig.getCompletionMode())) {

@@ -31,6 +31,7 @@ public class VideoDisplayOptions {
 	private boolean autoplay;
 	private boolean showComments;
 	private boolean showRating;
+	private boolean useContainerForCommentsAndRatings;
 	private boolean showTitle;
 	private boolean showDescription;
 	private boolean autoWidth;
@@ -45,7 +46,7 @@ public class VideoDisplayOptions {
 	private boolean authorMode;
 	private boolean forwardSeekingRestricted;
 	
-	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean showTitle, boolean showDescription,
+	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean useContainerForCommentsAndRatings, boolean showTitle, boolean showDescription,
 			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted) {
 		VideoDisplayOptions options = new VideoDisplayOptions();
 		options.setAutoplay(autoplay);
@@ -54,6 +55,7 @@ public class VideoDisplayOptions {
 		options.setReadOnly(readOnly);
 		options.setShowComments(showComments);
 		options.setShowRating(showRating);
+		options.setUseContainerForCommentsAndRatings(useContainerForCommentsAndRatings);
 		options.setShowTitle(showTitle);
 		options.setShowDescription(showDescription);
 		options.setForwardSeekingRestricted(forwardSeekingRestricted);
@@ -213,7 +215,26 @@ public class VideoDisplayOptions {
 	}
 	
 	public void setForwardSeekingRestricted(boolean forwardSeekingRestricted) {
-		this.forwardSeekingRestricted = forwardSeekingRestricted
-				;
+		this.forwardSeekingRestricted = forwardSeekingRestricted;
+	}
+
+	/**
+	 * @return true: store comments and ratings using the container resource given
+	 *         to the VideoDisplayController (e.g. the course resource); 
+	 *         false: use the video resource to store the comments and ratings
+	 */
+	public boolean isUseContainerForCommentsAndRatings() {
+		return useContainerForCommentsAndRatings;
+	}
+	
+	/**
+	 * true: store comments and ratings using the container resource given to the
+	 * VideoDisplayController (e.g. the course resource); false: use the video
+	 * resource to store the comments and ratings
+	 * 
+	 * @param useContainerForCommentsAndRatings
+	 */
+	public void setUseContainerForCommentsAndRatings(boolean useContainerForCommentsAndRatings) {
+		this.useContainerForCommentsAndRatings = useContainerForCommentsAndRatings;
 	}
 }

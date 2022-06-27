@@ -136,7 +136,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		
 		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult result = acManager.isAccessible(entry, ureq.getIdentity(), false);
+		AccessResult result = acManager.isAccessible(entry, ureq.getIdentity(), null, false, false);
 		if(!result.isAccessible()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}

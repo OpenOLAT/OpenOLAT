@@ -56,6 +56,7 @@ public class CheckListConfigPage {
 		OOGraphene.waitElement(addCheckboxBy, browser);
 		browser.findElement(addCheckboxBy).click();
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		
 		By titleBy = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form input.o_sel_cl_checkbox_title[type='text']");
 		OOGraphene.waitElement(titleBy, browser);
@@ -72,7 +73,7 @@ public class CheckListConfigPage {
 		}
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form button.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

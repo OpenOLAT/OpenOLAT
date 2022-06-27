@@ -108,11 +108,11 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		List<UserToolExtension> toolExtensions = userToolsModule.getUserToolExtensions(ureq);
 		for (UserToolExtension toolExtension : toolExtensions) {
 			// check for sites
-			UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
-			if(tool != null) {
-				UserToolCategory category = toolExtension.getUserToolCategory();
-				boolean shortCutOnly = toolExtension.isShortCutOnly();
-				if(!shortCutOnly && !selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
+			UserToolCategory category = toolExtension.getUserToolCategory();
+			boolean shortCutOnly = toolExtension.isShortCutOnly();
+			if(!shortCutOnly && !selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
+				UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
+				if(tool != null) {
 					Component link = tool.getMenuComponent(ureq, menuVC);
 					String linkName = link.getComponentName();
 					switch(category) {

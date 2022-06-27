@@ -25,22 +25,37 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeScaleEditController;
+import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,13 +67,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MSEditFormController extends FormBasicController {
 
-	/** Configuration this controller will modify. */
+	private final RepositoryEntry courseEntry;
+	private final CourseNode courseNode;
 	private final ModuleConfiguration modConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
+	
+	private CloseableModalController cmc;
+	private GradeScaleEditController gradeScaleCtrl;
 
 	/** whether score will be awarded or not. */
 	private MultipleSelectionElement scoreGranted;
 
+	private SpacerElement passedSpacer;
 	/** Dropdown for choosing whether pass/fail will be displayed or not. */
 	private MultipleSelectionElement displayPassed;
 
@@ -78,6 +98,15 @@ public class MSEditFormController extends FormBasicController {
 
 	/** Text input element for the maximum score. */
 	private TextElement maxVal;
+	
+	/** Grade */
+	private SpacerElement gradeSpacer;
+	private MultipleSelectionElement gradeEnabledEl;
+	private SingleSelection gradeAutoEl;
+	private StaticTextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleButtonsCont;
+	private FormLink gradeScaleEditLink;
+	private StaticTextElement gradePassedEl;
 
 	/** Text input element for the passing score. */
 	private TextElement cutVal;
@@ -101,18 +130,27 @@ public class MSEditFormController extends FormBasicController {
 
 	private final String title;
 	private final String helpUrl;
+	private GradeScale gradeScale;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType) {
-		this(ureq, wControl, modConfig, nodeAccessType, null, null);
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode, NodeAccessType nodeAccessType) {
+		this(ureq, wControl, courseEntry, courseNode, nodeAccessType, null, null);
 	}
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType,
-			String title, String helpUrl) {
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode, NodeAccessType nodeAccessType, String title, String helpUrl) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
-		this.modConfig = modConfig;
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		this.courseEntry = courseEntry;
+		this.courseNode = courseNode;
+		this.modConfig = courseNode.getModuleConfiguration();
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.title = title;
 		this.helpUrl = helpUrl;
@@ -173,7 +211,32 @@ public class MSEditFormController extends FormBasicController {
 		maxVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
 		maxVal.setElementCssClass("o_sel_course_ms_max_val");
 		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		if (gradeModule.isEnabled()) {
+			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
+			
+			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
+			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
+			boolean gradeEnabled = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			gradeEnabledEl.select("xx", gradeEnabled);
+			
+			SelectionValues autoSV = new SelectionValues();
+			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
+			autoSV.add(new SelectionValue(Boolean.TRUE.toString(), translate("node.grade.auto.auto"), translate("node.grade.auto.auto.desc"), null, null, true));
+			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", formLayout, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
+			gradeAutoEl.select(Boolean.valueOf(modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)).toString(), true);
+			
+			gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
+			
+			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
+			gradeScaleButtonsCont.setRootForm(mainForm);
+			formLayout.add(gradeScaleButtonsCont);
+			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
+		}
+		
+		passedSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
 
 		// Create the "display passed / failed"
 		displayPassed = uifactory.addCheckboxesHorizontal("form.passed", formLayout, new String[]{"xx"}, new String[]{null});
@@ -247,8 +310,43 @@ public class MSEditFormController extends FormBasicController {
 	}
 	
 	@Override
-	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		update(ureq);
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		 if (gradeScaleCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+				update(ureq);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(gradeScaleCtrl);
+		removeAsListenerAndDispose(cmc);
+		gradeScaleCtrl = null;
+		cmc = null;
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if (fiSrc != gradeScaleEditLink) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == gradeScaleEditLink) {
+			doEditGradeScale(ureq);
+		} else {
+			update(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void update(UserRequest ureq) {
@@ -257,7 +355,27 @@ public class MSEditFormController extends FormBasicController {
 		minVal.setMandatory(minVal.isVisible());
 		maxVal.setMandatory(maxVal.isVisible());
 		
-		displayType.setVisible(displayPassed.isSelected(0));
+		if (gradeEnabledEl != null) {
+			gradeSpacer.setVisible(scoreGranted.isSelected(0));
+			gradeEnabledEl.setVisible(scoreGranted.isSelected(0));
+			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			String gradeScaleText = gradeScale == null
+					? translate("node.grade.scale.not.available")
+					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
+			gradeScaleEl.setValue(gradeScaleText);
+			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			
+			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
+			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1) && minRange != null);
+			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
+		}
+		
+		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
+		
+		passedSpacer.setVisible(gradeDisable);
+		displayPassed.setVisible(gradeDisable);
+		displayType.setVisible(displayPassed.isSelected(0) && gradeDisable);
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
 		
@@ -335,6 +453,9 @@ public class MSEditFormController extends FormBasicController {
 		for (String formItemName : formItems.keySet()) {
 			formItems.get(formItemName).setEnabled(!displayOnly);
 		}
+		if (gradeScaleButtonsCont != null) {
+			gradeScaleButtonsCont.setVisible(!displayOnly);
+		}
 	}
 
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
@@ -350,14 +471,23 @@ public class MSEditFormController extends FormBasicController {
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		}
-
+		
+		// Grade
+		if (gradeEnabledEl != null) {
+			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isAtLeastSelected(1));
+			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.valueOf(gradeAutoEl.getSelectedKey()).booleanValue());
+		} else {
+			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+		}
+		
 		// mandatory passed flag
 		Boolean pf = Boolean.valueOf(displayPassed.isSelected(0));
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, pf);
 		if (pf.booleanValue()) {
 			// do cut value
 			Boolean cf = Boolean.valueOf(displayType.getSelectedKey());
-			if (cf.booleanValue()) {
+			if (cf.booleanValue() && cutVal.isVisible()) {
 				moduleConfiguration.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, Float.valueOf(cutVal.getValue()));
 			} else {
 				// remove old config
@@ -439,5 +569,25 @@ public class MSEditFormController extends FormBasicController {
 		if (!((confElement == null) || (confElement instanceof String))) return false;
 
 		return isValid;
+	}
+
+	private void doEditGradeScale(UserRequest ureq) {
+		if (guardModalController(gradeScaleCtrl)) return;
+		
+		Float minScore = modConfig.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+		Float maxScore = modConfig.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		if ((minScore == null || minScore.intValue() == 0) && (maxScore == null || maxScore.intValue() == 0)) {
+			showWarning("error.score.min.max.not.set");
+			return;
+		}
+		
+		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
+				minScore, maxScore, true);
+		listenTo(gradeScaleCtrl);
+		
+		String title = translate("grade.scale.edit");
+		cmc = new CloseableModalController(getWindowControl(), "close", gradeScaleCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

@@ -56,6 +56,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseModule;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -119,6 +120,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private CatalogV2Module catalogModule;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -170,7 +173,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_repo_metadata");
 		if (showHeading) {
-			setFormContextHelp("Set up info page");
+			setFormContextHelp("manual_user/authoring/Set_up_info_page/");
 			setFormTitle("details.metadata.title");
 		}
 		
@@ -317,6 +320,9 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 				keyValues.keys(), keyValues.values(), null, null);
 		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);
 		taxonomyLevelEl.setEnabled(!readOnly);
+		if (catalogModule.isEnabled()) {
+			taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
+		}
 	}
 
 	@Override
@@ -415,10 +421,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	
 			repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
 					repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
-					repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, taxonomyLevels,
-					repositoryEntry.getEducationalType());
+					repositoryEntry.getDescription(), repositoryEntry.getTeaser(), repositoryEntry.getObjectives(),
+					repositoryEntry.getRequirements(), repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(),
+					repositoryEntry.getLocation(), repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(),
+					null, taxonomyLevels, repositoryEntry.getEducationalType());
 			if(repositoryEntry == null) {
 				showWarning("repositoryentry.not.existing");
 				fireEvent(ureq, Event.CLOSE_EVENT);
@@ -432,51 +438,51 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	}
 	
 	public boolean saveToContext(UserRequest ureq, CopyCourseContext context) {
-		String licenseTypeKey = null;
-		String licensor = null;
-		String freetext = null;
-		
-		String authorsValue = null;
-		
-		String expenditureOfWorkValue = null;
-		
 		if (validateFormLogic(ureq)) {
+			if (authors != null) {
+				context.setAuthors(authors.getValue().trim());
+			}
+			
 			if (licenseModule.isEnabled(licenseHandler)) {
 				if (licenseEl != null && licenseEl.isOneSelected()) {
-					licenseTypeKey = licenseEl.getSelectedKey();
+					String licenseTypeKey = licenseEl.getSelectedKey();
+					context.setLicenseTypeKey(licenseTypeKey);
 				}
 				
 				if (licensorEl != null && licensorEl.isVisible()) {
-					licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+					String licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+					context.setLicensor(licensor);
 				}
 				if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
-					freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+					String freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+					context.setLicenseFreetext(freetext);
 				}
 			}
 			
-	
-			if(authors != null) {
-				authorsValue = authors.getValue().trim();
+			if (taxonomyLevelEl != null) {
+				Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
+				List<String> currentKeys = taxonomyLevels.stream()
+						.map(l -> l.getKey().toString())
+						.collect(Collectors.toList());
+				// add newly selected keys
+				Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
+				addKeys.removeAll(currentKeys);
+				for (String addKey : addKeys) {
+					TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
+					taxonomyLevels.add(level);
+				}
+				// remove newly unselected keys
+				Collection<String> removeKeys = new HashSet<>(currentKeys);
+				removeKeys.removeAll(selectedLevelKeys);
+				for (String removeKey: removeKeys) {
+					taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey().toString()));
+				}
+				context.setTaxonomyLevels(taxonomyLevels);
 			}
-			
-			if(expenditureOfWork != null) {
-				expenditureOfWorkValue = expenditureOfWork.getValue().trim();
-			}
-			
-			context.setAuthors(authorsValue);
-			context.setExpenditureOfWork(expenditureOfWorkValue);
-			context.setLicenseTypeKey(licenseTypeKey);
-			context.setLicensor(licensor);
-			context.setLicenseFreetext(freetext);
 			
 			return true;
-		} else {
-			return false;
 		}
-	}
-	
-	public void loadFromContext(CopyCourseContext context) {
-		
+		return false;
 	}
 
 	@Override

@@ -42,6 +42,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +61,7 @@ public class LTIAssessmentHandler implements AssessmentHandler {
 	}
 	
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
 		return new LTIAssessmentConfig(courseNode.getModuleConfiguration());
 	}
 

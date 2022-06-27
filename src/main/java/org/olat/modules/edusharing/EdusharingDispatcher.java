@@ -194,7 +194,7 @@ public class EdusharingDispatcher implements Dispatcher {
 				.append("&reurl=").append(reurl)
 				.toString();
 		
-		log.debug("edu-sharing start search " + url);
+		log.debug("edu-sharing start search {}", url);
 		DispatcherModule.redirectTo(response, url);
 	}
 
@@ -203,7 +203,7 @@ public class EdusharingDispatcher implements Dispatcher {
 		
 		SearchResult result = conversionService.toSearchResult(ureq);
 		String json = conversionService.toJson(result);
-		log.debug("edu-sharing search callback: " + json);
+		log.debug("edu-sharing search callback: {}", json);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("<!DOCTYPE html>");
@@ -212,12 +212,8 @@ public class EdusharingDispatcher implements Dispatcher {
 		sb.append("<meta charset=\"UTF-8\">");
 		sb.append("<script>");
 		sb.append("  (function() {");
-		sb.append("	\"use strict\";");
-		sb.append("	parent.tinymce.activeEditor.windowManager.setParams(");
-		sb.append(json);
-		sb.append("	);");
-		sb.append("	parent.tinymce.activeEditor.windowManager.close();");
-		sb.append("}());");
+		sb.append(" \"use strict\";");
+		sb.append(" window.parent.postMessage({ mceAction: \"mceEdusharingContent\", params: ").append(json).append("})}());");
 		sb.append("</script>");
 		sb.append("</head>");
 		sb.append("<body />");

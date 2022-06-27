@@ -71,6 +71,7 @@ import org.olat.course.nodes.bc.BCCourseNodeConfigController;
 import org.olat.course.nodes.bc.BCCourseNodeEditChooseFolderForm;
 import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.nodes.bc.SelectFolderEvent;
+import org.olat.course.run.RunMainController;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -157,6 +158,7 @@ public class CourseToolbarController extends FormBasicController {
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, ICourse course, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(BCCourseNodeConfigController.class, getLocale(), getTranslator()));
 		onValues = new String[] {translate("on")};
 		this.entry = entry;
@@ -200,7 +202,7 @@ public class CourseToolbarController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Course Settings#_optionen");
+		setFormContextHelp("manual_user/course_operation/Using_Additional_Course_Features/");
 		setFormTitle("details.toolbar.title");
 		formLayout.setElementCssClass("o_sel_toolbar_settings");
 		

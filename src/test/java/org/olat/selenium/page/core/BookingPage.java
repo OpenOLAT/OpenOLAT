@@ -38,8 +38,7 @@ import org.openqa.selenium.WebElement;
  */
 public class BookingPage {
 	
-	
-	private WebDriver browser;
+	private final WebDriver browser;
 	
 	public BookingPage(WebDriver browser) {
 		this.browser = browser;
@@ -55,6 +54,37 @@ public class BookingPage {
 		return this;
 	}
 	
+	
+	/**
+	 * Add a guest booking method via the callout menu.
+	 * Callout menu need to be open.
+	 * 
+	 * @return Itself
+	 */
+	public BookingPage addGuestMethod() {
+		addMethodByLink("o_sel_ac_add_guest");
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
+	 * Add a public booking method via the callout menu.
+	 * Callout menu need to be open.
+	 * 
+	 * @return Itself
+	 */
+	public BookingPage addOpenMethod() {
+		addMethodByLink("o_sel_ac_add_open");
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	public BookingPage addOpenAsFirstMethod() {
+		addFirstMethodByButton("o_sel_ac_add_open");
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
 	/**
 	 * In the dropdown to add an access control method, choose
 	 * the method by secret token.
@@ -62,54 +92,9 @@ public class BookingPage {
 	 * @return This page
 	 */
 	public BookingPage addTokenMethod() {
-		addMethod("o_ac_token_icon");
-		By popupBy = By.cssSelector("div.modal-dialog");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		addMethodByIcon("o_ac_token_icon");
+		OOGraphene.waitModalDialog(browser);
 		return this;
-	}
-	
-	private BookingPage addMethod(String iconClassname) {
-		//wait menu
-		By addMenuBy = By.cssSelector("fieldset.o_ac_configuration ul.dropdown-menu");
-		OOGraphene.waitElement(addMenuBy, browser);
-		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[i[contains(@class,'" + iconClassname + "')]]");
-		browser.findElement(addMethodBy).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	public BookingPage configureTokenMethod(String token, String description) {
-		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_token_form .o_sel_accesscontrol_description textarea");
-		browser.findElement(descriptionBy).sendKeys(description);		
-		By tokenBy = By.cssSelector(".o_sel_accesscontrol_token_form .o_sel_accesscontrol_token input[type='text']");
-		browser.findElement(tokenBy).sendKeys(token);
-
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_token_form button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	public BookingPage assertOnToken(String token) {
-		boolean found = false;
-		By infosBy = By.className("o_ac_infos");
-		List<WebElement> infos = browser.findElements(infosBy);
-		for(WebElement info:infos) {
-			if(info.getText().contains(token)) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
-		return this;
-	}
-	
-	public void bookToken(String token) {
-		By tokenEntryBy = By.cssSelector(".o_sel_accesscontrol_token_entry input[type='text']");
-		browser.findElement(tokenEntryBy).sendKeys(token);
-		
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_form button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
 	}
 	
 	/**
@@ -118,9 +103,99 @@ public class BookingPage {
 	 * @return Itself
 	 */
 	public BookingPage addFreeBooking() {
-		addMethod("o_ac_free_icon");
+		addMethodByIcon("o_ac_free_icon");
 		OOGraphene.waitModalDialog(browser);
 		return this;
+	}
+	
+	private BookingPage addFirstMethodByButton(String linkClassname) {
+		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//div[contains(@class,'o_sel_ac_add_first_methods')]//a[contains(@class,'" + linkClassname + "')]");
+		browser.findElement(addMethodBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	private BookingPage addMethodByLink(String linkClassname) {
+		//wait menu
+		By addMenuBy = By.cssSelector("fieldset.o_ac_configuration ul.dropdown-menu");
+		OOGraphene.waitElement(addMenuBy, browser);
+		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[contains(@class,'" + linkClassname + "')]");
+		browser.findElement(addMethodBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	private BookingPage addMethodByIcon(String iconClassname) {
+		//wait menu
+		By addMenuBy = By.cssSelector("fieldset.o_ac_configuration ul.dropdown-menu");
+		OOGraphene.waitElement(addMenuBy, browser);
+		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[i[contains(@class,'" + iconClassname + "')]]");
+		browser.findElement(addMethodBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	public BookingPage configureGuestMethod(String description, boolean catalog) {
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_description textarea");
+		browser.findElement(descriptionBy).sendKeys(description);	
+		
+		if(catalog) {
+			By catalogBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_catalog input[name='offer.catalog']");
+			browser.findElement(catalogBy).click();
+		}
+
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_guest_form button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_guest_form");
+		
+		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h4>i.o_ac_guest_icon");
+		OOGraphene.waitElement(publicRowBy, browser);
+		return this;
+	}
+	
+	public BookingPage configureOpenMethod(String description) {
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_open_form .o_sel_accesscontrol_description textarea");
+		browser.findElement(descriptionBy).sendKeys(description);		
+
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_open_form button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_open_form");
+		
+		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h4");
+		OOGraphene.waitElement(publicRowBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Configure the token, save it and check that the token appears
+	 * in the list.
+	 * 
+	 * @param token The secret token
+	 * @param description The description
+	 * @return Itself
+	 */
+	public BookingPage configureTokenMethod(String token, String description) {
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_token_form .o_sel_accesscontrol_description textarea");
+		browser.findElement(descriptionBy).sendKeys(description);		
+		By tokenBy = By.cssSelector(".o_sel_accesscontrol_token_form .o_sel_accesscontrol_token input[type='text']");
+		browser.findElement(tokenBy).sendKeys(token);
+
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_token_form button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By tokenRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_ac_offer>div.o_ac_icon_col>h4>i.o_ac_token_icon");
+		OOGraphene.waitElement(tokenRowBy, browser);
+		return this;
+	}
+	
+	public void bookToken(String token) {
+		By tokenEntryBy = By.cssSelector(".o_sel_accesscontrol_token_entry input[type='text']");
+		browser.findElement(tokenEntryBy).sendKeys(token);
+		
+		By submitBy = By.cssSelector(".o_method_token button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitBusy(browser);
 	}
 	
 	/**
@@ -135,7 +210,8 @@ public class BookingPage {
 		
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_free_form button.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.takeScreenshot("Configure free", browser);
 		return this;
 	}
 	

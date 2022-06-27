@@ -85,6 +85,8 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		super.initGradeScaleEditButton(formLayout);
+		
 		boolean evaluationFormEnabled = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
 		if (evaluationFormEnabled) {
 			statsButton = uifactory.addFormLink("tool.stats", formLayout, Link.BUTTON);

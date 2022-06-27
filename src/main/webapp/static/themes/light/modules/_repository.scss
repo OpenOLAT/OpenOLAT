@@ -1,78 +1,84 @@
 .o_repo_details {
 	position: relative;
 	
-	.o_lead {
-		display: flex;	
-		flex-wrap: nowrap;
-		justify-content: left;
-		width: 100%;
+	.o_header {
 		border-bottom: $o-coursesite-meta-header-border-width solid $o-coursesite-meta-header-border;
 		
-		@media (max-width: $screen-xs-max) { 
-			display: block;				
-		}	
-		
-		.o_media  {
-			margin-right: 2em;
-			margin-bottom: 2em;
-			max-width: floor(570px * 0.75); //570x380
-			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-				max-width: floor(570px * 0.5); //570x380			
-			}
-			@media (max-width: $screen-xs-max) { 
-				max-width: 100%;	
-				width: 100%;
-				.o_image, img, .o_video, video {
-					width: 100%;
-				}
-			}	
-		}		
-		.o_meta {
-			flex-grow: 1;
-			flex-shrink: 1;
+		.o_lead {
+			display: flex;
+			flex-wrap: nowrap;
+			justify-content: left;
 			width: 100%;
-			white-space: nowrap;
-			overflow-x: hidden;
-			text-overflow: ellipsis;		
-		}
-		
-		.o_ext_ref {
-			color: $text-muted;
-		}
-		h2 {
-			font-size: $o-coursesite-meta-title-font-size;
-			margin-top: 0;
-			white-space: normal;
-			i {
-				display: none;
-			}
-		}
-		
-		.o_educational_type {
-			margin-right: .5em;
-			margin-top: auto;
-			margin-bottom: auto;
-			line-height: normal;
-		}
-		
-		.o_author{
-			color: $o-coursesite-meta-author-color;
-			white-space: normal;
-		}
-	
-		.o_start_wrapper {
-			margin: 2em 0 2em 0;
-			.o_start_inner {
-				display: inline-block; 
-				@media (max-width: $screen-xs-max) { 
-					display: block;
+			
+			@media (max-width: $screen-xs-max) {
+				display: block;
+			}	
+			
+			.o_media  {
+				margin-right: 2em;
+				margin-bottom: 2em;
+				max-width: floor(570px * 0.75); //570x380
+				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+					max-width: floor(570px * 0.5); //570x380	
+				}
+				@media (max-width: $screen-xs-max) {
+					max-width: 100%;	
 					width: 100%;
+					.o_image, img, .o_video, video {
+						width: 100%;
+					}
 				}
 			}
-		}		
-		.o_start, .o_book {
-			display: inline-block;  
-		}		
+			.o_meta {
+				flex-grow: 1;
+				flex-shrink: 1;
+				width: 100%;
+				white-space: nowrap;
+				overflow-x: hidden;
+				text-overflow: ellipsis;	
+			}
+			
+			.o_ext_ref {
+				color: $text-muted;
+			}
+			h2 {
+				font-size: $o-coursesite-meta-title-font-size;
+				margin-top: 0;
+				white-space: normal;
+				i {
+					display: none;
+				}
+			}
+			.o_teaser {
+				white-space: normal;
+			}
+			
+			.o_educational_type {
+				margin-right: .5em;
+				margin-top: auto;
+				margin-bottom: auto;
+				line-height: normal;
+			}
+			
+			.o_author{
+				color: $o-coursesite-meta-author-color;
+				white-space: normal;
+			}
+		
+			.o_start_wrapper {
+				margin: 2em 0 2em 0;
+				.o_start_inner {
+					display: inline-block; 
+					@media (max-width: $screen-xs-max) {
+						display: block;
+						width: 100%;
+					}
+				}
+			}
+			.o_start, .o_book {
+				display: inline-block;
+			}
+		}
 	}
 
 	/* one-column default styles for mobile-first */
@@ -192,27 +198,85 @@
 }
 
 .o_ac_configuration {
-	span.o_ac_infos { font-weight:normal; color: grey; }
-	
-	div.o_ac_method {
-		background-color: #efefef;
-		padding: 5px;
-		border-radius: 3px;
+	.o_ac_offer {
+		border: $o-ac-config-offer-border;
+		border-radius: $o-ac-config-offer-border-radius;
+		h3, h4 {
+			margin-top: 0;
+			margin-bottom: 15px;
+		}
+		
+		display: flex;
+		.o_ac_offer_col {
+			width: 100%;
+			padding: 15px;
+			background-color: $panel-bg;
+			.o_cmds {
+				margin-top: 10px;
+				padding-right: 15px;
+			}
+		}
+		.o_ac_icon_col {
+			padding: 15px 10px;
+			border-right: $o-ac-config-offer-border;
+			background-color: $o-ac-config-offer-icon-bg-color;
+		}
 	}
-	div.o_ac_methods.form-group {
-		padding-bottom: 0;
-		margin-bottom: 0;
+}
+.o_ac_overview {
+	.panel-body {
+		padding: 0px;
+	}
+}
+.o_access_method_list {
+	.o_access_method {
+		margin-top: 15px;
+	}
+	.o_ac_method {
+		border: $o-ac-method-border;
+		border-radius: $o-ac-method-border-radius;
+		padding: 15px;
+		h3 {
+			margin-top: 0;
+		}
+		display:flex;
+		flex-direction: row;
+		@media (max-width: 1000px) {
+			flex-direction: column;
+		} 
+		.o_ac_method_info {
+			padding-right: 15px;
+			@media (max-width: 1000px) {
+				padding-bottom: 15px;
+			}
+		}
+		.o_ac_method_details {
+			min-width: 300px;
+			padding: 15px 0px 15px 15px;
+			border-left: $o-ac-method-border;
+			@media (max-width: 1000px) {
+				border-left: 0;
+				border-top: $o-ac-method-border;
+				padding: 15px 0px;
+			}
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			.o_ac_method_icon {
+				display: flex;
+				justify-content: center;
+			}
+			>div {
+				width: 100%;
+				max-width: 300px;
+			}
+			button {
+				width: 100%;
+			}
+		}
 	}
 }
 
-.o_repo_with_explanation {
-	padding-bottom: 0;
-	margin-bottom: 0;
-}
-
-.o_repo_explanation {
-	color: $brand-warning;
-}
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
 tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {

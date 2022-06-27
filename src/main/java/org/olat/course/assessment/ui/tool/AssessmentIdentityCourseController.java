@@ -336,7 +336,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		if(index > 0 && index <= numOfNodes) {
 			for(int i=index; i-->0; ) {
 				CourseNode previousNode = treeOverviewCtrl.getNode(i);
-				AssessmentConfig previousConfig = courseAssessmentService.getAssessmentConfig(previousNode);
+				AssessmentConfig previousConfig = courseAssessmentService.getAssessmentConfig(courseEntry, previousNode);
 				if(previousConfig.isAssessable() && !(previousNode instanceof STCourseNode)) {
 					return true;
 				}

@@ -71,7 +71,7 @@ public class FOConfigController extends FormBasicController {
 			FormLayoutContainer anonymousCont = FormLayoutContainer.createDefaultFormLayout("anonymous", getTranslator());
 			formLayout.add(anonymousCont);
 			anonymousCont.setFormTitle(translate("anonymous.title"));
-			anonymousCont.setFormContextHelp("Communication and Collaboration#_forumkonfig");
+			anonymousCont.setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#forum");
 
 			allowPseudonymEl = uifactory.addCheckboxesHorizontal("allow.pseudonym.post", anonymousCont, allowKeys,
 					translateAll(getTranslator(), allowKeys));
@@ -98,7 +98,7 @@ public class FOConfigController extends FormBasicController {
 			formLayout.add(rightsCont);
 			rightsCont.setFormTitle(translate("user.rights"));
 			if(!forumModule.isAnonymousPostingWithPseudonymEnabled()) {
-				rightsCont.setFormContextHelp("Communication and Collaboration#_forumkonfig");
+				rightsCont.setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#forum");
 			}
 		
 			allowGuestEl = uifactory.addCheckboxesHorizontal("allow.guest.post", rightsCont, allowKeys,

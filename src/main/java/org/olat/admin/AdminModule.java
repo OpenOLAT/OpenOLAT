@@ -34,7 +34,6 @@ import org.olat.admin.site.AdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.User;
@@ -98,16 +97,6 @@ public class AdminModule extends AbstractSpringModule {
 		}
 	}
 
-
-	/**
-	 * Sets the new maintenance message based on a http parameter. The request must use a valid
-	 * token. The token can be looked up in the properties table.
-	 * The maintenance message itself is managed by the OLATContext from the brasato core
-	 * @param message
-	 */
-	public void setMaintenanceMessage(String message) {
-		GlobalStickyMessage.setGlobalStickyMessage(message, true);
-	}
 	
 	public boolean checkMaintenanceMessageToken(HttpServletRequest request) {
 		return checkToken(request, PROPERTY_MAINTENANCE_MESSAGE);

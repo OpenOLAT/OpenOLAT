@@ -52,7 +52,6 @@ import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
-import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 
 /**
@@ -87,19 +86,6 @@ public class ObjectFactory {
 			log.warn("", e);
 			return null;
 		}
-	}
-	
-	public static GroupVO get(BusinessGroup grp) {
-		GroupVO vo = new GroupVO();
-		vo.setKey(grp.getKey());
-		vo.setName(grp.getName());
-		vo.setDescription(grp.getDescription());
-		vo.setMaxParticipants(grp.getMaxParticipants());
-		vo.setMinParticipants(grp.getMinParticipants());
-		vo.setExternalId(grp.getExternalId());
-		vo.setManagedFlags(grp.getManagedFlagsString());
-		vo.setType("LearningGroup");
-		return vo;
 	}
 	
 	public static GroupInfoVO getInformation(Identity identity, BusinessGroup grp) {
@@ -167,6 +153,7 @@ public class ObjectFactory {
 		vo.setNodeAccessType(course.getCourseConfig().getNodeAccessType().getType());
 		vo.setSoftKey(re.getSoftkey());
 		vo.setRepoEntryKey(re.getKey());
+		vo.setRepoEntryStatus(re.getEntryStatus().name());
 		OLATResource resource = re.getOlatResource();
 		if(resource != null) {
 			vo.setOlatResourceKey(resource.getKey());

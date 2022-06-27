@@ -65,13 +65,13 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.AlwaysEmptyMap;
 import org.olat.core.util.CodeHelper;
@@ -609,6 +609,7 @@ public class I18nManager {
 	 */
 	public void sortI18nItems(List<I18nItem> i18nItems, final boolean afterBundlePriorities, final boolean afterKeyPriorities) {
 		Comparator<I18nItem> comparator = new Comparator<I18nItem>() {
+			@Override
 			public int compare(I18nItem item1, I18nItem item2) {
 				// 1) compare bundle
 				if (afterBundlePriorities) {
@@ -649,6 +650,7 @@ public class I18nManager {
 	 */
 	public void sortBundles(List<String> bundleNames, final boolean afterBundlePriorities) {
 		Comparator<String> comparator = new Comparator<String>() {
+			@Override
 			public int compare(String bundle1, String bundle2) {
 				// 1) compare bundle priority
 				if (afterBundlePriorities) {
@@ -678,13 +680,13 @@ public class I18nManager {
 			String itemIdent = i18nItem.getLocale() + ":" + buildI18nItemIdentifyer(i18nItem.getBundleName(), i18nItem.getKey());
 			if (properties.containsKey(i18nItem.getKey())) {
 				if (StringHelper.containsNonWhitespace(value)) {
-					log.debug("Updating i18n item::" + itemIdent + " with new value::" + value);					
+					log.debug("Updating i18n item::{} with new value::{}" , itemIdent, value);
 				} else {
-					log.debug("Deleting i18n item::" + itemIdent + " because new value is emty");
+					log.debug("Deleting i18n item::{} because new value is empty", itemIdent);
 				}
 			} else {
 				if (StringHelper.containsNonWhitespace(value)) {
-					log.debug("Creating i18n item::" + itemIdent + " with new value::" + value);		
+					log.debug("Creating i18n item::{} with new value::{}", itemIdent, value);
 				}				
 			}
 		}
@@ -774,7 +776,7 @@ public class I18nManager {
 	 * @param locale
 	 * @param bundleName
 	 * @return the properties for the given locale and bundlename. When no file is
-	 *         found, an emtpy properties object will be returned
+	 *         found, an empty properties object will be returned
 	 */
 	public Properties getPropertiesWithoutResolvingRecursively(Locale locale, String bundleName) {
 		return getProperties(locale, bundleName, false, 0);
@@ -2002,6 +2004,7 @@ public class I18nManager {
 		/**
 		 * @see java.lang.ThreadLocal#initialValue()
 		 */
+		@Override
 		public Locale initialValue() {
 			return null;
 		}
@@ -2039,6 +2042,7 @@ public class I18nManager {
 		/**
 		 * @see java.lang.ThreadLocal#initialValue()
 		 */
+		@Override
 		public Boolean initialValue() {
 			return null;
 		}

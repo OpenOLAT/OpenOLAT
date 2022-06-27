@@ -34,6 +34,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -79,23 +80,24 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 			accessibilityContent.put("remove", conditionRemoveCtrl.getInitialComponent());
 
 			// Reader precondition
+			CourseEntryRef courseEntry = new CourseEntryRef(euce);
 			Condition readerCondition = foNode.getPreConditionReader();
 			readerCondContr = new ConditionEditController(ureq, getWindowControl(), euce, readerCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, forumNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, forumNode));
 			listenTo(readerCondContr);
 			accessibilityContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 			// Poster precondition
 			Condition posterCondition = foNode.getPreConditionPoster();
 			posterCondContr = new ConditionEditController(ureq, getWindowControl(), euce, posterCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, forumNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, forumNode));
 			listenTo(posterCondContr);
 			accessibilityContent.put("posterCondition", posterCondContr.getInitialComponent());
 
 			// Moderator precondition
 			Condition moderatorCondition = foNode.getPreConditionModerator();
 			moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), euce, moderatorCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, forumNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, forumNode));
 			listenTo(moderatorCondContr);
 			accessibilityContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
 		}

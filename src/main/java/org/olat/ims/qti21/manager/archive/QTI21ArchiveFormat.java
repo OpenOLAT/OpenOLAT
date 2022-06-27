@@ -299,7 +299,7 @@ public class QTI21ArchiveFormat {
 		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
-				final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
+				final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);		
 				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 					//headers
 					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
@@ -332,7 +332,7 @@ public class QTI21ArchiveFormat {
 		}
 
 		// course node points and passed
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if(hasScore) {
@@ -348,7 +348,7 @@ public class QTI21ArchiveFormat {
 
 		// test points, passed and dates
 		header1Row.addCell(col++, translator.translate("archive.table.header.test"), headerStyle);
-		col += 5;
+		col += 7;
 		
 		List<AbstractInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
@@ -379,7 +379,7 @@ public class QTI21ArchiveFormat {
 			} else if(numOfSections > 1 && info instanceof SectionInfos) {
 				SectionInfos section = (SectionInfos)info;
 				if(!section.getItemInfos().isEmpty()) {
-					String sectionTitle = translator.translate("archive.table.header.section", new String[] { section.getAssessmentSection().getTitle() });
+					String sectionTitle = translator.translate("archive.table.header.section", section.getAssessmentSection().getTitle());
 					header1Row.addCell(col++, sectionTitle, headerStyle);
 				}
 			}
@@ -410,7 +410,7 @@ public class QTI21ArchiveFormat {
 		}
 
 		// course node points and passed
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
 		}
@@ -426,6 +426,8 @@ public class QTI21ArchiveFormat {
 			header2Row.addCell(col++, translator.translate("column.header.date"), headerStyle);
 		}
 		header2Row.addCell(col++, translator.translate("column.header.duration"), headerStyle);
+		header2Row.addCell(col++, translator.translate("archive.table.header.additional.time"), headerStyle);
+		header2Row.addCell(col++, translator.translate("archive.table.header.compensation"), headerStyle);
 
 		List<AbstractInfos> infos = getItemInfos();
 		int itemPos = 0;
@@ -542,7 +544,7 @@ public class QTI21ArchiveFormat {
 		}
 		
 		// course node points and passed
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			if(entry.getScore() != null) {
 				dataRow.addCell(col++, entry.getScore(), null);
@@ -580,10 +582,22 @@ public class QTI21ArchiveFormat {
 			col++;
 		}
 		if(anonymizerCallback == null) {
-			dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
+			dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		}
 		dataRow.addCell(col++, toDurationInMilliseconds(testSession.getDuration()), null);
-
+		
+		if(testSession.getExtraTime() != null) {
+			dataRow.addCell(col++, toDurationSecondsToMinutes(testSession.getExtraTime()), null);
+		} else {
+			col++;
+		}
+		
+		if(testSession.getCompensationExtraTime() != null) {
+			dataRow.addCell(col++, toDurationSecondsToMinutes(testSession.getCompensationExtraTime()), null);
+		} else {
+			col++;
+		}
+		
 		List<AbstractInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
 			AbstractInfos info = infos.get(i);
@@ -628,7 +642,7 @@ public class QTI21ArchiveFormat {
 					}
 					if (exportConfig.isTimeCols()) {
 						if (anonymizerCallback == null){
-							dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getTimeStyle());
+							dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getDateStyle());
 						}
 						dataRow.addCell(col++, toDurationInMilliseconds(itemSession.getDuration()), null);
 					}
@@ -674,6 +688,11 @@ public class QTI21ArchiveFormat {
 		}
 		
 		return sectionScore;
+	}
+	
+	private Integer toDurationSecondsToMinutes(Integer value) {
+		if(value == null || value.intValue() == 0) return null;
+		return Math.round(value.floatValue() / 60.0f);
 	}
 	
 	private Long toDurationInMilliseconds(Long value) {

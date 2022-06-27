@@ -134,8 +134,18 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public List<Organisation> findOrganisationByIdentifier(String identifier) {
+		return organisationDao.loadByIdentifier(identifier);
+	}
+
+	@Override
 	public List<Organisation> getOrganisationParentLine(Organisation organisation) {
 		return organisationDao.getParentLine(organisation);
+	}
+	
+	@Override
+	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations) {
+		return organisationDao.getParentLineRefs(organisations);
 	}
 
 	@Override

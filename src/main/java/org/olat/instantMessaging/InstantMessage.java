@@ -22,6 +22,8 @@ package org.olat.instantMessaging;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 
 /**
  * 
@@ -43,6 +45,12 @@ public interface InstantMessage {
 	
 	public String getBody();
 	
+	public BigBlueButtonMeeting getBbbMeeting();
+
+	public TeamsMeeting getTeamsMeeting();
+	
 	public boolean isFromMe(Identity me);
+	
+	public InstantMessageTypeEnum getType();
 
 }

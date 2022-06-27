@@ -26,7 +26,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.LockModeType;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -34,8 +33,8 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
+import org.olat.instantMessaging.RosterEntry;
 
 /**
  * 
@@ -45,14 +44,12 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="imrosterentry")
 @Table(name="o_im_roster_entry")
-@NamedQueries({
-	@NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
-	@NamedQuery(name="loadIMRosterEntryForUpdate", query="select entry from imrosterentry entry where entry.key=:entryKey",
-		lockMode=LockModeType.PESSIMISTIC_WRITE),
-	@NamedQuery(name="loadIMRosterEntry", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
-	@NamedQuery(name="loadIMRosterEntryByResource", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname")
-})
-public class RosterEntryImpl implements Persistable, CreateInfo {
+@NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname")
+@NamedQuery(name="loadIMRosterEntryForUpdate", query="select entry from imrosterentry entry where entry.key=:entryKey",
+	lockMode=LockModeType.PESSIMISTIC_WRITE)
+@NamedQuery(name="loadIMRosterEntry", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname")
+@NamedQuery(name="loadIMRosterEntryByResourceNo", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname")
+public class RosterEntryImpl implements Persistable, RosterEntry {
 
 	private static final long serialVersionUID = -4265724240924748369L;
 
@@ -88,6 +85,20 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 	private String resourceTypeName;
 	@Column(name="r_resid", nullable=false, insertable=true, updatable=false)
 	private Long resourceId;
+	@Column(name="r_ressubpath", nullable=true, insertable=true, updatable=false)
+	private String resSubPath;
+	@Column(name="r_channel", nullable=true, insertable=true, updatable=false)
+	private String channel;
+	
+	@Column(name="r_persistent", nullable=false, insertable=true, updatable=true)
+	private boolean persistent;
+	@Column(name="r_active", nullable=false, insertable=true, updatable=true)
+	private boolean active;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="r_read_upto", nullable=true, insertable=true, updatable=true)
+	private Date lastSeen;
+
 	
 	@Override
 	public Long getKey() {
@@ -107,6 +118,7 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public Long getIdentityKey() {
 		return identityKey;
 	}
@@ -115,38 +127,47 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 		this.identityKey = identityKey;
 	}
 
+	@Override
 	public String getNickName() {
 		return nickName;
 	}
 
+	@Override
 	public void setNickName(String nickName) {
 		this.nickName = nickName;
 	}
 
+	@Override
 	public String getFullName() {
 		return fullName;
 	}
 
+	@Override
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
 
+	@Override
 	public boolean isVip() {
 		return vip;
 	}
 
+	@Override
 	public void setVip(boolean vip) {
 		this.vip = vip;
 	}
 
+	@Override
 	public boolean isAnonym() {
 		return anonym;
 	}
 
+	@Override
 	public void setAnonym(boolean anonym) {
 		this.anonym = anonym;
 	}
-	
+
+	@Override
 	public String getResourceTypeName() {
 		return resourceTypeName;
 	}
@@ -155,12 +176,57 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 		this.resourceTypeName = resourceTypeName;
 	}
 
+	@Override
 	public Long getResourceId() {
 		return resourceId;
 	}
 
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
+	}
+
+	@Override
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public void setResSubPath(String resSubPath) {
+		this.resSubPath = resSubPath;
+	}
+
+	@Override
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public boolean isPersistent() {
+		return persistent;
+	}
+
+	public void setPersistent(boolean persistent) {
+		this.persistent = persistent;
+	}
+
+	@Override
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	@Override
+	public Date getLastSeen() {
+		return lastSeen;
+	}
+
+	public void setLastSeen(Date lastSeen) {
+		this.lastSeen = lastSeen;
 	}
 
 	@Override

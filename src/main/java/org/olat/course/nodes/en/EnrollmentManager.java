@@ -70,10 +70,12 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.SingleUserObligationContext;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.model.EnrollState;
@@ -162,6 +164,8 @@ public class EnrollmentManager implements GenericEventListener {
 			enrollStatus.setErrorMessage(trans.translate("error.group.already.enrolled"));
 		}
 		syncAssessmentStatus(cgm.getCourseEntry(), enNode, userCourseEnv, identity, Role.user);
+		//Invalidate user to group cache
+		userCourseEnv.getScoreAccounting().setObligationContext(new SingleUserObligationContext());
 		log.debug("doEnroll finished");
 		return enrollStatus;
 	}
@@ -179,6 +183,8 @@ public class EnrollmentManager implements GenericEventListener {
 		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, doNotSendmailPackage);
 		log.info(identity.getKey() + " doCancelEnrollment in group " + enrolledGroup);
 		syncAssessmentStatus(courseEntry, enNode, userCourseEnv, identity, Role.user);
+		//Invalidate user to group cache
+		userCourseEnv.getScoreAccounting().setObligationContext(new SingleUserObligationContext());
 
 		// 2. Remove enrollmentdate property
 		// only remove last time date, not firsttime
@@ -309,7 +315,7 @@ public class EnrollmentManager implements GenericEventListener {
 		// numInWaitingList, numOfParticipants, participant, waiting;
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select grp.key, grp.name, grp.description, grp.maxParticipants, grp.waitingListEnabled, ")
+		sb.append("select grp.key, grp.name, grp.description, grp.status, grp.maxParticipants, grp.waitingListEnabled, ")
 		  //num of participant
 		  .append(" (select count(participants.key) from bgroupmember participants ")
 		  .append("  where participants.group=baseGroup and participants.role='").append(GroupRoles.participant.name()).append("'")
@@ -354,10 +360,11 @@ public class EnrollmentManager implements GenericEventListener {
 					desc = Formatter.truncate(asciiDesc, descriptionMaxSize);
 				}
 			}
+			BusinessGroupStatusEnum status = BusinessGroupStatusEnum.secureValueOf((String)row[3]);
 
-			int maxParticipants = row[3] == null ? -1 : ((Number)row[3]).intValue();
+			int maxParticipants = row[4] == null ? -1 : ((Number)row[4]).intValue();
 			
-			Object enabled = row[4];
+			Object enabled = row[5];
 			boolean waitingListEnabled;
 			if(enabled == null) {
 				waitingListEnabled = false;
@@ -370,13 +377,13 @@ public class EnrollmentManager implements GenericEventListener {
 				waitingListEnabled = false;
 			}
 			
-			int numOfParticipants = row[5] == null ? 0 : ((Number)row[5]).intValue();
-			int numOfReservations = row[6] == null ? 0 : ((Number)row[6]).intValue();
-			int numOfWaiters = row[7] == null ? 0 : ((Number)row[7]).intValue();
-			boolean participant = row[8] == null ? false : ((Number)row[8]).intValue() > 0;
-			boolean waiting = row[9] == null ? false : ((Number)row[9]).intValue() > 0;
+			int numOfParticipants = row[6] == null ? 0 : ((Number)row[6]).intValue();
+			int numOfReservations = row[7] == null ? 0 : ((Number)row[7]).intValue();
+			int numOfWaiters = row[8] == null ? 0 : ((Number)row[8]).intValue();
+			boolean participant = row[9] == null ? false : ((Number)row[9]).intValue() > 0;
+			boolean waiting = row[10] == null ? false : ((Number)row[10]).intValue() > 0;
 			
-			EnrollmentRow enrollment = new EnrollmentRow(key, name, desc,
+			EnrollmentRow enrollment = new EnrollmentRow(key, name, desc, status,
 					maxParticipants, waitingListEnabled);
 			enrollment.setNumOfParticipants(numOfParticipants);
 			enrollment.setNumOfReservations(numOfReservations);

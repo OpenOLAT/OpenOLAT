@@ -183,7 +183,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 
 	private void addAttempteableNode(CourseNode courseNode, List<CourseNode> nodes) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 		if (assessmentConfig.hasAttempts() && !nodes.contains(courseNode)) {
 			nodes.add(courseNode);
 		}

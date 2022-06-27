@@ -20,6 +20,7 @@
 package org.olat.course.run.scoring;
 
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -29,6 +30,6 @@ import org.olat.course.nodes.CourseNode;
  */
 public interface MaxScoreEvaluator {
 
-	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting);
+	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry);
 
 }

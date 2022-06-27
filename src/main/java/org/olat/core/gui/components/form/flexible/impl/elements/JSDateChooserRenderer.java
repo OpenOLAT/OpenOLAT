@@ -53,9 +53,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
 		String exDate = jsdcc.getExampleDateString();
 		int maxlength = exDate.length() + 4;
-		
+
 		//add pop js for date chooser, if componente is enabled
-		sb.append("<div class='o_date form-inline'>");
+		sb.append("<div");
+		if(!jsdcc.isDomReplacementWrapperRequired()) {
+			sb.append(" id='o_c").append(jsdcc.getDispatchID()).append("'");
+		}
+		sb.append(" class='o_date form-inline'>");
 		if (source.isEnabled()) {
 			renderDateElement(sb, jsdcc, maxlength, translator);
 		} else{
@@ -67,7 +71,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	private void renderDateElement(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength, Translator translator) {
 		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
 		if (!jsdcc.isTimeOnlyEnabled()) {
-			renderDateChooser(sb, jsdcc, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+			renderDateChooser(sb, jsdcc, receiverId, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
 		}
 		//input fields for hour and minute
 		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
@@ -89,7 +93,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				renderSeparator(sb, translator.translate(jsdcc.getSeparator()));
 			}
 			if(!jsdcc.isTimeOnlyEnabled() || jsdcc.isTimeOnlyEnabled()) {
-				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
+				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), receiverId, jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
 			}
 			if (jsdcc.isDateChooserTimeEnabled()) {
 				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms");
@@ -101,7 +105,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='form-group o_date_separator'>").append(sep).append("</div>");
 	}
 	
-	private void renderDateChooser(StringOutput sb, JSDateChooserComponent jsdcc, String receiverId, String value, String cssClass, int maxlength, Translator translator) {
+	private void renderDateChooser(StringOutput sb, JSDateChooserComponent jsdcc, String receiverId, String onChangeId,
+			String value, String cssClass, int maxlength, Translator translator) {
 		TextElementComponent teC = jsdcc.getTextElementComponent();
 		String format = jsdcc.getDateChooserDateFormat();
 		TextElementImpl te = teC.getTextElementImpl();
@@ -114,7 +119,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		sb.append("<div class='form-group ").append(cssClass).append("'><div class='input-group o_date_picker'>");
-		renderTextElement(sb, receiverId, value, teC, maxlength);
+		renderTextElement(sb, receiverId, onChangeId, value, teC, maxlength);
 		//date chooser button
 		sb.append("<span class='input-group-addon'>")
 		  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\"")
@@ -152,6 +157,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
 			.append("],\n")
 			.append("  showOtherMonths:true,\n");
+
 			if(jsdcc.getFormItem().getDefaultValue() != null) {
 				String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
 				sb.append("  beforeShow:function(el, inst) {\n")
@@ -162,8 +168,16 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			sb.append("  onSelect:function(){\n")
 			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
 			  .append("    jQuery(this).focus();\n")
-			  .append("    jQuery(this).change();\n")
-			  .append("  }\n")
+			  .append("    jQuery(this).change();\n");
+			if(jsdcc.getFormItem().getPushDateValueTo() != null) {
+				String pushId = ((JSDateChooser)jsdcc.getFormItem().getPushDateValueTo()).getTextElementComponent().getFormDispatchId();
+				sb.append("    var val = jQuery('#").append(pushId).append("').val();\n")
+				  .append("    if(val == null || val === '') {\n")
+				  .append("      var cDate = jQuery('#").append(receiverId).append("').val();\n")
+				  .append("      jQuery('#").append(pushId).append("').val(cDate);\n")
+				  .append("    }");
+			}
+			sb.append("  }\n")
 			  .append("})});")
 			  .append("\n</script>");
 		}
@@ -207,10 +221,15 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			minute = cal.get(Calendar.MINUTE);
 		}
 		sb.append("<div class='form-group o_date_ms ").append(cssClass).append("'>");
-		renderMS(sb, "o_dch_" + receiverId, receiverId, teC, hour);
+		String hId = "o_dch_".concat(receiverId);
+		renderMS(sb, hId, receiverId, teC, hour);
 		sb.append(" : ");
-		renderMS(sb, "o_dcm_" + receiverId, receiverId, teC, minute);
+		String mId = "o_dcm_".concat(receiverId);
+		renderMS(sb, mId, receiverId, teC, minute);
 		sb.append("</div>");
+		
+		FormJSHelper.appendFlexiFormDirty(sb, teC.getFormItem().getRootForm(), hId);
+		FormJSHelper.appendFlexiFormDirty(sb, teC.getFormItem().getRootForm(), mId);
 	}
 	
 	private void renderTimeDisabled(StringOutput sb, Date date, String receiverId, String cssClass) {
@@ -283,7 +302,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		return dc;
 	}
 	
-	private void renderTextElement(StringOutput sb, String receiverId, String value, TextElementComponent teC, int maxlength) {
+	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String value, TextElementComponent teC, int maxlength) {
 		TextElementImpl te = teC.getTextElementImpl();
 		
 		//display size cannot be bigger the maxlenght given by dateformat
@@ -295,7 +314,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" size=\"").append(te.displaySize)
 		  .append("\" maxlength=\"").append(maxlength)
 		  .append("\" value=\"").append(StringHelper.escapeHtml(value)).append("\" ")
-		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), receiverId, te.getAction()))
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()))
 		  .append("/>");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), receiverId);

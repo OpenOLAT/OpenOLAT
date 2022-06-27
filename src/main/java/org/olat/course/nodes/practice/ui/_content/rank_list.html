@@ -1,0 +1,25 @@
+
+#if($r.isNotEmpty($rankList) || $r.visible("share.score"))
+<div class="o_practice_ranklist">
+	<h4>$r.translate("rank.list.title")</h4>
+	#if($r.visible("share.score"))
+		$r.render("share.score")
+	#elseif($r.isNotEmpty($rankList))
+	<table class="table">
+		<tbody>
+			#foreach($ident in $rankList)
+			<tr class="#if(${ident.isMe()}) o_practice_rank_me #end">
+				<td>${ident.rank}.</td>
+				<td>
+					<span class="o_portrait"><span class="o_portrait">
+						<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$ident.name)" title="$r.translate("portrait.alt",$ident.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${ident.avatarKey}/portrait_small.jpg')" />
+					</span></span>
+				</td>
+				<td>${ident.fullname}</td>
+			 </tr>
+			#end
+		</tbody>
+	</table>
+	#end
+</div>
+#end

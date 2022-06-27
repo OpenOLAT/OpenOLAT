@@ -167,6 +167,8 @@ public class QTI21Constants {
 	
 	public static final String CSS_ESSAY_DISABLE_COPYPASTE =  "essay-nocopypaste";
 	
+	public static final String CSS_ESSAY_RICHTEXT =  "essay-richtext";
+	
 
 	public static final String QMD_ENTRY_SUMMARY_NONE = "summaryNone";
 	

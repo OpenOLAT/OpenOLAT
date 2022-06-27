@@ -104,7 +104,7 @@ public class DevelopmentController extends BasicController {
 	public DevelopmentController(UserRequest ureq, WindowControl wControl, WindowBackOfficeImpl wboImpl) {
 		super(ureq, wControl);
 		this.wboImpl = wboImpl;
-		this.winMgrImpl = wboImpl.getWinmgrImpl();
+		this.winMgrImpl = wboImpl.getWindowManager();
 
 		// set up the main layout
 		myContent = createVelocityContainer("index");

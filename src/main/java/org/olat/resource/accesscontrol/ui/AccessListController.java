@@ -23,7 +23,6 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -35,6 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,24 +46,23 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
  * Initial Date:  27 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class AccessListController extends BasicController implements AccessController {
+public class AccessListController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final List<Controller> accessCtrls = new ArrayList<>();
 	
-	private final AccessControlModule acModule;
-	private Object userObject;
+	@Autowired
+	private AccessControlModule acModule;
 
-	public AccessListController(UserRequest ureq, WindowControl wControl, List<OfferAccess> links) {
+	public AccessListController(UserRequest ureq, WindowControl wControl, List<OfferAccess> links, boolean withTitle) {
 		super(ureq, wControl);
 		
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		
 		mainVC = createVelocityContainer("access_method_list");
+		mainVC.contextPut("title", Boolean.valueOf(withTitle));
 		
 		for(OfferAccess link:links) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-			Controller accessCtrl = handler.createAccessController(ureq, getWindowControl(), link, null);
+			Controller accessCtrl = handler.createAccessController(ureq, getWindowControl(), link);
 			listenTo(accessCtrl);
 			accessCtrls.add(accessCtrl);
 			mainVC.put("ac_" + link.getKey(), accessCtrl.getInitialComponent());
@@ -76,14 +75,6 @@ public class AccessListController extends BasicController implements AccessContr
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-
-	public Object getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(Object userObject) {
-		this.userObject = userObject;
 	}
 
 	@Override

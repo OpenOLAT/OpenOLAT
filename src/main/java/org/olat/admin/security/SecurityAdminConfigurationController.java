@@ -95,7 +95,7 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		formLayout.add(resourcesCont);
 		resourcesCont.setFormTitle(translate("sec.title"));
 		resourcesCont.setFormDescription(translate("sec.description"));
-		resourcesCont.setFormContextHelp("Security");
+		resourcesCont.setFormContextHelp("manual_admin/administration/Security/");
 
 		// on: force file download in folder component (more security); off: allow execution of content (less security)
 		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", resourcesCont, keys, values);

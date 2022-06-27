@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -60,15 +62,28 @@ import org.olat.group.model.ContactViewExtended;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
+import org.olat.instantMessaging.InstantMessageTypeEnum;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.LeaveChatEvent;
+import org.olat.instantMessaging.RosterEntry;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
 import org.olat.instantMessaging.model.BuddyStats;
 import org.olat.instantMessaging.model.InstantMessageImpl;
+import org.olat.instantMessaging.model.InstantMessageNotificationTypeEnum;
 import org.olat.instantMessaging.model.Presence;
-import org.olat.instantMessaging.model.RosterEntryView;
+import org.olat.instantMessaging.model.RosterChannelInfos;
+import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserDataExportable;
 import org.olat.user.UserManager;
@@ -94,6 +109,8 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	@Autowired
 	private InstantMessagePreferencesDAO prefsDao;
 	@Autowired
+	private InstantMessageNotificationDAO notificationDao;
+	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private ContactDAO contactDao;
@@ -105,6 +122,17 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	private BaseSecurity securityManager;
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private TeamsService teamsService;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 
 
 	@Override
@@ -191,34 +219,124 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		InstantMessageImpl msg = imDao.loadMessageById(messageId);
 		if(markedAsRead && msg != null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(msg.getResourceTypeName(), msg.getResourceId());
-			imDao.deleteNotification(identity, ores);
+			notificationDao.deleteNotification(identity, ores, null, null);
 		}
 		return msg;
 	}
 
 	@Override
-	public List<InstantMessage> getMessages(Identity identity, OLATResourceable chatResource,
+	public List<InstantMessage> getMessages(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
 			Date from, int firstResult, int maxResults, boolean markedAsRead) {
-		List<InstantMessage> msgs = imDao.getMessages(chatResource, from, firstResult, maxResults);
+		List<InstantMessage> msgs = imDao.getMessages(chatResource, resSubPath, channel, from, firstResult, maxResults);
 		if(markedAsRead) {
-			imDao.deleteNotification(identity, chatResource);
+			notificationDao.deleteNotification(identity, chatResource, null, null);
 		}
 		return msgs;
 	}
+	
+	@Override
+	public InstantMessage sendStatusMessage(Identity from, String fromNickName, boolean anonym, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		return sendMessage(from, fromNickName, anonym, null, type, chatResource, resSubPath, channel, List.of());
+	}
 
 	@Override
-	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
+	public InstantMessage sendMeetingMessage(Identity from, String fromNickName, boolean anonym, String meetingName,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		InstantMessage msg = null;
+		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isChatExamsEnabled()) {
+			msg = sendBigBlueButtonMessage(from, fromNickName, anonym, chatResource, resSubPath, channel);
+		} else if(teamsModule.isEnabled() && teamsModule.isChatExamsEnabled()) {
+			msg = sendTeamsMessage(from, fromNickName, anonym, chatResource, resSubPath, channel);
+		}
+		return msg;
+	}
+	
+	private InstantMessage sendTeamsMessage(Identity from, String fromNickName, boolean anonym,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		InstantMessage msg = null;
+		
+		String identifier = resSubPath + "-" + channel;
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(chatResource, false);
+		if(entry != null) {
+			List<TeamsMeeting> meetings = teamsService.getMeetings(entry, identifier, null);
+			TeamsMeeting meeting = null;
+			if(meetings.isEmpty()) {
+				meeting = teamsService.createMeeting(channel, null, null, entry, identifier, null, from);
+			} else {
+				meeting = meetings.get(meetings.size() - 1);
+			}
+			
+			if(meeting != null) {
+				msg = sendMessage(from, fromNickName, anonym, null, null, meeting, InstantMessageTypeEnum.meeting, chatResource, resSubPath, channel, null);
+			}
+		}
+		
+		return msg;
+	}
+	
+	private InstantMessage sendBigBlueButtonMessage(Identity from, String fromNickName, boolean anonym,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		InstantMessage msg = null;
+		
+		String identifier = resSubPath + "-" + channel;
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(chatResource, false);
+		if(entry != null) {
+			List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, identifier, null, false);
+			BigBlueButtonMeeting meeting = null;
+			if(meetings.isEmpty()) {
+				meeting = bigBlueButtonManager.createAndPersistMeeting(fromNickName, entry, identifier, null, from);
+			} else {
+				meeting = meetings.get(meetings.size() - 1);
+			}
+			
+			if(meeting != null) {
+				msg = sendMessage(from, fromNickName, anonym, null, meeting, null, InstantMessageTypeEnum.meeting, chatResource, resSubPath, channel, null);
+			}
+		}
+		
+		return msg;
+	}
+
+	@Override
+	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel, List<IdentityRef> toNotifyList) {
+		return sendMessage(from, fromNickName, anonym, body, null, null, type, chatResource, resSubPath, channel, toNotifyList);
+	}
+	
+	private InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym,
+			String body, BigBlueButtonMeeting bbbMeeting, TeamsMeeting teamsMeeting, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel, List<IdentityRef> toNotifyList) {
 		InstantMessage message = null;
 		try {
-			message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
+			message = imDao.createMessage(from, fromNickName, anonym, body, bbbMeeting, teamsMeeting, chatResource, resSubPath, channel, type);
 			dbInstance.commit();//commit before sending event
+
+			InstantMessageNotificationTypeEnum notification = InstantMessageNotificationTypeEnum.message;
+			if(toNotifyList != null && !toNotifyList.isEmpty()) {
+				if(type == InstantMessageTypeEnum.request) {
+					notification = InstantMessageNotificationTypeEnum.request;
+				}
+				for(IdentityRef toNotify:toNotifyList) {
+					notificationDao.createNotification(from.getKey(), toNotify.getKey(), chatResource, resSubPath, channel, notification);
+				}
+				dbInstance.commit();
+			}
 			
-			InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
+			final InstantMessagingEvent event = new InstantMessagingEvent(notification.name(), chatResource, resSubPath, channel);
 			event.setFromId(from.getKey());
 			event.setName(fromNickName);
 			event.setAnonym(anonym);
-			event.setMessageId(message.getKey());
+			event.setMessage(message.getKey(), message.getType());
 			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
+			
+			if(toNotifyList != null && !toNotifyList.isEmpty()) {
+				for(IdentityRef toNotify:toNotifyList) {
+					coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event,
+							OresHelper.createOLATResourceableInstance(InstantMessagingService.PERSONAL_EVENT_ORES_NAME, toNotify.getKey()));
+				}
+			}
+			
 		} catch (DBRuntimeException e) {
 			dbInstance.rollbackAndCloseSession();
 			log.error("", e);
@@ -232,15 +350,15 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		InstantMessage message = null;
 		try {
 			String name = userManager.getUserDisplayName(from);
-			message = imDao.createMessage(from, name, false, body, chatResource);
-			imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
+			message = imDao.createMessage(from, name, false, body, null, null, chatResource, null, null, InstantMessageTypeEnum.text);
+			notificationDao.createNotification(from.getKey(), toIdentityKey, chatResource, null, null, InstantMessageNotificationTypeEnum.message);
 			dbInstance.commit();//commit before sending event
 			
-			InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
+			InstantMessagingEvent event = new InstantMessagingEvent(InstantMessagingEvent.MESSAGE, chatResource, null, null);
 			event.setFromId(from.getKey());
 			event.setName(name);
 			event.setAnonym(false);
-			event.setMessageId(message.getKey());
+			event.setMessage(message.getKey(), message.getType());
 			//general event
 			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 			//buddy event
@@ -256,12 +374,35 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 
 	@Override
 	public void deleteMessages(OLATResourceable ores) {
+		List<InstantMessage> messagesToDelete = imDao.getAllResourcesMessages(ores);
+		List<TeamsMeeting> teamsToDelete = new ArrayList<>();
+		List<BigBlueButtonMeeting> bigBlueButtonToDelete = new ArrayList<>();
+		for(InstantMessage message:messagesToDelete) {
+			if(message.getBbbMeeting() != null) {
+				bigBlueButtonToDelete.add(message.getBbbMeeting());
+				
+			} else if(message.getTeamsMeeting() != null) {
+				teamsToDelete.add(message.getTeamsMeeting());
+			}
+		}
+		
 		imDao.deleteMessages(ores);
+		dbInstance.commit();
+		
+		for(BigBlueButtonMeeting meeting:bigBlueButtonToDelete) {
+			BigBlueButtonErrors errors = new BigBlueButtonErrors();
+			bigBlueButtonManager.deleteMeeting(meeting, errors);
+		}
+		for(TeamsMeeting meeting:teamsToDelete) {
+			teamsService.deleteMeeting(meeting);
+		}
+		dbInstance.commit();
 	}
 
 	@Override
-	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource) {
-		InstantMessagingEvent event = new InstantMessagingEvent("participant", chatResource);
+	public void sendPresence(Identity me, OLATResourceable chatResource, String resSubPath, String channel,
+			String nickName, boolean anonym, boolean vip, boolean persistent) {
+		InstantMessagingEvent event = new InstantMessagingEvent(InstantMessagingEvent.PARTICIPANT, chatResource, resSubPath, channel);
 		event.setAnonym(anonym);
 		event.setVip(vip);
 		event.setFromId(me.getKey());
@@ -269,13 +410,41 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 			event.setName(nickName);
 		}
 		String fullName = userManager.getUserDisplayName(me);
-		rosterDao.updateRosterEntry(chatResource, me, fullName, nickName, anonym, vip);
+		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, me, fullName, nickName, anonym, vip, persistent, false, true);
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	
 	@Override
-	public List<InstantMessageNotification> getNotifications(Identity identity) {
-		return imDao.getNotifications(identity);
+	public void updateLastSeen(Identity identity, OLATResourceable chatResource, String resSubPath, String channel) {
+		rosterDao.updateLastSeen(identity, chatResource, resSubPath, channel);
+	}
+	
+	@Override
+	public long countRequestNotifications(IdentityRef identity) {
+		return notificationDao.countRequestNotifications(identity);
+	}
+
+	@Override
+	public List<InstantMessageNotification> getRequestNotifications(IdentityRef identity) {
+		return notificationDao.getRequestNotifications(identity);
+	}
+
+	@Override
+	public List<InstantMessageNotification> getPrivateNotifications(IdentityRef identity) {
+		return notificationDao.getPrivateNotifications(identity);
+	}
+
+	@Override
+	public void deleteNotifications(OLATResourceable chatResource, String resSubPath, String channel) {
+		List<InstantMessageNotification> notifications = notificationDao.getNotifications(chatResource, resSubPath, channel);
+		notificationDao.deleteNotification(null, chatResource, resSubPath, channel);
+		dbInstance.commit();
+
+		for(InstantMessageNotification notification:notifications) {
+			InstantMessagingEvent event = new InstantMessagingEvent(InstantMessagingEvent.DELETE_NOTIFICATION, chatResource, resSubPath, channel);
+			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, OresHelper
+					.createOLATResourceableInstance(PERSONAL_EVENT_ORES_NAME, notification.getToIdentityKey()));
+		}
 	}
 
 	@Override
@@ -402,11 +571,11 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
-	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource) {
-		List<RosterEntryView> roster = rosterDao.getRosterView(chatResource, 0, -1);
+	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource, String resSubPath, String channel) {
+		List<RosterEntry> roster = rosterDao.getRoster(chatResource, resSubPath, channel);
 		List<Buddy> buddies = new ArrayList<>();
 		if(roster != null) {
-			for(RosterEntryView entry:roster) {
+			for(RosterEntry entry:roster) {
 				String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
 				String status = getOnlineStatus(entry.getIdentityKey());
 				buddies.add(new Buddy(entry.getIdentityKey(), name, entry.isAnonym(), entry.isVip(), status));
@@ -419,6 +588,11 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		return isOnline(identityKey) ? Presence.available.name() : Presence.unavailable.name();
 	}
 	
+	@Override
+	public boolean isOnline(IdentityRef identity) {
+		return isOnline(identity.getKey());
+	}
+
 	/**
 	 * Return true if the identity is logged in on the instance
 	 * @param identityKey
@@ -429,16 +603,19 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
-	public void listenChat(Identity identity, OLATResourceable chatResource, String nickName,
-			boolean anonym, boolean vip, GenericEventListener listener) {
+	public boolean listenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
+			String nickName, boolean anonym, boolean vip, boolean persistent, boolean createRosterEntry, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity);
-		rosterDao.updateRosterEntry(chatResource, identity, fullName, nickName, anonym, vip);
+		boolean entry = rosterDao.updateRosterEntry(chatResource, resSubPath, channel, identity,
+				fullName, nickName, anonym, vip, persistent, true, createRosterEntry);
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
+		return entry;
 	}
 
 	@Override
-	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
-		rosterDao.deleteEntry(identity, chatResource);
+	public void unlistenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
+			GenericEventListener listener) {
+		rosterDao.inactivateEntry(identity, chatResource, resSubPath, channel);
 		dbInstance.commit();
 		coordinator.getCoordinator().getEventBus()
 			.fireEventToListenersOf(new LeaveChatEvent(identity.getKey(), chatResource), chatResource);
@@ -446,12 +623,68 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
-	public void disableChat(Identity identity) {
-		//
+	public void clearChannel(OLATResourceable chatResource, String resSubPath, String channel) {
+		rosterDao.deleteVIPEntries(chatResource, resSubPath, channel);
+		dbInstance.commit();
 	}
 
 	@Override
-	public void enableChat(Identity identity) {
-		//
+	public void endChannel(Identity identity, OLATResourceable chatResource, String resSubPath, String channel) {
+		RosterChannelInfos channelInfos = getRoster(chatResource, resSubPath, channel, identity);
+		if(channelInfos == null || (channelInfos.getLastStatusMessage() == null && channelInfos.getLastTextMessage() == null)) {
+			return;// nothing happened
+		}
+		
+		RosterStatus status= channelInfos.getRosterStatus();
+		if(status != RosterStatus.ended) {
+			String fullName = userManager.getUserDisplayName(identity);
+			sendStatusMessage(identity, fullName, false, InstantMessageTypeEnum.end, chatResource, resSubPath, channel);
+		}
+		
+		// Notify all users with notifications pending
+		List<InstantMessageNotification> notifications = notificationDao.getNotifications(chatResource, resSubPath, channel);
+		Set<Long> toNotifySet = notifications.stream()
+				.filter(notification -> notification.getToIdentityKey() != null)
+				.map(InstantMessageNotification::getToIdentityKey)
+				.collect(Collectors.toSet());
+		
+		// delete all notifications
+		notificationDao.deleteNotification(null, chatResource, resSubPath, channel);
+		dbInstance.commit();
+
+		// Notify all users with roster entry
+		List<Long> toNotifyList = channelInfos.getEntries().stream()
+				.map(RosterEntry::getIdentityKey)
+				.filter(identityKey -> (identity == null || !identity.getKey().equals(identityKey)))
+				.collect(Collectors.toList());
+		toNotifySet.addAll(toNotifyList);
+		toNotifySet.remove(identity.getKey());
+		
+		if(!toNotifySet.isEmpty()) {
+			InstantMessagingEvent event = new InstantMessagingEvent(InstantMessagingEvent.END_CHANNEL, chatResource, resSubPath, channel);
+			event.setFromId(identity.getKey());
+			event.setAnonym(false);
+			for(Long toNotify:toNotifySet) {
+				coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event,
+						OresHelper.createOLATResourceableInstance(InstantMessagingService.PERSONAL_EVENT_ORES_NAME, toNotify));
+			}
+		}
+	}
+
+	@Override
+	public List<RosterChannelInfos> getRosters(OLATResourceable ores, String resSubPath, IdentityRef identity, boolean onlyMyActiveRosters) {
+		return rosterDao.getRosterAroundChannels(ores, resSubPath, null, identity, onlyMyActiveRosters);
+	}
+	
+	@Override
+	public RosterChannelInfos getRoster(OLATResourceable ores, String resSubPath, String channel, IdentityRef identity) {
+		List<RosterChannelInfos> infos = rosterDao.getRosterAroundChannels(ores, resSubPath, channel, identity, false);
+		return infos.size() == 1 ? infos.get(0) : null;
+	}
+
+	@Override
+	public void addToRoster(Identity identity, OLATResourceable chatResource, String resSubPath, String channel, String nickName, boolean anonym, boolean vip) {
+		String fullName = userManager.getUserDisplayName(identity);
+		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, identity, fullName, nickName, anonym, vip, true, false, true);
 	}
 }

@@ -51,7 +51,6 @@ import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
@@ -60,7 +59,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
@@ -783,7 +781,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		menuNodeIconsEl.setVisible(learningPath && menuEnabled);
 		menuPathEl.setVisible(learningPath && menuEnabled);
 		if (dirty) {
-			setDirty();
+			markDirty();
 		}
 	}
 	
@@ -849,13 +847,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		headerPreviewCont.put("header", headerCtrl.getInitialComponent());
 	
 		if (dirty) {
-			setDirty();
+			markDirty();
 		}
-	}
-
-	private void setDirty() {
-		String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
-		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
 	}
 	
 	private Header createPreviewHeader() {

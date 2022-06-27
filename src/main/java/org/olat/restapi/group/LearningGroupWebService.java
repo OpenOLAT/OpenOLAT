@@ -80,7 +80,6 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.modules.wiki.restapi.GroupWikiWebService;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
@@ -183,7 +182,7 @@ public class LearningGroupWebService {
 		int count = 0;
 		GroupVO[] groupVOs = new GroupVO[groups.size()];
 		for(BusinessGroup bg:groups) {
-			groupVOs[count++] = ObjectFactory.get(bg);
+			groupVOs[count++] = GroupVO.valueOf(bg);
 		}
 		return Response.ok(groupVOs).build();
 	}
@@ -217,7 +216,7 @@ public class LearningGroupWebService {
 		Date lastModified = bg.getLastModified();
 		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 		if(response == null) {
-			GroupVO vo = ObjectFactory.get(bg);
+			GroupVO vo = GroupVO.valueOf(bg);
 			response = Response.ok(vo);
 		}
 		return response.build();
@@ -259,7 +258,7 @@ public class LearningGroupWebService {
 		Integer maxPart = normalize(group.getMaxParticipants());
 		BusinessGroup newBG = bgs.createBusinessGroup(identity, group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
 				group.getExternalId(), group.getManagedFlags(), minPart, maxPart, false, false, null);
-		GroupVO savedVO = ObjectFactory.get(newBG);
+		GroupVO savedVO = GroupVO.valueOf(newBG);
 		return Response.ok(savedVO).build();
 	}
 	
@@ -298,7 +297,7 @@ public class LearningGroupWebService {
 		BusinessGroup mergedBg = bgs.updateBusinessGroup(identity, bg, group.getName(), group.getDescription(),
 				group.getExternalId(), group.getManagedFlags(), normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
 		//save the updated group
-		GroupVO savedVO = ObjectFactory.get(mergedBg);
+		GroupVO savedVO = GroupVO.valueOf(mergedBg);
 		return Response.ok(savedVO).build();
 	}
 	

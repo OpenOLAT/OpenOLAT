@@ -83,16 +83,6 @@ public interface WindowBackOffice extends Disposable{
 	Controller createDebugDispatcherController(UserRequest ureq, WindowControl windowControl);
 
 	/**
-	 * Factory method to create the inline translation tool dispatcher controller.
-	 * This implicitly sets the translation controller on the window back office
-	 * 
-	 * @param ureq
-	 * @param windowControl
-	 * @return
-	 */
-	Controller createInlineTranslationDispatcherController(UserRequest ureq, WindowControl windowControl);
-	
-	/**
 	 * @param ureq
 	 * @return
 	 */

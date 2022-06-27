@@ -35,6 +35,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.course.site.CourseSite;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
+import org.olat.modules.catalog.site.CatalogContextEntryControllerCreator;
 import org.olat.repository.site.CatalogAdminSite;
 import org.olat.repository.site.MyCoursesSite;
 import org.olat.repository.site.RepositorySite;
@@ -144,9 +145,7 @@ public class RepositoryModule extends AbstractSpringModule {
 				new CourseSiteContextEntryControllerCreator());
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),
-				new CatalogContextEntryControllerCreator(this));
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("Catalog",
-				new CatalogContextEntryControllerCreator(this));
+				new CatalogContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("CatalogAdmin",
 				new SiteContextEntryControllerCreator(CatalogAdminSite.class));
 		

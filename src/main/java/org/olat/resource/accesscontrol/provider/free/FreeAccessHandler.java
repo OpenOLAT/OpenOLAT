@@ -20,15 +20,18 @@
 
 package org.olat.resource.accesscontrol.provider.free;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -41,6 +44,7 @@ import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.free.ui.FreeAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.free.ui.FreeAccessController;
+import org.olat.resource.accesscontrol.provider.free.ui.FreeSubmitController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -75,7 +79,7 @@ public class FreeAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(FreeAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(FreeSubmitController.class, locale);
 		return translator.translate("free.method");
 	}
 	
@@ -85,24 +89,26 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public FreeAccessController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		if(form == null) {
-			return new FreeAccessController(ureq, wControl, link);
-		} else {
-			return new FreeAccessController(ureq, wControl, link, form);
-		}
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new FreeAccessController(ureq, wControl, link);
 	}
 
 	@Override
-	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new FreeAccessConfigurationController(ureq, wControl, link, true);
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported) {
+		return new FreeAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
+				offerOrganisations, catalogSupported, true);
 	}
 
 	@Override
-	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new FreeAccessConfigurationController(ureq, wControl, link, false);
+	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean catalogSupported) {
+		return new FreeAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
+				offerOrganisations, catalogSupported, false);
 	}
-	
+
 	@Override
 	public FormController createTransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderPart part, AccessMethod method, Form form) {
 		return null;

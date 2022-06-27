@@ -34,16 +34,12 @@ import javax.persistence.TemporalType;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.course.assessment.UserEfficiencyStatement;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
 
 /**
  * Description:
@@ -83,6 +79,12 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 
 	@Column(name="score", nullable=true, insertable=true, updatable=true)
 	private Float score;
+	@Column(name="grade", nullable=true, insertable=true, updatable=true)
+	private String grade;
+	@Column(name="grade_system_ident", nullable=true, insertable=true, updatable=true)
+	private String gradeSystemIdent;
+	@Column(name="performance_class_ident", nullable=true, insertable=true, updatable=true)
+	private String performanceClassIdent;
 	@Column(name="passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
 	@Column(name="total_nodes", nullable=true, insertable=true, updatable=true)
@@ -99,7 +101,7 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	@Column(name="course_repo_key", nullable=true, insertable=true, updatable=true)
 	private Long courseRepoKey;
 	@Column(name="fk_resource_id", nullable=true, insertable=false, updatable=false)
-	private Long archivedResourceKey;
+	private Long resourceKey;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastusermodified", nullable=true, insertable=true, updatable=true)
@@ -111,10 +113,6 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, updatable=false)
 	private Identity identity;
-	@NotFound(action=NotFoundAction.IGNORE)
-	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.EAGER,optional=true)
-	@JoinColumn(name="fk_resource_id", nullable=true, updatable=true)
-	private OLATResource resource;
 
 	@Override
 	public Long getKey() {
@@ -172,6 +170,33 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	}
 
 	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
+	}
+
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
@@ -215,14 +240,6 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}
-		
-	public OLATResource getResource() {
-		return resource;
-	}
-		
-	public void setResource(OLATResource resource) {
-		this.resource = resource;
-	}
 
 	@Override
 	public String getTitle() {
@@ -242,12 +259,12 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 		this.shortTitle = shortTitle;
 	}
 
-	public Long getArchivedResourceKey() {
-		return archivedResourceKey;
+	public Long getResourceKey() {
+		return resourceKey;
 	}
 
-	public void setArchivedResourceKey(Long archivedResourceKey) {
-		this.archivedResourceKey = archivedResourceKey;
+	public void setResourceKey(Long resourceKey) {
+		this.resourceKey = resourceKey;
 	}
 
 	@Override

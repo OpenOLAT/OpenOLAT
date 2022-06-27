@@ -203,7 +203,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		long size = fileLeaf.getSize();
 		if ( size > FolderConfig.getMaxEditSizeLimit()) {
 			// limit to reasonable size, see OO-57
-			fileToLargeError = translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""});
+			fileToLargeError = translate("plaintext.error.tolarge", (size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000) + "");
 			this.body = "";
 			this.editable = false;
 			return;
@@ -359,8 +359,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 			//
 			// Add resize handler
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
-			editorConfiguration.addOnInitCallbackFunction("setTimeout(function() { b_resizetofit_htmleditor()}, 100);");
-			editorConfiguration.enableEditorHeight();
+			editorConfiguration.setEditorHeight("full");
 			if(StringHelper.containsNonWhitespace(mediaPath)) {
 				editorConfiguration.setFileBrowserUploadRelPath(mediaPath);
 			}

@@ -78,7 +78,7 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 		
 		admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(admin, "Empty course",
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		course1 = CourseFactory.loadCourse(courseEntry);
 		
 		//copy a couple of files in the resource folder

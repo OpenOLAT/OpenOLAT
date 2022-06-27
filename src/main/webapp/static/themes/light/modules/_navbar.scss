@@ -65,12 +65,13 @@ a.o_disabled.navbar-text {
 			&:hover { 
 				i:before { color: $o-navbar-tab-close-hover-color; }
 			}
-    }
+	    }
 	}
 	
 	.o_custom_navbar-brand {
-		background-position: 5px 0;
+		background-position: 0;
 		background-repeat: no-repeat;
+		background-size: contain;
 		height: 50px;
 		width: 120px;
 	}

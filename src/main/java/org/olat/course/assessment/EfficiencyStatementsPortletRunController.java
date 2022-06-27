@@ -214,7 +214,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 					// will not be disposed on course run dispose, popus up as new browserwindow
 					ControllerCreator ctrlCreator = new ControllerCreator() {
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, statement.getArchivedResourceKey());
+							CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, statement.getResourceKey());
 							return new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyCtrl);
 						}					
 					};

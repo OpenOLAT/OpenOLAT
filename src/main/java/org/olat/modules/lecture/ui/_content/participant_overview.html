@@ -20,7 +20,7 @@ function print() {
 	#if($r.available("log"))
 		$r.render("log")
 	#end
-	$r.contextHelpWithWrapper("Lectures - User view")
+	$r.contextHelpWithWrapper("manual_user/course_operation/Lectures_-_User_view/")
 	</div>
 #end
 #if($r.isNotEmpty($aggregatedElementsTitle))
@@ -44,3 +44,14 @@ function print() {
 	#end
 </ul>
 </fieldset>
+#if($r.isTrue($printCommand))
+<script>
+	// execute after radial score rendering
+	jQuery(function() {
+		setTimeout(function() {
+			window.focus();
+			window.print();
+		},500);
+	});
+</script>
+#end

@@ -149,7 +149,7 @@ public class LearningPathListController extends FormBasicController implements T
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.node, nodeRenderer));
 		
 		// Progress icon
-		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(getLocale(), true, false);
+		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(courseEntry, getLocale(), true, false);
 		DefaultFlexiColumnModel progressModel = new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer);
 		progressModel.setExportable(false);
 		columnsModel.addFlexiColumnModel(progressModel);
@@ -332,7 +332,7 @@ public class LearningPathListController extends FormBasicController implements T
 	}
 
 	private boolean isObligationOverridableOpenable(LearningPathRow row) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(row.getCourseNode());
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, row.getCourseNode());
 		if (!assessmentConfig.isObligationOverridable()) {
 			return false;
 		}

@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -90,6 +91,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
+import org.olat.course.disclaimer.event.CourseDisclaimerEvent;
 import org.olat.course.disclaimer.ui.CourseDisclaimerConsentController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -134,7 +136,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private static final Logger log = Tracing.createLoggerFor(RunMainController.class);
 
 	public static final Event RELOAD_COURSE_NODE = new Event("reload-course-node");
-	public static final Event COURSE_DISCLAIMER_ACCEPTED = new Event("course-disclaimer-accepted");
 	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
@@ -869,11 +870,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				doAssessmentConfirmation(false);
 			}
 		} else if (source == disclaimerController) {
-			if (event == Event.DONE_EVENT) {
+			if (event == CourseDisclaimerEvent.ACCEPTED) {
 				disclaimerAccepted = true;
 				coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
 				coursemain.setDirty(true);
-				fireEvent(ureq, COURSE_DISCLAIMER_ACCEPTED);
+				// forward to course runtime
+				fireEvent(ureq, event);
+			} else if (event == CourseDisclaimerEvent.REJECTED) {
+				disclaimerAccepted = false;
+				// add empty panel just in case to certainly display nothing
+				coursemain.put("coursemain", new Panel("empty"));
+				coursemain.setDirty(true);
+				// forward to course runtime
+				fireEvent(ureq, event);
 			}
 		}
 	}
@@ -929,17 +938,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void doAssessmentConfirmation(boolean confirmed) {
-		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
-		updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
-		updateAssessmentConfirmUI(getCurrentCourseNode());
+		if (getCurrentCourseNode() != null) {
+			nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
+			updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
+			updateAssessmentConfirmUI(getCurrentCourseNode());
+		}
 	}
 	
 	private void doScrollTop() {
-		String srollToTopJS = "try {o_scrollToElement('#o_top');}catch(e){}";
-		JSCommand jsc = new JSCommand(srollToTopJS);
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
-			wControl.getWindowBackOffice().sendCommandTo(jsc);
+			wControl.getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 	

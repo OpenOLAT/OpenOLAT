@@ -149,7 +149,7 @@ public class HighScoreRunController extends FormBasicController{
 		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		AssessmentEntry ownEntry = assessmentManager.getAssessmentEntry(courseNode, ownIdentity);
 		// check user visibility
-		if (ownEntry != null && ownEntry.getUserVisibility() != null &&	!ownEntry.getUserVisibility().booleanValue()) {
+		if (ownEntry != null && (ownEntry.getUserVisibility() == null || !ownEntry.getUserVisibility().booleanValue())) {
 			viewHighscore = false;
 			return;
 		}		

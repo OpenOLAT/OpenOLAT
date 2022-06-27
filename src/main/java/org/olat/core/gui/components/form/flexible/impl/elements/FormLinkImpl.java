@@ -74,8 +74,9 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private String iconRightCSS;
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
-	private String title;
+	private String title;	
 	private String ariaLabel;
+	private String ariaRole;
 	private String textReasonForDisabling;
 	private String target;
 
@@ -245,6 +246,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			}
 		}
 		//if enabled or not must be set now in case it was set during construction time
+		component.setVisible(isVisible());
 		component.setEnabled(isEnabled());
 		component.setTranslator(getTranslator());
 		component.setIconLeftCSS(iconLeftCSS);
@@ -264,6 +266,21 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setFocus(super.hasFocus());
 		if(StringHelper.containsNonWhitespace(getElementCssClass())) {
 			component.setElementCssClass(getElementCssClass());
+		}
+		if (ariaRole != null) {
+			component.setAriaRole(ariaRole);			
+		} else if (presentation >= Link.BUTTON_XSMALL) {
+			// set button role if button style is applied. Extract the link style
+			int linkStyle = presentation;
+			if ((linkStyle - Link.FLEXIBLEFORMLNK) >= 0) {
+				linkStyle = linkStyle - Link.FLEXIBLEFORMLNK;
+			}
+			if ((linkStyle - Link.NONTRANSLATED) >= 0) {
+				linkStyle = linkStyle - Link.NONTRANSLATED;
+			}
+			if (linkStyle >= Link.BUTTON_XSMALL && linkStyle <= Link.BUTTON_LARGE) {
+				component.setAriaRole(Link.ARIA_ROLE_BUTTON);
+			}
 		}
 	}
 	
@@ -350,6 +367,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		this.ariaLabel = label;
 		if(component != null) {
 			component.setAriaLabel(label);
+		}
+	}
+
+	@Override
+	public void setAriaRole(String role) {
+		this.ariaRole = role;
+		if(component != null) {
+			component.setAriaRole(role);
 		}
 	}
 

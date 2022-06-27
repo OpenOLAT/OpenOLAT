@@ -201,8 +201,8 @@ public class ConfirmChangeResourceController extends FormBasicController {
 				}
 			}
 			
-			ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, Boolean.FALSE,
-					null, 0.0d, AssessmentRunStatus.notStarted, null);
+			ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, null, null, null,
+					AssessmentEntryStatus.notStarted, Boolean.FALSE, null, 0.0d, AssessmentRunStatus.notStarted, null);
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
 					Role.coach);
 			courseAssessmentService.updateCurrentCompletion(courseNode, uce, null, null, AssessmentRunStatus.notStarted,

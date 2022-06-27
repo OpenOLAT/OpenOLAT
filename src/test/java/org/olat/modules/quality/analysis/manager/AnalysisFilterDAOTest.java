@@ -296,7 +296,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	public void shouldGetAvailableAttributeForTopicOrganisation() {
 		QualityDataCollection dataCollection = createFinishedDataCollection();
 		Organisation organisation = qualityTestHelper.createOrganisation();
-		dataCollection.setTopicOrganisation(organisation);;
+		dataCollection.setTopicOrganisation(organisation);
 		qualityService.updateDataCollection(dataCollection);
 		dbInstance.commitAndCloseSession();
 		
@@ -1837,7 +1837,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		CurriculumElement element2 = curriculumService.createCurriculumElement("el", "Element",
 				CurriculumElementStatus.active, null, null, null, type, disabled, CurriculumLectures.disabled,
 				CurriculumLearningProgress.disabled, curriculum);
-		;
+		
 		CurriculumElement elementNull = curriculumService.createCurriculumElement("el", "Element",
 				CurriculumElementStatus.active, null, null, null, null, disabled, CurriculumLectures.disabled,
 				CurriculumLearningProgress.disabled, curriculum);

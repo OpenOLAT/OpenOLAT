@@ -2,7 +2,13 @@
 	<div id="o_qti_run_title" class="o_header_with_buttons">
 		<h2>$r.escapeHtml($title)</h2>
 		<div class="o_button_group o_button_group_right">
-		#set( $showClose = ${qtiWorksStatus.mayCloseTest()} && $r.available("closeTest") && $r.visible("closeTest") )
+		#set($showClose = ${qtiWorksStatus.mayCloseTest()} && $r.available("closeTest") && $r.visible("closeTest"))
+		
+		$r.render("messagesTest")
+		
+		#if($r.available("chatTest") && $r.visible("chatTest"))
+			$r.render("chatTest")
+		#end
 		
 		#if(${qtiWorksStatus.mayCancelTest()} && $r.available("cancelTest") && $r.visible("cancelTest") && !$showClose)
 			$r.render("cancelTest")
@@ -22,6 +28,7 @@
 		</div>
 	</div>
 
+	$r.render("assessmentMessages")
 	$r.render("timer")
 
 	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasMaxScore()) || $displayQuestionProgress) && !$r.visible("qtiResults"))

@@ -20,6 +20,7 @@
 package org.olat.upgrade;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -32,6 +33,8 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.core.CourseNodeService;
 import org.olat.group.BusinessGroupModule;
+import org.olat.modules.assessment.model.AssessmentEntryImpl;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,6 +48,8 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_16_1_0.class);
 
+	private static final int BATCH_SIZE = 50000;
+	
 	private static final String VERSION = "OLAT_16.1.0";
 	private static final String UPDATE_ASSESSMENT_OBLIGATION = "UPDATE ASSESSMENT OBLIGATION";
 	private static final String INIT_COURSE_ELEMENT = "INIT COURSE ELEMENT";
@@ -116,10 +121,17 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(UPDATE_ASSESSMENT_OBLIGATION)) {
 			try {
 				log.info("Start assessment entry update.");
-				String query = "update assessmententry ae set ae.obligationConfig = ae.obligation";
-				dbInstance.getCurrentEntityManager()
-						.createQuery(query)
-						.executeUpdate();
+				
+				int counter = 0;
+				List<AssessmentEntryImpl> entries;
+				do {
+					entries = getIdentity(counter, BATCH_SIZE);
+					migrateAssessmentEntries(entries);
+					counter += entries.size();
+					log.info(Tracing.M_AUDIT, "Update assessment entries obligation config: {}, total processed ({})", entries.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while(entries.size() == BATCH_SIZE);
+				
 				log.info("Assessment entry update finished.");
 			} catch (Exception e) {
 				log.error("", e);
@@ -131,6 +143,34 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		}
 
 		return allOk;
+	}
+	
+	private void migrateAssessmentEntries(List<AssessmentEntryImpl> entries) {
+		try {
+			int count = 0;
+			for(AssessmentEntryImpl entry:entries) {
+				AssessmentObligation current = entry.getObligation().getCurrent();
+				if(!Objects.equals(current, entry.getObligationConfig())) {
+					entry.setObligationConfig(current);
+					dbInstance.getCurrentEntityManager().merge(entry);
+					if(count++ % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					}
+				}
+			}
+		} catch (Exception e) {
+			dbInstance.rollbackAndCloseSession();
+			log.error("", e);
+		}
+	}
+	
+	private List<AssessmentEntryImpl> getIdentity(int firstResult, int maxResults) {
+		String query = "select ae from assessmententry as ae order by ae.key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, AssessmentEntryImpl.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 	
 	private boolean initCourseElements(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -158,7 +198,16 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		for (RepositoryEntry repositoryEntry : courseEntries) {
 			initCourseElements(repositoryEntry);
 			migrationCounter.incrementAndGet();
-			dbInstance.commitAndCloseSession();
+			try {
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				// Calling db.instance.commitAndCloseSession() can e.g. throw an
+				// org.olat.core.logging.DBRuntimeException: commit failed, rollback transaction
+				// -> Avoid that whole migration gets stopped!
+				log.error("Error in init course elements of course {} ({}).", repositoryEntry.getKey(),
+					repositoryEntry.getDisplayname());
+				log.error("", e);
+			}
 			if(migrationCounter.get() % 100 == 0) {
 				log.info("Init course elements: num. of courses migrated: {}", migrationCounter);
 			}

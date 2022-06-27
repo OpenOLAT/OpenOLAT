@@ -27,24 +27,26 @@ package org.olat.modules.assessment.ui;
  */
 public class ScoreStat {
 	
-	private static final ScoreStat NO_SCORE = new ScoreStat(false, 0.0d, 0.0d);
+	private static final ScoreStat NO_SCORE = new ScoreStat(false, 0.0d, 0.0d, false);
 	
 	private final boolean enabled;
 	private final Double min;
 	private final Double max;
+	private final boolean gradeEnabled;
 	
 	public static ScoreStat noScore() {
 		return NO_SCORE;
 	}
 	
-	public static ScoreStat of(Double min, Double max) {
-		return new ScoreStat(true, min, max);
+	public static ScoreStat of(Double min, Double max, boolean gradeEnabled) {
+		return new ScoreStat(true, min, max, gradeEnabled);
 	}
 	
-	private ScoreStat(boolean enabled, Double min, Double max) {
+	private ScoreStat(boolean enabled, Double min, Double max, boolean gradeEnabled) {
 		this.enabled = enabled;
 		this.min = min;
 		this.max = max;
+		this.gradeEnabled = gradeEnabled;
 	}
 
 	public boolean isEnabled() {
@@ -57,6 +59,10 @@ public class ScoreStat {
 
 	public Double getMax() {
 		return max;
+	}
+
+	public boolean isGradeEnabled() {
+		return gradeEnabled;
 	}
 	
 }

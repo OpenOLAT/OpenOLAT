@@ -139,6 +139,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private String displayname; // mandatory
 	@Column(name="description", nullable=true, insertable=true, updatable=true)
 	private String description; // mandatory
+	@Column(name="teaser", nullable=true, insertable=true, updatable=true)
+	private String teaser; // mandatory
 	@Column(name="initialauthor", nullable=false, insertable=true, updatable=true)
 	private String initialAuthor; // mandatory // login of the author of the first version
 	@Column(name="authors", nullable=true, insertable=true, updatable=true)
@@ -174,6 +176,10 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	@Column(name="status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Column(name="status_published_date", nullable=true, insertable=true, updatable=true)
+	private Date statusPublishedDate;
+	@Column(name="publicvisible", nullable=false, insertable=true, updatable=true)
+	private boolean publicVisible;
 	@Column(name="allusers", nullable=false, insertable=true, updatable=true)
 	private boolean allUsers;
 	@Column(name="guests", nullable=false, insertable=true, updatable=true)
@@ -246,6 +252,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.description = description;
 	}
 	
+	public String getTeaser() {
+		return teaser;
+	}
+
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
+	}
+
 	public String getMainLanguage() {
 		return mainLanguage;
 	}
@@ -442,34 +456,66 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		return RepositoryEntryStatusEnum.valueOf(status);
 	}
 	
-	public void setEntryStatus(RepositoryEntryStatusEnum status) {
-		this.status = status.name();
+	public void setEntryStatus(RepositoryEntryStatusEnum entryStatus) {
+		RepositoryEntryStatusEnum previousStatus = StringHelper.containsNonWhitespace(status)? getEntryStatus(): RepositoryEntryStatusEnum.preparation;
+		if (RepositoryEntryStatusEnum.isInArray(entryStatus, RepositoryEntryStatusEnum.preparationToCoachPublished())) {
+			statusPublishedDate = null;
+		} else if (statusPublishedDate == null && RepositoryEntryStatusEnum.published == entryStatus && RepositoryEntryStatusEnum.published != previousStatus) {
+			statusPublishedDate = new Date();
+		}
+		
+		this.status = entryStatus.name();
+	}
+	
+	public Date getStatusPublishedDate() {
+		return statusPublishedDate;
 	}
 
+	/*
+	 * if a repository entry is public visible the offers for guests, open access and bookings are available.
+	 * Oh the other hand if a repository entry is not public visible offers for guests, open access and bookings are not available.
+	 * In this case the members of the repository entry can only be managed in the members management.
+	 */
+
+	public boolean isPublicVisible() {
+		return publicVisible;
+	}
+
+	public void setPublicVisible(boolean publicVisible) {
+		this.publicVisible = publicVisible;
+	}
+	
+	@Deprecated
 	public boolean isBookable() {
 		return bookable;
 	}
 
+	@Deprecated
 	public void setBookable(boolean bookable) {
 		this.bookable = bookable;
 	}
 
+	@Deprecated
 	public boolean isAllUsers() {
 		return allUsers;
 	}
 
+	@Deprecated
 	public void setAllUsers(boolean allUsers) {
 		this.allUsers = allUsers;
 	}
 
+	@Deprecated
 	public boolean isGuests() {
 		return guests;
 	}
 
+	@Deprecated
 	public void setGuests(boolean guests) {
 		this.guests = guests;
 	}
 
+	@Deprecated
 	public String getAllowToLeave() {
 		return allowToLeave;
 	}

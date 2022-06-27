@@ -27,9 +27,12 @@ import java.util.Map;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
@@ -38,6 +41,7 @@ import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupByKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.quality.ui.QualityMainController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -55,6 +59,7 @@ class GroupByNameCache {
 
 	private final AnalysisSearchParameter searchParams;
 	private final Locale locale;
+	private Translator translator;
 
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -130,10 +135,19 @@ class GroupByNameCache {
 		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
 		for (IdentityShort identity : identities) {
 			String key = identity.getKey().toString();
-			String value = identity.getLastName() + " " + identity.getFirstName();
+			String value = identity.getStatus() >= Identity.STATUS_DELETED
+					? getTranslator().translate("data.collection.topic.identity.unknown")
+					: identity.getLastName() + " " + identity.getFirstName();
 			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
+	}
+	
+	private Translator getTranslator() {
+		if (translator == null) {
+			translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		}
+		return translator;
 	}
 
 	private Map<String, Name> loadTopicOrganisationGroupNames() {

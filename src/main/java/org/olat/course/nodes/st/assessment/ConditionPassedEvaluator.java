@@ -31,6 +31,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.PassedEvaluator;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.modules.assessment.Overridable;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -44,7 +45,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 public class ConditionPassedEvaluator implements PassedEvaluator {
 
 	@Override
-	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
+	public Overridable<Boolean> getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
 			ConditionInterpreter conditionInterpreter) {
 		Boolean passed = null;
 		ScoreCalculator scoreCalculator = getScoreCalculator(courseNode);
@@ -68,7 +69,7 @@ public class ConditionPassedEvaluator implements PassedEvaluator {
 				}
 			}
 		}
-		return passed;
+		return Overridable.of(passed);
 	}
 	
 	private ScoreCalculator getScoreCalculator(CourseNode courseNode) {

@@ -1,0 +1,56 @@
+<div class="panel panel-default o_assessment_grade_stats">
+	<div class="panel-heading">
+		<h4 class="panel-title"><i class="o_icon o_icon_grade"> </i> $title</h4>
+	</div>
+	<div class="o_stats">
+		<div class="o_figures">
+			<table class="table">
+			<tbody>
+				#if($r.isNotEmpty($gradeSystem))
+					<tr>
+						<th scope="row">$r.translate("grade.system")</th>
+						<td>$gradeSystem</td>
+					</tr>
+				#end
+				#if($r.isNotEmpty($resolution))
+					<tr>
+						<th scope="row">$r.translate("grade.system.resolution")</th>
+						<td>$resolution</td>
+					</tr>
+				#end
+				#if($r.isNotEmpty($rounding))
+					<tr>
+						<th scope="row">$r.translate("grade.system.rounding")</th>
+						<td>$rounding</td>
+					</tr>
+				#end
+				#if($r.isNotEmpty($scoreMinMax))
+					<tr>
+						<th>$r.translate("score.min.max")</th>
+						<td>$scoreMinMax</td>
+					</tr>
+				#end
+				#if($r.isNotEmpty($passedWith))
+					<tr>
+						<th scope="row">$r.translate("grade.score.passed.with")</th>
+						<td>$passedWith</td>
+					</tr>
+				#end
+				<tr>
+					<th scope="row">$r.translate("grade.stats.avg")</th>
+					<td>#if($r.isNotEmpty($avgScore))$avgScore#end</td>
+				</tr>
+				<tr>
+					<th scope="row">$r.translate("grade.stats.best")</th>
+					<td>#if($r.isNotEmpty($bestScore))$bestScore#end</td>
+				</tr>
+			</tbody>
+			</table>
+		</div>
+		<div class="o_chart">
+			#if($r.available("chart"))
+				$r.render("chart")
+			#end
+		</div>
+	</div>
+</div>

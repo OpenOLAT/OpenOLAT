@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.csp;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.csp.model.CSPReportRequest;
+import org.olat.core.commons.services.csp.model.CSPReport;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -35,6 +36,8 @@ import org.olat.core.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -47,8 +50,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CSPDispatcher implements Dispatcher {
 	
 	private static final Logger log = Tracing.createLoggerFor(CSPDispatcher.class);
-	
-	private final ObjectMapper mapper = new ObjectMapper();
+
+	private static final JsonFactory jsonFactory = new JsonFactory();
+	private static final ObjectMapper mapper = new ObjectMapper(jsonFactory);
 	
 	@Autowired
 	private CSPModule cspModule;
@@ -75,13 +79,23 @@ public class CSPDispatcher implements Dispatcher {
 					identity = us.getIdentity();
 				}
 			}
-			
-			CSPReportRequest report = mapper.readValue(request.getInputStream(), CSPReportRequest.class);
-			if(report.getReport() != null) {
-				cspManager.log(report.getReport(), identity);
+			CSPReport report = readReport(request.getInputStream());
+			if(report != null) {
+				cspManager.log(report, identity);
 			}
 		} catch (Exception e) {
 			log.error("", e);
+		}
+	}
+	
+	protected static CSPReport readReport(InputStream stream) {
+		try {
+			JsonNode report = mapper.readTree(stream);
+			JsonNode reportNode = report.get("csp-report");
+			return mapper.treeToValue(reportNode, CSPReport.class);
+		} catch (IllegalArgumentException | IOException e) {
+			log.warn("", e);
+			return null;
 		}
 	}
 }

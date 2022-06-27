@@ -20,6 +20,7 @@
 package org.olat.course.nodes.en;
 
 import org.olat.group.BusinessGroupRef;
+import org.olat.group.BusinessGroupStatusEnum;
 
 
 /**
@@ -35,7 +36,7 @@ public class EnrollmentRow implements BusinessGroupRef {
 	private final String description;
 	private final int maxParticipants;
 	private final boolean waitingListEnabled;
-	
+	private final BusinessGroupStatusEnum groupStatus;
 	
 	private boolean waiting;
 	private boolean participant;
@@ -45,9 +46,10 @@ public class EnrollmentRow implements BusinessGroupRef {
 	private int positionInWaitingList;
 	private int sortKey;
 	
-	public EnrollmentRow(Long groupKey, String name, String description,
+	public EnrollmentRow(Long groupKey, String name, String description, BusinessGroupStatusEnum groupStatus,
 			int maxParticipants, boolean waitingListEnabled) {
 		this.groupKey = groupKey;
+		this.groupStatus = groupStatus;
 		this.name = name;
 		this.description = description;
 		this.maxParticipants = maxParticipants;
@@ -57,6 +59,10 @@ public class EnrollmentRow implements BusinessGroupRef {
 	@Override
 	public Long getKey() {
 		return groupKey;
+	}
+	
+	public boolean isActive() {
+		return groupStatus == BusinessGroupStatusEnum.active;
 	}
 	
 	public int getSortKey() {

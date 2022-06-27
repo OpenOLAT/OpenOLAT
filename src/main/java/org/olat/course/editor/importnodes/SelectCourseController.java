@@ -70,6 +70,7 @@ public class SelectCourseController extends StepFormBasicController {
 		config.setImportRessources(false);
 		config.setCreateRessources(false);
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		searchParams.setCanCopy(true);
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setExcludeEntryKeys(List.of(importCourseContext.getTargetEntry().getKey()));
 		listCtrl = new AuthorListController(ureq, wControl, rootForm, searchParams, config);

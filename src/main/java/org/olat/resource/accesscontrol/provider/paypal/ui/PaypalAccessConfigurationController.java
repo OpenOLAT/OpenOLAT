@@ -21,26 +21,23 @@
 package org.olat.resource.accesscontrol.provider.paypal.ui;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Collection;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
-import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,10 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PaypalAccessConfigurationController extends AbstractConfigurationMethodController {
 	
-	private final OfferAccess link;
-
-	private TextElement descEl, priceEl;
-	private DateChooser dateFrom, dateTo;
+	private TextElement priceEl;
 	private SingleSelection currencyEl;
 	private MultipleSelectionElement vatEnabledEl;
 	
@@ -96,23 +90,16 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 	@Autowired
 	private AccessControlModule acModule;
 	
-	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
-		super(ureq, wControl, edit);
-		this.link = link;
+	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogSupported, edit);
 		vatValues = new String[]{ translate("vat.on") };
-		setTranslator(Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		String desc = null;
-		if(link.getOffer() != null) {
-			desc = link.getOffer().getDescription();
-		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
-		
+	protected void initCustomFormElements(FormItemContainer formLayout) {
 		Price price = null;
 		if(link.getOffer() != null && link.getOffer().getPrice() != null) {
 			price = link.getOffer().getPrice();
@@ -120,7 +107,7 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		
 		String amount = null;
 		if(price != null && price.getAmount() != null) {
-			amount = price.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN).toString();
+			amount = price.getAmount().setScale(2, RoundingMode.HALF_EVEN).toString();
 		}
 		priceEl = uifactory.addTextElement("price", "price", 32, amount, formLayout);
 
@@ -149,36 +136,17 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 			vatEnabledEl.select(vatKeys[0], true);
 		}
 		vatEnabledEl.setEnabled(false);
-		
-		dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", link.getValidFrom(), formLayout);
-		dateFrom.setHelpText(translate("from.hint"));
-		dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", link.getValidTo(), formLayout);
-		dateTo.setHelpText(translate("from.hint"));
-		
-		super.initForm(formLayout, listener, ureq);
-	}
-	
-	@Override
-	public AccessMethod getMethod() {
-		return link.getMethod();
 	}
 
 	@Override
-	public OfferAccess commitChanges() {
+	public void updateCustomChanges() {
 		BigDecimal amount = new BigDecimal(priceEl.getValue());
 		String currencyCode = currencyEl.getSelectedKey();
 		PriceImpl price = new PriceImpl();
 		price.setAmount(amount);
 		price.setCurrencyCode(currencyCode);
 		
-		Offer offer = link.getOffer();
-		offer.setPrice(price);
-		offer.setDescription(descEl.getValue());
-		offer.setValidFrom(dateFrom.getDate());
-		offer.setValidTo(dateTo.getDate());
-		link.setValidFrom(dateFrom.getDate());
-		link.setValidTo(dateTo.getDate());
-		return link;
+		link.getOffer().setPrice(price);
 	}
 
 	@Override
@@ -211,12 +179,6 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		if(!currencyEl.isOneSelected()) {
 			currencyEl.setErrorKey("currency.error", null);
 			allOk = false;
-		}
-
-		if (dateFrom.getDate() != null && dateTo.getDate() != null && dateFrom.getDate().compareTo(dateTo.getDate()) > 0) {
-			dateTo.setErrorKey("date.error", null);
-			dateFrom.setErrorKey(null, null);
-			allOk &= false;
 		}
 
 		return allOk;

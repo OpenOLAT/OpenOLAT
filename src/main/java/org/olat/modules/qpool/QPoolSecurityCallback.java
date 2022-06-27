@@ -31,6 +31,12 @@ public interface QPoolSecurityCallback {
 	
 	public void setRoles(Roles roles);
 	
+	boolean canNewQuestions();
+	
+	boolean canEditQuestions();
+	
+	boolean canShareQuestions();
+	
 	boolean canUseCollections();
 
 	boolean canUsePools();

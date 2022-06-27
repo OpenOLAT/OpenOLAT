@@ -228,7 +228,9 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	public static Link createButtonLarge(String name, VelocityContainer vc, ComponentEventListener listener){
-		return new Link(name, name, name, Link.BUTTON_LARGE, vc, listener);
+		Link link = new Link(name, name, name, Link.BUTTON_LARGE, vc, listener);
+		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		return link;
 	}
 
 	/**
@@ -246,7 +248,9 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	public static Link createButton(String name, VelocityContainer vc, ComponentEventListener listener){
-		return new Link(name, name, name, Link.BUTTON, vc, listener);
+		Link link = new Link(name, name, name, Link.BUTTON, vc, listener);
+		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		return link;
 	}
 	
 	/**
@@ -264,7 +268,9 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	public static Link createButtonSmall(String name, VelocityContainer vc, ComponentEventListener listener){
-		return new Link(name, name, name, Link.BUTTON_SMALL, vc, listener);
+		Link link = new Link(name, name, name, Link.BUTTON_SMALL, vc, listener);
+		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		return link;
 	}
 	
 	/**
@@ -282,7 +288,9 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	public static Link createButtonSmall(String name, String cmd, String i18n, VelocityContainer vc, ComponentEventListener listener){
-		return new Link(name, cmd, i18n, Link.BUTTON_SMALL, vc, listener);
+		Link link = new Link(name, cmd, i18n, Link.BUTTON_SMALL, vc, listener);
+		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		return link;
 	}
 	
 	/**
@@ -300,7 +308,9 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	public static Link createButtonXSmall(String name, VelocityContainer vc, ComponentEventListener listener){
-		return new Link(name, name, name, Link.BUTTON_XSMALL, vc, listener);
+		Link link = new Link(name, name, name, Link.BUTTON_XSMALL, vc, listener);
+		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		return link;
 	}
 	
 	public static ExternalLink createExternalLink(String name, String label, String url) {

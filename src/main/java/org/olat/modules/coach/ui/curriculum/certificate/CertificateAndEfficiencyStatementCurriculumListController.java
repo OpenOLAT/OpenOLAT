@@ -117,6 +117,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -368,13 +369,13 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
             wrapper.setPassed(efficiencyStatement.getPassed());
             wrapper.setScore(efficiencyStatement.getScore());
             wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
-            wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+            wrapper.setResourceKey(efficiencyStatement.getResourceKey());
             wrapper.setLastModified(efficiencyStatement.getLastModified());
             wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
             Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
             wrapper.setCompletion(completion);
             statements.add(wrapper);
-            resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
+            resourceKeyToStatments.put(efficiencyStatement.getResourceKey(), wrapper);
         }
 
         List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
@@ -433,7 +434,8 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                         }
                     }
                 }
-                List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+                List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, null);
+                List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null);
                 repositoryService.filterMembership(assessedIdentity, repoKeys);
 
                 for (CurriculumElementRepositoryEntryViews elementWithViews : elementsWithViews) {
@@ -456,7 +458,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                         rows.add(row);
                     } else if (repositoryEntryMyViews.size() == 1) {
                         CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().get(0), true);
-                        forge(row, repoKeys, resourcesWithOffer);
+                        forge(row, repoKeys, resourcesOpenAccess, resourcesWithOffer);
                         forgeCalendarsLink(row);
                         rows.add(row);
                     } else {
@@ -465,7 +467,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                         rows.add(elementRow);
                         for (RepositoryEntryMyView entry : repositoryEntryMyViews) {
                             CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(curriculum, element, elementMembership, entry, false);
-                            forge(row, repoKeys, resourcesWithOffer);
+                            forge(row, repoKeys, resourcesOpenAccess, resourcesWithOffer);
                             rows.add(row);
                         }
                     }
@@ -565,7 +567,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         rows.removeIf(curriculumTreeWithViewsRow -> !curriculumTreeWithViewsRow.isCurriculumMember());
     }
 
-    private void forge(CurriculumTreeWithViewsRow row, Collection<Long> repoKeys, List<OLATResourceAccess> resourcesWithOffer) {
+    private void forge(CurriculumTreeWithViewsRow row, Collection<Long> repoKeys, List<OLATResource> resourcesOpenAccess, List<OLATResourceAccess> resourcesWithOffer) {
         if (row.getRepositoryEntryKey() == null || guestOnly) return;// nothing for guests
 
         boolean isMember = repoKeys.contains(row.getRepositoryEntryKey());
@@ -573,12 +575,12 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 
         FormLink startLink = null;
         List<PriceMethod> types = new ArrayList<>();
-        if (row.isAllUsers() || isMember) {
+        if (isMember || resourcesOpenAccess.contains(row.getOlatResource())) {
             startLink = uifactory.addFormLink("start_" + (++counter), "start", "start", null, null, Link.LINK);
             startLink.setElementCssClass("o_start btn-block");
             startLink.setCustomEnabledLinkCSS("o_start btn-block");
             startLink.setIconRightCSS("o_icon o_icon_start");
-        } else if (row.isBookable()) {
+        } else if (row.isPublicVisible()) {
             // collect access control method icons
             OLATResource resource = row.getOlatResource();
             for (OLATResourceAccess resourceAccess : resourcesWithOffer) {
@@ -593,10 +595,12 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                 }
             }
 
-            startLink = uifactory.addFormLink("start_" + (++counter), "start", "book", null, null, Link.LINK);
-            startLink.setElementCssClass("o_start btn-block");
-            startLink.setCustomEnabledLinkCSS("o_book btn-block");
-            startLink.setIconRightCSS("o_icon o_icon_start");
+            	if (!types.isEmpty()) {
+                startLink = uifactory.addFormLink("start_" + (++counter), "start", "book", null, null, Link.LINK);
+                startLink.setElementCssClass("o_start btn-block");
+                startLink.setCustomEnabledLinkCSS("o_book btn-block");
+                startLink.setIconRightCSS("o_icon o_icon_start");
+            	}
         }
 
         if(startLink != null) {
@@ -608,7 +612,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         }
 
 
-        if (!row.isAllUsers() && !row.isGuests()) {
+        if (!row.isPublicVisible()) {
             // members only always show lock icon
             types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
         }
@@ -869,7 +873,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
             } else if (entry == null) {
                 showWarning("repositoryentry.not.existing");
             } else {
-                detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, false);
+                detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
                 listenTo(detailsCtrl);
                 addToHistory(ureq, detailsCtrl);
 

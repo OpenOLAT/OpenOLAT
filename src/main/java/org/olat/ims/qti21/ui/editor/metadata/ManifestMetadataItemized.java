@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
+public class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
 	
 	private final ManifestMetadataBuilder metadataBuilder;
 	
@@ -73,6 +73,23 @@ class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
 		this.metadataBuilder = metadataBuilder;
 		this.lang = lang;
 		metadataConverter = new QTI21MetadataConverter(itemTypeDao, educationalContextDao, qpoolService);
+		if(StringHelper.containsNonWhitespace(metadataBuilder.getClassificationTaxonomy())) {
+			taxonomyLevel = metadataConverter.toTaxonomy(metadataBuilder.getClassificationTaxonomy());
+		}
+		if(StringHelper.containsNonWhitespace(metadataBuilder.getEducationContext())) {
+			context = metadataConverter.toEducationalContext(metadataBuilder.getEducationContext());
+		}
+		if(StringHelper.containsNonWhitespace(metadataBuilder.getOpenOLATMetadataQuestionType())) {
+			itemType = metadataConverter.toType(metadataBuilder.getOpenOLATMetadataQuestionType());
+		}
+	}
+	
+	public ManifestMetadataItemized(ManifestMetadataBuilder metadataBuilder, String lang, QTI21MetadataConverter metadataConverter) {
+		CoreSpringFactory.autowireObject(this);
+		
+		this.metadataConverter = metadataConverter;
+		this.metadataBuilder = metadataBuilder;
+		this.lang = lang;
 		if(StringHelper.containsNonWhitespace(metadataBuilder.getClassificationTaxonomy())) {
 			taxonomyLevel = metadataConverter.toTaxonomy(metadataBuilder.getClassificationTaxonomy());
 		}

@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BigBlueButtonConfigurationController extends FormBasicController {
 
-	private static final String[] FOR_KEYS = { "courses", "appointments", "groups" };
+	private static final String[] FOR_KEYS = { "courses", "appointments", "groups", "chatexams" };
 	private static final String[] ENABLED_KEY = new String[]{ "on" };
 	
 	private MultipleSelectionElement moduleEnabled;
@@ -99,7 +99,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("bigbluebutton.title");
 		setFormInfo("bigbluebutton.intro");
-		setFormContextHelp("BigBlueButton+module");
+		setFormContextHelp("manual_admin/administration/BigBlueButton_module/");
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("bigbluebutton.module.enabled", formLayout, ENABLED_KEY, enabledValues);
@@ -108,12 +108,13 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		
 		String[] forValues = new String[] {
 			translate("bigbluebutton.module.enabled.for.courses"), translate("bigbluebutton.module.enabled.for.appointments"),
-			translate("bigbluebutton.module.enabled.for.groups")
+			translate("bigbluebutton.module.enabled.for.groups"), translate("bigbluebutton.module.enabled.for.chat.exam")
 		};
 		enabledForEl = uifactory.addCheckboxesVertical("bigbluebutton.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
 		enabledForEl.select(FOR_KEYS[0], bigBlueButtonModule.isCoursesEnabled());
 		enabledForEl.select(FOR_KEYS[1], bigBlueButtonModule.isAppointmentsEnabled());
 		enabledForEl.select(FOR_KEYS[2], bigBlueButtonModule.isGroupsEnabled());
+		enabledForEl.select(FOR_KEYS[3], bigBlueButtonModule.isChatExamsEnabled());
 		
 		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, ENABLED_KEY, enabledValues);
 		permanentForEl.select(ENABLED_KEY[0], bigBlueButtonModule.isPermanentMeetingEnabled());
@@ -279,6 +280,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			bigBlueButtonModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
 			bigBlueButtonModule.setAvatarEnabled(avatarEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(2));
+			bigBlueButtonModule.setChatExamsEnabled(enabledForEl.isSelected(3));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
 			bigBlueButtonModule.setMaxUploadSize(Integer.valueOf(slidesUploadLimitEl.getValue()));

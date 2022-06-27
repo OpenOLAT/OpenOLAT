@@ -67,6 +67,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
@@ -99,6 +100,7 @@ import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -285,7 +287,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 				}
 			}
 		}
-		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		List<? extends OrganisationRef> organisations = acService.getOfferOrganisations(assessedIdentity);
+		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, organisations);
+		List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, organisations);
+		
 		repositoryService.filterMembership(assessedIdentity, repoKeys);
 
 		List<CurriculumElementWithViewsRow> rows = new ArrayList<>(elementsWithViews.size() * 3);
@@ -299,7 +304,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				rows.add(row);
 			} else if(elementWithViews.getEntries().size() == 1) {
 				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().get(0), true);
-				forge(row, repoKeys, resourcesWithOffer);
+				forge(row, repoKeys, resourcesOpenAccess, resourcesWithOffer);
 				forgeCalendarsLink(row);
 				rows.add(row);
 			} else {
@@ -308,7 +313,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				rows.add(elementRow);
 				for(RepositoryEntryMyView entry:elementWithViews.getEntries()) {
 					CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, entry, false);
-					forge(row, repoKeys, resourcesWithOffer);
+					forge(row, repoKeys, resourcesOpenAccess, resourcesWithOffer);
 					rows.add(row);
 				}
 			}
@@ -354,7 +359,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		}
 	}
 	
-	private void forge(CurriculumElementWithViewsRow row, Collection<Long> repoKeys, List<OLATResourceAccess> resourcesWithOffer) {
+	private void forge(CurriculumElementWithViewsRow row, Collection<Long> repoKeys, List<OLATResource> resourcesOpenAccess, List<OLATResourceAccess> resourcesWithOffer) {
 		if(row.getRepositoryEntryKey() == null || guestOnly) return;// nothing for guests
 
 		boolean isMember = repoKeys.contains(row.getRepositoryEntryKey());
@@ -362,12 +367,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		FormLink startLink = null;
 		List<PriceMethod> types = new ArrayList<>();
-		if(row.isAllUsers() || isMember) {
+		if (isMember || resourcesOpenAccess.contains(row.getOlatResource())) {
 			startLink = uifactory.addFormLink("start_" + (++counter), "start", "start", null, null, Link.LINK);
 			startLink.setElementCssClass("o_start btn-block");
 			startLink.setCustomEnabledLinkCSS("o_start btn-block");
 			startLink.setIconRightCSS("o_icon o_icon_start");
-		} else if(row.isBookable()) {
+		} else if(row.isPublicVisible()) {
 			// collect access control method icons
 			OLATResource resource = row.getOlatResource();
 			for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -382,10 +387,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 				}
 			}
 			
-			startLink = uifactory.addFormLink("start_" + (++counter), "start", "book", null, null, Link.LINK);
-			startLink.setElementCssClass("o_start btn-block");
-			startLink.setCustomEnabledLinkCSS("o_book btn-block");
-			startLink.setIconRightCSS("o_icon o_icon_start");
+			if (types.isEmpty()) {
+				startLink = uifactory.addFormLink("start_" + (++counter), "start", "book", null, null, Link.LINK);
+				startLink.setElementCssClass("o_start btn-block");
+				startLink.setCustomEnabledLinkCSS("o_book btn-block");
+				startLink.setIconRightCSS("o_icon o_icon_start");
+			}
 		}
 
 		if(startLink != null) {
@@ -396,7 +403,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			row.setStartLink(startLink, startUrl);
 		}
 
-		if (!row.isAllUsers() && !row.isGuests()) {
+		if (!row.isPublicVisible()) {
 			// members only always show lock icon
 			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 		}
@@ -610,7 +617,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			} else if(entry == null) {
 				showWarning("repositoryentry.not.existing");
 			} else {
-				detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, false);
+				detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
 				listenTo(detailsCtrl);
 				addToHistory(ureq, detailsCtrl);
 				

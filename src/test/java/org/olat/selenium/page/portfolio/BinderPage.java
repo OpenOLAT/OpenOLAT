@@ -92,7 +92,7 @@ public class BinderPage {
 	 */
 	public BinderPage assertOnPage(String title) {
 		By metaTitleBy = By.xpath("//div[contains(@class,'o_page_lead')]//h2[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(metaTitleBy, 5, browser);
+		OOGraphene.waitElement(metaTitleBy, browser);
 		return this;
 	}
 	
@@ -110,6 +110,12 @@ public class BinderPage {
 	public BinderPage assertOnAssignmentInEntries(String title) {
 		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElementPresence(assignmentTitleBy, 5, browser);
+		return this;
+	}
+	
+	public BinderPage assertOnTimeline() {
+		By timelineBy = By.xpath("//div[contains(@class,'o_portfolio_timeline')]//*[local-name() = 'svg']");
+		OOGraphene.waitElement(timelineBy, browser);
 		return this;
 	}
 	
@@ -171,12 +177,16 @@ public class BinderPage {
 	 * @return Itself
 	 */
 	public BinderPage selectEntries() {
-		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
-		OOGraphene.waitElement(tocBy, browser);
-		browser.findElement(tocBy).click();
-		OOGraphene.waitBusy(browser);
-		By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
-		OOGraphene.waitElementSlowly(binderPageListBy, 10, browser);
+		try {
+			By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
+			OOGraphene.waitElement(tocBy, browser);
+			browser.findElement(tocBy).click();
+			By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
+			OOGraphene.waitElementSlowly(binderPageListBy, 10, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Select portfolio entries", browser);
+			throw e;
+		}
 		return this;
 	}
 	
@@ -221,7 +231,7 @@ public class BinderPage {
 		By toolsMenuCaretBy = By.cssSelector("a.o_sel_pf_section_tools");
 		By toolsMenu = By.cssSelector("ul.o_sel_pf_section_tools");
 		browser.findElement(toolsMenuCaretBy).click();
-		OOGraphene.waitElement(toolsMenu, 5, browser);
+		OOGraphene.waitElement(toolsMenu, browser);
 		
 		By deleteBy = By.cssSelector("ul.o_sel_pf_section_tools a.o_sel_pf_delete_section");
 		browser.findElement(deleteBy).click();
@@ -298,8 +308,8 @@ public class BinderPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_assignment_form button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitTopModalDialogDisappears(browser);
+		OOGraphene.click(submitBy, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

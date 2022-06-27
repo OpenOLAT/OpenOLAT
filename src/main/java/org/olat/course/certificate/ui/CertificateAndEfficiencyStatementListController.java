@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
@@ -99,6 +97,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -126,7 +125,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private static final String CMD_CURRICULUM = "cmd.filter.curriculum.";
 	private static final String CMD_TOOLS = "cmd.tools";
 	
-	private final AtomicInteger counter = new AtomicInteger();
+	private int counter = 0;
 
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
@@ -188,6 +187,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
@@ -325,8 +325,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
+		// This column is hidden as long as no grade can be assigned in the course.
+//		if (gradeModule.isEnabled()) {
+//			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.grade));
+//		}
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));		
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
@@ -409,8 +413,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					));
 		
 		efficiencyStatementsList.forEach(statement -> {
-			if (!olatResourceKeyToStatement.containsKey(statement.getArchivedResourceKey())) {
-				olatResourceKeyToStatement.put(statement.getArchivedResourceKey(), statement);
+			if (!olatResourceKeyToStatement.containsKey(statement.getResourceKey())) {
+				olatResourceKeyToStatement.put(statement.getResourceKey(), statement);
 			} 			
 		});
 		
@@ -507,8 +511,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		
-		tableRows.sort(new FlexiTreeNodeComparator());
-		tableRows.forEach(row -> forgeToolsLinks(row));
+		tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
+		tableRows.forEach(this::forgeToolsLinks);
 		
 		tableModel.setObjects(tableRows);
 		tableModel.openAll();
@@ -541,11 +545,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				statementRow.setDisplayName(efficiencyStatement.getTitle());
 				statementRow.setPassed(efficiencyStatement.getPassed());
 				statementRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
-				statementRow.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+				statementRow.setResourceKey(efficiencyStatement.getResourceKey());
 				statementRow.setLastModified(efficiencyStatement.getLastModified());
 				statementRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				statementRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
-				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getArchivedResourceKey()));
+				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
 				
 				statementRow.setStatement(true);
 				
@@ -555,11 +559,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			for (UserEfficiencyStatementLight efficiencyStatement : efficiencyStatements) {
 				parentRow.setPassed(efficiencyStatement.getPassed());
 				parentRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
-				parentRow.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+				parentRow.setResourceKey(efficiencyStatement.getResourceKey());
 				parentRow.setLastModified(efficiencyStatement.getLastModified());
 				parentRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				parentRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
-				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getArchivedResourceKey()));
+				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
 				
 				parentRow.setStatement(true);
 			}
@@ -600,8 +604,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setDisplayName(efficiencyStatement.getTitle());
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
+			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
+					efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade(),
+					efficiencyStatement.getGradeSystemIdent()));
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
-			wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+			wrapper.setResourceKey(efficiencyStatement.getResourceKey());
 			wrapper.setLastModified(efficiencyStatement.getLastModified());
 			wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
 			Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
@@ -609,7 +616,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setStatement(true);
 			statments.add(wrapper);
 			
-			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
+			resourceKeyToStatments.put(efficiencyStatement.getResourceKey(), wrapper);
 		}
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
@@ -660,7 +667,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			statments.removeIf(statement -> coursesWithCurriculumKeys.contains(statement.getResourceKey()));
 		}
 		
-		statments.forEach(row -> forgeToolsLinks(row));
+		statments.forEach(this::forgeToolsLinks);
 		
 		tableModel.setObjects(statments);
 		tableModel.openAll();
@@ -670,7 +677,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private void forgeToolsLinks(CertificateAndEfficiencyStatementRow row) {
 		if (row.isStatement() && (canLaunchCourse || canModify)) {
-			FormLink toolsLink = uifactory.addFormLink(CMD_TOOLS + "_" + counter.incrementAndGet(), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
+			FormLink toolsLink = uifactory.addFormLink(CMD_TOOLS + "_" + (++counter), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);

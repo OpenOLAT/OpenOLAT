@@ -35,7 +35,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
-import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
@@ -115,6 +114,18 @@ public class OOGraphene {
 	public static void waitModalDialogDisappears(WebDriver browser) {
 		try {
 			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
+			new WebDriverWait(browser, driverTimeout)
+				.withTimeout(timeout).pollingEvery(poolingSlow)
+				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);
+			throw e;
+		}
+	}
+	
+	public static void waitModalDialogWithFieldsetDisappears(WebDriver browser, String fieldsetCssClass) {
+		try {
+			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//fieldset[contains(@class,'" + fieldsetCssClass + "')]");
 			new WebDriverWait(browser, driverTimeout)
 				.withTimeout(timeout).pollingEvery(poolingSlow)
 				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
@@ -444,7 +455,7 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	private static final void waitTinymce(String containerCssSelector, WebDriver browser) {
-		waitElement(By.cssSelector(containerCssSelector + " div.o_richtext_mce div.mce-edit-area>iframe"), browser);
+		waitElement(By.cssSelector(containerCssSelector + " div.o_richtext_mce div.tox-edit-area>iframe"), browser);
 	}
 
 	/**
@@ -466,13 +477,6 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static final void selectTab(String ulClass, By formBy, WebDriver browser) {
-		selectTab(ulClass, (b) -> {
-			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
-			return !chooseRepoEntry.isEmpty();
-		}, false, browser);
-	}
-	
-	public static final void selectTabSlowly(String ulClass, By formBy, WebDriver browser) {
 		selectTab(ulClass, (b) -> {
 			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
 			return !chooseRepoEntry.isEmpty();
@@ -510,7 +514,7 @@ public class OOGraphene {
 		Assert.assertTrue("Found the tab", found);
 	}
 	
-	public static final boolean selectTab(String ulClass, Predicate<WebDriver> selectTab, int start, int end, boolean slowly, WebDriver browser) {
+	private static final boolean selectTab(String ulClass, Predicate<WebDriver> selectTab, int start, int end, boolean slowly, WebDriver browser) {
 		boolean found = false;
 		
 		a_a:
@@ -520,7 +524,7 @@ public class OOGraphene {
 			String tabClass = tabEl.getAttribute("onclick");
 			if(StringHelper.containsNonWhitespace(tabClass)) {
 				tabEl.click();
-				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][@class='active']/a");
+				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][contains(@class,'active')]/a");
 				if(slowly) {
 					waitElementSlowly(activatedTabLinkBy, 10, browser);
 				} else {
@@ -771,7 +775,7 @@ public class OOGraphene {
 		closeBlueMessageWindow(browser);
 	}
 	
-	private static final void closeBlueMessageWindow(WebDriver browser) {
+	public static final void closeBlueMessageWindow(WebDriver browser) {
 		List<WebElement> closeButtons = browser.findElements(closeBlueBoxButtonBy);
 		for(WebElement closeButton:closeButtons) {
 			if(closeButton.isDisplayed()) {
@@ -783,7 +787,7 @@ public class OOGraphene {
 					} catch(Exception e2) {
 						//e.printStackTrace();
 					}
-				} catch(ElementNotVisibleException e1) {
+				} catch(Exception e1) {
 					try {
 						waitingALittleLonger();
 						clickCloseButton(browser, closeButton);
@@ -824,8 +828,8 @@ public class OOGraphene {
 		try {
 			closeButton.click();
 			waitModalDialogDisappears(browser);
-		} catch (ElementNotVisibleException e) {
-			//e.printStackTrace();
+		} catch (Exception e) {
+			log.warn("", e);
 		}
 	}
 	

@@ -136,7 +136,7 @@ public class DialogBoxController extends BasicController {
 	 * Set an optional context help link for this form. If you use a custom
 	 * template this will have no effect
 	 * 
-	 * @param url The page in confluence 
+	 * @param url The page in OpenOlat-docs 
 	 */
 	public void setContextHelp(String url) {
 		if (url == null) {

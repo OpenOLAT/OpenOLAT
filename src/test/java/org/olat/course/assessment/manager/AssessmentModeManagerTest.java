@@ -996,6 +996,55 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 			.containsAnyOf(mode);
 	}
 	
+	/**
+	 * Manual without lead time -> not in the current list
+	 */
+	@Test
+	public void findRunningAssessmentModeSearchParams() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setBegin(DateUtils.addDays(mode.getBegin(), -25));
+		((AssessmentModeImpl)mode).setBeginWithLeadTime(mode.getBegin());
+		mode.setEnd(DateUtils.addDays(mode.getEnd(), -23));
+		((AssessmentModeImpl)mode).setEndWithFollowupTime(mode.getEnd());
+		mode.setName("Running mode");
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.add(Calendar.HOUR_OF_DAY, -1);
+		mode.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 2);
+		mode.setEnd(cal.getTime());
+		mode.setTargetAudience(Target.course);
+		mode.setManualBeginEnd(true);
+		mode.setStatus(Status.assessment);
+		mode.setEndStatus(null);
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		SearchAssessmentModeParams params = new SearchAssessmentModeParams();
+		params.setRunning(Boolean.TRUE);
+	
+		List<AssessmentMode> runningModes = assessmentModeMgr.findAssessmentMode(params);
+		assertThat(runningModes)
+			.isNotNull()
+			.containsAnyOf(mode);
+		
+		// update 
+		mode.setStatus(Status.end);
+		mode.setEndStatus(EndStatus.all);
+		mode = assessmentModeMgr.merge(mode, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentMode> rModes = assessmentModeMgr.findAssessmentMode(params);
+		assertThat(rModes)
+			.isNotNull()
+			.doesNotContainSequence(mode);
+	}
+	
 	@Test
 	public void getAssessedIdentities_course_areas() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-20");

@@ -1,129 +1,8 @@
 <div id="$r.getCId()" class="o_course_run o_course_iq">
 #if ($enableScoreInfo)
 	#if($r.isNotNull($attempts) && $attempts > 0)
-		<div class="panel panel-default o_personal">
-		  	<div class="panel-heading">
-	  			<h4 class="panel-title">$r.translate("personal.title")</h4>
-	  		</div>
-			<table class="table">
-			<tbody>
-				<tr class="o_attempts">
-					<th scope="row">$r.translate("attempts.yourattempts")</th>
-					<td>
-						$attempts
-						#if ($attemptsConfig && $attemptsConfig > 0)
-							<span class="small">$r.translate("attempts.of.max", $attemptsConfig)</span>
-						#end
-					</td> 
-				</tr>
-				<tr class="o_score">
-					<th scope="row">$r.translate("score.yourscore")</th>
-					<td>
-						#if($inReview)
-							<span id="o_score_in_review" class="o_in_review">
-								<i class="o_icon o_icon-fw o_icon_warn"> </i>
-								$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
-							</span>
-							$r.mouseoverHelpTranslated("o_score_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
-						#elseif(!$resultsVisible)
-							<span id="o_score_in_release" class="o_in_release">
-								<i class="o_icon o_icon-fw o_icon_warn"> </i>
-								$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
-							</span>
-							$r.mouseoverHelpTranslated("o_score_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
-						#elseif($score)
-							$score
-						#else
-							<div class="o_noinfo">$r.translate("score.noscore")</div>
-						#end
-					</td>
-				</tr>
-				#if($showPassed)
-					<tr class="o_state #if(!$resultsVisible || $inReview)) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-						<th scope="row">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
-						<td>
-							#if($inReview)
-								<span id="o_passed_in_review" class="o_in_review">
-									<i class="o_icon o_icon-fw o_icon_warn"> </i>
-									$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
-								</span>
-								$r.mouseoverHelpTranslated("o_passed_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
-							#elseif(!$resultsVisible)
-								<span id="o_passed_in_release" class="o_in_release">
-									<i class="o_icon o_icon-fw o_icon_warn"> </i>
-									$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
-								</span>
-								$r.mouseoverHelpTranslated("o_passed_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
-							#elseif($hasPassedValue && $passed)
-								<i class="o_icon o_icon_passed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
-							#elseif($hasPassedValue && !$passed)
-								<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
-							#else
-								<div class="o_noinfo"><i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")</div>
-							#end
-						</td>
-					</tr>
-				#end
-				#if($r.available("digital.signature.download.link"))
-				<tr>
-					<th scope="row">$r.translate("digital.signature.download")</th>
-					<td>$r.render("digital.signature.download.link")
-					#if($r.isNotNull($signatureIssueDate)) $r.translate("digital.signature.download.date", $signatureIssueDate)#end</td>
-				</tr>
-				#end
-			</tbody>
-			</table>
-		</div>
-	
-		#if ($r.isNotEmpty($comment))		
-		<div class="panel panel-default o_comment">
-		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
-	  			<h4 class="panel-title">
-	  				<i id="collapseCommentsToggler" class="o_icon o_icon-fw #if($r.isTrue($incomment)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
-	  				$r.translate("comment.yourcomment")</h4>
-	  		</div>
-			<div id="collapseComment" class="panel-collapse collapse #if($r.isTrue($incomment)) in #end"><div class="panel-body">
-				$comment
-	  		</div>
-		</div></div>
-		<script>
-		jQuery('#collapseComment').on('hide.bs.collapse', function () {
-			jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-			$r.backgroundCommand("hide","panel","comment")
-		})
-		jQuery('#collapseComment').on('show.bs.collapse', function () {
-			jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-			$r.backgroundCommand("show","panel","comment")
-		})
-		</script>
-		#end
-		
-		#if ($r.isNotEmpty($docs))
-		<div class="panel panel-default o_assessment_docs">
-		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseAssessmentDocuments">
-		  		<h4 class="panel-title">
-		  			<i id="collapseAssessmentDocumentsToggler" class="o_icon o_icon-fw #if($r.isTrue($inassessmentDocuments)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
-		  			$r.translate("assessment.documents.title")
-		  		</h4>
-		  	</div>
-			<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($inassessmentDocuments)) in #end"><div class="panel-body">
-				<ul class="list-unstyled">
-				#foreach($doc in $docs)
-					<li><a href="$docsMapperUri/$doc.name" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
-				#end
-				</ul>
-	  		</div></div>
-		</div>
-		<script>
-		jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
-			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-			$r.backgroundCommand("hide","panel","assessmentDocuments")
-		})
-		jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
-			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-			$r.backgroundCommand("show","panel","assessmentDocuments")
-		})
-		</script>
+		#if($r.available("assessment"))
+			$r.render("assessment")
 		#end
 	#else
 		<div class="o_no_scoreinfo">
@@ -194,6 +73,9 @@
 	#if($infobox)	
 		#if($type == "test")
 		<div class="o_note">
+			#if($r.visible("assessment.messages"))
+				$r.render("assessment.messages")
+			#end
 			<p>$r.translate("Intro.test")</p>
 			<p>$r.translate("info.assessment")</p>
 			#if($r.isNotNull($startDateMessage))

@@ -72,6 +72,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		  .append("  slide: function(event, ui) {\n")
 		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n")
 		  .append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
+		  .append("    o_info.lastFormFocusEl='").append(formDispatchFieldId).append("';")
 		  .append("  },\n")
 		  .append("  stop: function(event, ui) {\n")
 		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n");
@@ -79,6 +80,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 			sb.append("    ").append(FormJSHelper.getJSFnCallFor(sel.getRootForm(), sec.getFormDispatchId(), 2)).append(";\n");
 		}
 		sb.append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
+		  .append("    o_info.lastFormFocusEl='").append(formDispatchFieldId).append("';")
 		  .append("  }\n")
 		  .append(" })");
 		if(!sec.isEnabled()) {

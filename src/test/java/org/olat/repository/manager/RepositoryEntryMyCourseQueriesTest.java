@@ -19,31 +19,45 @@
  */
 package org.olat.repository.manager;
 
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.data.Offset;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +84,16 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private RepositoryEntryMyCourseQueries repositoryEntryMyCourseViewQueries;
-
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private OrganisationService organisationService;
+	
+	@Before
+	@After
+	public void setUp() {
+		acService.enableMethod(FreeAccessMethod.class, true);
+	}
 	@Test
 	public void searchViews() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-1-");
@@ -138,10 +161,10 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_membershipMandatory() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-3-");
 		RepositoryEntry reMember = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reMember, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(reMember, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, reMember, GroupRoles.participant.name());
 		RepositoryEntry reNotMember = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotMember, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(reNotMember, RepositoryEntryStatusEnum.published);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -160,10 +183,10 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_idAndRefs() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-3-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		RepositoryEntry otherRe = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(otherRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(otherRe, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -182,10 +205,10 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_resourceTypes() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-3-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		RepositoryEntry otherRe = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(otherRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(otherRe, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, otherRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -209,27 +232,6 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	}
 	
 	/**
-	 * Check the visibility of entries with the published and flags all users / guests
-	 * set.
-	 */
-	@Test
-	public void searchViews_asUsers() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-4-");
-		RepositoryEntry reNotAllUsers = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotAllUsers, RepositoryEntryStatusEnum.published, false, false);
-		RepositoryEntry reAllUsers = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reAllUsers, RepositoryEntryStatusEnum.published, true, true);
-		
-		dbInstance.commitAndCloseSession();
-		
-		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
-		
-		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(reAllUsers, views));
-		Assert.assertFalse(contains(reNotAllUsers, views));
-	}
-	
-	/**
 	 * Check the visibility of entries as a simple user.
 	 */
 	@Test
@@ -238,19 +240,19 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
+		repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -260,8 +262,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		Assert.assertFalse(contains(rePreparation, views));
 		Assert.assertFalse(contains(reReview, views));
 		Assert.assertFalse(contains(reCoachPublished, views));
-		Assert.assertTrue(contains(rePublished, views));
-		Assert.assertTrue(contains(reClosed, views));
+		Assert.assertFalse(contains(rePublished, views));
+		Assert.assertFalse(contains(reClosed, views));
 		Assert.assertFalse(contains(reTrash, views));
 		Assert.assertFalse(contains(reDeleted, views));
 	}
@@ -275,25 +277,25 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryRelationDao.addRole(id, rePreparation, GroupRoles.participant.name());
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, false, false);
+		repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		repositoryEntryRelationDao.addRole(id, reReview, GroupRoles.participant.name());
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, false, false);
+		repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		repositoryEntryRelationDao.addRole(id, reCoachPublished, GroupRoles.participant.name());
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, rePublished, GroupRoles.participant.name());
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, false, false);
+		repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		repositoryEntryRelationDao.addRole(id, reClosed, GroupRoles.participant.name());
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, false, false);
+		repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		repositoryEntryRelationDao.addRole(id, reTrash, GroupRoles.participant.name());
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, false, false);
+		repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		repositoryEntryRelationDao.addRole(id, reDeleted, GroupRoles.participant.name());
 		
 		dbInstance.commitAndCloseSession();
@@ -303,9 +305,9 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		params.setMembershipMandatory(true);
 		
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertFalse(contains(reReview, views));
-		Assert.assertFalse(contains(reCoachPublished, views));
+		Assert.assertTrue(contains(rePreparation, views));
+		Assert.assertTrue(contains(reReview, views));
+		Assert.assertTrue(contains(reCoachPublished, views));
 		Assert.assertTrue(contains(rePublished, views));
 		Assert.assertTrue(contains(reClosed, views));
 		Assert.assertFalse(contains(reTrash, views));
@@ -315,9 +317,9 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		SearchMyRepositoryEntryViewParams paramsForAll = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
 
 		List<RepositoryEntryMyView> viewsForAll = repositoryEntryMyCourseViewQueries.searchViews(paramsForAll, 0, -1);
-		Assert.assertFalse(contains(rePreparation, viewsForAll));
-		Assert.assertFalse(contains(reReview, viewsForAll));
-		Assert.assertFalse(contains(reCoachPublished, viewsForAll));
+		Assert.assertTrue(contains(rePreparation, viewsForAll));
+		Assert.assertTrue(contains(reReview, viewsForAll));
+		Assert.assertTrue(contains(reCoachPublished, viewsForAll));
 		Assert.assertTrue(contains(rePublished, viewsForAll));
 		Assert.assertTrue(contains(reClosed, viewsForAll));
 		Assert.assertFalse(contains(reTrash, viewsForAll));
@@ -333,25 +335,26 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		repositoryEntryRelationDao.addRole(id, rePreparation, GroupRoles.coach.name());
+		repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, reReview, GroupRoles.coach.name());
-		repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, reCoachPublished, GroupRoles.coach.name());
-		repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, rePublished, GroupRoles.coach.name());
-		repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, reClosed, GroupRoles.coach.name());
-		repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id, reTrash, GroupRoles.coach.name());
-		repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
 		repositoryEntryRelationDao.addRole(id, reDeleted, GroupRoles.coach.name());
+		repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -360,8 +363,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		params.setMembershipMandatory(true);
 		
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertFalse(contains(reReview, views));
+		Assert.assertTrue(contains(rePreparation, views));
+		Assert.assertTrue(contains(reReview, views));
 		Assert.assertTrue(contains(reCoachPublished, views));
 		Assert.assertTrue(contains(rePublished, views));
 		Assert.assertTrue(contains(reClosed, views));
@@ -372,8 +375,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		SearchMyRepositoryEntryViewParams paramsForAll = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
 
 		List<RepositoryEntryMyView> viewsForAll = repositoryEntryMyCourseViewQueries.searchViews(paramsForAll, 0, -1);
-		Assert.assertFalse(contains(rePreparation, viewsForAll));
-		Assert.assertFalse(contains(reReview, viewsForAll));
+		Assert.assertTrue(contains(rePreparation, viewsForAll));
+		Assert.assertTrue(contains(reReview, viewsForAll));
 		Assert.assertTrue(contains(reCoachPublished, viewsForAll));
 		Assert.assertTrue(contains(rePublished, viewsForAll));
 		Assert.assertTrue(contains(reClosed, viewsForAll));
@@ -388,16 +391,16 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_review_asCoaches() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-7-");
 		RepositoryEntry reNotCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotCoach, RepositoryEntryStatusEnum.review, false, false);
+		repositoryManager.setStatus(reNotCoach, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoach, RepositoryEntryStatusEnum.review, false, false);
+		repositoryManager.setStatus(reCoach, RepositoryEntryStatusEnum.review);
 		repositoryEntryRelationDao.addRole(id, reCoach, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
 		
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(reCoach, views));
+		Assert.assertTrue(contains(reCoach, views));
 		Assert.assertFalse(contains(reNotCoach, views));
 	}
 	
@@ -408,9 +411,9 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_coachPublished_asCoaches() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-8-");
 		RepositoryEntry reNotCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotCoach, RepositoryEntryStatusEnum.coachpublished, false, false);
+		repositoryManager.setStatus(reNotCoach, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry reCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoach, RepositoryEntryStatusEnum.coachpublished, false, false);
+		repositoryManager.setStatus(reCoach, RepositoryEntryStatusEnum.coachpublished);
 		repositoryEntryRelationDao.addRole(id, reCoach, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -428,9 +431,9 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_published_asCoaches() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-9-");
 		RepositoryEntry reNotCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotCoach, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(reNotCoach, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoach, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(reCoach, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, reCoach, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -448,9 +451,9 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_closed_asCoaches() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-10-");
 		RepositoryEntry reNotCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotCoach, RepositoryEntryStatusEnum.closed, false, false);
+		repositoryManager.setStatus(reNotCoach, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoach, RepositoryEntryStatusEnum.closed, false, false);
+		repositoryManager.setStatus(reCoach, RepositoryEntryStatusEnum.closed);
 		repositoryEntryRelationDao.addRole(id, reCoach, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -468,9 +471,9 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	public void searchViews_trash_asCoaches() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-10-");
 		RepositoryEntry reNotCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotCoach, RepositoryEntryStatusEnum.trash, false, false);
+		repositoryManager.setStatus(reNotCoach, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reCoach = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reCoach, RepositoryEntryStatusEnum.trash, false, false);
+		repositoryManager.setStatus(reCoach, RepositoryEntryStatusEnum.trash);
 		repositoryEntryRelationDao.addRole(id, reCoach, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -482,10 +485,305 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void searchViews_offer_bookable() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		
+		// Not bookable
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setStatus(re,  RepositoryEntryStatusEnum.published);
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		Offer offer = acService.createOffer(re.getOlatResource(), random());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
+		acService.saveOfferAccess(offerAccess);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).isEmpty();
+		
+		// Bookable
+		re = repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(re.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_status() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Date now = new Date();
+		Date inPast = DateUtils.addDays(now, -2);
+		Date inFuture = DateUtils.addDays(now, 2);
+		
+		// Offer without date has to be published
+		RepositoryEntry rePreparation = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.preparation, inPast, inFuture);
+		RepositoryEntry reReview = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.review, inPast, inFuture);
+		RepositoryEntry reCoachPublished = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.coachpublished, inPast, inFuture);
+		RepositoryEntry rePublished = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.closed, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.trash, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.deleted, inPast, inFuture);
+		// Offer with date has to be prepared to published
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.preparation, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.review, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.coachpublished, null, null);
+		RepositoryEntry rePublishedNoDates = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.closed, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.trash, null, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.deleted, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(now);
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(
+				rePreparation.getKey(),
+				reReview.getKey(),
+				reCoachPublished.getKey(),
+				rePublished.getKey(),
+				rePublishedNoDates.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_organisation() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		
+		RepositoryEntry reOfferOrg1 = createReOffer(method, reOrgs, singletonList(organisation1), RepositoryEntryStatusEnum.published, null, null);
+		RepositoryEntry reOfferOrg2 = createReOffer(method, reOrgs, singletonList(organisation2), RepositoryEntryStatusEnum.published, null, null);
+		createReOffer(method, reOrgs, singletonList(otherOganisation), RepositoryEntryStatusEnum.published, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(List.of(organisation1, organisation2));
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(
+				reOfferOrg1.getKey(),
+				reOfferOrg2.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_period() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Date now = new Date();
+		Date inPast = DateUtils.addDays(now, -2);
+		Date inFuture = DateUtils.addDays(now, 2);
+		
+		RepositoryEntry reNoDates = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
+		RepositoryEntry reFromInPast = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inFuture, null);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, inPast);
+		RepositoryEntry reToInFuture = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, DateUtils.addDays(inPast, -2), inPast);
+		RepositoryEntry reToInRange = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, inFuture);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inFuture, DateUtils.addDays(inFuture, 2));
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(now);
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(
+				reNoDates.getKey(),
+				reFromInPast.getKey(),
+				reToInFuture.getKey(),
+				reToInRange.getKey());
+	}
+	
+	@Test
+	public void searchViews_offer_method() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		RepositoryEntry re = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		// Method enabled
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(re.getKey());
+		
+		// Method disabled
+		acService.enableMethod(FreeAccessMethod.class, false);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).isEmpty();
+		
+		// Method enabled
+		acService.enableMethod(FreeAccessMethod.class, true);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(re.getKey());
+	}
+	
+	private RepositoryEntry createReOffer(AccessMethod method, List<Organisation> reOrgs,
+			List<Organisation> offerOrganisations, RepositoryEntryStatusEnum status, Date validFrom, Date validTo) {
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
+		rePreparation = repositoryManager.setStatus(rePreparation, status);
+		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
+		offer.setValidFrom(validFrom);
+		offer.setValidTo(validTo);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
+		acService.saveOfferAccess(offerAccess);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		return rePreparation;
+	}
+	
+	@Test
+	public void searchViews_openaccess() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		dbInstance.commitAndCloseSession();
+		
+		// Open access enabled, repository entry public visible, status published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
+		offer.setOpenAccess(true);
+		offer = acService.save(offer);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).contains(repositoryEntry.getKey());
+		
+		// repository entry not public visible
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).doesNotContain(repositoryEntry.getKey());
+		
+		// repository entry not published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).doesNotContain(repositoryEntry.getKey());
+
+		// Open access not enabled
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		offer.setOpenAccess(false);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).doesNotContain(repositoryEntry.getKey());
+	}
+	
+	@Test
+	public void searchViews_openaccess_organisations() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		
+		RepositoryEntry reOfferOrg1 = createReOpenAccess(reOrgs, singletonList(organisation1));
+		RepositoryEntry reOfferOrg2 = createReOpenAccess(reOrgs, singletonList(organisation2));
+		createReOpenAccess(reOrgs, singletonList(otherOganisation));
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(List.of(organisation1, organisation2));
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactlyInAnyOrder(
+				reOfferOrg1.getKey(),
+				reOfferOrg2.getKey());
+	}
+	
+	private RepositoryEntry createReOpenAccess(List<Organisation> reOrgs, List<Organisation> offerOrganisations) {
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.published);
+		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, reOrgs);
+		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
+		offer.setOpenAccess(true);
+		offer = acService.save(offer);
+		acService.updateOfferOrganisations(offer, offerOrganisations);
+		return rePreparation;
+	}
+	
+	@Test
+	public void searchViews_guest() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		// Guest enabled, repository entry public visible, status published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
+		offer.setGuestAccess(true);
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.guestRoles());
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).contains(repositoryEntry.getKey());
+		
+		// repository entry not public visible
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).doesNotContain(repositoryEntry.getKey());
+		
+		// repository entry not published
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, null);
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).doesNotContain(repositoryEntry.getKey());
+
+		// guest not enabled
+		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
+		offer.setGuestAccess(false);
+		dbInstance.commitAndCloseSession();
+		
+		views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).doesNotContain(repositoryEntry.getKey());
+	}
+	
+	@Test
 	public void searchViews_assessment_values() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-11-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		
 		AssessmentEntry rootAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.TRUE, null);

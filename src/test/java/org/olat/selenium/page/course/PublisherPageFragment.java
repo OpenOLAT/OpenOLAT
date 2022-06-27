@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.UserAccess;
 import org.openqa.selenium.By;
@@ -59,13 +60,13 @@ public class PublisherPageFragment {
 	}
 
 	public void quickPublish() {
-		quickPublish(UserAccess.guest);
+		quickPublish(UserAccess.registred);
 	}
 	
 	public void quickPublish(UserAccess access) {
 		assertOnPublisher()
 			.nextSelectNodes()
-			.selectAccess(access)
+			.selectAccess(access, false)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found
@@ -100,42 +101,50 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
-	public PublisherPageFragment selectAccess(UserAccess access) {
+	/**
+	 * Configure access. Make the offer configuration for registered and
+	 * guest, catalog only implemented for guest.
+	 * 
+	 * @param access Type of access
+	 * @param catalog Web publishing for guest access
+	 * @return Itself
+	 */
+	public PublisherPageFragment selectAccess(UserAccess access, boolean catalog) {
 		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
 		OOGraphene.scrollTo(publishStatusBy, browser);
 		WebElement publishStatusEl = browser.findElement(publishStatusBy);
 		Select publishStatusSelect = new Select(publishStatusEl);
 		publishStatusSelect.selectByValue("published");
+		OOGraphene.waitBusy(browser);
 
-		if(access == UserAccess.registred || access == UserAccess.guest) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='shared']");
-			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-			
-			By guestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label[input[@name='entry.access.guest' and @value='on']]");
-			OOGraphene.waitElement(guestsBy, browser);
-			
-			if(access == UserAccess.guest) {
-				WebElement guestsEl = browser.findElement(guestsBy);
-				OOGraphene.check(guestsEl, Boolean.TRUE);
-			}
-		} else if(access == UserAccess.membersOnly) {
+		if(access == UserAccess.membersOnly) {
 			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
 			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
-		} else if(access == UserAccess.booking) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
+		} else if(access == UserAccess.booking || access == UserAccess.registred || access == UserAccess.guest) {
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='public']");
+			OOGraphene.waitElement(allUsersBy, browser);
 			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-			
 			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
 			OOGraphene.waitElement(accessConfigurationBy, browser);
 		}
+		
+		if(access == UserAccess.registred) {
+			new BookingPage(browser)
+				.addOpenAsFirstMethod()
+				.configureOpenMethod("Hello");
+		} else if(access == UserAccess.guest) {
+			new BookingPage(browser)
+				.openAddDropMenu()
+				.addGuestMethod()
+				.configureGuestMethod("Hello", catalog);
+		}
+		
 		return this;
 	}
 	
 	public PublisherPageFragment selectCatalog(boolean access) {
-		OOGraphene.waitElement(selectCatalogYesNoBy, 5, browser);
+		OOGraphene.waitElement(selectCatalogYesNoBy, browser);
 		WebElement select = browser.findElement(selectCatalogYesNoBy);
 		new Select(select).selectByValue(access ? "yes" : "no");
 		OOGraphene.waitBusy(browser);
@@ -154,8 +163,7 @@ public class PublisherPageFragment {
 		selectCatalogNode(title);
 		
 		By selectBy = By.cssSelector(".o_sel_catalog_chooser_tree a.o_sel_catalog_add_select");
-		WebElement selectButton = browser.findElement(selectBy);
-		selectButton.click();
+		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

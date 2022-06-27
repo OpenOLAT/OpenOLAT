@@ -53,7 +53,7 @@ public class FlexiSortController extends FormBasicController {
 			FlexiTableElementImpl tableEl, SortKey selectedSortKey) {
 		super(ureq, wControl, "sort_setting");
 		this.tableEl = tableEl;
-		this.selectedSortKey = selectedSortKey;
+		this.selectedSortKey = (selectedSortKey == null || selectedSortKey.getKey() == null) ? null : selectedSortKey;
 		initForm(ureq);
 	}
 

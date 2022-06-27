@@ -180,20 +180,33 @@ public class EssayAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		extendedTextInteraction.setMaxStrings(maxStrings);
 	}
 	
+	public boolean isRichTextFormating() {
+		List<String> classes = extendedTextInteraction.getClassAttr();
+		return classes != null && classes.contains(QTI21Constants.CSS_ESSAY_RICHTEXT);
+	}
+	
+	public void setRichTextFormating(boolean enabled) {
+		enableClassFeature(enabled, QTI21Constants.CSS_ESSAY_RICHTEXT);
+	}
+	
 	public boolean isCopyPasteDisabled() {
 		List<String> classes = extendedTextInteraction.getClassAttr();
 		return classes != null && classes.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
 	}
 
 	public void setCopyPasteDisabled(boolean copyPasteDisabled) {
+		enableClassFeature(copyPasteDisabled, QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+	}
+	
+	private void enableClassFeature(boolean enable, String feature) {
 		List<String> cssClassses = extendedTextInteraction.getClassAttr();
 		cssClassses = cssClassses == null ? new ArrayList<>() : new ArrayList<>(cssClassses);
-		if(copyPasteDisabled) {
-			if(!cssClassses.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE)) {
-				cssClassses.add(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+		if(enable) {
+			if(!cssClassses.contains(feature)) {
+				cssClassses.add(feature);
 			}
 		} else {
-			cssClassses.remove(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+			cssClassses.remove(feature);
 		}
 		extendedTextInteraction.setClassAttr(cssClassses);
 	}

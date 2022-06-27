@@ -74,11 +74,14 @@ public class AssessmentCEConfigurationPage {
 		WebElement cutValEl = browser.findElement(cutValBy);
 		cutValEl.clear();
 		cutValEl.sendKeys(Float.toString(cutVal));
-		
+		return this;
+	}
+	
+	public AssessmentCEConfigurationPage saveAssessmentOptions() {
 		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
-		OOGraphene.scrollTop(browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	

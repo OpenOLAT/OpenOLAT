@@ -34,12 +34,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
@@ -55,16 +54,10 @@ import org.olat.core.gui.dev.controller.DevelopmentController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.intercept.InterceptHandler;
-import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.render.intercept.debug.GuiDebugDispatcherController;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.ui.I18nUIFactory;
-import org.olat.core.util.i18n.ui.InlineTranslationInterceptHandlerController;
 
 /**
  * Description:<br>
@@ -83,13 +76,10 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	private WindowSettings settings;
 	private final ChiefController windowOwner;
 	
-	private InterceptHandler linkedInterceptHandler;
-	private InterceptHandler debug_interceptHandler;
-	private InterceptHandler inlineTranslation_interceptHandler;
-	
 	private AjaxController ajaxC;
+	
 	private GuiDebugDispatcherController guidebugC;
-	private InlineTranslationInterceptHandlerController inlineTranslationC;
+	private InterceptHandler debugInterceptHandler;
 	
 	private List<ZIndexWrapper> guiMessages = new ArrayList<>(); // request-transient render-related data
 	
@@ -100,33 +90,8 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		this.windowOwner = windowOwner;
 		window = new Window(windowName, csrfToken, this);
 		this.settings = settings;
-
-		linkedInterceptHandler = new InterceptHandler() {
-			@Override
-			public InterceptHandlerInstance createInterceptHandlerInstance() {
-				InterceptHandler debugH = debug_interceptHandler;
-				InterceptHandler inlineTranslationH = inlineTranslation_interceptHandler;
-				final InterceptHandlerInstance debugI = debugH == null? null: debugH.createInterceptHandlerInstance(); 
-				final InterceptHandlerInstance inlineTranslationI = (inlineTranslationH == null ? null : inlineTranslationH.createInterceptHandlerInstance());
-				return new InterceptHandlerInstance() {
-					@Override
-					public ComponentRenderer createInterceptComponentRenderer(ComponentRenderer originalRenderer) {
-						ComponentRenderer toUse = originalRenderer;
-
-						if (winmgrImpl.isShowDebugInfo() && debugI != null) {
-							toUse = debugI.createInterceptComponentRenderer(toUse);
-						}
-						if (I18nManager.getInstance().isCurrentThreadMarkLocalizedStringsEnabled() && inlineTranslationI != null) {
-							toUse = inlineTranslationI.createInterceptComponentRenderer(toUse);
-						}
-						return toUse;
-					}};
-			}};
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#getWindow()
-	 */
 	@Override
 	public Window getWindow() {
 		return window;
@@ -137,17 +102,11 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		return windowOwner;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#createDevelopmentController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createDevelopmentController(UserRequest ureq, WindowControl windowControl) {
 		return new DevelopmentController(ureq, windowControl,this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#getGlobalSettings()
-	 */
 	@Override
 	public GlobalSettings getGlobalSettings() {
 		return winmgrImpl.getGlobalSettings();
@@ -211,7 +170,10 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 * @return
 	 */
 	public InterceptHandler getInterceptHandler() {
-		return linkedInterceptHandler;
+		if(debugInterceptHandler != null && winmgrImpl.isShowDebugInfo()) {
+			return debugInterceptHandler; 
+		}
+		return null;
 	}
 
 	/**
@@ -219,26 +181,11 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 * @param windowControl
 	 * @return the debug controller (not visible on screen, only in debug mode it wraps around each component for dispatching of gui debug info)
 	 */
+	@Override
 	public Controller createDebugDispatcherController(UserRequest ureq, WindowControl windowControl) {
 		guidebugC = new GuiDebugDispatcherController(ureq, windowControl);
-		this.debug_interceptHandler  = guidebugC;
+		this.debugInterceptHandler  = guidebugC;
 		return guidebugC;
-	}
-
-	/**
-	 * Factory method to create the inline translation tool dispatcher controller.
-	 * This implicitly sets the translation controller on the window back office
-	 * 
-	 * @param ureq
-	 * @param windowControl
-	 * @return
-	 */
-	@Override
-	public Controller createInlineTranslationDispatcherController(UserRequest ureq, WindowControl windowControl) {
-		if (inlineTranslationC != null) throw new AssertException("Can't set the inline translation dispatcher twice!", null);
-		inlineTranslationC = I18nUIFactory.createInlineTranslationIntercepHandlerController(ureq, windowControl);
-		this.inlineTranslation_interceptHandler  = inlineTranslationC;
-		return inlineTranslationC;
 	}
 
 	@Override
@@ -248,16 +195,9 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		return ajaxC;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#isDebuging()
-	 */
 	@Override
 	public boolean isDebuging() {
 		return Settings.isDebuging();
-	}
-
-	public WindowManagerImpl getWinmgrImpl() {
-		return winmgrImpl;
 	}
 
 	@Override
@@ -268,40 +208,25 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		}
 	}
 
-	/**
-	 * @param enabled
-	 */
 	public void setAjaxEnabled(boolean enabled) {
 		if (ajaxC != null) ajaxC.setAjaxEnabled(enabled);
 	}
 
-	/**
-	 * @param refreshInterval
-	 */
 	public void setRequiredRefreshInterval(int refreshInterval) {
 		if (ajaxC != null) ajaxC.setPollPeriod(refreshInterval);
 	}
 
-	/**
-	 * @param showDebugInfo
-	 */
 	public void setShowDebugInfo(boolean showDebugInfo) {
 		if (guidebugC != null) {
 			guidebugC.setShowDebugInfo(showDebugInfo);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#getWindowManager()
-	 */
+
 	@Override
-	public WindowManager getWindowManager() {
+	public WindowManagerImpl getWindowManager() {
 		return winmgrImpl;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#createGuiStack(org.olat.core.gui.components.Component)
-	 */
 	@Override
 	public GuiStack createGuiStack(Component initialComponent) {
 		return new GuiStackNiceImpl(this, initialComponent);

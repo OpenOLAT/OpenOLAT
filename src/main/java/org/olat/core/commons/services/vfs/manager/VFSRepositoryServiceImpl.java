@@ -1252,42 +1252,44 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	 */
 	@Override
 	public License getLicense(VFSMetadata meta) {
-		License license = null;
-		boolean hasLicense = meta != null && StringHelper.containsNonWhitespace(meta.getLicenseTypeName());
-		if (hasLicense) { 
-			String licenseTypeName = meta.getLicenseTypeName();
-			LicenseType licenseType = null;
-			if(meta.getLicenseType() != null) {
-				licenseType = meta.getLicenseType();
-			} else {
-				licenseType = licenseService.loadLicenseTypeByName(licenseTypeName);
-			}
-			if (licenseType == null) {
-				licenseType = licenseService.createLicenseType(licenseTypeName);
-				licenseType.setText(meta.getLicenseText());
-				licenseService.saveLicenseType(licenseType);
-			}
-			license = licenseService.createLicense(licenseType);
-			license.setLicensor(meta.getLicensor());
-			if (licenseService.isFreetext(licenseType)) {
-				license.setFreetext(meta.getLicenseText());
-			}
+		if (meta == null || meta.isDirectory() || !StringHelper.containsNonWhitespace(meta.getLicenseTypeName())) {
+			return null;
+		}
+		
+		String licenseTypeName = meta.getLicenseTypeName();
+		LicenseType licenseType = null;
+		if(meta.getLicenseType() != null) {
+			licenseType = meta.getLicenseType();
+		} else {
+			licenseType = licenseService.loadLicenseTypeByName(licenseTypeName);
+		}
+		if (licenseType == null) {
+			licenseType = licenseService.createLicenseType(licenseTypeName);
+			licenseType.setText(meta.getLicenseText());
+			licenseService.saveLicenseType(licenseType);
+		}
+		License license = licenseService.createLicense(licenseType);
+		license.setLicensor(meta.getLicensor());
+		if (licenseService.isFreetext(licenseType)) {
+			license.setFreetext(meta.getLicenseText());
 		}
 		return license;
 	}
 	
 	/**
-	 * Get the license of the MetaInfo or create a new default license:
+	 * Get the license of the MetaInfo or create a new default license.
 	 *
 	 * @param meta
-	 * @param itentity the current user
-	 * @return
+	 * @param identity the current user
+	 * @return the license
 	 */
 	@Override
-	public License getOrCreateLicense(VFSMetadata meta, Identity itentity) {
+	public License getOrCreateLicense(VFSMetadata meta, Identity identity) {
+		if (meta != null && meta.isDirectory()) return null;
+		
 		License license = getLicense(meta);
 		if (license == null) {
-			license = licenseService.createDefaultLicense(licenseHandler, itentity);
+			license = licenseService.createDefaultLicense(licenseHandler, identity);
 		}
 		return license;
 	}

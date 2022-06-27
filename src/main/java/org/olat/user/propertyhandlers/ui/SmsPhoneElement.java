@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.ChiefController;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.id.User;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
@@ -56,7 +58,6 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	private final SmsPhoneComponent component;
 	
 	private String phone;
-	private boolean forceFormDirty;
 	private boolean hasChanged = false;
 	private final User editedUser;
 	private final UserPropertyHandler handler;
@@ -94,12 +95,6 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	public FormLink getRemoveLink() {
 		return removeLink;
 	}
-	
-	public boolean getAndResetFormDirty() {
-		boolean ffd = forceFormDirty;
-		forceFormDirty = false;
-		return ffd;
-	}
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
@@ -110,8 +105,9 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				setPhone(smsPhoneCtrl.getPhone());
 				hasChanged = true;
-				forceFormDirty = true;
 				component.setDirty(true);
+				Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+				smsPhoneCtrl.getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
 			}
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -195,7 +191,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 			
 			String propLabel = CoreSpringFactory.getImpl(UserManager.class)
 					.getPropertyHandlerTranslator(getTranslator()).translate(handler.i18nFormElementLabelKey());
-			String title = getTranslator().translate("sms.title", new String[] { propLabel });
+			String title = getTranslator().translate("sms.title", propLabel);
 			cmc = new CloseableModalController(wControl, "close", smsPhoneCtrl.getInitialComponent(), true, title);
 			cmc.suppressDirtyFormWarningOnClose();
 			cmc.activate();

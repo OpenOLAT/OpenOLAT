@@ -60,6 +60,11 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 	}
 
 	@Override
+	public void setForPrint(boolean forPrint) {
+		super.setForPrint(forPrint);
+	}
+
+	@Override
 	public void open(UserRequest ureq) {
 		ureq.getDispatchResult().setResultingWindow(getWindowControl().getWindowBackOffice().getWindow());
 	}

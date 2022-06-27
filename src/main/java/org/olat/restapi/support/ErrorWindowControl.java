@@ -68,6 +68,16 @@ public class ErrorWindowControl implements WindowControl {
 
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {/* */}
+	
+	@Override
+	public void addInstanteMessagePanel(Component comp) {
+		//
+	}
+
+	@Override
+	public boolean removeInstanteMessagePanel(Component comp) {
+		return false;
+	}
 
 	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {/* */}

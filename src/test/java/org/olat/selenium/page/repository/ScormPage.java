@@ -97,8 +97,8 @@ public class ScormPage {
 	 * @return Itself
 	 */
 	public ScormPage assertOnScormPassed() {
-		By notPassedBy = By.cssSelector("div.o_personal tr.o_state.o_passed ");
-		OOGraphene.waitElement(notPassedBy, 5, browser);
+		By passedBy = By.cssSelector("div.o_personal div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
 	

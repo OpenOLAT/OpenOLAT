@@ -31,6 +31,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.catalog.ui.CatalogRepositoryEntryRow;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.catalog.CatalogEntryRow;
@@ -68,17 +69,15 @@ public class ACRenderer implements FlexiCellRenderer {
 				try(StringOutput methodsSb = new StringOutput()) {
 					renderPriceMethods(renderer, methodsSb, entry.getAccessTypes());
 					sb.append(methodsSb);
-					if (methodsSb.length() == 0 && entry.isAllUsers()) {
-						sb.append(" <span class='o_small text-muted'>");
-						sb.append(translator.translate("table.allusers"));
-						sb.append("</span>");
-					}
 				} catch(IOException e) {
 					log.error("", e);
 				}
 			}
 		} else if (val instanceof CatalogEntryRow) {
 			CatalogEntryRow entry = (CatalogEntryRow)val;
+			renderPriceMethods(renderer, sb, entry.getAccessTypes());
+		} else if (val instanceof CatalogRepositoryEntryRow) {
+			CatalogRepositoryEntryRow entry = (CatalogRepositoryEntryRow)val;
 			renderPriceMethods(renderer, sb, entry.getAccessTypes());
 		}
 		sb.append("</div>");

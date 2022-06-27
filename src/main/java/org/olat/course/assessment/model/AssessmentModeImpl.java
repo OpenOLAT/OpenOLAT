@@ -87,6 +87,11 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@Column(name="a_external_id", nullable=true, insertable=true, updatable=true)
+	private String externalId;
+	@Column(name="a_managed_flags", nullable=true, insertable=true, updatable=true)
+	private String managedFlagsString;
 
 	@Column(name="a_name", nullable=true, insertable=true, updatable=true)
 	private String name;
@@ -542,6 +547,31 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Override
 	public void setApplySettingsForCoach(boolean applySettingsForCoach) {
 		this.applySettingsForCoach = applySettingsForCoach;
+	}
+
+	@Override
+	public String getExternalId() {
+		return externalId;
+	}
+
+	@Override
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	@Override
+	public String getManagedFlagsString() {
+		return managedFlagsString;
+	}
+
+	@Override
+	public void setManagedFlagsString(String managedFlagsString) {
+		this.managedFlagsString = managedFlagsString;
+	}
+
+	@Override
+	public AssessmentModeManagedFlag[] getManagedFlags() {
+		return AssessmentModeManagedFlag.toEnum(managedFlagsString);
 	}
 
 	@Override

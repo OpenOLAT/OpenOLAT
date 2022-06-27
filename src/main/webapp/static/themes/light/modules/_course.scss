@@ -110,6 +110,9 @@
 			min-height: $o-cn-style-image-height;
 		}
 	}
+	.o_text_block {
+		@include clearfix; 
+	}	
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.
 			Otherwise the hole line has the background color.
@@ -520,6 +523,14 @@
 .o_noinfo {
 	color: $text-muted;
 }
+.o_passed_cell {
+	&.o_cell_passed {
+		color: $o-course-state-passed-color;
+	}
+	&.o_cell_failed {
+		color: $o-course-state-failed-color;
+	}
+}
 .o_assessment_stats {
 	.o_overview {
 		display: flex;
@@ -590,12 +601,22 @@
 		}	
 	}
 }
+.o_assessment_grade_stats {
+	.o_stats {
+		display: flex;
+		>div {
+			width: 50%;
+		}
+		.o_chart {
+			padding: 10px;
+		}
+	}
+}
 #o_assessment_tool_main {
 	.o_chelp_wrapper {
 		margin-bottom: 0;
 	}
 }
-
 
 .o_labeled_light {
 	&.o_results_visible {
@@ -628,17 +649,15 @@
 	.o_table_part {
 		background-color: $o-course-assessment-table-part-bg-color;
 	}
-	a.o_button_results_visible,
-	button.o_button_results_visible.btn-default.dropdown-toggle {
-		border-color: 		$o-course-results-visible-color;
-		color: 				$o-course-results-visible-color;
-		background-color: 	$o-course-results-visible-bg-color;
-	}
-	a.o_button_results_hidden,
-	button.o_button_results_hidden.btn-default.dropdown-toggle {
-		border-color: 		$o-course-results-hidden-color;
-		color: 				$o-course-results-hidden-color;
-		background-color: 	$o-course-results-hidden-bg-color;
+}
+
+.o_personal {
+	.panel-heading {
+		display: flex;
+		align-items: center;
+		:nth-child(2) {
+			margin-left: auto;
+		}
 	}
 }
 
@@ -657,10 +676,6 @@
 	}	
 	.o_no_scoreinfo {
 		@extend %o_important;
-	}
-	.o_in_review, .o_in_release {
-		font-style: italic;
-		position: relative;
 	}
 	
 	@if not $o-course-show-icon-title {

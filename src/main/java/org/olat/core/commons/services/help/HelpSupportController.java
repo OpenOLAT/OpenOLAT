@@ -63,7 +63,7 @@ public class HelpSupportController extends BasicController implements GenericEve
 		contactEmail = helpModule.getSupportEmail();
 
 		ContactMessage contactMessage = new ContactMessage(ureq.getIdentity());
-		ContactList contactList = new ContactList(translate("contact.to"));
+		ContactList contactList = new ContactList(contactEmail);
 
 		contactList.add(contactEmail);
 		contactMessage.addEmailTo(contactList);

@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool.tools;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NavigableSet;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,10 +34,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.CourseNode;
@@ -47,6 +53,11 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,12 +76,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractToolsController extends BasicController {
 	
-	private Link detailsLink, setDoneLink, reopenLink, visibleLink, notVisibleLink;
+	private Link detailsLink, applyGradeLink, setDoneLink, reopenLink, visibleLink, notVisibleLink;
 	private Link resetAttemptsButton;
 	private final VelocityContainer mainVC;
 	private final List<String> links = new ArrayList<>();
 
 	private CloseableModalController cmc;
+	private DialogBoxController applyGradeCtrl;
 	private ResetAttemptsConfirmationController resetAttemptsConfirmationCtrl;
 	
 	private final boolean courseReadonly;
@@ -80,14 +92,20 @@ public abstract class AbstractToolsController extends BasicController {
 	private final AssessmentEvaluation scoreEval;
 	protected final CourseNode courseNode;
 	protected final UserCourseEnvironment assessedUserCourseEnv;
+	protected final AssessmentConfig assessmentConfig;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
 	public AbstractToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		String velocityRoot = Util.getPackageVelocityRoot(AbstractToolsController.class);
 		String page = velocityRoot + "/tools.html";
@@ -102,6 +120,7 @@ public abstract class AbstractToolsController extends BasicController {
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
 		scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 	}
 	
 	public boolean isCourseReadonly() {
@@ -114,6 +133,7 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	protected final void initTools() {
 		initDetails();
+		initApplyGrade();
 		initStatus();
 		addSeparator();
 		initResetAttempts();
@@ -140,6 +160,26 @@ public abstract class AbstractToolsController extends BasicController {
 		detailsLink = addLink("tool.details", "tool.details", "o_icon o_icon-fw o_icon_details");
 	}
 	
+	protected void initApplyGrade() {
+		boolean canApplyGrade = gradeModule.isEnabled() 
+				&& Mode.none != assessmentConfig.getScoreMode()
+				&& assessmentConfig.hasGrade()
+				&& !assessmentConfig.isAutoGrade()
+				&& !courseReadonly
+				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))
+				&& scoreEval != null
+				&& scoreEval.getScore() != null
+				&& !StringHelper.containsNonWhitespace(scoreEval.getGrade());
+		if (canApplyGrade) {
+			applyGradeLink = LinkFactory.createLink("tool.grade.apply", "tool.grade.apply", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+			applyGradeLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_grade");
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
+			applyGradeLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+			mainVC.put("tool.grade.apply", applyGradeLink);
+			links.add("tool.grade.apply");
+		}
+	}
+	
 	protected void initStatus() {
 		if(scoreEval != null && !courseReadonly) {
 			// set status inReview / done
@@ -153,7 +193,7 @@ public abstract class AbstractToolsController extends BasicController {
 			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
 					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 			if (canChangeUserVisibility) {
-				if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
+				if(scoreEval.getUserVisible() != null && scoreEval.getUserVisible().booleanValue()) {
 					notVisibleLink = addLink("tool.set.hidden", "tool.set.hidden", "o_icon o_icon-fw o_icon_results_hidden");
 				} else {
 					visibleLink = addLink("tool.set.visible", "tool.set.visible", "o_icon o_icon-fw o_icon_results_visible");
@@ -163,7 +203,7 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void initResetAttempts() {
-		if(courseAssessmentService.getAssessmentConfig(courseNode).hasAttempts()) {
+		if(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode).hasAttempts()) {
 			resetAttemptsButton = addLink("tool.reset.attempts", "reset.attempts", "o_icon o_icon-fw o_icon_reset");
 		}
 	}
@@ -196,24 +236,33 @@ public abstract class AbstractToolsController extends BasicController {
 			doSetVisibility(ureq, true);
 		} else if(notVisibleLink == source) {
 			doSetVisibility(ureq, false);
+		} else if(applyGradeLink == source) {
+			doConfirmApplyGrade(ureq);
 		} else if(detailsLink == source) {
 			fireEvent(ureq, new ShowDetailsEvent(courseNode, assessedIdentity));
 		}
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(resetAttemptsConfirmationCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			fireEvent(ureq, event);
+		} else if (applyGradeCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doApplyGrade(ureq);
+			}
+			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(resetAttemptsConfirmationCtrl);
+		removeAsListenerAndDispose(applyGradeCtrl);
 		removeAsListenerAndDispose(cmc);
 		resetAttemptsConfirmationCtrl = null;
+		applyGradeCtrl = null;
 		cmc = null;
 	}
 	
@@ -238,10 +287,10 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void reopenEvaluation() {
-		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				AssessmentRunStatus.running, scoreEval.getAssessmentID());
+		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running, scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
@@ -254,23 +303,74 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void doneEvalution() {
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				AssessmentEntryStatus.done, scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
 	}
 	
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
 		if (scoreEval != null) {
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.done, visible,
-					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+					scoreEval.getAssessmentStatus(), Boolean.valueOf(visible), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
+	
+	private void doConfirmApplyGrade(UserRequest ureq) {
+		fireEvent(ureq, Event.CLOSE_EVENT);
+		
+		if (scoreEval != null && scoreEval.getScore() != null) {
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+			String grade = gradeScoreRange.getGrade();
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeScoreRange.getGradeSystemIdent());
+			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
+					? gradeScoreRange.getPassed()
+					: null;
+			
+			String text = null;
+			if (passed != null) {
+				if (passed.booleanValue()) {
+					text = translate("grade.apply.text.passed", grade, gradeSystemLabel);
+				} else {
+					text = translate("grade.apply.text.failed", grade, gradeSystemLabel);
+				}
+			} else {
+				text = translate("grade.apply.text", grade, gradeSystemLabel);
+			}
+			String title = translate("grade.apply.label", gradeSystemLabel);
+			applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
+		}
+	}
+	
+	private void doApplyGrade(UserRequest ureq) {
+		if (scoreEval != null && scoreEval.getScore() != null) {
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+			String grade = gradeScoreRange.getGrade();
+			String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
+					? gradeScoreRange.getPassed()
+					: null;
+			
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
+					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
+		}
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
 }

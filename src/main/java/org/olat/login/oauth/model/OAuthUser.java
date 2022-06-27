@@ -19,6 +19,8 @@
  */
 package org.olat.login.oauth.model;
 
+import java.util.Set;
+
 import org.olat.core.id.UserConstants;
 
 /**
@@ -28,6 +30,10 @@ import org.olat.core.id.UserConstants;
  *
  */
 public class OAuthUser {
+	
+	public static final Set<String> availableAttributes = Set.of(UserConstants.EMAIL, UserConstants.NICKNAME,
+			UserConstants.FIRSTNAME, UserConstants.LASTNAME, UserConstants.INSTITUTIONALUSERIDENTIFIER,
+			UserConstants.INSTITUTIONALNAME, UserConstants.DEPARTMENT, UserConstants.COUNTRY);
 	
 	private String id;
 	private String nickName;
@@ -123,6 +129,7 @@ public class OAuthUser {
 	public String getProperty(String propName) {
 		switch(propName) {
 			case UserConstants.EMAIL: return email;
+			case UserConstants.NICKNAME: return nickName;
 			case UserConstants.FIRSTNAME: return firstName;
 			case UserConstants.LASTNAME: return lastName;
 			case UserConstants.INSTITUTIONALUSERIDENTIFIER: return institutionalUserIdentifier;
@@ -131,6 +138,20 @@ public class OAuthUser {
 			case UserConstants.COUNTRY: return country;
 			default: return null;
 		}	
+	}
+	
+	public void setProperty(String propName, String value) {
+		switch(propName) {
+			case UserConstants.EMAIL: email = value; break;
+			case UserConstants.NICKNAME: nickName = value; break;
+			case UserConstants.FIRSTNAME: firstName = value; break;
+			case UserConstants.LASTNAME: lastName = value; break;
+			case UserConstants.INSTITUTIONALUSERIDENTIFIER: institutionalUserIdentifier = value; break;
+			case UserConstants.INSTITUTIONALNAME: institutionalName = value; break;
+			case UserConstants.DEPARTMENT: department = value; break;
+			case UserConstants.COUNTRY: country = value; break;
+			default: break;
+		}
 	}
 	
 	@Override

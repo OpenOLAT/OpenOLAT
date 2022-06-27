@@ -21,6 +21,7 @@ package org.olat.course.run.scoring;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.Overridable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -31,7 +32,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface PassedEvaluator {
 
-	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
+	public Overridable<Boolean> getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
 			ConditionInterpreter conditionInterpreter);
 
 }

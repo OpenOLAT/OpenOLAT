@@ -21,6 +21,7 @@ package org.olat.course.assessment.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -49,6 +50,8 @@ public class SearchAssessedIdentityParams {
 	private final boolean nonMembers;
 	private final boolean coach;
 	
+	private Boolean scoreNull;
+	private Boolean gradeNull;
 	private List<AssessmentEntryStatus> assessmentStatus;
 	private List<Passed> passed;
 	private Boolean userVisibility;
@@ -59,6 +62,8 @@ public class SearchAssessedIdentityParams {
 	private String searchString;
 	private List<Long> businessGroupKeys;
 	private List<Long> curriculumElementKeys;
+	
+	private Map<String,String> userProperties;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, 
 			AssessmentToolSecurityCallback secCallback) {
@@ -112,6 +117,22 @@ public class SearchAssessedIdentityParams {
 		this.assessmentStatus = assessmentStatus;
 	}
 	
+	public Boolean getScoreNull() {
+		return scoreNull;
+	}
+
+	public void setScoreNull(Boolean scoreNull) {
+		this.scoreNull = scoreNull;
+	}
+
+	public Boolean getGradeNull() {
+		return gradeNull;
+	}
+
+	public void setGradeNull(Boolean gradeNull) {
+		this.gradeNull = gradeNull;
+	}
+
 	public List<Passed> getPassed() {
 		return passed;
 	}
@@ -174,5 +195,13 @@ public class SearchAssessedIdentityParams {
 
 	public void setCurriculumElementKeys(List<Long> curriculumElementKeys) {
 		this.curriculumElementKeys = curriculumElementKeys;
+	}
+
+	public Map<String, String> getUserProperties() {
+		return userProperties;
+	}
+
+	public void setUserProperties(Map<String, String> userProperties) {
+		this.userProperties = userProperties;
 	}
 }

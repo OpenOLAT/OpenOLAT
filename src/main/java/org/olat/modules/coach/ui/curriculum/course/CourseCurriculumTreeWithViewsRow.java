@@ -74,9 +74,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	private String representationalName;
 	
 	private RepositoryEntryStatusEnum status;
-	private boolean guests;
-	private boolean allUsers;
-	private boolean bookable;
+	private boolean publicVisible;
 	private List<PriceMethod> accessTypes;
 
 	private boolean member;
@@ -142,9 +140,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	 * @param repositoryEntryView
 	 */
 	public CourseCurriculumTreeWithViewsRow(RepositoryEntryMyView repositoryEntryView) {
-		guests = repositoryEntryView.isGuests();
-		allUsers = repositoryEntryView.isAllUsers();
-		bookable = repositoryEntryView.isBookable();
+		publicVisible = repositoryEntryView.isPublicVisible();
 		status = repositoryEntryView.getEntryStatus();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
@@ -177,10 +173,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 			level++;
 		}
 		
-		guests = repositoryEntryView.isGuests();
-		allUsers = repositoryEntryView.isAllUsers();
-		bookable = repositoryEntryView.isBookable();
-		status = repositoryEntryView.getEntryStatus();
+		publicVisible = repositoryEntryView.isPublicVisible();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
 		marked = repositoryEntryView.isMarked();
@@ -368,7 +361,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	}
 	
 	public boolean isClosed() {
-		return status.decommissioned();
+		return status != null && status.decommissioned();
 	}
 
 	public boolean isSingleEntry() {
@@ -387,18 +380,14 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 		return status;
 	}
 	
-	public boolean isAllUsers() {
-		return allUsers;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
-	
-	public boolean isGuests() {
-		return guests;
+
+	public void setPublicVisible(boolean publicVisible) {
+		this.publicVisible = publicVisible;
 	}
-	
-	public boolean isBookable() {
-		return bookable;
-	}
-	
+
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailRelPath);
 	}

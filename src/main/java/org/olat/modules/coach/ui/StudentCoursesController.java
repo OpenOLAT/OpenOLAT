@@ -189,9 +189,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		stackPanel.addTool(previousStudent);
 		
 		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(student));
-		String details = translate("students.details", new String[]{
-				fullName, Integer.toString(index + 1), Integer.toString(numOfStudents)
-		});
+		String details = translate("students.details", fullName, Integer.toString(index + 1), Integer.toString(numOfStudents));
 		detailsStudentCmp = LinkFactory.createToolLink("details.student", details, this);
 		detailsStudentCmp.setIconLeftCSS("o_icon o_icon_user");
 		stackPanel.addTool(detailsStudentCmp);
@@ -221,7 +219,10 @@ public class StudentCoursesController extends FormBasicController implements Act
 					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalId, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalRef, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
@@ -474,9 +475,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		String displayName = entry.getCourseDisplayName();
 		int entryIndex = model.getObjects().indexOf(entry);
-		String details = translate("students.details", new String[] {
-				displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
-		});
+		String details = translate("students.details", displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount()));
 		
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
 				entry, student, details, entryIndex, model.getRowCount(), selectedTool, true, false);

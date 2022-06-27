@@ -84,6 +84,13 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	private String loginTemplate;
 	@Value("${shibboleth.template.login.default:default_shibbolethlogin}")
 	private String loginTemplateDefault;
+	
+	@Value("${shibboleth.organisation.strategy}")
+	private String organisationStrategy;
+	@Value("${shibboleth.organisation.default}")
+	private String defaultOrganisation;
+	@Value("${shibboleth.organisation.shib}")
+	private String shibbolethOrganisation;
 
 	public static final String MULTIVALUE_SEPARATOR = ";";
 
@@ -260,6 +267,30 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	public void setLoginTemplateDefault(String loginTemplateDefault) {
 		this.loginTemplateDefault = loginTemplateDefault;
 	}
+	
+	public ShibbolethOrganisationStrategy getOrganisationStrategy() {
+		return ShibbolethOrganisationStrategy.secureValue(organisationStrategy);
+	}
+
+	public void setOrganisationStrategy(String organisationStrategy) {
+		this.organisationStrategy = organisationStrategy;
+	}
+
+	public String getDefaultOrganisation() {
+		return defaultOrganisation;
+	}
+
+	public void setDefaultOrganisation(String defaultOrganisation) {
+		this.defaultOrganisation = defaultOrganisation;
+	}
+
+	public String getShibbolethOrganisation() {
+		return shibbolethOrganisation;
+	}
+
+	public void setShibbolethOrganisation(String shibbolethOrganisation) {
+		this.shibbolethOrganisation = shibbolethOrganisation;
+	}
 
 	public String getPreselectedAttributeKey(String userAttribute) {
 		String shibKey = userMapping.get(userAttribute);
@@ -383,6 +414,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		addAttributeNameIfDefined(attribute1, attributeNames);
 		addAttributeNameIfDefined(attribute2, attributeNames);
 		addAttributeNameIfDefined(acAutoAttributeName, attributeNames);
+		addAttributeNameIfDefined(shibbolethOrganisation, attributeNames);
 		return attributeNames;
 	}
 	

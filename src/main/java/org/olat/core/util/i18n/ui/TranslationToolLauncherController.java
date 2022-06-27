@@ -26,15 +26,12 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,7 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class TranslationToolLauncherController extends BasicController {
 	private VelocityContainer translationToolLauncherVC;
-	private Link startTranslationToolLink, enableInlineTranslationLink, disableInlineTranslationLink, cacheFlushLink;
+	private Link startTranslationToolLink;
+	private Link cacheFlushLink;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -73,9 +71,6 @@ public class TranslationToolLauncherController extends BasicController {
 		if (i18nModule.isCachingEnabled()) {
 			cacheFlushLink = LinkFactory.createButton("cache.flush", translationToolLauncherVC, this);
 		}
-		// Add inline translation status and link
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		updateInlineTranslationStatusAndLink(guiPrefs);
 		putInitialPanel(translationToolLauncherVC);
 		// Enable or disable entire translation tool
 		boolean isTranslationToolEnabled = i18nModule.isTransToolEnabled();
@@ -85,22 +80,12 @@ public class TranslationToolLauncherController extends BasicController {
 		translationToolLauncherVC.contextPut("customizingToolEnabled", Boolean.valueOf(!isTranslationToolEnabled && i18nModule.isOverlayEnabled()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest
-	 * , org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == startTranslationToolLink) {
 			// wrap the content controller into a full header layout
-			ControllerCreator controllerCreator = new ControllerCreator() {
-				@Override
-				public Controller createController(UserRequest uureq, WindowControl wControl) {
-					return new TranslationToolMainController(uureq, wControl, !i18nModule.isTransToolEnabled());
-				}
+			ControllerCreator controllerCreator = (uureq, wControl) -> {
+				return new TranslationToolMainController(uureq, wControl, !i18nModule.isTransToolEnabled());
 			};
 			// no need for later disposal, opens in popup window and will be disposed
 			// by window manager
@@ -109,64 +94,10 @@ public class TranslationToolLauncherController extends BasicController {
 					.createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
 			pbw.open(ureq);
 
-		} else if (source == enableInlineTranslationLink) {
-			setNewInlineStatus(ureq, true);
-
-		} else if (source == disableInlineTranslationLink) {
-			setNewInlineStatus(ureq, false);
-
 		} else if (source == cacheFlushLink) {
 			// clear i18n cache
 			i18nModule.reInitializeAndFlushCache();
 			showInfo("cache.flush.ok");
 		}
-	}
-
-	/**
-	 * Helper to persist the new inline edit configuration and update the GUI
-	 * accordingly
-	 * 
-	 * @param ureq
-	 * @param enable
-	 */
-	private void setNewInlineStatus(UserRequest ureq, boolean enable) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		guiPrefs.putAndSave(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED, Boolean.valueOf(enable));
-		updateInlineTranslationStatusAndLink(guiPrefs);
-	}
-
-	/**
-	 * Helper to update the GUI according to the state defined in the GUI
-	 * preferences
-	 * 
-	 * @param guiPrefs
-	 */
-	private void updateInlineTranslationStatusAndLink(Preferences guiPrefs) {
-		Boolean isEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED, Boolean.FALSE);
-		if (isEnabled.booleanValue()) {
-			// remove enable link
-			if (enableInlineTranslationLink != null) {
-				translationToolLauncherVC.remove(enableInlineTranslationLink);
-				enableInlineTranslationLink = null;
-			}
-			// set disable link
-			disableInlineTranslationLink = LinkFactory.createButton("inline.disable", translationToolLauncherVC, this);
-		} else {
-			// remove disabled link
-			if (disableInlineTranslationLink != null) {
-				translationToolLauncherVC.remove(disableInlineTranslationLink);
-				disableInlineTranslationLink = null;
-			}
-			// set disable link
-			enableInlineTranslationLink = LinkFactory.createButton("inline.enable", translationToolLauncherVC, this);
-		}
-		if (isEnabled.booleanValue() == I18nManager.getInstance().isCurrentThreadMarkLocalizedStringsEnabled()) {
-			translationToolLauncherVC.contextPut("logoutRequired", Boolean.FALSE);
-		} else {
-			translationToolLauncherVC.contextPut("logoutRequired", Boolean.TRUE);
-		}
-		// disable translation tool when in inline translation mode
-		startTranslationToolLink.setEnabled(!isEnabled);
-
 	}
 }

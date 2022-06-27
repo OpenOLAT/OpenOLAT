@@ -71,7 +71,7 @@ public class AssessmentItemSessionDAOTest extends OlatTestCase {
 		//make test, item and response
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, null, true);
 		Assert.assertNotNull(testSession);
-		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, itemIdentifier);
+		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, itemIdentifier, null);
 		Assert.assertNotNull(itemSession);
 		dbInstance.commitAndCloseSession();
 		

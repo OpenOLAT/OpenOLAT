@@ -26,54 +26,29 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController.OfferAccessWithOrganisation;
 /**
  * 
  * @author fkiefer
  *
  */
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController.OfferWithOrganisation;
 public class AccessAndProperties {
-	private final RepositoryEntry repoEntry;
+	private RepositoryEntry repoEntry;
 	private RepositoryEntryAllowToLeaveOptions setting;
 	private RepositoryEntryStatusEnum status;
-	private boolean allUsers;
-	private boolean guests;
-	private boolean bookable;
+	private boolean publicVisible;
 	private boolean canCopy;
 	private boolean canReference;
-	private boolean canDownload;	
-	private Boolean confirmationEmail;
+	private boolean canDownload;
 	private List<Organisation> organisations;
 	
-	private List<OfferAccess> offerAccess;
-	private List<Offer> deletedOffer;
-	
-	public AccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting,
-			RepositoryEntryStatusEnum status, boolean bookable, boolean allUsers, boolean guests,
-			List<Organisation> organisations) {
-		this.repoEntry = re;
-		this.setting = setting;
-		this.status = status;
-		this.allUsers = allUsers;
-		this.guests = guests;
-		this.bookable = bookable;
-		this.organisations = organisations;
-	}	
-	
-	public List<OfferAccess> getOfferAccess() {
-		return offerAccess;
-	}
+	private List<OfferAccessWithOrganisation> offerAccess;
+	private List<OfferWithOrganisation> openAccess;
+	private Offer guestOffer;
 
-	public void setOfferAccess(List<OfferAccess> offerAccess) {
-		this.offerAccess = offerAccess;
-	}
-
-	public List<Offer> getDeletedOffer() {
-		return deletedOffer;
-	}
-
-	public void setDeletedOffer(List<Offer> deletedOffer) {
-		this.deletedOffer = deletedOffer;
+	public void setRepositoryEntry(RepositoryEntry repoEntry) {
+		this.repoEntry = repoEntry;
 	}
 
 	public RepositoryEntry getRepositoryEntry() {
@@ -96,28 +71,12 @@ public class AccessAndProperties {
 		this.status = status;
 	}
 
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
-	public void setBookable(boolean bookable) {
-		this.bookable = bookable;
-	}
-
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-
-	public void setAllUsers(boolean allUsers) {
-		this.allUsers = allUsers;
-	}
-
-	public boolean isGuests() {
-		return guests;
-	}
-
-	public void setGuests(boolean guests) {
-		this.guests = guests;
+	public void setPublicVisible(boolean publicVisible) {
+		this.publicVisible = publicVisible;
 	}
 
 	public boolean isCanCopy() {
@@ -143,16 +102,38 @@ public class AccessAndProperties {
 	public void setCanDownload(boolean canDownload) {
 		this.canDownload = canDownload;
 	}
-
-	public Boolean getConfirmationEmail() {
-		return confirmationEmail;
-	}
-
-	public void setConfirmationEmail(Boolean confirmationEmail) {
-		this.confirmationEmail = confirmationEmail;
-	}
 	
 	public List<Organisation> getOrganisations() {
 		return organisations;
 	}
+
+	public void setOrganisations(List<Organisation> organisations) {
+		this.organisations = organisations;
+	}
+
+	
+	public List<OfferAccessWithOrganisation> getOfferAccess() {
+		return offerAccess;
+	}
+
+	public void setOfferAccess(List<OfferAccessWithOrganisation> offerAccess) {
+		this.offerAccess = offerAccess;
+	}
+
+	public List<OfferWithOrganisation> getOpenAccess() {
+		return openAccess;
+	}
+
+	public void setOpenAccess(List<OfferWithOrganisation> openAccess) {
+		this.openAccess = openAccess;
+	}
+
+	public Offer getGuestOffer() {
+		return guestOffer;
+	}
+
+	public void setGuestOffer(Offer guestOffer) {
+		this.guestOffer = guestOffer;
+	}
+	
 }

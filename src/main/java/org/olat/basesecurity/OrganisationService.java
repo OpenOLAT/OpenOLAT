@@ -69,7 +69,11 @@ public interface OrganisationService {
 	 */
 	public Organisation getOrganisation(OrganisationRef organisation);
 	
+	public List<Organisation> findOrganisationByIdentifier(String identifier);
+	
 	public List<Organisation> getOrganisationParentLine(Organisation organisation);
+	
+	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations);
 	
 	public Organisation updateOrganisation(Organisation organisation);
 	

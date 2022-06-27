@@ -588,12 +588,12 @@ class GTANotifications {
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			AssessmentEntry assessment = courseNodeAssessmentDao.loadAssessmentEntry(assessedIdentity, courseEntry, gtaNode.getIdent());
 			boolean resultsVisible = assessment != null
-					&& (assessment.getUserVisibility() == null || assessment.getUserVisibility().booleanValue());
+					&& assessment.getUserVisibility() != null && assessment.getUserVisibility().booleanValue();
 			if(resultsVisible) {
 				String score = null;
 				String status = null;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, gtaNode);
 				if(Mode.none != assessmentConfig.getScoreMode() && assessment.getScore() != null) {
 					score = AssessmentHelper.getRoundedScore(assessment.getScore());
 				}

@@ -111,6 +111,7 @@ public class WordDocument extends FileDocument {
             HWPFOldDocument doc = new HWPFOldDocument(pfs);
             Word6Extractor docExtractor = new Word6Extractor(doc);
             addTextIfAny(sb, docExtractor.getText());
+            docExtractor.close();
 		} catch(Exception e) {
 			log.error("Cannot read old word document: {}", leaf, e);
 		}

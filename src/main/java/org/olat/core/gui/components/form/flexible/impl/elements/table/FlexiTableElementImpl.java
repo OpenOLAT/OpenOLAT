@@ -137,7 +137,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private String emptyTableMessageKey;
 	private String emptyTableHintKey;		
-	private String emtpyTableIconCss;	
+	private String emptyTableIconCss;	
 	private FormLink emptyTablePrimaryActionButton;
 	private boolean emptyShowSearch = true;
 	
@@ -747,7 +747,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public List<FlexiTableExtendedFilter> getExtendedFilters() {
 		if(filtersEl == null) {
-			return List.of();
+			return new ArrayList<>();
 		}
 		
 		List<FlexiTableFilter> filterList = filtersEl.getAllFilters();
@@ -2430,19 +2430,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setEmptyTableSettings(String emtpyMessagei18key, String emptyTableHintKey, String emtpyTableIconCss) {
-		setEmptyTableSettings(emtpyMessagei18key, emptyTableHintKey, emtpyTableIconCss, null, null, true);
+	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss) {
+		setEmptyTableSettings(emptyMessagei18key, emptyTableHintKey, emptyTableIconCss, null, null, true);
 	}
 	
 	@Override
-	public void setEmptyTableSettings(String emtpyMessagei18key, String emptyTableHintKey, String emtpyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields) {
-		this.emptyTableMessageKey = emtpyMessagei18key;
+	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields) {
+		this.emptyTableMessageKey = emptyMessagei18key;
 		this.emptyTableHintKey = emptyTableHintKey;
-		this.emtpyTableIconCss = emtpyTableIconCss;
+		this.emptyTableIconCss = emptyTableIconCss;
 		// create action button
 		if (emptyPrimaryActionKey != null) {
 			String dispatchId = component.getDispatchID();
-			emptyTablePrimaryActionButton = new FormLinkImpl(dispatchId + "_emtpyTablePrimaryActionButton", "rEmtpyTablePrimaryActionButton", emptyPrimaryActionKey, Link.BUTTON);
+			emptyTablePrimaryActionButton = new FormLinkImpl(dispatchId + "_emptyTablePrimaryActionButton", "rEmtpyTablePrimaryActionButton", emptyPrimaryActionKey, Link.BUTTON);
 			emptyTablePrimaryActionButton.setTranslator(translator);
 			emptyTablePrimaryActionButton.setPrimary(true);
 			if (emptyPrimaryActionIconCSS != null) {
@@ -2470,7 +2470,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return emptyTableHintKey;
 	}
 	public String getEmtpyTableIconCss() {
-		return emtpyTableIconCss;
+		return emptyTableIconCss;
 	}
 
 	@Override

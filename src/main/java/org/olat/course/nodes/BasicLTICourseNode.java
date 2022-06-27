@@ -73,6 +73,7 @@ import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -198,13 +199,12 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	
 	/**
 	 * Return the scaling factor or 1.0f if not configured.
-	 * 
-	 * @param node
+	 * @param courseEntry
 	 * @return
 	 */
-	public float getScalingFactor() {
+	public float getScalingFactor(RepositoryEntryRef courseEntry) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(this);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, this);
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			Float scale = getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			if(scale == null) {
@@ -393,7 +393,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
+	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new LTIAssessmentConfig(getModuleConfiguration()));
 	}
 

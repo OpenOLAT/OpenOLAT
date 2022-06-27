@@ -31,6 +31,8 @@ import org.olat.repository.ui.list.RepositoryEntryRow;
  */
 public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
 	
+	private static final Cols[] COLS = Cols.values();
+	
 	public VideoEntryDataModel(VideoEntryDataSource source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
 	}
@@ -50,6 +52,13 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposi
 	public VideoEntryDataSource getSourceDelegate() {
 		return (VideoEntryDataSource)super.getSourceDelegate();
 	}
+	
+	public RepositoryEntryRow getRowByKey(Long key) {
+		return getObjects().stream()
+				.filter(row -> row != null && row.getKey().equals(key))
+				.findFirst()
+				.orElse(null);
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -58,10 +67,10 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposi
 			return null;//don't break here
 		}
 		
-		switch(Cols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return item.getKey();
+			default: return null;
 		}
-		return null;
 	}
 	
 	public enum Cols {

@@ -125,7 +125,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 		if (!usedInWizard) {
-			setFormContextHelp("Set up info page");
+			setFormContextHelp("manual_user/authoring/Set_up_info_page/");
 			setFormTitle("details.execution.title");
 		}
 
@@ -291,7 +291,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
 		} else if (source == startDateEl) {
-			if (!dateMoved && startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
+			if (!dateMoved && startDateEl.getDate() != null && startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
 				Date startDate = startDateEl.getDate();
 				long difference = startDate.getTime() - startDateEl.getInitialDate().getTime();
 				Date endDate = endDateEl.getDate();
@@ -340,10 +340,10 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	
 			repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
 					repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
-					repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, null,
-					repositoryEntry.getEducationalType());
+					repositoryEntry.getDescription(), repositoryEntry.getTeaser(), repositoryEntry.getObjectives(),
+					repositoryEntry.getRequirements(), repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(),
+					repositoryEntry.getLocation(), repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(),
+					null, null, repositoryEntry.getEducationalType());
 			if(repositoryEntry == null) {
 				showWarning("repositoryentry.not.existing");
 				fireEvent(ureq, Event.CLOSE_EVENT);
@@ -405,25 +405,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 					break;
 				case beginAndEnd: 
 					dateTypesEl.select("private", true);
+					startDateEl.setDate(context.getBeginDate());
+					endDateEl.setDate(context.getEndDate());
+					if (startDateEl.getInitialDate() == null) {
+						startDateEl.setInitialDate(context.getInitialBeginDate());
+					}
 					break;
 				case semester: 
 					dateTypesEl.select("public", true);
-					break;
-			}
-		}
-		
-		if (dateTypesEl.getSelectedKey() != null) {
-			switch (dateTypesEl.getSelectedKey()) {
-				case "private": 
-					startDateEl.setDate(context.getBeginDate());
-					endDateEl.setDate(context.getEndDate());
-					
-					if (context.getRepositoryLifeCycle() != null) {
-						startDateEl.setInitialDate(context.getRepositoryLifeCycle().getValidFrom());
-						endDateEl.setDate(context.getRepositoryLifeCycle().getValidTo());
-					}
-					break;
-				case "public": 
 					if (context.getSemesterKey() != null) {
 						publicDatesEl.select(context.getSemesterKey().toString(), true);
 					}

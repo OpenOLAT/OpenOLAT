@@ -77,6 +77,12 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 
 	@Column(name="score", nullable=true, insertable=false, updatable=false)
 	private Float score;
+	@Column(name="grade", nullable=true, insertable=true, updatable=true)
+	private String grade;
+	@Column(name="grade_system_ident", nullable=true, insertable=true, updatable=true)
+	private String gradeSystemIdent;
+	@Column(name="performance_class_ident", nullable=true, insertable=true, updatable=true)
+	private String performanceClassIdent;
 	@Column(name="passed", nullable=true, insertable=false, updatable=false)
 	private Boolean passed;
 	@Column(name="total_nodes", nullable=true, insertable=false, updatable=false)
@@ -158,6 +164,33 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 		
 	public void setScore(Float score) {
 		this.score = score;
+	}
+
+	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
 	}
 
 	@Override

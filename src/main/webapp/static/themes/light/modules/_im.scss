@@ -41,36 +41,135 @@
 	}
 }
 
-.o_im_load_history {
-	.o_label {
-		font-size: $o-im-chat-load-font-size; 
-		padding-right: 0.5em;
-		line-height: 1.5em;
-		color: $text-muted;
-	}
-	margin-bottom: $padding-base-vertical;
+.ui-dialog .ui-widget-content.o_im_chat_dialog {
+	padding: 4px;
+	position: relative;
 }
-.o_im_chat_history {
-	height:170px;
-	font-size: 90%;
-	border: 1px solid $o-im-chat-history-border; 
+
+.o_im {
+	display: grid;
+	grid-template-columns: 2fr;
+	grid-template-rows: 2fr;
+	column-gap: 0;
+	row-gap: 0;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	
-	/* scrollbar */
-	margin: 0 0 1em 0; 
-	overflow: scroll; 
-	overflow-x:auto;
-} 
+	&.o_im_with_header, &.o_im_roster_top {
+		grid-template-rows: auto 2fr;
+	}
+	
+	&.o_im_roster_left {
+		grid-template-columns: 1fr 2fr;
+	}
+	
+	.o_im_resource_infos, .o_im_entries, .o_im_roster, .o_im_chat {
+		padding: 5px;
+	}
+	
+	.o_im_resource_infos {
+		border-right: 1px solid $o-im-chat-border;
+		background-color: $o-im-chat-roster-bg;
+		align-self: center;
+	}
+	
+	.o_im_entries {
+		align-self: center;
+		display: flex;
+		
+		.o_im_entries_non_vip {
+			flex: 1 1 70px;
+		}
+	
+		.o_im_entries_number {
+			flex: 0 0 auto;
+			padding-right: 5px;
+		}
+	}
+	
+	.o_im_roster {
+		border-right: 1px solid $o-im-chat-border;
+		border-top: 1px solid $o-im-chat-border;
+		background-color: $o-im-chat-roster-bg;
+	}
+	
+	.o_im_chat {
+		border-top: 1px solid $o-im-chat-border;
+		display: flex;
+		flex-direction: column;
+		
+		.o_im_load_history {
+			margin-bottom: $padding-base-vertical;
+			flex: 0 0 auto;
+		
+		}
+		
+		.o_im_chat_history {
+			flex: 1 1 160px;
+			font-size: 90%;
+			border: 1px solid $o-im-chat-history-border; 
+			
+			/* scrollbar */
+			margin: 0 0 1em 0; 
+			overflow-y: scroll; 
+			overflow-x:auto;
+		}
+		
+		.o_im_chat_form {
+			flex: 0 0 auto;
+		}
+	}
+}
+
+.o_supervisor_chat_roster a.active {
+	font-weight: bold;
+}
+
+.o_im_load_history .o_label {
+	font-size: $o-im-chat-load-font-size; 
+	padding-right: 0.5em;
+	line-height: 1.5em;
+	color: $text-muted;
+}
+
 /* message group for all following messages of a single user. a new message group starts 
    when someone else replies */
 .o_im_message_group {
+	margin: 3px 3px;
 	padding: 3px 3px 3px 40px;
 	min-height: 40px;		
 	position: relative;
-	border-top: 1px solid $o-im-chat-message-border;
+	border-radius: $o-im-chat-message-border-radius;
 	background: $o-im-chat-message-bg;
-		
-	&.o_odd {
-		background: $o-im-chat-message-bg-alt;
+	
+	&.o_im_message_end {
+		display: none;
+	}
+	
+	&.o_im_message_join, &.o_im_message_accept, &.o_im_message_close, &.o_im_message_reactivate {
+		padding: 0 7px;
+		min-height: 12px;
+		margin: 3px 3px;
+		border-radius: $o-im-chat-message-border-radius;
+		background-color: $o-im-chat-message-bg-status;
+	}
+	
+	&.o_im_message_error {
+		padding: 0 7px;
+		min-height: 12px;
+		margin: 3px 3px;
+		border-radius: $o-im-chat-message-border-radius;
+		background-color: $o-im-chat-message-bg-error;
+	}
+	
+	&.o_im_message_me {
+		padding: 0 7px;
+		margin: 3px 3px 3px 70px;
+		border-radius: $o-im-chat-message-border-radius;
+		background-color: $o-im-chat-message-bg-me;
 	}
 	
 	.o_portrait {
@@ -106,6 +205,23 @@
 	font-size: 75%;
 }
 
+.o_im_input_send {
+	display: flex;
+	column-gap: 10px;
+	
+	input {
+		flex: 1 1 auto;
+	}
+	
+	.o_im_send_button {
+		flex: 0 0 auto;
+		border-radius: 50%;
+		padding: 6px 8px 6px 6px;
+		margin: 1px;
+		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+	}
+}
+
 .o_groupchat_roster {
 	font-size: $o-im-groupchat-font-size;
 	li {
@@ -120,6 +236,25 @@
 		}	
 	}
 
+}
+
+.o_supervised_chat_roster>ul {
+	display: inline-block;
+}
+
+.o_supervised_chat_roster>ul>li {
+	display: inline-block;
+}
+
+.o_supervisor_chat_rosters {
+	margin-left: 25px;
+}
+
+.o_im_entries .o_portrait img,
+.o_supervisor_chat_rosters .o_portrait img,
+.o_supervised_chat_roster img {
+	width: 20px;
+	height: 20px;
 }
 
 .o_im_buddieslist {
@@ -141,4 +276,49 @@
 		}
 	}	
 }
+
+.o_im_status_active.o_labeled {
+	border-color: $alert-success-text;
+	color: $alert-success-text;
+	background-color: $alert-success-bg;
+	text-transform: none;
+	font-weight: normal;
+	display: inline-block;
+}
+
+.o_im_status_completed.o_labeled {
+	border-color: $alert-info-text;
+	color: $alert-info-text;
+	background-color: $alert-info-bg;
+	text-transform: none;
+	font-weight: normal;
+	display: inline-block;
+}
+
+.o_im_status_requested.o_labeled {
+	border-color: $alert-warning-text;
+	color: $alert-warning-text;
+	background-color: $alert-warning-bg;
+	text-transform: none;
+	font-weight: normal;
+	display: inline-block;
+}
+
+.o_im_supervised_list table>tbody>tr.o_im_request,
+.o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_left,
+.o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_right {
+	background-color: $alert-warning-bg !important;
+}
+.o_im_supervised_list table>tbody>tr.o_im_unread,
+.o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_left,
+.o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_right {
+	background-color: $alert-info-bg !important;
+}
+.o_im_supervised_list table>tbody>tr.o_im_danger,
+.o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_left,
+.o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_right {
+	background-color: $alert-danger-bg !important;
+}
+
+
 

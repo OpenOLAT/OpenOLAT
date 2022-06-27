@@ -82,6 +82,13 @@ public enum RepositoryEntryStatusEnum {
 		};
 	}
 	
+	public static RepositoryEntryStatusEnum[] preparationToCoachPublished() {
+		return new RepositoryEntryStatusEnum[] {
+			RepositoryEntryStatusEnum.preparation, RepositoryEntryStatusEnum.review,
+			RepositoryEntryStatusEnum.coachpublished
+		};
+	}
+	
 	public static RepositoryEntryStatusEnum[] reviewToPublished() {
 		return new RepositoryEntryStatusEnum[] {
 			RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished,

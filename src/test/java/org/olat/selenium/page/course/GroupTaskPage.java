@@ -214,9 +214,8 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage assertPassed() {
-		By passedBy = By.cssSelector("#o_step_grading_content table tr.o_state.o_passed");
-		List<WebElement> passedEls = browser.findElements(passedBy);
-		Assert.assertFalse(passedEls.isEmpty());
+		By passedBy = By.cssSelector("#o_step_grading_content table div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
 }

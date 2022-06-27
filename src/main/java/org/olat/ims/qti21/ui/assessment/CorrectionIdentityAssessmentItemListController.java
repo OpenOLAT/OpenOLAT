@@ -389,7 +389,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 			ParentPartItemRefs parentParts = AssessmentTestHelper
 					.getParentSection(itemNode.getKey(), testSessionState, model.getResolvedAssessmentTest());
 			reloadItemSession = qtiService
-					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier);
+					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, itemRef.getIdentifier().toString());
 		}
 		
 		// lock on item, need to check the lock on identity / test

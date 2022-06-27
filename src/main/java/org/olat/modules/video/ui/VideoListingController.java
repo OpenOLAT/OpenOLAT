@@ -20,6 +20,7 @@
 package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,6 +66,8 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
+import org.olat.repository.ui.list.RepositoryEntryRow;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,6 +85,7 @@ public class VideoListingController extends FormBasicController implements Activ
 
 	private final String imgUrl;
 	private FlexiTableElement tableEl;
+	private VideoEntryDataModel tableModel;
 	private VideoEntryDataSource dataSource;
 	private SearchMyRepositoryEntryViewParams searchParams;
 
@@ -91,6 +95,8 @@ public class VideoListingController extends FormBasicController implements Activ
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private ACService acService;
 
 	public VideoListingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {		
 		super(ureq, wControl, "video_listing");
@@ -99,6 +105,8 @@ public class VideoListingController extends FormBasicController implements Activ
 		this.toolbarPanel = toolbarPanel;
 		
 		searchParams = new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), VideoFileResource.TYPE_NAME);
+		searchParams.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
+		searchParams.setOfferValidAt(new Date());
 		searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
 		dataSource = new VideoEntryDataSource(searchParams);
 		imgUrl = registerMapper(ureq, new VideoMapper());
@@ -112,8 +120,8 @@ public class VideoListingController extends FormBasicController implements Activ
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 
-		VideoEntryDataModel model = new VideoEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableModel = new VideoEntryDataModel(dataSource, columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
@@ -168,7 +176,7 @@ public class VideoListingController extends FormBasicController implements Activ
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, videoEntry);
 		if (reSecurity.canLaunch()) {// no booking implemented for video
 			boolean readOnly = videoEntry.getEntryStatus().decommissioned();
-			VideoDisplayOptions options = VideoDisplayOptions.valueOf(true, true, true, true, true, false, videoEntry.getDescription(), false, readOnly, false);
+			VideoDisplayOptions options = VideoDisplayOptions.valueOf(true, true, true, false, true, true, false, videoEntry.getDescription(), false, readOnly, false);
 			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, null, null, options);
 			listenTo(videoDisplayCtr);
 			toolbarPanel.pushController(videoEntry.getDisplayname(), videoDisplayCtr);
@@ -220,9 +228,13 @@ public class VideoListingController extends FormBasicController implements Activ
 				if (start != -1) {
 					relPath = relPath.substring(start+1);
 					Long id = Long.valueOf(relPath);
-					RepositoryEntry entry = repositoryService.loadByKey(id);
-					VFSLeaf imageFile = repositoryManager.getImage(entry);
-					return new VFSMediaResource(imageFile);
+					RepositoryEntryRow row = tableModel.getRowByKey(id);
+					if(row != null) {
+						VFSLeaf imageFile = repositoryManager.getImage(id, row.getOLATResourceable());
+						if(imageFile != null) {
+							return new VFSMediaResource(imageFile);
+						}
+					}
 				}
 			}
 			return new NotFoundMediaResource();

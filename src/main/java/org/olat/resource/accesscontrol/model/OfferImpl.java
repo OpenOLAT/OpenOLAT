@@ -100,6 +100,14 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	private boolean autoBooking;
 	@Column(name="confirmation_email", nullable=true, insertable=true, updatable=true)
 	private boolean confirmationEmail;
+	@Column(name="open_access", nullable=false, insertable=true, updatable=true)
+	private boolean openAccess;
+	@Column(name="guest_access", nullable=false, insertable=true, updatable=true)
+	private boolean guestAccess;
+	@Column(name="catalog_publish", nullable=false, insertable=true, updatable=true)
+	private boolean catalogPublish;
+	@Column(name="catalog_web_publish", nullable=false, insertable=true, updatable=true)
+	private boolean catalogWebPublish;
 
 	@Column(name="resourceid", nullable=true, insertable=true, updatable=true)
 	private Long resourceId;
@@ -231,12 +239,54 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 		this.autoBooking = autoBooking;
 	}
 
+	@Override
 	public boolean isConfirmationEmail() {
 		return confirmationEmail;
 	}
 
+	@Override
 	public void setConfirmationEmail(boolean confirmationEmail) {
 		this.confirmationEmail = confirmationEmail;
+	}
+
+	@Override
+	public boolean isOpenAccess() {
+		return openAccess;
+	}
+
+	@Override
+	public void setOpenAccess(boolean openAccess) {
+		this.openAccess = openAccess;
+	}
+
+	@Override
+	public boolean isGuestAccess() {
+		return guestAccess;
+	}
+
+	@Override
+	public void setGuestAccess(boolean guestAccess) {
+		this.guestAccess = guestAccess;
+	}
+
+	@Override
+	public boolean isCatalogPublish() {
+		return catalogPublish;
+	}
+
+	@Override
+	public void setCatalogPublish(boolean catalogPublish) {
+		this.catalogPublish = catalogPublish;
+	}
+
+	@Override
+	public boolean isCatalogWebPublish() {
+		return catalogWebPublish;
+	}
+
+	@Override
+	public void setCatalogWebPublish(boolean catalogWebPublish) {
+		this.catalogWebPublish = catalogWebPublish;
 	}
 
 	public String getToken() {

@@ -44,7 +44,6 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
-import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.OrderLineImpl;
@@ -150,7 +149,7 @@ public class ACOrderDAO {
 		return order;
 	}
 
-	public List<Order> findOrdersByDelivery(Identity delivery, OrderStatus... status) {
+	public List<Order> findOrdersByDelivery(IdentityRef delivery, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select order from ").append(OrderImpl.class.getName()).append(" order")
 			.append(" where order.delivery.key=:deliveryKey");
@@ -262,7 +261,8 @@ public class ACOrderDAO {
 		  .append(" inner join o.parts orderPart")
 		  .append(" inner join orderPart.lines orderLine")
 		  .append(" inner join orderLine.offer offer")
-		  .append(" where o.delivery.key=:deliveryKey and offer.resource.key=:resourceKey")
+		  .append(" inner join offer.resource rsrc")
+		  .append(" where o.delivery.key=:deliveryKey and rsrc.key=:resourceKey")
 		  .append(" and o.orderStatus=:status")
 		  .append(" and exists (select trx.key from actransaction as trx")
 		  .append("   where trx.order.key=o.key and trx.statusStr ").in(AccessTransactionStatus.PENDING)
@@ -461,7 +461,8 @@ public class ACOrderDAO {
 			.append(" inner join o.parts orderPart ")
 			.append(" inner join orderPart.lines orderLine ")
 			.append(" inner join orderLine.offer offer ")
-			.append(" where offer.resource.key=:resourceKey");
+			.append(" inner join offer.resource rsrc ")
+			.append(" where rsrc.key=:resourceKey");
 		if(status != null && status.length > 0) {
 			sb.append(" and o.orderStatusStr in (:status)");
 		}
@@ -475,35 +476,6 @@ public class ACOrderDAO {
 				statusStr.add(s.name());
 			}
 			query.setParameter("status", statusStr);
-		}
-
-		return query.getResultList();
-	}
-
-	public List<Order> findOrdersByResource(OLATResource resource, Identity identity, AccessMethod method) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(o) from ").append(OrderImpl.class.getName()).append(" o")
-			.append(" inner join o.parts orderPart ")
-			.append(" inner join orderPart.lines orderLine ")
-			.append(" inner join orderLine.offer offer ")
-			.append(" left join offer.offerAccess offeraccess ")
-			.append(" left join offeraccess.method method ")
-			.append(" where offer.resource.key=:resourceKey");
-		if(identity != null) {
-			sb.append(" and o.delivery.key=:deliveryKey");
-		}
-		if(method != null) {
-			sb.append(" and method.type=:methodKey");
-		}
-
-		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Order.class)
-				.setParameter("resourceKey", resource.getKey());
-		if(identity != null) {
-			query.setParameter("deliveryKey", identity.getKey());
-		}
-		if (method != null) {
-			query.setParameter("methodKey", method.getKey());
 		}
 
 		return query.getResultList();

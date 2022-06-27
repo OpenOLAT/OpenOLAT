@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21;
 
+import java.util.Locale;
+
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -43,8 +45,9 @@ public interface CorrectionManager {
 	 * @param courseNode The course element
 	 * @param courseEnv The course environment
 	 * @param doer Who is doing the change
+	 * @param locale 
 	 */
 	public void updateCourseNode(AssessmentTestSession testSession, AssessmentTest assessmentTest,
-			IQTESTCourseNode courseNode, CourseEnvironment courseEnv, Identity doer);
+			IQTESTCourseNode courseNode, CourseEnvironment courseEnv, Identity doer, Locale locale);
 
 }

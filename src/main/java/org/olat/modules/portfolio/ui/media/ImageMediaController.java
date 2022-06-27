@@ -24,7 +24,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElementRenderingHints;
-import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.ImageRunController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
@@ -38,7 +37,7 @@ import org.olat.modules.portfolio.ui.MediaMetadataController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImageMediaController extends ImageRunController implements PageRunElement {
+public class ImageMediaController extends ImageRunController {
 	
 	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaPart media, PageElementRenderingHints hints) {
 		super(ureq, wControl, dataStorage, media, hints);

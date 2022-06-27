@@ -136,7 +136,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case license: return item.getLicense();
 			case location: return item.getLocation();
 			case access: return item;
-			case guests: return item.isGuests();
+			case guests: return item.isGuestAccess();
 			case creationDate: return item.getCreationDate();
 			case lastUsage: return item.getLastUsage();
 			case deletedBy: return item.getDeletedByFullName();

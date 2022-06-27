@@ -49,13 +49,15 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -90,6 +92,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private VelocityContainer startPage;
 
 	private ScormAPIandDisplayController scormDispC;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	private ScormCourseNode scormNode;
 
 	// for external menu representation
@@ -102,6 +105,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private String assessableType;
 	private DeliveryOptions deliveryOptions;
 	private final UserSession userSession;//need for high score
+	private AssessmentConfig assessmentConfig;
 	
 	@Autowired
 	private ScormMainManager scormMainManager;
@@ -145,6 +149,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
+			assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), scormNode);
 		}
 
 		// <OLATCE-289>
@@ -201,10 +206,10 @@ public class ScormRunController extends BasicController implements GenericEventL
 				}
 				doStartPage(ureq);
 			} else if(Event.CLOSE_EVENT == event) {
-				doStartPage(null);
+				doStartPage(ureq);
 				scormDispC.close();
 			} else if(event instanceof FinishEvent) {
-				doStartPage(null);
+				doStartPage(ureq);
 				if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
 					scormDispC.close();
 				}
@@ -225,30 +230,22 @@ public class ScormRunController extends BasicController implements GenericEventL
 	}
 
 	private void doStartPage(UserRequest ureq) {
-
-		// push title and learning objectives, only visible on intro page
-		startPage.contextPut("menuTitle", scormNode.getShortTitle());
-		startPage.contextPut("displayTitle", scormNode.getLongTitle());
-
 		if (isAssessable) {
-			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-			Float score = scoreEval.getScore();
-			if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
-				startPage.contextPut("score", score != null ? AssessmentHelper.getRoundedScore(score) : "0");
-			}
-			startPage.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-			startPage.contextPut("passed", scoreEval.getPassed());
-			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
-			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
-			startPage.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig, null, null, null);
+			listenTo(assessmentParticipantViewCtrl);
+			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+			
+			startPage.contextPut("attempts", assessmentEval.getAttempts());
+			
+			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
+			
 			if(resultsVisible && assessmentConfig.hasComment()) {
 				StringBuilder comment = Formatter
 						.stripTabsAndReturns(courseAssessmentService.getUserComment(scormNode, userCourseEnv));
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}
-			startPage.contextPut("attempts", courseAssessmentService.getAttempts(scormNode, userCourseEnv));
-			startPage.contextPut("attemptsConfig", config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0));
 			
 			if(ureq == null) {// High score need one
 				ureq = new SyntheticUserRequest(getIdentity(), getLocale(), userSession);
@@ -303,15 +300,25 @@ public class ScormRunController extends BasicController implements GenericEventL
 		if (isPreview) {
 			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 					cpRoot, null, null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-					null, doActivate, fullWindow, false, true, deliveryOptions);
+					null, doActivate, fullWindow, true, deliveryOptions);
 		} else {
-			boolean attemptsIncremented = false;
 			if (userCourseEnv.isParticipant()) {
+				// Set status in Progress
+				ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+				if (currentEval.getAssessmentStatus() == null
+						|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
+						|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
+					ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getGrade(),
+							currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(),
+							currentEval.getPassed(), AssessmentEntryStatus.inProgress,
+							currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+							currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+					courseAssessmentService.saveScoreEvaluation(scormNode, getIdentity(), scoreEval, userCourseEnv, false, Role.user);
+				}
 				//increment user attempts only once!
 				if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 						|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 					courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
-					attemptsIncremented = true;
 				}
 			}
 			
@@ -321,18 +328,18 @@ public class ScormRunController extends BasicController implements GenericEventL
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
-						attemptsIncremented, false, deliveryOptions);
+						false, deliveryOptions);
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				// When not assessible users can choose between normal mode where data is stored...
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
-						attemptsIncremented, false, deliveryOptions);
+						false, deliveryOptions);
 			} else {
 				// ... and preview mode where no data is stored
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-						assessableType, doActivate, fullWindow, attemptsIncremented, false, deliveryOptions);
+						assessableType, doActivate, fullWindow, false, deliveryOptions);
 			}
 			
 		}

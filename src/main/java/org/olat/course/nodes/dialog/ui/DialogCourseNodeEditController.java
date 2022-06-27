@@ -34,6 +34,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -93,23 +94,24 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 			
 			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 			// Reader precondition
+			CourseEntryRef courseEntry = new CourseEntryRef(userCourseEnv);
 			Condition readerCondition = courseNode.getPreConditionReader();
 			readerCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, readerCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 			listenTo(readerCondContr);
 			accessContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 			// Poster precondition
 			Condition posterCondition = courseNode.getPreConditionPoster();
 			posterCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, posterCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 			this.listenTo(posterCondContr);
 			accessContent.put("posterCondition", posterCondContr.getInitialComponent());
 
 			// Moderator precondition
 			Condition moderatorCondition = courseNode.getPreConditionModerator();
 			moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, moderatorCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
 
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			listenTo(moderatorCondContr);

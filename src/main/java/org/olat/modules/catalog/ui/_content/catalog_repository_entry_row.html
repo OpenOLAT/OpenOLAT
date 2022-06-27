@@ -1,0 +1,105 @@
+<div class="o_repo_entry_list_item #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
+	<div class="o_visual">
+		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
+		#if($row.isThumbnailAvailable())
+			<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
+		#else
+			<div class="o_visual_not_available"></div>
+		#end
+		</a>
+	</div>
+	<div class="o_meta">
+		<div class="o_go_xs visible-xs">
+			<i class=" o_icon o_icon-fw o_icon_start o_icon-lg"></i>
+		</div>
+		
+		#if ($row.getExternalRef())
+		<div class="o_ext_ref">
+			$r.escapeHtml($row.getExternalRef())
+		</div>
+		#end
+		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())</h4>
+		
+		#if($r.isNotEmpty($row.teaser))
+		<div class="o_flex_block_one_line_left">
+			<div class="o_teaser o_flex_item_max">$r.escapeHtml($row.teaser)</div>
+		</div>
+		#end
+		
+		<div class="o_flex_block_one_line_left">
+		#if($row.getEducationalType())
+		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
+			<span>$r.translate($row.getEducationalTypei18nKey())</span>
+		</span>
+		#end
+		#if($row.authors && !$row.authors.empty)
+			<div class="o_author o_flex_item_max"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
+		#end
+		</div>
+		
+		#if($row.closed)
+			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
+		#else
+			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location && !${row.location.isEmpty()}))
+				<div class="o_lifecycle #if ($row.isActive()) o_active #end o_flex_block_one_line_left">
+					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+						<div class="o_lifecycle_date o_flex_item_fix"><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i>
+						#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
+							#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
+							#else $r.escapeHtml($row.lifecycleLabel) #end
+						#else
+							#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
+							#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
+						#end</div>
+					#end
+					#if($row.location  && !${row.location.isEmpty()})
+						<div class="o_lifecycle_location o_flex_item_max">
+							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+								<span class="o_spacer">•</span>
+							#else
+								<i class="o_icon o_icon-fw o_icon_location"> </i> 
+							#end
+							$r.escapeHtml($row.location)
+						</div>
+					#end
+				</div>
+			#end
+		#end
+			
+		#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
+		<div class="o_taxonomy_levels">	
+			<i class="o_icon o_icon-fw o_icon_tags"> </i>
+			#foreach($taxonomy in $row.taxonomyLevels)
+			<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.materializedPathIdentifiersWithoutSlash)">
+				$taxonomy.displayName
+			</span>
+			#end
+		</div>
+		#end
+	</div>
+	
+	<div class="o_access">
+		#if($row.accessTypes && !$row.isMember())
+		<div class="o_bookings">
+			<div class="o_methods">
+				<ul class="list-unstyled">
+				#foreach($type in $row.accessTypes)
+					<li class="o_nowrap">
+						<i class="o_icon o_icon-fw $type.type o_icon-lg"></i>
+						#if($type.price && $type.price.length() > 0)<span class="o_access_price"> ($type.price) </span>#end 
+						<span class="o_access_name"> $r.escapeHtml("$type.displayName")</span>
+					</li>
+				#end
+				</ul>
+			</div>
+		</div> 
+		#end
+		
+		<div class="o_actions">
+			$r.render($row.getDetailsLinkName())
+			#if($row.getStartLinkName())
+				$r.render($row.getStartLinkName())
+			#end
+		</div>
+	</div>
+</div>

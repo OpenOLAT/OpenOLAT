@@ -106,6 +106,7 @@ public class GroupTaskToCoachPage {
 	public GroupTaskToCoachPage reviewed() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_reviewed");
 		OOGraphene.waitElement(reviewBy, browser);
+		OOGraphene.scrollTo(By.id("o_step_review_content"), browser);
 		OOGraphene.click(reviewBy, browser);
 		confirm();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
@@ -196,7 +197,7 @@ public class GroupTaskToCoachPage {
 		
 		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form a.btn.o_sel_assessment_form_save_and_done");
 		OOGraphene.click(saveAndCloseBy, browser);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -223,8 +224,9 @@ public class GroupTaskToCoachPage {
 	 * @return
 	 */
 	public GroupTaskToCoachPage groupAssessment(Boolean passed, Float score) {
+		OOGraphene.waitModalDialog(browser);
 		By groupAssessmentPopupBy = By.cssSelector(".modal-body .o_sel_course_gta_group_assessment_form");
-		OOGraphene.waitElement(groupAssessmentPopupBy, 5, browser);
+		OOGraphene.waitElement(groupAssessmentPopupBy, browser);
 		
 		By applyToAllCheckBy = By.xpath("//div[contains(@class,'o_sel_course_gta_group_assessment_form')]//div[contains(@class,'o_sel_course_gta_apply_to_all')]//input[@type='checkbox']");
 		WebElement applyToAllCheckEl = browser.findElement(applyToAllCheckBy);
@@ -246,14 +248,14 @@ public class GroupTaskToCoachPage {
 			OOGraphene.waitBusy(browser);
 		}
 		
-		By saveBy = By.cssSelector(".o_sel_course_gta_group_assessment_form button.btn-primary");
+		By saveBy = By.cssSelector(".o_sel_course_gta_group_assessment_form a.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public GroupTaskToCoachPage assertPassed() {
-		By passedBy = By.cssSelector("#o_step_grading_content table tr.o_state.o_passed");
+		By passedBy = By.cssSelector("#o_step_grading_content table div.o_state.o_passed");
 		List<WebElement> passedEls = browser.findElements(passedBy);
 		Assert.assertFalse(passedEls.isEmpty());
 		return this;

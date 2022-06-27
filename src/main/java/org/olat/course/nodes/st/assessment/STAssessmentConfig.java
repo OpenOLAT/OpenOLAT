@@ -26,6 +26,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.MaxScoreCumulator.MaxScore;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -37,12 +38,14 @@ public class STAssessmentConfig implements AssessmentConfig {
 	
 	private static final MaxScoreCumulator MAX_SCORE_CUMULATOR = new MaxScoreCumulator();
 	
+	private final RepositoryEntryRef courseEntry;
 	private final CourseNode courseNode;
 	private final boolean isRoot;
 	private final ModuleConfiguration rootConfig;
 	private final ScoreCalculator scoreCalculator;
 
-	public STAssessmentConfig(STCourseNode courseNode, boolean isRoot, ModuleConfiguration rootConfig) {
+	public STAssessmentConfig(RepositoryEntryRef courseEntry, STCourseNode courseNode, boolean isRoot, ModuleConfiguration rootConfig) {
+		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.isRoot = isRoot;
 		this.rootConfig = rootConfig;
@@ -79,7 +82,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMaxScore() {
 		if (scoreCalculator == null && rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
-			MaxScore maxScore = MAX_SCORE_CUMULATOR.getMaxScore(courseNode);
+			MaxScore maxScore = MAX_SCORE_CUMULATOR.getMaxScore(courseEntry, courseNode);
 			String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
 			if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
 				return maxScore.getSum();
@@ -94,6 +97,16 @@ public class STAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMinScore() {
 		return null;
+	}
+	
+	@Override
+	public boolean hasGrade() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return false;
 	}
 
 	@Override
@@ -117,6 +130,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 		return isRoot && (
 				   rootConfig.has(STCourseNode.CONFIG_PASSED_PROGRESS)
 				|| rootConfig.has(STCourseNode.CONFIG_PASSED_ALL)
+				|| rootConfig.has(STCourseNode.CONFIG_PASSED_NUMBER)
 				|| rootConfig.has(STCourseNode.CONFIG_PASSED_POINTS)
 				);
 	}
@@ -127,6 +141,11 @@ public class STAssessmentConfig implements AssessmentConfig {
 			return Float.valueOf(scoreCalculator.getPassedCutValue());
 		}
 		return null;
+	}
+	
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return Boolean.TRUE;
 	}
 
 	@Override

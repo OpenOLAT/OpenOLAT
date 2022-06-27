@@ -38,6 +38,8 @@ public class CourseElementMock implements CourseElement {
 	private String longTitle;
 	private boolean assesseable;
 	private Mode scoreMode;
+	private boolean grade;
+	private boolean autoGrade;
 	private Mode passedMode;
 	private BigDecimal cutValue;
 	private RepositoryEntry repositoryEntry;
@@ -95,6 +97,24 @@ public class CourseElementMock implements CourseElement {
 
 	public void setScoreMode(Mode scoreMode) {
 		this.scoreMode = scoreMode;
+	}
+
+	@Override
+	public boolean hasGrade() {
+		return grade;
+	}
+
+	public void setGrade(boolean grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public boolean isAutoGrade() {
+		return autoGrade;
+	}
+
+	public void setAutoGrade(boolean autoGrade) {
+		this.autoGrade = autoGrade;
 	}
 
 	@Override

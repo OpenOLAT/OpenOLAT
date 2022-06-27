@@ -184,7 +184,7 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				return;
 			}
 			
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(entry, courseNode);
 			if(Mode.none != assessmentConfig.getPassedMode()) {
 				if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
 					List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);

@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -49,6 +51,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,9 +68,6 @@ public class LayoutAdminController extends FormBasicController {
 	
 	private static final Set<String> imageMimeTypes = new HashSet<>();
 	static {
-		imageMimeTypes.add("image/gif");
-		imageMimeTypes.add("image/jpg");
-		imageMimeTypes.add("image/jpeg");
 		imageMimeTypes.add("image/png");
 	}
 	private FormLink deleteLogo;
@@ -138,7 +138,7 @@ public class LayoutAdminController extends FormBasicController {
 			logoUpload.setPreview(ureq.getUserSession(), true);
 			logoUpload.setInitialFile(logo);
 		}
-		logoUpload.limitToMimeType(imageMimeTypes, null, null);
+		logoUpload.limitToMimeType(imageMimeTypes, "customizing.img.error", null);
 		
 		String[] logoUrlTypeValues = new String[]{
 			translate("customizing.logo.link.landingpage"),
@@ -217,14 +217,21 @@ public class LayoutAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(logoUpload == source) {
 			if (logoUpload.isUploadSuccess()) {
-				layoutModule.removeLogo();
-				File destinationDir = layoutModule.getLogoDirectory();
-				File newLogo = logoUpload.moveUploadFileTo(destinationDir);
-				layoutModule.setLogoFilename(newLogo.getName());
-				logoUpload.setInitialFile(newLogo);
-				deleteLogo.setVisible(true);
-				getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
-				
+				logoUpload.clearError();
+				List<ValidationStatus> validationResults = new ArrayList<>();
+				logoUpload.validate(validationResults);
+				if (validationResults.isEmpty()) {
+					layoutModule.removeLogo();
+					File destinationDir = layoutModule.getLogoDirectory();
+					File newLogo = logoUpload.moveUploadFileTo(destinationDir);					
+					layoutModule.setLogoFilename(newLogo.getName());
+					File normalizedLogo = layoutModule.getLogo();
+					logoUpload.setInitialFile(normalizedLogo);
+					deleteLogo.setVisible(true);
+					getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
+				} else {
+					logoUpload.reset();
+				}
 			}
 		} else if(logoLinkTypeEl == source) {
 			boolean custom = logoLinkTypeEl.isOneSelected() && "custom".equals(logoLinkTypeEl.getSelectedKey());

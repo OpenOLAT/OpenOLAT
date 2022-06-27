@@ -104,7 +104,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 		
 		viewAsTeacher = secCallback.viewAs() == LectureRoles.teacher;
 		if(viewAsTeacher) {
-			lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(), getCurrentDate(), null, secCallback);
+			lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(),
+					getCurrentDate(), null, secCallback, true);
 			listenTo(lectureBlocksCtrl);
 			mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
 		}

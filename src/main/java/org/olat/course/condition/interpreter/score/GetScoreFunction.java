@@ -86,7 +86,7 @@ public class GetScoreFunction extends AbstractFunction {
 		}
 
 		Float score = evalScoreOfCourseNode(childId);
-		return new Double(score);
+		return Double.valueOf(score.doubleValue());
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class GetScoreFunction extends AbstractFunction {
 			ScoreEvaluation se = sa.evalCourseNode(foundNode);
 			if(se != null) {
 				// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-				if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
+				if(se.getUserVisible() != null && se.getUserVisible().booleanValue()) {
 					score = se.getScore();
 				} else {
 					score = Float.valueOf(0.0f);
@@ -124,7 +124,7 @@ public class GetScoreFunction extends AbstractFunction {
 
 	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 
 }

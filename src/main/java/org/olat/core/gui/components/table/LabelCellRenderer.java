@@ -56,32 +56,36 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 			String value = getExportValue(cellValue, translator);
 			target.append(value);
 		} else {
-			target.append("<div>");
-			target.append("<span class='o_labeled_light");
-			String elementCssClass = getElementCssClass(cellValue);
-			if (StringHelper.containsNonWhitespace(elementCssClass)) {
-				target.append(" ").append(elementCssClass);
-			}
-			target.append("'");
-			String title = getTitle(cellValue, translator);
-			if (StringHelper.containsNonWhitespace(title)) {
-				target.append(" title='").append(title).append("'");
-			}
-			target.append(">");
-			
-			String iconCssClass = getIconCssClass(cellValue);
-			if (StringHelper.containsNonWhitespace(iconCssClass)) {
-				target.append("<i class='o_icon ").append(iconCssClass).append("'> </i> ");
-			}
-			
-			String value = getCellValue(cellValue, translator);
-			if (StringHelper.containsNonWhitespace(value)) {
-				target.append("<span>").append(value).append("</span>");
-			}
-			
-			target.append("</span>");
-			target.append("</div>");			
+			render(target, translator, cellValue);
 		}
+	}
+
+	protected void render(StringOutput target, Translator translator, Object cellValue) {
+		target.append("<div>");
+		target.append("<span class='o_labeled_light");
+		String elementCssClass = getElementCssClass(cellValue);
+		if (StringHelper.containsNonWhitespace(elementCssClass)) {
+			target.append(" ").append(elementCssClass);
+		}
+		target.append("'");
+		String title = getTitle(cellValue, translator);
+		if (StringHelper.containsNonWhitespace(title)) {
+			target.append(" title='").append(title).append("'");
+		}
+		target.append(">");
+		
+		String iconCssClass = getIconCssClass(cellValue);
+		if (StringHelper.containsNonWhitespace(iconCssClass)) {
+			target.append("<i class='o_icon ").append(iconCssClass).append("'> </i> ");
+		}
+		
+		String value = getCellValue(cellValue, translator);
+		if (StringHelper.containsNonWhitespace(value)) {
+			target.append("<span>").append(value).append("</span>");
+		}
+		
+		target.append("</span>");
+		target.append("</div>");
 	}
 
 }

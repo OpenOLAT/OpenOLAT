@@ -409,6 +409,12 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 	
+	public StringOutput mathJaxJavascriptConfig() {
+		StringOutput sb = new StringOutput(100);
+		sb.append(Formatter.mathJaxConfiguration());
+		return sb;
+	}
+	
 	public String logoutUrl() {
 		return relLink(Settings.getLoginPath() + "/") + "?logout=true";
 	}
@@ -1048,6 +1054,11 @@ public class VelocityRenderDecorator implements Closeable {
 	public String formatTime(Date date) {
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatTime(date);
+	}
+	
+	public String formatTimeShort(Date date) {
+		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
+		return f.formatTimeShort(date);
 	}
 	
 	/**

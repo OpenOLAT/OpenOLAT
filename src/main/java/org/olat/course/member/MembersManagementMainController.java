@@ -166,7 +166,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		if(acModule.isEnabled() && (entryAdmin || principal ||  memberManagementRight)) {
 			//check if the course is managed and/or has offers
 			if(!RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.bookings)
-					|| acService.isResourceAccessControled(repoEntry.getOlatResource(), null)) {
+					|| (repoEntry.isPublicVisible() && acService.isResourceAccessControled(repoEntry.getOlatResource(), null))) {
 				GenericTreeNode node = new GenericTreeNode(translate("menu.orders"), CMD_BOOKING);
 				node.setAltText(translate("menu.orders.alt"));
 				node.setCssClass("o_sel_membersmgt_orders");
@@ -181,7 +181,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 		
-		if ((entryAdmin || principal || memberManagementRight || groupManagementRight) && courseModule.isDisclaimerEnabled()) {
+		if ((entryAdmin || principal || memberManagementRight || groupManagementRight)
+				&& courseModule.isDisclaimerEnabled() && coachCourseEnv.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled()) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.consents"), CMD_CONSENTS);
 			node.setAltText("menu.consents.alt");
 			node.setCssClass("o_sel_memebersmgt_consents");
@@ -275,6 +276,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				if(disclaimerController == null) {
 					disclaimerController = new CourseDisclaimerConsentOverviewController(ureq, bwControl, repoEntry, toolbarPanel, entryAdmin || memberManagementRight || groupManagementRight);
 					listenTo(disclaimerController);
+				} else {
+					disclaimerController.loadModel();
 				}
 				mainVC.put("content", disclaimerController.getInitialComponent());
 				selectedCtrl = disclaimerController;

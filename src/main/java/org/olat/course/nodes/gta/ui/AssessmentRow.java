@@ -44,14 +44,19 @@ public class AssessmentRow {
 	private UserCourseEnvironment userCourseEnv;
 	
 	private TextElement scoreEl;
+	private MultipleSelectionElement applyGradeEl;
 	private MultipleSelectionElement passedEl;
 	private FormLink assessmentDocsTooltipLink;
 	private FormLink assessmentDocsEditLink;
 	private FormLink commentTooltipLink, commentEditLink;
+	private MultipleSelectionElement userVisibilityEl;
 	
 	private String score;
+	private String grade;
+	private String translatedGrade;
 	private Boolean passed;
 	private String comment;
+	private Boolean userVisibility;
 	
 	public AssessmentRow(Identity identity, boolean duplicate) {
 		this.identity = identity;
@@ -79,6 +84,22 @@ public class AssessmentRow {
 
 	public void setScore(String score) {
 		this.score = score;
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getTranslatedGrade() {
+		return translatedGrade;
+	}
+
+	public void setTranslatedGrade(String translatedGrade) {
+		this.translatedGrade = translatedGrade;
 	}
 
 	public Boolean getPassed() {
@@ -137,6 +158,14 @@ public class AssessmentRow {
 		this.scoreEl = scoreEl;
 	}
 
+	public MultipleSelectionElement getApplyGradeEl() {
+		return applyGradeEl;
+	}
+
+	public void setApplyGradeEl(MultipleSelectionElement applyGradeEl) {
+		this.applyGradeEl = applyGradeEl;
+	}
+
 	public MultipleSelectionElement getPassedEl() {
 		return passedEl;
 	}
@@ -144,4 +173,21 @@ public class AssessmentRow {
 	public void setPassedEl(MultipleSelectionElement passedEl) {
 		this.passedEl = passedEl;
 	}
+
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	public void setUserVisibility(Boolean userVisibility) {
+		this.userVisibility = userVisibility;
+	}
+
+	public MultipleSelectionElement getUserVisibilityEl() {
+		return userVisibilityEl;
+	}
+
+	public void setUserVisibilityEl(MultipleSelectionElement userVisibilityEl) {
+		this.userVisibilityEl = userVisibilityEl;
+	}
+	
 }

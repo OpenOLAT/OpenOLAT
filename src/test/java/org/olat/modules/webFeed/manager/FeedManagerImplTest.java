@@ -293,11 +293,11 @@ public class FeedManagerImplTest {
 
 	@Test
 	public void importShouldNotCreateItemsIfNoXmlFilesArePresent() {
-		List<Item> emtpyList = new ArrayList<>();
+		List<Item> emptyList = new ArrayList<>();
 
 		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
-		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(emtpyList);
+		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(emptyList);
 
 		sut.importFeedFromXML(resourceDummy, true);
 

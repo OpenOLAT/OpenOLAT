@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.auto;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -69,20 +71,19 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			Form form) {
+	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		return null;
 	}
 
 	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link) {
+			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported) {
 		return null;
 	}
 
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
-			OfferAccess link) {
+			OfferAccess link, boolean offerOrganisationSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported) {
 		return null;
 	}
 

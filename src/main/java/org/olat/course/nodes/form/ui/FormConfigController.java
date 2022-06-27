@@ -230,6 +230,7 @@ public class FormConfigController extends FormBasicController {
 		if (selectedFormEntry != null) {
 			this.formEntry = selectedFormEntry;
 			updateUI();
+			markDirty();
 		}
 	}
 
@@ -243,8 +244,8 @@ public class FormConfigController extends FormBasicController {
 	}
 
 	private void doPreviewEvaluationForm(UserRequest ureq) {
-		File formFile = formManager.getFormFile(survey);
-		DataStorage storage = formManager.loadStorage(survey);
+		File formFile = formManager.getFormFile(formEntry);
+		DataStorage storage = formManager.loadStorage(formEntry);
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
 				FormCourseNode.EMPTY_STATE);
 		

@@ -132,6 +132,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -444,6 +445,8 @@ public class CourseFactory {
 		CoreSpringFactory.getImpl(GTAManager.class).deleteAllTaskLists(entry);
 		//delete the storage folder of info messages attachments
 		CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).deleteStorage(course);
+		// Delete GradeScales
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, null);
 		// Delete course elements
 		CoreSpringFactory.getImpl(CourseNodeService.class).deleteCourseElements(entry);
 
@@ -529,6 +532,10 @@ public class CourseFactory {
 			targetCourse.setEditorTreeModel((CourseEditorTreeModel) XStreamHelper.xstreamClone(sourceCourse.getEditorTreeModel()));
 			targetCourse.saveEditorTreeModel();
 			
+			// create DB entries for course nodes
+			CourseNodeService courseNodeService = CoreSpringFactory.getImpl(CourseNodeService.class);
+			courseNodeService.syncCourseElements(targetCourse);
+			
 			// copy course style folder
 			VFSContainer sourceCourseStyleCont = VFSManager.olatRootContainer(
 					sourceCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
@@ -549,13 +556,17 @@ public class CourseFactory {
 			CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
 			if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
 				VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
-				VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
-				VFSManager.copyContent(sourceContainer, targetContainer);
+				if (sourceContainer.exists()) {
+					VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+					targetContainer.copyContentOf(sourceContainer, author);
+				}
 			}
 			if(cc.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(cc.getDocumentsPath())) {
 				VFSContainer sourceContainer = CourseDocumentsFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
-				VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
-				VFSManager.copyContent(sourceContainer, targetContainer);
+				if (sourceContainer.exists()) {
+					VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+					targetContainer.copyContentOf(sourceContainer, author);
+				}
 			}
 			
 			// copy folder nodes directories
@@ -647,12 +658,11 @@ public class CourseFactory {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void publishCourse(ICourse course, RepositoryEntryStatusEnum accessStatus, boolean allUsers, boolean guests,
-			Identity identity, Locale locale) {
+	public static void publishCourse(ICourse course, RepositoryEntryStatusEnum accessStatus, Identity identity, Locale locale) {
 		 CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		 PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, locale);
 		 PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
-		 publishProcess.changeGeneralAccess(identity, accessStatus, allUsers, guests);
+		 publishProcess.changeGeneralAccess(identity, accessStatus);
 
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<>();
@@ -827,7 +837,7 @@ public class CourseFactory {
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
 
-		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
+		CoreSpringFactory.getImpl(ChatLogHelper.class).archiveResource(course, exportDirectory);
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 
@@ -920,7 +930,6 @@ public class CourseFactory {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(theCourse, () -> {
 				final PersistingCourseImpl course = getCourseEditSession(resourceableId);
 				if(course != null && course.isReadAndWrite()) {
-					course.initHasAssessableNodes();
 					course.saveRunStructure();
 					course.saveEditorTreeModel();
 

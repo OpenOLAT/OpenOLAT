@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -31,8 +34,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessagePanelController;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -53,6 +58,7 @@ import org.olat.modules.assessment.ui.AssessmentStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.PercentStat;
 import org.olat.modules.assessment.ui.ScoreStat;
+import org.olat.modules.grade.GradeModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,6 +74,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private final AssessmentStatisticsController statisticCtrl;
 	private final CourseNodeToReviewSmallController toReviewCtrl;
 	private final Controller toReleaseCtrl;
+	private CourseNodeToApplyGradeSmallController toApplyGradeCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
 
 	@Autowired
@@ -76,6 +83,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
+	@Autowired
+	private GradeModule gradeModule;
 	
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -85,7 +94,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		mainVC = createVelocityContainer("course_overview");
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		boolean hasAssessableNodes = course.hasAssessableNodes();
+		boolean hasAssessableNodes = AssessmentHelper.checkForAssessableNodes(courseEntry, course.getRunStructure().getRootNode());
 		mainVC.contextPut("hasAssessableNodes", Boolean.valueOf(hasAssessableNodes));
 		
 		// assessment changes subscription
@@ -113,7 +122,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNode.getIdent(), null, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, rootNode);
 		PercentStat percentStat = null;
 		if (Mode.none != assessmentConfig.getPassedMode()) {
 			percentStat = PercentStat.passed;
@@ -124,7 +133,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		if (Mode.none != assessmentConfig.getScoreMode()) {
 			Double minScore = assessmentConfig.getMinScore()!= null? Double.valueOf(assessmentConfig.getMinScore().doubleValue()): null;
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
-			scoreStat = ScoreStat.of(minScore, maxScore);
+			scoreStat = ScoreStat.of(minScore, maxScore, false);
 		}
 		
 		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params, percentStat, scoreStat);
@@ -144,6 +153,16 @@ public class AssessmentCourseOverviewController extends BasicController {
 		listenTo(toReleaseCtrl);
 		mainVC.put("toRelease", toReleaseCtrl.getInitialComponent());
 		
+		if (coachUserEnv.isAdmin() || rootNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY)) {
+			List<String> manualGradeSubIdents = new ArrayList<>();
+			addManualGradeSubIdents(manualGradeSubIdents, courseEntry, coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode());
+			if (gradeModule.isEnabled() && !manualGradeSubIdents.isEmpty()) {
+				toApplyGradeCtrl = new CourseNodeToApplyGradeSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback, manualGradeSubIdents);
+				listenTo(toApplyGradeCtrl);
+				mainVC.put("toApplyGrade", toApplyGradeCtrl.getInitialComponent());
+			}
+		}
+		
 		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(assessmentModeListCtrl);
 		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
@@ -151,6 +170,21 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	private void addManualGradeSubIdents(List<String> manualGradeSubIdents, RepositoryEntry courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade()) {
+			manualGradeSubIdents.add(courseNode.getIdent());
+		} 
+		int childCount = courseNode.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			INode child = courseNode.getChildAt(i);
+			if (child instanceof CourseNode) {
+				CourseNode childCourseNode = (CourseNode)child;
+				addManualGradeSubIdents(manualGradeSubIdents, courseEntry, childCourseNode);
+			}
+		}
 	}
 	
 	public void reloadAssessmentModes() {
@@ -167,7 +201,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 			if(event instanceof CourseNodeIdentityEvent) {
 				fireEvent(ureq, event);
 			}
-		
+		} else if(toApplyGradeCtrl == source) {
+			if(event instanceof CourseNodeIdentityEvent) {
+				fireEvent(ureq, event);
+			}
 		} else if(assessmentModeListCtrl == source) {
 			if(event instanceof CourseNodeEvent || event instanceof AssessmentModeStatusEvent) {
 				fireEvent(ureq, event);

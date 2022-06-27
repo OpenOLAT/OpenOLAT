@@ -41,7 +41,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.JSAndCSSAdder;
-import org.olat.core.gui.control.winmgr.ScrollTopCommand;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -173,7 +173,7 @@ public class MenuTree extends AbstractComponent {
 	private void scrollTop(UserRequest ureq) {
 		Window window = Windows.getWindows(ureq).getWindow(ureq);
 		if(window != null) {
-			window.getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+			window.getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 

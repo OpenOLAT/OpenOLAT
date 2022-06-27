@@ -10,97 +10,9 @@
 
 #if($locked)
 	<p class="o_warning">$r.translate("error.pageeditedby", $lockOwner) #if($r.isTrue($lockOwnerSameUser))$r.translate("lock.same.user.different.window")#end</p>
-#else
-#if ($r.available("rtfElement"))
-	<script>
-	function b_resizetofit_htmleditor() {
-		var mceEditEl = jQuery('.mce-edit-area');
-		if (mceEditEl.lengh == 0) {
-			return;
-		}
-		var availableHeight = window.innerHeight;
-		// minus the mce top space
-		editorWrapperEl = jQuery(mceEditEl[0]);
-		availableHeight -= editorWrapperEl.offset().top;
-		// minus the mce status bar
-		var mceStatusEl = jQuery('.mce-statusbar');
-		if (mceStatusEl.lengh == 0) {
-			return;
-		}
-		availableHeight -= jQuery(mceStatusEl[0]).outerHeight();
-		// minus the oo save buttons
-		var saveEl = jQuery('#o_save');
-		if (saveEl.lengh == 0) {
-			return;
-		}
-		availableHeight -= jQuery(saveEl[0]).outerHeight();
-		// minus the oo footer
-		var footerEl = jQuery('#o_footer_wrapper');
-		if (footerEl != null) {
-			availableHeight -= footerEl.outerHeight();
-		}
-		// use new height in editor
-		var edi = jQuery("#$f.getItemId("rtfElement")_ifr");
-		if (edi) {		
-			## use calculated height
-			edi.height(parseInt(availableHeight)+"px");		
-		} else {
-			## editor not available anymore - remove listener
-			Event.stopObserving(window, 'resize', b_resizetofit_htmleditor);
-		}
-		// keep for later reusage
-		o_info.optimized_htmleditor_height = availableHeight;
-		return availableHeight;
-	}
-	## attach handler on window resize 
-	jQuery(window).resize(b_resizetofit_htmleditor);	
-
-	## method to use the last editor height as a preset to reduce flickering.
-	function b_initialEditorHeight() {
-		if (o_info.optimized_htmleditor_height) return o_info.optimized_htmleditor_height;
-		else return window.innerHeight - 200;
-	}
-	
-	## Check for dirtyness and mark buttons accordingly, each second
-	jQuery.periodic({period: 1000, decay:1.0, max_period: Number.MAX_VALUE}, function() {
-		var executor = this;
-		## first check if the html editor still exists on this page, otherwhise stop executing this code
-		var elem = jQuery('#$f.getItemId("rtfElement")');
-		if (elem.length == 0) {
-			executor.cancel();
-		} else if (tinymce && tinymce.activeEditor) {
-			if (tinymce.activeEditor.isDirty()) {
-				o2c=1;
-				## add dirty class when dirty
-				jQuery('#o_button_save a').each(function(index,el) {
-					if(!jQuery(this).hasClass('o_button_dirty')) {
-						jQuery(this).addClass('o_button_dirty');
-						#if($f.isVisible("saveandclosebuttontext"))
-							jQuery('#o_button_saveclose a').each(function(index2, el2) {
-								jQuery(this).addClass('o_button_dirty');
-							});
-						#end
-					}
-				});
-			} else {
-				## when not dirty remove dirty class
-				jQuery('#o_button_save a').each(function(index,el) {
-					if (jQuery(this).hasClass('o_button_dirty')) {
-						jQuery(this).removeClass('o_button_dirty');
-						#if ($f.isVisible("saveandclosebuttontext"))
-							jQuery('#o_button_saveclose a').each(function(index2, el2) {
-								jQuery(this).removeClass('o_button_dirty');
-							});
-						#end
-					}
-				});
-			}
-		}		
-	});
-	</script>
-	
+#elseif ($r.available("rtfElement"))
 	## script block must be before editor loads
-	<div class="o_editor">
+	<div class="o_editor clearfix">
 		#if ($r.available("metadata"))
 			$r.render("metadata")
 		#end
@@ -117,7 +29,5 @@
 			<span id="o_button_close">$r.render("cancel")</span>
 		#end
 	</div>
-#end
-
 #end		
 </div>

@@ -95,10 +95,12 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage selectUsersCourseNode(String nodeTitle) {
 		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]/td/a[contains(@onclick,'cmd.select.node')]");
+		OOGraphene.waitElement(rowsBy, browser);
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
-		rowEls.get(0).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTo(rowsBy, browser);
+		browser.findElement(rowsBy).click();
+		OOGraphene.waitElement(By.cssSelector("div.o_assessment_panel"), browser);
 		return this;
 	}
 	
@@ -156,7 +158,7 @@ public class AssessmentToolPage {
 	public AssessmentToolPage setAssessmentScore(float score) {
 		By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
-		return closeAssessment();
+		return this;
 	}
 	
 	public AssessmentToolPage setAssessmentPassed(Boolean passed) {
@@ -166,14 +168,7 @@ public class AssessmentToolPage {
 		return this;
 	}
 	
-	public AssessmentToolPage setAssessmentVisibility(boolean visible) {
-		String val = visible ? "visible" : "hidden";
-		By visibleBy = By.cssSelector(".o_sel_assessment_form_visibility input[type='radio'][value='" + val + "']");
-		browser.findElement(visibleBy).click();
-		return this;
-	}
-	
-	public AssessmentToolPage closeAssessment() {
+	public AssessmentToolPage closeAndPublishAssessment() {
 		By saveBy = By.cssSelector("a.btn.o_sel_assessment_form_save_and_done");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
@@ -250,12 +245,13 @@ public class AssessmentToolPage {
 	
 	public AssessmentToolPage generateCertificate() {
 		By userLinksBy = By.className("o_sel_certificate_generate");
+		OOGraphene.waitElement(userLinksBy, browser);
 		browser.findElement(userLinksBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 
 		By certificateBy = By.cssSelector("ul.o_certificates a>i.o_icon.o_filetype_pdf");
-		OOGraphene.waitElement(certificateBy, 15, browser);
+		OOGraphene.waitElementSlowly(certificateBy, 15, browser);
 		return this;
 	}
 	

@@ -58,7 +58,7 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.video.metaDataConfig");
-		setFormContextHelp("Set up info page");
+		setFormContextHelp("manual_user/authoring/Set_up_info_page/");
 		
 		OLATResource videoResource = repoEntry.getOlatResource();
 		if(StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {

@@ -197,7 +197,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			subjectEl.setMandatory(true);
 		
 			bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, false, mailTemplate.getBodyTemplate(), inviteeCont);
-			bodyEl.setHelpUrlForManualPage("E-Mail");
+			bodyEl.setHelpUrlForManualPage("manual_user/personal/E-Mail/");
 			bodyEl.setMandatory(true);
 		}
 		

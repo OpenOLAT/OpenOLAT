@@ -22,6 +22,7 @@ package org.olat.course.style.ui;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -73,7 +74,7 @@ public class CourseStyleUIFactory {
 	
 	public static String translate(Translator translator, ColorCategory colorCategory) {
 		String i18nKey = getI18nKey(colorCategory);
-		String translation = translator.translate(i18nKey);
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if(i18nKey.equals(translation) || translation.length() > 256) {
 			translation = colorCategory.getIdentifier();
 		}
@@ -94,7 +95,7 @@ public class CourseStyleUIFactory {
 	
 	public static String translateSystemImage(Translator translator, String filename) {
 		String i18nKey = getSystemImageI18nKey(filename);
-		String translation = translator.translate(i18nKey);
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if(i18nKey.equals(translation) || translation.length() > 256) {
 			translation = filename;
 		}

@@ -49,18 +49,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseNodeSelectionController extends BasicController {
 	
 	private final MenuTree menuTree;
+
+	private final RepositoryEntry courseEntry;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+
 	public CourseNodeSelectionController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl);
+		this.courseEntry = courseEntry;
 	
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
-		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		menuTree.setTreeModel(tm);
 		menuTree.setExpandSelectedNode(true);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
@@ -89,7 +92,7 @@ public class CourseNodeSelectionController extends BasicController {
 						//do nothing
 					} else {
 						CourseNode selectedNode = (CourseNode)uo;
-						AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(selectedNode);
+						AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, selectedNode);
 						if (assessmentConfig.isAssessable() && assessmentConfig.isEditable()) {
 							fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, selectedNode.getIdent()));
 						}
@@ -101,7 +104,7 @@ public class CourseNodeSelectionController extends BasicController {
 						fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, rootNode.getIdent()));
 					} else {
 						CourseNode selectedNode = (CourseNode)uo;
-						AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(selectedNode);
+						AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, selectedNode);
 						if (assessmentConfig.isAssessable() && assessmentConfig.isEditable()) {
 							fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, selectedNode.getIdent()));
 						}

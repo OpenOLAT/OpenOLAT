@@ -47,9 +47,9 @@ public class PaypalSmartButtonMapper implements Mapper {
 	private final OfferAccess link;
 	private final Identity identity;
 	private final PaypalCheckoutManager paypalManager;
-	private final PaypalSmartButtonAccessController controller;
+	private final PaypalSmartButtonPaymentController controller;
 	
-	public PaypalSmartButtonMapper(Identity identity, OfferAccess link, PaypalSmartButtonAccessController controller) {
+	public PaypalSmartButtonMapper(Identity identity, OfferAccess link, PaypalSmartButtonPaymentController controller) {
 		this.link = link;
 		this.identity = identity;
 		this.controller = controller;

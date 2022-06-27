@@ -150,15 +150,18 @@ public class EfficiencyStatementWebService {
 		
 		Date creationDate = efficiencyStatementVO.getCreationDate();
 		Float score = efficiencyStatementVO.getScore();
+		String grade = efficiencyStatementVO.getGrade();
+		String gradeSystemIdent = efficiencyStatementVO.getGradeSystemIdent();
+		String performanceClassIdent = efficiencyStatementVO.getPerformanceClassIdent();
 		Boolean passed = efficiencyStatementVO.getPassed();
 
 		OLATResource resource = resourceManager.findResourceById(resourceKey);
 		if(resource == null) {
 			String courseTitle = efficiencyStatementVO.getCourseTitle();
-			efficiencyStatementManager.createStandAloneUserEfficiencyStatement(creationDate, score, passed,
-					null, null, null, null, assessedIdentity, resourceKey, courseTitle);
+			efficiencyStatementManager.createStandAloneUserEfficiencyStatement(creationDate, score, grade,
+					gradeSystemIdent, performanceClassIdent, passed, null, null, null, null, assessedIdentity, resourceKey, courseTitle);
 		} else {
-			efficiencyStatementManager.createUserEfficiencyStatement(creationDate, score, passed, assessedIdentity, resource);
+			efficiencyStatementManager.createUserEfficiencyStatement(creationDate, score, grade, gradeSystemIdent, performanceClassIdent, passed, assessedIdentity, resource);
 		}
 		return Response.ok().build();
 	}

@@ -234,7 +234,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				coachedGroups = assessmentCallback.getCoachedGroups();
 			}
 
-			if(!coachedGroups.isEmpty()) {
+			if(coachedGroups != null && !coachedGroups.isEmpty()) {
 				SelectionValues groupValues = new SelectionValues();
 				for(BusinessGroup coachedGroup:coachedGroups) {
 					String groupName = StringHelper.escapeHtml(coachedGroup.getName());

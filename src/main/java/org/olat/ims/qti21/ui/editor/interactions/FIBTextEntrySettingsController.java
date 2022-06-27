@@ -107,7 +107,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		formLayout.add(alternativesCont);
 		alternativesCont.setLabel("fib.alternative", null);
 		alternativesCont.setHelpText(translate("fib.alternative.help"));
-		alternativesCont.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
+		alternativesCont.setHelpUrlForManualPage("manual_user/tests/Test_question_types/#fib");
 		alternativesCont.contextPut("alternatives", alternativeRows);
 		
 		addFirstAlternative = uifactory.addFormLink("add.first.alternative", "add", "", null, alternativesCont, Link.LINK | Link.NONTRANSLATED);
@@ -296,7 +296,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 			String val = row.getAlternativeEl().getValue();
 			int indexSeparator = val.indexOf(';');
 			// Don't split single ;, or &auml;
-			if(indexSeparator >= 0 && val.length() > 1 && indexSeparator != val.length() - 1) {
+			if(alternativeRows.size() == 1 && indexSeparator >= 0 && val.length() > 1 && indexSeparator != val.length() - 1) {
 				String[] valArr = val.split("[;]");
 				for(int i=0;i<valArr.length; i++) {
 					if(i==0) {

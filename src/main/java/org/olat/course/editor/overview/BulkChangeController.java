@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -268,7 +269,7 @@ public class BulkChangeController extends FormBasicController {
 	private void formOKAssessment(CourseNode courseNode) {
 		if (isEnabled(ignoreInCourseAssessmentEl)) {
 			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isAtLeastSelected(1);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 			assessmentConfig.setIgnoreInCourseAssessment(ignoreInCourseAssessment);
 		}
 	}

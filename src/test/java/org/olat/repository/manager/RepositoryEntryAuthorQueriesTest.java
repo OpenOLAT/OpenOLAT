@@ -35,6 +35,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -123,10 +124,10 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	public void searchViews_preparation_byAuthor() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
 		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setStatus(reOwner, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
 		RepositoryEntry reNotOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setStatus(reNotOwner, RepositoryEntryStatusEnum.preparation);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -146,10 +147,10 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	public void searchViews_preparation_asAuthor() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
 		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setStatus(reOwner, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
 		RepositoryEntry reNotOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setStatus(reNotOwner, RepositoryEntryStatusEnum.preparation);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -168,22 +169,25 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	public void searchViews_review_asAuthor() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
 		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.review, false, false);
+		repositoryManager.setStatus(reOwner, RepositoryEntryStatusEnum.review);
 		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
 		RepositoryEntry reNotOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotOwner, RepositoryEntryStatusEnum.review, false, false);
+		repositoryManager.setStatus(reNotOwner, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reNotOwnerButCopy = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reNotOwnerButCopy = repositoryManager.setAccess(reNotOwnerButCopy, RepositoryEntryStatusEnum.review, false, false);
-		repositoryManager.setAccess(reNotOwnerButCopy, true, false, false);
+		reNotOwnerButCopy = repositoryManager.setStatus(reNotOwnerButCopy, RepositoryEntryStatusEnum.review);
+		repositoryManager.setAccess(reNotOwnerButCopy, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry reNotOwnerButReference = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reNotOwnerButReference = repositoryManager.setAccess(reNotOwnerButReference, RepositoryEntryStatusEnum.review, false, false);
-		repositoryManager.setAccess(reNotOwnerButReference, false, true, false);
+		reNotOwnerButReference = repositoryManager.setStatus(reNotOwnerButReference, RepositoryEntryStatusEnum.review);
+		repositoryManager.setAccess(reNotOwnerButReference, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, false, null);
 		RepositoryEntry reNotOwnerButDownload = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reNotOwnerButDownload = repositoryManager.setAccess(reNotOwnerButReference, RepositoryEntryStatusEnum.review, false, false);
-		repositoryManager.setAccess(reNotOwnerButDownload, false, false, true);
+		reNotOwnerButDownload = repositoryManager.setStatus(reNotOwnerButReference, RepositoryEntryStatusEnum.review);
+		repositoryManager.setAccess(reNotOwnerButDownload, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setCanCopy(true);
+		params.setCanDownload(true);
+		params.setCanReference(true);
 
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertTrue(contains(reOwner, results));
@@ -200,13 +204,13 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	public void searchViews_idRefs() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
 		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.coachpublished, false, false);
+		repositoryManager.setStatus(reOwner, RepositoryEntryStatusEnum.coachpublished);
 		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
 		RepositoryEntry reNotOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryManager.setAccess(reNotOwner, RepositoryEntryStatusEnum.coachpublished, false, false);
+		repositoryManager.setStatus(reNotOwner, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry reNotOwnerButCopy = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reNotOwnerButCopy = repositoryManager.setAccess(reNotOwnerButCopy, RepositoryEntryStatusEnum.coachpublished, false, false);
-		repositoryManager.setAccess(reNotOwnerButCopy, true, false, false);
+		reNotOwnerButCopy = repositoryManager.setStatus(reNotOwnerButCopy, RepositoryEntryStatusEnum.coachpublished);
+		repositoryManager.setAccess(reNotOwnerButCopy, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
@@ -223,35 +227,36 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * and the entries have the flags copy allowed set.
 	 */
 	@Test
-	public void searchViews_status_asAuthor_withCopy() {
+	public void searchViews_statusAsAuthorCanCopy() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4-");
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
-		rePreparation = repositoryManager.setAccess(rePreparation, true, false, false);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
+		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
-		reReview = repositoryManager.setAccess(reReview, true, false, false);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
+		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, true, false, false);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
+		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
-		rePublished = repositoryManager.setAccess(rePublished, true, false, false);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
+		rePublished = repositoryManager.setAccess(rePublished, false,  RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
-		reClosed = repositoryManager.setAccess(reClosed, true, false, false);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
+		reClosed = repositoryManager.setAccess(reClosed, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
-		reTrash = repositoryManager.setAccess(reTrash, true, false, false);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
+		reTrash = repositoryManager.setAccess(reTrash, false,  RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, null);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
-		reDeleted = repositoryManager.setAccess(reDeleted, true, false, false);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
+		reDeleted = repositoryManager.setAccess(reDeleted,false, RepositoryEntryAllowToLeaveOptions.atAnyTime,  true, false, false, null);
 		
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setCanCopy(true);
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertFalse(contains(rePreparation, results));
@@ -268,24 +273,24 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * with no flags copy / download / reference set.
 	 */
 	@Test
-	public void searchViews_status_asAuthor() {
+	public void searchViews_statusAsAuthorNoReferenceable() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4-");
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -295,6 +300,48 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		Assert.assertFalse(contains(rePreparation, results));
 		Assert.assertFalse(contains(reReview, results));
 		Assert.assertFalse(contains(reCoachPublished, results));
+		Assert.assertFalse(contains(rePublished, results));
+		Assert.assertFalse(contains(reClosed, results));
+		Assert.assertFalse(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
+	}
+	
+	@Test
+	public void searchViews_statusAsAuthorCanDownload() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4b-");
+		
+		// a set of entries with every possible status
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
+		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
+		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
+		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
+		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
+		reClosed = repositoryManager.setAccess(reClosed, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
+		reTrash = repositoryManager.setAccess(reTrash, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
+		reDeleted = repositoryManager.setAccess(reDeleted,false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, null);
+		
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setCanDownload(true);
+		
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertFalse(contains(rePreparation, results));
+		Assert.assertTrue(contains(reReview, results));
+		Assert.assertTrue(contains(reCoachPublished, results));
 		Assert.assertTrue(contains(rePublished, results));
 		Assert.assertTrue(contains(reClosed, results));
 		Assert.assertFalse(contains(reTrash, results));
@@ -306,30 +353,30 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * with no flags copy / download / reference set.
 	 */
 	@Test
-	public void searchViews_status_asAuthor_deleted() {
+	public void searchViews_status_asAuthorDeleted() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-4-");
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryRelationDao.addRole(id, rePreparation, GroupRoles.owner.name());
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		repositoryEntryRelationDao.addRole(id, reReview, GroupRoles.owner.name());
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		repositoryEntryRelationDao.addRole(id, reCoachPublished, GroupRoles.owner.name());
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, rePublished, GroupRoles.owner.name());
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		repositoryEntryRelationDao.addRole(id, reClosed, GroupRoles.owner.name());
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		repositoryEntryRelationDao.addRole(id, reTrash, GroupRoles.owner.name());
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		repositoryEntryRelationDao.addRole(id, reDeleted, GroupRoles.owner.name());
 		
 		dbInstance.commitAndCloseSession();
@@ -357,19 +404,19 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -394,10 +441,10 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry reOwned = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reOwned = repositoryManager.setAccess(reOwned, RepositoryEntryStatusEnum.preparation, true, true);
+		reOwned = repositoryManager.setStatus(reOwned, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryRelationDao.addRole(id, reOwned, GroupRoles.owner.name());
 		RepositoryEntry reOwned2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reOwned2 = repositoryManager.setAccess(reOwned2, RepositoryEntryStatusEnum.preparation, true, true);
+		reOwned2 = repositoryManager.setStatus(reOwned2, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryRelationDao.addRole(id, reOwned2, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -419,19 +466,19 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -451,24 +498,24 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	 * Check the visibility of entries with different status as an administrator.
 	 */
 	@Test
-	public void searchViews_status_asAdministrator_searchDeleted() {
+	public void searchViews_status_asAdministratorSearchDeleted() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("view-4-");
 		
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePreparation = repositoryManager.setAccess(rePreparation, RepositoryEntryStatusEnum.preparation, true, true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reReview = repositoryManager.setAccess(reReview, RepositoryEntryStatusEnum.review, true, true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		rePublished = repositoryManager.setAccess(rePublished, RepositoryEntryStatusEnum.published, true, true);
+		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reClosed = repositoryManager.setAccess(reClosed, RepositoryEntryStatusEnum.closed, true, true);
+		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reTrash = repositoryManager.setAccess(reTrash, RepositoryEntryStatusEnum.trash, true, true);
+		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reDeleted = repositoryManager.setAccess(reDeleted, RepositoryEntryStatusEnum.deleted, true, true);
+		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -492,7 +539,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	public void searchViews_resource() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
 		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		reOwner = repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.closed, false, false);
+		reOwner = repositoryManager.setStatus(reOwner, RepositoryEntryStatusEnum.closed);
 		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		

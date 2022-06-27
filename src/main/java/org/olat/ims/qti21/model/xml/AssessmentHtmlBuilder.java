@@ -273,6 +273,7 @@ public class AssessmentHtmlBuilder {
 				for(int i=0; i<attributes.getLength(); i++) {
 					String name = attributes.getLocalName(i);
 					if(!"openolattype".equalsIgnoreCase(name)
+							&& !"data-qti-gap-type".equals(name)
 							&& !"data-qti-solution".equalsIgnoreCase(name)
 							&& !"data-qti-solution-empty".equalsIgnoreCase(name)) {
 						String value = attributes.getValue(i);

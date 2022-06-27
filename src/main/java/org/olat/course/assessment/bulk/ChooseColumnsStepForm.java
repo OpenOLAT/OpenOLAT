@@ -47,6 +47,7 @@ import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  *
@@ -62,15 +63,17 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	private SingleSelection commentColumnEl;
 	private SingleSelection userNameColumnEl;
 	private OverviewDataModel overviewDataModel;
+	private final RepositoryEntryRef courseEntry;
 	private final BulkAssessmentColumnSettings columnsSettings;
 	
 	private final String translatedPassed;
 	private final String translatedFailed;
 
 	public ChooseColumnsStepForm(UserRequest ureq, WindowControl wControl, BulkAssessmentColumnSettings columnsSettings,
-			StepsRunContext runContext, Form rootForm) {
+			StepsRunContext runContext, Form rootForm, RepositoryEntryRef courseEntry) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
+		this.courseEntry = courseEntry;
 		this.columnsSettings = columnsSettings;
 
 		@SuppressWarnings("unchecked")
@@ -89,10 +92,10 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("chooseColumns.title");
 		setFormDescription("chooseColumns.description");
-		setFormContextHelp("Using Course Tools#bulkassessment_map");
+		setFormContextHelp("manual_user/how-to/create_a_bulk_assessment_for_submission_tasks/#map");
 
 		CourseNode courseNode = (CourseNode)getFromRunContext("courseNode");
-		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
+		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
 
 		String[] usernameKeys = new String[numOfColumns];
 		String[] usernameValues = new String[numOfColumns];

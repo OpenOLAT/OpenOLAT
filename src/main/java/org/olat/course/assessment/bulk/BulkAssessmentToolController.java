@@ -42,6 +42,7 @@ import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
@@ -59,6 +60,7 @@ public class BulkAssessmentToolController extends BasicController {
 	private StepsMainRunController bulkAssessmentCtrl;
 	private final TaskExecutorManager taskManager;
 	private final OLATResource courseOres;
+	private final RepositoryEntry courseEntry;
 	
 	public BulkAssessmentToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			CourseNode courseNode, boolean canEditUserVisibility) {
@@ -67,6 +69,7 @@ public class BulkAssessmentToolController extends BasicController {
 		this.canEditUserVisibility = canEditUserVisibility;
 		taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
 		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
+		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		
 		startButton = LinkFactory.createButton("new.bulk", null, this);
 		startButton.setTranslator(getTranslator());
@@ -109,7 +112,7 @@ public class BulkAssessmentToolController extends BasicController {
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
-		Step start = new BulkAssessment_2_DatasStep(ureq, courseNode, canEditUserVisibility);
+		Step start = new BulkAssessment_2_DatasStep(ureq, courseEntry, courseNode, canEditUserVisibility);
 		bulkAssessmentCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("bulk.wizard.title"), "o_sel_bulk_assessment_wizard");
 		listenTo(bulkAssessmentCtrl);
@@ -117,7 +120,7 @@ public class BulkAssessmentToolController extends BasicController {
 	}
 	
 	private Feedback doBulkAssessment(Date scheduledDate, BulkAssessmentDatas datas) {
-		BulkAssessmentTask task = new BulkAssessmentTask(courseOres, courseNode, datas, getIdentity().getKey());
+		BulkAssessmentTask task = new BulkAssessmentTask(courseOres, courseNode, datas, getIdentity().getKey(), getLocale());
 		Feedback feedback;
 		if(scheduledDate == null) {
 			List<BulkAssessmentFeedback> feedbacks = task.process();

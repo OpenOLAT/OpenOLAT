@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -218,6 +219,33 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRoleToCountMemebers() {
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
+		RepositoryEntry repositoryEntry = repositoryService.create(null, random(), random(), random(), null, null,
+				RepositoryEntryStatusEnum.published, organisation2);
+		dbInstance.commitAndCloseSession();
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(participant1, repositoryEntry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, repositoryEntry, GroupRoles.participant.name());
+		organisationService.addMember(organisation1, author1, OrganisationRoles.author);
+		organisationService.addMember(organisation2, author2, OrganisationRoles.author);
+		organisationService.addMember(organisation3, author3, OrganisationRoles.author);
+		dbInstance.commitAndCloseSession();
+		
+		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMemebers(repositoryEntry);
+		
+		Assert.assertEquals(Long.valueOf(2), roleToCountMemebers.get(GroupRoles.participant.name()));
+		Assert.assertEquals(Long.valueOf(2), roleToCountMemebers.get(OrganisationRoles.author.name()));
+	}
+	
+	@Test
 	public void getMembers_defaultGroup() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("owner-1-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -363,24 +391,6 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Map<Long,Date> notEnrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(notEnrolledRe);
 		Assert.assertNotNull(notEnrollmentDates);
 		Assert.assertEquals(0, notEnrollmentDates.size());
-	}
-	
-	@Test
-	public void getAuthorKeys() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-1-");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("part-2-");
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
-		dbInstance.commit();
-		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
-		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
-		dbInstance.commit();
-		
-		List<Long> authorKeys = repositoryEntryRelationDao.getAuthorKeys(re);
-		Assert.assertNotNull(authorKeys);
-		Assert.assertEquals(1, authorKeys.size());
-		Assert.assertEquals(id1.getKey(), authorKeys.get(0));
 	}
 	
 	@Test

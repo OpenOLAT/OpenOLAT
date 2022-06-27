@@ -539,7 +539,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, 0, -1);
 		
 		assertThat(loadedItems).hasSize(6);
-		assertThat(keysOf(loadedItems)).containsOnlyElementsOf(keysOf(item11, item12, item13, item21, item22, item23));
+		assertThat(keysOf(loadedItems))
+			.containsExactlyInAnyOrderElementsOf(keysOf(item11, item12, item13, item21, item22, item23));
 	}
 	
 	@Test
@@ -561,7 +562,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(inKeys.size());
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(inKeys)
+				.containsExactlyInAnyOrderElementsOf(inKeys)
 				.doesNotContainAnyElementsOf(keysOf(item11, item13, item22, item23));
 	}
 	
@@ -787,7 +788,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item12))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item11, item12))
 				.doesNotContainAnyElementsOf(keysOf(item21, item22, item23));
 		
 		int countItems = qItemQueriesDao.countItems(params);
@@ -812,7 +813,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item12))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item11, item12))
 				.doesNotContainAnyElementsOf(keysOf(item21, item22, item23));
 		
 		int countItems = qItemQueriesDao.countItems(params);
@@ -841,7 +842,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item22, item23))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item22, item23))
 				.doesNotContainAnyElementsOf(keysOf(item11, item12, item21));
 		
 		int countItems = qItemQueriesDao.countItems(params);
@@ -864,7 +865,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item21))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item11, item21))
 				.doesNotContainAnyElementsOf(keysOf(item12, item22, item23));
 		
 		int countItems = qItemQueriesDao.countItems(params);
@@ -887,7 +888,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item12))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item11, item12))
 				.doesNotContainAnyElementsOf(keysOf(item21, item22, item23));
 		
 		int countItems = qItemQueriesDao.countItems(params);
@@ -910,7 +911,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(3);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item21, item22, item23))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item21, item22, item23))
 				.doesNotContainAnyElementsOf(keysOf(item11, item12));
 		
 		int countItems = qItemQueriesDao.countItems(params);
@@ -937,7 +938,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item12))
+				.containsExactlyInAnyOrderElementsOf(keysOf(item11, item12))
 				.doesNotContainAnyElementsOf(keysOf(item21, item22, item23));
 		
 		int countItems = qItemQueriesDao.countItems(params);

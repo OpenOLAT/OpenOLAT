@@ -23,6 +23,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,7 +43,7 @@ public class SurveyAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 	}
 	
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
 		return SURVEY_CONFIG;
 	}
 

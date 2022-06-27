@@ -72,7 +72,7 @@ public class ConditionInterpreter {
 	protected UserCourseEnvironment uce;
 
 	/**
-	 * ConditionInterpreter interpretes course conditions.
+	 * ConditionInterpreter interpreters course conditions.
 	 *
 	 * @param userCourseEnv
 	 */
@@ -158,6 +158,7 @@ public class ConditionInterpreter {
 		// functions to calculate score
 		env.addFunction(GetPassedFunction.name, new GetPassedFunction(userCourseEnv));
 		env.addFunction(GetScoreFunction.name, new GetScoreFunction(userCourseEnv));
+		env.addFunction(GetMaxScoreFunction.name, new GetMaxScoreFunction(userCourseEnv));
 		env.addFunction(GetAverageScoreFunction.NAME, new GetAverageScoreFunction(userCourseEnv));
 		env.addFunction(GetPassedWithCourseIdFunction.name, new GetPassedWithCourseIdFunction(userCourseEnv));
 		env.addFunction(GetScoreWithCourseIdFunction.name, new GetScoreWithCourseIdFunction(userCourseEnv));

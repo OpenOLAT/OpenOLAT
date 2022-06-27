@@ -578,6 +578,33 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.course.nodes.cl.ui.CheckListAssessmentController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Table for check lists" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
@@ -1429,6 +1456,31 @@
 				<entry key="org.olat.course.assessment.ui.tool.AssessmentCoachingTableModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Assessments in coaching tool" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
+				<entry key="org.olat.modules.grade.ui.wizard.GradeChangeTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Change gradeing scale users" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />

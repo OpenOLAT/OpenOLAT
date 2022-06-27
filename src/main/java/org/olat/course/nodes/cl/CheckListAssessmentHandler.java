@@ -38,6 +38,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
+import org.olat.course.nodes.cl.ui.CheckListIdentityListCourseNodeController;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -45,6 +46,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,8 +64,8 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		return new CheckListAssessmentConfig(courseNode.getModuleConfiguration());
+	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		return new CheckListAssessmentConfig(courseEntry, courseNode);
 	}
 
 	@Override
@@ -100,15 +102,16 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public boolean hasCustomIdentityList() {
-		return false;
+		return true;
 	}
-
+	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return null;
+		return new CheckListIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 	@Override

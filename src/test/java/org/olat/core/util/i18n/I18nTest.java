@@ -38,24 +38,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.Util;
 import org.olat.core.util.i18n.devtools.TranslationDevManager;
-import org.olat.core.util.i18n.ui.InlineTranslationInterceptHandlerController;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -498,7 +491,7 @@ public class I18nTest extends OlatTestCase {
 		bundleName = "org.olat.core.util.i18n.junittestdata.subtest";
 		metadataProperties = i18nMgr.getPropertiesWithoutResolvingRecursively(null, bundleName);
 		assertNotNull(metadataProperties);
-		assertTrue(metadataProperties.size() == 0);
+		assertTrue(metadataProperties.isEmpty());
 		assertEquals(I18nManager.DEFAULT_BUNDLE_PRIORITY, i18nMgr.getBundlePriority("bla.bla")); // default priority
 		assertEquals(I18nManager.DEFAULT_KEY_PRIORITY, i18nMgr.getKeyPriority(metadataProperties, "no.need.to.translate.this", bundleName));
 	}
@@ -561,7 +554,8 @@ public class I18nTest extends OlatTestCase {
 	/**
 	 * Test methods i18nManager.findMissingI18nItems()
 	 */
-	@Test public void testFindMissingI18nItems() {
+	@Test
+	public void testFindMissingI18nItems() {
 		Locale sourceLocale = i18nMgr.getLocaleOrDefault("de");
 		Locale targetLocale = i18nMgr.getLocaleOrDefault("de");
 		String notExistsTestBundle =  "org.olat.core.util.i18n.junittestdata.notexists";
@@ -573,96 +567,12 @@ public class I18nTest extends OlatTestCase {
 		assertEquals(total, i18nMgr.findMissingI18nItems(sourceLocale, targetLocale, null, true).size());
 		assertEquals(total, i18nMgr.findExistingAndMissingI18nItems(sourceLocale, targetLocale, null, true).size());
 	}
-
-	/**
-	 * Test methods i18nManager inline translation tool and InlineTranslationInterceptHandlerController
-	 */
-	@Test public void testInlineTranslationReplaceLocalizationMarkupWithHTML() {
-		// enable inline translation markup
-		i18nMgr.setMarkLocalizedStringsEnabled(null, true);
-		Translator inlineTrans = Util.createPackageTranslator(InlineTranslationInterceptHandlerController.class, i18nMgr.getLocaleOrNull("de"));
-		URLBuilder inlineTranslationURLBuilder = new jUnitURLBuilder();
-		String testBundle = "org.olat.core.util.i18n.junittestdata";
-		String testKey = "no.need.to.translate.this";
-		String rawtext1 = "Lorem impsum<b>nice stuff</b>";
-		String rawtext2 = "Holderadio <ul>lsdfsdf<y  asdf blblb";
-		String combinedKey = testBundle + ":" + testKey;
-		// test method that adds identifyers around the translation items
-		String plainVanillaWrapped = i18nMgr.getLocalizedString(testBundle, testKey, null, i18nMgr.getLocaleOrNull("de"), false, false);
-		String plainVanillaPlain = "just a test"; 
-		Pattern plainVanillaWrappedPattern = Pattern.compile(I18nManager.IDENT_PREFIX + combinedKey + ":([0-9]*?)" + I18nManager.IDENT_START_POSTFIX 
-				+  plainVanillaPlain 	+  I18nManager.IDENT_PREFIX + combinedKey + ":\\1" + I18nManager.IDENT_END_POSTFIX); 
-		Matcher m = plainVanillaWrappedPattern.matcher(plainVanillaWrapped);
-		assertTrue(m.find());
-		
-		// test find-replace translator identifyers with HTML markup
-		StringOutput inlineTransLink = new StringOutput();
-		String[] args = (combinedKey + ":1000000001").split(":");
-		InlineTranslationInterceptHandlerController.buildInlineTranslationLink(args, inlineTransLink, inlineTrans, inlineTranslationURLBuilder);
-		// Plain vanilla text
-		String convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(plainVanillaWrapped, inlineTranslationURLBuilder, inlineTrans);
-		assertEquals("<span class=\"o_translation_i18nitem\">" + inlineTransLink.toString() + plainVanillaPlain + "</span>", convertedToHTMLMarkup);
-		// Simple link		
-		String linkOPEN = "<a href=\"http://www.olat.org/bla/blu:bli#bla\" title='funny title' class=\"o_css O_anothercss\">";
-		String linkCLOSE = "</a>";
-		String inlineSpanOPEN = "<span class=\"o_translation_i18nitem\">";
-		String inlineSpanCLOSE = "</span>";
-		String translatedWithinLink =  linkOPEN + plainVanillaWrapped + linkCLOSE + rawtext1;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinLink, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinLinkExpected = inlineSpanOPEN + inlineTransLink.toString() + linkOPEN + plainVanillaPlain + linkCLOSE + inlineSpanCLOSE + rawtext1;
-		assertEquals(convertedWithinLinkExpected, convertedToHTMLMarkup);
-		// Simple link with span
-		String linkSpanOPEN = "<span class=\"bluber\">";
-		String linkSpanCLOSE = "</span>";
-		String translatedWithinLinkAndSpan = rawtext2 + linkOPEN + linkSpanOPEN + plainVanillaWrapped + linkSpanCLOSE + linkCLOSE;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinLinkAndSpan, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinLinkAndSpanExpected = rawtext2 + inlineSpanOPEN + inlineTransLink.toString() + linkOPEN + linkSpanOPEN + plainVanillaPlain + linkSpanCLOSE + linkCLOSE + inlineSpanCLOSE;
-		assertEquals(convertedWithinLinkAndSpanExpected, convertedToHTMLMarkup);
-		// Muliple links
-		String translatedWithinMultipleLinks =  translatedWithinLink + translatedWithinLinkAndSpan + translatedWithinLinkAndSpan;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinMultipleLinks, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinMultipleLinksExpected = convertedWithinLinkExpected + convertedWithinLinkAndSpanExpected + convertedWithinLinkAndSpanExpected;
-		assertEquals(convertedWithinMultipleLinksExpected, convertedToHTMLMarkup);
-		// Input elements
-		String inputOPEN = "<input type='submit' class=\"bluber\" value=\"";
-		String inputCLOSE = "\" />";
-		String translatedWithinInput = inputOPEN + plainVanillaWrapped + inputCLOSE + rawtext1;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinInput, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinInputExpected = inlineSpanOPEN + inlineTransLink.toString() + inputOPEN + plainVanillaPlain + inputCLOSE + inlineSpanCLOSE + rawtext1;
-		assertEquals(convertedWithinInputExpected, convertedToHTMLMarkup);
-		// checkbox elements
-		String checkboxOPEN = "<input type='submit' class=\"bluber\" type=\"checkbox\" value=\"";
-		String checkboxCLOSE = "\" />";
-		String translatedWithinCheckbox = checkboxOPEN + plainVanillaWrapped + checkboxCLOSE + rawtext1;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinCheckbox, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinCheckboxExpected = checkboxOPEN + plainVanillaPlain + checkboxCLOSE + rawtext1;
-		assertEquals(convertedWithinCheckboxExpected, convertedToHTMLMarkup);
-		// Input and links mixed
-		String translatedWithinMultipleLinksAndInput =  translatedWithinLink + rawtext1 + translatedWithinInput + translatedWithinLinkAndSpan + rawtext2 + translatedWithinInput + translatedWithinLinkAndSpan;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinMultipleLinksAndInput, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinMultipleLinksAndInputExpected = convertedWithinLinkExpected + rawtext1 + convertedWithinInputExpected + convertedWithinLinkAndSpanExpected + rawtext2 + convertedWithinInputExpected + convertedWithinLinkAndSpanExpected;
-		assertEquals(convertedWithinMultipleLinksAndInputExpected, convertedToHTMLMarkup);
-		// Within element attribute
-		String attributeOPEN = "<a href='sdfsdf' title=\"";
-		String attributeCLOSE = "\" class=\"o_bluber\">hello world</a>";
-		String translatedWithinAttribute = attributeOPEN + plainVanillaWrapped + attributeCLOSE + rawtext1;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinAttribute, inlineTranslationURLBuilder, inlineTrans);
-		String convertedWithinAttributeExpected = attributeOPEN + plainVanillaPlain + attributeCLOSE + rawtext1;
-		assertEquals(convertedWithinAttributeExpected, convertedToHTMLMarkup);
-		// Ultimate test
-		String translatedUltimate =  translatedWithinMultipleLinksAndInput + rawtext1 + translatedWithinAttribute + translatedWithinMultipleLinksAndInput + rawtext2 + translatedWithinInput + translatedWithinLinkAndSpan;
-		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedUltimate, inlineTranslationURLBuilder, inlineTrans);
-		String convertedUltimateExpected = convertedWithinMultipleLinksAndInputExpected + rawtext1 + convertedWithinAttributeExpected + convertedWithinMultipleLinksAndInputExpected + rawtext2 + convertedWithinInputExpected + convertedWithinLinkAndSpanExpected;
-		assertEquals(convertedUltimateExpected, convertedToHTMLMarkup);
-
-		// don't do inline translation markup
-		i18nMgr.setMarkLocalizedStringsEnabled(null, false);
-	}
 	
 	/**
 	 * Test method i18nManager.getLocalizedString() with resolvePropertiesInternalKeys()
 	 */
-	@Test public void testResolvePropertiesInternalKeys() {
+	@Test
+	public void testResolvePropertiesInternalKeys() {
 		String bundleName = "org.olat.core.util.i18n.junittestdata.subtest";
 		Locale locale = Locale.GERMAN;
 		// first tests with cache enabled
@@ -692,22 +602,5 @@ public class I18nTest extends OlatTestCase {
 		// mode. But this should not have a negative effect on real-world scenarios
 		
 		i18nMgr.setCachingEnabled(true);
-	}
-
-	
-	/**
-	 * Description:<br>
-	 * Dummy URL builder
-	 * <P>
-	 * Initial Date:  22.09.2008 <br>
-	 * @author gnaegi
-	 */
-  private class jUnitURLBuilder extends URLBuilder {
-		public jUnitURLBuilder() {
-			super(null, null, null, null);
-		}
-	 	public void buildURI(StringOutput buf, String[] keys, String[] values) {
-	 		buf.append("http://do.test.com");
-	 	}
 	}
 }

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -49,6 +50,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
 
 /**
  * <h3>Description:</h3>
@@ -97,15 +100,19 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, re);
+		Roles roles = usess.getRoles();
 		if(re.getEntryStatus() == RepositoryEntryStatusEnum.trash || re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
-			Roles roles = usess.getRoles();
 			if(!reSecurity.isEntryAdmin() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
 				return messageController(ureq, wControl, "repositoryentry.deleted");
 			}
 		}
 		
-		if (!reSecurity.canLaunch() && !re.isBookable()) {
-			return messageController(ureq, wControl, "launch.noaccess");
+		if (!reSecurity.canLaunch()) {
+			if(isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
+				reSecurity = rm.isAllowed(ureq, re);
+			} else {
+				return messageController(ureq, wControl, "launch.noaccess");
+			}
 		}
 
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
@@ -128,6 +135,14 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return ctrl;	
 	}
 	
+	private boolean isPublicVisible(RepositoryEntry re, RepositoryEntrySecurity reSecurity, Identity identity, Roles roles) {
+		if (re.isPublicVisible()) {
+			AccessResult accessResult = CoreSpringFactory.getImpl(ACService.class).isAccessible(re, identity, reSecurity.isMember(), roles.isGuestOnly(), true);
+			return accessResult.isAccessible() || !accessResult.getAvailableMethods().isEmpty();
+		}
+		return false;
+	}
+
 	private Controller messageController(UserRequest ureq, WindowControl wControl, String i18nMesageKey) {
 		Translator trans = Util.createPackageTranslator(RepositoryService.class, ureq.getLocale());
 		String text = trans.translate(i18nMesageKey);
@@ -139,9 +154,6 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return layoutCtr;
 	}
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
-	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		RepositoryEntry re = getRepositoryEntry(ureq, ce);
@@ -152,9 +164,6 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return re == null ? "" : re.getDisplayname();
 	}
 	
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
-	 */
 	@Override
 	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		RepositoryEntry re = getRepositoryEntry(ureq, ces.get(0));

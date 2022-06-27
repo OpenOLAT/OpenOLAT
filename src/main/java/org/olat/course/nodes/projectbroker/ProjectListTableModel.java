@@ -109,7 +109,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 		  List<Identity> identities = CoreSpringFactory.getImpl(BusinessGroupService.class)
 					.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
 			if (identities.isEmpty()) {
-				return "-";
+				return List.of();
 			} else {
 				// return all proj-leaders
 				List<Identity> allIdents = new ArrayList<>();

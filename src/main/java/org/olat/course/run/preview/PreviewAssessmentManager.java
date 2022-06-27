@@ -140,11 +140,6 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		iAttempts++;
 		nodeAttempts.put(courseNode.getIdent(), Integer.valueOf(iAttempts));
 	}
-	
-	@Override
-	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment) {
-		incrementNodeAttempts(courseNode, identity, userCourseEnvironment, Role.auto);
-	}
 
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
@@ -259,7 +254,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	@Override
 	public Overridable<Boolean> getRootPassed(UserCourseEnvironment userCourseEnvironment) {
 		return Overridable.empty();
-	};
+	}
 
 	@Override
 	public Overridable<Boolean> overrideRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment, Boolean passed) {

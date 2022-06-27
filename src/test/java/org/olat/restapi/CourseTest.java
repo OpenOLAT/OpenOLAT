@@ -75,7 +75,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
-import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -594,7 +593,6 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertTrue(isParticipant2);
 	}
 	
-	
 	@Test
 	public void getMetadata() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
@@ -605,13 +603,12 @@ public class CourseTest extends OlatRestTestCase {
 		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
 		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
 		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, courseEntry.getDisplayname(), "Course ref.", "Course authors",
-				"Course description", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
+				"Course description", "Course teaser", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
 				null, null, null, educationalType);
 		dbInstance.commitAndCloseSession();
 		course.getCourseEnvironment().updateCourseEntry(courseEntry);
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -629,6 +626,7 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertEquals("Course ref.", metadataVo.getExternalRef());
 		Assert.assertEquals("Course authors", metadataVo.getAuthors());
 		Assert.assertEquals("Course description", metadataVo.getDescription());
+		Assert.assertEquals("Course teaser", metadataVo.getTeaser());
 		Assert.assertEquals("Course objectives", metadataVo.getObjectives());
 		Assert.assertEquals("Course requirements", metadataVo.getRequirements());
 		Assert.assertEquals("Course credits", metadataVo.getCredits());
@@ -642,15 +640,35 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
 	}
 	
-	
 	@Test
-	public void updateMetadata() throws IOException, URISyntaxException {
+	public void updateStatus() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
+
+		// Set the course to coach published
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString())
+				.path("status")
+				.queryParam("newStatus", RepositoryEntryStatusEnum.review.name())
+				.build();
 		
-		RestConnection conn = new RestConnection();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		RepositoryEntry updatedEntry = repositoryService.loadByKey(courseEntry.getKey());
+		Assert.assertEquals(RepositoryEntryStatusEnum.review, updatedEntry.getEntryStatus());
+	}
+	
+	@Test
+	public void updateMetadata() throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -715,33 +733,6 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertEquals("Solothurn", updatedRe.getLocation());
 		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
 		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
-	}
-	
-	
-	@Test
-	public void getAccess() throws IOException, URISyntaxException {
-		Assert.assertTrue(conn.login("administrator", "openolat"));
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		dbInstance.closeSession();
-		Assert.assertEquals(RepositoryEntryStatusEnum.published, courseEntry.getEntryStatus());
-		Assert.assertTrue(courseEntry.isAllUsers());
-		Assert.assertFalse(courseEntry.isGuests());
-		
-		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(course.getResourceableId().toString()).path("access").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		RepositoryEntryAccessVO accessVo = conn.parse(response, RepositoryEntryAccessVO.class);
-		conn.shutdown();
-		
-		//check
-		Assert.assertNotNull(accessVo);
-		Assert.assertEquals(courseEntry.getKey(), accessVo.getRepoEntryKey());
-		Assert.assertEquals(courseEntry.getStatus(), accessVo.getStatus());
-		Assert.assertEquals(courseEntry.isAllUsers(), accessVo.isAllUsers());
-		Assert.assertEquals(courseEntry.isGuests(), accessVo.isGuests());
 	}
 	
 	@Test
@@ -836,7 +827,7 @@ public class CourseTest extends OlatRestTestCase {
 		HttpGet method = conn.createGet(request, "application/zip", true);
 		HttpResponse response = conn.execute(method);
 
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 	}
 	

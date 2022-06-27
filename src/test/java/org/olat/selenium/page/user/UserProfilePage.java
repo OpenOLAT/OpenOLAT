@@ -86,9 +86,12 @@ public class UserProfilePage {
 	public UserProfilePage changeEmail(String newEmail) {
 		By emailBy = By.cssSelector(".o_user_profile_form .o_user_profil_email input[type='text']");
 		OOGraphene.waitElement(emailBy, browser);
-		WebElement emailEl = browser.findElement(emailBy);
-		emailEl.clear();
-		emailEl.sendKeys(newEmail);
+        browser.findElement(emailBy).clear();
+        // Make it reliable for Firefox (server)
+        OOGraphene.waitingALittleBit();
+        browser.findElement(emailBy).sendKeys("");
+        OOGraphene.waitingALittleBit();
+        browser.findElement(emailBy).sendKeys(newEmail);
 		return this;
 	}
 	
@@ -105,13 +108,18 @@ public class UserProfilePage {
 	}
 	
 	public UserProfilePage saveProfilAndConfirmEmail() {
-		By saveBy = By.cssSelector(".o_user_profile_form button.btn-primary");
-		OOGraphene.click(saveBy, browser);
-		OOGraphene.scrollTop(browser);
-		OOGraphene.waitModalDialog(browser);
-		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
-		browser.findElement(yesBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
+		try {
+			By saveBy = By.cssSelector(".o_user_profile_form button.btn-primary");
+			OOGraphene.click(saveBy, browser);
+			OOGraphene.waitingALittleLonger();
+			OOGraphene.waitModalDialog(browser);
+			By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
+			browser.findElement(yesBy).click();
+			OOGraphene.waitModalDialogDisappears(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Confirm Email", browser);
+			throw e;
+		}
 		return this;
 	}
 	

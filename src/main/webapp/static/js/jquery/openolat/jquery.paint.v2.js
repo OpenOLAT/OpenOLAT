@@ -446,7 +446,7 @@
 				jQuery('#paintModal').on('hidden.bs.modal', function (event) {
 					jQuery("#paintModal").remove();
 				});
-				o_scrollToElement('#o_top');
+				o_scrollTop();
 			});
 		}
 

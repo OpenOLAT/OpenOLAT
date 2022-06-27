@@ -752,7 +752,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course,
 			ICourse sourceCourse, CopyCourseContext context) {
-		super.postCopy(envMapper, processType, course, null, context);
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 		if (processType.equals(Processing.runstructure)) {
 			// initialize the managers and services
 			ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);

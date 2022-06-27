@@ -70,7 +70,7 @@ public class LTILearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	private ModuleLearningPathConfigs getLearningPathConfigs(CourseNode courseNode, boolean newNode) {
-		ModuleLearningPathConfigs configs = new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), true);
+		ModuleLearningPathConfigs configs = new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), false);
 		configs.updateDefaults(newNode, FullyAssessedTrigger.confirmed);
 		return configs;
 	}

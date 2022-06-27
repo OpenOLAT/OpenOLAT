@@ -252,7 +252,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		}
 
 		if(tabAccessCtrl != null) {
-			tabbedPane.addTab(ureq, translate("group.edit.tab.accesscontrol"), uureq -> tabAccessCtrl.getInitialComponent());
+			tabbedPane.addTab(ureq, translate("group.edit.tab.share"), uureq -> tabAccessCtrl.getInitialComponent());
 		}
 		
 		tabbedPane.addTab(ureq, translate("group.edit.tab.lifecycle"), uureq -> {

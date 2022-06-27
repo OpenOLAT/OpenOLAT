@@ -23,13 +23,16 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -42,9 +45,11 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class IQTESTAssessmentConfig implements AssessmentConfig {
 
+	private final RepositoryEntryRef courseEntry;
 	private final IQTESTCourseNode courseNode;
 
-	public IQTESTAssessmentConfig(IQTESTCourseNode courseNode) {
+	public IQTESTAssessmentConfig(RepositoryEntryRef courseEntry, IQTESTCourseNode courseNode) {
+		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 	}
 
@@ -134,6 +139,16 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasGrade() {
+		return courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		Mode mode = Mode.none;
 		
@@ -151,10 +166,17 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 						QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
 						if (deliveryOptions != null) {
-							Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-							PassedType passedType = deliveryOptions.getPassedType(cutValue);
-							if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
-								mode = Mode.setByNode;
+							if (hasGrade() && Mode.none != getScoreMode()) {
+								if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())) {
+									return Mode.setByNode;
+								}
+								return Mode.none;
+							} else {
+								Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+								PassedType passedType = deliveryOptions.getPassedType(cutValue);
+								if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
+									mode = Mode.setByNode;
+								}
 							}
 						}
 					}
@@ -197,6 +219,41 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	@Override
 	public boolean isPassedOverridable() {
 		return false;
+	}
+	
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		boolean auto = false;
+		
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		if (config.has(IQEditController.CONFIG_CORRECTION_MODE)) {
+			String correctionMode = config.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+			auto = IQEditController.CORRECTION_AUTO.equals(correctionMode);
+		} else if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+					|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			// Legacy: Set userVisibility to TRUE
+			auto = true;
+		} else {
+			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
+			if (testEntry != null) {
+				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+					if(assessmentTest != null) {
+						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+						auto = !qti21Service.needManualCorrection(testEntry);
+					}
+				}
+			}
+		}
+		
+		// Do not set the user visibility automatically if the test needs manual correction
+		if (auto) {
+			return Boolean.TRUE;
+		} else if (done && config.has(IQEditController.CONFIG_CORRECTION_MODE)) {
+			return courseNode.isScoreVisibleAfterCorrection();
+		}
+		
+		return null;
 	}
 	
 	@Override

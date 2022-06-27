@@ -111,6 +111,8 @@
 		<class>org.olat.course.nodes.gta.model.TaskRevisionDateImpl</class>
 		<class>org.olat.course.nodes.livestream.model.LaunchImpl</class>
 		<class>org.olat.course.nodes.livestream.model.UrlTemplateImpl</class>
+		<class>org.olat.course.nodes.practice.model.PracticeResourceImpl</class>
+		<class>org.olat.course.nodes.practice.model.PracticeAssessmentItemGlobalRefImpl</class>
 		<class>org.olat.course.certificate.model.CertificateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>
@@ -144,6 +146,7 @@
 		<class>org.olat.repository.model.RepositoryEntryEducationalTypeImpl</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OfferToOrganisationImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderPartImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderLineImpl</class>
@@ -159,7 +162,6 @@
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>
-		<class>org.olat.instantMessaging.model.RosterEntryView</class>
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13ToolImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13ToolDeploymentImpl</class>
@@ -185,6 +187,8 @@
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonServerImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonAttendeeImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingReferenceImpl</class>
+		<class>org.olat.modules.catalog.model.CatalogLauncherImpl</class>
+		<class>org.olat.modules.catalog.model.CatalogFilterImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>
@@ -206,6 +210,10 @@
 		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
+		<class>org.olat.modules.grade.model.BreakpointImpl</class>
+		<class>org.olat.modules.grade.model.GradeScaleImpl</class>
+		<class>org.olat.modules.grade.model.GradeSystemImpl</class>
+		<class>org.olat.modules.grade.model.PerformanceClassImpl</class>
 		<class>org.olat.modules.grading.model.GraderToIdentityImpl</class>
 		<class>org.olat.modules.grading.model.GradingAssignmentImpl</class>
 		<class>org.olat.modules.grading.model.GradingTimeRecordImpl</class>
@@ -225,6 +233,8 @@
 		<class>org.olat.modules.lecture.model.AbsenceNoticeImpl</class>
 		<class>org.olat.modules.lecture.model.AbsenceNoticeToLectureBlockImpl</class>
 		<class>org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl</class>
+		<class>org.olat.modules.message.model.AssessmentMessageImpl</class>
+		<class>org.olat.modules.message.model.AssessmentMessageLogImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>
@@ -233,6 +243,7 @@
 		<class>org.olat.modules.portfolio.model.AbstractPart</class>
 		<class>org.olat.modules.portfolio.model.MediaImpl</class>
 		<class>org.olat.modules.portfolio.model.HTMLPart</class>
+		<class>org.olat.modules.portfolio.model.MathPart</class>
 		<class>org.olat.modules.portfolio.model.ParagraphPart</class>
 		<class>org.olat.modules.portfolio.model.ContainerPart</class>
 		<class>org.olat.modules.portfolio.model.TitlePart</class>

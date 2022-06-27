@@ -60,12 +60,11 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
-import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -83,13 +82,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-@Tag(name = "Groups")
+@Tag(name = "Course - Groups")
 public class CourseGroupWebService {
 	
 	private static final String VERSION = "1.0";
 	
 	private final OLATResource course;
 	private final RepositoryEntryRef courseEntryRef;
+	
+	@Autowired
+	private BusinessGroupService bgs;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public CourseGroupWebService(RepositoryEntryRef courseEntryRef, OLATResource ores) {
 		this.course = ores;
@@ -112,8 +116,7 @@ public class CourseGroupWebService {
 	
 	@Path("{groupKey}/folder")
 	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		BusinessGroup bg = getGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
@@ -153,8 +156,7 @@ public class CourseGroupWebService {
 	@Path("{groupKey}/forum")
 	@Operation(summary = "Return the Forum web service", description = "Return the Forum web service")
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		BusinessGroup bg = getGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
@@ -183,8 +185,8 @@ public class CourseGroupWebService {
 	 * @return
 	 */
 	@GET
-	@Operation(summary = "Lists all learn groups", description = "Lists all learn groups of the specified course")
-	@ApiResponse(responseCode = "200", description = "The list of all learning group of the course",
+	@Operation(summary = "Lists all business groups of course", description = "Lists all business groups of the specified course")
+	@ApiResponse(responseCode = "200", description = "The list of all business groups of the course",
 			content = {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class)))
@@ -192,14 +194,13 @@ public class CourseGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The context of the group not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList() {
-    BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		List<BusinessGroup> groups = bgs.findBusinessGroups(params, courseEntryRef, 0, -1);
 			
 		int count = 0;
 		GroupVO[] vos = new GroupVO[groups.size()];
 		for(BusinessGroup group:groups) {
-			vos[count++] = ObjectFactory.get(group);
+			vos[count++] = GroupVO.valueOf(group);
 		}
 		return Response.ok(vos).build();
 	}
@@ -207,42 +208,60 @@ public class CourseGroupWebService {
 	/**
 	 * Creates a new group for the course.
 	 * 
-   * @param group The group's metadatas
-   * @param request The HTTP request
-	 * @return
+	 * @param group The group's metadatas
+	 * @param request The HTTP request
+	 * @return The created business group
 	 */
 	@PUT
-	@Operation(summary = "Create a new group", description = "Creates a new group for the course")
+	@Operation(summary = "Creates a new group", description = "Creates a new group for the course, and only create new business group.")
 	@ApiResponse(responseCode = "200", description = "A group to save", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putNewGroup(GroupVO group, @Context HttpServletRequest request) {
+	public Response putNewBusinessGroup(GroupVO group, @Context HttpServletRequest request) {
+		return createNewBusinessGroup(group, request);
+	}
+	
+	/**
+	 * Creates a new group for the course.
+	 * 
+	 * @param group The group's metadatas
+	 * @param request The HTTP request
+	 * @return The created business group
+	 */
+	@POST
+	@Operation(summary = "Creates a new group", description = "Creates a new group for the course, and only create new business group.")
+	@ApiResponse(responseCode = "200", description = "A group to save", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postNewBusinessGroup(GroupVO group, @Context HttpServletRequest request) {
+		return createNewBusinessGroup(group, request);
+	}
+	
+	private Response createNewBusinessGroup(GroupVO group, HttpServletRequest request) {
 		ICourse icourse = CourseFactory.loadCourse(course.getResourceableId());
 		if(!RestSecurityHelper.isGroupManager(request) && !RestSecurityHelper.isOwnerGrpManager(icourse, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-		BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
-    
+		RepositoryEntry courseRe = repositoryService.loadByKey(courseEntryRef.getKey());
+				
 		BusinessGroup bg;
-    if(group.getKey() != null && group.getKey() > 0) {
-    	//group already exists
-    	bg = bgm.loadBusinessGroup(group.getKey());
-    	bgm.addResourceTo(bg, courseRe);
-    } else {
-  		Integer min = normalize(group.getMinParticipants());
-  		Integer max = normalize(group.getMaxParticipants());
-  		bg = bgm.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
-  				group.getExternalId(), group.getManagedFlags(), min, max, false, false, courseRe);
-    }
-    GroupVO savedVO = ObjectFactory.get(bg);
+		if(group.getKey() != null && group.getKey() > 0) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		} else {
+			Integer min = normalize(group.getMinParticipants());
+			Integer max = normalize(group.getMaxParticipants());
+			bg = bgs.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
+					group.getExternalId(), group.getManagedFlags(), min, max, false, false, courseRe);
+		}
+		GroupVO savedVO = GroupVO.valueOf(bg);
 		return Response.ok(savedVO).build();
 	}
 	
@@ -264,34 +283,81 @@ public class CourseGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response getGroup(@PathParam("groupKey") Long groupKey, @Context Request request, @Context HttpServletRequest httpRequest) {
 		//further security check: group is in the course
-		return getGroupWebService().findById(groupKey, request, httpRequest);
+		BusinessGroup businessGroup = getGroup(groupKey);
+		if(businessGroup == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		GroupVO groupVO = GroupVO.valueOf(businessGroup);
+		return Response.ok(groupVO).build();
+	}
+	
+	private BusinessGroup getGroup(Long groupKey) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, courseEntryRef, 0, -1);
+		for(BusinessGroup group:groups) {
+			if(group.getKey().equals(groupKey)) {
+				return group;
+			}
+		}
+		return null;
 	}
 
 	/**
-	 * Updates the metadata for the specified group.
+	 * Add a business group to the specified course.
 	 * 
 	 * @param groupKey The group's id
-	 * @param group The group metadatas
 	 * @param request The HTTP request
 	 * @return
 	 */
 	@POST
 	@Path("{groupKey}")
-	@Operation(summary = "Updates the metadata for the specified group", description = "Updates the metadata for the specified group")
+	@Operation(summary = "Add a business group to the specified course", description = "Add a business group to the specified course")
 	@ApiResponse(responseCode = "200", description = "The saved group", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
-	public Response updateGroup(@PathParam("groupKey") Long groupKey, GroupVO group, @Context HttpServletRequest request) {
-		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		return getGroupWebService().postGroup(groupKey, group, request);
+	public Response postResourceTo(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		return addResourceTo(groupKey, request);
 	}
 	
 	/**
-	 * Deletes the business group specified by the key of the group.
+	 * Add a business group to the specified course.
+	 * 
+	 * @param groupKey The group's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@PUT
+	@Path("{groupKey}")
+	@Operation(summary = "Add a business group to the specified course", description = "Add a business group to the specified course")
+	@ApiResponse(responseCode = "200", description = "The saved group", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
+	public Response putResourceTo(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		return addResourceTo(groupKey, request);
+	}
+
+	private Response addResourceTo(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		if(!isGroupManager(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		BusinessGroup group = bgs.loadBusinessGroup(groupKey);
+		if(group == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		RepositoryEntry courseEntry = repositoryService.loadByKey(courseEntryRef.getKey());
+		bgs.addResourceTo(group, courseEntry);
+		GroupVO savedVO = GroupVO.valueOf(group);
+		return Response.ok(savedVO).build();
+	}
+	
+	/**
+	 * Remove the business group from the specified course.
 	 * 
 	 * @param groupKey The group id
 	 * @param request The HTTP request
@@ -299,21 +365,23 @@ public class CourseGroupWebService {
 	 */
 	@DELETE
 	@Path("{groupKey}")
-	@Operation(summary = "Deletes the business group", description = "Deletes the business group specified by the key of the group")
-	@ApiResponse(responseCode = "200", description = "The business group is deleted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@Operation(summary = "Remove the business group from course", description = "Remove the business group from the specified course")
+	@ApiResponse(responseCode = "200", description = "The business group is removed")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response deleteGroup(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		return getGroupWebService().deleteGroup(groupKey, request);
-	}
-	
-	private LearningGroupWebService getGroupWebService() {
-		LearningGroupWebService groupWebService = new LearningGroupWebService();
-		CoreSpringFactory.autowireObject(groupWebService);
-		return groupWebService;
+		
+		BusinessGroup group = bgs.loadBusinessGroup(groupKey);
+		if(group == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		RepositoryEntry courseEntry = repositoryService.loadByKey(courseEntryRef.getKey());
+		bgs.removeResourceFrom(List.of(group), courseEntry);
+		return Response.ok().build();
 	}
 	
 	/**

@@ -21,7 +21,6 @@ package org.olat.repository.model;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -50,14 +49,13 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String externalRef;
 	private final String displayname;
 	private final String description;
+	private final String teaser;
 	private final String authors;
 	private final String location;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private final RepositoryEntryStatusEnum status;
-	private final boolean allUsers;
-	private final boolean guests;
-	private final boolean bookable;
+	private final boolean publicVisible;
 	
 	private final OLATResource olatResource;
 	private final RepositoryEntryLifecycle lifecycle;
@@ -77,7 +75,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 	private final long offersAvailable;
 	
-	private final Set<TaxonomyLevel> taxonomyLevels;
+	private Set<TaxonomyLevel> taxonomyLevels;
 	
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
 			boolean marked, long offersAvailable, Integer myRating) {
@@ -88,20 +86,17 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		lastModified = re.getLastModified();
 		displayname = re.getDisplayname();
 		description = re.getDescription();
+		teaser = re.getTeaser();
 		authors = re.getAuthors();
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
 		status = re.getEntryStatus();
-		allUsers = re.isAllUsers();
-		guests = re.isGuests();
-		bookable = re.isBookable();
+		publicVisible = re.isPublicVisible();
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
-		
-		taxonomyLevels = re.getTaxonomyLevels().stream().map(relation -> relation.getTaxonomyLevel()).collect(Collectors.toSet());
-	
+
 		this.marked = marked;
 		this.myRating = myRating;
 
@@ -150,25 +145,14 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		this.lastModified = lastModified;
 	}
 
-
 	@Override
 	public RepositoryEntryStatusEnum getEntryStatus() {
 		return status;
 	}
 
 	@Override
-	public boolean isAllUsers() {
-		return allUsers;
-	}
-
-	@Override
-	public boolean isGuests() {
-		return guests;
-	}
-	
-	@Override
-	public boolean isBookable() {
-		return bookable;
+	public boolean isPublicVisible() {
+		return publicVisible;
 	}
 
 	@Override
@@ -189,6 +173,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public String getDescription() {
 		return description;
+	}
+
+	@Override
+	public String getTeaser() {
+		return teaser;
 	}
 
 	@Override
@@ -286,6 +275,10 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public Set<TaxonomyLevel> getTaxonomyLevels() {
 		return taxonomyLevels;
+	}
+	
+	public void setTaxonomyLevels(Set<TaxonomyLevel> levels) {
+		this.taxonomyLevels = levels;
 	}
 
 	@Override

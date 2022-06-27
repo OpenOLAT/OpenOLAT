@@ -116,7 +116,7 @@ public class GetAverageScoreFunction extends AbstractFunction {
 				ScoreEvaluation se = sa.evalCourseNode(foundNode);
 				if(se != null) {
 					// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-					if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
+					if(se.getUserVisible() != null && se.getUserVisible().booleanValue()) {
 						score = se.getScore();
 						if (score != null) {
 							count++;

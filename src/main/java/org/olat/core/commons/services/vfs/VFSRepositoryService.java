@@ -288,7 +288,7 @@ public interface VFSRepositoryService {
 	
 	public License getLicense(VFSMetadata meta);
 	
-	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
+	public License getOrCreateLicense(VFSMetadata meta, Identity identity);
 	
 	public VFSStatistics getStatistics(boolean recalculateSizes);
 	

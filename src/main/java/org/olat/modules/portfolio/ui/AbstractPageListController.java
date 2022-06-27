@@ -68,7 +68,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.winmgr.ScrollTopCommand;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -299,7 +299,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (taxonomyLinkingEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section));
@@ -667,7 +667,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			if(row.getNumOfComments() == 1) {
 				title = translate("comment.one");
 			} else if(row.getNumOfComments() > 1) {
-				title = translate("comment.several", new String[]{ Long.toString(row.getNumOfComments()) });
+				title = translate("comment.several", Long.toString(row.getNumOfComments()));
 			} else {
 				title = translate("comment.zero");
 				cssClass += "_none";
@@ -922,7 +922,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	
 	private void doConfirmCloseSection(UserRequest ureq, PortfolioElementRow row) {
 		String title = translate("close.section.confirm.title");
-		String text = translate("close.section.confirm.descr", new String[]{ row.getSectionTitle() });
+		String text = translate("close.section.confirm.descr", row.getSectionTitle());
 		confirmCloseSectionCtrl = activateYesNoDialog(ureq, title, text, confirmCloseSectionCtrl);
 		confirmCloseSectionCtrl.setUserObject(row);
 	}
@@ -938,7 +938,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	
 	private void doConfirmReopenSection(UserRequest ureq, PortfolioElementRow row) {
 		String title = translate("reopen.section.confirm.title");
-		String text = translate("reopen.section.confirm.descr", new String[]{ row.getSectionTitle() });
+		String text = translate("reopen.section.confirm.descr", row.getSectionTitle());
 		confirmReopenSectionCtrl = activateYesNoDialog(ureq, title, text, confirmReopenSectionCtrl);
 		confirmReopenSectionCtrl.setUserObject(row);
 	}
@@ -1098,7 +1098,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		stackPanel.popUpToController(this);
 		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
 		doOpenPage(ureq, reloadedPage, false);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	protected void doNextPage(UserRequest ureq, Page currentPage) {
@@ -1114,12 +1114,12 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		stackPanel.popUpToController(this);
 		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
 		doOpenPage(ureq, reloadedPage, false);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	protected void doAllPages() {
 		stackPanel.popController(pageCtrl);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	protected void doOpenPage(UserRequest ureq, Page reloadedPage, boolean newElement) {

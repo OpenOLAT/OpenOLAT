@@ -1,0 +1,168 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.catalog.ui.admin;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.modules.catalog.CatalogLauncher;
+import org.olat.modules.catalog.CatalogLauncherHandler;
+import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.ui.CatalogV2UIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 8 Jun 2022<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public abstract class AbstractLauncherEditController extends FormBasicController {
+	
+	private static final String[] ON_KEYS = new String[] { "on" };
+	
+	private StaticTextElement systemNameEl;
+	private FormLink systemNameLink;
+	private MultipleSelectionElement enabledEl;
+	
+	private CloseableModalController cmc;
+	private SingleKeyTranslatorController launcherNameTranslatorCtrl;
+	
+	private final CatalogLauncherHandler handler;
+	private final String identifier;
+	private CatalogLauncher catalogLauncher;
+	
+	@Autowired
+	private CatalogV2Service catalogService;
+
+	public AbstractLauncherEditController(UserRequest ureq, WindowControl wControl, CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale(), getTranslator()));
+		this.handler = handler;
+		this.catalogLauncher = catalogLauncher;
+		this.identifier = catalogLauncher!= null? catalogLauncher.getIdentifier(): catalogService.createLauncherIdentifier();
+	}
+
+	protected abstract void initForm(FormItemContainer formLayout);
+
+	protected abstract String getConfig();
+	
+	protected CatalogLauncher getCatalogLauncher() {
+		return catalogLauncher;
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
+		nameCont.setLabel("admin.launcher.name", null);
+		nameCont.setElementCssClass("o_inline_cont");
+		nameCont.setRootForm(mainForm);
+		formLayout.add(nameCont);
+		
+		String translateLauncherName = CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier);
+		systemNameEl = uifactory.addStaticTextElement("admin.launcher.name", null, translateLauncherName, nameCont);
+		
+		systemNameLink = uifactory.addFormLink("admin.launcher.name.edit", nameCont);
+		
+		String[] onValues = new String[]{ translate("on") };
+		enabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.enabled", formLayout, ON_KEYS, onValues);
+		enabledEl.select(ON_KEYS[0], catalogLauncher == null || catalogLauncher.isEnabled());
+		
+		initForm(formLayout);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == launcherNameTranslatorCtrl) {
+			systemNameEl.setValue(CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier));
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(launcherNameTranslatorCtrl);
+		removeAsListenerAndDispose(cmc);
+		launcherNameTranslatorCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == systemNameLink) {
+			doLauncherName(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if (catalogLauncher == null) {
+			catalogLauncher = catalogService.createCatalogLauncher(handler.getType(), identifier);
+		}
+		
+		catalogLauncher.setEnabled(enabledEl.isAtLeastSelected(1));
+		catalogLauncher.setConfig(getConfig());
+		catalogLauncher = catalogService.update(catalogLauncher);
+		
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private void doLauncherName(UserRequest ureq) {
+		if (guardModalController(launcherNameTranslatorCtrl)) return;
+		
+		String i18nKey = CatalogV2UIFactory.getLauncherNameI18nKey(identifier);
+		
+		launcherNameTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey, CatalogV2UIFactory.class);
+		listenTo(launcherNameTranslatorCtrl);
+
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), "close", launcherNameTranslatorCtrl.getInitialComponent(), true,
+				translate("admin.launcher.name"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+}

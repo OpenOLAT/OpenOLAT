@@ -40,7 +40,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -121,7 +121,7 @@ public class AutoCompletionController extends FormBasicController {
 		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
 		clearButton.setElementCssClass("o_filter_clear");
 		
-		JSCommand focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getFormDispatchId());
+		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getFormDispatchId());
 		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	

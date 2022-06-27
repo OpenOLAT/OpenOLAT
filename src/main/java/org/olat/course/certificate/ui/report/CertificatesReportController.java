@@ -61,6 +61,7 @@ import org.olat.repository.ui.RepositoryEntryACColumnDescriptor;
 import org.olat.repository.ui.RepositoryFlexiTableModel;
 import org.olat.repository.ui.RepositoryFlexiTableModel.RepoCols;
 import org.olat.repository.ui.author.TypeRenderer;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,6 +87,8 @@ public class CertificatesReportController extends FormBasicController {
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private ACService acService;
 	
 	public CertificatesReportController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "reports", Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale(),
@@ -146,6 +149,8 @@ public class CertificatesReportController extends FormBasicController {
 		params.setIdentity(getIdentity());
 		params.setRoles(ureq.getUserSession().getRoles());
 		params.setIdRefsAndTitle(searchString);
+		params.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
+		params.setOfferValidAt(new Date());
 		
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		tableModel.setObjects(entries);

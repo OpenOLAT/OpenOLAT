@@ -43,6 +43,7 @@ o_info.edusharing_enabled = true;
 o_info.zseed = 0;
 o_info.newWindow=null;
 o_info.submit=null;
+o_info.latexit=false;
 #if($enforceTopFrame)
 if (top!=self){top.location=self.location+"?o_winrndo=1";}
 #end
@@ -56,44 +57,7 @@ function o_start() {
 	o_info.initialPageLoadFinished = true;
 }
 
-o_info.latexit=false;
-function o_mathjax(fct_success) {
-	if(window.MathJax === undefined) {
-		window.MathJax = {
-			tex: {
-				inlineMath: [['$', '$'], ['\\(', '\\)']]
-			},
-			options: {
-				enableMenu: false,
-				processHtmlClass: 'tex2jax_process',
-				renderActions: {
-					findScripts: [11, function (doc) {
-						for (var node of document.querySelectorAll('.math')) {
-							var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
-							var text = document.createTextNode('');
-							node.parentNode.replaceChild(text, node);
-							math.start = {node: text, delim: '', n: 0};
-							math.end = {node: text, delim: '', n: 0};
-							doc.math.push(math);
-						}
-					}, '']
-				}
-			}
-		}
 
-		jQuery.ajax("${r.mathJaxCdn()}tex-mml-chtml.js", {
-			cache: true,
-			dataType: "script",
-			crossDomain: true,
-			success: function() {
-		    	if(typeof fct_success !== "undefined") {
-		    		fct_success();
-		    	}
-				o_info.latexit = false;
-			}
-		});
-	}
-}
 ## Analytics code, if available
 $!analytics
 ##
@@ -109,6 +73,33 @@ try{
 	}
 } catch(e) { }
 </script>
+
+#if($r.isTrue($forPrint))
+<script>
+$r.mathJaxJavascriptConfig();
+</script>
+<script src='${r.mathJaxCdn()}tex-mml-chtml.js'></script>
+#else
+<script>
+function o_mathjax(fct_success) {
+	if(window.MathJax === undefined) {
+		$r.mathJaxJavascriptConfig();
+		jQuery.ajax("${r.mathJaxCdn()}tex-mml-chtml.js", {
+			cache: true,
+			dataType: "script",
+			crossDomain: true,
+			success: function() {
+		    	if(typeof fct_success !== "undefined") {
+		    		fct_success();
+		    	}
+				o_info.latexit = false;
+			}
+		});
+	}
+}
+</script>
+#end
+
 ## jQuery libraries
 <script src='$r.staticLink("js/jquery/jquery-3.6.0.min.js")'></script>
 #if ($r.available("guidebug"))
@@ -150,6 +141,7 @@ try{
 	<link href='$r.staticLink("js/jquery/sliderpips/jquery-ui-slider-pips.css")' rel="stylesheet" />
 	<link href='$r.staticLink("js/jquery/ui/jquery-ui-1.11.4.custom.min.css")' rel="stylesheet" />
 	<link href='$r.staticLink("js/dragula/dragula.css")' rel="stylesheet" />
+	<link href='$r.staticLink("js/swiper/swiper-bundle.min.css")' rel="stylesheet" />
 	<link href='$r.staticLink("js/tagify/tagify.css")' rel="stylesheet" />
 #else
 	<link href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet" />
@@ -237,10 +229,6 @@ $r.renderHeaderIncludes()
 <!-- START guiDebug -->
 $r.renderForce("guidebug")
 <!-- END guiDebug -->
-## The inline translation tool
-<!-- START inlineTranslation -->
-$r.renderForce("inlineTranslation")
-<!-- END inlineTranslation -->
 ## - include javascript for window and ajax control
 <!-- START jsServer -->
 $r.render("jsServer")
@@ -266,8 +254,8 @@ $r.renderForce("development")
 #if($screenMode.standardScreen)
 <div id="o_header_wrapper"> 
 	<div id="o_header_container" class="o_container_offcanvas container-fluid"> 
-		<div id="o_logo"></div>
-		<div id="o_right_logo"></div>
+		<div id="o_logo" aria-hidden="true"></div>
+		<div id="o_right_logo" aria-hidden="true"></div>
 		
 		## something to be displayed in the header, a logo, some ads, whatever
 		#if($r.available("headerComponent"))
@@ -280,7 +268,7 @@ $r.renderForce("development")
 
 ## ---- START #o_navbar ---
 #if($screenMode.standardScreen)
-<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation">
+<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation" aria-label="$r.translate("accesskey.side")">
 	<a href="javascript:;" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'> </i> </a>
 	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
 		#if($r.available("menuComponent"))
@@ -288,7 +276,7 @@ $r.renderForce("development")
 		#end
 	</div>
 </div>
-<div id="o_navbar_wrapper" class="o_navbar" role="navigation">
+<div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		#set($logoLinkUri = $logoInfos.logoLinkUri)
 		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer"></a>
@@ -305,9 +293,9 @@ $r.renderForce("development")
 		
 	</div>
 </div>
-<div id="o_container_page_width_toggler">
-	<div id="o_go_standard_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-primary btn-xs o_noprint"><i class="o_icon o_icon_width_collapse o_icon-fw"> </i></div>
-	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs o_noprint"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
+<div id="o_container_page_width_toggler" aria-hidden="true">
+	<div id="o_go_standard_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-primary btn-xs o_noprint" role="button"><i class="o_icon o_icon_width_collapse o_icon-fw"> </i></div>
+	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs o_noprint" role="button"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
 </div>
 <div><script>
 jQuery(document).ready(function() {
@@ -323,7 +311,7 @@ $r.render("stickymsg")
 <div id="o_main_wrapper">
 	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 		$r.render("main")
-		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
+		<a id="o_toplink" href="#o_top" onclick="o_scrollTop();" title="$r.translateInAttribute("top.alt")" aria-hidden="true">
 			<i class="o_icon o_icon_top"></i> 
 			$r.translate("top")
 		</a>	
@@ -347,15 +335,16 @@ $r.render("stickymsg")
 ## IE can't render empty div's properly which results in an ugly white bar.
 $r.render("modalpanel")
 $r.render("topmodalpanel")
+$r.render("instantmessagepanel")
 ## ---- END #o_modal ---
 
 ## ----- START #o_form_dirty_message ----------
-<div class="modal fade" tabindex="-1" role="dialog" id="o_form_dirty_message">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="$r.getId('o_md_')" id="o_form_dirty_message">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">$r.translate("form.dirty.title")</h4>
+        <h4 class="modal-title" id="$r.getId('o_md_')">$r.translate("form.dirty.title")</h4>
       </div>
       <div class="modal-body">
       	<p class="o_warning">
@@ -388,7 +377,7 @@ $r.render("topmodalpanel")
 </div>
 
 ## hidden div for EM-PX factor readout 
-<div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
+<div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;" aria-hidden="true"></div>
 <div><script>
 // init size and listen to text resize events
 jQuery(function() {

@@ -86,7 +86,8 @@ implements SortableFlexiTableDataModel<LectureCurriculumElementInfos> {
 		externalId("table.header.external.id"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),
-		numOfParticipants("table.header.num.participants");
+		numOfParticipants("table.header.num.participants"),
+		absences("table.header.absences");
 		
 		private final String i18nHeaderKey;
 		

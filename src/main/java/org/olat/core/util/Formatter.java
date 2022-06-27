@@ -133,6 +133,16 @@ public class Formatter {
 	}
 	
 	public String dayOfWeek(Date date) {
+		DayOfWeek dayOfWeek = getDayOfWeek(date);
+		return  dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale);
+	}
+	
+	public String dayOfWeekShort(Date date) {
+		DayOfWeek dayOfWeek = getDayOfWeek(date);
+		return  dayOfWeek.getDisplayName(TextStyle.SHORT_STANDALONE, locale);
+	}
+	
+	public static DayOfWeek getDayOfWeek(Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		DayOfWeek dayOfWeek;
@@ -146,7 +156,7 @@ public class Formatter {
 			case Calendar.SUNDAY: dayOfWeek = DayOfWeek.SUNDAY; break;
 			default: dayOfWeek = DayOfWeek.MONDAY;
 		}
-		return  dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale);
+		return  dayOfWeek;
 	}
 
 	/**
@@ -694,6 +704,34 @@ public class Formatter {
 	 */
 	public static String elementLatexFormattingScript(String domid) {
 		return "<script>o_info.latexit=true;</script>";
+	}
+	
+	public static String mathJaxConfiguration() {
+		StringBuilder sb = new StringBuilder(768);
+		sb.append("window.MathJax = {\n")
+		  .append("  tex: {\n")
+		  .append("    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]\n")
+		  .append("  },\n")
+		  .append("  options: {\n")
+		  .append("    enableMenu: false,\n")
+		  .append("    processHtmlClass: 'tex2jax_process',\n")
+		  .append("    renderActions: {\n")
+		  .append("      findScripts: [11, function (doc) {\n")
+		  .append("        var nodes = document.querySelectorAll('.math');\n")
+		  .append("        for (var i=0; i<nodes.length; i++) {\n")
+		  .append("          var node = nodes[i];\n")
+		  .append("          var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));\n")
+		  .append("          var text = document.createTextNode('');\n")
+		  .append("          node.parentNode.replaceChild(text, node);\n")
+		  .append("          math.start = {node: text, delim: '', n: 0};\n")
+		  .append("          math.end = {node: text, delim: '', n: 0};\n")
+		  .append("          doc.math.push(math);\n")
+		  .append("        }\n")
+		  .append("      }, '']\n")
+		  .append("    }\n")
+		  .append("  }\n")
+		  .append("};\n");
+		return sb.toString();
 	}
 	
 	

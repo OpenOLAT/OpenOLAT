@@ -111,7 +111,7 @@ public class GuiDemoStepsRunner extends BasicController {
 				}
 
 			};
-			smrc = new StepsMainRunController(ureq, getWindowControl(), start, finishCallback, null, "A Workflow", "o_sel_demo_wizard");
+			smrc = new StepsMainRunController(ureq, getWindowControl(), start, finishCallback, null, "A Workflow", "o_sel_demo_wizard", "/manual_dev/");
 			listenTo(smrc);
 			getWindowControl().pushAsModalDialog(smrc.getInitialComponent());
 

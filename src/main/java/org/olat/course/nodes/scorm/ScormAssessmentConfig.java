@@ -76,6 +76,16 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasGrade() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return false;
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true)? Mode.setByNode: Mode.none;
 	}
@@ -89,6 +99,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	@Override
 	public boolean isPassedOverridable() {
 		return false;
+	}
+	
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
 	}
 	
 	@Override

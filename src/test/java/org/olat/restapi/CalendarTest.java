@@ -37,6 +37,7 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -53,9 +54,12 @@ import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.restapi.CalendarVO;
+import org.olat.commons.calendar.restapi.EventLinkVO;
 import org.olat.commons.calendar.restapi.EventVO;
 import org.olat.commons.calendar.restapi.EventVOes;
+import org.olat.commons.calendar.ui.ExternalLinksController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
@@ -82,7 +86,8 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CalendarTest.class);
 
-	private static ICourse course1, course2;
+	private static ICourse course1;
+	private static ICourse course2;
 	private static IdentityWithLogin id1;
 	private static IdentityWithLogin id2;
 	
@@ -135,7 +140,7 @@ public class CalendarTest extends OlatRestTestCase {
 			calendarManager.addEventTo(calendarWrapper.getKalendar(), event2);
 			
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course1, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntryStatusEnum.published, true, false);
+			entry = repositoryManager.setStatus(entry, RepositoryEntryStatusEnum.published);
 			repositoryService.addRole(id1.getIdentity(), entry, GroupRoles.participant.name());
 			
 			dbInstance.commit();
@@ -152,7 +157,7 @@ public class CalendarTest extends OlatRestTestCase {
 			Assert.assertNotNull(calendarWrapper);
 
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course2, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntryStatusEnum.published, true, false);
+			entry = repositoryManager.setStatus(entry, RepositoryEntryStatusEnum.published);
 			dbInstance.commit();
 		}
 	}
@@ -429,6 +434,67 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void putCalendarEventWithLinks() throws IOException, URISyntaxException {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("calendar-");
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(identity));
+		
+		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString()).path("calendars").build();
+		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(calMethod);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CalendarVO> vos = parseArray(response);
+		CalendarVO calendar = getUserCalendar(vos);
+		assertNotNull(calendar);
+		
+		//create an event
+		EventVO event = new EventVO();
+		Calendar cal = Calendar.getInstance();
+		event.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event.setEnd(cal.getTime());
+		String subject = UUID.randomUUID().toString();
+		event.setSubject(subject);
+		
+		EventLinkVO link = new EventLinkVO();
+		link.setId("link-id-1");
+		link.setDisplayName("OpenOlat");
+		link.setUri("https://www.openolat.org");
+		link.setProvider(ExternalLinksController.EXTERNAL_LINKS_PROVIDER);
+		link.setIconCssClass("o_openolat");
+		event.setLinks(new EventLinkVO[] { link });
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("event").build();
+		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(putEventMethod, event);
+		HttpResponse putEventResponse = conn.execute(putEventMethod);
+		assertEquals(200, putEventResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(putEventResponse.getEntity());
+
+		//check if the link is saved
+		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity.getIdentity());
+		List<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
+		Assert.assertNotNull(savedEvents);
+		Assert.assertEquals(1, savedEvents.size());
+		
+		KalendarEvent savedEvent = savedEvents.get(0);
+		List<KalendarEventLink> savedLinks = savedEvent.getKalendarEventLinks();
+		Assert.assertNotNull(savedLinks);
+		Assert.assertEquals(1, savedLinks.size());
+		
+		KalendarEventLink savedLink = savedLinks.get(0);
+		Assert.assertEquals(ExternalLinksController.EXTERNAL_LINKS_PROVIDER, savedLink.getProvider());
+		Assert.assertEquals("link-id-1", savedLink.getId());
+		Assert.assertEquals("OpenOlat", savedLink.getDisplayName());
+		Assert.assertEquals("https://www.openolat.org", savedLink.getURI());
+		Assert.assertEquals("o_openolat", savedLink.getIconCssClass());
+
+		conn.shutdown();
+	}
+	
+	@Test
 	public void putCalendarEvents_forbidden() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id2));
@@ -574,6 +640,50 @@ public class CalendarTest extends OlatRestTestCase {
 		softly.assertThat(reloadedEvent.getManagedFlags()).isEqualTo(event.getManagedFlags());
 		softly.assertThat(reloadedEvent.getLiveStreamUrl()).isEqualTo(event.getLiveStreamUrl());
 		softly.assertAll();
+	}
+	
+	@Test
+	public void testGetPersonalCalendarEventWithLink() throws IOException, URISyntaxException {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("cal-perso");
+		
+		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity.getIdentity());
+		KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit with links" , new Date(), DateUtils.addDays(new Date(), 1));
+		KalendarEventLink link = new KalendarEventLink("appointments", "app-01", "Termin", "https://www.openolat.org", "o_icon");
+		event.setKalendarEventLinks(List.of(link));
+		calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(identity));
+		
+		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString()).path("calendars").build();
+		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(calMethod);
+		List<CalendarVO> vos = parseArray(response);
+		CalendarVO calendar = getUserCalendar(vos);
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events").build();
+		HttpGet eventMethod = conn.createGet(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse eventResponse = conn.execute(eventMethod);
+		assertEquals(200, eventResponse.getStatusLine().getStatusCode());
+		
+		List<EventVO> events = parseEventArray(eventResponse);
+		assertNotNull(events);
+		assertEquals(1, events.size());
+		
+		EventVO eventVo = events.get(0);
+		EventLinkVO[] links = eventVo.getLinks();
+		assertNotNull(links);
+		assertEquals(1, links.length);
+		
+		EventLinkVO linkVo = links[0];
+		assertEquals("appointments", linkVo.getProvider());
+		assertEquals("app-01", linkVo.getId());
+		assertEquals("Termin", linkVo.getDisplayName());
+		assertEquals("https://www.openolat.org", linkVo.getUri());
+		assertEquals("o_icon", linkVo.getIconCssClass());
+		
+		conn.shutdown();
 	}
 	
 	@Test

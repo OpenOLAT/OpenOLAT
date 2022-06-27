@@ -33,7 +33,8 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
@@ -368,34 +369,22 @@ public class FormJSHelper {
 		  .append("})();</script>");
 		return sb;
 	}
-	
+
 	/**
-	 * This is an hack because it use a timeout of 500ms to be executed after
-	 * o_afterserver() method
+	 * Set the flexi form dirty.
 	 * 
-	 * @param sb
-	 * @param form
-	 * @return
+	 * @param form The flexi-form
+	 * @return A command
 	 */
-	public static StringOutput setFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
-		sb.append("<script>\n")
-		  .append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);")
-		  .append("\n</script>");
-		return sb;
-	}
-	
-	public static String setFlexiFormDirtyOnLoad(Form form) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);");
-		return sb.toString();
+	public static Command getFlexiFormDirtyOnLoadCommand(Form form) {
+		return CommandFactory.createDirtyForm(form);
 	}
 	
 	public static String getSetFlexiFormDirtyFnCallOnly(Form form){
 		if(form.isDirtyMarking()){
 			return "setFlexiFormDirty('"+form.getDispatchFieldId()+"');";
-		}else{
-			return " ";
 		}
+		return " ";
 	}
 
 	/**
@@ -447,30 +436,7 @@ public class FormJSHelper {
 		return sb.toString();
 	}
 
-	/**
-	 * JS Code to set the form focus to a specific form item, to the first error or
-	 * the last focused element
-	 * 
-	 * @param sb The output
-	 * @param formName The root form name
-	 * @param formItemId null or the form item id that needs to get the focus
-	 * @param withScriptTag true: add script tag; false: only JS code
-	 * @return the sb
-	 */
-	public static StringOutput setFormFocus(StringOutput sb, String formName, String formItemId, boolean withScriptTag) {		
-		if (withScriptTag) {
-			sb.append("<script>\n");			
-		}
-		sb.append("setTimeout(function(){ o_ffSetFocus('").append(formName);
-		if (formItemId != null) {
-			sb.append("','").append(formItemId);
-		}
-		sb.append("'); },10);");
-		if (withScriptTag) {
-			sb.append("</script>\n");			
-		}
-		return sb;
-	}
+
 	/**
 	 * JS command to set the form focus to a specific form item, to the first error or
 	 * the last focused element
@@ -479,10 +445,7 @@ public class FormJSHelper {
 	 * @param formItemId null or the form item id that needs to get the focus
 	 * @return A JSCommand object
 	 */
-	public static JSCommand getFormFocusCommand(String formName, String formItemId) {
-		StringOutput sb = new StringOutput();
-		setFormFocus(sb, formName, formItemId, false);
-		JSCommand focusCommand = new JSCommand(sb.toString());
-		return focusCommand;
+	public static Command getFormFocusCommand(String formName, String formItemId) {
+		return CommandFactory.createFlexiFocus(formName, formItemId);
 	}
 }

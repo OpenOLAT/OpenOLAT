@@ -780,8 +780,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
 			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
-			Float score = getScoreFromEvalutation(eval, ltiNode);
-			Float maxScore = getMaxScoreFromNode(ltiNode);
+			Float score = getScoreFromEvalutation(eval, entry, ltiNode);
+			Float maxScore = getMaxScoreFromNode(entry, ltiNode);
 			return LTI13JsonUtil.createResult(userId, score, maxScore, deployment);
 		}
 		return null;
@@ -797,11 +797,11 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		List<Result> results = new ArrayList<>();
 		if(courseNode instanceof BasicLTICourseNode) {
 			BasicLTICourseNode ltiNode = (BasicLTICourseNode)courseNode;
-			Float maxScore = getMaxScoreFromNode(ltiNode);
+			Float maxScore = getMaxScoreFromNode(entry, ltiNode);
 			
 			List<AssessmentEntryWithUserId> assessmentEntries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(deployment, firstResult, maxResults);
 			for(AssessmentEntryWithUserId assessmentEntry:assessmentEntries) {
-				Float score = getScoreFromEvalutation(assessmentEntry, ltiNode);
+				Float score = getScoreFromEvalutation(assessmentEntry, entry, ltiNode);
 				Result result = LTI13JsonUtil.createResult(assessmentEntry.getUserId(), score, maxScore, deployment);
 				results.add(result);
 			}
@@ -826,7 +826,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		}
 		
 		if(courseNode instanceof BasicLTICourseNode) {
-			Float maxScore = getMaxScoreFromNode((BasicLTICourseNode)courseNode);
+			Float maxScore = getMaxScoreFromNode(entry, (BasicLTICourseNode)courseNode);
 			if(maxScore != null) {
 				lineItem.setScoreMaximum(maxScore.doubleValue());
 			}
@@ -840,25 +840,25 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		return lineItem;
 	}
 	
-	private Float getMaxScoreFromNode(BasicLTICourseNode ltiNode) {
+	private Float getMaxScoreFromNode(RepositoryEntry repositoryEntry, BasicLTICourseNode ltiNode) {
 		Float maxScore = null;
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(ltiNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(repositoryEntry, ltiNode);
 		if(assessmentConfig.getScoreMode() == Mode.setByNode) {
 			maxScore = assessmentConfig.getMaxScore();
 			if(maxScore != null && maxScore.floatValue() > 0.0f) {
-				float scale = ltiNode.getScalingFactor();
+				float scale = ltiNode.getScalingFactor(repositoryEntry);
 				maxScore = Float.valueOf(maxScore.floatValue() / scale);
 			}
 		}
 		return maxScore;
 	}
 	
-	private Float getScoreFromEvalutation(AssessmentEntryWithUserId eval, BasicLTICourseNode ltiNode) {
+	private Float getScoreFromEvalutation(AssessmentEntryWithUserId eval, RepositoryEntry repositoryEntry, BasicLTICourseNode ltiNode) {
 		Float score = null;
 		if(eval != null && eval.getAssessmentEntry() != null && eval.getAssessmentEntry().getScore() != null) {
 			BigDecimal scaledScore = eval.getAssessmentEntry().getScore();
 			if(scaledScore != null && scaledScore.doubleValue() > 0.0d) {
-				float scale = ltiNode.getScalingFactor();
+				float scale = ltiNode.getScalingFactor(repositoryEntry);
 				score = Float.valueOf(scaledScore.floatValue() / scale);
 			} else if(scaledScore != null) {
 				score = Float.valueOf(0.0f);
@@ -867,12 +867,12 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		return score;
 	}
 	
-	private Float getScoreFromEvalutation(ScoreEvaluation eval, BasicLTICourseNode ltiNode) {
+	private Float getScoreFromEvalutation(ScoreEvaluation eval,  RepositoryEntry repositoryEntry, BasicLTICourseNode ltiNode) {
 		Float score = null;
 		if(eval != null && eval.getScore() != null) {
 			float scaledScore = eval.getScore();
 			if(scaledScore > 0.0f) {
-				float scale = ltiNode.getScalingFactor();
+				float scale = ltiNode.getScalingFactor(repositoryEntry);
 				scaledScore = scaledScore / scale;
 			}
 			score = Float.valueOf(scaledScore);

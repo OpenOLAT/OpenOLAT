@@ -66,6 +66,11 @@ public class AssessmentReleaseListController extends AssessmentCoachingListContr
 	}
 
 	@Override
+	protected boolean canApplyGrade() {
+		return false;
+	}
+
+	@Override
 	protected List<CoachingAssessmentEntry> loadModel() {
 		CoachingAssessmentSearchParams  params = new CoachingAssessmentSearchParams();
 		params.setSearchString(getQuickSearchString());

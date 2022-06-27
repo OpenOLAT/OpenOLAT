@@ -145,7 +145,10 @@ public class EnrollmentListController extends FormBasicController implements Act
 		// Add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalId, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalRef, "select"));
 		if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
 		}

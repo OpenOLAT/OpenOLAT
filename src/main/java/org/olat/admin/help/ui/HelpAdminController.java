@@ -68,7 +68,7 @@ public class HelpAdminController extends FormBasicController {
 	private DropdownItem addHelpDropDown;
 	private FormLink addAcademy;
 	private FormLink addOOTeach;
-	private FormLink addConfluence;
+	private FormLink addOODocs;
 	private FormLink addCourse;
 	private FormLink addSupport;
 	private FormLink addCustom1;
@@ -102,7 +102,7 @@ public class HelpAdminController extends FormBasicController {
 
 		addAcademy = uifactory.addFormLink("help.admin.academy", formLayout);
 		addOOTeach = uifactory.addFormLink("help.admin.ooTeach", formLayout);
-		addConfluence = uifactory.addFormLink("help.admin.confluence", formLayout);
+		addOODocs = uifactory.addFormLink("help.admin.ooDocs", formLayout);
 		addCourse = uifactory.addFormLink("help.admin.course", formLayout);
 		addSupport = uifactory.addFormLink("help.admin.support", formLayout);
 		addCustom1 = uifactory.addFormLink("help.admin.custom1", formLayout);
@@ -152,8 +152,8 @@ public class HelpAdminController extends FormBasicController {
 			case HelpModule.OOTEACH:
 				addHelpDropDown.addElement(addOOTeach);
 				break;
-			case HelpModule.CONFLUENCE:
-				addHelpDropDown.addElement(addConfluence);
+			case HelpModule.OODOCS:
+				addHelpDropDown.addElement(addOODocs);
 				break;
 			case HelpModule.COURSE:
 				addHelpDropDown.addElement(addCourse);
@@ -182,9 +182,47 @@ public class HelpAdminController extends FormBasicController {
 		List<String> helpPlugins = helpModule.getHelpPluginList();
 		for (int i = 0; i < helpPlugins.size(); i++) {
 			String helpPlugin = helpPlugins.get(i);
-			HelpAdminTableContentRow tableRow;
+			HelpAdminTableContentRow tableRow = createRow(helpPlugin);
+			if(tableRow == null) {
+				continue;
+			}
 
-			switch (helpPlugin) {
+			if (helpPlugins.size() > 1) {
+				tableEl.setColumnModelVisible(upDownColumn, true);
+				UpDown upDown = UpDownFactory.createUpDown("up_down_" + helpPlugin, UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
+				upDown.setUserObject(tableRow);
+				if (i == 0) {
+					upDown.setTopmost(true);
+				} else if (i == helpPlugins.size() - 1) {
+					upDown.setLowermost(true);
+				} 
+				tableRow.setUpDown(upDown);
+			} else {
+				tableEl.setColumnModelVisible(upDownColumn, false);
+			}
+
+			FormLink editLink = uifactory.addFormLink("edit_" + counter.incrementAndGet(), "edit", "help.admin.edit", null, null, Link.LINK);
+			editLink.setUserObject(tableRow);
+
+			FormLink deleteLink = uifactory.addFormLink("delete_" + counter.incrementAndGet(), "delete", "help.admin.delete", null, null, Link.LINK);
+			deleteLink.setUserObject(tableRow);
+
+			tableRow.setEditLink(editLink);
+			tableRow.setDeleteLink(deleteLink);
+
+			tableRows.add(tableRow);
+		}
+	
+		tableModel.setObjects(tableRows);
+		tableEl.reset(true, true, true);
+		
+		// Save positions, necessary if new entries added
+		saveHelpPluginPositions(tableRows);
+	}
+	
+	private HelpAdminTableContentRow createRow(String helpPlugin) {
+		HelpAdminTableContentRow tableRow;
+		switch (helpPlugin) {
 			case HelpModule.ACADEMY_KEY:
 				tableRow = new HelpAdminTableContentRow(
 						HelpModule.ACADEMY, 
@@ -201,13 +239,13 @@ public class HelpAdminController extends FormBasicController {
 						helpModule.getOOTeachEnabled().contains(HelpModule.AUTHORSITE), 
 						helpModule.getOOTeachEnabled().contains(HelpModule.DMZ));
 				break;
-			case HelpModule.CONFLUENCE_KEY:
+			case HelpModule.OODOCS_KEY:
 				tableRow = new HelpAdminTableContentRow(
-						HelpModule.CONFLUENCE, 
-						helpModule.getConfluenceIcon(), 
-						helpModule.getConfluenceEnabled().contains(HelpModule.USERTOOL), 
-						helpModule.getConfluenceEnabled().contains(HelpModule.AUTHORSITE), 
-						helpModule.getConfluenceEnabled().contains(HelpModule.DMZ));
+						HelpModule.OODOCS, 
+						helpModule.getOODocsIcon(), 
+						helpModule.getOODocsEnabled().contains(HelpModule.USERTOOL), 
+						helpModule.getOODocsEnabled().contains(HelpModule.AUTHORSITE), 
+						helpModule.getOODocsEnabled().contains(HelpModule.DMZ));
 				break;
 			case HelpModule.COURSE_KEY:
 				tableRow = new HelpAdminTableContentRow(
@@ -250,41 +288,11 @@ public class HelpAdminController extends FormBasicController {
 						helpModule.getSupportEnabled().contains(HelpModule.DMZ));
 				break;
 			default:
-				tableRow = new HelpAdminTableContentRow();
+				tableRow = null;
 				break;
-			}
-
-			if (helpPlugins.size() > 1) {
-				tableEl.setColumnModelVisible(upDownColumn, true);
-				UpDown upDown = UpDownFactory.createUpDown("up_down_" + helpPlugin, UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
-				upDown.setUserObject(tableRow);
-				if (i == 0) {
-					upDown.setTopmost(true);
-				} else if (i == helpPlugins.size() - 1) {
-					upDown.setLowermost(true);
-				} 
-				tableRow.setUpDown(upDown);
-			} else {
-				tableEl.setColumnModelVisible(upDownColumn, false);
-			}
-
-			FormLink editLink = uifactory.addFormLink("edit_" + counter.incrementAndGet(), "edit", "help.admin.edit", null, null, Link.LINK);
-			editLink.setUserObject(tableRow);
-
-			FormLink deleteLink = uifactory.addFormLink("delete_" + counter.incrementAndGet(), "delete", "help.admin.delete", null, null, Link.LINK);
-			deleteLink.setUserObject(tableRow);
-
-			tableRow.setEditLink(editLink);
-			tableRow.setDeleteLink(deleteLink);
-
-			tableRows.add(tableRow);
 		}
-
-		tableModel.setObjects(tableRows);
-		tableEl.reset(true, true, true);
 		
-		// Save positions, necessary if new entries added
-		saveHelpPluginPositions(tableRows);
+		return tableRow;
 	}
 
 	@Override
@@ -298,8 +306,8 @@ public class HelpAdminController extends FormBasicController {
 			doOpenAddHelpDialog(ureq, HelpModule.ACADEMY);
 		} else if (source == addOOTeach) {
 			doOpenAddHelpDialog(ureq, HelpModule.OOTEACH);
-		} else if (source == addConfluence) {
-			doOpenAddHelpDialog(ureq, HelpModule.CONFLUENCE);
+		} else if (source == addOODocs) {
+			doOpenAddHelpDialog(ureq, HelpModule.OODOCS);
 		} else if (source == addCourse) {
 			doOpenAddHelpDialog(ureq, HelpModule.COURSE);
 		} else if (source == addSupport) {
@@ -369,11 +377,17 @@ public class HelpAdminController extends FormBasicController {
 	private void doMoveHelpPlugin(UpDown upDown, Direction direction) {
 		List<HelpAdminTableContentRow> tableRows = tableModel.getObjects();
 
-		Integer index = tableRows.indexOf(upDown.getUserObject());
+		int index = tableRows.indexOf(upDown.getUserObject());
 		if (Direction.UP.equals(direction)) {
-			Collections.swap(tableRows, index - 1, index);
+			int upIndex = index - 1;
+			if(upIndex >= 0 && upIndex < tableRows.size()) {
+				Collections.swap(tableRows, upIndex, index);
+			}
 		} else {
-			Collections.swap(tableRows, index, index + 1);
+			int downIndex = index + 1;
+			if(downIndex >= 0 && downIndex < tableRows.size()) {
+				Collections.swap(tableRows, index, downIndex);
+			}
 		}
 		doDisableUpDowns(tableRows);
 

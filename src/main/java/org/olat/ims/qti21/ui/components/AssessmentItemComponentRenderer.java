@@ -177,7 +177,12 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
 		sb.append("<span class='o_qti_item_meta'>");
-		renderItemStatus(renderer, sb, itemSessionState, translator);
+		if(component.isShowStatus()) {
+			renderItemStatus(renderer, sb, itemSessionState, translator);
+		}
+		if(component.isShowQuestionLevel()) {
+			renderQuestionLevels(component.getQuestionLevel(), component.getMaxQuestionLevel(), sb, translator);
+		}
 		sb.append("</span>");
 		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h4>")
 		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
@@ -209,6 +214,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			submit.setDirty(false);
 		}
 		
+		boolean skipRendered = false;
 		boolean enableAdditionalButtons = component.isEnableBack() || component.isEnableSkip()
 				|| component.isEnableResetHard() || component.isEnableResetSoft();
 		if(enableAdditionalButtons && (itemSessionState.isResponded() || itemSessionState.getEndTime() != null)) {
@@ -235,6 +241,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				if(component.isEnableSkip()) {
 					String title = translator.translate("skip.item");
 					renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
+					skipRendered = true;
 				}
 			} else {
 				if(isCorrectlyAnswered(itemSessionState) && !willShowFeedback(component, assessmentItem)) {
@@ -243,6 +250,11 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				String title = translator.translate("next.item");
 				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
 			}
+		}
+		
+		if(component.isEnableAlwaysSkip() && !skipRendered) {
+			String title = translator.translate("skip.item");
+			renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
 		}
 		
 		sb.append("</div>");
@@ -301,6 +313,18 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		} else {
 			super.renderItemStatus(sb, itemSessionState, null, translator);
 		}
+	}
+	
+	private void renderQuestionLevels(int level, int maxQuestionLevels, StringOutput sb, Translator translator) {
+		sb.append("<span class='o_assessmentitem_level'>").append(translator.translate("assessment.item.level")).append("");
+		for(int i=1; i<=maxQuestionLevels; i++) {
+			if(i <= level) {
+				sb.append(" <i class='o_icon o_icon_circle_color'> </i>");
+			} else {
+				sb.append(" <i class='o_icon o_icon_disabled'> </i>");
+			}
+		}
+		sb.append("</span>");
 	}
 	
 	@Override

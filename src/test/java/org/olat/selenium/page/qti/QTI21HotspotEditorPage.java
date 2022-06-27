@@ -186,7 +186,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21FeedbacksEditorPage selectFeedbacks() {
-		selectTab(By.className("o_sel_assessment_item_feedbacks"));
+		selectTab("o_sel_assessment_item_feedback", By.className("o_sel_assessment_item_feedbacks"));
 		return new QTI21FeedbacksEditorPage(browser);
 	}
 }

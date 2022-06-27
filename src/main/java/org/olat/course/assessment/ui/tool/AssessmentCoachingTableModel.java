@@ -72,6 +72,9 @@ implements SortableFlexiTableDataModel<AssessmentCoachingRow> {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
 			case course: return row.getRepositoryEntryName();
+			case courseKey: return row.getRepositoryEntryKey();
+			case courseExternalId: return row.getRepositoryEntryExternalId();
+			case courseExternalRef: return row.getRepositoryEntryExternalRef();
 			case courseNode: return row;
 			case lastUserModified: return row.getLastUserModified();
 			case statusDoneBy: return row.getStatusDoneBy();
@@ -88,7 +91,10 @@ implements SortableFlexiTableDataModel<AssessmentCoachingRow> {
 	}
 	
 	public enum AssessmentCoachingsCol implements FlexiSortableColumnDef {
+		courseKey("table.header.course.key"),
 		course("table.header.course"),
+		courseExternalId("table.header.course.externalId"),
+		courseExternalRef("table.header.course.externalRef"),
 		courseNode("table.header.course.node"),
 		lastUserModified("table.header.lastUserModificationDate"),
 		statusDoneBy("table.header.status.done.by"),

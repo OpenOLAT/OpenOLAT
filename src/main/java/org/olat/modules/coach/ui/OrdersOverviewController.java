@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.ui.tool.AssessmentApplyGradeListController;
 import org.olat.course.assessment.ui.tool.AssessmentReleaseListController;
 import org.olat.course.assessment.ui.tool.AssessmentReviewListController;
 import org.olat.modules.coach.model.CoachingSecurity;
@@ -55,6 +56,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 
 	private final Link assessmentReviewLink;
 	private final Link assessmentReleaseLink;
+	private final Link assessmentApplyGradeLink;
 	private final Link gradingAssignmentsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -62,6 +64,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 	
 	private AssessmentReviewListController assessmentReviewCtrl;
 	private AssessmentReleaseListController assessmentReleaseCtrl;
+	private AssessmentApplyGradeListController assessmentApplyGradeCtrl;
 	private GradingAssignmentsListController gradingAssignmentsCtrl;
 	
 	private final CoachingSecurity coachingSec;
@@ -89,6 +92,10 @@ public class OrdersOverviewController extends BasicController implements Activat
 		assessmentReleaseLink.setVisible(coachingSec.isCoach());
 		segmentView.addSegment(assessmentReleaseLink, false);
 		
+		assessmentApplyGradeLink = LinkFactory.createLink("orders.apply.grade", mainVC, this);
+		assessmentApplyGradeLink.setVisible(coachingSec.isCoach());
+		segmentView.addSegment(assessmentApplyGradeLink, false);
+		
 		gradingAssignmentsLink = LinkFactory.createLink("orders.grading", mainVC, this);
 		gradingAssignmentsLink.setVisible(secCallback.canGrade() && !secCallback.canManage());
 		segmentView.addSegment(gradingAssignmentsLink, false);
@@ -114,6 +121,9 @@ public class OrdersOverviewController extends BasicController implements Activat
 		} else if("Release".equalsIgnoreCase(type)&& coachingSec.isCoach()) {
 			doOpenAssessmentRelease(ureq);
 			segmentView.select(assessmentReleaseLink);
+		} else if("ApplyGrade".equalsIgnoreCase(type)&& coachingSec.isCoach()) {
+			doOpenAssessmentApplyGrade(ureq);
+			segmentView.select(assessmentReleaseLink);
 		} else if("Assignments".equalsIgnoreCase(type) && secCallback.canGrade()) {
 			doOpenMyGradingAssignments(ureq);
 			segmentView.select(gradingAssignmentsLink);
@@ -131,6 +141,8 @@ public class OrdersOverviewController extends BasicController implements Activat
 					doOpenAssessmentReview(ureq);
 				} else if (clickedLink == assessmentReleaseLink) {
 					doOpenAssessmentRelease(ureq);
+				} else if (clickedLink == assessmentApplyGradeLink) {
+					doOpenAssessmentApplyGrade(ureq);
 				} else if (clickedLink == gradingAssignmentsLink) {
 					doOpenMyGradingAssignments(ureq);
 				}
@@ -161,6 +173,19 @@ public class OrdersOverviewController extends BasicController implements Activat
 		addToHistory(ureq, assessmentReleaseCtrl);
 		mainVC.put("segmentCmp", assessmentReleaseCtrl.getInitialComponent());
 		return assessmentReleaseCtrl;
+	}
+	
+	private AssessmentApplyGradeListController doOpenAssessmentApplyGrade(UserRequest ureq) {
+		if(assessmentApplyGradeCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("ApplyGrade"), null);
+			assessmentApplyGradeCtrl = new AssessmentApplyGradeListController(ureq, swControl, stackPanel, translate("orders.apply.grade"));
+			listenTo(assessmentApplyGradeCtrl);
+		} else {
+			assessmentApplyGradeCtrl.reload();
+		}
+		addToHistory(ureq, assessmentApplyGradeCtrl);
+		mainVC.put("segmentCmp", assessmentApplyGradeCtrl.getInitialComponent());
+		return assessmentApplyGradeCtrl;
 	}
 
 	private void doOpenMyGradingAssignments(UserRequest ureq) {

@@ -1,16 +1,13 @@
-$r.render("chats")
 #if($iconsHolder && $iconsHolder.size() > 0)
 <div id="o_im_message">
 	<script>
-	/* <![CDATA[ */
 		document.title = "$r.translate('im.new.message.short')";
-	/* ]]> */
 	</script>
 	## render the new message icon links
 	#foreach ($holder in $iconsHolder)
 		$r.render("${holder}")
 	#end
-	<audio src="$newMessageSoundURL" autoplay />
+	<audio src="$newMessageSoundURL" autoplay></audio>
 </div>
 #end
 

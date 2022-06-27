@@ -66,6 +66,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
@@ -116,6 +117,8 @@ public class EditLectureBlockController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -161,7 +164,7 @@ public class EditLectureBlockController extends FormBasicController {
 			titleEl.setFocus(true);
 		}
 		
-		int plannedNumOfLectures = lectureBlock == null ? 4 : lectureBlock.getPlannedLecturesNumber();
+		int plannedNumOfLectures = lectureBlock == null ? lectureModule.getDefaultPlannedLectures() : lectureBlock.getPlannedLecturesNumber();
 		int maxNumOfLectures = Math.max(12, plannedNumOfLectures);
 		SelectionValues plannedLecturesKeys = new SelectionValues();
 		for(int i=1; i<=maxNumOfLectures; i++) {
@@ -171,7 +174,8 @@ public class EditLectureBlockController extends FormBasicController {
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
 				plannedLecturesKeys.keys(), plannedLecturesKeys.values(), null);
 		plannedLecturesEl.setMandatory(true);
-		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
+		String plannedlectures = lectureBlock == null
+				? Integer.toString(lectureModule.getDefaultPlannedLectures()) : Integer.toString(lectureBlock.getPlannedLecturesNumber());
 		for(String plannedLecturesKey:plannedLecturesKeys.keys()) {
 			if(plannedlectures.equals(plannedLecturesKey)) {
 				plannedLecturesEl.select(plannedLecturesKey, true);

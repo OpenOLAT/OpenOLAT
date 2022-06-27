@@ -1,0 +1,37 @@
+/* Coaching */
+.o_coaching div#o_main_toolbar.o_toolbar {
+	margin-top: 0px;
+}
+
+.o_eff_statement_details .o_user_infos {
+	margin-top:20px;
+}
+
+.o_coaching_notifications {
+	float: left;
+	position: relative;
+	padding: 15px 3px;
+	
+	.badge {
+		&.o_notification_request {
+			background-color: $state-danger-text;
+		}
+		&.o_notification_unread {
+			background-color: $state-warning-text;
+		}
+	}
+}
+
+.o_coaching_activities {
+	h4 {
+		padding: 2px 14px 8px 14px;
+		margin: 0 -14px;
+		// same as modal-header
+		color: $o-dialog-header-color;
+	  	font-weight: $o-dialog-header-font-weight;
+		font-family: $headings-font-family;
+	  	line-height: $headings-line-height;
+		border-bottom: 1px solid $modal-header-border-color;
+	}
+
+}

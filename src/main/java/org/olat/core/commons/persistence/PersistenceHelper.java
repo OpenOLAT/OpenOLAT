@@ -135,16 +135,33 @@ public class PersistenceHelper {
 		return true;
 	}
 	
-	public static final void appendFuzzyLike(Appendable sb, String var, String key, String dbVendor) {
+	public static final void appendFuzzyLike(Appendable sb, String field, String key, String dbVendor) {
 		try {
 			if(dbVendor.equals("mysql")) {
-				sb.append(" ").append(var).append(" like :").append(key);
+				sb.append(" ").append(field).append(" like :").append(key);
 			} else {
-				sb.append(" lower(").append(var).append(") like :").append(key);
+				sb.append(" lower(").append(field).append(") like :").append(key);
 			}
 			if(dbVendor.equals("oracle")) {
 				sb.append(" escape '\\'");
 			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	public static final void appendFuzzyNotLike(Appendable sb, String field, String key, String dbVendor) {
+		try {
+			sb.append("(").append(field).append(" is null or ");
+			if(dbVendor.equals("mysql")) {
+				sb.append(" ").append(field).append(" not like :").append(key);
+			} else {
+				sb.append(" lower(").append(field).append(") not like :").append(key);
+			}
+			if(dbVendor.equals("oracle")) {
+				sb.append(" escape '\\'");
+			}
+			sb.append(")");
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -191,6 +208,16 @@ public class PersistenceHelper {
 	}
 	
 
+	public static String getOrderByRandom(DB dbInstance) {
+		if (dbInstance.isPostgreSQL()){
+			return "random()";
+		} else if (dbInstance.isMySQL()){
+			return "rand()";
+		} else if (dbInstance.isOracle()) {
+			return "DBMS_RANDOM.VALUE()";
+		}
+		return "";
+	}
 
 	/**
 	 * 

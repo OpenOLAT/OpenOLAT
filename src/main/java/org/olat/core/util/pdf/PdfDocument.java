@@ -227,7 +227,8 @@ public class PdfDocument {
     public static String cleanCharacters(String string) {
     	return string.replace("\u00AD", "")
     			.replace('\u00A0', ' ')
-    			.replace('\u2212', '-');
+    			.replace('\u2212', '-')
+    			.replace('\u2666', '-');
     }
     
     public static void showTextToStream(String text, PDPageContentStream stream) throws IOException {
@@ -349,7 +350,7 @@ public class PdfDocument {
 	 * @return
 	 * @throws IOException
 	 */
-	protected String[] splitText(String text, float maxWidth, float fontSize) throws IOException {
+	protected String[] splitTextInTwo(String text, float maxWidth, float fontSize) throws IOException {
 		float textWidth = getStringWidth(text, fontSize);
 		if(maxWidth < textWidth) {
 
@@ -384,6 +385,52 @@ public class PdfDocument {
 				two = two.substring(0, maxNumOfLetter - 6) + "...";
 			}
 			return new String[] { one.trim(), two.trim() };
+		}
+		return new String[]{ text };
+	}
+	
+	protected String[] splitTextInParts(String text, float maxWidth, float fontSize) throws IOException {
+		float textWidth = getStringWidth(text, fontSize);
+		if(maxWidth < textWidth) {
+			
+			List<String> list = new ArrayList<>();
+			for( ; text.length() > 0; ) {
+				
+				// calculate them specifically for every line to be more precise
+				textWidth = getStringWidth(text, fontSize);
+				float letterWidth = textWidth / text.length();
+				int maxNumOfLetter = Math.round(maxWidth / letterWidth) - 1;
+				
+				String line;
+				if(text.length() < maxNumOfLetter) {
+					line = text;
+					text = "";
+				} else {
+					//use space and comma as separator to gentle split the text
+					int indexBefore = findBreakBefore(text, maxNumOfLetter);
+					if(indexBefore < (maxNumOfLetter / 2)) {
+						indexBefore = -1;//use more place
+					}
+					
+					if(indexBefore <= 0) {
+						//one word
+						indexBefore = Math.min(text.length(), maxNumOfLetter);
+						line = text.substring(0, indexBefore);
+						
+						int indexAfter = findBreakAfter(text, maxNumOfLetter);
+						if(indexAfter <= 0) {
+							text = text.substring(indexBefore);
+						} else {
+							text = text.substring(indexAfter);
+						}
+					} else {
+						line = text.substring(0, indexBefore + 1);
+						text = text.substring(indexBefore + 1);
+					}
+				}
+				list.add(line.trim());
+			}
+			return list.toArray(new String[list.size()]);
 		}
 		return new String[]{ text };
 	}

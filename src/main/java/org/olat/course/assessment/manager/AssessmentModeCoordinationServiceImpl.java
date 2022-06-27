@@ -22,6 +22,8 @@ package org.olat.course.assessment.manager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +38,7 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -56,6 +59,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -282,6 +286,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 
 	private AssessmentMode sendEvent(AssessmentMode mode, Date now, boolean forceStatus) {
 		if(mode.getBeginWithLeadTime().compareTo(now) > 0) {
+			// Before begin time
 			//none
 			Status status = mode.getStatus();
 			if(status != Status.leadtime && status != Status.assessment && status != Status.followup && status != Status.end) {
@@ -298,7 +303,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			}
 		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) > 0
 				&& mode.getBeginWithLeadTime().compareTo(mode.getBegin()) != 0) {
-			//leading time
+			// Leading time
 			Status status = mode.getStatus();
 			if(status != Status.assessment && status != Status.followup && status != Status.end) {
 				mode = ensureStatusOfMode(mode, Status.leadtime);
@@ -307,42 +312,130 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			}
 		} else if(mode.isManualBeginEnd() && !forceStatus) {
 			sendEventForManualMode(mode, now);
-		} else {
-			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {
-				if(mode.getStatus() != Status.assessment) {
-					log.info(Tracing.M_AUDIT, "Send start event: {} ({})", mode.getName(), mode.getKey());
-				}
-				mode = ensureStatusOfMode(mode, Status.assessment);
-				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
-						assessmentModeManager.getAssessedIdentityKeys(mode));
-				
-				//message 5 minutes before end
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(mode.getEnd());
-				cal.set(Calendar.SECOND, 0);
-				cal.set(Calendar.MILLISECOND, 0);
-				cal.add(Calendar.MINUTE, -6);
-				if(now.after(cal.getTime())) {
-					sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, mode, null);
-				}
-			} else if(mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) > 0) {
-				if(mode.getFollowupTime() > 0) {
-					mode = ensureStatusOfMode(mode, Status.followup);
-					sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode,
-							assessmentModeManager.getAssessedIdentityKeys(mode));
-				} else {
-					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
-					sendEvent(AssessmentModeNotificationEvent.END, mode,
-							assessmentModeManager.getAssessedIdentityKeys(mode));
-				}
-			} else if(mode.getEndWithFollowupTime().compareTo(now) <= 0) {
-				mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
-				sendEvent(AssessmentModeNotificationEvent.END, mode,
-						assessmentModeManager.getAssessedIdentityKeys(mode));
+		} else if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {
+			// In assessment (between begin and end)
+			
+			if(mode.getStatus() != Status.assessment) {
+				log.info(Tracing.M_AUDIT, "Send start event: {} ({})", mode.getName(), mode.getKey());
 			}
+			mode = ensureStatusOfMode(mode, Status.assessment);
+			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
+					assessmentModeManager.getAssessedIdentityKeys(mode));
+			
+			//message 5 minutes before end
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(mode.getEnd());
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			cal.add(Calendar.MINUTE, -6);
+			if(now.after(cal.getTime())) {
+				sendEventForStopWarning(mode, now);
+			}
+		} else if(mode.getFollowupTime() > 0 && mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) > 0) {
+			// Follow-up time
+			sendEventForFollowUp(mode, now);
+		} else if(mode.getEndWithFollowupTime().compareTo(now) <= 0) {
+			// End
+			sendEventForEnd(mode, now);
 		}
+
 		manageListenersOfCoordinatedMode(mode);
 		return mode;
+	}
+	
+	private AssessmentMode sendEventForFollowUp(AssessmentMode mode, Date now) {
+		Set<Long> assessedIdentities = assessmentModeManager.getAssessedIdentityKeys(mode);
+		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
+		assessedIdentities.removeAll(extraTimes.keySet());
+	
+		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutDisadvantage;
+		mode = ensureBothStatusOfMode(mode, Status.followup, status);
+		sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode, assessedIdentities);
+		return mode;
+	}
+	
+	/**
+	 * This is for automatic mode, will check if disadvantage compensation is needed.
+	 * 
+	 * @param mode The assessment mode
+	 * @return The updated assessment mode
+	 */
+	private AssessmentMode sendEventForEnd(AssessmentMode mode, Date now) {
+		Set<Long> assessedIdentities = assessmentModeManager.getAssessedIdentityKeys(mode);
+		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
+		assessedIdentities.removeAll(extraTimes.keySet());
+	
+		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutDisadvantage;
+		mode = ensureBothStatusOfMode(mode, Status.end, status);
+		sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentities);
+		return mode;
+	}
+	
+	private void sendEventForStopWarning(AssessmentMode mode, Date now) {
+		Set<Long> assessedIdentities = assessmentModeManager.getAssessedIdentityKeys(mode);
+		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
+		
+		sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, mode, assessedIdentities, extraTimes);
+	}
+	
+	private Map<Long,Integer> getExtraTimesInSeconds(AssessmentMode mode, Set<Long> assessedIdentities, Date now) {
+		Set<Long> identitiesKeys = new HashSet<>(assessedIdentities);
+		List<DisadvantageCompensation> compensations = getDisadvantageCompensations(mode);
+		
+		List<AssessmentTestSession> testSessions = assessmentTestSessionDao
+				.getRunningTestSessionsByIdentityKeys(mode.getRepositoryEntry(), mode.getElementAsList(), List.copyOf(identitiesKeys));
+		Map<Long,AssessmentTestSession> identityToSessions = testSessions.stream()
+				.collect(Collectors.toMap(sess -> sess.getIdentity().getKey(), sess -> sess, (u, v) -> u));
+		
+		Map<Long,Integer> extraTimes = new HashMap<>();
+		for(DisadvantageCompensation compensation:compensations) {
+			Identity identity = compensation.getIdentity();
+			if(identitiesKeys.contains(identity.getKey())) {
+				int extraTimeInSeconds = compensation.getExtraTime().intValue();
+				AssessmentTestSession testSession = identityToSessions.get(identity.getKey());
+				if(testSession != null && testSession.getExtraTime() != null) {
+					extraTimeInSeconds += testSession.getExtraTime().intValue();
+					identityToSessions.remove(identity.getKey());
+				}
+
+				Date compensatedDate = DateUtils.addSeconds(mode.getEnd(), extraTimeInSeconds);
+				if(compensatedDate.compareTo(now) >= 0) {
+					extraTimes.put(identity.getKey(), Integer.valueOf(extraTimeInSeconds));
+					identitiesKeys.remove(identity.getKey());
+				}	
+			}
+		}
+		
+		for(AssessmentTestSession testSession:testSessions) {
+			if(testSession.getExtraTime() != null && testSession.getExtraTime().intValue() > 0
+					&& identitiesKeys.contains(testSession.getIdentity().getKey())) {	
+				int extraTimeInSeconds = testSession.getExtraTime().intValue();
+				Date compensatedDate = DateUtils.addSeconds(mode.getEnd(), extraTimeInSeconds);
+				if(compensatedDate.compareTo(now) >= 0) {
+					extraTimes.put(testSession.getIdentity().getKey(), Integer.valueOf(extraTimeInSeconds));
+					identitiesKeys.remove(testSession.getIdentity().getKey());
+				}
+			}
+		}
+		return extraTimes;
+	}
+	
+	public int getCumulatedAdditionalTime(AssessmentMode mode, Identity identity) {
+		List<AssessmentTestSession> testSessions = assessmentTestSessionDao
+				.getRunningTestSessionsByIdentityKeys(mode.getRepositoryEntry(), mode.getElementAsList(), List.of(identity.getKey()));
+		
+		int extraTimeInMilliSeconds = 0;
+		if(testSessions.size() == 1 && testSessions.get(0).getExtraTime() != null) {
+			extraTimeInMilliSeconds += testSessions.get(0).getExtraTime().intValue();
+		}
+		
+		DisadvantageCompensation compensation = disadvantageCompensationDao
+				.getActiveDisadvantageCompensation(identity, mode.getRepositoryEntry(), mode.getElementList());
+		if(compensation != null && compensation.getExtraTime() != null) {
+			extraTimeInMilliSeconds += compensation.getExtraTime().intValue();
+		}
+		
+		return extraTimeInMilliSeconds;
 	}
 	
 	private void sendEventForManualMode(AssessmentMode mode, Date now) {
@@ -437,10 +530,14 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Date endWithFollowupTime = assessmentModeManager.evaluateFollowupTime(movedEnd, mode.getFollowupTime());
 		((AssessmentModeImpl)mode).setEndWithFollowupTime(endWithFollowupTime);	
 	}
-	
+
 	private void sendEvent(String cmd, AssessmentMode mode, Set<Long> assessedIdentityKeys) {
+		sendEvent(cmd, mode, assessedIdentityKeys, null);
+	}
+	
+	private void sendEvent(String cmd, AssessmentMode mode, Set<Long> assessedIdentityKeys, Map<Long,Integer> extraTimesInSeconds) {
 		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
-		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, transientMode, assessedIdentityKeys);
+		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, transientMode, assessedIdentityKeys, extraTimesInSeconds);
 		coordinatorManager.getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		
@@ -593,6 +690,11 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return identities.stream()
 				.map(IdentityRef::getKey)
 				.collect(Collectors.toSet());
+	}
+	
+	private List<DisadvantageCompensation> getDisadvantageCompensations(AssessmentMode assessmentMode) {
+		return disadvantageCompensationDao
+				.getActiveDisadvantageCompensations(assessmentMode.getRepositoryEntry(), assessmentMode.getElementAsList());
 	}
 
 	@Override

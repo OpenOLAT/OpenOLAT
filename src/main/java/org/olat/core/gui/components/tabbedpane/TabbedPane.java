@@ -156,16 +156,24 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @return
 	 */
 	public int addTab(String displayName, Component component) {
-		tabPanes.add(new TabPane(displayName, component));
+		return addTab(displayName, null, component);
+	}
+	
+	public int addTab(String displayName, String elementCssClass, Component component) {
+		tabPanes.add(new TabPane(displayName, elementCssClass, component));
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
 			super.put("atp", component); 
 		}
 		return tabPanes.size() - 1;
 	}
-	
+
 	public int addTab(String displayName, Controller controller) {
-		TabPane tab = new TabPane(displayName, controller);
+		return addTab(displayName, null, controller);
+	}
+	
+	public int addTab(String displayName, String elementCssClass, Controller controller) {
+		TabPane tab = new TabPane(displayName, elementCssClass, controller);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
@@ -175,7 +183,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 	
 	public int addTab(UserRequest ureq, String displayName, TabComponentCreator creator) {
-		TabPane tab = new TabPane(displayName, creator);
+		TabPane tab = new TabPane(displayName, null, creator);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
@@ -188,7 +196,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 	
 	public int addTabControllerCreator(UserRequest ureq, String displayName, TabControllerCreator creator) {
-		TabPane tab = new TabPane(displayName, creator);
+		TabPane tab = new TabPane(displayName, null, creator);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
@@ -201,7 +209,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 	
 	public int addTab(int pos, String displayName, Controller controller) {
-		TabPane tab = new TabPane(displayName, controller);
+		TabPane tab = new TabPane(displayName, null, controller);
 		tabPanes.add(pos, tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
@@ -322,6 +330,10 @@ public class TabbedPane extends Container implements Activateable2 {
 	protected String getDisplayNameAt(int position) {
 		return tabPanes.get(position).getDisplayName();
 	}
+	
+	protected String getElementCssAt(int position) {
+		return tabPanes.get(position).getElementCssClass();
+	}
 
 	/**
 	 * @return The number of tabs
@@ -418,32 +430,37 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		private boolean enabled = true;
 		private final String displayName;
+		private final String elementCssClass;
 		private Component component;
 		private Controller controller;
 		private TabComponentCreator componentCreator;
 		private TabControllerCreator controllerCreator;
 		
-		public TabPane(String displayName, Component component) {
+		public TabPane(String displayName, String elementCssClass, Component component) {
 			this.displayName = displayName;
+			this.elementCssClass = elementCssClass;
 			this.component = component;
 			this.enabled = true;
 		}
 		
-		public TabPane(String displayName, Controller controller) {
+		public TabPane(String displayName, String elementCssClass, Controller controller) {
 			this.displayName = displayName;
+			this.elementCssClass = elementCssClass;
 			this.controller = controller;
 			this.component = controller.getInitialComponent();
 			this.enabled = true;
 		}
 		
-		public TabPane(String displayName, TabComponentCreator componentCreator) {
+		public TabPane(String displayName, String elementCssClass, TabComponentCreator componentCreator) {
 			this.displayName = displayName;
+			this.elementCssClass = elementCssClass;
 			this.componentCreator = componentCreator;
 			this.enabled = true;
 		}
 		
-		public TabPane(String displayName, TabControllerCreator controllerCreator) {
+		public TabPane(String displayName, String elementCssClass, TabControllerCreator controllerCreator) {
 			this.displayName = displayName;
+			this.elementCssClass = elementCssClass;
 			this.controllerCreator = controllerCreator;
 			this.enabled = true;
 		}
@@ -458,6 +475,10 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		public String getDisplayName() {
 			return displayName;
+		}
+		
+		public String getElementCssClass() {
+			return elementCssClass;
 		}
 		
 		public boolean hasTabCreator() {

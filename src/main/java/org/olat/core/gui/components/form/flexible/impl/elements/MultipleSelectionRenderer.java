@@ -77,7 +77,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("'>");
 		sb.append("<button type='button' class='btn btn-default dropdown-toggle o_ms_button' data-toggle='dropdown'>");
-		sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp<span class='caret o_ms_carret'></span>");
+		sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp;<span class='caret o_ms_carret'></span>");
 		sb.append("</button>");
 		sb.append("<ul class='dropdown-menu o_ms_list' id='");
 		sb.append(listId);

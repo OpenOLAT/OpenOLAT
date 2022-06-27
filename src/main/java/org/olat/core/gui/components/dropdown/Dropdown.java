@@ -44,11 +44,12 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	public enum ButtonSize { extraSmall, small, regular, large }
-	public enum CaretPosition { left, right };
+	public enum CaretPosition { left, right }
 	
 	private String i18nKey;
 	private boolean button = false;
 	private ButtonSize buttonSize = ButtonSize.regular;
+	private boolean primary = false;
 	private CaretPosition caretPosition = CaretPosition.right;
 	private boolean embbeded = false;
 	private boolean expandContentHeight = false;
@@ -99,6 +100,14 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		this.buttonSize = buttonSize;
 	}
 	
+	public boolean isPrimary() {
+		return primary;
+	}
+
+	public void setPrimary(boolean primary) {
+		this.primary = primary;
+	}
+
 	public CaretPosition getCaretPosition() {
 		return caretPosition;
 	}

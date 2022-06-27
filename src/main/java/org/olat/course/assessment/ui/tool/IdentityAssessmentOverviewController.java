@@ -28,6 +28,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -58,8 +59,10 @@ import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
@@ -71,14 +74,23 @@ import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
+import org.olat.course.assessment.ui.tool.component.IdentityAssessmentPassedCellRenderer;
+import org.olat.course.assessment.ui.tool.component.IdentityAssessmentStatusCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
-import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.modules.assessment.ui.component.GradeCellRenderer;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScaleSearchParams;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -105,6 +117,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private boolean discardEmptyNodes;
 	private boolean allowTableFiltering;
 
+	private DefaultFlexiColumnModel gradeColumn;
 	private FlexiTableElement tableEl;
 	private IdentityAssessmentOverviewTableModel tableModel;
 	private FormLink bulkVisibleButton;
@@ -118,6 +131,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
+	private boolean hasStatus;
+	private boolean hasGrade;
 	private boolean hasPassedOverridable;
 	private int counter = 0;
 	
@@ -127,6 +142,10 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	protected BaseSecurity securityManager;
+	@Autowired
+	private GradeModule gradeModul;
+	@Autowired
+	private GradeService gradeService;
 
 	/**
 	 * Constructor for the identity assessment overview controller to be used in the assessment tool or in the users
@@ -142,6 +161,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			boolean nodesSelectable, boolean discardEmptyNodes, boolean allowTableFiltering) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.runStructure = userCourseEnvironment.getCourseEnvironment().getRunStructure();
 		this.nodesSelectable = nodesSelectable;
@@ -150,15 +170,36 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.userCourseEnvironment = userCourseEnvironment;		
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
-		this.hasPassedOverridable = hasPassedOverridable(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
+		this.hasStatus = true;
+		CourseEntryRef courseEntry = new CourseEntryRef(userCourseEnvironment);
+		this.hasGrade = hasGrade(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
+		this.hasPassedOverridable = hasPassedOverridable(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
 		initForm(ureq);
 		initMultiSelectionTools();
 		loadModel();
 	}
 
-	private boolean hasPassedOverridable(CourseNode courseNode) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+	private boolean hasGrade(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		if (assessmentConfig.hasGrade()) {
+			return true;
+		} 
+		int childCount = courseNode.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			INode child = courseNode.getChildAt(i);
+			if (child instanceof CourseNode) {
+				CourseNode childCourseNode = (CourseNode) child;
+				if (hasGrade(courseEntry, childCourseNode)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean hasPassedOverridable(RepositoryEntryRef courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (assessmentConfig.isPassedOverridable()) {
 			return true;
 		} 
@@ -167,7 +208,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				return hasPassedOverridable(childCourseNode);
+				if(hasPassedOverridable(courseEntry, childCourseNode)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -183,6 +226,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		runStructure = null;
 		nodesSelectable = false;
@@ -192,6 +236,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		loadNodesFromCourse = false;
 		followUserResultsVisibility = true;
 		preloadedNodesList = assessmentCourseNodes;
+		hasStatus = false;
+		hasGrade = true;
 	
 		initForm(ureq);
 		initMultiSelectionTools();
@@ -308,12 +354,18 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.minMax, new ScoreMinMaxCellRenderer()));
+		if(gradeModul.isEnabled() && hasGrade) {
+			gradeColumn = new DefaultFlexiColumnModel(NodeCols.grade, new GradeCellRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(gradeColumn);
+		}
 		if (hasPassedOverridable) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new PassedCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new IdentityAssessmentPassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.numOfAssessmentDocs));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new AssessmentStatusCellRenderer(getLocale())));
+		if (hasStatus) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new IdentityAssessmentStatusCellRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.lastUserModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastCoachModified));
@@ -351,28 +403,70 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (loadNodesFromCourse) {
 			// get list of course node and user data and populate table data model 	
 			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, null, followUserResultsVisibility, discardEmptyNodes, true);
+			// In this case all course nodes are loaded, even if the assessment is not user visible yet.
+			// If the data are taken from the efficiency statement (else clause), only user visible data are present,
+			// but the information about the user visibility is always null.
+			nodesTableList.forEach(this::forgeScore);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = new ArrayList<>(preloadedNodesList);
 		}
-		nodesTableList.forEach(this::forgeScore);
+		setGradeColumnLabel(nodesTableList);
 		tableModel.setObjects(nodesTableList);
 		tableEl.reset(true, true, true);
 	}
-	
 
-	
 	private void forgeScore(AssessmentNodeData row) {
 		Float score = row.getScore();
 		if (score == null) return;
 		
-		if (row.isIgnoreInCourseAssessment() || (row.getUserVisibility() != null && !row.getUserVisibility().booleanValue())) {
+		if (row.isIgnoreInCourseAssessment() || row.getUserVisibility() == null || !row.getUserVisibility().booleanValue()) {
 			String linkText = translate("score.not.summed", new String[] {AssessmentHelper.getRoundedScore(score) });
 			linkText += " <i class='o_icon o_icon_info'> </i>";
-			FormLink formLink = uifactory.addFormLink("o_sd:" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
 			row.setScoreDesc(formLink);
 		}
+	}
+	
+	private void setGradeColumnLabel(List<AssessmentNodeData> nodesTableList) {
+		if (gradeColumn == null) return;
+		
+		Set<String> gradeSystemIdents = null;
+		
+		if (userCourseEnvironment != null) {
+			Set<String> idents = nodesTableList.stream()
+					.map(AssessmentNodeData::getIdent)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+			GradeScaleSearchParams searchParams = new GradeScaleSearchParams();
+			searchParams.setRepositoryEntry(userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+			searchParams.setSubIdents(idents);
+			gradeSystemIdents = gradeService.getGradeScales(searchParams).stream()
+					.map(GradeScale::getGradeSystem)
+					.map(GradeSystem::getIdentifier)
+					.collect(Collectors.toSet());
+		} else {
+			gradeSystemIdents = nodesTableList.stream()
+					.map(AssessmentNodeData::getGradeSystemIdent)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+		}
+		
+		String headerGradeSystemLabel = null;
+		for (String gradeSystemIdent : gradeSystemIdents) {
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemIdent);
+			if (headerGradeSystemLabel == null) {
+				headerGradeSystemLabel = gradeSystemLabel;
+			} else if (!headerGradeSystemLabel.equals(gradeSystemLabel)) {
+				headerGradeSystemLabel = GradeUIFactory.translateGradeSystemLabelFallback(getTranslator());
+				break;
+			}
+		}
+		if (!StringHelper.containsNonWhitespace(headerGradeSystemLabel)) {
+			headerGradeSystemLabel = GradeUIFactory.translateGradeSystemLabelFallback(getTranslator());
+		}
+		gradeColumn.setHeaderLabel(headerGradeSystemLabel);
 	}
 
 	@Override
@@ -460,12 +554,12 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (courseNode == null || isRoot(courseNode)) return;
 		
 		ScoreEvaluation scoreEval = userCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode);
-		if (userVisibility.equals(scoreEval.getUserVisible())) return; // nothing to change
+		if (Objects.equals(userVisibility, scoreEval.getUserVisible())) return; // nothing to change
 		
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, userCourseEnvironment, getIdentity(),
 				false, Role.coach);
 		dbInstance.commitAndCloseSession();
@@ -479,7 +573,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		String text = "";
 		if (nodeData.isIgnoreInCourseAssessment()) {
 			text = translate("score.not.summed.ignore");
-		} else if (nodeData.getUserVisibility() != null && !nodeData.getUserVisibility()) {
+		} else if (nodeData.getUserVisibility() == null || !nodeData.getUserVisibility()) {
 			text = translate("score.not.summed.hidden");
 		}
 		scoreDescCtrl = new SimpleMessageController(ureq, getWindowControl(), text, null);

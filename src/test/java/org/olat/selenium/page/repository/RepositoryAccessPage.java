@@ -23,7 +23,6 @@ import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -39,38 +38,35 @@ public class RepositoryAccessPage {
 		this.browser = browser;
 	}
 	
+	/**
+	 * The method save the settings.
+	 * 
+	 * @param access Type of access
+	 * @return Itself
+	 */
 	public RepositoryAccessPage setUserAccess(UserAccess access) {
-		if(access == UserAccess.registred || access == UserAccess.guest) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='shared']");
-			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-			
-			By guestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label/input[@name='entry.access.guest' and @value='on']");
-			OOGraphene.waitElement(guestsBy, browser);
-			
-			if(access == UserAccess.guest) {
-				WebElement guestsEl = browser.findElement(guestsBy);
-				OOGraphene.check(guestsEl, Boolean.TRUE);
-			}
-		} else if(access == UserAccess.membersOnly) {
+		if(access == UserAccess.membersOnly) {
 			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
 			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-		} else if(access == UserAccess.booking) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='booking']");
+		} else if(access == UserAccess.booking || access == UserAccess.registred || access == UserAccess.guest) {
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='public']");
 			browser.findElement(allUsersBy).click();
-			OOGraphene.waitBusy(browser);
-			
-			By bookingFieldsetBy = By.cssSelector("fieldset.o_ac_configuration");
-			OOGraphene.waitElement(bookingFieldsetBy, browser);
 		}
 		return this;
 	}
-
-	public BookingPage boooking() {
-		By bookingFieldsetBy = By.cssSelector("fieldset.o_ac_configuration");
-		OOGraphene.waitElement(bookingFieldsetBy, browser);
-		return new BookingPage(browser);
+	
+	/**
+	 * Add a public access to a learn resource without any booking method.
+	 * 
+	 * @return Itself
+	 */
+	public RepositoryAccessPage quickOpenAccess() {
+		setUserAccess(UserAccess.registred)
+			.save()
+			.boooking()
+			.addOpenAsFirstMethod()
+			.configureOpenMethod("Hello");
+		return this;
 	}
 	
 	public RepositoryAccessPage save() {
@@ -80,13 +76,29 @@ public class RepositoryAccessPage {
 		return this;
 	}
 
+	public RepositoryAccessPage cleanBlueBox() {
+		OOGraphene.closeBlueMessageWindow(browser);
+		return this;
+	}
+
+	public BookingPage boooking() {
+		By bookingFieldsetBy = By.cssSelector("fieldset.o_ac_configuration");
+		OOGraphene.waitElement(bookingFieldsetBy, browser);
+		OOGraphene.moveTo(bookingFieldsetBy, browser);
+		return new BookingPage(browser);
+	}
 	
 	/**
 	 * Click toolbar
 	 */
 	public void clickToolbarBack() {
-		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		try {
+			By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+			browser.findElement(toolbarBackBy).click();
+			OOGraphene.waitBusy(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Toolbar Back", browser);
+			throw e;
+		}
 	}
 }

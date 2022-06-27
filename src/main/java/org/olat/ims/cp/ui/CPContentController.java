@@ -66,7 +66,8 @@ public class CPContentController extends BasicController {
 	private CPMetadataEditController editMetadataCtr;
 	private CloseableModalController dialogCtr;
 	private LayoutMain3ColsPreviewController previewCtr;
-	private Link editMetadataLink, previewLink;
+	private Link editMetadataLink;
+	private Link previewLink;
 	private Component helpLink;
 	private DeliveryOptions deliveryOptions;
 	private StackedPanel mainPanel;
@@ -89,7 +90,8 @@ public class CPContentController extends BasicController {
 		// init help link, can't do this in initToolbar because ureq is missing
 		if (helpModule.isHelpEnabled()) {
 			HelpLinkSPI provider = helpModule.getManualProvider();
-			helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("helpbutton"), "o_icon o_icon-lg o_icon_help", null, "CP Editor");
+			helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("helpbutton"),
+					"o_icon o_icon-lg o_icon_help", null, "manual_user/resource_cp/CP_Editor/");
 		}
 		
 		// set initial page to display
@@ -269,23 +271,12 @@ public class CPContentController extends BasicController {
 				// save but do not close
 				fireEvent(ureq, new NewCPPageEvent("Page Saved", editMetadataCtr.getPage()));
 			}
-		} else if (source == dialogCtr) {
-			if (event.getCommand().equals("CLOSE_MODAL_EVENT")) {
-				// close (x) button clicked in modal dialog
-				// System.out.println("modal dialog closed (x)");
-			}
-		} else if (source == mceCtr) {
-			if (event.getCommand().equals("CLOSE_MODAL_EVENT")) {
-				// close (x) button clicked in modal dialog
-				// System.out.println("modal dialog closed (x)");
-			}
 		} else if (source == iframeCtr) {
 			if (event instanceof NewIframeUriEvent) {
 				// html link clicked in content (iframe)
 				fireEvent(ureq, event);
 			}
 		}
-
 	}
 
 	/**

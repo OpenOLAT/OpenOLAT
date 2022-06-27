@@ -76,7 +76,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("My-course-");
 		
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(user.getIdentity());
-		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
 		repositoryService.addRole(user.getIdentity(), courseRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -112,7 +112,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		//prepare a course with a tutor
 		IdentityWithLogin teacher = JunitTestHelper.createAndPersistRndUser("Course-teacher-");
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(teacher.getIdentity());
-		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
 		repositoryService.addRole(teacher.getIdentity(), courseRe, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -143,12 +143,47 @@ public class UserCoursesTest extends OlatRestTestCase {
 		conn.shutdown();
 	}
 	
-	@Test
+    @Test
+    public void testOwnedCourses() throws IOException, URISyntaxException {
+        //prepare a course with a owner
+        IdentityWithLogin owner = JunitTestHelper.createAndPersistRndUser("Course-owner-");
+        RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(owner.getIdentity());
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
+        dbInstance.commitAndCloseSession();
+        
+		RestConnection conn = new RestConnection();
+        Assert.assertTrue(conn.login(owner));
+        
+        //without paging
+        URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(owner.getKey().toString()).path("/courses/owned").build();
+        HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+        HttpResponse response = conn.execute(method);
+        Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+        List<CourseVO> courses = parseCourseArray(response.getEntity());
+        Assert.assertNotNull(courses);
+        Assert.assertEquals(1, courses.size());
+
+        //with paging
+        URI pagedRequest = UriBuilder.fromUri(getContextURI()).path("/users").path(owner.getKey().toString()).path("/courses/owned")
+                .queryParam("start", "0").queryParam("limit", "10").build();
+        HttpGet pagedMethod = conn.createGet(pagedRequest, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+        HttpResponse pagedResponse = conn.execute(pagedMethod);
+        Assert.assertEquals(200, pagedResponse.getStatusLine().getStatusCode());
+        CourseVOes pagedCourses = conn.parse(pagedResponse.getEntity(), CourseVOes.class);
+        Assert.assertNotNull(pagedCourses);
+        Assert.assertEquals(1, pagedCourses.getTotalCount());
+        Assert.assertNotNull(pagedCourses.getCourses());
+        Assert.assertEquals(1, pagedCourses.getCourses().length);
+
+        conn.shutdown();
+    }
+
+    @Test
 	public void testFavoritCourses() throws IOException, URISyntaxException {
 		//prepare a course with a tutor
 		IdentityWithLogin me = JunitTestHelper.createAndPersistRndUser("Course-teacher-");
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(me.getIdentity());
-		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, true, false);
+		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
 		markManager.setMark(courseRe, me.getIdentity(), null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
 		dbInstance.commitAndCloseSession();
 

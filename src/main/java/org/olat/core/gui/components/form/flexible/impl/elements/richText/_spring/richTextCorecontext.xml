@@ -19,17 +19,8 @@
 		class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory">
  		<property name="customPlugins">		
  			<list>
- 				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin">
- 					<property name="pluginParameters">		
-			 			<map>
-			 				<!-- The place horizontally and vertically that the player uses for navigation -->
-			 				<entry key="playerOffsetHeight" value="0" />
-			 				<entry key="playerOffsetWidth" value="0" />
-			  			</map>	  			
-					</property>	
- 				</bean>
+ 				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin" />
  				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor.OlatMathEditorPlugin" />
- 				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys.OlatSmileysPlugin" />
  				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.quotespliter.QuoteSpliterPlugin" />
   			</list>	  			
 		</property>

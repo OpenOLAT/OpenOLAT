@@ -39,6 +39,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_ENABLED = "vc.teams.enabled";
 	private static final String PROP_GROUP_ENABLED = "vc.teams.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.teams.courses";
+	private static final String PROP_CHAT_EXAM_ENABLED = "vc.teams.chat.exams";
 	private static final String PROP_APPOINTMENTS_ENABLED = "vc.teams.appointments";
 	private static final String PROP_PRODUCER_ID = "vc.teams.producer.id";
 	
@@ -65,6 +66,8 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private String groupsEnabled;
 	@Value("${vc.teams.courses:true}")
 	private String coursesEnabled;
+	@Value("${vc.teams.chat.exams:true}")
+	private String chatExamsEnabled;
 	@Value("${vc.teams.appointments:true}")
 	private String appointmentsEnabled;
 	
@@ -88,6 +91,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
+		chatExamsEnabled = getStringPropertyValue(PROP_CHAT_EXAM_ENABLED, chatExamsEnabled);
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
 	}
 
@@ -167,6 +171,15 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCoursesEnabled(boolean enabled) {
 		coursesEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_COURSE_ENABLED, coursesEnabled, true);
+	}
+	
+	public boolean isChatExamsEnabled() {
+		return "true".equals(chatExamsEnabled);
+	}
+
+	public void setChatExamsEnabled(boolean enabled) {
+		chatExamsEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_CHAT_EXAM_ENABLED, chatExamsEnabled, true);
 	}
 	
 	public boolean isAppointmentsEnabled() {

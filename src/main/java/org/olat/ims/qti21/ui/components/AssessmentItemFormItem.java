@@ -96,6 +96,38 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 		component.setEnableSkip(enable);
 	}
 	
+	public boolean isEnableAlwaysSkip() {
+		return component.isEnableAlwaysSkip();
+	}
+
+	public void setEnableAlwaysSkip(boolean enable) {
+		component.setEnableAlwaysSkip(enable);
+	}
+	
+	public int getQuestionLevel() {
+		return component.getQuestionLevel();
+	}
+
+	public void setQuestionLevel(int questionLevel, int maxQuestionLevels) {
+		component.setQuestionLevel(questionLevel, maxQuestionLevels);
+	}
+
+	public boolean isShowQuestionLevel() {
+		return component.isShowQuestionLevel();
+	}
+
+	public void setShowQuestionLevel(boolean showQuestionLevel) {
+		component.setShowQuestionLevel(showQuestionLevel);
+	}
+
+	public boolean isShowStatus() {
+		return component.isShowStatus();
+	}
+
+	public void setShowStatus(boolean showStatus) {
+		component.setShowStatus(showStatus);
+	}
+	
 	public ResolvedAssessmentItem getResolvedAssessmentItem() {
 		return component.getResolvedAssessmentItem();
 	}

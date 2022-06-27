@@ -57,6 +57,7 @@ import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
@@ -267,13 +268,14 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		TestSessionState testSessionState = itemCorrection.getTestSessionState();
 		AssessmentTestSession candidateSession = itemCorrection.getTestSession();
 		try(AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, false)) {
+			AssessmentItemRef itemRef = itemCorrection.getItemRef();
 			TestPlanNodeKey testPlanNodeKey = itemCorrection.getItemNode().getKey();
 			String stringuifiedIdentifier = testPlanNodeKey.getIdentifier().toString();
 			
 			ParentPartItemRefs parentParts = AssessmentTestHelper
 					.getParentSection(testPlanNodeKey, testSessionState, resolvedAssessmentTest);
 			AssessmentItemSession itemSession = qtiService
-					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier);
+					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, itemRef.getIdentifier().toString());
 
 			itemSession.setManualScore(identityInteractionsCtrl.getManualScore());
 			itemSession.setCoachComment(identityInteractionsCtrl.getComment());
@@ -291,7 +293,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			if(model.getCourseNode() != null && model.getCourseEnvironment() != null) {
 				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 				correctionManager.updateCourseNode(candidateSession, assessmentTest,
-						model.getCourseNode(), model.getCourseEnvironment(), getIdentity());
+						model.getCourseNode(), model.getCourseEnvironment(), getIdentity(), getLocale());
 			}
 		} catch(IOException e) {
 			logError("", e);

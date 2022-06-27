@@ -288,10 +288,8 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 			groupTableModel.removeBusinessGroup(businessGroupKey);
 			tableEl.reset();
 		} else {
-			String text = getTranslator().translate("group.remove", new String[] {
-					StringHelper.escapeHtml(group.getName()),
-					StringHelper.escapeHtml(re.getDisplayname())
-			});
+			String text = getTranslator().translate("group.remove", StringHelper.escapeHtml(group.getName()),
+					StringHelper.escapeHtml(re.getDisplayname()));
 			confirmRemoveResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
 			confirmRemoveResource.setUserObject(group);
 		}
@@ -314,10 +312,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		if(managedSb.length() > 0) {
 			showWarning("error.managed.group", managedSb.toString());
 		} else {
-			String text = getTranslator().translate("group.remove", new String[] { 
-					sb.toString(),
-					StringHelper.escapeHtml(re.getDisplayname())
-			});
+			String text = getTranslator().translate("group.remove", sb.toString(), StringHelper.escapeHtml(re.getDisplayname()));
 			confirmRemoveMultiResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
 			confirmRemoveMultiResource.setUserObject(selectedItems);
 		}
@@ -358,6 +353,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
 		params.setRepositoryEntry(re);
+		params.setAuthorConnection(true);
 		return params;
 	}
 	

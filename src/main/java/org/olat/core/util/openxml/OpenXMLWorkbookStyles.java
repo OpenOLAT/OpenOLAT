@@ -135,16 +135,12 @@ public class OpenXMLWorkbookStyles {
 		return dateStyle;
 	}
 	
-	public CellStyle getTimeStyle() {
-		return dateStyle;
-	}
-	
 	public CellStyle getDateTimeStyle() {
 		return dateTimeStyle;
 	}
 	
 	public CellStyle getDurationStyle() {
-		return dateStyle;
+		return durationStyle;
 	}
 	
 	public CellStyle getHeaderStyle() {

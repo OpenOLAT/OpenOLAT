@@ -210,6 +210,11 @@
 }
 
 
+/* Link without color */
+.o_link_plain, .o_link_plain:link, .o_link_plain:hover {
+	color: inherit;
+	text-decoration: inherit;
+}
 
 .panel-imagebg {
 	background-repeat:no-repeat;

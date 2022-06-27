@@ -419,7 +419,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			return printCtrl;
 		};				
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+		openInNewBrowserWindow(ureq, layoutCtrlr, true);
 	}
 	
 	private void doOpenCourse(UserRequest ureq) {

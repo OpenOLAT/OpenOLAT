@@ -56,17 +56,14 @@ public class BaseFullWebappPopupLayoutFactory {
 			UserRequest ureq, ControllerCreator controllerCreator) {
 		if (!ureq.getUserSession().isAuthenticated())
 			throw new AssertException("not authenticated!");
-		BaseFullWebappPopupLayout layoutCC = new BaseFullWebappMinimalLayoutControllerCreator(controllerCreator);
-		return layoutCC;
+		return new BaseFullWebappMinimalLayoutControllerCreator(controllerCreator);
 	}
 
 	public static BaseFullWebappPopupLayout createMinimalPopupLayout(ControllerCreator controllerCreator) {
-		BaseFullWebappPopupLayout layoutCC = new BaseFullWebappMinimalLayoutControllerCreator(controllerCreator);
-		return layoutCC;
+		return new BaseFullWebappMinimalLayoutControllerCreator(controllerCreator);
 	}
 	
 	public static BaseFullWebappPopupLayout createPrintPopupLayout(ControllerCreator controllerCreator) {
-		BaseFullWebappPopupLayout layoutCC = new BaseFullWebappPrintLayoutControllerCreator(controllerCreator);
-		return layoutCC;
+		return new BaseFullWebappPrintLayoutControllerCreator(controllerCreator);
 	}
 }

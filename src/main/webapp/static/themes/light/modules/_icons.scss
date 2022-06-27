@@ -75,6 +75,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_catalog_sub:before { content: $fa-var-folder; }
 .o_icon_certificate:before { content: $fa-var-certificate;}
 .o_icon_chat:before { content: $fa-var-comment-o; }
+.o_icon_chats:before { content: $fa-var-comments-o; }
 .o_icon_check:before { content: $fa-var-check; }
 .o_icon_check_disabled:before { content: $fa-var-ban; }
 .o_icon_check_mixed:before { content: $fa-var-minus-square-o; }
@@ -150,6 +151,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eraser:before { content: $fa-var-eraser; }
 .o_icon_error:before { content: $fa-var-exclamation-circle; color: $brand-danger;}
 .o_icon_exclamation:before { content: $fa-var-exclamation;}
+.o_icon_exclamation_circle:before { content: $fa-var-exclamation-circle;}
 .o_icon_expand:before { content: $fa-var-expand;}
 .o_icon_expenditure:before { content: $fa-var-clock-o;}
 .o_icon_export:before { content: $fa-var-share-square-o;}
@@ -161,6 +163,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_fileupload:before { content: $fa-var-file-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
 .o_icon_form:before { content: $fa-var-clipboard;}
+.o_icon_grade:before { content: $fa-var-calculator; }
 .o_icon_graduate:before { content: $fa-var-graduation-cap; }
 .o_icon_group:before, .o_BusinessGroup_icon:before { content: $fa-var-users; }
 .o_icon_disclaimer:before {content: $fa-var-handshake-o; }
@@ -246,6 +249,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notice_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_notification:before { content: $fa-var-rss;}
 .o_icon_number_of:before { content: $fa-var-hashtag;}
+.o_icon_offer_active:before { content: $fa-var-eye; color: $o-ac-offer-active-color; }
+.o_icon_offer_inactive:before { content: $fa-var-eye-slash; color: $o-ac-offer-inactive-color;}
 .o_icon_ok:before { content: $fa-var-check; color: $brand-success}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
@@ -275,6 +280,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_progress_success:before { content: $fa-var-check; color: #e5efe5}
 .o_icon_progress_danger:before { content: $fa-var-times; color: #efe5e5}
 .o_icon_provider_adfs:before { content: $fa-var-windows;}
+.o_icon_provider_datenlotsen:before { content: $fa-var-university;}
 .o_icon_provider_keycloak:before { content: $fa-var-user-secret;}
 .o_icon_provider_facebook:before { content: $fa-var-facebook;}
 .o_icon_provider_google:before { content: $fa-var-google;}
@@ -286,6 +292,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_openid:before { content: $fa-var-openid; }
 .o_icon_provider_performx:before { content: $fa-var-caret-down;}
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
+.o_icon_provider_switch_eduid:before { content: $fa-var-university;}
 .o_icon_provider_tequila:before { content: $fa-var-university;}
 .o_icon_provider_tocco:before { content: $fa-var-circle-o;}
 .o_icon_provider_twitter:before { content: $fa-var-twitter;}
@@ -298,6 +305,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_radio_on:before { content: $fa-var-check-circle-o;}
 .o_icon_rating_on:before { content: $fa-var-star;}
 .o_icon_rating_off:before { content: $fa-var-star-o;}
+.o_icon_reactivate:before { content: $fa-var-level-up; }
 .o_icon_read:before { content: $fa-var-circle-o; }
 .o_icon_readonly:before { content: $fa-var-edit; color:red;}
 .o_icon_readwrite:before { content: $fa-var-edit; }
@@ -307,6 +315,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_redo:before { content: $fa-var-repeat; }
 .o_icon_refresh:before { content: $fa-var-refresh; }
 .o_icon_reject:before { content: $fa-var-times; color:$brand-danger; }
+.btn-danger .o_icon_reject:before { color: $btn-danger-color; }
 .o_icon_rejected:before { content: $fa-var-thumbs-down;}
 .o_icon_reminder:before { content: $fa-var-bell-o; }
 .o_icon_remove:before { content: $fa-var-times; }
@@ -477,6 +486,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_wiki_icon:before { content: $fa-var-globe; }
 .o_podcast_icon:before { content: $fa-var-video-camera; }
 .o_pf_icon:before { content: $fa-var-inbox; }
+.o_practice_icon:before { content: $fa-var-soccer-ball-o; }
 .o_blog_icon:before { content: $fa-var-bullhorn; }
 .o_ep_icon:before { content: $fa-var-briefcase; }
 .o_iqtest_icon:before { content: $fa-var-pencil-square; }
@@ -664,10 +674,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_rollcall_free:before { content: $fa-var-circle; color: #969696; }
 .o_lectures_rollcall_notice:before { content: $fa-var-circle; color: #969696; }
 .o_lectures_rollcall_:before { content: $fa-var-clock-o; color: #b8b8b8; }
-.o_lectures_attended:before { content: $fa-var-circle; color: $brand-success; }
-.o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
-.o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
-.o_lectures_dispensed:before { content: $fa-var-circle; color: $brand-info; }
+.o_lectures_attended:before { content: $fa-var-circle; color: $brand-success !important; }
+.o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning !important; }
+.o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger !important; }
+.o_lectures_dispensed:before { content: $fa-var-circle; color: $brand-info !important; }
 .o_absences_col_warning:before { content: $fa-var-warning; }
 .o_absences_col_alert:before { content: $fa-var-exclamation-circle; }
 
@@ -702,11 +712,13 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_identity_deleted:before { content: $fa-var-trash; }
 
 /* Access control icons */
+.o_ac_guest_icon:before { content: $fa-var-user-circle;}
 .o_ac_token_icon{ @include fa-icon-rotate(180deg, 1); &:before { content: $fa-var-key; }}
-.o_ac_free_icon:before { content: $fa-var-gift;}
+.o_ac_free_icon:before { content: $fa-var-percent;}
 .o_ac_group_icon:before { content: $fa-var-group;}
 .o_ac_membersonly_icon:before { content: $fa-var-lock;}
-.o_ac_guests_icon:before { content: $fa-var-user-secret;}
+.o_ac_guests_icon:before { content: $fa-var-user-circle-o;}
+.o_ac_openaccess_icon:before { content: $fa-var-user-secret;}
 .o_ac_paypal_icon:before { content: $fa-var-cc-paypal;}
 .o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}

@@ -57,7 +57,8 @@ public class EssayEditorController extends FormBasicController {
 	private TextElement maxWordsEl;
 	private TextElement placeholderEl;
 	private RichTextElement textEl;
-	private SingleSelection  copyPasteEl;
+	private SingleSelection copyPasteEl;
+	private SingleSelection textFormattingEl;
 
 	private final File itemFile;
 	private final File rootDirectory;
@@ -86,7 +87,7 @@ public class EssayEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Configure test questions");
+		setFormContextHelp("manual_user/tests/Configure_test_questions/");
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
@@ -108,6 +109,18 @@ public class EssayEditorController extends FormBasicController {
 			textReadOnlyEl.setBlocks(itemBuilder.getQuestionBlocks());
 			textReadOnlyEl.setMapperUri(mapperUri);
 			formLayout.add(textReadOnlyEl);
+		}
+		
+		//copy/paste
+		SelectionValues modeKeys = new SelectionValues();
+		modeKeys.add(SelectionValues.entry("standard", translate("essay.formating.standard")));
+		modeKeys.add(SelectionValues.entry("rich", translate("essay.formating.rich")));
+		textFormattingEl = uifactory.addRadiosHorizontal("essay.formating", "essay.formating", formLayout, modeKeys.keys(), modeKeys.values());
+		textFormattingEl.setEnabled(!restrictedEdit && !readOnly);
+		if(itemBuilder.isRichTextFormating()) {
+			textFormattingEl.select("rich", true);
+		} else {
+			textFormattingEl.select("standard", true);
 		}
 		
 		String placeholder = itemBuilder.getPlaceholder();
@@ -180,6 +193,12 @@ public class EssayEditorController extends FormBasicController {
 			copyPasteEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		
+		textFormattingEl.clearError();
+		if(!textFormattingEl.isOneSelected()) {
+			textFormattingEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		allOk &= validateInteger(lengthEl);
 		allOk &= validateInteger(heightEl);
@@ -228,6 +247,9 @@ public class EssayEditorController extends FormBasicController {
 		
 		boolean copyPasteDisabled = copyPasteEl.isSelected(1);
 		itemBuilder.setCopyPasteDisabled(copyPasteDisabled);
+		
+		boolean richText = "rich".equals(textFormattingEl.getSelectedKey());
+		itemBuilder.setRichTextFormating(richText);
 		
 		itemBuilder.setPlaceholder(placeholderEl.getValue());
 		if(!restrictedEdit) {

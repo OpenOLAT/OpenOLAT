@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -52,6 +53,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -65,13 +67,16 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CoachingAssessmentEntry;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentCoachingTableModel.AssessmentCoachingsCol;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -79,6 +84,10 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -98,6 +107,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	private static final String CMD_OPEN_COURSE_NODE = "open.course.node";
 	private static final String CMD_ASSESS = "assess";
 	private static final String CMD_DETAILS = "details";
+	private static final String CMD_APPLY_GRADE = "apply";
 
 	private TooledStackedPanel stackPanel;
 	private List<UserPropertyHandler> userPropertyHandlers;
@@ -108,6 +118,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
+	private DialogBoxController applyGradeCtrl;
 	private AssessedIdentityController currentIdentityCtrl;
 	
 	private final String translatedFormTitle;
@@ -118,6 +129,8 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	protected AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeService gradeService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -130,6 +143,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	public AssessmentCoachingListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
 		this.translatedFormTitle = translatedFormTitle;
@@ -147,6 +161,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	protected abstract boolean canEditUserVisibility();
 	protected abstract boolean canAssess();
 	protected abstract boolean canViewDetails();
+	protected abstract boolean canApplyGrade();
 	protected abstract List<CoachingAssessmentEntry> loadModel();
 	
 	@Override
@@ -166,7 +181,10 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 			colPos++;
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseKey, CMD_OPEN_COURSE));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.course, CMD_OPEN_COURSE));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalId, CMD_OPEN_COURSE));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalRef, CMD_OPEN_COURSE));
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.courseNode, CMD_OPEN_COURSE_NODE, intendedNodeRenderer));
@@ -186,6 +204,12 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		if (canViewDetails()) {
 			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel("cmd.details", -1, CMD_DETAILS,
 					new StaticFlexiCellRenderer(translate("cmd.details"), CMD_DETAILS, "", "", null));
+			detailsColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(detailsColumn);
+		}
+		if (canApplyGrade()) {
+			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel("cmd.grade.apply", -1, CMD_APPLY_GRADE,
+					new StaticFlexiCellRenderer(translate("cmd.grade.apply"), CMD_APPLY_GRADE, "", "", null));
 			detailsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(detailsColumn);
 		}
@@ -251,13 +275,21 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
+		} else if (applyGradeCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				AssessmentCoachingRow row = (AssessmentCoachingRow)applyGradeCtrl.getUserObject();
+				doApplyGrade(ureq, row);
+			}
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	protected void cleanUp() {
+		removeAsListenerAndDispose(applyGradeCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(cmc);
+		applyGradeCtrl = null;
 		contactCtrl = null;
 		cmc = null;
 	}
@@ -276,6 +308,8 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				} else if (CMD_DETAILS.equals(se.getCommand())) {
 					// The assessment controller opens the release view automatically.
 					doAssess(ureq, dataModel.getObject(se.getIndex()));
+				} else if (CMD_APPLY_GRADE.equals(se.getCommand())) {
+					doConfirmApplyGrade(ureq, dataModel.getObject(se.getIndex()));
 				} else if (CMD_OPEN_COURSE.equals(se.getCommand())) {
 					doOpenCourse(ureq, dataModel.getObject(se.getIndex()));
 				} else if (CMD_OPEN_COURSE_NODE.equals(se.getCommand())) {
@@ -356,6 +390,90 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		return false;
 	}
 	
+	private void doConfirmApplyGrade(UserRequest ureq, AssessmentCoachingRow row) {
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(row.getRepositoryEntryKey());
+		if (repositoryEntry == null) return;
+		
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		if (course == null) return;
+		
+		CourseNode courseNode = course.getRunStructure().getNode(row.getSubIdent());
+		if (courseNode == null) return;
+		
+		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		if (assessedIdentity == null) return;
+		
+		if (!isAssessedIdentityLocked(ureq, repositoryEntry, courseNode, assessedIdentity)) {
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+					.createAndInitUserCourseEnvironment(assessedIdentity, course.getCourseEnvironment());
+			AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+			
+			if (scoreEval != null && scoreEval.getScore() != null) {
+				GradeScale gradeScale = gradeService.getGradeScale(repositoryEntry, courseNode.getIdent());
+				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+				String grade = gradeScoreRange.getGrade();
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeScoreRange.getGradeSystemIdent());
+				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(repositoryEntry, courseNode).getPassedMode()
+						? gradeScoreRange.getPassed()
+						: null;
+				
+				String text = null;
+				if (passed != null) {
+					if (passed.booleanValue()) {
+						text = translate("grade.apply.text.passed", grade, gradeSystemLabel);
+					} else {
+						text = translate("grade.apply.text.failed", grade, gradeSystemLabel);
+					}
+				} else {
+					text = translate("grade.apply.text", grade, gradeSystemLabel);
+				}
+				String title = translate("grade.apply.label", gradeSystemLabel);
+				applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
+				applyGradeCtrl.setUserObject(row);
+			}
+		}
+	}
+	
+	private void doApplyGrade(UserRequest ureq, AssessmentCoachingRow row) {
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(row.getRepositoryEntryKey());
+		if (repositoryEntry == null) return;
+		
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		if (course == null) return;
+		
+		CourseNode courseNode = course.getRunStructure().getNode(row.getSubIdent());
+		if (courseNode == null) return;
+		
+		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		if (assessedIdentity == null) return;
+		
+		if (!isAssessedIdentityLocked(ureq, repositoryEntry, courseNode, assessedIdentity)) {
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+					.createAndInitUserCourseEnvironment(assessedIdentity, course.getCourseEnvironment());
+			AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+			if (scoreEval != null && scoreEval.getScore() != null) {
+				GradeScale gradeScale = gradeService.getGradeScale(repositoryEntry, courseNode.getIdent());
+				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+				String grade = gradeScoreRange.getGrade();
+				String gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+				String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+				Boolean passed = Mode.none != courseAssessmentService.getAssessmentConfig(repositoryEntry, courseNode).getPassedMode()
+						? gradeScoreRange.getPassed()
+						: null;
+				
+				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+						gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
+						scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
+						getIdentity(), false, Role.coach);
+				reload();
+			}
+		}
+	}
+	
 	private void doEmail(UserRequest ureq) {
 		if(guardModalController(contactCtrl)) return;
 		
@@ -419,10 +537,10 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 		
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
 		dbInstance.commitAndCloseSession();

@@ -24,20 +24,16 @@
 */
 package org.olat.admin.sysinfo;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+import java.util.Date;
+
+import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -50,19 +46,24 @@ import org.olat.properties.PropertyManager;
  * Initial Date:  12.08.2008 <br>
  * @author guido
  */
-public class InfoMessageManager implements GenericEventListener{
-	
+public class InfoMessageManager implements GenericEventListener {
+
 	private static final String INFO_MSG = "InfoMsg";
 	private static final String INFO_MSG_NODE_ONLY = "InfoMsgNode-";
+	private static final String MAINTENANCE_MSG = "MaintenanceMsg";
+	private static final String MAINTENANCE_MSG_NODE_ONLY = "MaintenanceMsgNode-";
+	
 	//random long to make sure we create always the same dummy ores
 	private static final Long KEY = Long.valueOf(857394857);
-	protected static String infoMessage;
-	private static String infoMessageNodeOnly;
+	
+	private SysInfoMessage infoMessage;
+	private SysInfoMessage infoMessageNodeOnly;
+	private SysInfoMessage maintenanceMessage;	
+	private SysInfoMessage maintenanceMessageNodeOnly;
+	
 	private static final OLATResourceable INFO_MESSAGE_ORES = OresHelper.createOLATResourceableType(InfoMessageManager.class);
-	public static final String EMPTY_MESSAGE = "";
 	//identifies a node in the cluster
 	private int nodeId;
-	private AutoCreator actionControllerCreator;
 	private CoordinatorManager coordinatorManager;
 	
 	/**
@@ -71,124 +72,255 @@ public class InfoMessageManager implements GenericEventListener{
 	 */
 	private InfoMessageManager(CoordinatorManager coordinatorManager, int nodeId) {
 		this.coordinatorManager = coordinatorManager;
-		// it must exist, ensured by LoginModule
-		infoMessage = EMPTY_MESSAGE;
-		String currInfoMsg = getInfoMsgProperty(INFO_MSG).getTextValue();
-		if(StringHelper.containsNonWhitespace(currInfoMsg)){
-			// set info message on startup OLAT-3539
-			infoMessage = currInfoMsg;
-		}
+		// Init InfoMessage
+		infoMessage = loadSysInfoMessage(INFO_MSG);
+		// Init InfoMessage for this node only
+		infoMessageNodeOnly = loadSysInfoMessage(INFO_MSG_NODE_ONLY + nodeId);
+		// Init maintenanceMessage
+		maintenanceMessage = loadSysInfoMessage(MAINTENANCE_MSG);
+		GlobalStickyMessage.setGlobalStickyMessage(maintenanceMessage.getTimedMessage(), true);		
+		// Init maintenanceMessage for this node only
+		maintenanceMessageNodeOnly = loadSysInfoMessage(MAINTENANCE_MSG_NODE_ONLY + nodeId);
+		GlobalStickyMessage.setGlobalStickyMessage(maintenanceMessageNodeOnly.getTimedMessage(), false);
 		
-		infoMessageNodeOnly = EMPTY_MESSAGE;
-		String currInfoMsgNode = getInfoMsgProperty(INFO_MSG_NODE_ONLY+nodeId).getTextValue();
-		if(StringHelper.containsNonWhitespace(currInfoMsgNode)){
-			// set info message on startup OLAT-3539
-			infoMessageNodeOnly = currInfoMsgNode;
-		}
-		
+		// Register for info and maintenance change events
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, INFO_MESSAGE_ORES);
 		this.nodeId = nodeId;
-	}
+	}		
 	
 
 	/**
-	 * @return the info message configured in the admin area
+	 * Get the currently configured info message displayed on all nodes
+	 * @return the SysInfoMessage representing the message
 	 */
-	public String getInfoMessage() {
+	public SysInfoMessage getInfoMessage() {
 		return infoMessage;
 	}
-
 	/**
-	 * @param message The new info message that will show up on the login screen
-	 * Synchronized to prevent two users creating or updating the info message property
-	 * at the same time
+	 * Get the currently configured info message displayed only on this node
+	 * @return the SysInfoMessage representing the message
 	 */
-	public void setInfoMessage(final String message) { //o_clusterOK synchronized
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(INFO_MSG, KEY);
+	public SysInfoMessage getInfoMessageNodeOnly() {
+		return infoMessageNodeOnly;
+	}
+	
+	/**
+	 * Get the currently configured maintenance message displayed on all nodes
+	 * @return the SysInfoMessage representing the message
+	 */
+	public SysInfoMessage getMaintenanceMessage() {
+		return maintenanceMessage;
+	}
+	
+	/**
+	 * Get the currently configured maintenance message displayed only on this node
+	 * @return the SysInfoMessage representing the message
+	 */
+	public SysInfoMessage getMaintenanceMessageNodeOnly() {
+		return maintenanceMessageNodeOnly;
+	}
+	
+	
+	
+	/**
+	 * Set a new info message visible only on all nodes
+	 * 
+	 * @param message The message: empty or NULL value means "no message"
+	 * @param start The optional display start date or NULL to start immediately
+	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
+	 * @return The SysInfoMessage
+	 */
+	public SysInfoMessage setInfoMessage(final String message, final Date start, final Date end, boolean clearOnRestart) {
+		infoMessage = new SysInfoMessage(INFO_MSG, message, start, end, clearOnRestart);
+		saveSysInfoMessageAndFireEvent(infoMessage);	
+		return infoMessage;
+	}
+	
+	/**
+	 * Set a new info message visible only on this node
+	 * 
+	 * @param message The message: empty or NULL value means "no message"
+	 * @param start The optional display start date or NULL to start immediately
+	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
+	 * @return The SysInfoMessage
+	 */
+	public SysInfoMessage setInfoMessageNodeOnly(final String message, final Date start, final Date end, boolean clearOnRestart) {
+		infoMessageNodeOnly = new SysInfoMessage(INFO_MSG_NODE_ONLY + nodeId, message, start, end, clearOnRestart);
+		saveSysInfoMessageAndFireEvent(infoMessageNodeOnly);		
+		return infoMessageNodeOnly;
+	}	
+	
+	/**
+	 * Set a new maintenance message visible on all nodes and notify everybody about the change
+	 * 
+	 * @param message The message: empty or NULL value means "no message"
+	 * @param start The optional display start date or NULL to start immediately
+	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
+	 * @return The SysInfoMessage
+	 */
+	public SysInfoMessage setMaintenanceMessage(final String message,final  Date start, final Date end, boolean clearOnRestart) {
+		this.maintenanceMessage = new SysInfoMessage(MAINTENANCE_MSG, message, start, end, clearOnRestart);
+		GlobalStickyMessage.setGlobalStickyMessage(this.maintenanceMessage.getTimedMessage(), true);
+		saveSysInfoMessageAndFireEvent(maintenanceMessage);
+		return maintenanceMessage;
+	}	
+	
+	/**
+	 * Set a new maintenance message visible only on this node and notify everybody about the change
+	 * 
+	 * @param message The message: empty or NULL value means "no message"
+	 * @param start The optional display start date or NULL to start immediately
+	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
+	 * @return The SysInfoMessage
+	 */
+	public SysInfoMessage setMaintenanceMessageNodeOnly(final String message, final Date start, final Date end, boolean clearOnRestart)  {
+		this.maintenanceMessageNodeOnly = new SysInfoMessage(MAINTENANCE_MSG_NODE_ONLY + nodeId, message, start, end, clearOnRestart);
+		GlobalStickyMessage.setGlobalStickyMessage(this.maintenanceMessageNodeOnly.getTimedMessage(), false);
+		saveSysInfoMessageAndFireEvent(maintenanceMessageNodeOnly);		
+		return maintenanceMessageNodeOnly;
+	}
+
+	
+	/**
+	 * Method called by MaintenanceMessageJob to update the maintenance message UI
+	 * of logged in users. This does not modify the message in anyway.
+	 */
+	protected void updateMaintenanceMessageFromJob() {
+		if (maintenanceMessage.hasMessage()) {
+			String newMaintenanceMessage = maintenanceMessage.getTimedMessage();
+			String oldMaintenanceMessage = GlobalStickyMessage.getGlobalStickyMessage(true);
+			if (!newMaintenanceMessage.equals(oldMaintenanceMessage)) {
+				GlobalStickyMessage.setGlobalStickyMessage(newMaintenanceMessage, true);			
+			}			
+		}
+		if (maintenanceMessageNodeOnly.hasMessage()) {
+			String newMaintenanceNodeOnlyMessage = maintenanceMessageNodeOnly.getTimedMessage();
+			String oldMaintenanceNodeOnlyMessage = GlobalStickyMessage.getGlobalStickyMessage(false);
+			if (!newMaintenanceNodeOnlyMessage.equals(oldMaintenanceNodeOnlyMessage)) {
+				GlobalStickyMessage.setGlobalStickyMessage(newMaintenanceNodeOnlyMessage, false);			
+			}			
+		}
+	}
+	
+	/**
+	 * Persist the given SysInfoMessage in the database and send events to all
+	 * listeners (all users on all nodes and the InfoMessageManager on other nodes)
+	 * 
+	 * @param sysInfoMessage
+	 */
+	private void saveSysInfoMessageAndFireEvent(final SysInfoMessage sysInfoMessage) { //o_clusterOK synchronized
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(sysInfoMessage.getType(), KEY);
 		
 		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
 
 			public void execute() {
 				PropertyManager pm = PropertyManager.getInstance();
-				Property p = pm.findProperty(null, null, null, "_o3_", INFO_MSG);
+				Property p = pm.findProperty(null, null, null, "_o3_", sysInfoMessage.getType());
 				if (p == null) {
-					p =	pm.createPropertyInstance(null,	null,	null,	"_o3_", INFO_MSG, null, null, null, "");
+					p =	pm.createPropertyInstance(null,	null,	null,	"_o3_", sysInfoMessage.getType(), null, null, null, "");
 					pm.saveProperty(p);
 				}
-				p.setTextValue(message);
-				//set Message in RAM
-				InfoMessageManager.infoMessage = message;
+				if (sysInfoMessage.isClearOnRestart()) {
+					// Remove any old message and save an empty one instead. On next startup the
+					// system will initialize with the cleared message
+					p.setTextValue(SysInfoMessage.EMPTY_MESSAGE);
+					p.setLongValue(null);
+					p.setFloatValue(null);					
+				} else {
+					// Message stored as text, start as long and end as float in one single property
+					// to reduce queries and compact storage
+					p.setTextValue(sysInfoMessage.getMessage());
+					Date start = sysInfoMessage.getStart();
+					p.setLongValue(start == null ? null : start.getTime());
+					Date end = sysInfoMessage.getEnd();
+					p.setFloatValue(end == null ? null : (float)end.getTime());					
+				}
+				
 				pm.updateProperty(p);
 			}
 			
 		});//end syncerCallback
+		
+		// Inform everybody on all nodes about changed SysInfoMessage 
 		EventBus eb = coordinatorManager.getCoordinator().getEventBus(); 
-		MultiUserEvent mue = new MultiUserEvent(message);
-		eb.fireEventToListenersOf(mue, INFO_MESSAGE_ORES);
+		SysInfoMessageChangedEvent simce = new SysInfoMessageChangedEvent(sysInfoMessage);
+		eb.fireEventToListenersOf(simce, INFO_MESSAGE_ORES);
 	}
-
-	private Property getInfoMsgProperty(final String key) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(INFO_MSG, KEY);
+	
+	/**
+	 * Load the persisted SysInfoMessage from the database
+	 * 
+	 * @param type The SysInfoMessage type
+	 * @return SysInfoMessage with empty default values, never null
+	 */
+	private SysInfoMessage loadSysInfoMessage(final String type) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(type, KEY);
 		
-		return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Property>() {
+		return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<SysInfoMessage>() {
 		
-			public Property execute() {
+			public SysInfoMessage execute() {
 			PropertyManager pm = PropertyManager.getInstance();
-			Property p = pm.findProperty(null, null, null, "_o3_", key);
+			Property p = pm.findProperty(null, null, null, "_o3_", type);
 			if (p == null) {
-				p =	pm.createPropertyInstance(null,	null,	null,	"_o3_", key, null, null, null, "");
+				p =	pm.createPropertyInstance(null,	null,	null,	"_o3_", type, null, null, null, "");
 				pm.saveProperty(p);
 			}
-			return p;
+			String msg = p.getTextValue();
+			// Message stored as text, start as long and end as float in one single property
+			// to reduce queries and compact storage
+			Date start = null;
+			Long startValue = p.getLongValue();
+			if(startValue != null){
+				start =  new Date(startValue.longValue());
+			} 
+			Date end = null;
+			Float endValue = p.getFloatValue();
+			if(endValue != null){
+				end =  new Date(endValue.longValue());
+			}	
+			
+			boolean clearOnRestart = false;
+			if ( type.equals(MAINTENANCE_MSG) || type.equals(MAINTENANCE_MSG_NODE_ONLY) ) {
+				clearOnRestart = true;
+			}
+			
+			return new SysInfoMessage(type, msg, start, end, clearOnRestart);
+			
 			}
 			
 		});//end syncerCallback
 	}
 
+	
+	/**
+	 *  GenericEventListener events sent by this or other nodes.  
+	 */
+	@Override
 	public void event(Event event) {
-		if (event instanceof MultiUserEvent) {
-			MultiUserEvent mue = (MultiUserEvent) event;
-			//do not use setInfoMessage(..) this event comes in from another node, where the infomessage was set.
-			InfoMessageManager.infoMessage = mue.getCommand();
+		if (event instanceof SysInfoMessageChangedEvent) {
+			SysInfoMessageChangedEvent simce = (SysInfoMessageChangedEvent) event;
+			// Only update our local messages if node fired from another node. If modified
+			// on this node, it is already set to the correct values
+			if (!simce.isEventOnThisNode()) {
+				SysInfoMessage sysInfoMessage = simce.getSysInfoMessage();
+				// Set new message in manager for this instance for next usage. 
+				// Update in windows done by individual dispatch of the events of each registered controller
+				if (sysInfoMessage.getType().equals(INFO_MSG)) {					
+					infoMessage = sysInfoMessage;
+				} else if (sysInfoMessage.getType().equals(MAINTENANCE_MSG)) {			
+					maintenanceMessage = sysInfoMessage;
+					GlobalStickyMessage.setGlobalStickyMessage(maintenanceMessage.getTimedMessage(), true);		
+				}
+				// ignore node-only events
+			}
 		}
 	}
-
-	/**
-	 * set info message on node level only, no need to sync
-	 * @param message
-	 */
-	public void setInfoMessageNodeOnly(String message) {
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(null, null, null, "_o3_", INFO_MSG_NODE_ONLY+nodeId);
-		if (p == null) {
-			p =	pm.createPropertyInstance(null,	null,	null,	"_o3_", INFO_MSG_NODE_ONLY+nodeId, null, null, null, "");
-			pm.saveProperty(p);
-		}
-		p.setTextValue(message);
-		//set Message in RAM
-		InfoMessageManager.infoMessageNodeOnly = message;
-		pm.updateProperty(p);
-	}
-
-	public String getInfoMessageNodeOnly() {
-		return infoMessageNodeOnly;
-	}
-	
-	/**
-	 * get an controller instance, either the singleVM or the cluster version
-	 * @param ureq
-	 * @param control
-	 */
-	public Controller getInfoMessageController(UserRequest ureq, WindowControl control) {
-		return actionControllerCreator.createController(ureq, control);
-	}
-	
-	/**
-	 * [used by spring]
-	 */
-	public void setActionController(ControllerCreator actionControllerCreator) {
-		this.actionControllerCreator = (AutoCreator) actionControllerCreator;
-	}
-	
-
 }

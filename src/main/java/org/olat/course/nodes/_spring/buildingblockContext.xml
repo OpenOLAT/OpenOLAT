@@ -135,6 +135,11 @@
 		<property name="order" value="170" />
 	</bean>
 	
+	<bean id="practice" class="org.olat.course.nodes.practice.PracticeCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.practice.enabled}" />
+		<property name="order" value="165" />
+	</bean>
+	
 	<bean id="form" class="org.olat.course.nodes.form.FormCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.form.enabled}" />
 		<property name="order" value="173" />

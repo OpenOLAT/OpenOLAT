@@ -200,6 +200,8 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe);
+	
+	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re);
 
 	/**
 	 * Return the smallest enrollment date.
@@ -226,11 +228,6 @@ public interface RepositoryService {
 	public boolean isParticipantAllowedToLeave(RepositoryEntry re);
 
 	/**
-	 * Return the primary keys of the authors
-	 */
-	public List<Long> getAuthors(RepositoryEntryRef re);
-
-	/**
 	 * Get the members of the repository entry (the method doesn't
 	 * follow automatically the business groups or other relations).
 	 *
@@ -250,6 +247,8 @@ public interface RepositoryService {
 	 * @return A list of identities which have at least one of the specified role
 	 */
 	public List<Identity> getMembers(List<? extends RepositoryEntryRef> re, RepositoryEntryRelationType relationType, String... roles);
+	
+	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles);
 	
 	/**
 	 * The participants the specified user can coach. The method is specific to

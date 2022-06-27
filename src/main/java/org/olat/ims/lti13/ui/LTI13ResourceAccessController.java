@@ -127,9 +127,9 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("access.lti13.title");
 		if(entry == null) {
-			setFormContextHelp("Share groups");
+			setFormContextHelp("manual_user/groups/LTI_Share_groups/");
 		} else {
-			setFormContextHelp("Share courses");
+			setFormContextHelp("manual_user/course_create/LTI_Share_courses/");
 		}
 		
 		if(!readOnly) {

@@ -121,7 +121,7 @@ public class TrueFalseEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("Configure test questions");
+		metadata.setFormContextHelp("manual_user/tests/Configure_test_questions/");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);
@@ -251,7 +251,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		if(sourceWrappers.isEmpty()) {
 			answersCont.setErrorKey("error.atleast.one.answer", null);
 			allOk &= false;
-		} else {
+		} else if(!restrictedEdit) {
 			for(SourceWrapper sourceWrapper:sourceWrappers) {
 				sourceWrapper.setErrorSingleChoice(false);
 				List<String> answers = temporaryAssociations.get(sourceWrapper.getIdentifierString());

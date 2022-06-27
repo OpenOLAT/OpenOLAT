@@ -1,0 +1,36 @@
+<fieldset class="o_form form o_block" style="position:relative">
+	<legend>$r.translate("criteria")</legend>
+	
+	<div class="form-group $f.getElementCssClass("taxonomy.levels") #if($f.hasError("taxonomy.levels")) has-feedback has-error #elseif($f.hasWarning("taxonomy.levels")) has-feedback has-warning #end clearfix">
+		$r.render("taxonomy.levels_LABEL", "$f.getItemId($item)")
+		$r.render("taxonomy.levels", "form")
+		#if($f.hasError("taxonomy.levels") || $f.hasWarning("taxonomy.levels"))
+			$r.render("taxonomy.levels_ERROR")
+		#end
+	</div>
+	<div class="form-group $f.getElementCssClass("wo.taxonomy.levels") clearfix">
+		$r.render("wo.taxonomy.levels", "form")
+	</div>
+	
+	<strong>$r.translate("criteria.filter.rules")</strong>
+	
+	#foreach($rule in $rules)
+	<div class="o_reminder_rule row o_sel_row-$foreach.count">
+		<div class="col-md-4">$r.render($rule.typeEl.name)</div>
+		<div class="col-md-2">$r.render($rule.operatorEl.name)</div>
+		<div class="col-md-4">
+			$r.render($rule.valueItem.name)
+			#if($f.hasError($rule.valueItem))
+				<br>$r.render("${rule.valueItem.name}_ERROR")
+			#end
+		</div>
+		<div class="col-md-2"><div class="text-right">$r.render($rule.deleteButton.name)</div></div>
+	</div>
+	#end
+	
+	<div class="o_reminder_rule row">
+		<div class="col-md-4">
+			$r.render("add.rule.type")
+		</div>
+	</div>
+</fieldset>

@@ -56,6 +56,8 @@ public class PowerPointOOXMLDocument extends FileDocument {
 	private static final long serialVersionUID = 2322994231200065526L;
 	private static final Logger log = Tracing.createLoggerFor(PowerPointOOXMLDocument.class);
 
+	private static final int MAX_ENTRIES = 64;
+	
 	public static final String POWERPOINT_FILE_TYPE = "type.file.ppt";
 	private static final String SLIDE = "ppt/slides/slide";
 
@@ -76,8 +78,9 @@ public class PowerPointOOXMLDocument extends FileDocument {
 		File file = ((JavaIOItem)leaf).getBasefile();
 		try(LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
 				ZipFile wordFile = new ZipFile(file)) {
+			int count = 0;
 			List<String> contents = new ArrayList<>();
-			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements(); ) {
+			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements() && count<MAX_ENTRIES; count++) {
 				ZipEntry entry = entriesEnumeration.nextElement();
 				String name = entry.getName();
 				if(name.startsWith(SLIDE) && name.endsWith(".xml")) {

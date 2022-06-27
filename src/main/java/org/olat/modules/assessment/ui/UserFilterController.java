@@ -96,8 +96,8 @@ public class UserFilterController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(restrictionEl == source) {
 			Collection<String> selectedKeys = restrictionEl.getSelectedKeys();
-			boolean withOtherUsers = selectedKeys.contains("otherUsers");
-			boolean withAnonymousUsers = selectedKeys.contains("anonymousUsers");
+			boolean withOtherUsers = selectedKeys.contains(OTHER_USER);
+			boolean withAnonymousUsers = selectedKeys.contains(ANONYMOUS);
 			fireEvent(ureq, new UserFilterEvent(withOtherUsers, withAnonymousUsers));
 		}
 		super.formInnerEvent(ureq, source, event);

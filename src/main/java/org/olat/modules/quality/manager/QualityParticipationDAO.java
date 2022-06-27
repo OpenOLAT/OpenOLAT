@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -138,7 +139,7 @@ class QualityParticipationDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(participation.key)");
 		appendFrom(sb);
-		appendWhereClause(sb, searchParam);;
+		appendWhereClause(sb, searchParam);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -182,7 +183,8 @@ class QualityParticipationDAO {
 		sb.append("            when '").append(QualityDataCollectionTopicType.CUSTOM).append("'");
 		sb.append("            then collection.topicCustom");
 		sb.append("            when '").append(QualityDataCollectionTopicType.IDENTIY).append("'");
-		sb.append("            then concat(user.lastName, ' ', user.firstName)");
+		sb.append("              then case when collection.topicIdentity.status < ").append(Identity.STATUS_DELETED);
+		sb.append("                then concat(user.lastName, ' ', user.firstName) end");
 		sb.append("            when '").append(QualityDataCollectionTopicType.ORGANISATION).append("'");
 		sb.append("            then organisation.displayName");
 		sb.append("            when '").append(QualityDataCollectionTopicType.CURRICULUM).append("'");

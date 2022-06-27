@@ -11,7 +11,7 @@ function print() {
 }
 </script>
 	<a class="btn btn-default" href="javascript:print()" title="$r.translate("print")"><i class="o_icon o_icon_print"> </i> $r.translate("print")</a>
-	$r.contextHelpWithWrapper("Lectures and absences")
+	$r.contextHelpWithWrapper("manual_user/course_operation/Lectures_and_absences/")
 #end
 </div>
 <div class="o_sel_lecture_participants_overview">
@@ -34,9 +34,11 @@ $r.render("table")
 #if($r.isTrue($printCommand))
 <script>
 	// execute after radial score rendering
-	setTimeout(function() {
-		window.focus();
-		window.print();
-	},110);
+	jQuery(function() {
+		setTimeout(function() {
+			window.focus();
+			window.print();
+		},500);
+	});
 </script>
 #end

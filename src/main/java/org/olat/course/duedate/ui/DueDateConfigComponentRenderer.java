@@ -22,6 +22,7 @@ package org.olat.course.duedate.ui;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -58,8 +59,15 @@ public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 				cmp.setDirty(false);
 			}
 		} else {
-			FormItem absoluteDateEl = dueDateItem.getAbsoluteDateEl();
+			JSDateChooser absoluteDateEl = dueDateItem.getAbsoluteDateEl();
 			if(absoluteDateEl != null && absoluteDateEl.isVisible()) {
+				if(dueDateItem.getPushDateValueTo() != null
+						&& !((DueDateFormItemImpl)dueDateItem.getPushDateValueTo()).isRelative()) {
+					// Done in renderer because the date chooser can be create before or after the set methods are called
+					JSDateChooser pushTo = ((DueDateFormItemImpl)dueDateItem.getPushDateValueTo()).getAbsoluteDateEl();
+					absoluteDateEl.setPushDateValueTo(pushTo);
+				}
+				
 				Component cmp = absoluteDateEl.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
 				cmp.setDirty(false);

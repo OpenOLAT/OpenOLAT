@@ -22,7 +22,6 @@ package org.olat.resource.accesscontrol;
 
 import java.util.Date;
 
-import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
 
 /**
@@ -34,7 +33,7 @@ import org.olat.resource.OLATResource;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface Offer extends Persistable {
+public interface Offer extends OfferRef {
 	
 	public OLATResource getResource();
 	
@@ -72,5 +71,21 @@ public interface Offer extends Persistable {
 	public boolean isConfirmationEmail();
 
 	public void setConfirmationEmail(boolean confirmationEmail);
+
+	boolean isOpenAccess();
+
+	public void setOpenAccess(boolean openAccess);
+
+	public boolean isGuestAccess();
+
+	public void setGuestAccess(boolean guestAccess);
+
+	public boolean isCatalogPublish();
+
+	public void setCatalogPublish(boolean catalogPublish);
+
+	public boolean isCatalogWebPublish();
+
+	public void setCatalogWebPublish(boolean catalogWebPublish);
 
 }

@@ -1,0 +1,24 @@
+#if($description && $description.length() > 0)
+	<div class="o_desc o_user_content_block">
+		<h3>$r.translate("cif.description")</h3>
+		$description
+	</div>
+#end
+#if($objectives)
+	<div class="o_objectives o_user_content_block clearfix">
+		<h3>$r.translate("cif.objectives")</h3>
+		$objectives
+	</div>
+#end
+#if($requirements)
+	<div class="o_requirements o_user_content_block clearfix">
+		<h3>$r.translate("cif.requirements")</h3>
+		$requirements
+	</div>
+#end
+#if($credits)
+	<div class="o_credits o_user_content_block clearfix">
+		<h3>$r.translate("cif.credits")</h3>
+		$credits
+	</div>
+#end

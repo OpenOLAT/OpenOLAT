@@ -1,5 +1,6 @@
 /* HELP, context sensitive */
-a.o_chelp {
+a.o_chelp,
+.tox .tox-dialog .tox-form a.o_chelp {
 	display: inline-block;
 	padding: 1px 3px;
 	text-align: center;
@@ -151,55 +152,6 @@ ul.o_dropdown {
 	}
 }
 
-/* SCORM module */
-.badge {
-	/* badge color */
-	&.o_scorm_org {}
-	&.o_scorm_item {}
-	&.o_scorm_completed { background-color: $state-success-text; }
-	&.o_scorm_failed { background-color: $state-danger-text; }
-	&.o_scorm_incomplete { background-color: $state-warning-text; }
-	&.o_scorm_not_attempted { background: none; }
-}
-
-body.o_scorm_full_width {
-	.o_toolbar {
-		margin: 10px 0;
-	}
-	
-	div.o_container_offcanvas {
-		margin-left: 0;
-		margin-right: 0;
-	}
-	
-	#o_main_wrapper #o_toplink {
-		display: none;
-	}
-	
-	.o_scorm {
-	
-		.o_iframedisplay {
-			margin: 0;
-			padding: 0;
-			overflow:hidden;
-			
-			>iframe {
-				display: block;
-				border: none;
-				height:100%;
-				width:100%;
-				position: fixed;
-				top: 47px;
-				bottom:0;
-				left:0;
-				right:0;
-				padding-bottom: 47px;
-				min-height:600px
-			}
-		}
-	}
-}
-
 /* Empty state in various modules */
 .o_empty_state {
 	text-align: center;
@@ -218,7 +170,7 @@ body.o_scorm_full_width {
 			bottom: 10%; 
 			font-weight: bold;
 			font-size: 4em;
-			color: $o-emtpy-indicator-color;
+			color: $o-empty-indicator-color;
 			text-shadow: 5px 10px 10px rgba(0,0,0,.2);
 		}
 		
@@ -226,13 +178,13 @@ body.o_scorm_full_width {
 		i:nth-child(2) {
 			font-weight: bold;
 			font-size: 8em;
-			color: $o-emtpy-icon-color;
+			color: $o-empty-icon-color;
 			min-width: 96px;
 		}
 	}
 	.o_empty_msg {
 		margin-top: 1.5em;
-		color: $o-emtpy-msg-color;	
+		color: $o-empty-msg-color;	
 		font-size: 1.5em;
 	}
 	.o_empty_hint {
@@ -452,6 +404,7 @@ The "important!" avoids hiding the image by bootstrap.
 .o_portrait_dummy_female_small	{background-image: url('#{$o-images-path}portrait/dummy_female_small.png') !important;}
 .o_portrait_dummy_male_small	{background-image: url('#{$o-images-path}portrait/dummy_male_small.png') !important;}
 .o_portrait_anonymous_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
+.o_portrait_openolat_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
 
 /* Date component, used in info course element, blog etc */
 .o_datecomp {
@@ -618,15 +571,6 @@ ul.o_certificates li {
 .o_tm_blue { background-color: #33FFFF; }
 .o_tm_red { background-color: #FF3333; }
 .o_tm_green { background-color: #99FF00; }
-
-/* Coaching */
-.o_coaching div#o_main_toolbar.o_toolbar {
-	margin-top: 0px;
-}
-
-.o_eff_statement_details .o_user_infos {
-	margin-top:20px;
-}
 
 /* Assessment */
 div.o_assessment_user_type_filter {
@@ -1239,3 +1183,96 @@ body {
 .o_textbox_dropdown {
 	overflow-y: scroll;
 }
+
+
+/* Grade */
+.o_gr_breakpoint_edit {
+	div {
+		display: inline-block;
+	}
+}
+.o_gr_scale_num,
+.o_gr_scale_text {
+	display: flex;
+	align-items: flex-start;
+	flex-flow: wrap;
+}
+.o_gr_scale_text {
+	.o_gr_table {
+		.table {
+			width: unset;
+			margin-top: 0px;
+			margin-right: 1em;
+			.form-control {
+				width: unset;
+			}
+			tr.o_gr_passed_row {
+				div.o_gr_passed_cell {
+					color: $o-course-state-passed-color;
+				}
+			}
+			tr.o_gr_failed_row {
+				div.o_gr_passed_cell {
+					color: $o-course-state-failed-color;
+				}
+			}
+		}
+	}
+}
+.o_gr_grade_scores {
+	display: flex;
+	align-items: flex-start;
+	.o_gr_grade_score_table {
+		&.table {
+			width: unset;
+			margin-right: 1em;
+		}
+		.o_gr_passed {
+			background-color: rgba($o-course-state-passed-color, 0.5);
+		}
+	}
+}
+.o_gr_scale_chart_line {
+	stroke-width: 2;
+	stroke: $o-d3chart-default;
+	fill: none;
+	&.o_gr_passed {
+		stroke: $o-course-state-passed-color;
+	}
+	&.o_gr_failed {
+		stroke: $o-course-state-failed-color;
+	}
+	&.o_gr_cut_value {
+		stroke: $o-course-state-passed-color;
+		stroke-width: 1;
+	}
+	&.o_gr_help_line {
+		stroke: $gray-light;
+		stroke-width: 1;
+		opacity: 0.5;
+		&.o_gr_dash {
+			stroke-dasharray: 3,3;
+		}
+	}
+}
+.o_gr_percent:after {
+	content: "%";
+}
+
+/* Pie chart */
+.o_pie_chart {
+	.o_piechart_title {
+		font-size: 36px;
+	}
+	
+	.o_piechart_subtitle {
+		font-size: 18px;
+	}
+}
+
+
+/* MathLive */
+.o_mathlive_editor {
+	min-height: 3em;
+}
+

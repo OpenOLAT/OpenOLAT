@@ -67,6 +67,25 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 
 	public void setMaxScore(BigDecimal maxScore);
 
+	public String getGrade();
+	
+	public void setGrade(String grade);
+
+	/**
+	 * The identifier of the grade system.
+	 * This value is part of the assessment entry to increase the performance minimally
+	 * and to store it in the efficiency statement which may have no reference to the course.
+	 *
+	 * @return
+	 */
+	public String getGradeSystemIdent();
+	
+	public void setGradeSystemIdent(String gradeSystemIdent);
+
+	public String getPerformanceClassIdent();
+
+	public void setPerformanceClassIdent(String performanceClassIdent);
+
 	public void setPassed(Boolean passed);
 	
 	public Overridable<Boolean> getPassedOverridable();
@@ -76,6 +95,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public Boolean getUserVisibility();
 	
 	public void setUserVisibility(Boolean visibility);
+	
+	public Boolean getShare();
+	
+	public void setShare(Boolean share);
 	
 	public AssessmentEntryStatus getAssessmentStatus();
 	
@@ -182,5 +205,5 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	 * @return The assessed identity
 	 */
 	public Identity getIdentity();
-
+	
 }

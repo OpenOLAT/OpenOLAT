@@ -93,7 +93,7 @@ public class QuickPublishController extends BasicController {
 				
 			case published:
 				accessI18n = translate("cif.status.published");
-				if(!entry.isAllUsers() && !entry.isGuests()) {
+				if(!entry.isPublicVisible()) {
 					accessI18CssClass = "o_warning";
 				}
 				break;

@@ -19,13 +19,17 @@
  */
 package org.olat.course.nodes.iq;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.io.File;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.NavigableSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -61,11 +66,13 @@ import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -74,7 +81,6 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
-import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -86,12 +92,10 @@ import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
@@ -106,7 +110,14 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.message.AssessmentMessageService;
+import org.olat.modules.message.ui.AssessmentMessageDisplayCalloutController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -121,12 +132,13 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentRunController extends BasicController implements GenericEventListener, OutcomesListener {
+public class QTI21AssessmentRunController extends BasicController implements GenericEventListener, OutcomesListener, AssessmentDocumentsSupplier {
 	
 	private static final OLATResourceable assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
 	private Link startButton;
+	private Link messagesButton;
 	private Link showResultsButton;
 	private Link hideResultsButton;
 	private Link signatureDownloadLink;
@@ -142,6 +154,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final UserCourseEnvironment userCourseEnv;
 	private final QTICourseNode courseNode;
 	private final RepositoryEntry testEntry;
+	private final AssessmentConfig assessmentConfig;
+	private final PanelInfo panelInfo;
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final QTI21OverrideOptions overrideOptions;
 	// The test is really assessment not a self test or a survey
@@ -152,12 +166,19 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private AssessmentResultController resultCtrl;
 	private AssessmentTestDisplayController displayCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	private QTI21AssessmentMainLayoutController displayContainerController;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
+	private AssessmentMessageDisplayCalloutController messageDisplayCalloutCtrl;
 	
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	@Autowired
 	private DueDateService dueDateService;
 	@Autowired
@@ -167,6 +188,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private AssessmentMessageService assessmentMessageService;
+	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
@@ -175,6 +198,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			UserCourseEnvironment userCourseEnv, QTICourseNode courseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
@@ -182,13 +206,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		anonym = userSession.getRoles().isGuestOnly();
 		config = courseNode.getModuleConfiguration();
 		testEntry = courseNode.getReferencedRepositoryEntry();
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		panelInfo = new PanelInfo(QTI21AssessmentRunController.class,
+				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
 		mainVC.setDomReplaceable(false); // DOM ID set in velocity
 		
 		resourceList = userSession.getResourceList();
-		if(!resourceList.registerResourceable(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-				courseNode.getIdent(), getWindow())) {
+		if(!resourceList.registerResourceable(courseEntry, courseNode.getIdent(), getWindow())) {
 			showWarning("warning.multi.window");
 		}
 		
@@ -207,7 +234,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("type", "self");
 		}
 		
-		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		DisadvantageCompensation c = disadvantageCompensationService
 				.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
 		compensation = (c != null && c.getExtraTime() != null) ? c : null;
@@ -227,6 +253,15 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (!userCourseEnv.isParticipant() && !anonym) {
 			startButton.setCustomDisplayText(translate("preview"));
 		}
+		
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		boolean hasMessages = assessmentMessageService.hasMessagesFor(courseEntry, courseNode.getIdent(), ureq.getRequestTimestamp());
+		messagesButton = LinkFactory.createLink("assessment.messages", "assessment.messages", "messages", "", getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
+		messagesButton.setElementCssClass("o_assessment_messages_button");
+		messagesButton.setIconLeftCSS("o_icon o_icon-fw o_infomsg_icon");
+		messagesButton.setTitle(translate("assessment.messages"));
+		messagesButton.setVisible(hasMessages);
 		
 		// fetch disclaimer file
 		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
@@ -258,26 +293,22 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private void initAssessment(UserRequest ureq) {
-	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", Boolean.valueOf(enableScoreInfo));
 		
-		mainVC.contextPut("showPassed", getPassedType() != PassedType.none);
-		
-	    // configuration data
 		int maxAttempts = deliveryOptions.getMaxAttempts();
 		if(maxAttempts > 0) {
 			mainVC.contextPut("attemptsConfig", Integer.valueOf(maxAttempts));
 		} else {
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
+		
 		// configure date period
 		boolean blockedBasedOnDate = blockedBasedOnDate(ureq);
 		mainVC.contextPut("blockDate", Boolean.valueOf(blockedBasedOnDate));
 		// time limit
 		initTimeLimits();
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if (assessmentConfig.isAssessable()) {
 			if (Mode.none != assessmentConfig.getScoreMode() || userCourseEnv.isCoach()){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
@@ -288,41 +319,29 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		}
 		
-	    // user data
+		// user data
 		if (courseNode instanceof SelfAssessableCourseNode) {
 			SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
-			ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
-			Integer attempts = acn.getUserAttempts(null, userCourseEnv);
-			if (scoreEval != null) {
-				mainVC.contextPut("resultsVisible", Boolean.TRUE);
-				mainVC.contextPut("hasResults", Boolean.TRUE);
-				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-				mainVC.contextPut("passed", scoreEval.getPassed());
-				mainVC.contextPut("attempts", attempts); //at least one attempt
+			AssessmentEvaluation assessmentEval = acn.getAssessmentEvaluation(userCourseEnv);
+			if (assessmentEval != null) {
+				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+						assessmentEval, new IQSELFRunAssessmentConfig(assessmentEval), this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+				listenTo(assessmentParticipantViewCtrl);
+				mainVC.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+				mainVC.contextPut("attempts", assessmentEval.getAttempts());
 				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
-				exposeResults(ureq, true, scoreEval.getPassed() != null && scoreEval.getPassed().booleanValue(), AssessmentEntryStatus.done);
+				exposeResults(ureq, true, assessmentEval.getPassed() != null && assessmentEval.getPassed().booleanValue(), AssessmentEntryStatus.done);
 			} else {
 				exposeResults(ureq, false, false, AssessmentEntryStatus.notStarted);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-			AssessmentEntry assessmentEntry = userCourseEnv.isParticipant()
-					? courseAssessmentService.getAssessmentEntry(testCourseNode, userCourseEnv)
-					: null;
-			if(assessmentEntry == null) {
-				mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
-				mainVC.contextPut("score", null);
-				mainVC.contextPut("hasPassedValue", Boolean.FALSE);
-				mainVC.contextPut("passed", Boolean.FALSE);
-				mainVC.contextPut("comment", null);
-				mainVC.contextPut("attempts", 0);
-				mainVC.contextPut("showChangeLog", Boolean.FALSE);
-				if (!userCourseEnv.isParticipant()) {
-					mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
-				}
+			if (!userCourseEnv.isParticipant()) {
+				mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
 			} else {
-				boolean passed = assessmentEntry.getPassed() != null && assessmentEntry.getPassed().booleanValue();
+				AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(testCourseNode, userCourseEnv);
+				boolean passed = assessmentEval.getPassed() != null && assessmentEval.getPassed().booleanValue();
 				//block if test passed (and config set to check it)
 				Boolean blocked = Boolean.FALSE;
 				boolean blockAfterSuccess = deliveryOptions.isBlockAfterSuccess();
@@ -331,55 +350,41 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				mainVC.contextPut("blockAfterSuccess", blocked);
 				
-				boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
-				mainVC.contextPut("resultsVisible", resultsVisible);
-				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
-				mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-				mainVC.contextPut("passed", passed);
-				mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
+				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
+						assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+				listenTo(assessmentParticipantViewCtrl);
+				mainVC.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 				
-				if(resultsVisible) {
-					if(assessmentConfig.hasComment()) {
-						StringBuilder comment = Formatter.stripTabsAndReturns(
-								courseAssessmentService.getUserComment(testCourseNode, userCourseEnv));
-						if (comment != null && comment.length() > 0) {
-							mainVC.contextPut("comment", StringHelper.xssScan(comment));
-							mainVC.contextPut("incomment", isPanelOpen(ureq, "comment", true));
-						}
-					}
-					
-					if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-						List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(testCourseNode,
-								userCourseEnv);
-						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-						mainVC.contextPut("docsMapperUri", mapperUri);
-						mainVC.contextPut("docs", docs);
-						mainVC.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
-					}
-				}
-				Integer attempts = assessmentEntry.getAttempts();
+				boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
+				
+				Integer attempts = assessmentEval.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
-				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(passed, assessmentEntry.getAssessmentStatus()));
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(passed, assessmentEval.getAssessmentStatus()));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
-					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEval.getAssessmentID());
 					if(session != null) {
 						File signature = qtiService.getAssessmentResultSignature(session);
 						if(signature != null && signature.exists()) {
-							signatureDownloadLink = LinkFactory.createLink("digital.signature.download.link", mainVC, this);
+							VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
+							
+							signatureDownloadLink = LinkFactory.createLink("digital.signature.download.link", customCont, this);
 							signatureDownloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 							signatureDownloadLink.setTarget("_blank");
 							
 							Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
 							if(issueDate != null) {
-								mainVC.contextPut("signatureIssueDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
+								customCont.contextPut("signatureIssueDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
 							}
+							
+							assessmentParticipantViewCtrl.setCustomFields(customCont);
 						}
 					}
 				}
 
-				exposeResults(ureq, resultsVisible, passed, assessmentEntry.getAssessmentStatus());
+				exposeResults(ureq, resultsVisible, passed, assessmentEval.getAssessmentStatus());
 			}
 		}
 	}
@@ -654,6 +659,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 				getIdentity());
 	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	}
+
+	@Override
+	public boolean isDownloadEnabled() {
+		return false;
+	}
 	
 	@Override
 	protected void doDispose() {
@@ -685,7 +700,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(startButton == source && startButton.isEnabled() && startButton.isVisible()) {
 			doStart(ureq);
-		}else if(source == showResultsButton) {			
+		} else if(messagesButton == source) {
+			doOpenMessages(ureq, messagesButton);
+		} else if(source == showResultsButton) {			
 			doShowResults(ureq);
 		} else if (source == hideResultsButton) {
 			doHideResults(ureq);
@@ -723,8 +740,31 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
+		} else if(messageDisplayCalloutCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();
+		} else if(calloutCtrl == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(messageDisplayCalloutCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		messageDisplayCalloutCtrl = null;
+		calloutCtrl = null;
+	}
+	
+	private void doOpenMessages(UserRequest ureq, Link link) {
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		messageDisplayCalloutCtrl = new AssessmentMessageDisplayCalloutController(ureq, getWindowControl(), courseEntry, courseNode.getIdent());
+		listenTo(messageDisplayCalloutCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				messageDisplayCalloutCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doShowResults(UserRequest ureq) {
@@ -770,20 +810,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(QTI21AssessmentRunController.class, getOpenPanelId(panelId));
+		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.getClass(), getOpenPanelId(panelId));
 		return showConfig == null ? def : showConfig.booleanValue();
 	}
 	
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.commit(QTI21AssessmentRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
+			guiPrefs.commit(panelInfo.getClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
 		mainVC.getContext().put("in-".concat(panelId), Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {
-		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
+		return panelId + panelInfo.getIdSuffix();
 	}
 	
 	private void doDownloadSignature(UserRequest ureq) {
@@ -873,17 +913,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		return null;
 	}
 	
-	private PassedType getPassedType() {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		
-		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		return deliveryOptions.getPassedType(cutValue);
-	}
-	
 	private QTI21DeliveryOptions getDeliveryOptions() {
 		QTI21DeliveryOptions testOptions = qtiService.getDeliveryOptions(testEntry);
 		QTI21DeliveryOptions finalOptions = testOptions.clone();
@@ -907,6 +936,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
 		}
 		
+		String roles = config.getStringValue(IQEditController.CONFIG_KEY_IM_NOTIFICATIONS_ROLES);
+		finalOptions.setCanStartChat(config.getBooleanSafe(IQEditController.CONFIG_KEY_IM_PARTICIPANT_CAN_START, false));
+		finalOptions.setChatCoaches(roles != null && roles.contains(GroupRoles.coach.name()));
+		finalOptions.setChatOwners(roles != null && roles.contains(GroupRoles.owner.name()));
 		
 		if(!QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT.equals(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
 			//if this setting is set, override the summary
@@ -1067,18 +1100,39 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		if(courseNode instanceof IQTESTCourseNode) {
+			String grade = null;
+			String gradeSystemIdent = null;
+			String performanceClassIdent = null;
+			Boolean updatePass = pass;
+			if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()) {
+				if (assessmentConfig.isAutoGrade() || isAssessmentWithGrade()) {
+					GradeScale gradeScale = gradeService.getGradeScale(
+							userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+							courseNode.getIdent());
+					NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+					updatePass = gradeScoreRange.getPassed();
+				} else {
+					updatePass = null;
+				}
+			}
+			
 			Boolean visibility;
 			AssessmentEntryStatus assessmentStatus;
 			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 			if(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
-				visibility = Boolean.FALSE;
+				visibility = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getUserVisible();
 			} else {
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;
 			}
-			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, start, completion,
-					AssessmentRunStatus.done, assessmentId);
+			
+			ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+					updatePass, assessmentStatus, visibility, start, completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
 			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
@@ -1103,5 +1157,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(null, userCourseEnv, Role.user);
 			}
 		}
+	}
+
+	private boolean isAssessmentWithGrade() {
+		return StringHelper.containsNonWhitespace(courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getGrade());
 	}
 }

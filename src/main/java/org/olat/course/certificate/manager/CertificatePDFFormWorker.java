@@ -206,6 +206,7 @@ public class CertificatePDFFormWorker {
 		String authors = entry.getAuthors();
 		fillField("authors", authors, acroForm);
 		String expenditureOfWorks = entry.getExpenditureOfWork();
+		fillField("expenditureOfWork", expenditureOfWorks, acroForm);
 		fillField("expenditureOfWorks", expenditureOfWorks, acroForm);
 		String mainLanguage = entry.getMainLanguage();
 		fillField("mainLanguage", mainLanguage, acroForm);

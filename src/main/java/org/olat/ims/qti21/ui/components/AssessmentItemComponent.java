@@ -48,6 +48,12 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	private boolean enableResetHard;
 	private boolean enableResetSoft;
 	private boolean enableSkip;
+	private boolean enableAlwaysSkip;
+	
+	private int questionLevel;
+	private int maxQuestionLevel = 5;
+	private boolean showQuestionLevel = false;
+	private boolean showStatus = true;
 	
 	public AssessmentItemComponent(String name, AssessmentItemFormItem qtiItem) {
 		super(name);
@@ -86,6 +92,43 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 		this.enableSkip = enableSkip;
 	}
 	
+	public boolean isEnableAlwaysSkip() {
+		return enableAlwaysSkip;
+	}
+
+	public void setEnableAlwaysSkip(boolean enableAlwaysSkip) {
+		this.enableAlwaysSkip = enableAlwaysSkip;
+	}
+
+	public int getQuestionLevel() {
+		return questionLevel;
+	}
+	
+	public int getMaxQuestionLevel() {
+		return maxQuestionLevel;
+	}
+
+	public void setQuestionLevel(int questionLevel, int maxQuestionLevel) {
+		this.questionLevel = questionLevel;
+		this.maxQuestionLevel = maxQuestionLevel;
+	}
+
+	public boolean isShowQuestionLevel() {
+		return showQuestionLevel;
+	}
+
+	public void setShowQuestionLevel(boolean showQuestionLevel) {
+		this.showQuestionLevel = showQuestionLevel;
+	}
+
+	public boolean isShowStatus() {
+		return showStatus;
+	}
+
+	public void setShowStatus(boolean showStatus) {
+		this.showStatus = showStatus;
+	}
+
 	@Override
 	public boolean isSilentlyDynamicalCmp() {
 		return true;

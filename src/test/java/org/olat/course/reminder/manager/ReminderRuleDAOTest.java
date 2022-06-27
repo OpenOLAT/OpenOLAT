@@ -186,7 +186,7 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		assessmentService.updateAssessmentEntry(aePassed1);
 		AssessmentEntry aePassed2 = assessmentService.getOrCreateAssessmentEntry(identityPassed2, null, entry, subIdent, Boolean.FALSE, null);
 		aePassed2.setPassed(Boolean.TRUE);
-		aePassed1.setUserVisibility(Boolean.TRUE);
+		aePassed2.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aePassed2);
 		AssessmentEntry aeNotUserVisible = assessmentService.getOrCreateAssessmentEntry(identityNotUserVisible, null, entry, subIdent, Boolean.FALSE, null);
 		aeNotUserVisible.setPassed(Boolean.TRUE);

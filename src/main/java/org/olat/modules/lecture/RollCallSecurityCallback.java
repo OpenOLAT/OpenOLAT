@@ -41,6 +41,10 @@ public interface RollCallSecurityCallback {
 	
 	public boolean canReopen();
 	
+	public boolean canExport();
+	
+	public boolean canViewDetails();
+	
 	public void updateLectureBlock(LectureBlock lectureBlock);
 
 }

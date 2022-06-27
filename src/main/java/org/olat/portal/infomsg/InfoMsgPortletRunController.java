@@ -26,6 +26,7 @@
 package org.olat.portal.infomsg;
 
 import org.olat.admin.sysinfo.InfoMessageManager;
+import org.olat.admin.sysinfo.SysInfoMessage;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -61,7 +62,21 @@ public class InfoMsgPortletRunController extends DefaultController {
 		trans = Util.createPackageTranslator(InfoMsgPortletRunController.class, ureq.getLocale());
 		infoVC = new VelocityContainer("infoVC", VELOCITY_ROOT + "/portlet.html", trans, this);
 		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-		String infoMsg = mrg.getInfoMessage();
+		String infoMsg = "";
+		// first: normal info message
+		SysInfoMessage sysInfoMsg = mrg.getInfoMessage();
+		if (sysInfoMsg.hasMessage()) {
+			infoMsg = sysInfoMsg.getTimedMessage();
+		}
+		// second: node info message
+		SysInfoMessage sysInfoNodeMsg = mrg.getInfoMessage();
+		if (sysInfoNodeMsg.hasMessage()) {
+			String infomsgNode = sysInfoNodeMsg.getTimedMessage();
+			if (infomsgNode.length() > 0) {
+				infoMsg = infoMsg + "<br /><br >/" + infomsgNode;
+			}
+		}
+		// push to UI
 		if (StringHelper.containsNonWhitespace(infoMsg)) {
 			infoVC.contextPut("content", infoMsg);
 		} else {

@@ -54,6 +54,8 @@ import org.olat.repository.wizard.RepositoryWizardService;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController.OfferAccessWithOrganisation;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController.OfferWithOrganisation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -132,7 +134,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 		}
 		
 		return repositoryManager.setDescriptionAndName(entry, entry.getDisplayname(), entry.getExternalRef(),
-				entry.getAuthors(), entry.getDescription(), entry.getObjectives(), entry.getRequirements(),
+				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
 				entry.getLifecycle(), null, taxonomyLevels, educationalType);
 	}
@@ -172,39 +174,23 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 	public void changeAccessAndProperties(Identity executor, AccessAndProperties accessAndProps, boolean fireEvents) {
 		RepositoryEntry entry = accessAndProps.getRepositoryEntry();
 		
-		entry = repositoryManager.setAccess(entry,
-				accessAndProps.isAllUsers(), accessAndProps.isGuests(), accessAndProps.isBookable(),
-				accessAndProps.getSetting(), accessAndProps.getOrganisations());
+		entry = repositoryManager.setStatus(entry, accessAndProps.getStatus());
+		entry = repositoryManager.setAccess(entry, accessAndProps.isPublicVisible(), accessAndProps.getSetting(),
+				accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload(),
+				accessAndProps.getOrganisations());
 		
-		entry = repositoryManager.setAccessAndProperties(entry, accessAndProps.getStatus(),
-				accessAndProps.isAllUsers(), accessAndProps.isGuests(),
-				accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload());
-		
-		List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
-		List<Offer> deletedOffers = accessAndProps.getDeletedOffer();
-		if(entry.isBookable()) {
-			// 1: add new and update existing offerings
-			for (OfferAccess newLink : offerAccess) {
-				if(accessAndProps.getConfirmationEmail() != null) {
-					Offer offer = newLink.getOffer();
-					boolean confirmation = accessAndProps.getConfirmationEmail().booleanValue();
-					if(offer.isConfirmationEmail() != confirmation) {
-						offer.setConfirmationEmail(confirmation);
-						if(offer.getKey() != null) {
-							acService.save(offer);
-						}
-					}
-				}
-				acService.saveOfferAccess(newLink);
+		if(entry.isPublicVisible()) {
+			for (OfferAccessWithOrganisation offerAccessWithOrganisation : accessAndProps.getOfferAccess()) {
+				OfferAccess offerAccess = acService.saveOfferAccess(offerAccessWithOrganisation.getLink());
+				acService.updateOfferOrganisations(offerAccess.getOffer(), offerAccessWithOrganisation.getOfferOrganisations());
 			}
-		} else {
-			for (OfferAccess deletedOffer : offerAccess) {
-				acService.deleteOffer(deletedOffer.getOffer());
+			for (OfferWithOrganisation offerWithOrganisation : accessAndProps.getOpenAccess()) {
+				Offer offer = acService.save(offerWithOrganisation.getOffer());
+				acService.updateOfferOrganisations(offer, offerWithOrganisation.getOfferOrganisations());
 			}
-		}
-		// 2: remove offerings not available anymore
-		for (Offer deletedOffer : deletedOffers) {
-			acService.deleteOffer(deletedOffer);
+			if (accessAndProps.getGuestOffer() != null) {
+				acService.save(accessAndProps.getGuestOffer());
+			}
 		}
 		
 		if (fireEvents) {

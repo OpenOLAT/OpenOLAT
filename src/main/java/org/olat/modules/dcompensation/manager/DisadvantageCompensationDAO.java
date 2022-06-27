@@ -167,6 +167,25 @@ public class DisadvantageCompensationDAO {
 				.collect(Collectors.toList());
 	}
 	
+	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, List<String> subIdents) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select compensation from dcompensation as compensation")
+		  .append(" inner join fetch compensation.identity as ident")
+		  .append(" where compensation.entry.key=:entryKey and compensation.status=:status");
+		if(subIdents != null && !subIdents.isEmpty()) {
+			sb.append(" and compensation.subIdent in (:subIdent)");
+		}
+		
+		TypedQuery<DisadvantageCompensation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DisadvantageCompensation.class)
+				.setParameter("status", DisadvantageCompensationStatusEnum.active.name())
+				.setParameter("entryKey", entry.getKey());
+		if(subIdents != null && !subIdents.isEmpty()) {
+			query.setParameter("subIdent", subIdents);
+		}
+		return query.getResultList();
+	}
+	
 	public boolean isActiveDisadvantagedUser(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdents) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select compensation.key from dcompensation as compensation")
@@ -189,5 +208,30 @@ public class DisadvantageCompensationDAO {
 		
 		List<Long> keys = query.getResultList();
 		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
+	
+	/**
+	 * Fetch all repository informations.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<DisadvantageCompensation> getDisadvantageCompensations(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select compensation from dcompensation as compensation")
+		  .append(" where compensation.entry.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DisadvantageCompensation.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+	}
+	
+	public int deleteDisadvantageCompensationsByEntry(RepositoryEntryRef entry) {
+		String query = "delete from dcompensation as compensation where compensation.entry.key=:entryKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
 	}
 }

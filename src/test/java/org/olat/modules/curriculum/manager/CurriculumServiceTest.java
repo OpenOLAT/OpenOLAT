@@ -100,8 +100,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		RepositoryEntry reviewedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
 		
-		publishedEntry = repositoryManager.setAccess(publishedEntry, RepositoryEntryStatusEnum.published, false, false);
-		reviewedEntry = repositoryManager.setAccess(reviewedEntry, RepositoryEntryStatusEnum.review, false, false);
+		publishedEntry = repositoryManager.setStatus(publishedEntry, RepositoryEntryStatusEnum.published);
+		reviewedEntry = repositoryManager.setStatus(reviewedEntry, RepositoryEntryStatusEnum.review);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, publishedEntry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
@@ -142,8 +142,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		RepositoryEntry reviewedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
 		
-		publishedEntry = repositoryManager.setAccess(publishedEntry, RepositoryEntryStatusEnum.published, false, false);
-		reviewedEntry = repositoryManager.setAccess(reviewedEntry, RepositoryEntryStatusEnum.review, false, false);
+		publishedEntry = repositoryManager.setStatus(publishedEntry, RepositoryEntryStatusEnum.published);
+		reviewedEntry = repositoryManager.setStatus(reviewedEntry, RepositoryEntryStatusEnum.review);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element1, publishedEntry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");

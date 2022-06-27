@@ -228,7 +228,7 @@ public class OwnersStep extends BasicStep {
 		}
 		
 		private void showUserSelector(UserRequest ureq) {
-			userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), null, true);
+			userSearchController = new UserSearchFlexiController(ureq, getWindowControl(), (GroupRoles)null, true);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchController.getInitialComponent(), true);
 			
 			listenTo(userSearchController);

@@ -87,7 +87,7 @@ public class SurveyConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
-		setFormContextHelp("Assessment#_survey");
+		setFormContextHelp("manual_user/course_elements/Assessment/#course_element_survey");
 		
 		evaluationFormNotChoosen = uifactory.addStaticTextElement("edit.evaluation.form.not.choosen", "edit.evaluation.form",
 				translate("edit.evaluation.form.not.choosen"), formLayout);

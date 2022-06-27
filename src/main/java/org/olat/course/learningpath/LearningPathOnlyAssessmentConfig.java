@@ -60,6 +60,16 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean hasGrade() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return false;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		return Mode.none;
 	}
@@ -73,7 +83,12 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	public boolean isPassedOverridable() {
 		return false;
 	}
-
+	
+	@Override
+	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
+		return null;
+	}
+	
 	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;

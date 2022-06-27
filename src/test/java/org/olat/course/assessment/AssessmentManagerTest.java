@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -136,7 +137,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		
 		assertNotNull(course);
 		//find an assessableCourseNode
-		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), null);
+		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(new CourseEntryRef(course), course.getEditorTreeModel(), null);
 		Iterator<CourseNode> nodesIterator = assessableNodeList.iterator();
 		boolean testNodeFound = false; 
 		while(nodesIterator.hasNext()) {
@@ -158,7 +159,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		String userComment = "UselessUserComment";
 		
 		//store ScoreEvaluation for the assessableCourseNode and student
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score,passed, assessmentID);
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, null, null, null, passed, null, null, null, null, null, assessmentID);
     
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

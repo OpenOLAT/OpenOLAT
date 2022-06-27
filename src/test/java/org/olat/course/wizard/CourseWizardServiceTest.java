@@ -84,7 +84,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldSetRepositoryEntryStatus() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntryStatusEnum review = RepositoryEntryStatusEnum.review;
@@ -97,7 +97,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldPublishCourseElements() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 		defaults.setReferencedEntry(testEntry);
@@ -117,7 +117,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldSetCertificateConfigs() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		CertificateDefaults defaults = new CertificateDefaults();
 		defaults.setAutomaticCertificationEnabled(true);
@@ -162,7 +162,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCreateIQTESTCourseNode() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 
@@ -177,7 +177,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldSetIQTESTCourseNodeConfigs() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
@@ -212,7 +212,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCreateAssessmentMode() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 		defaults.setEnabled(true);
@@ -247,7 +247,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldNotCreateAssessmentModeIfDisabled() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 		defaults.setEnabled(false);

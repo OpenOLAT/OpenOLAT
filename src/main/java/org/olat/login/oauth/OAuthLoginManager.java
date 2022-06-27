@@ -19,6 +19,7 @@
  */
 package org.olat.login.oauth;
 
+import org.json.JSONObject;
 import org.olat.core.id.Identity;
 import org.olat.login.oauth.model.OAuthUser;
 
@@ -33,5 +34,7 @@ public interface OAuthLoginManager {
 	public boolean isValid(OAuthUser oauthUser);
 	
 	public Identity createIdentity(OAuthUser oauthUser, String provider);
-
+	
+	public JSONObject loadDiscoveryUrl(String url);
+	
 }

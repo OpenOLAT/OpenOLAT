@@ -1,0 +1,17 @@
+<div class="o_practice">
+#if($r.visible("endCmp"))
+	$r.render("endCmp")
+#else
+	<div class="o_practice_progress">
+		$r.render("progressBar")
+		<div class="o_progress_numbers"><strong>$progressNumbers</strong></div>
+		$r.render("close")
+	</div>
+	
+	#if($r.visible("feedbackCmp"))
+		$r.render("feedbackCmp")
+	#else
+		$r.render("assessmentItemCmp")
+	#end
+#end
+</div>

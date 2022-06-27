@@ -89,7 +89,8 @@ public interface AssessmentService {
 	 */
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
 	
-	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithStatus(RepositoryEntry entry, String subIdent, AssessmentEntryStatus status, boolean excludeZeroScore);
+	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithStatus(RepositoryEntry entry, String subIdent,
+			AssessmentEntryStatus status, boolean excludeZeroScore, boolean userVisibleOnly);
 	
 	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry);
 	
@@ -105,7 +106,19 @@ public interface AssessmentService {
 	
 	public boolean hasAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry);
 	
+	/**
+	 * @return whether at least one assessment entry has a grade.
+	 */
+	public boolean hasGrades(RepositoryEntryRef repositoryEntry, String subIdent);
+	
+	/**
+	 * @return the number of assessment entries with a score
+	 */
+	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent);
+
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
+
+	public List<AssessmentEntry> getRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry);
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 	

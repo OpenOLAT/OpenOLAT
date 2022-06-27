@@ -28,6 +28,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -58,6 +59,8 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 
 	private TabbedPane myTabbedPane;
 	
+	private ICourse course;
+	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -67,14 +70,16 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 			ICourse course) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
+		this.course = course;
 		
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		int numOfChecks = checkboxManager.countChecks(course, courseNode.getIdent());
 		
 		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode, numOfChecks > 0);
 		listenTo(checkboxListEditCtrl);
-		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode, NodeAccessType.of(course),
-				numOfChecks > 0);
+		configurationCtrl = new CheckListConfigurationController(ureq, wControl,
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode,
+				NodeAccessType.of(course), numOfChecks > 0);
 		listenTo(configurationCtrl);
 		
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode.getModuleConfiguration(), course);
@@ -92,7 +97,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	}
 	
 	private void updateHighscoreTab() {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()),
 				Mode.none != assessmentConfig.getScoreMode());
 	}
@@ -119,6 +124,8 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				checkboxListEditCtrl.dispatchEvent(ureq, configurationCtrl, event);
 				updateHighscoreTab();
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if(source == checkboxListEditCtrl) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

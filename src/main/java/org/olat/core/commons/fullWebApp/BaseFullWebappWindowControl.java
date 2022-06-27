@@ -83,6 +83,16 @@ class BaseFullWebappWindowControl implements WindowControl {
 	}
 
 	@Override
+	public void addInstanteMessagePanel(Component comp) {
+		webappCtrl.getCurrentGuiStack().addInstantMessagePanel(comp);
+	}
+
+	@Override
+	public boolean removeInstanteMessagePanel(Component comp) {
+		return webappCtrl.getCurrentGuiStack().removeInstantMessagePanel(comp);
+	}
+
+	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {
 		ChiefController cc = getWindowBackOffice().getChiefController();
 		String businessPath = ctrl.getWindowControlForDebug().getBusinessControl().getAsString();
@@ -106,6 +116,7 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setInfo(String info) {
 		webappCtrl.getGUIMessage().setInfo(info);
+		webappCtrl.getGUIMessage().setTitle(null);
 		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
 		msgVc.setDirty(true);
 		webappCtrl.getGUIMsgPanel().setContent(msgVc);
@@ -125,6 +136,7 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setError(String error) {
 		webappCtrl.getGUIMessage().setError(error);
+		webappCtrl.getGUIMessage().setTitle(null);
 		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
 		msgVc.setDirty(true);
 		webappCtrl.getGUIMsgPanel().setContent(msgVc);
@@ -133,6 +145,7 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setWarning(String warning) {
 		webappCtrl.getGUIMessage().setWarn(warning);
+		webappCtrl.getGUIMessage().setTitle(null);
 		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
 		msgVc.setDirty(true);
 		webappCtrl.getGUIMsgPanel().setContent(msgVc);

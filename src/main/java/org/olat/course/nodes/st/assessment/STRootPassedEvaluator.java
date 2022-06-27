@@ -59,7 +59,9 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 	@Override
 	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry) {
-		Boolean currentPassed = currentEvaluation.getPassed();
+		Boolean currentPassed = currentEvaluation.getPassedOverridable().isOverridden()
+				? currentEvaluation.getPassedOverridable().getOriginal()
+				: currentEvaluation.getPassedOverridable().getCurrent();
 		if (currentPassed != null && currentPassed.booleanValue()) {
 			// Never reset a passed course to null or failed
 			return currentPassed;
@@ -89,7 +91,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		// Number passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
 			int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, Integer.MAX_VALUE);
-			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassed() >= cutValue) {
 				return Boolean.TRUE;
 			}
@@ -97,7 +99,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		
 		// All passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
-			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassable() > 0) {
 				if (counts.isAllAssessed() && counts.getPassable() == counts.getPassed()) {
 					return Boolean.TRUE;
@@ -109,7 +111,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		}
 	
 		if (currentPassed == null && getActivePassedConfigs(config) > 0) {
-			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassable() > 0) {
 				
 				// Failed if course is fully assessed
@@ -132,7 +134,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		return currentPassed;
 	}
 
-	private int getActivePassedConfigs(ModuleConfiguration config) {
+	public static int getActivePassedConfigs(ModuleConfiguration config) {
 		int active = 0;
 		if (config.has(STCourseNode.CONFIG_PASSED_PROGRESS)) {
 			active++;

@@ -52,8 +52,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
@@ -92,6 +95,8 @@ import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -462,6 +467,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
+		postCopyGradeScale(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent(),
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
 		
 		if (context != null) {
 			ModuleConfiguration config = getModuleConfiguration();
@@ -515,6 +522,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			}
 		}
 	}
+
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		postImportCopyConditions(envMapper);
@@ -570,6 +578,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
 		postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		postCopyCourseStyleImage(sourceCourse, sourceCourseNode, course, this, envMapper.getAuthor());
 	}
 	
 	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
@@ -666,7 +675,30 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			}
 			copyInstance.setLongTitle("Copy of " + getLongTitle());
 		}
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		postCopyCourseStyleImage(course, this, course, copyInstance, author);
+		postCopyGradeScale(courseEntry, getIdent(), courseEntry, copyInstance.getIdent());
+		
 		return copyInstance;
+	}
+	
+	private void postCopyCourseStyleImage(ICourse sourceCourse, CourseNode sourceNode, ICourse targetCourse, CourseNode targetNode, Identity author) {
+		if (teaserImageSource != null && ImageSourceType.custom == teaserImageSource.getType()) {
+			CourseStyleService courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
+			VFSLeaf image = courseStyleService.getImage(sourceCourse, sourceNode);
+			if (image instanceof LocalFileImpl) {
+				ImageSource targetImageSource = courseStyleService.storeImage(targetCourse, targetNode, author, ((LocalFileImpl)image).getBasefile(), image.getName());
+				targetNode.setTeaserImageSource(targetImageSource);
+			}
+		}
+	}
+
+	private void postCopyGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry, String targetIdent) {
+		if (CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentConfig(sourceEntry, this).hasGrade()) {
+			GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+			gradeService.cloneGradeScale(sourceEntry, sourceIdent, targetEntry, targetIdent);
+		}
 	}
 
 	@Override

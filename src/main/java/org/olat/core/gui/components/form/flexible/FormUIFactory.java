@@ -93,6 +93,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.ExternalLinkItemImpl;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.math.MathLiveElement;
+import org.olat.core.gui.components.math.MathLiveElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
@@ -983,6 +985,7 @@ public class FormUIFactory {
 		rte.getEditorConfiguration().disableTinyMedia();
 		rte.getEditorConfiguration().setFilenameUriValidation(true);
 		rte.getEditorConfiguration().setFigCaption(false);
+		rte.getEditorConfiguration().setStatusBar(false);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
@@ -1039,6 +1042,18 @@ public class FormUIFactory {
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
+	}
+	
+	public MathLiveElement addMathLiveElement(String name, String i18nLabel, String formula, FormItemContainer formLayout) {
+		// Create rich text element with bare bone configuration
+		MathLiveElement mle = new MathLiveElementImpl(name);
+		mle.setValue(formula);
+		setLabelIfNotNull(i18nLabel, mle);	
+		if(formLayout != null) {
+			// Add to form and finish
+			formLayout.add(mle);
+		}
+		return mle;
 	}
 	
 	/**

@@ -9,7 +9,7 @@
 
 <div class="mathEntryInteraction form-${orientation} clearfix">
 	<div class="inputPanel col-sm-6">
-		$r.contextHelpWithWrapper("Other#math_entry-interaction")
+		$r.contextHelpWithWrapper("manual_user/personal/Math_formula/")
 		##TODO qti size="{if (exists(@ma:expectedLength)) then @ma:expectedLength else '10'}""
         <input id="qtiworks_id_mathEntryInput_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}" class="form-control" type="text" size="35" #if($r.isItemSessionEnded()) disabled #end #if($asciiMathInput && !$asciiMathInput.isEmpty()) value="$asciiMathInput" #end />
 		$r.appendFlexiFormDirtyForCheckbox("qtiworks_id_mathEntryInput_${responseIdentifier}")

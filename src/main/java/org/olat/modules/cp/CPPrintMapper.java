@@ -26,9 +26,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -138,8 +140,26 @@ public class CPPrintMapper implements Mapper {
 		}
 		injectJavascriptAndCss(sb);
 		
-		sb.append("</head><body onload='window.focus();window.print()'>");
-		for(HtmlPageHandler page:parsedPages) {
+		sb.append("</head><body onload='window.focus();window.print()'><div class='o_offline_cp'>");
+		printPagesList(sb, parsedPages);
+		sb.append("</div></body></html>");
+
+		return prepareMediaResource(request, sb.toString(), gEncoding, "text/html");
+	}
+	
+	public String pagesToHtml() {
+		List<String> nodeIds = ctm.getFlattedTree()
+				.stream().map(TreeNode::getIdent)
+				.collect(Collectors.toList());
+		List<HtmlPageHandler> parsedPages = composePrintPage(nodeIds);
+		StringBuilder sb = new StringBuilder(12000);
+		printPagesList(sb, parsedPages);
+		return sb.toString();
+	}
+	
+	private void printPagesList(StringBuilder sb, List<HtmlPageHandler> parsedPages) {
+		for(Iterator<HtmlPageHandler> pageIt=parsedPages.iterator(); pageIt.hasNext(); ) {
+			HtmlPageHandler page = pageIt.next();
 			if(page.isEmpty()) {
 				String title = page.getTitle();
 				if(StringHelper.containsNonWhitespace(title)) {
@@ -148,12 +168,9 @@ public class CPPrintMapper implements Mapper {
 					sb.append("<h").append(level).append(">").append(page.getTitle()).append("</h").append(level).append(">");
 				}
 			} else {
-				bodyDecorator(page, sb);
+				bodyDecorator(page, sb, !pageIt.hasNext());
 			}
 		}
-		sb.append("</body></html>");
-
-		return prepareMediaResource(request, sb.toString(), gEncoding, "text/html");
 	}
 	
 	private void injectJavascriptAndCss(StringBuilder output) {	
@@ -162,17 +179,22 @@ public class CPPrintMapper implements Mapper {
 			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-3.6.0.min.js");
 			sb.append("\")'></script>");
 			output.append(sb.toString());
-			output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" />\n");
+			output.append("<link href=\"").append(themeBaseUri).append("content.css\" rel=\"stylesheet\" />\n");
+			output.append("<link href=\"").append(themeBaseUri).append("theme.css\" rel=\"stylesheet\" />\n");
 		} catch(IOException e) {
 			log.error("", e);
 		}
 	}
 	
-	protected void bodyDecorator(HtmlPageHandler page, StringBuilder sb) {
+	protected void bodyDecorator(HtmlPageHandler page, StringBuilder sb, boolean last) {
 		sb.append("<!-- Body of ").append(page.getDocument().getName()).append("-->");
-		sb.append("<div class=\"o_cp_print_page\" style='clear:both; position:relative;page-break-after:always;'>\n");
-		sb.append(page.getBody());
-		sb.append("\n</div>");
+		sb.append("<div class=\"o_cp_print_page\" style='clear:both; position:relative;");
+		if(!last) {
+			sb.append(" page-break-after:always;");
+		}  
+		sb.append("'>")
+		  .append(page.getBody())
+		  .append("</div>");
 	}
 	
 	private List<HtmlPageHandler> composePrintPage(List<String> nodeIds) {
