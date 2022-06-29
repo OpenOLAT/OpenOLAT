@@ -183,7 +183,9 @@ public class CourseWebService {
 	@Path("groups")
 	public CourseGroupWebService getCourseGroupWebService() {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
-		return new CourseGroupWebService(re, courseOres);
+		CourseGroupWebService ws = new CourseGroupWebService(re, courseOres);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 	
 	/**

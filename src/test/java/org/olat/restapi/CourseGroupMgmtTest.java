@@ -23,20 +23,16 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */
-
-
 package org.olat.restapi;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -50,19 +46,18 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,217 +78,255 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CourseGroupMgmtTest.class);
 	
-	private Identity id1, id2;
-	private BusinessGroup g1, g2;
-	private BusinessGroup g3, g4;
-	private RepositoryEntry courseRepoEntry;
-
-	private RestConnection conn;
-	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
-	
-	
-	/**
-	 * Set up a course with learn group and group area
-	 * @see org.olat.test.OlatRestTestCase#setUp()
-	 */
-	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
-		//create a course with learn group
-		
-		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-1");
-		id2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-2");
-		JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-3");
-		Identity auth = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-grp-one");
-		
-		courseRepoEntry = JunitTestHelper.deployBasicCourse(auth);
-
-		// create groups without waiting list
-		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseRepoEntry);
-		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseRepoEntry);
-		// members
-		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
-		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
-    
-		// groups
-		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.BUSINESS_TYPE, -1, -1, false, false, courseRepoEntry);
-		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.BUSINESS_TYPE, -1, -1, false, false, courseRepoEntry);
-		// members
-		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
-    
-		dbInstance.commitAndCloseSession(); // simulate user clicks
-	}
-	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-      throw e;
-		}
-	}
 	
 	@Test
-	public void testGetCourseGroups() throws IOException, URISyntaxException {
+	public void getCourseGroups() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
-
-		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-5");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(owner, "rest-g5", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
+		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(owner, "rest-g6", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
+		dbInstance.commitAndCloseSession();
+			
+		Long courseId = courseEntry.getOlatResource().getResourceableId();
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<GroupVO> vos = parseGroupArray(response.getEntity());
-		assertNotNull(vos);
-		assertEquals(4, vos.size());//g1, g2, g3, g4
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(2, vos.size());
 		
-		List<Long> voKeys = new ArrayList<>(4);
-		for(GroupVO vo:vos) {
-			voKeys.add(vo.getKey());
-		}
-		assertTrue(voKeys.contains(g1.getKey()));
-		assertTrue(voKeys.contains(g2.getKey()));
-		assertTrue(voKeys.contains(g3.getKey()));
-		assertTrue(voKeys.contains(g4.getKey()));
+		assertThat(vos)
+			.map(GroupVO::getKey)
+			.containsExactlyInAnyOrder(businessGroup1.getKey(), businessGroup2.getKey());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetCourseGroups_unkownId() throws IOException, URISyntaxException {
+	public void getCourseGroupsUnkownId() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 
 		Long courseId = 1l;
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(404, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetCourseGroup() throws IOException, URISyntaxException {
+	public void getCourseGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
-		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups/" + g1.getKey()).build();
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-6");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g6", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		Long courseId = courseEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups/" + businessGroup.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		GroupVO vo = conn.parse(response, GroupVO.class);
-		assertNotNull(vo);
-		assertEquals(g1.getKey(), vo.getKey());
+		Assert.assertNotNull(vo);
+		Assert.assertEquals(businessGroup.getKey(), vo.getKey());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testPutCourseGroup() throws IOException, URISyntaxException {
+	public void putCourseGroupRelation() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		GroupVO vo = new GroupVO();
-		vo.setName("hello");
-		vo.setDescription("hello description");
-		vo.setMinParticipants(Integer.valueOf(-1));
-		vo.setMaxParticipants(Integer.valueOf(-1));
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-7");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g7", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
 		
-		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
+		// No business group linked to this course
+		List<BusinessGroup> courseGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertTrue(courseGroups.isEmpty());
+		
+		// Add the business group to the course
+		Long courseId = courseEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseId.toString())
+				.path("groups").path(businessGroup.getKey().toString()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		GroupVO responseVo = conn.parse(response, GroupVO.class);
-		assertNotNull(responseVo);
-		assertEquals(vo.getName(), responseVo.getName());
+		Assert.assertNotNull(responseVo);
+		Assert.assertEquals(businessGroup.getKey(), responseVo.getKey());
+		Assert.assertEquals(businessGroup.getName(), responseVo.getName());
 
-    BusinessGroup bg = businessGroupService.loadBusinessGroup(responseVo.getKey());
-    assertNotNull(bg);
-    assertEquals(bg.getKey(), responseVo.getKey());
-    assertEquals(bg.getName(), vo.getName());
-    assertEquals(bg.getDescription(), vo.getDescription());
-    assertNull(bg.getMinParticipants());
-    assertNull(bg.getMaxParticipants());
+		// The business group is linked to this course
+		List<BusinessGroup> linkedGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertEquals(1, linkedGroups.size());
+		Assert.assertEquals(businessGroup, linkedGroups.get(0));
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testUpdateCourseGroup() throws IOException, URISyntaxException {
+	public void postCourseGroupRelation() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-8");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g8", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		// No business group linked to this course
+		List<BusinessGroup> courseGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertTrue(courseGroups.isEmpty());
+		
+		// Add the business group to the course
+		Long courseId = courseEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseId.toString())
+				.path("groups").path(businessGroup.getKey().toString()).build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupVO responseVo = conn.parse(response, GroupVO.class);
+		Assert.assertNotNull(responseVo);
+		Assert.assertEquals(businessGroup.getKey(), responseVo.getKey());
+		Assert.assertEquals(businessGroup.getName(), responseVo.getName());
+
+		// The business group is linked to this course
+		List<BusinessGroup> linkedGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertEquals(1, linkedGroups.size());
+		Assert.assertEquals(businessGroup, linkedGroups.get(0));
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void putNewCourseGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		dbInstance.commitAndCloseSession();
+		
 		GroupVO vo = new GroupVO();
-		vo.setKey(g1.getKey());
-		vo.setName("rest-g1-mod");
-		vo.setDescription("rest-g1 description");
-		vo.setMinParticipants(g1.getMinParticipants());
-		vo.setMaxParticipants(g1.getMaxParticipants());
+		vo.setName("rest-g11-mod");
+		vo.setDescription("rest-g11 description");
+		vo.setMinParticipants(5);
+		vo.setMaxParticipants(7);
 		vo.setType("LeanringGroup");
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g1.getKey()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		Long courseId = courseEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseId.toString())
+				.path("groups").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-    BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
-    assertNotNull(bg);
-    assertEquals(bg.getKey(), vo.getKey());
-    assertEquals("rest-g1-mod", bg.getName());
-    assertEquals("rest-g1 description", bg.getDescription());
+		// The business group is linked to this course
+		List<BusinessGroup> linkedGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertEquals(1, linkedGroups.size());
+		Assert.assertEquals(vo.getName(), linkedGroups.get(0).getName());
+		Assert.assertEquals(5, linkedGroups.get(0).getMinParticipants().intValue());
+		Assert.assertEquals(7, linkedGroups.get(0).getMaxParticipants().intValue());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
+	public void removeCourseGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g1.getKey()).build();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-9");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g9", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		// No business group linked to this course
+		List<BusinessGroup> courseGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertEquals(1, courseGroups.size());
+		Assert.assertEquals(businessGroup, courseGroups.get(0));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("groups").path(businessGroup.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-    BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
-    assertNull(bg);
+		// Check removed business group
+		List<BusinessGroup> removedGroups = businessGroupService.findBusinessGroups(new SearchBusinessGroupParams(), courseEntry, 0, -1);
+		Assert.assertTrue(removedGroups.isEmpty());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testBasicSecurityDeleteCall() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-c-g-3", "A6B7C8"));
+	public void basicSecurityDeleteCall() throws IOException, URISyntaxException {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("rest-c-g-11");
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups/" + g2.getKey()).build();
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(identity));
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g11", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("groups").path(businessGroup.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
 		
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testBasicSecurityPutCall() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-c-g-3", "A6B7C8"));
+	public void basicSecurityPutCall() throws IOException, URISyntaxException {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("rest-c-g-10");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(identity));
 		
-		GroupVO vo = new GroupVO();
-		vo.setName("hello dont put");
-		vo.setDescription("hello description dont put");
-		vo.setMinParticipants(Integer.valueOf(-1));
-		vo.setMaxParticipants(Integer.valueOf(-1));
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-10");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g10", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups").build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("groups").path(businessGroup.getKey().toString()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
 		EntityUtils.consume(response.getEntity());
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	protected List<GroupVO> parseGroupArray(HttpEntity body) {
@@ -301,7 +334,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(in, new TypeReference<List<GroupVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
