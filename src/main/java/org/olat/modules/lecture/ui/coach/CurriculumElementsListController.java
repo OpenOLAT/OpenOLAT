@@ -27,12 +27,14 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
@@ -84,8 +86,8 @@ public class CurriculumElementsListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureCurriculumCols.endDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureCurriculumCols.numOfParticipants));
 		if(secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach || secCallback.viewAs() == LectureRoles.teacher) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.absences", translate("table.header.absences"),
-					"absences", "o_icon o_icon_timetable o_icon-fw"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.absences", LectureCurriculumCols.absences.ordinal(), "absences",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.absences"), "absences", null, "o_icon o_icon_lecture o_icon-fw"), null)));
 		}
 
 		tableModel = new CurriculumElementsTableModel(columnsModel, getLocale());
