@@ -29,6 +29,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
 
 /**
@@ -73,8 +75,15 @@ implements SortableFlexiTableDataModel<LectureCurriculumElementInfos> {
 			case beginDate: return element.getBeginDate();
 			case endDate: return element.getEndDate();
 			case numOfParticipants: return row.getNumOfParticipants();
+			case absences: return isLecturesEnabled(row);
 			default: return "ERROR";
 		}
+	}
+	
+	private boolean isLecturesEnabled(LectureCurriculumElementInfos row) {
+		CurriculumElement element = row.getElement();
+		CurriculumElementType elementType = row.getElementType();
+		return CurriculumLectures.isEnabled(element, elementType);
 	}
 	
 	public enum LectureCurriculumCols implements FlexiSortableColumnDef {

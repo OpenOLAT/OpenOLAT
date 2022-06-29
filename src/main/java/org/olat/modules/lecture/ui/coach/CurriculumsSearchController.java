@@ -117,13 +117,16 @@ public class CurriculumsSearchController extends BasicController {
 	
 	private void doSelectLectures(UserRequest ureq, CurriculumElement element) {
 		LectureRoles viewAs = secCallback.viewAs();
+		boolean withDescendants;
 		CurriculumSecurityCallback curriculumSecCallback;
 		if(viewAs == LectureRoles.lecturemanager || viewAs ==LectureRoles.mastercoach) {
+			withDescendants = true;
 			curriculumSecCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 		} else {
+			withDescendants = false;
 			curriculumSecCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 		}
-		lecturesCtrl = new CurriculumElementLecturesController(ureq, getWindowControl(), panel, element, false, curriculumSecCallback);
+		lecturesCtrl = new CurriculumElementLecturesController(ureq, getWindowControl(), panel, element, withDescendants, curriculumSecCallback);
 		listenTo(lecturesCtrl);
 		panel.pushController(element.getDisplayName(), lecturesCtrl);
 	}
