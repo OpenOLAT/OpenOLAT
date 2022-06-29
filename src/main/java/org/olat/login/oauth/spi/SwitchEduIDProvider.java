@@ -19,84 +19,98 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
- * Initial date: 15.07.2016<br>
+ * Initial date: 3 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class OpenIdConnectProvider implements OAuthSPI {
-	
-	private static final Logger log = Tracing.createLoggerFor(OpenIdConnectProvider.class);
+public class SwitchEduIDProvider implements OAuthSPI {
 
+	private static final Logger log = Tracing.createLoggerFor(SwitchEduIDProvider.class);
+	
+	@Value("${switch.eduid.test.env:false}")
+	private boolean test;
+	
 	@Autowired
 	private OAuthLoginModule oauthModule;
-	
+
 	@Override
 	public boolean isEnabled() {
-		return oauthModule.isOpenIdConnectIFEnabled();
+		return oauthModule.isSwitchEduIDEnabled();
 	}
 	
 	@Override
 	public boolean isRootEnabled() {
-		return oauthModule.isOpenIdConnectIFRootEnabled();
+		return oauthModule.isSwitchEduIDRootEnabled();
+	}
+	
+	public boolean isTestEnvironment() {
+		return test;
 	}
 	
 	@Override
 	public boolean isImplicitWorkflow() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public OAuthService getScribeProvider() {
-		return new ServiceBuilder(oauthModule.getOpenIdConnectIFApiKey())
-                .apiSecret(oauthModule.getOpenIdConnectIFApiSecret())
+		return new ServiceBuilder(oauthModule.getSwitchEduIDApiKey())
+                .apiSecret(oauthModule.getSwitchEduIDApiSecret())
                 .callback(oauthModule.getCallbackUrl())
                 .defaultScope("openid email")
-                .responseType("id_token token")
-                .build(new OpenIdConnectApi(this));
-	}
-	
-	public String getEndPoint() {
-		return oauthModule.getOpenIdConnectIFAuthorizationEndPoint();
+                .responseType("code")
+                .build(new SwitchEduIDApi(this));
 	}
 
 	@Override
 	public String getName() {
-		return "OpenIDConnect";
+		return "switcheduid";
 	}
 
 	@Override
 	public String getProviderName() {
-		return "OPENIDCO";
+		return "SEDUID";
 	}
 
 	@Override
 	public String getIconCSS() {
-		return "o_icon o_icon_provider_openid";
+		return "o_icon o_icon_provider_switch_eduid";
 	}
 
 	@Override
-	public OAuthUser getUser(OAuthService service, Token accessToken) {
+	public String getIssuerIdentifier() {
+		return "https://login.eduid.ch/";
+	}
+
+	@Override
+	public OAuthUser getUser(OAuthService service, Token accessToken)
+			throws IOException, InterruptedException, ExecutionException {
 		try {
-			String idToken = ((OAuth2AccessToken)accessToken).getAccessToken();
+			String idToken = ((OpenIdOAuth2AccessToken)accessToken).getOpenIdToken();
 			JSONWebToken token = JSONWebToken.parse(idToken);
 			return parseInfos(token.getPayload());
 		} catch (JSONException e) {
@@ -110,8 +124,11 @@ public class OpenIdConnectProvider implements OAuthSPI {
 		
 		try {
 			JSONObject obj = new JSONObject(body);
-			user.setId(getValue(obj, "sub"));
-			user.setEmail(getValue(obj, "sub"));
+			user.setId(getValue(obj, "swissEduPersonUniqueID"));
+			user.setEmail(getValue(obj, "email"));
+			user.setFirstName(getValue(obj, "given_name"));
+			user.setLastName(getValue(obj, "family_name"));
+			user.setInstitutionalUserIdentifier(this.getFirstArrayValue(obj, "swissEduIDLinkedAffiliationUniqueID"));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
@@ -123,9 +140,9 @@ public class OpenIdConnectProvider implements OAuthSPI {
 		String value = obj.optString(property);
 		return StringHelper.containsNonWhitespace(value) ? value : null;
 	}
-
-	@Override
-	public String getIssuerIdentifier() {
-		return oauthModule.getOpenIdConnectIFIssuer();
+	
+	private String getFirstArrayValue(JSONObject obj, String property) {
+		JSONArray value = obj.optJSONArray(property);
+		return value == null || value.isEmpty() ? null : value.iterator().next().toString();
 	}
 }
