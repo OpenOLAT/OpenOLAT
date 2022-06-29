@@ -99,6 +99,12 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement switchEduIDApiKeyEl;
 	private TextElement switchEduIDApiSecretEl;
 	
+	private MultipleSelectionElement datenlotsenEl;
+	private MultipleSelectionElement datenlotsenDefaultEl;
+	private TextElement datenlotsenKeyEl;
+	private TextElement datenlotsenSecretEl;
+	private TextElement datenlotsenEndpointEl;
+	
 	private MultipleSelectionElement keycloakEl;
 	private MultipleSelectionElement keycloakDefaultEl;
 	private TextElement keycloakClientIdEl;
@@ -158,6 +164,7 @@ public class OAuthAdminController extends FormBasicController {
 		initAzureAdfsForm(formLayout);
 		initKeycloakForm(formLayout);
 		initSwitchEduIDForm(formLayout);
+		initDatenlotsenForm(formLayout);
 		initTequilaForm(formLayout);
 		initOpenIDConnectForm(formLayout);
 		
@@ -415,16 +422,47 @@ public class OAuthAdminController extends FormBasicController {
 		switchEduIDEl = uifactory.addCheckboxesHorizontal("switch.eduid.enabled", switchEduIdCont, keys, values);
 		switchEduIDEl.addActionListener(FormEvent.ONCHANGE);
 		
-		String tequilaApiKey = oauthModule.getSwitchEduIDApiKey();
-		switchEduIDApiKeyEl = uifactory.addTextElement("switch.eduid.id", "switch.eduid.api.id", 256, tequilaApiKey, switchEduIdCont);
-		String tequilaApiSecret = oauthModule.getSwitchEduIDApiSecret();
-		switchEduIDApiSecretEl = uifactory.addTextElement("switch.eduid.secret", "switch.eduid.api.secret", 256, tequilaApiSecret, switchEduIdCont);
+		String apiKey = oauthModule.getSwitchEduIDApiKey();
+		switchEduIDApiKeyEl = uifactory.addTextElement("switch.eduid.id", "switch.eduid.api.id", 256, apiKey, switchEduIdCont);
+		String apiSecret = oauthModule.getSwitchEduIDApiSecret();
+		switchEduIDApiSecretEl = uifactory.addTextElement("switch.eduid.secret", "switch.eduid.api.secret", 256, apiSecret, switchEduIdCont);
 		
-		if(oauthModule.isTequilaEnabled()) {
+		if(oauthModule.isSwitchEduIDEnabled()) {
 			switchEduIDEl.select(keys[0], true);
 		} else {
 			switchEduIDApiKeyEl.setVisible(false);
 			switchEduIDApiSecretEl.setVisible(false);
+		}
+	}
+	
+	private void initDatenlotsenForm(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("datenlotsen", getTranslator());
+		layoutCont.setFormTitle(translate("datenlotsen.admin.title"));
+		layoutCont.setFormTitleIconCss("o_icon o_icon_provider_oauth");
+		layoutCont.setRootForm(mainForm);
+		formLayout.add(layoutCont);
+		
+		datenlotsenEl = uifactory.addCheckboxesHorizontal("datenlotsen.enabled", layoutCont, keys, values);
+		datenlotsenEl.addActionListener(FormEvent.ONCHANGE);
+		
+		datenlotsenDefaultEl = uifactory.addCheckboxesHorizontal("datenlotsen.default.enabled", layoutCont, keys, values);
+		datenlotsenDefaultEl.select(keys[0], oauthModule.isDatenlotsenRootEnabled());
+		
+		String apiKey = oauthModule.getDatenlotsenApiKey();
+		datenlotsenKeyEl = uifactory.addTextElement("datenlotsen.id", "datenlotsen.api.id", 256, apiKey, layoutCont);
+		String apiSecret = oauthModule.getDatenlotsenApiSecret();
+		datenlotsenSecretEl = uifactory.addTextElement("datenlotsen.secret", "datenlotsen.api.secret", 256, apiSecret, layoutCont);
+		String endpoint = oauthModule.getDatenlotsenEndpoint();
+		datenlotsenEndpointEl = uifactory.addTextElement("datenlotsen.endpoint", "datenlotsen.api.endpoint", 256, endpoint, layoutCont);
+		datenlotsenEndpointEl.setExampleKey("datenlotsen.api.endpoint.hint", null);
+		
+		if(oauthModule.isDatenlotsenEnabled()) {
+			datenlotsenEl.select(keys[0], true);
+		} else {
+			datenlotsenKeyEl.setVisible(false);
+			datenlotsenSecretEl.setVisible(false);
+			datenlotsenEndpointEl.setVisible(false);
+			datenlotsenDefaultEl.setVisible(false);
 		}
 	}
 	
@@ -439,7 +477,6 @@ public class OAuthAdminController extends FormBasicController {
 		openIdConnectIFEl.addActionListener(FormEvent.ONCHANGE);
 		
 		openIdConnectIFDefaultEl = uifactory.addCheckboxesHorizontal("openidconnectif.default.enabled", openIdConnectIFCont, keys, values);
-		openIdConnectIFDefaultEl.addActionListener(FormEvent.ONCHANGE);
 
 		String openIdConnectIFApiKey = oauthModule.getOpenIdConnectIFApiKey();
 		openIdConnectIFApiKeyEl = uifactory.addTextElement("openidconnectif.id", "openidconnectif.api.id", 256, openIdConnectIFApiKey, openIdConnectIFCont);
@@ -599,11 +636,15 @@ public class OAuthAdminController extends FormBasicController {
 			keycloakClientSecretEl.setVisible(keycloakEl.isAtLeastSelected(1));
 			keycloakEndpointEl.setVisible(keycloakEl.isAtLeastSelected(1));
 			keycloakRealmEl.setVisible(keycloakEl.isAtLeastSelected(1));
+		} else if(source == switchEduIDEl) {
+			switchProvider(switchEduIDEl,switchEduIDApiKeyEl, switchEduIDApiSecretEl);
+		} else if(source == datenlotsenEl) {
+			switchProvider(datenlotsenEl, datenlotsenDefaultEl, datenlotsenKeyEl, datenlotsenSecretEl, datenlotsenEndpointEl);
 		} else if(source == tequilaEl) {
 			tequilaApiKeyEl.setVisible(tequilaEl.isAtLeastSelected(1));
 			tequilaApiSecretEl.setVisible(tequilaEl.isAtLeastSelected(1));
 			tequilaOAuth2EndpointEl.setVisible(tequilaEl.isAtLeastSelected(1));
-		}  else if(source == openIdConnectIFEl) {
+		} else if(source == openIdConnectIFEl) {
 			openIdConnectIFIssuerEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
 			openIdConnectIFApiKeyEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
 			openIdConnectIFDefaultEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
@@ -619,6 +660,17 @@ public class OAuthAdminController extends FormBasicController {
 			}	
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void switchProvider(MultipleSelectionElement enableEl, FormItem... elements) {
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		if(elements != null) {
+			for(FormItem element:elements) {
+				if(element != null) {
+					element.setVisible(enabled);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -725,6 +777,20 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setSwitchEduIDEnabled(false);
 			oauthModule.setSwitchEduIDApiKey("");
 			oauthModule.setSwitchEduIDApiSecret("");
+		}
+		
+		if(datenlotsenEl.isAtLeastSelected(1)) {
+			oauthModule.setDatenlotsenEnabled(true);
+			oauthModule.setDatenlotsenRootEnabled(datenlotsenDefaultEl.isAtLeastSelected(1));
+			oauthModule.setDatenlotsenApiKey(datenlotsenKeyEl.getValue());
+			oauthModule.setDatenlotsenApiSecret(datenlotsenSecretEl.getValue());
+			oauthModule.setDatenlotsenEndpoint(datenlotsenEndpointEl.getValue());
+		} else {
+			oauthModule.setDatenlotsenEnabled(false);
+			oauthModule.setDatenlotsenRootEnabled(false);
+			oauthModule.setDatenlotsenApiKey("");
+			oauthModule.setDatenlotsenApiSecret("");
+			oauthModule.setDatenlotsenEndpoint("");
 		}
 		
 		if(tequilaEl.isAtLeastSelected(1)) {
