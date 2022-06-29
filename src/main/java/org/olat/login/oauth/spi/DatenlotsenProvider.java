@@ -89,7 +89,7 @@ public class DatenlotsenProvider implements OAuthSPI {
 
 	@Override
 	public String getIconCSS() {
-		return "o_icon o_icon_provider_oauth";
+		return "o_icon o_icon_provider_datenlotsen";
 	}
 	
 	public String getEndPoint() {

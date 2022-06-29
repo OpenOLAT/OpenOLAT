@@ -19,22 +19,18 @@
  */
 package org.olat.login.oauth;
 
-import org.json.JSONObject;
-import org.olat.core.id.Identity;
-import org.olat.login.oauth.model.OAuthUser;
+import java.util.List;
+
+import org.olat.login.oauth.model.OAuthAttributeMapping;
 
 /**
  * 
- * Initial date: 9 avr. 2021<br>
+ * Initial date: 20 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OAuthLoginManager {
+public interface OAuthMapping {
 	
-	public boolean isValid(OAuthUser oauthUser);
-	
-	public Identity createIdentity(OAuthUser oauthUser, String provider);
-	
-	public JSONObject loadDiscoveryUrl(String url);
-	
+	public List<OAuthAttributeMapping> getMapping();
+
 }

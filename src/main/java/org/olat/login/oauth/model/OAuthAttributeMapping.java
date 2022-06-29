@@ -17,24 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.login.oauth;
-
-import org.json.JSONObject;
-import org.olat.core.id.Identity;
-import org.olat.login.oauth.model.OAuthUser;
+package org.olat.login.oauth.model;
 
 /**
  * 
- * Initial date: 9 avr. 2021<br>
+ * Initial date: 20 juin 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OAuthLoginManager {
+public class OAuthAttributeMapping {
 	
-	public boolean isValid(OAuthUser oauthUser);
+	private final String externalAttribute;
+	private final String openolatAttribute;
 	
-	public Identity createIdentity(OAuthUser oauthUser, String provider);
-	
-	public JSONObject loadDiscoveryUrl(String url);
-	
+	public OAuthAttributeMapping(String externalAttribute, String openolatAttribute) {
+		this.externalAttribute = externalAttribute;
+		this.openolatAttribute = openolatAttribute;
+	}
+
+	public String getExternalAttribute() {
+		return externalAttribute;
+	}
+
+	public String getOpenolatAttribute() {
+		return openolatAttribute;
+	}
+
 }

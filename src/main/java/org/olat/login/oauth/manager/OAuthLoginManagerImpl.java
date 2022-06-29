@@ -19,15 +19,24 @@
  */
 package org.olat.login.oauth.manager;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.oauth.OAuthLoginManager;
 import org.olat.login.oauth.model.OAuthUser;
@@ -48,12 +57,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class OAuthLoginManagerImpl implements OAuthLoginManager {
 	
+	private static final Logger log = Tracing.createLoggerFor(OAuthLoginManagerImpl.class);
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Override
 	public boolean isValid(OAuthUser oauthUser) {
@@ -123,5 +136,18 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager {
 		}
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
 				provider, BaseSecurity.DEFAULT_ISSUER, id, null, null, null);
+	}
+
+	@Override
+	public JSONObject loadDiscoveryUrl(String url) {
+		try(CloseableHttpClient httpClient=httpClientService.createHttpClient()) {
+			HttpGet get = new HttpGet(new URL(url).toURI());
+			HttpResponse response = httpClient.execute(get);
+			String content = EntityUtils.toString(response.getEntity());
+			return new JSONObject(content);
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		return null;
 	}
 }
