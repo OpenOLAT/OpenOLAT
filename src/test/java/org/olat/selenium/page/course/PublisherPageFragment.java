@@ -81,13 +81,13 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment nextAccess() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_course_editor_publish"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_course_editor_publish"), browser);
 		return this;
 	}
 	
 	public PublisherPageFragment nextCatalog() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_warnings"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_warnings"), browser);
 		return this;
 	}
 	
@@ -96,7 +96,7 @@ public class PublisherPageFragment {
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
