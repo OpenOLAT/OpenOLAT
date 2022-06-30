@@ -228,7 +228,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
 		sb.append("<script>\n");
-		sb.append(" setTimeout(function() {");
+		sb.append(" (function() {")
+		  .append(" \"use strict\";");
 		if("full".equals(height)) {
 			sb.append("  var oTop = jQuery('#").append(domID).append("_diw").append("').offset().top;\n")
 			  .append("  var cssHeight = 'calc(100vh - ' + (oTop + 53) + 'px)';\n");
@@ -291,7 +292,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("    },\n")
 		  .append(configurations)
 		  .append("  });\n")
-		  .append("}, 1);\n")// end timeout
+		  .append("}());\n")// end timeout
 		  .append("</script>\n");
 	}
 	

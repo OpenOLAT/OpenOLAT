@@ -84,6 +84,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		boolean ampm = amFormatted.contains("AM") || amFormatted.contains("PM");
 
 		sb.append("<script>\n")
+		  .append("\"use strict\";")
 		  .append("jQuery(function() {\n")
 		  .append(" try {\n")
 		  .append("  var calendarEl = jQuery('#").append(id).append("').get(0);\n")

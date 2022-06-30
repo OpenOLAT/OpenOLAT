@@ -100,7 +100,7 @@
 	#end
 </div>
 <script>
-/* <![CDATA[ */
+"use strict";
 jQuery().ready(function() {
 	// Main vertical splitter, anchored to the browser window
 	jQuery("#o_main_left").resizable({
@@ -116,12 +116,12 @@ jQuery().ready(function() {
 	});
 
 	## init offcanvas menu
-	window.menuState = {
+	var menuState = {
 		open : true,
 		docked : true			
 	};
 	
-	window.o_showMenu = function(duration) {
+	var o_showMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 333 : duration;
 		if (!menuState.open) {
 			jQuery('#o_main_left_content').show();
@@ -131,7 +131,7 @@ jQuery().ready(function() {
 			});
 		} 
 	};
-	window.o_hideMenu = function(duration) {
+	var o_hideMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 333 : duration;
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
@@ -150,7 +150,8 @@ jQuery().ready(function() {
 			});			
 		} 
 	};
-	window.o_undockMenu = function(duration) {
+	
+	var o_undockMenu = function(duration) {
 		if (menuState.docked) {
 			var left = jQuery('#o_main_left');
 			var offset = 0;
@@ -171,7 +172,8 @@ jQuery().ready(function() {
 			});							
 		} 
 	};
-	window.o_dockMenu = function(duration) {
+	
+	var o_dockMenu = function(duration) {
 		o_showMenu();
 		if (!menuState.docked) {
 			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
@@ -184,7 +186,8 @@ jQuery().ready(function() {
 			})			
 		} 
 	};
-	window.o_responsiveMenu = function() {
+	
+	var o_responsiveMenu = function() {
 		if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
 			// same breakpoint as bootstrap screen-md, opacity detect IE8
 			o_undockMenu(333);
@@ -209,5 +212,4 @@ jQuery().ready(function() {
 		o_undockMenu(0);
 	}
 });
-/* ]]> */
 </script>

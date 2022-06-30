@@ -30,6 +30,7 @@
 </div>
 #if(($existsCol1 && $r.visible("col1")) || ($existsCol2 && $r.visible("col2")))
 <script>
+"use strict";
 jQuery().ready(function() {
 	// Main vertical splitter, anchored to the browser window
 #if($existsCol1 && $r.visible("col1"))
@@ -62,21 +63,21 @@ jQuery().ready(function() {
 	});
 
 	## init offcanvas menu
-	window.menuState = {
+	var menuState = {
 		origWidth : 14,
 		minimized : false,
 		open : true,
 		docked : true			
 	};
 	
-	window.o_restoreMenu = function(duration) {
+	var o_restoreMenu = function(duration) {
 		jQuery('#o_main_left_toggle').hide();	
 		menuState.minimized = false;
 		var l = jQuery('#o_main_left');
 		l.transition({'width': menuState.origWidth + 'em'}, duration, function() {});
 		$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", menuState.origWidth);
 	};
-	window.o_showMenu = function(duration) {
+	var o_showMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 500 : duration;
 		if (!menuState.open) {
 			jQuery('#o_main_left_content').show();
@@ -86,7 +87,7 @@ jQuery().ready(function() {
 			});
 		} 
 	};
-	window.o_hideMenu = function(duration) {
+	var o_hideMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 500 : duration;
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
@@ -96,7 +97,7 @@ jQuery().ready(function() {
 			});			
 		} 
 	};
-	window.o_undockMenu = function(duration) {
+	var o_undockMenu = function(duration) {
 		if (menuState.docked) {
 			var left = jQuery('#o_main_left');
 			var offset = 0;
@@ -118,7 +119,7 @@ jQuery().ready(function() {
 			});							
 		} 
 	};
-	window.o_dockMenu = function(duration) {
+	var o_dockMenu = function(duration) {
 		o_showMenu();
 		if (!menuState.docked) {
 			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
@@ -132,7 +133,7 @@ jQuery().ready(function() {
 			})			
 		} 
 	};
-	window.o_responsiveMenu = function() {
+	var o_responsiveMenu = function() {
 		if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
 			// same breakpoint as bootstrap screen-md, opacity detect IE8
 			o_undockMenu(500);
@@ -186,7 +187,6 @@ jQuery().ready(function() {
 		if(window.console)  console.log(e);
 	}
 	#end
-	
 #end
 
 #if($existsCol2 && $r.visible("col2"))		
