@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.questionimport;
 
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createInlineChoice;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -32,6 +34,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -40,6 +43,8 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.LobAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
@@ -58,6 +63,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
@@ -400,7 +406,7 @@ public class CSVToAssessmentItemConverter {
 		buildCurrentItem();
 		
 		if(parts.length > 1) {
-			String type = parts[1].toLowerCase();
+			String type = parts[1].toLowerCase().replace(" ", "");
 			AssessmentItemBuilder itemBuilder;
 			switch(type) {
 				case "fib": {
@@ -449,6 +455,10 @@ public class CSVToAssessmentItemConverter {
 					MatchAssessmentItemBuilder matchBuilder = new MatchAssessmentItemBuilder("Matrix", QTI21Constants.CSS_MATCH_TRUE_FALSE,
 							trans.translate("match.unanswered"), trans.translate("match.true"), trans.translate("match.false"), qtiSerializer);
 					itemBuilder = initMatchAssessmentItemBuilderForTrueFalse(matchBuilder);
+					break;
+				} case "inlinechoice": {
+					InlineChoiceAssessmentItemBuilder matchBuilder = new InlineChoiceAssessmentItemBuilder("Inline choice", qtiSerializer);
+					itemBuilder = initInlineChoiceAssessmentItemBuilder(matchBuilder);
 					break;
 				}
 				default: {
@@ -516,11 +526,23 @@ public class CSVToAssessmentItemConverter {
 		return matchBuilder;
 	}
 	
+	private InlineChoiceAssessmentItemBuilder initInlineChoiceAssessmentItemBuilder(InlineChoiceAssessmentItemBuilder inlineChoiceBuilder) {
+		//reset
+		inlineChoiceBuilder.setQuestion("");
+		for(InlineChoiceInteractionEntry entry:inlineChoiceBuilder.getInteractions()) {
+			inlineChoiceBuilder.removeInteraction(entry);
+		}
+		//set default options
+		inlineChoiceBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+		return inlineChoiceBuilder;
+	}
+	
 	private void buildCurrentItem() {
 		if(currentItem != null) {
 			try {
 				String question = buildQuestion(); 
 				currentItem.getItemBuilder().setQuestion(question);
+				currentItem.getItemBuilder().postImportProcessing();
 				currentItem.getItemBuilder().build();
 				items.add(currentItem);
 			} catch (Exception e) {
@@ -710,7 +732,10 @@ public class CSVToAssessmentItemConverter {
 				processChoiceKprim(parts, (KPrimAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof MatchAssessmentItemBuilder) {
 				processChoiceMatch(parts, (MatchAssessmentItemBuilder)itemBuilder);
+			} else if(itemBuilder instanceof InlineChoiceAssessmentItemBuilder) {
+				processInlineChoice(parts, (InlineChoiceAssessmentItemBuilder)itemBuilder);
 			}
+			
 		} catch (NumberFormatException e) {
 			log.warn("Cannot parse point for: {} / {}", parts[0], parts[1], e);
 		}
@@ -778,14 +803,50 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 
-	private void processChoiceFib(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
-		String firstPart = parts[0].toLowerCase();
-		if("text".equals(firstPart) || "texte".equals(firstPart)) {
-			String text = parts[1];
+	private void processInlineChoice(String[] parts, InlineChoiceAssessmentItemBuilder inlineChoiceBuilder) {
+		if(isText(parts)) {
+			processText(parts);
+		} else if(StringHelper.containsNonWhitespace(parts[0])) {
+			double score = parseDouble(parts[0], 1.0d);
+			String correctResponse = parts[2];
+			
+			String responseIdentifier = inlineChoiceBuilder.generateResponseIdentifier().toString();
+			InlineChoiceInteractionEntry interactionEntry = inlineChoiceBuilder.createInteraction(responseIdentifier);
+			interactionEntry.setShuffle(true);
+			
+			String[] choices = splitInlineChoices(parts);
+			for(String choice:choices) {
+				Identifier responseId = IdentifierGenerator.newAsIdentifier("inlinec");
+				InlineChoice newChoice = createInlineChoice(interactionEntry.getInteraction(), choice, responseId);
+				interactionEntry.getInlineChoices().add(newChoice);
+				if(correctResponse != null && correctResponse.equals(choice)) {
+					interactionEntry.putScore(responseId, Double.valueOf(score));
+					interactionEntry.setCorrectResponseId(responseId);
+				} else {
+					interactionEntry.putScore(responseId, Double.valueOf(0.0d));
+				}
+			}
+			
+			String entry = " <inlineChoiceInteraction responseIdentifier=\"" + responseIdentifier + "\"></inlineChoiceInteraction>";
 			if(questionFragements == null) {
 				questionFragements = new ArrayList<>();
 			}
-			questionFragements.add(text);	
+			questionFragements.add(entry);	
+		}
+	}
+	
+	private String[] splitInlineChoices(String[] parts) {
+		String choices = parts[1];
+		String separator = ";";
+		if(parts.length >= 4 && StringHelper.containsNonWhitespace(parts[3]) && parts[3].trim().length() == 1) {
+			separator = parts[3].trim();
+		}
+		return choices.split("[" + separator + "]");
+	}
+
+	private void processChoiceFib(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
+		if(isText(parts)) {
+			processText(parts);
 		} else if(StringHelper.containsNonWhitespace(parts[0])) {
 			double score = parseDouble(parts[0], 1.0d);
 			String correctBlank = parts[1];
@@ -806,6 +867,23 @@ public class CSVToAssessmentItemConverter {
 				questionFragements = new ArrayList<>();
 			}
 			questionFragements.add(entry);	
+		}
+	}
+	
+	private boolean isText(String[] parts) {
+		if(parts == null || parts.length < 2) return false;
+		
+		String firstPart = parts[0].toLowerCase();
+		return "text".equals(firstPart) || "texte".equals(firstPart);
+	}
+	
+	private void processText(String[] parts) {
+		if(parts.length >= 2) {
+			String text = parts[1];
+			if(questionFragements == null) {
+				questionFragements = new ArrayList<>();
+			}
+			questionFragements.add(text);
 		}
 	}
 	

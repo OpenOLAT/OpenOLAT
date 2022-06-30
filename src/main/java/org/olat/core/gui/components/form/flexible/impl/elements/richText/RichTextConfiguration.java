@@ -908,12 +908,12 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.enableMathEditor();
 	}
 
-	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
-		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
-		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
+	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext, boolean inlineChoice) {
+		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext, inlineChoice);
+		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext,~inlinechoiceinteraction,~inlinechoice");
 		//TINYMCE6 void_elements
 		setQuotedConfigValue("short_ended_elements", SHORT_ENDED_ELEMENTS);
-		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*]");
+		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*],inlinechoiceinteraction[*],inlinechoice[*]");
 	}
 
 	public void enableEdusharing(Identity identity, EdusharingProvider provider) {

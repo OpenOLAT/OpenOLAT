@@ -52,6 +52,7 @@ import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.core.util.openxml.OpenXMLDocument.Border;
 import org.olat.core.util.openxml.OpenXMLDocument.Columns;
 import org.olat.core.util.openxml.OpenXMLDocument.Indent;
+import org.olat.core.util.openxml.OpenXMLDocument.PredefinedStyle;
 import org.olat.core.util.openxml.OpenXMLDocument.Spacing;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.olat.core.util.openxml.OpenXMLDocument.Unit;
@@ -91,11 +92,13 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
@@ -309,6 +312,7 @@ public class QTI21WordExport implements MediaResource {
 			case matchtruefalse: typeDescription = translator.translate("form.matchtruefalse"); break;
 			case hottext: typeDescription = translator.translate("form.hottext"); break;
 			case order: typeDescription = translator.translate("form.order"); break;
+			case inlinechoice: typeDescription = translator.translate("form.inlinechoice"); break;
 			default: typeDescription = null; break;
 		}
 		
@@ -414,6 +418,11 @@ public class QTI21WordExport implements MediaResource {
 					startHotspotInteraction(attributes);
 					break;
 				case "inlinechoiceinteraction":
+					startInlineChoiceInteraction();
+					break;
+				case "inlinechoice":
+					startInlineChoice(attributes);
+					break;	
 				case "hottextinteraction":
 					break;
 				case "hottext":
@@ -502,6 +511,12 @@ public class QTI21WordExport implements MediaResource {
 					//auto closing tag
 				case "hotspotinteraction":
 					//all work done during start
+					break;
+				case "inlinechoiceinteraction":
+					endInlineChoiceInteraction();
+					break;
+				case "inlinechoice":
+					endInlineChoice();
 					break;
 				case "hottextinteraction":
 				case "hottext":
@@ -684,6 +699,64 @@ public class QTI21WordExport implements MediaResource {
 					startGraphic(backgroundImg, elements);
 				}
 			}
+		}
+		
+		private void startInlineChoiceInteraction() {
+			flushText();
+		}
+		
+		private void startInlineChoice(Attributes attributes) {
+			InlineChoice inlineChoice = getInlineChoiceByIdentifier(attributes);
+			if(inlineChoice != null) {
+				InlineChoiceInteraction interaction = null;
+				for(QtiNode parentNode=inlineChoice.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
+					if(parentNode instanceof InlineChoiceInteraction) {
+						interaction = (InlineChoiceInteraction)parentNode;
+						break;
+					}
+				}
+				
+				if(interaction != null) {
+					boolean checked = false;
+					if(withResponses) {
+						List<Identifier> correctAnswers = CorrectResponsesUtil
+								.getCorrectIdentifierResponses(assessmentItem, interaction.getResponseIdentifier());
+						checked = correctAnswers.contains(inlineChoice.getIdentifier());	
+					}
+					
+					flushText();
+
+					Element paragraphEl = getCurrentParagraph(false);
+					Node responseEl = factory.createCheckbox(checked, false);
+					
+					Element runEl = factory.createRunEl(Collections.singletonList(responseEl), PredefinedStyle.inlineBox);
+					paragraphEl.appendChild(runEl);
+				}
+			}
+		}
+		
+		private void endInlineChoice() {
+			appendText(" ");
+		}
+		
+		private void endInlineChoiceInteraction() {
+			flushText();
+			Element newRunEl = factory.createRunEl();
+			currentParagraph.appendChild(newRunEl);
+		}
+		
+		private InlineChoice getInlineChoiceByIdentifier(Attributes attributes) {
+			String identifier = attributes.getValue("identifier");
+			if(StringHelper.containsNonWhitespace(identifier)) {
+				Identifier rIdentifier = Identifier.assumedLegal(identifier);
+				List<InlineChoice> inlineChoices = QueryUtils.search(InlineChoice.class, assessmentItem.getItemBody());
+				for(InlineChoice inlineChoice:inlineChoices) {
+					if(rIdentifier.equals(inlineChoice.getIdentifier())) {
+						return inlineChoice;
+					}
+				}
+			}
+			return null;
 		}
 		
 		private void startOrder(Attributes attributes) {

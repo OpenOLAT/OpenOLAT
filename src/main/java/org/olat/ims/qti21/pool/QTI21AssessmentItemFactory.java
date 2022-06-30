@@ -66,6 +66,7 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 			case drawing: return "QTI 2.1 " + trans.translate("new.drawing");
 			case hotspot: return "QTI 2.1 " + trans.translate("new.hotspot");
 			case hottext: return "QTI 2.1 " + trans.translate("new.hottext");
+			case inlinechoice: return "QTI 2.1 " + trans.translate("new.inlinechoice");
 			case order: return "QTI 2.1 " + trans.translate("new.order");
 			default: return type.name();
 		}

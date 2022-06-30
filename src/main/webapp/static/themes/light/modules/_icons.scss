@@ -635,6 +635,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_mi_qtiessay:before { content: $fa-var-align-left; }
 .o_mi_qtiunkown:before { content: $fa-var-user-secret; }
 .o_mi_qtiupload:before { content: $fa-var-upload; }
+.o_mi_qtiinlinechoice:before { content: $fa-var-caret-down; }
 
 .o_as_mode_none { }
 .o_as_mode_leadtime:before { content: $fa-var-clock-o; }

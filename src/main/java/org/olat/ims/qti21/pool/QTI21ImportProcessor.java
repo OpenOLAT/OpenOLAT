@@ -311,6 +311,7 @@ public class QTI21ImportProcessor {
 			case upload: return qItemTypeDao.loadByType(QuestionType.UPLOAD.name());
 			case drawing: return qItemTypeDao.loadByType(QuestionType.DRAWING.name());
 			case order: return qItemTypeDao.loadByType(QuestionType.ORDER.name());
+			case inlinechoice: return qItemTypeDao.loadByType(QuestionType.INLINECHOICE.name());
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}

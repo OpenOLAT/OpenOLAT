@@ -107,6 +107,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -173,8 +174,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Dropdown addItemTools, changeItemDropDown;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
 			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
-			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink, newOrderLink,
-			newEssayLink, newUploadLink, newDrawingLink;
+			newFIBLink, newNumericalLink, newInlineChoiceLink, newHotspotLink,
+			newHottextLink, newOrderLink, newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink;
 	private Link importFromTableLink;
 	private Link exportToPoolLink;
@@ -308,6 +309,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newNumericalLink = LinkFactory.createToolLink("new.fib.numerical", translate("new.fib.numerical"), this, "o_mi_qtinumerical");
 		newNumericalLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newNumericalLink);
+		newInlineChoiceLink = LinkFactory.createToolLink("new.inlinechoice", translate("new.inlinechoice"), this, "o_mi_qtiinlinechoice");
+		newInlineChoiceLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newInlineChoiceLink);
 		newHottextLink = LinkFactory.createToolLink("new.hottext", translate("new.hottext"), this, "o_mi_qtihottext");
 		newHottextLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newHottextLink);
@@ -577,6 +581,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(translate("new.hotspot"), qtiService.qtiSerializer()));
 		} else if(newHottextLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HottextAssessmentItemBuilder(translate("new.hottext"), translate("new.hottext.start"), translate("new.hottext.text"), qtiService.qtiSerializer()));
+		} else if(newInlineChoiceLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new InlineChoiceAssessmentItemBuilder(translate("new.inlinechoice"), qtiService.qtiSerializer()));
 		} else if(newOrderLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new OrderAssessmentItemBuilder(translate("new.order"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {

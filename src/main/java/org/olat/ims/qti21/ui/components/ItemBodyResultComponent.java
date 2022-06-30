@@ -47,8 +47,9 @@ public class ItemBodyResultComponent extends AssessmentObjectComponent  {
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private ItemSessionState itemSessionState;
-	private boolean showSolution;
-	private boolean report;
+	private boolean showSolution = false;
+	private boolean report = false;
+	private boolean offline = false;
 	
 	public ItemBodyResultComponent(String name, ResolvedAssessmentItem resolvedAssessmentItem, ItemBodyResultFormItem qtiItem) {
 		super(name);
@@ -71,6 +72,14 @@ public class ItemBodyResultComponent extends AssessmentObjectComponent  {
 
 	public void setReport(boolean report) {
 		this.report = report;
+	}
+
+	public boolean isOffline() {
+		return offline;
+	}
+
+	public void setOffline(boolean offline) {
+		this.offline = offline;
 	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {

@@ -551,4 +551,36 @@
 			<w:szCs w:val="20" />
 		</w:rPr>
 	</w:style>
+	
+	<w:style w:type="paragraph" w:styleId="ooInlineBox">
+		<w:name w:val="OO Inline Box" />
+		<w:basedOn w:val="Standard" />
+		<w:next w:val="Standard" />
+		<w:link w:val="ooInlineBoxZeichen" />
+		<w:uiPriority w:val="11" />
+		<w:qFormat />
+		<w:rsid w:val="00384E23" />
+		<w:pPr>
+			<w:numPr>
+				<w:ilvl w:val="1" />
+			</w:numPr>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:bdr w:val="single" w:sz="4" w:space="0" w:color="AAAAAA" />
+			<w:shd w:val="clear" w:color="auto" w:themeColor="accent1" w:fill="EFEFEF" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:styleId="ooInlineBoxZeichen">
+		<w:name w:val="OO Inline Box" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:uiPriority w:val="19" />
+		<w:qFormat />
+		<w:rsid w:val="00384E24" />
+		<w:rPr>
+			<w:bdr w:val="single" w:sz="4" w:space="0" w:color="AAAAAA" />
+			<w:shd w:val="clear" w:color="auto" w:themeColor="accent1" w:fill="EFEFEF" />
+		</w:rPr>
+	</w:style>
+	
 </w:styles>

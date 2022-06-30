@@ -400,11 +400,6 @@ span.o_qti_gaptext_score_alternative {
 	padding-left: 48%;
 }
 
-.o_qti_hotspot_delete {
-	
-}
-
-
 .o_assessmentsection_rubrics_wrapper {
 	background: $o-qti-item-title-bg;
 	border: 1px solid $o-qti-item-title-border-color;
@@ -877,7 +872,7 @@ tr.choiceinteraction {
 	border-bottom: 3px solid white;
 }
 
-table.table.o_qti_item_kprim>thead>tr>th, table.table.o_qti_item_kprim>tbody>tr>td, {
+table.table.o_qti_item_kprim>thead>tr>th, table.table.o_qti_item_kprim>tbody>tr>td {
 	border:none;
 }
 
@@ -1180,6 +1175,27 @@ table.o_qti_item_kprim {
 /* Drawing interaction */
 .drawingInteraction {
 	clear: both;
+}
+
+/* Inline interaction */
+.o_inline_choice_correct_cell {
+	text-align: right;
+	
+	input[type='radio'] {
+		width: 34px;
+		display: inline-block;
+	}
+}
+
+.o_qti_inlinechoices_scores_map {
+	padding: 1em;
+	margin-bottom: 0.5em;
+	border: 1px solid $o-qti-editor-box-border-color;
+	border-radius: $border-radius-base;
+	
+	table.table {
+		margin-bottom: 0;
+	}
 }
 
 /* MathEntryInteraction styling for MathAssess */
@@ -1835,14 +1851,16 @@ div.o_qti_statistics {
 	.matchInteraction input[type="radio"][disabled],
 	.matchInteraction input[type="checkbox"][disabled],
 	.hottextInteraction .hottext input[type="radio"][disabled],
-	.hottextInteraction .hottext input[type="checkbox"][disabled] {
+	.hottextInteraction .hottext input[type="checkbox"][disabled],
+	.inlineChoiceInteraction input[type="radio"][disabled] {
 		display: none;
 	}
 	
 	.choiceinteraction input + i,
 	.o_qti_item_choice_option_flow input + i,
 	.matchInteraction input + i,
-	.hottextInteraction .hottext input + i {
+	.hottextInteraction .hottext input + i,
+	.inlineChoiceInteraction input + i {
 		display: inline;
 		font-family: FontAwesome;
 		font-style: normal;
@@ -1862,13 +1880,15 @@ div.o_qti_statistics {
 	.choiceInteraction input[type="radio"][disabled] + i:before,
 	.matchInteraction input[type="radio"][disabled] + i:before,
 	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i:before,
-	.hottextInteraction  .hottext input[type="radio"][disabled] + i:before {
+	.hottextInteraction .hottext input[type="radio"][disabled] + i:before,
+	.inlineChoiceInteraction input[type="radio"][disabled] + i:before {
 		content: $fa-var-circle-o;
 	}
 	.choiceInteraction input[type="radio"][disabled]:checked + i:before,
 	.matchInteraction input[type="radio"][disabled]:checked + i:before,
 	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i:before,
-	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i:before {
+	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i:before,
+	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i:before {
 		content: $fa-var-dot-circle-o;
 	}
 	.choiceInteraction input[type="checkbox"][disabled] + i:before,
@@ -1880,6 +1900,12 @@ div.o_qti_statistics {
 	.matchInteraction input[type="checkbox"][disabled]:checked + i:before,
 	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i:before {
 		content: $fa-var-check-square-o;
+	}
+	
+	span.inlineChoiceInteraction.o_qti_offline {
+		border: 1px solid $o-qti-inline-choice-print-border-color;
+		padding: 0 2px 0 2px;
+		margin: 1px;
 	}
 	
 	div.o_qti_statistics {

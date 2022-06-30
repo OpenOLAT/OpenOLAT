@@ -1,0 +1,7 @@
+#foreach($choice in $wrappers)
+<div class="form-inline #if(!$foreach.last) o_block_bottom #end">
+	$r.render(${choice.getChoiceEl()})
+	$r.render(${choice.getAddButton()})
+	$r.render(${choice.getDeleteButton()})
+</div>
+#end

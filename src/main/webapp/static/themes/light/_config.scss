@@ -702,24 +702,24 @@ $o-qti-match-true-false-right-bg						: lighten($brand-success, 40%) !default;
 $o-qti-match-true-false-wrong-bg						: lighten($brand-danger, 40%) !default;
 $o-qti-match-kprim-correct-bg						: lighten($brand-success, 40%) !default;
 $o-qti-match-kprim-wrong-bg							: lighten($brand-danger, 40%) !default;
-$o-qti-order-source-border-style						: dashed !default;
+$o-qti-order-source-border-style					: dashed !default;
 $o-qti-order-sources-border-color					: $o-qti-run-infos-border-color !default;
 $o-qti-order-border-radius							: $panel-border-radius !default;
 $o-qti-order-source-bg								: $state-warning-bg !default;
 $o-qti-order-sources-bg								: $o-qti-run-infos-bg !default;
 $o-qti-order-drop-accept-border-color				: darken($brand-info, 25%) !default;
 $o-qti-order-target-bg								: $state-info-bg !default;
-$o-qti-order-target-border-color						: $brand-info !default;
+$o-qti-order-target-border-color					: $brand-info !default;
 $o-qti-textEntryInteraction-color					: $text-color !default;
 $o-qti-textEntryInteraction-bg						: #fff !default;
-$o-qti-textEntryInteraction-border-color				: $o-qti-gap-border-color !default;
-$o-qti-textEntryInteraction-filled-color				: $o-qti-userselection-color !default;
+$o-qti-textEntryInteraction-border-color			: $o-qti-gap-border-color !default;
+$o-qti-textEntryInteraction-filled-color			: $o-qti-userselection-color !default;
 $o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
 $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
 
+$o-qti-inline-choice-print-border-color				: #999 !default;
 
-$o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
-$o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
+$o-qti-editor-box-border-color						: #e5e5e5;
 
 /* Video module */
 $o-video-marker-bg-color							: #efefef;

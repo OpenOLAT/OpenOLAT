@@ -81,6 +81,7 @@ public class NewQuestionItemCalloutController extends BasicController {
 		addLink("new.hottext", QTI21QuestionType.hottext, links);
 		addLink("new.hotspot", QTI21QuestionType.hotspot, links);
 		addLink("new.order", QTI21QuestionType.order, links);
+		addLink("new.inlinechoice", QTI21QuestionType.inlinechoice, links);
 		
 		mainVC.contextPut("links", links);
 		putInitialPanel(mainVC);

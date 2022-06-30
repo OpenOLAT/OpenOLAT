@@ -51,7 +51,7 @@ public class TinyConfig {
 			  "view: {title: 'View', items: 'visualblocks visualchars | preview fullscreen'}",
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image charmap emoticons hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice olatmovieviewer image charmap emoticons hr link";
 		editorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//compact profile
@@ -64,7 +64,7 @@ public class TinyConfig {
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image olatmatheditor charmap hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice olatmovieviewer image olatmatheditor charmap hr link";
 		editorCompactConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//invisible
@@ -165,7 +165,7 @@ public class TinyConfig {
 				.enableFeature("olatmovieviewer");
 	}
 	
-	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
+	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext, boolean inlineChoice) {
 		TinyConfig config = enableFeature("olatqti");
 		if(!textEntry) {
 			config = config.disableButtons("olatqtifibtext");
@@ -175,6 +175,9 @@ public class TinyConfig {
 		}
 		if(!hottext) {
 			config = config.disableButtons("olatqtihottext");
+		}
+		if(!inlineChoice) {
+			config = config.disableButtons("olatqtiinlinechoice");
 		}
 		return config;
 	}

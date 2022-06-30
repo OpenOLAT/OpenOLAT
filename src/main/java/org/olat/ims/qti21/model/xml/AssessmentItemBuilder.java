@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder.ModalFeedbackType;
@@ -330,6 +331,14 @@ public abstract class AssessmentItemBuilder {
 		correctSolutionFeedback = null;
 	}
 	
+	public final String escapeForDataQtiSolution(String solution) {
+		return StringHelper.escapeHtml(solution).replace("/", "\u2215");
+	}
+	
+	public final String unescapeDataQtiSolution(String solution) {
+		return StringHelper.unescapeHtml(solution).replace("\u2215", "/");
+	}
+	
 	public AssessmentHtmlBuilder getHtmlHelper() {
 		return htmlHelper;
 	}
@@ -366,6 +375,10 @@ public abstract class AssessmentItemBuilder {
 		final XsltSerializationOptions xsltSerializationOptions = new XsltSerializationOptions();
         xsltSerializationOptions.setIndenting(false);
 		qtiSerializer.serializeJqtiObject(block, new StreamResult(sb), new SaxFiringOptions(), xsltSerializationOptions);
+	}
+	
+	public void postImportProcessing() {
+		// Do something after an import
 	}
 
 	public final void build() {

@@ -41,6 +41,7 @@ public enum QuestionType {
 	MATCHTRUEFALSE,
 	HOTTEXT,
 	ORDER,
+	INLINECHOICE,
 	UNKOWN
 
 }

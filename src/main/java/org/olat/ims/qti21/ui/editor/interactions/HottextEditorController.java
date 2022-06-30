@@ -94,7 +94,7 @@ public class HottextEditorController extends FormBasicController {
 		textEl.setElementCssClass("o_sel_assessment_item_hottext_text");
 		textEl.addActionListener(FormEvent.ONCLICK);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
-		richTextConfig.enableQTITools(false, false, true);
+		richTextConfig.enableQTITools(false, false, true, false);
 		richTextConfig.setAdditionalConfiguration(new CorrectAnswersConfiguration());
 		richTextConfig.setReadOnly(restrictedEdit || readOnly);
 		

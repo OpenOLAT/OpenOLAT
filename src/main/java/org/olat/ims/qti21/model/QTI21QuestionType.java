@@ -32,6 +32,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
@@ -62,6 +63,7 @@ public enum QTI21QuestionType {
 	drawing(true, "drawing", "o_mi_qtidrawing", QuestionType.DRAWING),
 	hottext(true, "hottext", "o_mi_qtihottext", QuestionType.HOTTEXT),
 	order(true, "order", "o_mi_qtiorder", QuestionType.ORDER),
+	inlinechoice(true, "inlinechoice", "o_mi_qtiinlinechoice", QuestionType.INLINECHOICE),
 	unkown(false, "unkown", "o_mi_qtiunkown", null);
 	
 	private final String prefix;
@@ -131,6 +133,7 @@ public enum QTI21QuestionType {
 		boolean fDrawing = false;
 		boolean fHottext = false;
 		boolean fOrder = false;
+		boolean fInlineChoice = false;
 		boolean fUnkown = false;
 
 		if(interactions != null && !interactions.isEmpty()) {
@@ -153,6 +156,8 @@ public enum QTI21QuestionType {
 					fHottext = true;
 				} else if(interaction instanceof OrderInteraction) {
 					fOrder = true;
+				} else if(interaction instanceof InlineChoiceInteraction) {
+					fInlineChoice = true;
 				} else if(interaction instanceof EndAttemptInteraction) {
 					//ignore
 				}   else {
@@ -163,24 +168,26 @@ public enum QTI21QuestionType {
 		
 		if(fUnkown) {
 			return QTI21QuestionType.unkown;
-		} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return getTypeOfChoice(item, interactions);
-		} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return getTypeOfMatch(item, interactions);
-		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return getTypeOfTextEntryInteraction(item);
-		} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.essay;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.upload;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && fDrawing && !fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.drawing;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && fHotspot && !fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.hotspot;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && fHottext && !fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.hottext;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && fOrder && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.order;
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && fInlineChoice && !fUnkown) {
+			return QTI21QuestionType.inlinechoice;
 		} else {
 			return QTI21QuestionType.unkown;
 		}

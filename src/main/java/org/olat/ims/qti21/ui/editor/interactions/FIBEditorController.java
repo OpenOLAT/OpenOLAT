@@ -112,7 +112,7 @@ public class FIBEditorController extends FormBasicController {
 		textEl.setElementCssClass("o_sel_assessment_item_fib_text");
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.setReadOnly(restrictedEdit || readOnly);
-		richTextConfig.enableQTITools(true, true, false);
+		richTextConfig.enableQTITools(true, true, false, false);
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

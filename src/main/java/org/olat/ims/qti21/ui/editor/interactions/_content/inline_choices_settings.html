@@ -1,0 +1,30 @@
+<fieldset class="o_form form-horizontal">
+	<div class="form-group clearfix">
+		<label class="control-label col-sm-3">$r.translate("form.imd.shuffle")</label>
+		<div class="col-sm-9">$r.render("form.imd.shuffle")</div>
+	</div>
+	<div class="form-group clearfix">
+		<div class="col-sm-9 col-sm-offset-3"><hr></hr></div>
+	</div>
+	<div class="form-group clearfix">
+		<label class="control-label col-sm-3">$r.translate("form.imd.inline.correct")</label>
+		<label class="control-label col-sm-9" style="text-align: left;">$r.translate("form.imd.inline.responses")</label>
+	</div>
+	
+	#foreach($choice in $choices)
+	<div class="form-group clearfix">
+		<div class="col-sm-3 o_inline_choice_correct_cell">
+			<input type="radio" id="oo_correct-${foreach.count}" name="correct" class="form-control" value="${choice.getInlineChoiceIdentifier()}" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
+			$f.appendFlexiFormDirtyForCheckbox("oo_correct-${foreach.count}")
+		</div>
+		<div class="col-sm-9 form-inline">
+			$r.render(${choice.getTextEl()})
+			$r.render(${choice.getAddButton()})
+			$r.render(${choice.getDeleteButton()})
+		</div>
+	</div>
+	#end
+	<div class="form-group clearfix">
+		<div class="col-sm-9 col-sm-offset-3">$r.render("buttons")</div>
+	</div>
+</fieldset>

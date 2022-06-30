@@ -459,14 +459,6 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 		return false;
 	}
-	
-	public String escapeForDataQtiSolution(String solution) {
-		return StringHelper.escapeHtml(solution).replace("/", "\u2215");
-	}
-	
-	public String unescapeDataQtiSolution(String solution) {
-		return StringHelper.unescapeHtml(solution).replace("\u2215", "/");
-	}
 
 	@Override
 	public QTI21QuestionType getQuestionType() {

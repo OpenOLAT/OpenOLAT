@@ -52,6 +52,7 @@ import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.InlineStatic;
+import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.serialization.SaxFiringOptions;
 import uk.ac.ed.ph.jqtiplus.xmlutils.SimpleDomBuilderHandler;
@@ -130,6 +131,20 @@ public class AssessmentHtmlBuilder {
 		try(StringOutput sb = new StringOutput()) {
 			if(statics != null && !statics.isEmpty()) {
 				for(InlineStatic inlineStatic:statics) {
+					serializeJqtiObject(inlineStatic, sb);
+				}
+			}
+			return cleanUpNamespaces(sb);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public String textOrVariableString(List<? extends TextOrVariable> statics) {
+		try(StringOutput sb = new StringOutput()) {
+			if(statics != null && !statics.isEmpty()) {
+				for(TextOrVariable inlineStatic:statics) {
 					serializeJqtiObject(inlineStatic, sb);
 				}
 			}
@@ -285,7 +300,28 @@ public class AssessmentHtmlBuilder {
 				super.startElement(uri, localName, qName, attributes);
 				super.endElement(uri, localName, qName);
 				return;
-			} else if(convertInputValue && "input".equalsIgnoreCase(localName)) {
+			}
+			
+			if("inlinechoiceinteraction".equalsIgnoreCase(localName)) {
+				localName = qName = "inlineChoiceInteraction";
+
+				AttributesImpl attributesCleaned = new AttributesImpl("");
+				for(int i=0; i<attributes.getLength(); i++) {
+					String name = attributes.getLocalName(i);
+					if(!"openolattype".equalsIgnoreCase(name)
+							&& !"data-qti-solution".equalsIgnoreCase(name)
+							&& !"data-qti-solution-empty".equalsIgnoreCase(name)) {
+						String value = attributes.getValue(i);
+						attributesCleaned.addAttribute(name, value);
+					}
+				}
+
+				attributes = new AttributesDelegate(attributesCleaned);
+				super.startElement(uri, localName, qName, attributes);
+				return;
+			}
+			
+			if(convertInputValue && "input".equalsIgnoreCase(localName)) {
 				for(int i=0; i<attributes.getLength(); i++) {
 					String name = attributes.getLocalName(i);
 					if("value".equalsIgnoreCase(name)) {
@@ -352,6 +388,10 @@ public class AssessmentHtmlBuilder {
 					|| (convertInputValue && "input".equalsIgnoreCase(localName))) {
 				return;
 			}
+			if("inlinechoiceinteraction".equalsIgnoreCase(localName)) {
+				localName = qName = "inlineChoiceInteraction";
+			}
+			
 			super.endElement(uri, localName, qName);
 		}
 		

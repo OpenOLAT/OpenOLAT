@@ -1036,6 +1036,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ctx.put("isCorrectionHelp", component.isCorrectionHelp());
 		ctx.put("isCorrectionSolution", component.isCorrectionSolution());
 		ctx.put("isSolutionMode", renderer.isSolutionMode());
+		ctx.put("isOffline", renderer.isOffline());
 
 		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getRenderer().getCsrfToken());
 		AssessmentRenderer fHints = renderer.newHints(fr);

@@ -43,6 +43,7 @@ public class AssessmentRenderer {
 	private boolean candidateCommentAllowed;
 	private boolean showTitles;
 	private boolean report;
+	private boolean offline;
 	
 	public AssessmentRenderer(Renderer renderer) {
 		this.renderer = renderer;
@@ -61,6 +62,7 @@ public class AssessmentRenderer {
 		clone.setCandidateCommentAllowed(candidateCommentAllowed);
 		clone.setShowTitles(showTitles);
 		clone.setReport(report);
+		clone.setOffline(offline);
 		return clone;
 	}
 	
@@ -162,6 +164,14 @@ public class AssessmentRenderer {
 
 	public void setReport(boolean report) {
 		this.report = report;
+	}
+
+	public boolean isOffline() {
+		return offline;
+	}
+
+	public void setOffline(boolean offline) {
+		this.offline = offline;
 	}
 
 	public void setRenderer(Renderer renderer) {

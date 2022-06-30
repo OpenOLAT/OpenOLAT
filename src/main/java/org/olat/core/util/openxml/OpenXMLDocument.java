@@ -1835,7 +1835,8 @@ public class OpenXMLDocument {
 		heading2("ooHeading2", null),
 		subTitle("ooUntertitel", "ooUntertitelZeichen"),
 		subSubtleEmphasis("ooSubtleEmphasis", "ooSubtleEmphasisZeichen"),
-		quote("ooQuote", "ooQuoteZeichen");
+		quote("ooQuote", "ooQuoteZeichen"),
+		inlineBox("ooInlineBox", "ooInlineBoxZeichen");
 		
 		private final String paragraphStyleId;
 		private final String runStyleId;

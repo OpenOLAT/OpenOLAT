@@ -28,6 +28,9 @@ import java.util.Map;
 
 import org.olat.ims.qti21.QTI21Constants;
 
+import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
+import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
+import uk.ac.ed.ph.jqtiplus.node.AbstractNode;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
@@ -92,6 +95,18 @@ public interface QtiNodesExtractor {
 			}
 		}
 		return doubleValue;
+	}
+	
+	public static Identifier getIdentifierFromCorrectResponse(CorrectResponse correctResponse) {
+		BaseTypeAndCardinality responseDeclaration = correctResponse.getParent();
+		if(responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+			Value value = FieldValue.computeValue(Cardinality.SINGLE, correctResponse.getFieldValues());
+			if(value instanceof IdentifierValue) {
+				IdentifierValue identifierValue = (IdentifierValue)value;
+				return identifierValue.identifierValue();
+			}
+		}
+		return null;
 	}
 	
 	public static void extractIdentifiersFromCorrectResponse(CorrectResponse correctResponse, List<Identifier> correctAnswers) {
@@ -204,6 +219,22 @@ public interface QtiNodesExtractor {
 					BaseValue value = (BaseValue)baseValue;
 					if(value.getSingleValue() instanceof FloatValue) {
 						return ((FloatValue)value.getSingleValue()).doubleValue();
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static String extractId(AbstractNode node) {
+		AttributeList attributes = node.getAttributes();
+		if(attributes != null) {
+			for(int i=attributes.size(); i-->0; ) {
+				Attribute<?> attr = attributes.get(i);
+				if("id".equals(attr.getLocalName())) {
+					Object val = attr.getValue();
+					if(val instanceof String) {
+						return (String)val;
 					}
 				}
 			}
