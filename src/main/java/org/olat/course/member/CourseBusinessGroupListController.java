@@ -347,13 +347,17 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		businessGroupService.addResourcesTo(groups, resources);
 		reloadModel();
 	}
+	
+	@Override
+	protected boolean isAdminSearchAllowed() {
+		return groupManagementRight || super.isAdminSearchAllowed();
+	}
 
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
 		params.setRepositoryEntry(re);
-		params.setAuthorConnection(true);
 		return params;
 	}
 	

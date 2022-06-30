@@ -365,7 +365,7 @@ public class FormJSHelper {
 	 */
 	public static StringOutput appendFlexiFormDirtyOn(StringOutput sb, Form form, String events, String formDispatchId) {
 		sb.append("<script>")
-		  .append("(function() { jQuery('#").append(formDispatchId).append("').on('").append(events).append("', {formId:\"").append(form.getDispatchFieldId()).append("\", hideMessage:").append(form.isHideDirtyMarkingMessage()).append("}, setFlexiFormDirtyByListener);")
+		  .append("(function() { \"use strict\";\njQuery('#").append(formDispatchId).append("').on('").append(events).append("', {formId:\"").append(form.getDispatchFieldId()).append("\", hideMessage:").append(form.isHideDirtyMarkingMessage()).append("}, setFlexiFormDirtyByListener);")
 		  .append("})();</script>");
 		return sb;
 	}
