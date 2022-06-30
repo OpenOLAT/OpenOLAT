@@ -457,15 +457,19 @@ public class ImsQTI21Test extends Deployments {
 		
 		//create a course
 		String courseTitle = "Course QTI 2.1 " + UUID.randomUUID();
-		navBar
+		CoursePageFragment course = navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 		
-		String testNodeTitle = "QTI21Test-8";
+		// add a participant
+		course
+			.members()
+			.quickAdd(participant);
 		
-		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+		String testNodeTitle = "QTI21Test-8";
+		//create a course element of type test
+		CourseEditorPageFragment courseEditor = course
 			.edit();
 		courseEditor
 			.createNode("iqtest")
@@ -481,12 +485,10 @@ public class ImsQTI21Test extends Deployments {
 			.saveLayoutConfiguration();
 		
 		Calendar cal = Calendar.getInstance();
-		int currentSeconds = cal.get(Calendar.SECOND);
 		cal.set(Calendar.SECOND, 0);
 		cal.add(Calendar.MINUTE, -1);
 		Date start = cal.getTime();
-		int addMinutes = (currentSeconds < 30) ? 2 : 3;
-		cal.add(Calendar.MINUTE, addMinutes);
+		cal.add(Calendar.MINUTE, 3);
 		Date end = cal.getTime();
 		configPage
 			.selectConfiguration()
@@ -499,15 +501,6 @@ public class ImsQTI21Test extends Deployments {
 		courseEditor
 			.publish()
 			.quickPublish();
-		
-		//open the course and see the CP
-		CoursePageFragment course = courseEditor
-			.clickToolbarBack();
-		
-		// add a participant
-		course
-			.members()
-			.quickAdd(participant);
 		
 		//a user search the course and make the test
 		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);

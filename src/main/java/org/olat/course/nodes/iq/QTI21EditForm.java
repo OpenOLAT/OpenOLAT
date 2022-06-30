@@ -280,7 +280,7 @@ public class QTI21EditForm extends FormBasicController {
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
 			autoSV.add(new SelectionValue(Boolean.TRUE.toString(), translate("node.grade.auto.auto"), translate("node.grade.auto.auto.desc"), null, null, true));
 			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", formLayout, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
-			gradeAutoEl.select(Boolean.valueOf(modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)).toString(), true);
+			gradeAutoEl.select(Boolean.toString(modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)), true);
 			
 			gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);

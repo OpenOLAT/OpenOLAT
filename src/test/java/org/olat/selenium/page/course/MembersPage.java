@@ -90,9 +90,10 @@ public class MembersPage {
 			int maxParticipants, boolean waitingList, boolean auto) {
 		By createBy = By.className("o_sel_course_new_group");
 		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		OOGraphene.waitElement(popupBy, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
@@ -115,9 +116,8 @@ public class MembersPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
