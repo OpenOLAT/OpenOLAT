@@ -125,6 +125,9 @@ public class PFParticipantController extends BasicController {
 		folderRunController = new FolderRunController(frc, false, false, Mail.never, false, ureq, getWindowControl(), null, null, null);
 
 		folderRunController.disableSubscriptionController();
+		if(!isCoach) {
+			folderRunController.disableEditQuotaLink();
+		}
 		listenTo(folderRunController);
 		mainVC.put("folder", folderRunController.getInitialComponent());
 		folderRunController.activatePath(ureq, path);

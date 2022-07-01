@@ -273,7 +273,7 @@ public class PFManager {
 		boolean timeFrame = pfNode.hasDropboxTimeFrameConfigured() && !pfNode.isInDropboxTimeFrame();
 		boolean alterFile = pfNode.hasAlterFileConfigured();
 		if (timeFrame || limitCount && !alterFile){
-			callback = new ReadOnlyCallback(folderSubContext);
+			callback = new ReadOnlyCallback(folderSubContext, quotaPath);
 		} else if (webdav) {
 			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
 		} else if (limitCount && alterFile) {
@@ -329,7 +329,7 @@ public class PFManager {
 			VFSContainer dropContainer = new NamedContainerImpl(translator.translate("drop.box"),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 			if (courseReadOnly) {
-				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext));
+				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
 				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, true);
@@ -340,7 +340,7 @@ public class PFManager {
 		if (pfNode.hasCoachBoxConfigured()){
 			VFSContainer returnContainer = new NamedContainerImpl(translator.translate("return.box"),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
-			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext));
+			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
 			namedCourseFolder.addItem(returnContainer);
 		}
 		return namedCourseFolder;
@@ -380,7 +380,7 @@ public class PFManager {
 					VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, true);
 					dropContainer.setLocalSecurityCallback(callback);
 				} else {
-					dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
+					dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 				}
 				participantFolder.addItem(dropContainer);
 			}
@@ -426,7 +426,7 @@ public class PFManager {
 			if (pfNode.hasParticipantBoxConfigured()) {
 				VFSContainer dropContainer = new NamedContainerImpl(translator.translate("drop.box"),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
-				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
+				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(dropContainer);
 			}
 			
@@ -467,7 +467,7 @@ public class PFManager {
 		String baseContainerName = userManager.getUserDisplayName(identity);
 		
 		VirtualContainer namedCourseFolder = new VirtualContainer(baseContainerName);
-		namedCourseFolder.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
+		namedCourseFolder.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 
 		VFSContainer dropContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ? 
 				baseContainerName : translator.translate("drop.box"), 
@@ -487,17 +487,17 @@ public class PFManager {
 		
 
 		if (readOnly) {
-			dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
-			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
+			dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, null));
+			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, null));
 		} else {
 			if (isCoach) {
-				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
+				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
 				VFSSecurityCallback callback = calculateCallback(courseEnv, path, pfNode, dropbox, false);
 				dropContainer.setLocalSecurityCallback(callback);
-				returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
+				returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 			}
 		}
 		
