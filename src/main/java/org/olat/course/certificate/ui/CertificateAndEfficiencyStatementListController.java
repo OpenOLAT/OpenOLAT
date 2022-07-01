@@ -823,8 +823,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private void doConfirmDelete(UserRequest ureq, CertificateAndEfficiencyStatementRow statement) {
 		RepositoryEntry re = repositoryService.loadByResourceKey(statement.getResourceKey());
 		if(re == null) {
+			String title = translate("efficiencyStatements.delete.confirm.title");
 			String text = translate("efficiencyStatements.delete.confirm", statement.getDisplayName());
-			confirmDeleteCtr = activateYesNoDialog(ureq, "Hello", text, confirmDeleteCtr);
+			confirmDeleteCtr = activateYesNoDialog(ureq, title, text, confirmDeleteCtr);
 			confirmDeleteCtr.setUserObject(statement);
 		} else {
 			showWarning("efficiencyStatements.cannot.delete");
