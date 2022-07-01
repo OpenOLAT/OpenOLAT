@@ -1655,16 +1655,16 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef identity) {
+	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef participantIdentity, Identity identity) {
 		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		boolean countDispensationAsAttendant = lectureModule.isCountDispensationAsAttendant() && lectureModule.isAbsenceNoticeEnabled();
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
-		return lectureBlockRollCallDao.getStatistics(identity, RepositoryEntryStatusEnum.publishedAndClosed(),
+		return lectureBlockRollCallDao.getStatistics(participantIdentity, RepositoryEntryStatusEnum.publishedAndClosed(),
 				authorizedAbsenceEnabled, absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant, countDispensationAsAttendant,
-				calculateAttendanceRate, defaultRequiredAttendanceRate);
+				calculateAttendanceRate, defaultRequiredAttendanceRate, identity);
 	}
 
 	@Override
@@ -1715,7 +1715,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public List<LectureCurriculumElementInfos> searchCurriculumElements(LectureCurriculumElementSearchParameters searchParams) {
-		return lectureBlockDao.searchCurriculumElements(searchParams);
+		List<LectureCurriculumElementInfos> infos = lectureBlockDao.searchCurriculumElements(searchParams);
+		
+		
+		
+		return infos;
 	}
 
 	@Override

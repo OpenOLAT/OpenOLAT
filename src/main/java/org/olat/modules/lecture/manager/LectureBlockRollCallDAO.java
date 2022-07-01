@@ -607,10 +607,11 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
-	public List<LectureBlockStatistics> getStatistics(IdentityRef identity, RepositoryEntryStatusEnum[] entryStatus,
+	public List<LectureBlockStatistics> getStatistics(IdentityRef participantIdentity, RepositoryEntryStatusEnum[] entryStatus,
 			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized,
 			boolean countAuthorizedAbsenceAsAttendant, boolean countDispensationAsAttendant,
-			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+			boolean calculateAttendanceRate, double requiredAttendanceRateDefault,
+			Identity identity) {
 		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select call.key as callKey, ")
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
@@ -643,7 +644,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
 		  .append(" left join absencenotice as notice on (call.absenceNotice.key=notice.key)")
-		  .append(" where config.lectureEnabled=true and membership.identity.key=:identityKey")
+		  .append(" where config.lectureEnabled=true and membership.identity.key=:participantIdentityKey")
 		  .append(" and membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" and re.status ").in(entryStatus);
 		
@@ -651,13 +652,22 @@ public class LectureBlockRollCallDAO {
 		//take in account: authorized absence
 		//take in account: firstAddmissionDate and null
 		
+		// check access permission
+		if(identity != null && !identity.equals(participantIdentity)) {
+			appendCheckAccess(sb);
+		}
+		
 		Date now = new Date();
 		Set<Long> rollCallKeys = new HashSet<>();
 		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
-		dbInstance.getCurrentEntityManager()
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultStream().forEach(rawObject -> {
+				.setParameter("participantIdentityKey", participantIdentity.getKey());
+		if(identity != null && !identity.equals(participantIdentity)) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+
+		query.getResultStream().forEach(rawObject -> {
 			int pos = 0;//jump roll call key
 			Long rollCallKey = PersistenceHelper.extractLong(rawObject, pos++);
 			if(rollCallKey != null) {
@@ -705,7 +715,7 @@ public class LectureBlockRollCallDAO {
 			if(stats.containsKey(repoKey)) {
 				entryStatistics = stats.get(repoKey);
 			} else {
-				entryStatistics = create(identity.getKey(), lectureBlockKey, repoKey, repoDisplayname, repoExternalRef,
+				entryStatistics = create(participantIdentity.getKey(), lectureBlockKey, repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(repoKey, entryStatistics);
@@ -771,17 +781,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" where config.lectureEnabled=true and membership.role='").append(GroupRoles.participant.name()).append("'");
 	
 		// check access permission
-		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
-		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
-		  .append("     and membership.role").in(OrganisationRoles.administrator,OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name())
-		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
-		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
-		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
-		  .append(" ) or exists (select masterCoachMembership from bgroupmember as masterCoachMembership")
-		  .append("     where masterCoachMembership.group.key=bGroup.key and masterCoachMembership.identity.key=:identityKey")
-		  .append("     and masterCoachMembership.role").in(CurriculumRoles.mastercoach)
-		  .append(" ))");
+		appendCheckAccess(sb);
 
 		if(params.getLifecycle() != null) {
 			sb.append(" and re.lifecycle.key=:lifecycleKey");
@@ -963,6 +963,27 @@ public class LectureBlockRollCallDAO {
 		List<LectureBlockIdentityStatistics> statisticsList = new ArrayList<>(stats.values());
 		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant, countDispensationAsAttendant);
 		return statisticsList;
+	}
+	
+	/**
+	 * Check access to the lecture block as an administrator, lecture manager or owner at the course
+	 * level, as a teacher at the lecture block level or as master coach in relation to the participants
+	 * lecture block,
+	 * 
+	 * @param sb The query builder.
+	 */
+	private void appendCheckAccess(QueryBuilder sb) {
+		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
+		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
+		  .append("     and membership.role").in(OrganisationRoles.administrator,OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name())
+		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
+		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+		  .append(" ) or exists (select masterCoachMembership from bgroupmember as masterCoachMembership")
+		  .append("     where masterCoachMembership.group.key=bGroup.key and masterCoachMembership.identity.key=:identityKey")
+		  .append("     and masterCoachMembership.role").in(CurriculumRoles.mastercoach)
+		  .append(" ))");
 	}
 	
 	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams,
