@@ -3,7 +3,7 @@
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<span class="$localName #if($r.isTrue($isOffline)) o_qti_offline #end"> 
+<span class="$localName#if($r.isTrue($isOffline)) o_qti_offline#end"> 
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<span class="o_error badResponse">$r.translate("error.choice")</span>
 	#end
