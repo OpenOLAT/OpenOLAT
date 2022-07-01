@@ -331,10 +331,12 @@ public class LectureBlockDAO {
 		  .append(" inner join fetch curEl.group curElGroup")
 		  .append(" inner join fetch curEl.curriculum cur")
 		  .append(" left join fetch cur.organisation organis")
-		  .append(" where exists (select v.key from repositoryentry as v")
-		  .append("  inner join v.groups as relGroup")
-		  .append("  inner join lectureentryconfig config on (config.entry.key=v.key)")
-		  .append("  where relGroup.group.key=curElGroup.key and config.lectureEnabled=true")
+		  .append(" where (exists (select v.key from repositoryentry as v")
+		  .append("   inner join v.groups as relGroup")
+		  .append("   inner join lectureentryconfig config on (config.entry.key=v.key)")
+		  .append("   where relGroup.group.key=curElGroup.key and config.lectureEnabled=true")
+		  .append("  )")
+		  .append("  or curEl.lecturesEnabledString='enabled' or curElType.lecturesEnabledString='enabled'")
 		  .append(" )");
 		// generic search
 		Long key = null;

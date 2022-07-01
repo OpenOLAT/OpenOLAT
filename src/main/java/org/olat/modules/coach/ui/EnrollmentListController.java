@@ -240,7 +240,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 		
 		ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesMap = new ConcurrentHashMap<>();
 		if(lectureModule.isEnabled()) {
-			List<LectureBlockStatistics> lectureStats = lectureService.getParticipantLecturesStatistics(student);
+			List<LectureBlockStatistics> lectureStats = lectureService.getParticipantLecturesStatistics(student, null);
 			for(LectureBlockStatistics lectureStat:lectureStats) {
 				IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), lectureStat.getRepoKey());
 				lecturesMap.put(key, lectureStat);
