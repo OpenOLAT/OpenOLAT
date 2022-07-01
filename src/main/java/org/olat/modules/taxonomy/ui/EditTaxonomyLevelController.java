@@ -40,7 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
-import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -75,10 +75,12 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	
 	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	
-	private TabbedPane tabbedPane;
+	private TabbedPaneItem tabbedPane;
 	
-	private TextElement identifierEl, sortOrderEl;
-	private SingleSelection taxonomyLevelTypeEl, pathEl;
+	private TextElement sortOrderEl;
+	private TextElement identifierEl;
+	private SingleSelection pathEl;
+	private SingleSelection taxonomyLevelTypeEl;
 	private FileElement backgroundImageEl;
 	private FileElement teaserImageEl;
 	
@@ -253,11 +255,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			backgroundImageEl.setInitialFile(((LocalFileImpl)backgroundImage).getBasefile());
 		}
 		
-		tabbedPane = new TabbedPane("tabPane", ureq.getLocale());
-		tabbedPane.setDirtyCheck(false);
-		tabbedPane.addListener(this);
-		flc.put("tabPane", tabbedPane);
-		
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		// tabbedPane.setDirtyCheck(false);
+		// tabbedPane.addListener(this);
+
 		List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
 				.map(key -> i18nManager.getLocaleOrNull(key))
 				.filter(Objects::nonNull)
@@ -300,7 +301,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		FormLayoutContainer cont = FormLayoutContainer.createDefaultFormLayout("trans_" + elementSuffix, getTranslator());
 		cont.setRootForm(mainForm);
 		formLayout.add(cont);
-		tabbedPane.addTab(locale.getDisplayLanguage(getLocale()), cont.getFormItemComponent());
+		tabbedPane.addTab(locale.getDisplayLanguage(getLocale()), cont);
 		
 		TextElement displayNameEl = uifactory.addTextElement("level.displayname." + elementSuffix, "level.displayname", 255, displayName, cont);
 		displayNameEl.setElementCssClass("o_sel_taxonomy_level_name");

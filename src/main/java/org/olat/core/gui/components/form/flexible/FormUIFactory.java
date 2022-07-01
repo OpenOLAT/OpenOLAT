@@ -29,6 +29,7 @@ import java.io.File;
 import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
@@ -97,6 +98,7 @@ import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -1484,6 +1486,14 @@ public class FormUIFactory {
 			formLayout.add(link);
 		}
 		return link;
+	}
+	
+	public TabbedPaneItem addTabbedPane(String name, Locale locale, FormItemContainer formLayout) {
+		TabbedPaneItem tabbedPane = new TabbedPaneItem(name, locale);
+		if(formLayout != null) {
+			formLayout.add(tabbedPane);
+		}
+		return tabbedPane;
 	}
 	
 }
