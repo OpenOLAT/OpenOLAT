@@ -222,7 +222,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), levelsToMove, taxonomy);
 		listenTo(moveLevelCtrl);
 		
-		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
+		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)) });
 		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

@@ -92,6 +92,7 @@ import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
@@ -490,21 +491,21 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 
 	@Override
-	public List<GradingAssignmentWithInfos> getGradingAssignmentsWithInfos(GradingAssignmentSearchParameters searchParams) {
+	public List<GradingAssignmentWithInfos> getGradingAssignmentsWithInfos(GradingAssignmentSearchParameters searchParams, Locale locale) {
 		RepositoryEntry referenceEntry = searchParams.getReferenceEntry();
 		List<GradingAssignmentWithInfos> assignmentWithInfos = gradingAssignmentDao.findGradingAssignments(searchParams);
-		loadTaxonomy(referenceEntry, assignmentWithInfos);
+		loadTaxonomy(referenceEntry, assignmentWithInfos, locale);
 		loadCourseElements(assignmentWithInfos);
 		loadAssessedIdentityVisibility(referenceEntry, assignmentWithInfos);
 		return assignmentWithInfos;
 	}
 	
-	private void loadTaxonomy(RepositoryEntry referenceEntry, List<GradingAssignmentWithInfos> rows) {
+	private void loadTaxonomy(RepositoryEntry referenceEntry, List<GradingAssignmentWithInfos> rows, Locale locale) {
 		if(!taxonomyModule.isEnabled()) return;
 		
 		if(referenceEntry != null) {
 			List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(referenceEntry);
-			String levelsToString = taxonomyLevelToString(levels);
+			String levelsToString = taxonomyLevelToString(levels, locale);
 			if(StringHelper.containsNonWhitespace(levelsToString)) {
 				rows.stream().forEach(row -> row.setTaxonomyLevels(levelsToString));
 			}
@@ -517,19 +518,20 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			Map<RepositoryEntryRef,List<TaxonomyLevel>> levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(new ArrayList<>(entryRefs), false);
 			for(GradingAssignmentWithInfos row:rows) {
 				List<TaxonomyLevel> levels = levelsMap.get(row.getReferenceEntry());
-				String levelsToString = taxonomyLevelToString(levels);
+				String levelsToString = taxonomyLevelToString(levels, locale);
 				row.setTaxonomyLevels(levelsToString);
 			}
 		}
 	}
 	
-	private String taxonomyLevelToString(List<TaxonomyLevel> levels) {
+	private String taxonomyLevelToString(List<TaxonomyLevel> levels, Locale locale) {
 		if(levels == null || levels.isEmpty()) return null;
 
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 		StringBuilder sb = new StringBuilder(128);
 		for(TaxonomyLevel level:levels) {
 			if(sb.length() > 0) sb.append(", ");
-			sb.append(level.getDisplayName());
+			sb.append(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level));
 		}
 		return sb.toString();
 	}
@@ -660,7 +662,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			}
 		}
 
-		GraderMailTemplate template = new GraderMailTemplate(subject, body);
+		String language = grader.getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		GraderMailTemplate template = new GraderMailTemplate(subject, body, locale);
 		// test and taxonomy
 		decorateGraderMailTemplate(referenceEntry, template);
 		
@@ -705,17 +709,18 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		StringBuilder taxonomyLevelPath = new StringBuilder();
 		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(referenceEntry);
 
-		String taxonomyLevels = taxonomyLevelToString(new ArrayList<>(levels));
+		String taxonomyLevels = taxonomyLevelToString(new ArrayList<>(levels), template.getLocale());
 		template.setTaxonomyLevel(taxonomyLevels);
 		
 		if(!levels.isEmpty()) {
+			Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, template.getLocale());
 			for(TaxonomyLevel level:levels) {
 				List<TaxonomyLevel> parentLine = taxonomyLevelDao.getParentLine(level, level.getTaxonomy());
 				
 				StringBuilder sb = new StringBuilder(256);
 				for(TaxonomyLevel parent:parentLine) {
 					if(sb.length() > 0) sb.append(" / ");
-					sb.append(parent.getDisplayName());
+					sb.append(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, parent));
 				}
 				
 				if(taxonomyLevelPath.length() > 0) {

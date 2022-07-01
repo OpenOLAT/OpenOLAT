@@ -19,8 +19,11 @@
  */
 package org.olat.upgrade;
 
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -31,11 +34,19 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +64,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_17.0.0";
 	private static final String RE_PUBLIC_VISIBILE_INIT = "RE PUBLIC VISIBILE INIT";
 	private static final String OFFER_TO_ORG_INIT = "OFFER TO ORG INIT";
+	private static final String TAXONOMY_TRANSLATIONS = "TAXONOMY TRANSLATIONS";
 	
 	@Autowired
 	private DB dbInstance;
@@ -65,7 +77,13 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	@Autowired
 	private OrganisationService organisationServics;
 	@Autowired
-	private CatalogManager catalogV1Manager;
+	private I18nModule i18nModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private I18nManager i18nManager;
 	
 	public OLATUpgrade_17_0_0() {
 		super();
@@ -90,6 +108,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		
 		allOk &= initRePublicVisible(upgradeManager, uhd);
 		allOk &= initOfferToOrgs(upgradeManager, uhd);
+		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -268,6 +287,72 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("resourceKey", offer.getResource().getKey())
 				.getResultList().isEmpty();
+	}
+	
+	private boolean initTaxonomyTranslations(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(TAXONOMY_TRANSLATIONS)) {
+			try {
+				log.info("Start taxonomy translations initialization.");
+				initTaxonomyTranslations();
+				log.info("All taxonomy translations initialized.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(TAXONOMY_TRANSLATIONS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	@SuppressWarnings("deprecation")
+	private void initTaxonomyTranslations() {
+		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
+
+		List<TaxonomyLevel> taxonomyLevels = getTaxonomyLevels();
+		
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+			if (taxonomyLevel instanceof TaxonomyLevelImpl) {
+				TaxonomyLevelImpl impl = (TaxonomyLevelImpl)taxonomyLevel;
+				
+				String mediaPath = taxonomyLevelDao.createLevelMediaStorage(taxonomyLevel.getTaxonomy(), taxonomyLevel);
+				impl.setMediaPath(mediaPath);
+				
+				String i18nSuffix = taxonomyService.createI18nSuffix();
+				impl.setI18nSuffix(i18nSuffix);
+				dbInstance.getCurrentEntityManager().merge(impl);
+				
+				String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + i18nSuffix;
+				String displayName = i18nManager.getLocalizedString(BUNDLE_NAME, displayNameKey, null, overlayDefaultLocale, true, false);
+				if (!StringHelper.containsNonWhitespace(displayName)) {
+					I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, displayNameKey, overlayDefaultLocale);
+					i18nManager.saveOrUpdateI18nItem(displayNameItem, impl.getDisplayName());
+				}
+				
+				String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + i18nSuffix;
+				String description = i18nManager.getLocalizedString(BUNDLE_NAME, descriptionKey, null, overlayDefaultLocale, true, false);
+				if (!StringHelper.containsNonWhitespace(description)) {
+					I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, descriptionKey, overlayDefaultLocale);
+					i18nManager.saveOrUpdateI18nItem(descriptionItem, impl.getDescription());
+				}
+				
+				migrationCounter.incrementAndGet();
+				dbInstance.commitAndCloseSession();
+				if (migrationCounter.get() % 100 == 0) {
+					log.info("Init taxonomy translations: num. of taxonomy levels: {}", migrationCounter);
+				}
+			}
+		}
+	}
+
+	private List<TaxonomyLevel> getTaxonomyLevels() {
+		String query = "select level from ctaxonomylevel as level";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, TaxonomyLevel.class)
+			.getResultList();
 	}
 	
 }

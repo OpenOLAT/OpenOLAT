@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
@@ -91,6 +92,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 
 		initForm(ureq);
 		loadModel();
@@ -134,7 +136,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 	private void loadModel() {
 		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(assessedIdentity);
 		List<IdentityCompetenceRow> rows = competences.stream()
-				.map(IdentityCompetenceRow::new)
+				.map(c -> new  IdentityCompetenceRow(c, TaxonomyUIFactory.translateDisplayName(getTranslator(), c.getTaxonomyLevel())))
 				.collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(false, true, true);
@@ -233,7 +235,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 	private void doConfirmRemove(UserRequest ureq, IdentityCompetenceRow row) {
 		String title = translate("remove");
 		String competence = translate(row.getCompetenceType().name());
-		String levelDisplayName = StringHelper.escapeHtml(row.getTaxonomyLevel().getDisplayName());
+		String levelDisplayName = StringHelper.escapeHtml(row.getDisplayName());
 		String text = translate("confirmation.remove.competence", new String[] { competence, levelDisplayName });
 		removeCompentenceConfirmationCtrl = activateOkCancelDialog(ureq, title, text, removeCompentenceConfirmationCtrl);
 		removeCompentenceConfirmationCtrl.setUserObject(row);
@@ -253,7 +255,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 		tableEl.reset(true, true, true);
 		
 		String competenceTypeName = translate(row.getCompetenceType().name());
-		String levelDisplayName = StringHelper.escapeHtml(row.getTaxonomyLevel().getDisplayName());
+		String levelDisplayName = StringHelper.escapeHtml(row.getDisplayName());
 		showInfo("confirm.removed.competence", new String[] { competenceTypeName, levelDisplayName });
 	}
 }

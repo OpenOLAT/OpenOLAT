@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -41,6 +42,7 @@ import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,6 +72,7 @@ public class NewItemOptionsController extends FormBasicController {
 	public NewItemOptionsController(UserRequest ureq, WindowControl wControl,
 			QPoolSecurityCallback qPoolSecurityCallback, boolean ignoreCompetences) {
 		this(ureq, wControl, qPoolSecurityCallback, null, ignoreCompetences);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 	}
 
 	public NewItemOptionsController(UserRequest ureq, WindowControl wControl,
@@ -78,7 +81,7 @@ public class NewItemOptionsController extends FormBasicController {
 		super(ureq, wControl);
 		this.qPoolSecurityCallback = qPoolSecurityCallback;
 		this.selectedTaxonomyLevel = selectedTaxonomyLevel;
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), true, ignoreCompetences);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), true, ignoreCompetences);
 
 		initForm(ureq);
 	}

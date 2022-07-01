@@ -516,9 +516,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		TestCatalogItem catalogItem = createCatalogItem(5);
 		
 		Taxonomy taxonomy = taxonomyService.getTaxonomyList().get(0);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomyLevel1, taxonomy);
-		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);
@@ -561,9 +561,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		TestCatalogItem catalogItem = createCatalogItem(5);
 		
 		Taxonomy taxonomy = taxonomyService.getTaxonomyList().get(0);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomyLevel1, taxonomy);
-		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);

@@ -40,8 +40,8 @@ public class FinalItemsSource extends TaxonomyLevelItemsSource {
 
 	private final boolean isManager;
 	
-	public FinalItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, locale, taxonomyLevel);
+	public FinalItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
+		super(me, roles, locale, taxonomyLevel, displayName);
 		setStatusFilter(QuestionStatus.finalVersion);
 		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		isManager = taxonomyService.hasCompetenceByLevel(taxonomyLevel, me, new Date(), TaxonomyCompetenceTypes.manage);

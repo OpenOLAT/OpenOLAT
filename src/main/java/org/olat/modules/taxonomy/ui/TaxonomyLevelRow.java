@@ -36,6 +36,8 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 
 	private final TaxonomyLevelType type;
 	private final TaxonomyLevel taxonomyLevel;
+	private final String displayName;
+	private final String description;
 	private final Long parentLevelKey;
 	
 	// Only used in import wizard
@@ -45,16 +47,18 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	private FormLink toolsLink;
 	private TaxonomyLevelRow parent;
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, FormLink toolsLink) {
-		this(taxonomyLevel, toolsLink, false);
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String displayName, String description, FormLink toolsLink) {
+		this(taxonomyLevel, displayName, description, toolsLink, false);
 	}
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, boolean isUpdated) {
-		this(taxonomyLevel, null, isUpdated);
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel,String displayName, String description,  boolean isUpdated) {
+		this(taxonomyLevel, displayName, description, null, isUpdated);
 	}
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, FormLink toolsLink, boolean isUpdated) {
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String displayName, String description, FormLink toolsLink, boolean isUpdated) {
 		this.taxonomyLevel = taxonomyLevel;
+		this.displayName = displayName;
+		this.description = description;
 		this.toolsLink = toolsLink;
 		this.isUpdated = isUpdated;
 		parentLevelKey = taxonomyLevel.getParent() == null ? null : taxonomyLevel.getParent().getKey();
@@ -73,7 +77,7 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	
 	@Override
 	public String getCrump() {
-		return taxonomyLevel.getDisplayName();
+		return displayName;
 	}
 	
 	public TaxonomyLevel getTaxonomyLevel() {
@@ -97,7 +101,7 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	}
 	
 	public String getDisplayName() {
-		return taxonomyLevel.getDisplayName();
+		return displayName;
 	}
 	
 	public String getIdentifier() {
@@ -125,7 +129,7 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	}
 	
 	public String getDescription() {
-		return taxonomyLevel.getDescription();
+		return description;
 	}
 	
 	public void incrementNumberOfChildren() {
@@ -160,7 +164,7 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("row[name=").append(taxonomyLevel.getDisplayName() == null ? "" : taxonomyLevel.getDisplayName())
+		sb.append("row[identifier=").append(taxonomyLevel.getIdentifier() == null ? "" : taxonomyLevel.getIdentifier())
 		  .append("]").append(super.toString());
 		return sb.toString();
 	}

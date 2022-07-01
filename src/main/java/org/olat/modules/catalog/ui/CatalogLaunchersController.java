@@ -30,12 +30,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,6 +60,7 @@ public class CatalogLaunchersController extends BasicController {
 
 	protected CatalogLaunchersController(UserRequest ureq, WindowControl wControl, CatalogRepositoryEntrySearchParams defaultSearchParams) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.defaultSearchParams = defaultSearchParams;
 		mainVC = createVelocityContainer("launchers");
 		

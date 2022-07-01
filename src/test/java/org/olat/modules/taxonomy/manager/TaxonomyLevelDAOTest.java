@@ -55,7 +55,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-98", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(level);
@@ -68,7 +68,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createAndLoadTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-100", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "A taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "A taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		TaxonomyLevel reloadedLevel = taxonomyLevelDao.loadByKey(level.getKey());
@@ -84,7 +84,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	public void createAndLoadTaxonomyLevel_withType() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-103", "Typed taxonomy", null, null);
 		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-t", "A type", "Typed", "TYP-T", true, taxonomy);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "A taxonomy level", "A basic level", null, null, null, type, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "A taxonomy level", "A basic level", null, null, null, type, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		TaxonomyLevel reloadedLevel = taxonomyLevelDao.loadByKey(level.getKey());
@@ -100,10 +100,10 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createTaxonomyCompetence_2Level() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-99", "Leveled taxonomy", null, null);
-		TaxonomyLevel rootLevel = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "My root level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel rootLevel = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", random(), "My root level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commit();
 		
-		TaxonomyLevel secondLevel = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", "My second level", "A basic level", null, null, rootLevel, null, taxonomy);
+		TaxonomyLevel secondLevel = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", random(), "My second level", "A basic level", null, null, rootLevel, null, taxonomy);
 		dbInstance.commit();
 		
 		TaxonomyLevel reloadedSecondLevel = taxonomyLevelDao.loadByKey(secondLevel.getKey());
@@ -118,9 +118,9 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void loadTaxonomyLevels_byKeys() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy(random(), random(), null, null);
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel levelOther = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel levelOther = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), random(), null, null, null, null, taxonomy);
 		dbInstance.commit();
 		
 		List<TaxonomyLevel> levels = taxonomyLevelDao.loadLevels(List.of(level1, level2));
@@ -132,7 +132,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getTaxonomyLevels_byTaxonomy() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-99", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-3", "A level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-3", random(), "A level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commit();
 		
 		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(taxonomy);
@@ -143,7 +143,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getTaxonomyLevels_all() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-103", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-4", "A level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-4", random(), "A level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commit();
 		
 		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(null);
@@ -154,11 +154,11 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getParentLine() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-103", "Deeply leveled taxonomy", null, null);
-		TaxonomyLevel level_1 = taxonomyLevelDao.createTaxonomyLevel("L-1", "A level", "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level_2 = taxonomyLevelDao.createTaxonomyLevel("L-2", "A level", "A basic level", null, null, level_1, null, taxonomy);
-		TaxonomyLevel level_3 = taxonomyLevelDao.createTaxonomyLevel("L-3", "A level", "A basic level", null, null, level_2, null, taxonomy);
-		TaxonomyLevel level_4 = taxonomyLevelDao.createTaxonomyLevel("L-4", "A level", "A basic level", null, null, level_3, null, taxonomy);
-		TaxonomyLevel level_5 = taxonomyLevelDao.createTaxonomyLevel("L-5", "A level", "A basic level", null, null, level_4, null, taxonomy);
+		TaxonomyLevel level_1 = taxonomyLevelDao.createTaxonomyLevel("L-1", random(), "A level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level_2 = taxonomyLevelDao.createTaxonomyLevel("L-2", random(), "A level", "A basic level", null, null, level_1, null, taxonomy);
+		TaxonomyLevel level_3 = taxonomyLevelDao.createTaxonomyLevel("L-3", random(), "A level", "A basic level", null, null, level_2, null, taxonomy);
+		TaxonomyLevel level_4 = taxonomyLevelDao.createTaxonomyLevel("L-4", random(), "A level", "A basic level", null, null, level_3, null, taxonomy);
+		TaxonomyLevel level_5 = taxonomyLevelDao.createTaxonomyLevel("L-5", random(), "A level", "A basic level", null, null, level_4, null, taxonomy);
 		dbInstance.commit();
 
 		List<TaxonomyLevel> levels = taxonomyLevelDao.getParentLine(level_5, taxonomy);
@@ -174,11 +174,11 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getDescendants() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-103b", "Deeply leveled taxonomy", null, null);
-		TaxonomyLevel level_1 = taxonomyLevelDao.createTaxonomyLevel("L-1", "A level", "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level_2 = taxonomyLevelDao.createTaxonomyLevel("L-2", "A level", "A basic level", null, null, level_1, null, taxonomy);
-		TaxonomyLevel level_3 = taxonomyLevelDao.createTaxonomyLevel("L-3", "A level", "A basic level", null, null, level_2, null, taxonomy);
-		TaxonomyLevel level_4 = taxonomyLevelDao.createTaxonomyLevel("L-4", "A level", "A basic level", null, null, level_3, null, taxonomy);
-		TaxonomyLevel level_5 = taxonomyLevelDao.createTaxonomyLevel("L-5", "A level", "A basic level", null, null, level_4, null, taxonomy);
+		TaxonomyLevel level_1 = taxonomyLevelDao.createTaxonomyLevel("L-1", random(), "A level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level_2 = taxonomyLevelDao.createTaxonomyLevel("L-2", random(), "A level", "A basic level", null, null, level_1, null, taxonomy);
+		TaxonomyLevel level_3 = taxonomyLevelDao.createTaxonomyLevel("L-3", random(), "A level", "A basic level", null, null, level_2, null, taxonomy);
+		TaxonomyLevel level_4 = taxonomyLevelDao.createTaxonomyLevel("L-4", random(), "A level", "A basic level", null, null, level_3, null, taxonomy);
+		TaxonomyLevel level_5 = taxonomyLevelDao.createTaxonomyLevel("L-5", random(), "A level", "A basic level", null, null, level_4, null, taxonomy);
 		dbInstance.commit();
 
 		List<TaxonomyLevel> levels = taxonomyLevelDao.getDescendants(level_2, taxonomy);
@@ -193,7 +193,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	public void getLevelsByExternalId() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-103", "Externalized taxonomy", null, null);
 		String externalId = UUID.randomUUID().toString();
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("L-1", "A level", "A basic level", externalId, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("L-1", random(), "A level", "A basic level", externalId, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevelsByExternalId(taxonomy, externalId);
@@ -206,7 +206,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	public void getLevelsByDisplayName() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-104", "Named taxonomy", null, null);
 		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("L-1", displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("L-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevelsByDisplayName(taxonomy, displayName);
@@ -216,14 +216,17 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void searchLevelsByDisplayName() {
+	public void searchLevelsByI18nSuffix() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105A", "Named taxonomy", null, null);
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1A", "A basic level", "", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1G", "A complex level", "", null, null, null, null, taxonomy);
+		String i18nSuffix1 = random();
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1A", i18nSuffix1, null, "", null, null, null, null, taxonomy);
+		String i18nSuffix2 = random();
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1G", i18nSuffix2, null, "", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
 		searchParams.setQuickSearch("basic");
+		searchParams.setQuickSearchI18nSuffix(List.of(i18nSuffix1));
 		List<TaxonomyLevel> levels = taxonomyLevelDao.searchLevels(taxonomy, searchParams);
 		Assert.assertNotNull(levels);
 		Assert.assertEquals(1, levels.size());
@@ -234,8 +237,8 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void searchLevelsByKey() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105B", "Named taxonomy", null, null);
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1E", "A numerated level", "", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1F", "A numerated level", "", null, null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1E", random(), "A numerated level", "", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1F", random(), "A numerated level", "", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//key
@@ -251,8 +254,8 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void searchLevelsByExternalId() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105B", "Named taxonomy", null, null);
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1C", "A numerated level", "", "34765", null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1D", "A numerated level", "", "34766", null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1C", random(), "A numerated level", "", "34765", null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1D", random(), "A numerated level", "", "34766", null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//key
@@ -270,13 +273,12 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	public void updateTaxonomyLevel_simple() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105", "Updated taxonomy", null, null);
 		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", random(), displayName, "A basic level", null, null, level1, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		// update the level 2
 		TaxonomyLevel reloadedLevel2 = taxonomyLevelDao.loadByKey(level2.getKey());
-		reloadedLevel2.setDisplayName("Updated");
 		reloadedLevel2.setIdentifier("UU");
 		TaxonomyLevel updatedLevel2 = taxonomyLevelDao.updateTaxonomyLevel(reloadedLevel2);
 		dbInstance.commitAndCloseSession();
@@ -290,16 +292,15 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	public void updateTaxonomyLevel_withChildren() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105", "Updated taxonomy", null, null);
 		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
-		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", displayName, "A basic level", null, null, level2, null, taxonomy);
-		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", displayName, "A basic level", null, null, level3, null, taxonomy);
-		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", random(), displayName, "A basic level", null, null, level1, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", random(), displayName, "A basic level", null, null, level2, null, taxonomy);
+		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", random(), displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", random(), displayName, "A basic level", null, null, level3, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//update the level 2
 		TaxonomyLevel reloadedLevel2 = taxonomyLevelDao.loadByKey(level2.getKey());
-		reloadedLevel2.setDisplayName("Updated");
 		reloadedLevel2.setIdentifier("UBU");
 		TaxonomyLevel updatedLevel2 = taxonomyLevelDao.updateTaxonomyLevel(reloadedLevel2);
 		dbInstance.commitAndCloseSession();
@@ -325,9 +326,9 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	public void moveTaxonomyLevel_simple() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-106", "Moving taxonomy", null, null);
 		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel parentLevel = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A root level", null, null, null, null, taxonomy);
-		TaxonomyLevel targetLevel = taxonomyLevelDao.createTaxonomyLevel("T-1", displayName, "A root level", null, null, null, null, taxonomy);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, parentLevel, null, taxonomy);
+		TaxonomyLevel parentLevel = taxonomyLevelDao.createTaxonomyLevel("U-1", random(), displayName, "A root level", null, null, null, null, taxonomy);
+		TaxonomyLevel targetLevel = taxonomyLevelDao.createTaxonomyLevel("T-1", random(), displayName, "A root level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("U-2", random(), displayName, "A basic level", null, null, parentLevel, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//move the level
@@ -345,13 +346,13 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		// prepare some levels
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-107", "Large moving taxonomy", null, null);
 		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
-		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", displayName, "A basic level", null, null, level2, null, taxonomy);
-		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", displayName, "A basic level", null, null, level3, null, taxonomy);
-		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", displayName, "A basic level", null, null, level3, null, taxonomy);
-		TaxonomyLevel targetLevel1 = taxonomyLevelDao.createTaxonomyLevel("T-1", displayName, "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel targetLevel2 = taxonomyLevelDao.createTaxonomyLevel("T-2", displayName, "A basic level", null, null, targetLevel1, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", random(), displayName, "A basic level", null, null, level1, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", random(), displayName, "A basic level", null, null, level2, null, taxonomy);
+		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", random(), displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", random(), displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel targetLevel1 = taxonomyLevelDao.createTaxonomyLevel("T-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel targetLevel2 = taxonomyLevelDao.createTaxonomyLevel("T-2", random(), displayName, "A basic level", null, null, targetLevel1, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//move the level 2
@@ -382,11 +383,11 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		// prepare some levels
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-107", "Large moving taxonomy", null, null);
 		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
-		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", displayName, "A basic level", null, null, level2, null, taxonomy);
-		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", displayName, "A basic level", null, null, level3, null, taxonomy);
-		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", random(), displayName, "A basic level", null, null, level1, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", random(), displayName, "A basic level", null, null, level2, null, taxonomy);
+		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", random(), displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", random(), displayName, "A basic level", null, null, level3, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//move the level 2

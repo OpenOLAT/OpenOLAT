@@ -23,7 +23,6 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -41,9 +40,6 @@ public interface QuestionItem extends QuestionItemShort {
 	
 	public String getAdditionalInformations();
 		
-	//classification
-	
-	public TaxonomyLevel getTaxonomyLevel();
 	
 	//educational
 	public QEducationalContext getEducationalContext();

@@ -55,6 +55,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -77,6 +78,7 @@ import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.model.UserAssignmentInfos;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -131,6 +133,7 @@ public class PageMetadataController extends BasicController {
 	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Page page, boolean openInEditMode) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.page = page;
 		this.secCallback = secCallback;
 		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
@@ -247,7 +250,7 @@ public class PageMetadataController extends BasicController {
 				List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
 				List<String> competencyNames = new ArrayList<>(competences.size());
 				for(TaxonomyCompetence competence:competences) {
-					competencyNames.add(competence.getTaxonomyLevel().getDisplayName());
+					competencyNames.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), competence.getTaxonomyLevel()));
 				}
 				mainVC.contextPut("pageCompetences", competencyNames);
 			}

@@ -46,7 +46,7 @@ public interface CatalogLauncherHandler {
 
 	public String getEditI18nKey();
 
-	public String getDetails(CatalogLauncher catalogLauncher);
+	public String getDetails(Translator translator, CatalogLauncher catalogLauncher);
 	
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogLauncher catalogLauncher);
 

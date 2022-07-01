@@ -101,6 +101,7 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryManager;
@@ -183,7 +184,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, Boolean canUploadCertificate) {
 		super(ureq, wControl, "cert_statement_list");
-		
+
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
@@ -454,7 +456,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					
 					if (taxonomyRow == null) {
 						taxonomyRow = new CertificateAndEfficiencyStatementRow();
-						taxonomyRow.setDisplayName(taxonomyLevel.getDisplayName());
+						taxonomyRow.setDisplayName(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 						taxonomyRow.setTaxonomy(true);
 						taxonomyRow.setTaxonomyLevel(taxonomyLevel);
 						taxonomyRow.setParentElement(parent);

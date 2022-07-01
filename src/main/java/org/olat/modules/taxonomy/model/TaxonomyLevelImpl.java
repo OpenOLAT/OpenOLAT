@@ -71,6 +71,8 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 	
 	@Column(name="t_identifier", nullable=true, insertable=true, updatable=true)
 	private String identifier;
+	@Column(name="t_i18n_suffix", nullable=true, insertable=true, updatable=true)
+	private String i18nSuffix;
 	@Column(name="t_displayname", nullable=true, insertable=true, updatable=true)
 	private String displayName;
 	@Column(name="t_description", nullable=true, insertable=true, updatable=true)
@@ -82,6 +84,8 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 	
 	@Column(name="t_directory_path", nullable=true, insertable=true, updatable=true)
 	private String directoryPath;
+	@Column(name="t_media_path", nullable=true, insertable=true, updatable=true)
+	private String mediaPath;
 
 	@Column(name="t_m_path_keys", nullable=true, insertable=true, updatable=true)
 	private String materializedPathKeys;
@@ -150,21 +154,30 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 	}
 
 	@Override
+	public String getI18nSuffix() {
+		return i18nSuffix;
+	}
+
+	public void setI18nSuffix(String i18nSuffix) {
+		this.i18nSuffix = i18nSuffix;
+	}
+
+	@Deprecated
 	public String getDisplayName() {
 		return displayName;
 	}
 
-	@Override
+	@Deprecated
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
-	@Override
+	@Deprecated
 	public String getDescription() {
 		return description;
 	}
 
-	@Override
+	@Deprecated
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -195,6 +208,14 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 
 	public void setDirectoryPath(String directoryPath) {
 		this.directoryPath = directoryPath;
+	}
+
+	public String getMediaPath() {
+		return mediaPath;
+	}
+
+	public void setMediaPath(String mediaPath) {
+		this.mediaPath = mediaPath;
 	}
 
 	@Override

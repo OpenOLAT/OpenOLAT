@@ -19,9 +19,13 @@
  */
 package org.olat.modules.catalog.ui;
 
+import java.util.Comparator;
+
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -30,6 +34,16 @@ import org.olat.modules.catalog.CatalogLauncherHandler;
  *
  */
 public class CatalogV2UIFactory {
+	
+	public static Comparator<TaxonomyLevel> getTaxonomyLevelComparator(Translator translator) {
+		return Comparator
+			.comparing(
+					TaxonomyLevel::getSortOrder,
+					Comparator.nullsLast(Comparator.reverseOrder()))
+			.thenComparing(Comparator.comparing(
+					level -> TaxonomyUIFactory.translateDisplayName(translator, level),
+					Comparator.nullsLast(Comparator.reverseOrder())));
+	}
 
 	public static String translateLauncherName(Translator translator, CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {
 		if (catalogLauncher == null) return translator.translate(handler.getTypeI18nKey());

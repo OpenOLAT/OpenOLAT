@@ -35,11 +35,20 @@ import org.olat.core.gui.translator.Translator;
 public class KeyTranslator implements Translator {
 	
 	private Locale locale;
+	private String prefix;
 	
 	public KeyTranslator(Locale locale) {
 		this.locale = locale;
 	}
 	
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
 	@Override
 	public Locale getLocale() {
 		return locale;
@@ -57,21 +66,21 @@ public class KeyTranslator implements Translator {
 
 	@Override
 	public String translate(String key) {
-		return key;
+		return prefix != null? prefix + key: key;
 	}
 
 	@Override
 	public String translate(String key, String... args) {
-		return key;
+		return translate(key);
 	}
 
 	@Override
 	public String translate(String key, String[] args, Level missingTranslationLogLevel) {
-		return key;
+		return translate(key);
 	}
 
 	@Override
 	public String translate(String key, String[] args, int recursionLevel, boolean fallBackToDefaultLocale) {
-		return key;
+		return translate(key);
 	}
 }

@@ -44,6 +44,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,7 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 		if (StringHelper.isLong(config)) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(config));
 			if (taxonomyLevel != null) {
-				return taxonomyLevel.getDisplayName();
+				return TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel);
 			}
 		}
 		return "-";
@@ -133,18 +134,19 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 		List<TaxonomyLevel> descendants = taxonomyLevelDao.getDescendants(taxonomyLevel, taxonomyLevel.getTaxonomy());
 		TaxonomyLevelUserObject taxonomyLevelUserObject = new TaxonomyLevelUserObject(catalogFilter.getKey().toString(), descendants);
 		
-		SelectionValues taxonomyValues = getTaxonomyLevelsSV(taxonomyLevel, descendants);
+		SelectionValues taxonomyValues = getTaxonomyLevelsSV(translator, taxonomyLevel, descendants);
 		FlexiTableMultiSelectionFilter flexiTableFilter = new FlexiTableMultiSelectionFilter(
-				taxonomyLevel.getDisplayName(), TYPE, taxonomyValues, catalogFilter.isDefaultVisible());
+				TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel), TYPE, taxonomyValues,
+				catalogFilter.isDefaultVisible());
 		flexiTableFilter.setUserObject(taxonomyLevelUserObject);
 		return flexiTableFilter;
 	}
 	
-	private SelectionValues getTaxonomyLevelsSV(TaxonomyLevel taxonomyLevel, List<TaxonomyLevel> descendants) {
+	private SelectionValues getTaxonomyLevelsSV(Translator translator, TaxonomyLevel taxonomyLevel, List<TaxonomyLevel> descendants) {
 		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level: descendants) {
 			List<String> names = new ArrayList<>();
-			addParentNames(names, level, taxonomyLevel);
+			addParentNames(translator, names, level, taxonomyLevel);
 			Collections.reverse(names);
 			String value = String.join(" / ", names);
 			keyValues.add(entry(level.getKey().toString(), value));
@@ -153,11 +155,11 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 		return keyValues;
 	}
 	
-	private void addParentNames(List<String> names, TaxonomyLevel level, TaxonomyLevel topLevel) {
-		names.add(level.getDisplayName());
+	private void addParentNames(Translator translator, List<String> names, TaxonomyLevel level, TaxonomyLevel topLevel) {
+		names.add(TaxonomyUIFactory.translateDisplayName(translator, level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null && !parent.equals(topLevel)) {
-			addParentNames(names, parent, topLevel);
+			addParentNames(translator, names, parent, topLevel);
 		}
 	}
 

@@ -23,6 +23,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,9 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
@@ -55,6 +59,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyCompetenceRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelTypeRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -73,11 +78,15 @@ public class TaxonomyWebService {
 	private final Taxonomy taxonomy;
 	private final BaseSecurity securityManager;
 	private final TaxonomyService taxonomyService;
+	private final I18nModule i18nModule;
+	private final I18nManager i18nManager;
 	
 	public TaxonomyWebService(Taxonomy taxonomy) {
 		this.taxonomy = taxonomy;
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 	}
 	
 	/**
@@ -153,6 +162,7 @@ public class TaxonomyWebService {
 			parentLevel = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(levelVo.getParentKey()));
 		}
 		
+		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
 		TaxonomyLevel level;
 		if(levelVo.getKey() != null) {
 			level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(levelVo.getKey()));
@@ -160,10 +170,12 @@ public class TaxonomyWebService {
 				level.setIdentifier(levelVo.getIdentifier());
 			}
 			if(levelVo.getDisplayName() != null) {
-				level.setDisplayName(levelVo.getDisplayName());
+				I18nItem displayNameItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DISPLAY_NAME + level.getI18nSuffix(), overlayDefaultLocale);
+				i18nManager.saveOrUpdateI18nItem(displayNameItem, levelVo.getDisplayName());
 			}
 			if(levelVo.getDescription() != null) {
-				level.setDescription(levelVo.getDescription());
+				I18nItem descriptionItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DESCRIPTION + level.getI18nSuffix(), overlayDefaultLocale);
+				i18nManager.saveOrUpdateI18nItem(descriptionItem, levelVo.getDescription());
 			}
 			if(levelVo.getExternalId() != null) {
 				level.setExternalId(levelVo.getExternalId());
@@ -177,14 +189,17 @@ public class TaxonomyWebService {
 			}
 			level = taxonomyService.updateTaxonomyLevel(level);
 		} else {
-			level = taxonomyService.createTaxonomyLevel(levelVo.getIdentifier(), levelVo.getDisplayName(),
-				levelVo.getDescription(), levelVo.getExternalId(), TaxonomyLevelManagedFlag.toEnum(levelVo.getManagedFlags()),
-				parentLevel, taxonomy);
+			level = taxonomyService.createTaxonomyLevel(levelVo.getIdentifier(), taxonomyService.createI18nSuffix(),
+					levelVo.getExternalId(), TaxonomyLevelManagedFlag.toEnum(levelVo.getManagedFlags()), parentLevel, taxonomy);
 			if(levelVo.getTypeKey() != null) {
 				TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(levelVo.getTypeKey()));
 				level.setType(type);
 				level = taxonomyService.updateTaxonomyLevel(level);
 			}
+			I18nItem displayNameItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DISPLAY_NAME + level.getI18nSuffix(), overlayDefaultLocale);
+			i18nManager.saveOrUpdateI18nItem(displayNameItem, levelVo.getDisplayName());
+			I18nItem descriptionItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DESCRIPTION + level.getI18nSuffix(), overlayDefaultLocale);
+			i18nManager.saveOrUpdateI18nItem(descriptionItem, levelVo.getDescription());
 		}
 		
 		if((level.getParent() != null &&  levelVo.getParentKey() == null)

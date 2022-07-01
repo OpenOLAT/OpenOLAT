@@ -1,16 +1,15 @@
-<div class="o_catalog_taxonomy_header o_catalog_header_item #if($cssClass)$cssClass#end">
+<div class="o_catalog_taxonomy_header o_catalog_header_item #if($cssClass)$cssClass#end #if($bgImageUrl)o_header_bg_image#end" #if($bgImageUrl) style="background-image:url($bgImageUrl)" #end>
 	<div class="o_taxonomy_block">
-		<div class="o_taxonomy">
-			<div class="o_flex_block_one_line_left">
+		<div class="o_taxonomy o_nowrap">
+			<div class="o_tax_title o_nowrap">
 				<h3 class="o_flex_item_max">$displayName</h3>
 			</div>
 			#if($typeDisplayName)
-				<div class="o_flex_block_one_line_left">
-					<div class="o_flex_item_max">
-						$typeDisplayName
-					</div>
+				<div class="o_tax_sub_title o_nowrap">
+					$typeDisplayName
 				</div>
 			#end
 		</div>
+		<div></div>
 	</div>
 </div>

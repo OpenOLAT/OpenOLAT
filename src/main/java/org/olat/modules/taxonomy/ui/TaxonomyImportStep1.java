@@ -91,7 +91,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 		private TextAreaElement importDataElement;
 		
 		private ExcelMediaResource importTemplate;
-		private int importColumns;
 		
 		@Autowired
 		private TaxonomyService taxonomyService;
@@ -160,37 +159,31 @@ public class TaxonomyImportStep1 extends BasicStep {
 			StringBuilder dataRow2 = new StringBuilder();
 			
 			// Add columns
-			importColumns = 0;
 			
 			// Path
 			headerRow.append(translate("taxonomy.level.path")).append("\t");
 			dataRow1.append("/MATH").append("\t");
 			dataRow2.append("/MATH/GEO").append("\t");
-			importColumns++;
 			
 			// Display name
 			headerRow.append(translate("level.displayname")).append("\t");
 			dataRow1.append("Mathematik").append("\t");
 			dataRow2.append("Geometrie").append("\t");
-			importColumns++;
 			
 			// Type
 			headerRow.append(translate("level.type")).append("\t");
 			dataRow1.append("F").append("\t");
 			dataRow2.append("K").append("\t");
-			importColumns++;
 			
 			// Sort order
 			headerRow.append(translate("level.sort.order")).append("\t");
 			dataRow1.append("").append("\t");
 			dataRow2.append("").append("\t");
-			importColumns++;
 			
 			// Description
 			headerRow.append(translate("level.description")).append("\t");
 			dataRow1.append("").append("\t");
 			dataRow2.append("").append("\t");
-			importColumns++;
 			
 			// Concatenate header and data row
 			StringBuilder writeToFile = new StringBuilder();
@@ -201,6 +194,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 			return emr;
 		}
 		
+		@SuppressWarnings("deprecation")
 		private boolean validateExcelInput(TextAreaElement inputEl) {
 			boolean allOk = validateFormItem(inputEl);
 			
@@ -315,8 +309,10 @@ public class TaxonomyImportStep1 extends BasicStep {
 					continue;
 				}
 				
-				currentLevel.setDisplayName(displayName);
-				currentLevel.setDescription(description);
+				if (currentLevel instanceof TaxonomyLevelImpl) {
+					((TaxonomyLevelImpl)currentLevel).setDisplayName(displayName);
+					((TaxonomyLevelImpl)currentLevel).setDescription(description);
+				}
 				currentLevel.setSortOrder(order);
 				currentLevel.setType(currentLevelType);
 				
@@ -330,7 +326,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 					newLevelTypes.add(currentLevelType);
 				}
 				
-				reviewList.add(new TaxonomyLevelRow(currentLevel, currentLevel.getKey() != null));
+				reviewList.add(new TaxonomyLevelRow(currentLevel, displayName, description, currentLevel.getKey() != null));
 			}
 			
 			context.setReviewList(reviewList);

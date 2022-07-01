@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,12 +65,16 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.modules.taxonomy.ui.TaxonomyTreeTableModel.TaxonomyLevelCols;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
@@ -111,6 +116,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 
 	public TaxonomyTreeTableController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
 		super(ureq, wControl, "admin_taxonomy_levels");
@@ -189,6 +198,15 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private void loadModel(boolean resetPage, boolean resetInternal) {
 		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
 		searchParams.setQuickSearch(tableEl.getQuickSearchString());
+		Set<String> quickSearchI18nSuffix = i18nManager.findI18nKeysByOverlayValue(
+						tableEl.getQuickSearchString(),
+						TaxonomyUIFactory.PREFIX_DISPLAY_NAME,
+						getLocale(),
+						TaxonomyUIFactory.BUNDLE_NAME).stream()
+				.map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
+				.collect(Collectors.toSet());
+		searchParams.setQuickSearchI18nSuffix(quickSearchI18nSuffix);
+		
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy, searchParams);
 		List<TaxonomyLevelRow> rows = new ArrayList<>(taxonomyLevels.size());
 		Map<Long,TaxonomyLevelRow> levelToRows = new HashMap<>();
@@ -220,7 +238,9 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		//tools
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, toolsLink);
+		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
+		String description = TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel);
+		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, displayName, description, toolsLink);
 		toolsLink.setUserObject(row);
 		return row;
 	}
@@ -432,9 +452,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private class FinishedCallback implements StepRunnerCallback {
-	    @Override
+	    @SuppressWarnings("deprecation")
+		@Override
 	    public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 	        TaxonomyImportContext context = (TaxonomyImportContext) runContext.get(TaxonomyImportContext.CONTEXT_KEY);
+	        Locale defaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
 	         
 	        // Collect the created types for the next step
 	        List<TaxonomyLevelType> createdTypes = new ArrayList<>();
@@ -456,8 +478,16 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		        		parent = createdLevels.stream().filter(level -> level.getIdentifier().equals(newLevel.getParent().getIdentifier())).collect(Collectors.toList()).get(0);
 		        	}
 	        	}
-	        	TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), newLevel.getDisplayName(), newLevel.getDescription(), null, null, parent, context.getTaxonomy());
-	        	createdLevel.setSortOrder(newLevel.getSortOrder());
+				
+				
+				TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), taxonomyService.createI18nSuffix(), null, null, parent, context.getTaxonomy());
+				if (newLevel instanceof TaxonomyLevelImpl) {
+					I18nItem displayNameItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DISPLAY_NAME + createdLevel.getI18nSuffix(), defaultLocale);
+					i18nManager.saveOrUpdateI18nItem(displayNameItem, ((TaxonomyLevelImpl)newLevel).getDisplayName());
+					I18nItem descriptionItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DESCRIPTION + createdLevel.getI18nSuffix(), defaultLocale);
+					i18nManager.saveOrUpdateI18nItem(descriptionItem, ((TaxonomyLevelImpl)newLevel).getDescription());
+				}
+				createdLevel.setSortOrder(newLevel.getSortOrder());
 	        	
 	        	if (newLevel.getType() != null) {
 	        		TaxonomyLevelType levelType = null;
@@ -521,7 +551,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			WindowControl bwControl = addToHistory(ureq, ores, null);
 			TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, taxonomyLevel);
 			listenTo(detailsLevelCtrl);
-			stackPanel.pushController(taxonomyLevel.getDisplayName(), detailsLevelCtrl);
+			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
+			stackPanel.pushController(displayName, detailsLevelCtrl);
 			return detailsLevelCtrl;
 		}
 	}

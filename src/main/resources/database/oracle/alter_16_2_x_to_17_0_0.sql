@@ -24,6 +24,12 @@ create index idx_offer_guest_idx on o_ac_offer (guest_access);
 create index idx_offer_open_idx on o_ac_offer (open_access);
 
 alter table o_repositoryentry add publicvisible number default 0 not null;
+alter table o_repositoryentry add status_published_date date;
+
+-- Taxonomy
+alter table o_tax_taxonomy_level add t_i18n_suffix varchar2(64);
+alter table o_tax_taxonomy_level add t_media_path varchar2(255);
+alter table o_tax_taxonomy_level modify t_displayname null;
 
 
 -- Catalog V2
@@ -50,7 +56,6 @@ create table o_ca_filter (
    primary key (id)
 );
 
-alter table o_repositoryentry add status_published_date date;
 
 -- Practice
 alter table o_qti_assessmentitem_session add q_attempts number(20) default null;

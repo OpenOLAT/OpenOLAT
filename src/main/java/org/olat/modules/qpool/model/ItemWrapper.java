@@ -28,6 +28,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -51,7 +52,7 @@ public class ItemWrapper implements QuestionItemView {
 	private String additionalInformations;
 	private String language;
 	
-	private String taxonomyLevel;
+	private TaxonomyLevel taxonomyLevel;
 	private String taxonomyPath;
 	private String educationalContextLevel;
 	private String educationalLearningTime;
@@ -200,7 +201,7 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
-	public String getTaxonomyLevelName() {
+	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
 	}
 
@@ -349,7 +350,7 @@ public class ItemWrapper implements QuestionItemView {
 			itemWrapper.additionalInformations = item.getAdditionalInformations();
 			itemWrapper.language = item.getLanguage();
 			
-			itemWrapper.taxonomyLevel = item.getTaxonomyLevelName();
+			itemWrapper.taxonomyLevel = item.getTaxonomyLevel();
 			itemWrapper.taxonomyPath = item.getTaxonomicPath();
 			itemWrapper.educationalContextLevel = item.getEducationalContextLevel();
 			itemWrapper.educationalLearningTime = item.getEducationalLearningTime();

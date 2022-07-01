@@ -143,14 +143,6 @@ public class ManifestMetadataItemized implements QuestionItem, QuestionItemEdita
 	}
 
 	@Override
-	public String getTaxonomyLevelName() {
-		if(taxonomyLevel != null) {
-			return taxonomyLevel.getDisplayName();
-		}
-		return metadataBuilder.getClassificationTaxonomy();
-	}
-
-	@Override
 	public String getTaxonomicPath() {
 		if(taxonomyLevel != null) {
 			return taxonomyLevel.getMaterializedPathIdentifiers();

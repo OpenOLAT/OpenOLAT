@@ -41,6 +41,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -49,6 +50,7 @@ import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
@@ -95,6 +97,7 @@ public class InfoMetadataController extends StepFormBasicController {
 			String educationalTypeIdentifier) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setBasePackage(RepositoryService.class);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		entry = (RepositoryEntry) getFromRunContext("repoEntry");
 		
 		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
@@ -165,7 +168,7 @@ public class InfoMetadataController extends StepFormBasicController {
 	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
 		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
 
-		SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
+		SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
 		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
 				keyValues.keys(), keyValues.values(), null, null);
 		if (context.getTaxonomyLevelRefs() != null) {

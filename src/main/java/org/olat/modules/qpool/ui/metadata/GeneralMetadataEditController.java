@@ -48,6 +48,7 @@ import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
@@ -81,6 +82,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item, MetadataSecurityCallback securityCallback,
 			boolean ignoreCompetences, boolean wideLayout) {
 		super(ureq, wControl, wideLayout ? LAYOUT_DEFAULT : LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.qPoolSecurityCallback = qPoolSecurityCallback;
@@ -150,7 +152,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	}
 
 	private void buildTaxonomyLevelEl() {
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), securityCallback.canRemoveTaxonomy(), ignoreCompetences);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), securityCallback.canRemoveTaxonomy(), ignoreCompetences);
 		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
 		taxonomyLevelEl.setKeysAndValues(selectableKeys, selectableValues, null);
@@ -168,7 +170,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 					selectableKeys = new String[] {"dummy"};
 					selectableValues = new String[1];
 				}
-				selectableValues[0] = selectedTaxonomyLevel.getDisplayName();
+				selectableValues[0] = TaxonomyUIFactory.translateDisplayName(getTranslator(), selectedTaxonomyLevel);
 				taxonomyLevelEl.setEnabled(false);
 			}
 		}

@@ -52,15 +52,17 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 	
 	private final QPoolSecurityCallback securityCallback;
 	private final TaxonomyLevel taxonomyLevel;
+	private final String displayName;
 
 	public MyTaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			TaxonomyLevel taxonomyLevel) {
+			TaxonomyLevel taxonomyLevel, String displayName) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
+		this.displayName = displayName;
 		
-		setTitle(taxonomyLevel.getDisplayName());
+		setTitle(displayName);
 		TaxonomyLevelType type = taxonomyLevel.getType();
 		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 			setIconCssClass(type.getCssClass());
@@ -74,7 +76,7 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 		if (questionsCtrl == null) {
 			QuestionItemsSource source = new MyTaxonomyLevelItemsSource(
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
-					taxonomyLevel);
+					taxonomyLevel, displayName);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(MY_TAX_LEVEL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,

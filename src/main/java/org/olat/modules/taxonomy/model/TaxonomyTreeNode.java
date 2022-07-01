@@ -57,9 +57,9 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 		nodeType = type;
 	}
 	
-	public TaxonomyTreeNode(Taxonomy taxonomy, TaxonomyLevel taxonomyLevel, TaxonomyTreeNodeType type) {
+	public TaxonomyTreeNode(Taxonomy taxonomy, TaxonomyLevel taxonomyLevel, String levelDisplyName, TaxonomyTreeNodeType type) {
 		super(taxonomyLevel.getKey().toString());
-		setTitle(taxonomyLevel.getDisplayName());
+		setTitle(levelDisplyName);
 		this.taxonomy = taxonomy;
 		this.taxonomyLevel = taxonomyLevel;
 		setUserObject(taxonomyLevel);

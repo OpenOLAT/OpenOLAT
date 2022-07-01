@@ -365,7 +365,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	
 	private void loadModel() {
 		GradingAssignmentSearchParameters searchParams = getSearchParameters();
-		List<GradingAssignmentWithInfos> assignments = gradingService.getGradingAssignmentsWithInfos(searchParams);
+		List<GradingAssignmentWithInfos> assignments = gradingService.getGradingAssignmentsWithInfos(searchParams, getLocale());
 		List<GradingAssignmentRow> rows = assignments.stream()
 				.map(this::forgeRow).
 				collect(Collectors.toList());

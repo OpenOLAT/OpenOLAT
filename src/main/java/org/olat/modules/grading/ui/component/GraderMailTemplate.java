@@ -64,6 +64,7 @@ public class GraderMailTemplate extends MailTemplate {
 			COURSE_ELEMENT_TITLE, COURSE_ELEMENT_SHORT_TITLE, TEST_NAME, TEST_TITLE, TEST_REFERENCE, TEST_TAXONOMY,
 			TEST_TAXONOMY_PATH, ASSESSMENT_DATE, CORRECTION_URL);
 
+	private final Locale locale;
 	private Date assessmentDate;
 	private RepositoryEntry entry;
 	private CourseNode courseNode;
@@ -75,28 +76,30 @@ public class GraderMailTemplate extends MailTemplate {
 	private String taxonomyLevel;
 	private String taxonomyLevelPath;
 	
-	public GraderMailTemplate(String subject, String body) {
+	public GraderMailTemplate(String subject, String body, Locale locale) {
 		super(subject, body, null);
+		this.locale = locale;
 	}
 	
-	private GraderMailTemplate(String templateName, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
+	private GraderMailTemplate(String templateName, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry, Locale locale) {
 		super(null, null, null);
 		setTemplateName(templateName);
 		this.entry = entry;
 		this.courseNode = courseNode;
 		this.referenceEntry = referenceEntry;
+		this.locale = locale;
 	}
 	
 	public static final GraderMailTemplate empty(Translator translator, RepositoryEntry entry, CourseNode courseNode,
 			RepositoryEntry referenceEntry) {
-		return new GraderMailTemplate(translator.translate("template.empty"), entry, courseNode, referenceEntry);
+		return new GraderMailTemplate(translator.translate("template.empty"), entry, courseNode, referenceEntry, translator.getLocale());
 	}
 	
 	public static final GraderMailTemplate graderTo(Translator translator, RepositoryEntry entry, CourseNode courseNode,
 			RepositoryEntry referenceEntry) {
 		
 		String templateName = translator.translate("template.grader.to");
-		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry, translator.getLocale());
 		template.setSubjectTemplate(translator.translate("mail.grader.to.entry.subject"));
 		template.setBodyTemplate(translator.translate("mail.grader.to.entry.body"));
 		return template;
@@ -115,7 +118,7 @@ public class GraderMailTemplate extends MailTemplate {
 			RepositoryEntry referenceEntry) {
 		
 		String templateName = translator.translate("template.participant");
-		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry, translator.getLocale());
 		template.setSubjectTemplate(translator.translate("mail.notification.participant.subject"));
 		String body = translator.translate("mail.notification.participant.body");
 		template.setBodyTemplate(body);
@@ -129,7 +132,7 @@ public class GraderMailTemplate extends MailTemplate {
 			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
 		
 		String templateName = translator.translate("template.notification");
-		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry, translator.getLocale());
 		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationSubject())) {
 			template.setSubjectTemplate(configuration.getNotificationSubject());
 		} else {
@@ -147,7 +150,7 @@ public class GraderMailTemplate extends MailTemplate {
 			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
 		
 		String templateName = translator.translate("template.reminder1");
-		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry, translator.getLocale());
 		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getFirstReminderSubject())) {
 			template.setSubjectTemplate(configuration.getFirstReminderSubject());
 		} else {
@@ -165,7 +168,7 @@ public class GraderMailTemplate extends MailTemplate {
 			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
 		
 		String templateName = translator.translate("template.reminder2");
-		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry, translator.getLocale());
 		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getSecondReminderSubject())) {
 			template.setSubjectTemplate(configuration.getSecondReminderSubject());
 		} else {
@@ -181,6 +184,10 @@ public class GraderMailTemplate extends MailTemplate {
 	
 	public static Collection<String> variableNames() {
 		return VARIABLE_NAMES;
+	}
+
+	public Locale getLocale() {
+		return locale;
 	}
 
 	public Date getAssessmentDate() {

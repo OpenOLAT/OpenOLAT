@@ -22,6 +22,7 @@ package org.olat.modules.grading;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -147,7 +148,7 @@ public interface GradingService {
 	
 	public GradingAssignment getGradingAssignment(RepositoryEntryRef testEntry, AssessmentEntry entry);
 	
-	public List<GradingAssignmentWithInfos> getGradingAssignmentsWithInfos(GradingAssignmentSearchParameters searchParams);
+	public List<GradingAssignmentWithInfos> getGradingAssignmentsWithInfos(GradingAssignmentSearchParameters searchParams, Locale locale);
 	
 	public GradingAssignment assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, Date AssessmentDate, boolean updateAssessmentDate);
 	

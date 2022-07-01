@@ -40,6 +40,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -56,6 +57,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyVFSSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,6 +86,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 	
 	public DocumentPoolMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isTaxonomyAdmin = roles.isAdministrator() || roles.isSystemAdmin();
@@ -253,7 +256,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			WindowControl bwControl = addToHistory(ureq, ores, null);
 			DocumentPoolLevelController levelCtrl = new DocumentPoolLevelController(ureq, bwControl, level, node, secCallback);
 			listenTo(levelCtrl);
-			String displayName = level.getDisplayName();
+			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
 			
 			content.popUpToRootController(ureq);
 			List<TreeNode> parentLines = TreeHelper.getTreePath(node);

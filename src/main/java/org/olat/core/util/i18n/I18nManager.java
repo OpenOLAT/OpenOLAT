@@ -46,10 +46,12 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -506,15 +508,7 @@ public class I18nManager {
 			boolean includeBundlesChildren) {
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		List<I18nItem> foundTranslationItems = new LinkedList<>();
-		searchString = searchString.toLowerCase();
-		String[] parts = searchString.split("\\*");
-		// Build pattern
-		String regexpSearchString = "^.*";
-		for (String part : parts) {
-			regexpSearchString += Pattern.quote(part) + ".*";
-		}
-		regexpSearchString += "$";
-		Pattern p = Pattern.compile(regexpSearchString, Pattern.MULTILINE);
+		Pattern p = makeFuzzySearchPattern(searchString);
 		// Search in all bundles and keys for that pattern
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
@@ -535,6 +529,19 @@ public class I18nManager {
 			}
 		}
 		return foundTranslationItems;
+	}
+
+	private Pattern makeFuzzySearchPattern(String searchString) {
+		searchString = searchString.toLowerCase();
+		String[] parts = searchString.split("\\*");
+		// Build pattern
+		String regexpSearchString = "^.*";
+		for (String part : parts) {
+			regexpSearchString += Pattern.quote(part) + ".*";
+		}
+		regexpSearchString += "$";
+		Pattern p = Pattern.compile(regexpSearchString, Pattern.MULTILINE);
+		return p;
 	}
 
 	/**
@@ -575,6 +582,74 @@ public class I18nManager {
 			}
 		}
 		return foundTranslationItems;
+	}
+	
+	/**
+	 * Searches in overlay translations for the searchString.
+	 * The search happens in searchLocale and if in the default locale as a fallback.
+	 */
+	public Set<String> findI18nKeysByOverlayValue(String searchString, String keyPrefix, Locale searchLocale, String limitToBundleName) {
+		Locale overlayLocale = i18nModule.getOverlayLocales().get(searchLocale);
+		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
+		
+		Map<String, TranslationValues> keyToTranslationValues = new HashMap<>();
+		Properties overlayProperties = getPropertiesWithoutResolvingRecursively(overlayLocale, limitToBundleName);
+		for (Entry<Object, Object> entry : overlayProperties.entrySet()) {
+			String key = (String)entry.getKey();
+			if (key.startsWith(keyPrefix)) {
+				String value = (String)entry.getValue();
+				TranslationValues translationValues = new TranslationValues();
+				translationValues.setOverlayValue(value);
+				keyToTranslationValues.put(key, translationValues);
+			}
+		}
+		Properties overlayDefaultProperties = getPropertiesWithoutResolvingRecursively(overlayDefaultLocale, limitToBundleName);
+		for (Entry<Object, Object> entry : overlayDefaultProperties.entrySet()) {
+			String key = (String)entry.getKey();
+			if (key.startsWith(keyPrefix)) {
+				String value = (String)entry.getValue();
+				TranslationValues translationValues = keyToTranslationValues.computeIfAbsent(key, k -> new TranslationValues());
+				translationValues.setOverlayDefaultValue(value);
+			}
+		}
+		
+		Pattern p = makeFuzzySearchPattern(searchString);
+		Set<String> matchingKeys = new HashSet<>();
+		for (Entry<String, TranslationValues> entry : keyToTranslationValues.entrySet()) {
+			TranslationValues translationValues = entry.getValue();
+			String value = translationValues.getOverlayValue() != null
+					? translationValues.getOverlayValue()
+					: translationValues.getOverlayDefaultValue();
+			Matcher m = p.matcher(value.toLowerCase());
+			if (m.find()) {
+				matchingKeys.add(entry.getKey());
+			}
+		}
+		
+		return matchingKeys;
+	}
+	
+	private static final class TranslationValues {
+		
+		private String overlayDefaultValue;
+		private String overlayValue;
+		
+		public String getOverlayDefaultValue() {
+			return overlayDefaultValue;
+		}
+		
+		public void setOverlayDefaultValue(String overlayDefaultValue) {
+			this.overlayDefaultValue = overlayDefaultValue;
+		}
+		
+		public String getOverlayValue() {
+			return overlayValue;
+		}
+		
+		public void setOverlayValue(String overlayValue) {
+			this.overlayValue = overlayValue;
+		}
+		
 	}
 
 	/**

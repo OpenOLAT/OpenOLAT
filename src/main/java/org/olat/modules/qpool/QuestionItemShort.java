@@ -25,6 +25,7 @@ import java.util.Date;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -48,11 +49,7 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	public String getKeywords();
 	
 	//classification
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getTaxonomyLevelName();
+	public TaxonomyLevel getTaxonomyLevel();
 	
 	public String getTaxonomicPath();
 	

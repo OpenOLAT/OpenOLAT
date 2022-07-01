@@ -72,6 +72,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -528,18 +529,18 @@ public class QualityUIFactory {
 		return null;
 	}
 	
-	public static void addParentTaxonomyLevelNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
+	public static void addParentTaxonomyLevelNames(Translator translator, List<String> names, TaxonomyLevel level) {
+		names.add(TaxonomyUIFactory.translateDisplayName(translator, level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
-			addParentTaxonomyLevelNames(names, parent);
+			addParentTaxonomyLevelNames(translator, names, parent);
 		}
 	}
 	
-	public static String getIntendedTaxonomyLevel(TaxonomyLevel level) {
+	public static String getIntendedTaxonomyLevel(Translator translator, TaxonomyLevel level) {
 		StringBuilder sb = new StringBuilder();
 		computeIntendentionForTaxonomyLevel(sb, level);
-		return sb.append(level.getDisplayName()).toString();
+		return sb.append(TaxonomyUIFactory.translateDisplayName(translator, level)).toString();
 	}
 	
 	private static StringBuilder computeIntendentionForTaxonomyLevel(StringBuilder intendation, TaxonomyLevel level) {

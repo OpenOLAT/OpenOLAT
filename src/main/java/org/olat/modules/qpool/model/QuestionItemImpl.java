@@ -271,14 +271,6 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 	}
 
 	@Override
-	public String getTaxonomyLevelName() {
-		if(taxonomyLevel != null) {
-			return taxonomyLevel.getDisplayName();
-		}
-		return null;
-	}
-
-	@Override
 	public QEducationalContext getEducationalContext() {
 		return educationalContext;
 	}

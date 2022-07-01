@@ -37,15 +37,22 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	private Taxonomy taxonomy;
 	private TaxonomyLevel taxonomyLevel;
+	private String displayName;
+	private String description;
 	
 	private FormLink detailsLink;
 	
 	private Translator translator;
 	
-	public CompetenceBrowserTableRow(CompetenceBrowserTableRow parent, Taxonomy taxonomy, TaxonomyLevel taxonomyLevel) {
-		this.parent = parent;
+	public CompetenceBrowserTableRow(Taxonomy taxonomy) {
+		this.taxonomy = taxonomy;
+	}
+	
+	public CompetenceBrowserTableRow(Taxonomy taxonomy, TaxonomyLevel taxonomyLevel, String displayName, String description) {
 		this.taxonomy = taxonomy;
 		this.taxonomyLevel = taxonomyLevel;
+		this.displayName = displayName;
+		this.description = description;
 	}
 	
 	public CompetenceBrowserTableRow(Translator translator) {
@@ -54,10 +61,9 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public String getTaxonomyOrLevel() {
 		if (taxonomyLevel != null) {
-			return taxonomyLevel.getDisplayName();
-		} else {
-			return taxonomy.getDisplayName();
+			return displayName;
 		}
+		return taxonomy.getDisplayName();
 	}
 	
 	public Taxonomy getTaxonomy() {
@@ -86,7 +92,7 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public boolean containsSearch(String search) {
 		if (taxonomyLevel != null) {
-			return taxonomyLevel.getDisplayName().toLowerCase().contains(search) 
+			return displayName.toLowerCase().contains(search) 
 					|| taxonomyLevel.getIdentifier().toLowerCase().contains(search);
 		} else if (taxonomy != null) {
 			return taxonomy.getDisplayName().toLowerCase().contains(search) 
@@ -131,7 +137,7 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public String getDescription() {
 		if (taxonomyLevel != null) {
-			return taxonomyLevel.getDescription();
+			return description;
 		} else if (taxonomy != null) {
 			return taxonomy.getDescription();
 		} else {
@@ -151,7 +157,7 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public String getDisplayName() {
 		if (taxonomyLevel != null) {
-			return taxonomyLevel.getDisplayName();
+			return displayName;
 		} else if (taxonomy != null) {
 			return taxonomy.getDisplayName();
 		} else {

@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -39,6 +41,7 @@ import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -88,6 +91,7 @@ public class PortfolioElementRow {
 	private boolean representsOtherPages; 
 	
 	private Translator translator;
+	private Translator taxonomyTanslator;
 	
 	public PortfolioElementRow(Section section, AssessmentSection assessmentSection,
 			boolean assessable, boolean assignments) {
@@ -311,12 +315,15 @@ public class PortfolioElementRow {
 		this.pageCategories = pageCategories;
 	}
 	
-	public void setPageCompetences(Collection<TaxonomyCompetence> pageCompetences) {
+	public void setPageCompetences(Collection<TaxonomyCompetence> pageCompetences, Locale locale) {
 		this.pageCompetences = pageCompetences;
+		this.taxonomyTanslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 	}
 	
 	public Collection<String> getPageCompetences() {
-		return pageCompetences.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList());
+		return pageCompetences.stream()
+				.map(competence -> TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, competence.getTaxonomyLevel()))
+				.collect(Collectors.toList());
 	}
 	
 	public Collection<TaxonomyCompetence> getPageCompetencesObjects() {

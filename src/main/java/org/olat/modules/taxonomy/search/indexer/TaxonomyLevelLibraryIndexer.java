@@ -25,10 +25,13 @@ import java.util.List;
 
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -37,6 +40,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
@@ -69,10 +73,11 @@ public class TaxonomyLevelLibraryIndexer extends DefaultIndexer {
 			TaxonomyLevel level = (TaxonomyLevel)object;
 			VFSContainer library = taxonomyService.getDocumentsLibrary(level);
 			if(library != null) {
+				Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, I18nModule.getDefaultLocale());
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(level);
-				searchResourceContext.setTitle(level.getDisplayName());
-				searchResourceContext.setDescription(level.getDescription());
+				searchResourceContext.setTitle(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level));
+				searchResourceContext.setDescription(TaxonomyUIFactory.translateDescription(taxonomyTranslator, level));
 				searchResourceContext.setLastModified(level.getLastModified());
 				searchResourceContext.setCreatedDate(level.getCreationDate());
 

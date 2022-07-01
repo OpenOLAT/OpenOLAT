@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -47,6 +48,7 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,12 +81,14 @@ public class CompetencesEditController extends FormBasicController {
 	
 	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Page portfolioPage) {
 		super(ureq, wControl, "competences_edit");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(portfolioPage, true);
 		existingCompetences = new ArrayList<>();
 		for (TaxonomyCompetence competence : competences) {
-			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
-			competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
+			TaxonomyLevel taxonomyLevel = competence.getTaxonomyLevel();
+			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyLevel.getKey().toString());
+			competenceTextBoxItem.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 			competenceTextBoxItem.setCustomCSS("o_competence");
 			existingCompetences.add(competenceTextBoxItem);
 		}
@@ -100,7 +104,7 @@ public class CompetencesEditController extends FormBasicController {
 						}
 					}
 					
-					TextBoxItem item = new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString());
+					TextBoxItem item = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyLevel.getKey().toString());
 					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 					availableTaxonomyLevels.add(item);
@@ -175,9 +179,7 @@ public class CompetencesEditController extends FormBasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			initFormEditableState(false);
 		} else if(source == openBrowserLink) {
-			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> {
-				return new CompetenceBrowserController(lureq, lwControl);				
-			};
+			ControllerCreator competenceBrowserCreator = CompetenceBrowserController::new;
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
 			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		}

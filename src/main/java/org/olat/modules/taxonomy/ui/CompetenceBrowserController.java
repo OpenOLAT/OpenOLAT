@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -70,6 +71,7 @@ public class CompetenceBrowserController extends FormBasicController {
 	
 	public CompetenceBrowserController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
 		loadModel();
@@ -104,7 +106,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		
 		if (linkedTaxonomies != null) {
 			for (Taxonomy taxonomy : linkedTaxonomies) {
-				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(null, taxonomy, null);
+				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(taxonomy);
 				if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
 					FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 					taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
@@ -114,7 +116,9 @@ public class CompetenceBrowserController extends FormBasicController {
 				rows.add(taxonomyRow);
 				
 				for (TaxonomyLevel level : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(null, taxonomy, level);
+					String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+					String description = TaxonomyUIFactory.translateDescription(getTranslator(), level);
+					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(taxonomy, level, displayName, description);
 					if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
 						FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 						levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");

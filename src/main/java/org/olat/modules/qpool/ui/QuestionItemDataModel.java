@@ -88,7 +88,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case additionalInformations: return item.getAdditionalInformations();
 			case creationDate: return item.getCreationDate();
 			case lastModified: return item.getLastModified();
-			case taxonomyLevel: return item.getTaxonomyLevelName();
+			case taxonomyLevel: return item.getTaxonomyLevelDisplayName();
 			case taxonomyPath: return item.getTaxonomicPath();
 			case educationalContext: return item.getEducationalContextLevel();
 			case difficulty: return MetaUIFactory.bigDToString(item.getDifficulty());

@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -132,7 +133,7 @@ public class GradingWebService {
 		
 		GradingAssignmentSearchParameters searchParams = new GradingAssignmentSearchParameters();
 		searchParams.setReferenceEntry(entry);
-		List<GradingAssignmentWithInfos> assignmentInfos = gradingService.getGradingAssignmentsWithInfos(searchParams);
+		List<GradingAssignmentWithInfos> assignmentInfos = gradingService.getGradingAssignmentsWithInfos(searchParams, I18nModule.getDefaultLocale());
 		GradingAssignmentWithInfosVO[] infosVoes = toArrayOfInfoVOes(assignmentInfos);
 		return Response.ok(infosVoes).build();
 	}

@@ -226,7 +226,7 @@ public class PracticeServiceFreeShuffleTest extends OlatTestCase {
 	private List<PracticeItem> generateItems(Map<String, PracticeAssessmentItemGlobalRef> refs) {
 		return refs.values().stream().map(ref -> {
 			String identifier = ref.getIdentifier();
-			return new PracticeItem(identifier, identifier, null, null, null);
+			return new PracticeItem(identifier, identifier, null, null, null, null);
 			
 		}).collect(Collectors.toList());
 	}
@@ -235,7 +235,7 @@ public class PracticeServiceFreeShuffleTest extends OlatTestCase {
 		List<PracticeItem> items = new ArrayList<>();
 		for(int i=0; i<numOfQuestions; i++) {
 			String identifier = "item-" + (++counter);
-			items.add(new PracticeItem(identifier, identifier, null, null, null));
+			items.add(new PracticeItem(identifier, identifier, null, null, null, null));
 		}
 		return items;
 	}

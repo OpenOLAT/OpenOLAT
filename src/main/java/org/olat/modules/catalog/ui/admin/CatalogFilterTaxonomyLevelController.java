@@ -27,12 +27,14 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +56,7 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 
 	public CatalogFilterTaxonomyLevelController(UserRequest ureq, WindowControl wControl, CatalogFilterHandler handler, CatalogFilter catalogFilter) {
 		super(ureq, wControl, handler, catalogFilter);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
 	}
@@ -64,7 +67,7 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 		if (StringHelper.isLong(taxonomyTreeKey)) {
 			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
 			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
-			SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
+			SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
 			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", formLayout,
 					keyValues.keys(), keyValues.values());
 			taxonomyLevelEl.setMandatory(true);

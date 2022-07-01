@@ -59,6 +59,7 @@ import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
@@ -207,6 +208,8 @@ public class QTI21ExportProcessor {
 			final TestPart testPart = assessmentTest.getTestParts().get(0);
 			AssessmentSection defaultSection = testPart.getAssessmentSections().get(0);
 			Map<String,AssessmentSection> sectionByTitles = new HashMap<>();
+			
+			Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, translator.getLocale());
 
 			//assessment items
 			for(QuestionItemFull qitem:fullItems) {
@@ -224,9 +227,10 @@ public class QTI21ExportProcessor {
 				String newItemFilename = container  + "/" + newItemFile.getName();
 				qtiService.persistAssessmentObject(newItemFile, assessmentItem);
 				
+				String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, qitem.getTaxonomyLevel());
 				AssessmentSection section = defaultSection;
-				if(groupByTaxonomyLevel && StringHelper.containsNonWhitespace(qitem.getTaxonomyLevelName())) {
-					section = sectionByTitles.computeIfAbsent(qitem.getTaxonomyLevelName(), level
+				if(groupByTaxonomyLevel && StringHelper.containsNonWhitespace(taxonomyLevelDisplayName)) {
+					section = sectionByTitles.computeIfAbsent(taxonomyLevelDisplayName, level
 							-> AssessmentTestFactory.appendAssessmentSection(level, testPart));
 				}
 

@@ -11,7 +11,7 @@
 			#foreach($taxonomyLevel in $taxonomyLevels)
 			<div class="o_taxonomy_launcher o_card_hover" onClick="${f.ffXHREvent("select_taxonomy","$taxonomyLevel.key")};" role="link">
 				<div class="o_visual">
-					<span class="o_visual_not_available" #if($taxonomyLevel.thumbnailRelPath) style="background-image:url('$taxonomyLevel.thumbnailRelPath');" #end></span>
+					<span class="o_visual_not_available #if($taxonomyLevel.thumbnailRelPath)o_visual_available#end" #if($taxonomyLevel.thumbnailRelPath) style="background-image:url('$taxonomyLevel.thumbnailRelPath');" #end></span>
 				</div>
 				<div class="o_meta">
 					<h4 class="o_title">$r.render($taxonomyLevel.selectLinkName)</h4>

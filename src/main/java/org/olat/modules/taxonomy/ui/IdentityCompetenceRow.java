@@ -37,9 +37,11 @@ import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 public class IdentityCompetenceRow {
 
 	private final TaxonomyCompetence competence;
+	private final String displayName;
 
-	public IdentityCompetenceRow(TaxonomyCompetence competence) {
+	public IdentityCompetenceRow(TaxonomyCompetence competence, String displayName) {
 		this.competence = competence;
+		this.displayName = displayName;
 	}
 	
 	public Taxonomy getTaxonomy() {
@@ -69,6 +71,10 @@ public class IdentityCompetenceRow {
 		return TaxonomyLevelManagedFlag.isManaged(level, marker);
 	}
 	
+	public String getDisplayName() {
+		return displayName;
+	}
+
 	@Override
 	public int hashCode() {
 		return competence == null ? 2364 : competence.hashCode();

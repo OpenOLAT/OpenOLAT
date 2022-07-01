@@ -38,11 +38,18 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.LegendItem;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -109,21 +116,21 @@ public class FilteredPrintController extends BasicController {
 		if (searchParams.getTopicOrganisationRefs() != null && !searchParams.getTopicOrganisationRefs().isEmpty()) {
 			String label = searchParams.getTopicOrganisationRefs().stream()
 					.map(ref -> organisationService.getOrganisation(ref))
-					.map(o -> o.getDisplayName())
+					.map(Organisation::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.topic.organisations"), label));
 		}
 		if (searchParams.getTopicCurriculumRefs() != null && !searchParams.getTopicCurriculumRefs().isEmpty()) {
 			String label = searchParams.getTopicCurriculumRefs().stream()
 					.map(ref -> curriculumService.getCurriculum(ref))
-					.map(c -> c.getDisplayName())
+					.map(Curriculum::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.topic.curriculums"), label));
 		}
 		if (searchParams.getTopicCurriculumElementRefs() != null && !searchParams.getTopicCurriculumElementRefs().isEmpty()) {
 			String label = searchParams.getTopicCurriculumElementRefs().stream()
 					.map(ref -> curriculumService.getCurriculumElement(ref))
-					.map(ce -> ce.getDisplayName())
+					.map(CurriculumElement::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.topic.curriculum.elements"), label));
 		}
@@ -137,28 +144,28 @@ public class FilteredPrintController extends BasicController {
 		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			String label = searchParams.getContextOrganisationRefs().stream()
 					.map(ref -> organisationService.getOrganisation(ref))
-					.map(o -> o.getDisplayName())
+					.map(Organisation::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.context.organisations"), label));
 		}
 		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
 			String label = searchParams.getContextCurriculumRefs().stream()
 					.map(ref -> curriculumService.getCurriculum(ref))
-					.map(c -> c.getDisplayName())
+					.map(Curriculum::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.context.curriculums"), label));
 		}
 		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			String label = searchParams.getContextCurriculumElementRefs().stream()
 					.map(ref -> curriculumService.getCurriculumElement(ref))
-					.map(ce -> ce.getDisplayName())
+					.map(CurriculumElement::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.context.curriculum.elements"), label));
 		}
 		if (searchParams.getContextCurriculumElementTypeRefs() != null && !searchParams.getContextCurriculumElementTypeRefs().isEmpty()) {
 			String label = searchParams.getContextCurriculumElementTypeRefs().stream()
 					.map(ref -> curriculumService.getCurriculumElementType(ref))
-					.map(t -> t.getDisplayName())
+					.map(CurriculumElementType::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.context.curriculum.element.types"), label));
 					
@@ -166,14 +173,15 @@ public class FilteredPrintController extends BasicController {
 		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
 			String label = searchParams.getContextCurriculumOrganisationRefs().stream()
 					.map(ref -> organisationService.getOrganisation(ref))
-					.map(o -> o.getDisplayName())
+					.map(Organisation::getDisplayName)
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.context.curriculum.organisations"), label));
 		}
 		if (searchParams.getContextTaxonomyLevelRefs() != null) {
+			Translator taxonomyTanslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 			String label = searchParams.getContextTaxonomyLevelRefs().stream()
 					.map(ref -> taxonomyService.getTaxonomyLevel(ref))
-					.map(tl -> tl.getDisplayName())
+					.map(level -> TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, level))
 					.collect(Collectors.joining(", "));
 			items.add(item(translate("filter.context.taxonomy.level"), label));
 		}

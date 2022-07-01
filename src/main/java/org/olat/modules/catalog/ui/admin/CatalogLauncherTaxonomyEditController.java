@@ -32,12 +32,14 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,6 +61,7 @@ public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditC
 	public CatalogLauncherTaxonomyEditController(UserRequest ureq, WindowControl wControl,
 			CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {
 		super(ureq, wControl, handler, catalogLauncher);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -95,7 +98,7 @@ public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditC
 	}
 	
 	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
+		names.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
 			addParentNames(names, parent);

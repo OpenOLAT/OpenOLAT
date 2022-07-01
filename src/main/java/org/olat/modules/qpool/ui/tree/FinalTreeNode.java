@@ -52,15 +52,17 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 	
 	private final QPoolSecurityCallback securityCallback;
 	private final TaxonomyLevel taxonomyLevel;
+	private final String displayName;
 
 	public FinalTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			TaxonomyLevel taxonomyLevel) {
+			TaxonomyLevel taxonomyLevel, String displayName) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
+		this.displayName = displayName;
 		
-		setTitle(taxonomyLevel.getDisplayName());
+		setTitle(displayName);
 		TaxonomyLevelType type = taxonomyLevel.getType();
 		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 			setIconCssClass(type.getCssClass());
@@ -78,7 +80,7 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 		if (questionsCtrl == null) {
 			QuestionItemsSource source = new FinalItemsSource(
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
-					taxonomyLevel);
+					taxonomyLevel, displayName);
 			String resName = FINAL + "_" + taxonomyLevel.getIdentifier();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resName, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);

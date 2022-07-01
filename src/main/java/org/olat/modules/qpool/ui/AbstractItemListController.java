@@ -65,6 +65,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -83,6 +84,7 @@ import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.qpool.ui.metadata.ExtendedSearchController;
 import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -143,6 +145,7 @@ public abstract class AbstractItemListController extends FormBasicController
 			QuestionItemsSource source, String restrictToFormat, List<QItemType> excludeTypes,
 			String key, boolean searchAllTaxonomyLevels) {
 		super(ureq, wControl, "item_list");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 
 		this.securityCallback = securityCallback;
 		this.prefsKey = key;
@@ -524,6 +527,10 @@ public abstract class AbstractItemListController extends FormBasicController
 				row.setLicense(license);
 			}
 		}
+		
+		String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), item.getTaxonomyLevel());
+		row.setTaxonomyLevelDisplayName(taxonomyLevelDisplayName);
+		
 		return row;
 	}
 

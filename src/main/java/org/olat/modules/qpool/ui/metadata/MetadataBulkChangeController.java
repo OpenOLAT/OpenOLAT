@@ -22,8 +22,8 @@ package org.olat.modules.qpool.ui.metadata;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toInt;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateBigDecimal;
-import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateInteger;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateInteger;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
 import java.util.ArrayList;
@@ -69,6 +69,7 @@ import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,6 +128,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 
 	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qpoolSecurityCallback, List<ItemRow> items, boolean ignoreCompetences) {
 		super(ureq, wControl, "bulk_change");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		this.qpoolSecurityCallback = qpoolSecurityCallback;
 		this.items = items;
@@ -172,7 +174,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		decorate(topicEl, generalCont);
 		
 		if (qpoolSecurityCallback.canUseTaxonomy()) {
-			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), canRemoveTaxonomies(), ignoreCompetences);
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), canRemoveTaxonomies(), ignoreCompetences);
 			taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
 					qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 			decorate(taxonomyLevelEl, generalCont);

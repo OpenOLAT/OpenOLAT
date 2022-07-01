@@ -19,6 +19,8 @@
  */
 package org.olat.modules.docpool.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -185,7 +187,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
 		String levelId = "DP-Lev. " + UUID.randomUUID();
 		Taxonomy taxonomy = getDocumentPoolTaxonomy();
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, "Competence level", "A competence", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, random(), "Competence level", "A competence", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(level);
 		
@@ -201,8 +203,8 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void lostAndFoundSpecialCase() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
 		Taxonomy taxonomy = getDocumentPoolTaxonomy();
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("DP-Lev. " + UUID.randomUUID(), "Competence level", "A competence", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("DP-Lev. " + UUID.randomUUID(), "Competence level", "A competence", null, null, level1, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("DP-Lev. " + UUID.randomUUID(), random(), "Competence level", "A competence", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("DP-Lev. " + UUID.randomUUID(), random(), "Competence level", "A competence", null, null, level1, null, taxonomy);
 		TaxonomyLevelType type = createTypeLevelCompetence(id, level2, TaxonomyCompetenceTypes.have);
 		type.setDocumentsLibraryHaveCompetenceReadEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -241,7 +243,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 		String levelId = "DP-Lev. " + UUID.randomUUID();
 		Taxonomy taxonomy = getDocumentPoolTaxonomy();
 		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-docpool", "A type for document pool", "Typed", "TYP-0", true, taxonomy);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, "Competence level", "A competence", null, null, parent, type, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, random(), "Competence level", "A competence", null, null, parent, type, taxonomy);
 		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(competenceType, level, id, null);
 		dbInstance.commit();
 		type.setDocumentsLibraryManageCompetenceEnabled(false);

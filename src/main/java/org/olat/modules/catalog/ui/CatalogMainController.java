@@ -36,12 +36,14 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,6 +77,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	
 	public CatalogMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.defaultSearchParams = createDefaultSearchParams(ureq);
 		
 		mainVC = createVelocityContainer("main");
@@ -249,7 +252,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		searchParams.getIdentToTaxonomyLevels().put("launcher", Collections.singletonList(taxonomyLevel));
 		CatalogRepositoryEntryListController taxonomyListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, taxonomyLevel, true);
 		listenTo(taxonomyListCtrl);
-		stackPanel.pushController(taxonomyLevel.getDisplayName(), taxonomyListCtrl);
+		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
 	}
 
 }

@@ -93,7 +93,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyModel, taxonomy);
+		new TaxonomyAllTreesBuilder(getLocale()).loadTreeModel(taxonomyModel, taxonomy);
 		//remove children of the level to move
 		for(TaxonomyLevel levelToMove:levelsToMove) {
 			TreeNode nodeToMove = taxonomyModel
@@ -110,7 +110,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 		taxonomyModel.sort(taxonomyModel.getRootNode());
 
 		List<String> nodeIds = openedNodes
-				.stream().map(node -> node.getIdent())
+				.stream().map(TreeNode::getIdent)
 				.collect(Collectors.toList());
 		taxonomyEl.setOpenNodeIds(nodeIds);
 	}

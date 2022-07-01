@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -41,6 +42,7 @@ public class ItemRow implements QuestionItemView {
 	
 	private FormLink markLink;
 	private License license;
+	private String taxonomyLevelDisplayName;
 
 	public ItemRow(QuestionItemView delegate, QuestionItemSecurityCallback securityCallback) {
 		this.delegate = delegate;
@@ -163,8 +165,8 @@ public class ItemRow implements QuestionItemView {
 	}
 
 	@Override
-	public String getTaxonomyLevelName() {
-		return delegate.getTaxonomyLevelName();
+	public TaxonomyLevel getTaxonomyLevel() {
+		return delegate.getTaxonomyLevel();
 	}
 
 	@Override
@@ -272,6 +274,14 @@ public class ItemRow implements QuestionItemView {
 
 	public void setLicense(License license) {
 		this.license = license;
+	}
+
+	public String getTaxonomyLevelDisplayName() {
+		return taxonomyLevelDisplayName;
+	}
+
+	public void setTaxonomyLevelDisplayName(String taxonomyLevelDisplayName) {
+		this.taxonomyLevelDisplayName = taxonomyLevelDisplayName;
 	}
 
 	public QuestionItemSecurityCallback getSecurityCallback() {

@@ -35,13 +35,7 @@ public interface TaxonomyLevel extends TaxonomyLevelRef, CreateInfo, ModifiedInf
 	
 	public void setIdentifier(String identifier);
 	
-	public String getDisplayName();
-	
-	public void setDisplayName(String displayName);
-	
-	public String getDescription();
-	
-	public void setDescription(String description);
+	public String getI18nSuffix();
 	
 	public String getExternalId();
 	

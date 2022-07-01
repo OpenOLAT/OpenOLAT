@@ -24,8 +24,9 @@ import static org.olat.modules.catalog.ui.CatalogMainController.ORES_TYPE_INFOS;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -60,7 +61,9 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.CatalogFilter;
@@ -72,7 +75,10 @@ import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataModel.CatalogRepositoryEntryCols;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataSource.CatalogRepositoryEntryRowItemCreator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -105,6 +111,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	
 	private final boolean withSearch;
 	private final MapperKey mapperThumbnailKey;
+	private final MapperKey mapperTaxonomyLevelTeaserKey;
 	private final TaxonomyLevel taxonomyLevel;
 	
 	@Autowired
@@ -116,9 +123,13 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	protected ACService acService;
+	private ACService acService;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private MapperService mapperService;
 
@@ -128,12 +139,14 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		// Order of the translators matters.
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale()));
 		setTranslator(Util.createPackageTranslator(CatalogRepositoryEntryListController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.searchParams = searchParams;
 		this.taxonomyLevel = taxonomyLevel;
 		this.withSearch = withSearch;
 		this.dataSource = new CatalogRepositoryEntryDataSource(searchParams, withSearch, this, getLocale());
 		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		this.mapperTaxonomyLevelTeaserKey = mapperService.register(null, "taxonomyLevelTeaserImage", new TaxonomyLevelTeaserImageMapper());
 		
 		initForm(ureq);
 		tableEl.reloadData();
@@ -147,19 +160,23 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (taxonomyLevel != null) {
 			flc.contextPut("square", CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogModule.getLauncherTaxonomyLevelStyle()));
-			flc.contextPut("description", taxonomyLevel.getDescription());
+			flc.contextPut("description", TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel));
 			
 			List<TaxonomyLevel> taxonomyLevels = taxonomyLevelDao.getChildren(taxonomyLevel);
-			Comparator<TaxonomyLevel> comparator = Comparator.comparing(TaxonomyLevel::getSortOrder, Comparator.nullsLast(Comparator.reverseOrder()))
-					.thenComparing(TaxonomyLevel::getDisplayName);
-			taxonomyLevels.sort(comparator);
+			taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(getTranslator()));
 			List<TaxonomyItem> items = new ArrayList<>(taxonomyLevels.size());
 			for (TaxonomyLevel child : taxonomyLevels) {
 				String selectLinkName = "o_tl_" + child.getKey();
-				FormLink selectLink = uifactory.addFormLink(selectLinkName, "select_tax", child.getDisplayName(), null, formLayout, Link.NONTRANSLATED);
+				FormLink selectLink = uifactory.addFormLink(selectLinkName, "select_tax", TaxonomyUIFactory.translateDisplayName(getTranslator(), child), null, formLayout, Link.NONTRANSLATED);
 				selectLink.setUserObject(child.getKey());
 				
-				TaxonomyItem item = new TaxonomyItem(child.getKey(), selectLinkName, null);
+				TaxonomyItem item = new TaxonomyItem(child.getKey(), selectLinkName);
+				
+				VFSItem image = taxonomyService.getTeaserImage(child);
+				if (image != null) {
+					item.setThumbnailRelPath(mapperTaxonomyLevelTeaserKey.getUrl() + "/" + child.getKey());
+				}
+				
 				items.add(item);
 			}
 			flc.contextPut("taxonomyLevels", items);
@@ -359,7 +376,18 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	}
 
 	public void search(UserRequest ureq, String searchString, boolean reset) {
-		searchParams.setSearchString(searchString);
+		if (StringHelper.containsNonWhitespace(searchString)) {
+			searchParams.setSearchString(searchString);
+			Set<String> serachTaxonomyLevelI18nSuffix = i18nManager
+					.findI18nKeysByOverlayValue(searchString, TaxonomyUIFactory.PREFIX_DISPLAY_NAME, getLocale(),
+							TaxonomyUIFactory.BUNDLE_NAME)
+					.stream().map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
+					.collect(Collectors.toSet());
+			searchParams.setSerachTaxonomyLevelI18nSuffix(serachTaxonomyLevelI18nSuffix);
+		} else {
+			searchParams.setSearchString(null);
+			searchParams.setSerachTaxonomyLevelI18nSuffix(null);
+		}
 		if (reset) {
 			tableEl.resetSearch(ureq);
 		} else {
@@ -481,12 +509,11 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		
 		private final Long key;
 		private final String selectLinkName;
-		private final String thumbnailRelPath;
+		private String thumbnailRelPath;
 		
-		public TaxonomyItem(Long key, String selectLinkName, String thumbnailRelPath) {
+		public TaxonomyItem(Long key, String selectLinkName) {
 			this.key = key;
 			this.selectLinkName = selectLinkName;
-			this.thumbnailRelPath = thumbnailRelPath;
 		}
 
 		public Long getKey() {
@@ -499,6 +526,10 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 		public String getThumbnailRelPath() {
 			return thumbnailRelPath;
+		}
+
+		public void setThumbnailRelPath(String thumbnailRelPath) {
+			this.thumbnailRelPath = thumbnailRelPath;
 		}
 		
 	}

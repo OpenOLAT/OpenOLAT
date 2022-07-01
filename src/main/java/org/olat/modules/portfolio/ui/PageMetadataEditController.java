@@ -57,6 +57,7 @@ import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.modules.portfolio.Assignment;
@@ -81,6 +82,7 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -158,6 +160,7 @@ public class PageMetadataEditController extends FormBasicController {
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection, Page pageDelegate) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
@@ -827,9 +830,7 @@ public class PageMetadataEditController extends FormBasicController {
 			sectionsEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
 			bindersEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
 		} else if (openCompetenceBrowserLink == source) {
-			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> {
-				return new CompetenceBrowserController(lureq, lwControl);				
-			};
+			ControllerCreator competenceBrowserCreator = CompetenceBrowserController::new;
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
 			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		} else if(source instanceof FormLink) {
@@ -845,7 +846,7 @@ public class PageMetadataEditController extends FormBasicController {
 			List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
 			existingCompetences = new ArrayList<>();
 			for (TaxonomyCompetence competence : competences) {
-				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
+				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), competence.getTaxonomyLevel()), competence.getTaxonomyLevel().getKey().toString());
 				competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
 				existingCompetences.add(competenceTextBoxItem);
 			}
@@ -861,7 +862,7 @@ public class PageMetadataEditController extends FormBasicController {
 							continue;
 						}
 					}
-					TextBoxItem item = new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString());
+					TextBoxItem item = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyLevel.getKey().toString());
 					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 					availableTaxonomyLevels.add(item);

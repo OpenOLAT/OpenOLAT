@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,7 +119,7 @@ public class QuestionDAOTest extends OlatTestCase {
 	public void copyQuestion() {
 		// create an item and fill it
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-QP", "QPool taxonomy", null, null);
-		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QP-L-1", "QLevel 1", "For testing only", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QP-L-1", random(), "QLevel 1", "For testing only", null, null, null, null, taxonomy);
 		QEducationalContext eduContext = qEduContextDao.create("primary.school", true);
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		QItemType essayType = qItemTypeDao.loadByType(QuestionType.ESSAY.name());
@@ -178,7 +180,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertEquals(original.getAdditionalInformations(), clone.getAdditionalInformations());
 		Assert.assertEquals(original.getLanguage(), clone.getLanguage());
 		//classification
-		Assert.assertEquals(original.getTaxonomyLevelName(), clone.getTaxonomyLevelName());
+		Assert.assertEquals(original.getTaxonomyLevel(), clone.getTaxonomyLevel());
 		//educational
 		Assert.assertEquals(original.getEducationalContext(), clone.getEducationalContext());
 		Assert.assertEquals(original.getEducationalLearningTime(), clone.getEducationalLearningTime());

@@ -87,7 +87,7 @@ public class RandomHandler implements CatalogLauncherHandler {
 	}
 
 	@Override
-	public String getDetails(CatalogLauncher catalogLauncher) {
+	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
 		return null;
 	}
 

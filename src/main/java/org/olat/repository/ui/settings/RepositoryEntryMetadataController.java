@@ -52,7 +52,9 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseModule;
@@ -61,6 +63,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -314,8 +317,9 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
 		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
 		taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
-
-		SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
+		
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
+		SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(taxonomyTranslator, allTaxonomyLevels);
 		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
 				keyValues.keys(), keyValues.values(), null, null);
 		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);

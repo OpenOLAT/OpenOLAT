@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.model;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ import java.util.List;
 public class TaxonomyLevelSearchParameters {
 	
 	private String quickSearch;
+	private Collection<String> quickSearchI18nSuffix;
 	private Boolean allowedAsSubject;
 	private List<Long> taxonomyKeys;
 
@@ -41,6 +43,14 @@ public class TaxonomyLevelSearchParameters {
 		quickSearch = search;
 	}
 	
+	public Collection<String> getQuickSearchI18nSuffix() {
+		return quickSearchI18nSuffix;
+	}
+
+	public void setQuickSearchI18nSuffix(Collection<String> quickSearchI18nSuffix) {
+		this.quickSearchI18nSuffix = quickSearchI18nSuffix;
+	}
+
 	public Boolean isAllowedAsSubject() {
 		return allowedAsSubject;
 	}

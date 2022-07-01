@@ -51,8 +51,8 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 	private boolean isManaged;
 	private boolean hasChildren = true;
 	
-	public CompetencesOverviewTableRow(Translator translaotr) {
-		this.translator = translaotr;
+	public CompetencesOverviewTableRow(Translator translator) {
+		this.translator = translator;
 	}
 	
 	public void setTaxonomy(Taxonomy taxonomy) {
@@ -134,7 +134,7 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 			}
 			return "";
 		} else if (level != null) {
-			return level.getDisplayName();
+			return TaxonomyUIFactory.translateDisplayName(translator, level);
 		} else if (taxonomy!= null) {
 			return taxonomy.getDisplayName();
 		} else {
@@ -197,7 +197,7 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 	
 	public String getTaxonomyLevelDisplayName() {
 		if (level != null) {
-			return level.getDisplayName();
+			return TaxonomyUIFactory.translateDisplayName(translator, level);
 		}
 		
 		return null;
@@ -254,7 +254,7 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 		if (competence != null) {
 			return StringHelper.containsNonWhitespace(competence.getSourceText()) || StringHelper.containsNonWhitespace(competence.getSourceUrl());
 		} else if (level != null) {
-			return StringHelper.containsNonWhitespace(level.getDescription());
+			return StringHelper.containsNonWhitespace(TaxonomyUIFactory.translateDescription(translator, level));
 		} else if (taxonomy != null) {
 			return StringHelper.containsNonWhitespace(taxonomy.getDescription());
 		} else {
@@ -272,7 +272,7 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 	
 	public String getDescription() {
 		if (level != null) {
-			return level.getDescription();
+			return TaxonomyUIFactory.translateDescription(translator, level);
 		} else if (taxonomy != null) {
 			return taxonomy.getDescription();
 		} else {

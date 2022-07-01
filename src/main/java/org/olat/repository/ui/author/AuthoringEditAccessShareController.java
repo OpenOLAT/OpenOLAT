@@ -55,6 +55,7 @@ import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogMainController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -114,6 +115,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
@@ -125,6 +127,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = false;
@@ -404,7 +407,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 					url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_TAXONOMY
 							+ "/" + taxonomyLevel.getKey();
-					String name = translate("cif.catalog.links.microsite", taxonomyLevel.getDisplayName());
+					String name = translate("cif.catalog.links.microsite", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 					ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString(), url, name);
 					taxonomyLinks.add(extLink);
 					catalogLinksCont.contextPut("taxonomyLinks", taxonomyLinks);

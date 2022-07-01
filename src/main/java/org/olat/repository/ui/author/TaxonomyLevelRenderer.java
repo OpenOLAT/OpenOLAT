@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -27,7 +28,9 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -37,15 +40,21 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  */
 public class TaxonomyLevelRenderer implements FlexiCellRenderer {
 
+	private final Translator taxonomyTranslator;
+
+	public TaxonomyLevelRenderer(Locale locale) {
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
+	}
+
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue != null) {
 			@SuppressWarnings("unchecked")
 			List<TaxonomyLevel> taxonomyLevels = (List<TaxonomyLevel>)cellValue;
-			taxonomyLevels.sort((l1, l2) -> l1.getDisplayName().compareToIgnoreCase(l2.getDisplayName())); 
+			taxonomyLevels.sort((l1, l2) -> TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, l1).compareToIgnoreCase(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, l2)));
 			for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-				target.append("<div class='o_nowrap'>").append(taxonomyLevel.getDisplayName()).append("</div>");
+				target.append("<div class='o_nowrap'>").append(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel)).append("</div>");
 			}
 		}
 	}

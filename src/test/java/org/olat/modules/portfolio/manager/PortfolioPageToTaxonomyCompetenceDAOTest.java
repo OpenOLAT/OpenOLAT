@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.List;
 
 import org.junit.Assert;
@@ -95,9 +97,9 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 		this.type2 = taxonomyService.createTaxonomyLevelType("T2", "Type 2", "", null, false, taxonomy);
 		
 		
-		this.level1 = taxonomyLevelDAO.createTaxonomyLevel("l1", "level1", null, null, null, null, type1, this.taxonomy);
-		this.level2 = taxonomyLevelDAO.createTaxonomyLevel("l2", "level2", null, null, null, null, type2, this.taxonomy);
-		this.level3 = taxonomyLevelDAO.createTaxonomyLevel("l3", "level3", null, null, null, null, null, this.taxonomy);
+		this.level1 = taxonomyLevelDAO.createTaxonomyLevel("l1", random(), "level1", null, null, null, null, type1, this.taxonomy);
+		this.level2 = taxonomyLevelDAO.createTaxonomyLevel("l2", random(), "level2", null, null, null, null, type2, this.taxonomy);
+		this.level3 = taxonomyLevelDAO.createTaxonomyLevel("l3", random(), "level3", null, null, null, null, null, this.taxonomy);
 		dbInstance.commitAndCloseSession();
 	}
 	

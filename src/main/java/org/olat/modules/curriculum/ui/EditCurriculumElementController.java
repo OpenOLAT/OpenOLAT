@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -60,6 +61,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelDepthComparator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -134,6 +136,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.curriculum = curriculum;
 		this.parentElement = parentElement;
 		this.secCallback = secCallback;
@@ -143,6 +146,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.curriculum = curriculum;
 		this.element = element;
 		this.parentElement = parentElement;
@@ -234,7 +238,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		
 		if (!taxonomyLevels.isEmpty()) {
 			subjectsEl = uifactory.addCheckboxesDropdown("subjects", formLayout);
-			Set<Taxonomy> taxonomies = taxonomyLevels.stream().map(level -> level.getTaxonomy()).collect(Collectors.toSet());
+			Set<Taxonomy> taxonomies = taxonomyLevels.stream().map(TaxonomyLevel::getTaxonomy).collect(Collectors.toSet());
 			Set<String> disabledEntries = new HashSet<>();
 			
 			String[] keys = new String[taxonomyLevels.size() + taxonomies.size()];
@@ -290,7 +294,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			StringBuilder sb = new StringBuilder();
 			for(TaxonomyLevel level:levels) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(level.getDisplayName());
+				sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 			}
 			uifactory.addStaticTextElement("curriculum.element.taxonomy", sb.toString(), formLayout);
 		}

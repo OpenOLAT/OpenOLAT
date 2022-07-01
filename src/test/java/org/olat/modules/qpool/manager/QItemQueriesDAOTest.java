@@ -21,6 +21,7 @@ package org.olat.modules.qpool.manager;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -602,8 +603,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetItemsIsTeacher() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
-		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
 		Identity ownerAndTeacher = createRandomIdentity();
 		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, ownerAndTeacher, null);
 		Identity teacher = createRandomIdentity();
@@ -634,8 +635,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetItemsIsManager() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
-		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
 		Identity ownerAndManager = createRandomIdentity();
 		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, ownerAndManager, null);
 		Identity manager = createRandomIdentity();
@@ -769,9 +770,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetItemsFilteredByLikeTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
-		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
-		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
+		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
 		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
 		item11.setTaxonomyLevel(taxonomyLevel);
 		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
@@ -823,9 +824,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetItemsFilteredByWithoutTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
-		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
-		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
+		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
 		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
 		item11.setTaxonomyLevel(taxonomyLevel);
 		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
@@ -933,7 +934,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
-		params.setExcludeRated(rater1);;
+		params.setExcludeRated(rater1);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, 0, -1);
 		
 		assertThat(loadedItems).hasSize(2);
@@ -968,13 +969,13 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	private Collection<Long> keysOf(List<QuestionItemView> items) {
 		return items.stream()
-				.map(item -> item.getKey())
+				.map(QuestionItemView::getKey)
 				.collect(Collectors.toList());
 	}
 	
 	private Collection<Long> keysOf(QuestionItemShort... items) {
 		return Arrays.stream(items)
-				.map(item -> item.getKey())
+				.map(QuestionItemShort::getKey)
 				.collect(Collectors.toList());
 	}
 }

@@ -729,6 +729,10 @@
 				.o_visual_not_available {
 					display: block;
 				}
+				.o_visual_available {
+					background-position: left;
+					background-size: cover;
+				}
 			}
 			
 			.o_meta {

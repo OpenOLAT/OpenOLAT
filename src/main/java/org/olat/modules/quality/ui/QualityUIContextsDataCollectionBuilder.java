@@ -47,6 +47,7 @@ import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,7 +71,8 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 	
 	QualityUIContextsDataCollectionBuilder(QualityDataCollection dataCollection, Locale locale) {
 		this.dataCollection = dataCollection;
-		translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale,
+				Util.createPackageTranslator(QualityMainController.class, locale));
 		CoreSpringFactory.autowireObject(this);
 	}
 
@@ -224,7 +226,7 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 				.distinct()
 				.filter(Objects::nonNull)
 				.collect(Collectors.groupingBy(this::getLevelName,
-					Collectors.mapping(TaxonomyLevel::getDisplayName, Collectors.joining(DELIMITER))));
+					Collectors.mapping(level -> TaxonomyUIFactory.translateDisplayName(translator, level), Collectors.joining(DELIMITER))));
 		
 		List<KeyValue> keyValues = new ArrayList<>(typesNamesToTaxonomyLevels.size());
 		for (Map.Entry<String, String> entry : typesNamesToTaxonomyLevels.entrySet()) {

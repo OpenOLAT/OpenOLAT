@@ -21,6 +21,7 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.io.File;
 import java.io.IOException;
@@ -754,7 +755,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-500", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -781,7 +782,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-501", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -810,7 +811,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-502", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -840,8 +841,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-202", "Leveled taxonomy", null, null);
-		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level1);
 		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level2);
 		dbInstance.commitAndCloseSession();

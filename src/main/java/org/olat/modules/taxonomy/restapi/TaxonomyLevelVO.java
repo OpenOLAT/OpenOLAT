@@ -23,7 +23,11 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -68,11 +72,13 @@ public class TaxonomyLevelVO {
 	}
 	
 	public static TaxonomyLevelVO valueOf(TaxonomyLevel taxonomyLevel) {
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, I18nModule.getDefaultLocale());
+		
 		TaxonomyLevelVO vo = new TaxonomyLevelVO();
 		vo.setKey(taxonomyLevel.getKey());
 		vo.setIdentifier(taxonomyLevel.getIdentifier());
-		vo.setDisplayName(taxonomyLevel.getDisplayName());
-		vo.setDescription(taxonomyLevel.getDescription());
+		vo.setDisplayName(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel));
+		vo.setDescription(TaxonomyUIFactory.translateDescription(taxonomyTranslator, taxonomyLevel));
 		vo.setExternalId(taxonomyLevel.getExternalId());
 		if(taxonomyLevel.getParent() != null) {
 			vo.setParentKey(taxonomyLevel.getParent().getKey());

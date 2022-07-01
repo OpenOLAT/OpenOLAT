@@ -19,6 +19,8 @@
  */
 package org.olat.restapi;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -41,8 +43,11 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
@@ -56,6 +61,7 @@ import org.olat.modules.taxonomy.restapi.TaxonomyLevelTypeVO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.modules.taxonomy.restapi.TaxonomyVO;
 import org.olat.modules.taxonomy.restapi.TaxonomyVOes;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,8 +129,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void getFlatTaxonomyLevels()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-2", "Taxonomy on rest", "Rest is cool", "Ext-tax-1");
-		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel("REST-Tax-l-1", "Level 1 on rest", "Level", "Ext-3", null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel("REST-Tax-l-2", "Level 2 on rest", "Level", "Ext-4", null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel("REST-Tax-l-1", random(), "Ext-3", null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel("REST-Tax-l-2", random(), "Ext-4", null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 
@@ -185,14 +191,15 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("EXT-190", newTaxonomyLevelVo.getExternalId());
 		
 		//check the database
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, I18nModule.getDefaultLocale());
 		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomy);
 		Assert.assertNotNull(levels);
 		Assert.assertEquals(1, levels.size());
 		TaxonomyLevel savedLevel = levels.get(0);
 		Assert.assertEquals(newTaxonomyLevelVo.getKey(), savedLevel.getKey());
 		Assert.assertEquals(uid, savedLevel.getIdentifier());
-		Assert.assertEquals("PUT root level", savedLevel.getDisplayName());
-		Assert.assertEquals("Try to PUT a root level", savedLevel.getDescription());
+		Assert.assertEquals("PUT root level", TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, savedLevel));
+		Assert.assertEquals("Try to PUT a root level", TaxonomyUIFactory.translateDescription(taxonomyTranslator, savedLevel));
 		Assert.assertEquals("EXT-190", savedLevel.getExternalId());
 	}
 	
@@ -200,7 +207,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void putTaxonomyLevel_subLevel()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-3", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
-		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Tax-r-1", "Root level on rest", "Level", "Ext-23", null, null, taxonomy);
+		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Tax-r-1", random(), "Ext-23", null, null, taxonomy);
 		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-23", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
@@ -257,8 +264,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void updateTaxonomyLevel()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-4", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
-		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Tax-u-1", "Root level on rest", "Level", "Ext-25", null, null, taxonomy);
-		TaxonomyLevel levelToUpdate = taxonomyService.createTaxonomyLevel("REST-Tax-u-1", "Sub level on rest", "Level", "Ext-26", null, rootLevel, taxonomy);
+		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Tax-u-1", random(), "Ext-25", null, null, taxonomy);
+		TaxonomyLevel levelToUpdate = taxonomyService.createTaxonomyLevel("REST-Tax-u-1", random(), "Ext-26", null, rootLevel, taxonomy);
 		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-27", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
@@ -292,11 +299,12 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(type.getKey(), updatedTaxonomyLevelVo.getTypeKey());
 		
 		//check the database
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, I18nModule.getDefaultLocale());
 		TaxonomyLevel savedLevel = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(updatedTaxonomyLevelVo.getKey()));
 		Assert.assertNotNull(savedLevel);
 		Assert.assertEquals("Updated id", savedLevel.getIdentifier());
-		Assert.assertEquals("Updated name", savedLevel.getDisplayName());
-		Assert.assertEquals("Updated description", savedLevel.getDescription());
+		Assert.assertEquals("Updated name", TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, savedLevel));
+		Assert.assertEquals("Updated description", TaxonomyUIFactory.translateDescription(taxonomyTranslator, savedLevel));
 		Assert.assertEquals("Updated ext.", savedLevel.getExternalId());
 		Assert.assertEquals(rootLevel.getKey(), savedLevel.getParent().getKey());
 		Assert.assertEquals(type.getKey(), savedLevel.getType().getKey());
@@ -306,8 +314,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void deleteTaxonomyLevel()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Del-1", "Taxonomy on rest", "Delete is sad!", "DELETE-tax-1");
-		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Del-root", "Root level on rest", "Level", "Ext-55", null, null, taxonomy);
-		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-1", "Sub level on rest", "Level", "Ext-56", null, rootLevel, taxonomy);
+		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Del-root", random(), "Ext-55", null, null, taxonomy);
+		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-1", random(), "Ext-56", null, rootLevel, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 		
@@ -339,8 +347,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void deleteTaxonomyLevel_notPossible()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Del-2", "Taxonomy on rest", "Delete is sad! But there is some hope.", "DELETE-tax-2");
-		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Del-root", "Root level on rest", "Level", "Ext-57", null, null, taxonomy);
-		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-2", "Sub level on rest", "Level", "Ext-58", null, rootLevel, taxonomy);
+		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Del-root", random(), "Ext-57", null, null, taxonomy);
+		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-2", random(), "Ext-58", null, rootLevel, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 		
@@ -578,7 +586,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-2");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-6", "Taxonomy on rest", "Rest is cool", "Ext-tax-6");
-		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-1", "Level 1 on rest", "Level", "Ext-3", null, null, taxonomy);
+		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-1", random(), "Ext-3", null, null, taxonomy);
 		taxonomyService.addTaxonomyLevelCompetences(level, id1, TaxonomyCompetenceTypes.have, null);
 		taxonomyService.addTaxonomyLevelCompetences(level, id2, TaxonomyCompetenceTypes.manage, null);
 		dbInstance.commitAndCloseSession();
@@ -619,8 +627,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		// prepare a level, 2 users and 2 competences
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-20", "Taxonomy on rest", "Rest is cool", "Ext-tax-7");
-		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel("REST-Tax-l-21", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel("REST-Tax-l-22", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel("REST-Tax-l-21", random(), "Ext-7", null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel("REST-Tax-l-22", random(), "Ext-7", null, null, taxonomy);
 		taxonomyService.addTaxonomyLevelCompetences(level1, id, TaxonomyCompetenceTypes.teach, null);
 		taxonomyService.addTaxonomyLevelCompetences(level2, id, TaxonomyCompetenceTypes.have, null);
 		dbInstance.commitAndCloseSession();
@@ -659,7 +667,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		// prepare a level, 1 user and 1 competence
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-7", "Taxonomy on rest", "Rest is cool", "Ext-tax-7");
-		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-7", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
+		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-7", random(), "Ext-7", null, null, taxonomy);
 		taxonomyService.addTaxonomyLevelCompetences(level, id, TaxonomyCompetenceTypes.teach, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -687,7 +695,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-8", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
-		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-r-8", "Root level on rest", "Level", "Ext-23", null, null, taxonomy);
+		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-r-8", random(), "Ext-23", null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -728,7 +736,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-8", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
-		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-r-8", "Root level on rest", "Level", "Ext-23", null, null, taxonomy);
+		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-r-8", random(), "Ext-23", null, null, taxonomy);
 		TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(level, id, TaxonomyCompetenceTypes.target, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(competence);

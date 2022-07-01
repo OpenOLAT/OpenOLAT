@@ -37,9 +37,9 @@ public class PracticeResourceTaxonomyRow {
 	private int numOfQuestions = 0;
 	private final boolean withoutTaxonomy;
 	
-	public PracticeResourceTaxonomyRow(TaxonomyLevel level) {
+	public PracticeResourceTaxonomyRow(TaxonomyLevel level, String displayName) {
 		withoutTaxonomy = false;
-		taxonomyLevel = level.getDisplayName();
+		taxonomyLevel = displayName;
 		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(taxonomyLevel, level.getMaterializedPathIdentifiers());
 	}
 	

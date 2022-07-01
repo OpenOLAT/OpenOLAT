@@ -60,14 +60,14 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 	private final QuestionItemsSource source;
 
 	public ReviewTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			TaxonomyLevel taxonomyLevel, Identity identity, Roles roles, Locale locale) {
+			TaxonomyLevel taxonomyLevel, String displayName, Identity identity, Roles roles, Locale locale) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
-		source = new ReviewItemsSource(identity, roles, locale, taxonomyLevel);
+		source = new ReviewItemsSource(identity, roles, locale, taxonomyLevel, displayName);
 		
-		setTitle(taxonomyLevel.getDisplayName());
+		setTitle(displayName);
 		TaxonomyLevelType type = taxonomyLevel.getType();
 		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 			setIconCssClass(type.getCssClass());

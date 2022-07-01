@@ -156,6 +156,7 @@ public class CatalogRepositoryEntryQueries {
 		}
 		
 		String text = searchParams.getSearchString();
+		Collection<String> serachTaxonomyLevelI18nSuffix = null;
 		if (StringHelper.containsNonWhitespace(text)) {
 			text = PersistenceHelper.makeFuzzyQueryString(text);
 			sb.and().append("(");
@@ -166,6 +167,10 @@ public class CatalogRepositoryEntryQueries {
 			PersistenceHelper.appendFuzzyLike(sb, "v.objectives", "displaytext", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "displaytext", dbInstance.getDbVendor());
+			if (searchParams.getSerachTaxonomyLevelI18nSuffix() != null && !searchParams.getSerachTaxonomyLevelI18nSuffix().isEmpty()) {
+				sb.append(" or level.i18nSuffix in :serachTaxonomyLevelI18nSuffix");
+				serachTaxonomyLevelI18nSuffix = searchParams.getSerachTaxonomyLevelI18nSuffix();
+			}
 			sb.append(")");
 		}
 		
@@ -213,6 +218,9 @@ public class CatalogRepositoryEntryQueries {
 		}
 		if (StringHelper.containsNonWhitespace(text)) {
 			dbQuery.setParameter("displaytext", text);
+		}
+		if (serachTaxonomyLevelI18nSuffix != null) {
+			dbQuery.setParameter("serachTaxonomyLevelI18nSuffix", serachTaxonomyLevelI18nSuffix);
 		}
 		return dbQuery;
 	}

@@ -75,6 +75,7 @@ public class CatalogRepositoryEntrySearchParams {
 	
 	// Search
 	private String searchString;
+	private Collection<String> serachTaxonomyLevelI18nSuffix;
 	
 	// Filter
 	private Collection<Long> repositoryEntryKeys;
@@ -137,6 +138,14 @@ public class CatalogRepositoryEntrySearchParams {
 	
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
+	}
+
+	public Collection<String> getSerachTaxonomyLevelI18nSuffix() {
+		return serachTaxonomyLevelI18nSuffix;
+	}
+
+	public void setSerachTaxonomyLevelI18nSuffix(Collection<String> serachTaxonomyLevelI18nSuffix) {
+		this.serachTaxonomyLevelI18nSuffix = serachTaxonomyLevelI18nSuffix;
 	}
 
 	public Collection<Long> getRepositoryEntryKeys() {
@@ -243,6 +252,9 @@ public class CatalogRepositoryEntrySearchParams {
 		
 		// Search
 		copy.searchString = this.searchString;
+		if (this.serachTaxonomyLevelI18nSuffix != null) {
+			copy.serachTaxonomyLevelI18nSuffix = new ArrayList<>(this.serachTaxonomyLevelI18nSuffix);
+		}
 		
 		// Filter
 		if (repositoryEntryKeys != null) {

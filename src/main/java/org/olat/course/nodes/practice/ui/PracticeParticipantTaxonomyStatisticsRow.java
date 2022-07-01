@@ -57,11 +57,11 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		taxonomyLevel = null;
 	}
 	
-	public PracticeParticipantTaxonomyStatisticsRow(List<String> keys, TaxonomyLevel taxonomyLevel, int numOfLevels) {
+	public PracticeParticipantTaxonomyStatisticsRow(List<String> keys, TaxonomyLevel taxonomyLevel, int numOfLevels, String displayName) {
 		this.keys = keys;
 		withoutTaxonomy = false;
 		this.taxonomyLevel = taxonomyLevel;
-		taxonomyLevelName = taxonomyLevel.getDisplayName();
+		taxonomyLevelName = displayName;
 		levels = new Levels(numOfLevels);
 		taxonomyPath = SearchPracticeItemHelper
 				.cleanTaxonomicParentLine(taxonomyLevelName, taxonomyLevel.getMaterializedPathIdentifiers());

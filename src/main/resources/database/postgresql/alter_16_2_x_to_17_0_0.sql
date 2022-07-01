@@ -24,6 +24,13 @@ create index idx_offer_guest_idx on o_ac_offer (guest_access);
 create index idx_offer_open_idx on o_ac_offer (open_access);
 
 alter table o_repositoryentry add publicvisible bool default false not null;
+alter table o_repositoryentry add status_published_date timestamp;
+
+
+-- Taxonomy
+alter table o_tax_taxonomy_level add t_i18n_suffix varchar(64);
+alter table o_tax_taxonomy_level add t_media_path varchar(255);
+alter table o_tax_taxonomy_level alter column t_displayname drop not null;
 
 
 -- Catalog V2
@@ -49,8 +56,6 @@ create table o_ca_filter (
    c_config varchar(1024),
    primary key (id)
 );
-
-alter table o_repositoryentry add status_published_date timestamp;
 
 
 -- Practice

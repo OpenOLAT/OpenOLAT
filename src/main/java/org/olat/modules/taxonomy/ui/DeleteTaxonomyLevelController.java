@@ -70,7 +70,7 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		super(ureq, wControl, "confirm_delete_levels");
 		this.levels = levels;
 		
-		treeModel = new TaxonomyAllTreesBuilder().buildTreeModel(taxonomy);
+		treeModel = new TaxonomyAllTreesBuilder(getLocale()).buildTreeModel(taxonomy);
 		for(TaxonomyLevel level:levels) {
 			selectedNodeIds.add(TaxonomyAllTreesBuilder.nodeKey(level));
 		}
@@ -91,7 +91,7 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		StringBuilder sb = new StringBuilder();
 		for(TaxonomyLevel level:levels) {
 			if(sb.length() > 0) sb.append(", ");
-			sb.append(StringHelper.escapeHtml(level.getDisplayName()));
+			sb.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), level)));
 		}
 		
 		boolean canDelete = true;
@@ -207,10 +207,10 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 			if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel, mergeTo)) {
 				if(deletedLevels.length() > 0) deletedLevels.append(", ");
-				deletedLevels.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
+				deletedLevels.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)));
 			} else {
 				if(notDeletedLevels.length() > 0) notDeletedLevels.append(", ");
-				notDeletedLevels.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
+				notDeletedLevels.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)));
 			}
 		}
 		dbInstance.commit();//commit before sending event

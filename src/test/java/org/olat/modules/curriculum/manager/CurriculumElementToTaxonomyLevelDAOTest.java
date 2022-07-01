@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +71,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-98", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 	
 		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
 		dbInstance.commit();
@@ -83,7 +85,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-301", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -104,7 +106,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-302", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -122,7 +124,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-303", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
 		dbInstance.commitAndCloseSession();
 		

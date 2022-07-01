@@ -53,6 +53,7 @@ import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.search.model.AbstractOlatDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,6 +90,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			QPoolSecurityCallback qPoolSecurityCallback, String prefsKey, Form mainForm,
 			List<QItemType> excludedItemTypes, boolean allTaxonomyLevels) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		this.qPoolSecurityCallback = qPoolSecurityCallback;
 		this.allTaxonomyLevels = allTaxonomyLevels;
@@ -413,7 +415,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, allTaxonomyLevels);
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, allTaxonomyLevels);
 			return createItem(qpoolTaxonomyTreeBuilder.getSelectableKeys(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}
@@ -433,7 +435,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, allTaxonomyLevels);
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, allTaxonomyLevels);
 			return createItem(qpoolTaxonomyTreeBuilder.getTaxonomicKeyPaths(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}

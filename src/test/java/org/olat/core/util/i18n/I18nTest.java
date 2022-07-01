@@ -550,6 +550,24 @@ public class I18nTest extends OlatTestCase {
 		// multi line value search
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Die Aktion konnte nicht ausgef\u00FChrt werden", testLocale, testLocale, null, true).size());
 	}
+	
+	@Test
+	public void testFindI18nKeysByOverlayValue() {
+		assertTrue(Locale.GERMAN.equals(I18nModule.getDefaultLocale()));
+		
+		String bundleName = "org.olat.core.util.i18n.junittestdata.findinoverlay";
+		String prefix = "test.";
+		Locale searchLocale = i18nMgr.getLocaleOrDefault("nl_NL");
+		String searchString = "go";
+		
+		Set<String> keysByOverlayValue = i18nMgr.findI18nKeysByOverlayValue(searchString, prefix, searchLocale, bundleName);
+		assertTrue(keysByOverlayValue.contains("test.matching.overlay.no.default"));
+		assertTrue(keysByOverlayValue.contains("test.matching.overlay.non.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.non.matching.overlay.non.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.non.matching.overlay.matching.default"));
+		assertTrue(keysByOverlayValue.contains("test.no.overlay.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.other.locale"));
+	}
 
 	/**
 	 * Test methods i18nManager.findMissingI18nItems()

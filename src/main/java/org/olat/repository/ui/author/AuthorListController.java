@@ -141,6 +141,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
@@ -270,6 +271,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	public AuthorListController(UserRequest ureq, WindowControl wControl, SearchAuthorRepositoryEntryViewParams searchParams, AuthorListConfiguration configuration) {
 		super(ureq, wControl, "entries");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(),
 				Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator())));
 
@@ -480,11 +482,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		if (taxonomyEnabled) {
 			DefaultFlexiColumnModel taxonomyLevelColumnModel = new DefaultFlexiColumnModel(true, Cols.taxonomyLevels.i18nKey(),
 					Cols.taxonomyLevels.ordinal(), false, null);
-			taxonomyLevelColumnModel.setCellRenderer(new TaxonomyLevelRenderer());
+			taxonomyLevelColumnModel.setCellRenderer(new TaxonomyLevelRenderer(getLocale()));
 			columnsModel.addFlexiColumnModel(taxonomyLevelColumnModel);
 			DefaultFlexiColumnModel taxonomyLevelPathColumnModel = new DefaultFlexiColumnModel(configuration.isDefaultTaxonomyPath(),
 					Cols.taxonomyPaths.i18nKey(), Cols.taxonomyPaths.ordinal(), false, null);
-			taxonomyLevelPathColumnModel.setCellRenderer(new TaxonomyPathsRenderer());
+			taxonomyLevelPathColumnModel.setCellRenderer(new TaxonomyPathsRenderer(getLocale()));
 			columnsModel.addFlexiColumnModel(taxonomyLevelPathColumnModel);
 		}
 		DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),
@@ -759,7 +761,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
+		names.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
 			addParentNames(names, parent);

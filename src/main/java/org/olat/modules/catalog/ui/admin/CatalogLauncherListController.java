@@ -169,7 +169,7 @@ public class CatalogLauncherListController extends FormBasicController {
 				row.setHandler(handler);
 				row.setTranslatedType(translate(handler.getTypeI18nKey()));
 				row.setTranslatedName(CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, catalogLauncher));
-				row.setDetails(handler.getDetails(catalogLauncher));
+				row.setDetails(handler.getDetails(getTranslator(), catalogLauncher));
 			}
 			
 			UpDown upDown = UpDownFactory.createUpDown("up_down_" + catalogLauncher.getKey(), UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);

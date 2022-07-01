@@ -44,10 +44,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryShort;
@@ -129,12 +131,12 @@ public class RepositoyUIFactory {
 		return new LifecycleAdminController(ureq, wControl);
 	}
 	
-	public static SelectionValues createTaxonomyLevelKV(List<TaxonomyLevel> allTaxonomyLevels) {
+	public static SelectionValues createTaxonomyLevelKV(Translator translator, List<TaxonomyLevel> allTaxonomyLevels) {
 		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {
 			String key = Long.toString(level.getKey());
 			ArrayList<String> names = new ArrayList<>();
-			addParentNames(names, level);
+			addParentNames(translator, names, level);
 			Collections.reverse(names);
 			String value = String.join(" / ", names);
 			keyValues.add(entry(key, value));
@@ -143,11 +145,11 @@ public class RepositoyUIFactory {
 		return keyValues;
 	}
 	
-	private static void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
+	private static void addParentNames(Translator translator, List<String> names, TaxonomyLevel level) {
+		names.add(TaxonomyUIFactory.translateDisplayName(translator, level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
-			addParentNames(names, parent);
+			addParentNames(translator, names, parent);
 		}
 	}
 

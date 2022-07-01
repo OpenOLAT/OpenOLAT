@@ -76,9 +76,9 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 	@Test
 	public void shouldUpdateEntryByMetaInfo() {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy(random(), random(), null, null);
-		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel level3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		// Init values

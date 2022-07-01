@@ -22,6 +22,8 @@ package org.olat.modules.catalog.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
@@ -32,8 +34,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,11 +51,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLauncherTaxonomyController extends BasicController {
 	
+	private final MapperKey mapperThumbnailKey;
+	
 	@Autowired
 	private CatalogV2Module catalogModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private MapperService mapperService;
 
 	public CatalogLauncherTaxonomyController(UserRequest ureq, WindowControl wControl, List<TaxonomyLevel> taxonomyLevels, String title) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		this.mapperThumbnailKey = mapperService.register(null, "taxonomyLevelTeaserImage", new TaxonomyLevelTeaserImageMapper());
+		
 		VelocityContainer mainVC = createVelocityContainer("launch_taxonomy");
 		
 		if (taxonomyLevels.isEmpty()) {
@@ -62,10 +78,16 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 			String selectLinkName = "o_tl_" + taxonomyLevel.getKey();
 			Link selectLink = LinkFactory.createCustomLink(selectLinkName, "select_tax", selectLinkName, Link.LINK + Link.NONTRANSLATED, mainVC, this);
-			selectLink.setCustomDisplayText(taxonomyLevel.getDisplayName());
+			selectLink.setCustomDisplayText(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 			selectLink.setUserObject(taxonomyLevel.getKey());
 			
-			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), selectLinkName, null);
+			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), selectLinkName);
+			
+			VFSItem image = taxonomyService.getTeaserImage(taxonomyLevel);
+			if (image != null) {
+				item.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + taxonomyLevel.getKey());
+			}
+			
 			items.add(item);
 		}
 		mainVC.contextPut("items", items);
@@ -93,12 +115,11 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 		
 		private final Long key;
 		private final String selectLinkName;
-		private final String thumbnailRelPath;
+		private String thumbnailRelPath;
 		
-		public LauncherItem(Long key, String selectLinkName, String thumbnailRelPath) {
+		public LauncherItem(Long key, String selectLinkName) {
 			this.key = key;
 			this.selectLinkName = selectLinkName;
-			this.thumbnailRelPath = thumbnailRelPath;
 		}
 
 		public Long getKey() {
@@ -111,6 +132,10 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 
 		public String getThumbnailRelPath() {
 			return thumbnailRelPath;
+		}
+
+		public void setThumbnailRelPath(String thumbnailRelPath) {
+			this.thumbnailRelPath = thumbnailRelPath;
 		}
 		
 	}

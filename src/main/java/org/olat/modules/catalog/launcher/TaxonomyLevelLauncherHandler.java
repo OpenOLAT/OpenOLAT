@@ -21,7 +21,6 @@ package org.olat.modules.catalog.launcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +40,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -102,7 +102,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 	}
 
 	@Override
-	public String getDetails(CatalogLauncher catalogLauncher) {
+	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
 		String config = catalogLauncher.getConfig();
 		if (StringHelper.containsNonWhitespace(config)) {
 			if (config.startsWith(TAXONOMY_PREFIX)) {
@@ -116,7 +116,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 			} else if (StringHelper.isLong(config)) {
 				TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(config));
 				if (taxonomyLevel != null) {
-					return taxonomyLevel.getDisplayName();
+					return TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel);
 				}
 			}
 		}
@@ -135,9 +135,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		List<TaxonomyLevel> taxonomyLevels = getChildren(catalogLauncher);
 		if (taxonomyLevels == null) return null;
 		
-		Comparator<TaxonomyLevel> comparator = Comparator.comparing(TaxonomyLevel::getSortOrder, Comparator.nullsLast(Comparator.reverseOrder()))
-				.thenComparing(TaxonomyLevel::getDisplayName);
-		taxonomyLevels.sort(comparator);
+		taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(translator));
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		
 		return new CatalogLauncherTaxonomyController(ureq, wControl, taxonomyLevels, launcherName);
