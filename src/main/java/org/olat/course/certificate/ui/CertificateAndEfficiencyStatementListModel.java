@@ -73,40 +73,46 @@ public class CertificateAndEfficiencyStatementListModel
 	@Override
 	public Object getValueAt(CertificateAndEfficiencyStatementRow statement, int col) {
 		switch (COLS[col]) {
-		case displayName:
-			return statement.getDisplayName();
-		case curriculumElIdent:
-			return statement.getCurriculumElementIdentifier();
-		case score:
-			return statement.getScore();
-		case grade:
-			return statement.getGrade();
-		case passed:
-			return statement.getPassed();
-		case completion:
-			return statement.getCompletion();
-		case lastModified:
-			return statement.getLastModified();
-		case lastUserUpdate:
-			return statement.getLastUserModified();
-		case certificate:
-			return statement.getCertificate();
-		case recertification: {
-			if (statement.getCertificate() != null) {
-				return statement.getCertificate().getNextRecertificationDate();
+			case displayName:
+				return getDisplayName(statement);
+			case curriculumElIdent:
+				return statement.getCurriculumElementIdentifier();
+			case score:
+				return statement.getScore();
+			case grade:
+				return statement.getGrade();
+			case passed:
+				return statement.getPassed();
+			case completion:
+				return statement.getCompletion();
+			case lastModified:
+				return statement.getLastModified();
+			case lastUserUpdate:
+				return statement.getLastUserModified();
+			case certificate:
+				return statement.getCertificate();
+			case recertification: {
+				if (statement.getCertificate() != null) {
+					return statement.getCertificate().getNextRecertificationDate();
+				}
+				return null;
 			}
-			return null;
-		}
-		case efficiencyStatement:
-			return statement.getEfficiencyStatementKey();
-		case deleteEfficiencyStatement:
-			return true;
-		case artefact:
-			return statement.getEfficiencyStatementKey() != null;
-		case tools:
-			return statement.getToolsLink();
+			case efficiencyStatement:
+				return statement.getEfficiencyStatementKey();
+			case deleteEfficiencyStatement:
+				return true;
+			case artefact:
+				return statement.getEfficiencyStatementKey() != null;
+			case tools:
+				return statement.getToolsLink();
 		}
 		return null;
+	}
+	
+	public String getDisplayName(CertificateAndEfficiencyStatementRow statement) {
+		// Need to return a string at all costs, the cell renderer want a string and null is not acceptable
+		String displayName = statement.getDisplayName();
+		return displayName == null ? "" : displayName;
 	}
 	
 	@Override

@@ -58,6 +58,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -142,6 +143,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private boolean showCurriculumFilterButtons;
 	private List<FormLink> curriculumFilterButtons;
 
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private CollectArtefactController collectorCtrl;
 	private DialogBoxController confirmDeleteCtr;
@@ -622,6 +624,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
 		for(CertificateLight certificate:certificates) {
 			Long resourceKey = certificate.getOlatResourceKey();
+			if(resourceKey == null || resourceKey.longValue() <= 0) {
+				// randomize the resource key which are not a resource
+				resourceKey = Long.valueOf(- (++counter));
+			}
 			CertificateAndEfficiencyStatementRow wrapper = resourceKeyToStatments.get(resourceKey);
 			if(wrapper == null) {
 				wrapper = new CertificateAndEfficiencyStatementRow();
@@ -735,22 +741,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof Link) {
-			Link sourceLink = (Link) source;	
-			CertificateAndEfficiencyStatementRow statement = (CertificateAndEfficiencyStatementRow) sourceLink.getUserObject();
-			
-			if (sourceLink.getCommand().equals(CMD_LAUNCH_COURSE)) {
-				doLaunchCourse(ureq, statement.getResourceKey());
-			} else if (sourceLink.getCommand().equals(CMD_DELETE)) {
-				doConfirmDelete(ureq, statement);
-			}
-		}
-		
-		super.event(ureq, source, event);
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		 if (source == confirmDeleteCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -763,12 +753,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		} else if(uploadCertificateController == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel();
-				tableEl.reset();
 			}
-			
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(toolsCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();
+		} else if(cmc == source || calloutCtrl == source) {
 			cleanUp();
 		}
 	}
@@ -776,35 +767,25 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private void cleanUp() {
 		removeAsListenerAndDispose(uploadCertificateController);
 		removeAsListenerAndDispose(collectorCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		uploadCertificateController = null;
 		collectorCtrl = null;
+		calloutCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 	
 	private void doOpenTools(UserRequest ureq, CertificateAndEfficiencyStatementRow row, FormItem link) {
 		removeAsListenerAndDispose(calloutCtrl);
+		removeControllerListener(toolsCtrl);
 		
-		VelocityContainer toolsContainer = createVelocityContainer("tools");
-		
-		if (canLaunchCourse) {
-			Link startCourse = LinkFactory.createLink(CMD_LAUNCH_COURSE, getTranslator(), this);
-			startCourse.setUserObject(row);
-			startCourse.setIconLeftCSS("o_icon o_icon_fw o_course_icon");
-			
-			toolsContainer.put("startCourse", startCourse);
-		}
-		
-		if (canModify) {
-			Link deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
-			deleteStatement.setUserObject(row);
-			deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
-			
-			toolsContainer.put("deleteStatement", deleteStatement);
-		}
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
 			
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsContainer, link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -843,7 +824,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		RepositoryEntry re = repositoryService.loadByResourceKey(statement.getResourceKey());
 		if(re == null) {
 			String text = translate("efficiencyStatements.delete.confirm", statement.getDisplayName());
-			confirmDeleteCtr = activateYesNoDialog(ureq, null, text, confirmDeleteCtr);
+			confirmDeleteCtr = activateYesNoDialog(ureq, "Hello", text, confirmDeleteCtr);
 			confirmDeleteCtr.setUserObject(statement);
 		} else {
 			showWarning("efficiencyStatements.cannot.delete");
@@ -930,6 +911,43 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			sb.append("<i class='o_icon o_icon-lg o_icon_eportfolio_add'> </i> <span title=\"")
 				.append(translate("table.add.as.artefact"))
 				.append("\"> </span>");
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private Link startCourse;
+		private Link deleteStatement;
+		
+		private final CertificateAndEfficiencyStatementRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, CertificateAndEfficiencyStatementRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer toolsContainer = createVelocityContainer("tools");	
+			if (canLaunchCourse && row.getResourceKey() != null && row.getResourceKey().longValue() > 0l) {
+				startCourse = LinkFactory.createLink(CMD_LAUNCH_COURSE, getTranslator(), this);
+				startCourse.setIconLeftCSS("o_icon o_icon_fw o_course_icon");
+				toolsContainer.put("startCourse", startCourse);
+			}
+				
+			if (canModify && (row.getResourceKey() == null || row.getResourceKey().longValue() <= 0l)) {
+				deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
+				deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
+				toolsContainer.put("deleteStatement", deleteStatement);
+			}
+			putInitialPanel(toolsContainer);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if (startCourse == source) {
+				doLaunchCourse(ureq, row.getResourceKey());
+			} else if (deleteStatement == source) {
+				doConfirmDelete(ureq, row);
+			}
 		}
 	}
 }

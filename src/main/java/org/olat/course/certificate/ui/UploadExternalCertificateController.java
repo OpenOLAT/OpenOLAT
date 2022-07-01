@@ -42,16 +42,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UploadExternalCertificateController extends FormBasicController {
 	
-	private Identity assessedIdentity;
+	private final Identity assessedIdentity;
 	
 	private TextElement titleEl;
 	private DateChooser issuedDateEl;
 	private FileElement certificateEl;
 	
 	@Autowired
-	CertificatesManager certificatesManager;
+	private CertificatesManager certificatesManager;
 	@Autowired
-	CertificatesModule certificatesModule;
+	private CertificatesModule certificatesModule;
 
 	public UploadExternalCertificateController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
 		super(ureq, wControl);
@@ -64,9 +64,12 @@ public class UploadExternalCertificateController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		titleEl = uifactory.addTextElement("certificate.title", 255, null, formLayout);
+		titleEl.setMandatory(true);
 		issuedDateEl = uifactory.addDateChooser("certificate.date", null, formLayout);
+		issuedDateEl.setMandatory(true);
 		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "certificate.file", formLayout);
 		certificateEl.setMaxUploadSizeKB(certificatesModule.getUploadLimit() * 1024, "certiicate.file.error", null);
+		certificateEl.setMandatory(true);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonLayout.setRootForm(mainForm);
@@ -74,7 +77,6 @@ public class UploadExternalCertificateController extends FormBasicController {
 		
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		
 	}
 	
 	@Override
