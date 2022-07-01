@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.launcher;
 
+import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERED_NUMBER_CARDS;
+
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -101,7 +103,7 @@ public class RandomHandler implements CatalogLauncherHandler {
 			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
 		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
 		searchParams.setOrderBy(OrderBy.random);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, 12);
+		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERED_NUMBER_CARDS);
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false, null);

@@ -208,18 +208,19 @@
 	
 	.swiper-button-next,
 	.swiper-button-prev {
-		width: initial;
-		padding: 6px 14px;
-		color: #333;
-		background-color: #fcfcfc;
-		border-radius: 4px;
-		border: 1px solid #ccc;
+		width: $o-swiper-button-width;
+		height: $o-swiper-button-height;
+		color: $o-swiper-button-color;
+		background-color: $o-swiper-button-bg-color;
+		border: $o-swiper-button-border;
+		border-radius: $o-swiper-button-border-radius;
 		&::after {
 			font-size: 24px;
 			font-weight: bold;
 		}
 		&:hover {
-			color: $btn-primary-bg;
+			color: $o-swiper-button-hover-color;
+			box-shadow: $o-swiper-button-hover-box-shadow;
 		}
 	}
  }

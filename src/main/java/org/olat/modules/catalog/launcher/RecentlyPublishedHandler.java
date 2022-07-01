@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.launcher;
 
+import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERED_NUMBER_CARDS;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -105,7 +107,7 @@ public class RecentlyPublishedHandler implements CatalogLauncherHandler {
 		searchParams.setStatus(Collections.singletonList(RepositoryEntryStatusEnum.published));
 		searchParams.setOrderBy(OrderBy.publishedDate);
 		searchParams.setOrderByAsc(false);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, 12);
+		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERED_NUMBER_CARDS);
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false, null);

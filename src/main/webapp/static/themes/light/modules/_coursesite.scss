@@ -405,6 +405,31 @@
 			}
 		}
 	}
+		
+	// make space for the box shadow
+	&.swiper {
+		margin-bottom: -20px;
+		.swiper-wrapper {
+			padding-bottom: 20px;
+		}
+	}
+	
+	// All cards have the same hight
+	&.swiper {
+		.swiper-wrapper {
+			align-items: stretch;
+			.swiper-slide {
+				height: auto;
+				display: flex;
+				align-content: stretch;
+				align-items: stretch;
+				.o_repo_entry_card {
+					width: 100%;
+				}
+			}
+			
+		}
+	}
 }
 
 
@@ -654,6 +679,8 @@
 		margin-bottom: -20px;
 		.o_catalog_header_item {
 			padding: 20px 20px 40px 20px;
+			height: $o-cat2-header-hight;
+			max-height: $o-cat2-header-hight;
 		}
 		.o_catalog_header_item:not(.o_header_bg_image) {
 			background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba($brand-primary,1) 100%);
@@ -664,14 +691,13 @@
 		}
 	}
 	.o_catalog_search_header {
-		height: 200px;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		
 		.o_search_box {
 			background-color: $input-bg;
-			padding: 0px 20px 20px 20px;
+			padding: 1px 20px 20px 20px;
 		}
 		.o_search_box:is(.o_header_bg_image *) {
 			background-color: rgba(255,255,255,.95);
@@ -680,6 +706,14 @@
 	.o_catalog_taxonomy_header {
 		.o_taxonomy_block {
 			padding: 20px;
+			display: flex;
+			h3 {
+				margin: 0px;
+			}
+			.o_taxonomy:is(.o_header_bg_image *) {
+				padding: 20px;
+				background-color: rgba(255,255,255,.95);
+			}
 		}
 	}
 	
