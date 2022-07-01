@@ -320,6 +320,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				Double progress = doCalculateProgress();
 				fireEvent(ureq, new ProgressEvent(progress));
 			}
+		} else if(doneLink != source) {
+			markDirty();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
