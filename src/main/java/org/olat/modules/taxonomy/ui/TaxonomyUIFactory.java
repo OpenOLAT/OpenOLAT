@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -39,6 +40,8 @@ public class TaxonomyUIFactory {
 	}
 	
 	public static String translateDisplayName(Translator translator, TaxonomyLevel level) {
+		if(level == null) return null;
+		
 		String i18nKey = getDisplayNameI18nKey(level);
 		String translation = translator.translate(i18nKey);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
@@ -53,7 +56,7 @@ public class TaxonomyUIFactory {
 	
 	public static String translateDescription(Translator translator, TaxonomyLevel level) {
 		String i18nKey = getDescriptionI18nKey(level);
-		String translation = translator.translate(i18nKey);
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			translation = null;
 		}
