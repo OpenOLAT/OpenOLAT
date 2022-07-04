@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,6 +86,7 @@ import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -113,6 +115,8 @@ public class CopyCourseWizardController extends BasicController {
 	private CopyService copyService;
 	@Autowired
 	private CopyCourseWizardModule wizardModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -422,8 +426,10 @@ public class CopyCourseWizardController extends BasicController {
 	}
 	
 	private boolean hasCatalogEntry(RepositoryEntry repositoryEntry) {
-		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(repositoryEntry);
-		
+		List<CatalogEntry> catalogEntries = repositoryModule.isCatalogEnabled()
+				? catalogManager.getCatalogCategoriesFor(repositoryEntry)
+				: Collections.emptyList();
+				
 		return !catalogEntries.isEmpty();
 	}
 	
