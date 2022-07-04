@@ -80,7 +80,6 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +98,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
-	private Link certificateLink, courseDetailsLink;
+	private Link certificateLink;
+	private Link courseDetailsLink;
 	private Link homeLink, courseLink, groupLink, contactLink;
 	
 	private final Certificate certificate;
@@ -135,31 +135,19 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	 * @param courseId
 	 */
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, false);
-	}
-	
-	/**
-	 * This constructor show the efficiency statement for the course repository key and the current user
-	 * @param wControl
-	 * @param ureq
-	 * @param courseRepoEntryKey
-	 */
-	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Long resourceKey) {
-		this(wControl, ureq, 
-				ureq.getIdentity(), null, resourceKey, CoreSpringFactory.getImpl(RepositoryService.class).loadByResourceKey(resourceKey),
-				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(resourceKey, ureq.getIdentity()),
-				false);
+		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false);
 	}
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, RepositoryEntry entry) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, entry.getOlatResource().getKey(), entry,
 				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
-				false);
+				null, false);
 	}
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
-			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo, EfficiencyStatement efficiencyStatement, boolean links) {
+			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo,
+			EfficiencyStatement efficiencyStatement, Certificate certificate, boolean links) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -177,7 +165,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 
 		this.statementOwner = statementOwner;
 		this.efficiencyStatement = efficiencyStatement;
-		certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
+		if(certificate == null) {
+			this.certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
+		} else {
+			this.certificate = certificate;
+		}
 		
 		mainVC = createVelocityContainer("certificate_efficiencystatement");
 		populateAssessedIdentityInfos(ureq, courseRepo, businessGroup, links);
@@ -198,13 +190,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			selectCertificate(ureq);
 		}
 		
-		if(efficiencyStatement != null && statementOwner.equals(ureq.getIdentity())) {
-			if(portfolioV2Module.isEnabled()) {
-				String businessPath = "[RepositoryEntry:" + efficiencyStatement.getCourseRepoEntryKey() + "]";
-				MediaCollectorComponent collectorCmp = new MediaCollectorComponent("collectArtefactLink", getWindowControl(), efficiencyStatement,
-						mediaHandler, businessPath);
-				mainVC.put("collectArtefactLink", collectorCmp);
-			}
+		if(efficiencyStatement != null && statementOwner.equals(ureq.getIdentity()) && portfolioV2Module.isEnabled()) {
+			String businessPath = "[RepositoryEntry:" + efficiencyStatement.getCourseRepoEntryKey() + "]";
+			MediaCollectorComponent collectorCmp = new MediaCollectorComponent("collectArtefactLink", getWindowControl(), efficiencyStatement,
+					mediaHandler, businessPath);
+			mainVC.put("collectArtefactLink", collectorCmp);
 		}
 
 		putInitialPanel(mainVC);
