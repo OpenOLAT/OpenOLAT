@@ -95,6 +95,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	private String descriptionKey;
 	private boolean descriptionEnabled;
 	private Locale defaultLocale;
+	private int defaultLocaleTabIndex = -1;
 	private TextElement defaultLocaleDisplayNameEl;
 	private List<TranslationItem> translationItems;
 	
@@ -256,8 +257,6 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		}
 		
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
-		// tabbedPane.setDirtyCheck(false);
-		// tabbedPane.addListener(this);
 
 		List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
 				.map(key -> i18nManager.getLocaleOrNull(key))
@@ -265,18 +264,20 @@ public class EditTaxonomyLevelController extends FormBasicController {
 				.collect(Collectors.toList());
 		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
 		translationItems = new ArrayList<>(locales.size());
-		int initialTab = -1;
 		for (int i = 0; i < locales.size(); i++) {
 			Locale locale = locales.get(i);
 			initTranslationController(formLayout, locale, allOverlays.get(locale));
 			if (defaultLocale.equals(locale)) {
-				initialTab = i;
+				defaultLocaleTabIndex = i;
 			}
 		}
-		tabbedPane.setSelectedPane(ureq, initialTab);
-			
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
+		
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add(buttonsWrapperCont);
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttonsCont", getTranslator());
+		buttonsWrapperCont.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
@@ -311,7 +312,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			defaultLocaleDisplayNameEl = displayNameEl;
 		}
 
-		RichTextElement descriptionEl = uifactory.addRichTextElementForParagraphEditor("level.description." + elementSuffix,
+		RichTextElement descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("level.description." + elementSuffix,
 				 "level.description", description, 10, 60, cont, getWindowControl());
 		descriptionEl.setEnabled(descriptionEnabled);
 		
@@ -329,8 +330,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 					teaserImageEl.reset();
 				}
 				teaserImageEl.clearError();
+				markDirty();
 			} else if (teaserImageEl.isUploadSuccess()) {
 				teaserImageEl.clearError();
+				markDirty();
 			}
 		} else if (source == backgroundImageEl) {
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
@@ -339,8 +342,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 					backgroundImageEl.reset();
 				}
 				backgroundImageEl.clearError();
+				markDirty();
 			} else if (backgroundImageEl.isUploadSuccess()) {
 				backgroundImageEl.clearError();
+				markDirty();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -363,6 +368,22 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			}
 		}
 		
+		teaserImageEl.clearError();
+		List<ValidationStatus> teaserResults = new ArrayList<>();
+		teaserImageEl.validate(teaserResults);
+		
+		teaserImageEl.clearError();
+		List<ValidationStatus> backgroundResults = new ArrayList<>();
+		teaserImageEl.validate(backgroundResults);
+		
+		defaultLocaleDisplayNameEl.clearError();
+		if(!StringHelper.containsNonWhitespace(defaultLocaleDisplayNameEl.getValue())) {
+			defaultLocaleDisplayNameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+			tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
+		}
+		
+		
 		return allOk;
 	}
 	
@@ -377,14 +398,6 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
 			allOk &= false;
 		}
-		
-		teaserImageEl.clearError();
-		List<ValidationStatus> teaserResults = new ArrayList<>();
-		teaserImageEl.validate(teaserResults);
-		
-		teaserImageEl.clearError();
-		List<ValidationStatus> backgroundResults = new ArrayList<>();
-		teaserImageEl.validate(backgroundResults);
 		
 		return allOk;
 	}
