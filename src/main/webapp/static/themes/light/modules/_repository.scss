@@ -197,6 +197,12 @@
 	display: inline-block;
 }
 
+.o_repo_links_microsites {
+	.o_togglebox_wrapper {
+		margin-bottom: 0;
+	}
+}
+
 .o_ac_configuration {
 	.o_ac_offer {
 		border: $o-ac-config-offer-border;
