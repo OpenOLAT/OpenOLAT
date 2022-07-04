@@ -122,6 +122,4 @@ public class FormSubmit extends FormButton implements Submit{
 			component.setSubmitAndValidate(isSubmitAndValidate);
 		}
 	}
-
-
 }

@@ -80,7 +80,19 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 			sb.append(" o_new_window");
 		}
 		
-		sb.append("\"><span>").append(fs.getTranslated()).append("</span>");
+		sb.append("\">");
+		
+		// CSS icon
+		if (fs.getIconLeftCSS() != null) {
+			sb.append("<i class='").append(fs.getIconLeftCSS()).append("'></i> "); // one space needed
+		}
+					
+		sb.append("<span>").append(fs.getTranslated()).append("</span>");
+		
+		// CSS icon
+		if (fs.getIconRightCSS() != null) {
+			sb.append(" <i class='").append(fs.getIconRightCSS()).append("'></i> ");  // one space needed
+		}
 		
 		if(source.isEnabled() && fsC.getIsSubmitAndValidate()){
 			//it is a submitting and validating button (e.g. FormSubmit)
