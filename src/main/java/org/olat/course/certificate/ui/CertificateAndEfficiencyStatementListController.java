@@ -816,8 +816,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private void doShowStatement(UserRequest ureq, CertificateAndEfficiencyStatementRow statement) {
 		RepositoryEntry entry = repositoryService.loadByResourceKey(statement.getResourceKey());
 		EfficiencyStatement efficiencyStatment = esm.getUserEfficiencyStatementByKey(statement.getEfficiencyStatementKey());
+		Certificate certificate = certificatesManager.getCertificateById(statement.getCertificateKey());
 		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, false);
+				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, certificate, false);
 		listenTo(efficiencyCtrl);
 		stackPanel.pushController(statement.getDisplayName(), efficiencyCtrl);
 	}

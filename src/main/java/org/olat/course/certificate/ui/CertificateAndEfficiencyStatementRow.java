@@ -157,6 +157,10 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode 
 	public void setLastUserModified(Date lastUserModified) {
 		this.lastUserModified = lastUserModified;
 	}
+	
+	public Long getCertificateKey() {
+		return certificate == null ? null : certificate.getKey();
+	}
 
 	public CertificateLight getCertificate() {
 		return certificate;

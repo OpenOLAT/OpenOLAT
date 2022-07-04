@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -117,7 +118,7 @@ public class AssessmentForm extends FormBasicController {
 	private FormLink intermediateSaveLink;
 	private DropdownItem intermediateSaveDropdown;
 	private FormLink intermediateSaveUserVisibilityLink;
-	private FormLink saveAndDoneLink;
+	private FormSubmit saveAndDoneLink;
 	private DropdownItem saveAndDoneDropdown;
 	private FormLink saveAndDoneAdditionalLink;
 	private List<DocumentWrapper> assessmentDocuments;
@@ -290,7 +291,7 @@ public class AssessmentForm extends FormBasicController {
 				doUpdateAssessmentData(false, visible);
 				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
 			}
-		} else if(saveAndDoneLink == source || saveAndDoneAdditionalLink == source) {
+		} else if(saveAndDoneAdditionalLink == source) {
 			if(validateFormLogic(ureq)) {
 				FormLink link = (FormLink)source;
 				boolean visible = CMD_DONE_VISIBLE.equals(link.getCmd());
@@ -321,7 +322,9 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		boolean visible = CMD_DONE_VISIBLE.equals(saveAndDoneLink.getUserObject());
+		doUpdateAssessmentData(true, visible);
+		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_DONE, true));
 	}
 
 	@Override
@@ -750,10 +753,10 @@ public class AssessmentForm extends FormBasicController {
 				doneAddCmd = CMD_DONE_VISIBLE;
 			}
 		}
-		saveAndDoneLink = uifactory.addFormLink("save.done", doneCmd, doneName, null, buttonGroupLayout, Link.BUTTON);
+		saveAndDoneLink = uifactory.addFormSubmitButton("save.done", doneName, buttonGroupLayout);
 		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_done");
 		saveAndDoneLink.setIconLeftCSS(doneIconCSS);
-		saveAndDoneLink.setPrimary(true);
+		saveAndDoneLink.setUserObject(doneCmd);
 		
 		if (canChangeUserVisibility) {
 			saveAndDoneDropdown = uifactory.addDropdownMenu("save.done.more", null, buttonGroupLayout, getTranslator());
