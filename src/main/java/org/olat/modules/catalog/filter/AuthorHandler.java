@@ -91,7 +91,7 @@ public class AuthorHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		return new FlexiTableTextFilter(repositoryTranslator.translate("cif.author.search"), TYPE, catalogFilter.isDefaultVisible());
 	}

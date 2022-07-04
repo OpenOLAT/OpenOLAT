@@ -21,8 +21,10 @@ package org.olat.modules.catalog.manager;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.FlushModeType;
@@ -88,13 +90,13 @@ public class CatalogRepositoryEntryQueries {
 			sb.append("select count(v.key) ");
 			sb.append(" from repositoryentry as v");
 			sb.append(" inner join v.olatResource as res");
-			sb.append(" left join v.lifecycle as lifecycle ");
+			sb.append(" left join v.lifecycle as lifecycle");
 		} else {
 			sb.append("select v");
 			sb.append(" from repositoryentry as v");
 			sb.append(" inner join fetch v.olatResource as res");
-			sb.append(" left join fetch v.lifecycle as lifecycle ");
-			sb.append(" left join fetch v.educationalType as educationalType ");
+			sb.append(" left join fetch v.lifecycle as lifecycle");
+			sb.append(" left join fetch v.educationalType as educationalType");
 		}
 		
 		AddParams addParams = appendMyViewAccessSubSelect(sb, searchParams.isGuestOnly(),
@@ -107,9 +109,33 @@ public class CatalogRepositoryEntryQueries {
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("v.status in :status");
 		}
-		if (searchParams.getEducationalTypeKeys() != null && !searchParams.getEducationalTypeKeys().isEmpty()) {
+		
+		Set<String> resourceTypes = null;
+		for (Collection<String> identToResourceTypes : searchParams.getIdentToResourceTypes().values()) {
+			if (resourceTypes == null) {
+				resourceTypes = new HashSet<>(identToResourceTypes);
+			} else {
+				resourceTypes.retainAll(identToResourceTypes);
+			}
+		}
+		// No check if is empty! retainAll() may have put all keys away, so no result must be found
+		if (resourceTypes != null) {
+			sb.and().append("res.resName in :resourceTypes");
+		}
+		
+		Set<Long> educationalTypeKeys = null;
+		for (Collection<Long> identToEducationalTypeKeys : searchParams.getIdentToEducationalTypeKeys().values()) {
+			if (educationalTypeKeys == null) {
+				educationalTypeKeys = new HashSet<>(identToEducationalTypeKeys);
+			} else {
+				educationalTypeKeys.retainAll(identToEducationalTypeKeys);
+			}
+		}
+		// No check if is empty! retainAll() may have put all keys away, so no result must be found
+		if (educationalTypeKeys != null) {
 			sb.and().append("v.educationalType.key in :educationalTypeKeys");
 		}
+		
 		for (Entry<String, List<TaxonomyLevel>> identToTaxonomyLevels : searchParams.getIdentToTaxonomyLevels().entrySet()) {
 			if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {
 				if (searchParams.isTaxonomyLevelChildren()) {
@@ -193,8 +219,11 @@ public class CatalogRepositoryEntryQueries {
 			Collection<String> status = searchParams.getStatus().stream().map(RepositoryEntryStatusEnum::name).collect(Collectors.toList());
 			dbQuery.setParameter("status", status);
 		}
-		if (searchParams.getEducationalTypeKeys() != null && !searchParams.getEducationalTypeKeys().isEmpty()) {
-			dbQuery.setParameter("educationalTypeKeys", searchParams.getEducationalTypeKeys());
+		if (resourceTypes != null) {
+			dbQuery.setParameter("resourceTypes", resourceTypes);
+		}
+		if (educationalTypeKeys != null) {
+			dbQuery.setParameter("educationalTypeKeys", educationalTypeKeys);
 		}
 		for (Entry<String, List<TaxonomyLevel>> identToTaxonomyLevels : searchParams.getIdentToTaxonomyLevels().entrySet()) {
 			if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {

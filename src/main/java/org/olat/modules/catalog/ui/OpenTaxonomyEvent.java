@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.ui;
 
+import java.util.Collection;
+
 import org.olat.core.gui.control.Event;
 
 /**
@@ -32,14 +34,26 @@ public class OpenTaxonomyEvent extends Event {
 	private static final long serialVersionUID = -1766457998153853128L;
 	
 	private final Long taxonomyLevelKey;
+	private final Collection<Long> educationalTypeKeys;
+	private final Collection<String> resourceTypes;
 	
-	public OpenTaxonomyEvent(Long taxonomyLevelKey) {
+	public OpenTaxonomyEvent(Long taxonomyLevelKey, Collection<Long> educationalTypeKeys, Collection<String> resourceTypes) {
 		super("open.taxonomy");
 		this.taxonomyLevelKey = taxonomyLevelKey;
+		this.educationalTypeKeys = educationalTypeKeys;
+		this.resourceTypes = resourceTypes;
 	}
 
 	public Long getTaxonomyLevelKey() {
 		return taxonomyLevelKey;
+	}
+
+	public Collection<String> getResourceTypes() {
+		return resourceTypes;
+	}
+
+	public Collection<Long> getEducationalTypeKeys() {
+		return educationalTypeKeys;
 	}
 
 }

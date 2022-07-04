@@ -50,8 +50,8 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	
 	private static final String[] ON_KEYS = new String[] { "on" };
 	
-	private StaticTextElement systemNameEl;
-	private FormLink systemNameLink;
+	private StaticTextElement nameEl;
+	private FormLink nameLink;
 	private MultipleSelectionElement enabledEl;
 	
 	private CloseableModalController cmc;
@@ -65,14 +65,24 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	private CatalogV2Service catalogService;
 
 	public AbstractLauncherEditController(UserRequest ureq, WindowControl wControl, CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale(), getTranslator()));
 		this.handler = handler;
 		this.catalogLauncher = catalogLauncher;
 		this.identifier = catalogLauncher!= null? catalogLauncher.getIdentifier(): catalogService.createLauncherIdentifier();
 	}
 
-	protected abstract void initForm(FormItemContainer formLayout);
+	protected abstract void initForm(FormItemContainer generalCont);
+	
+	/**
+	 * Subclasses may add additional parts to the form.
+	 * 
+	 * @param formLayout 
+	 * @param ureq
+	 */
+	protected void addFormPart(FormItemContainer formLayout, UserRequest ureq) {
+		// May be overridden by sub classes.
+	}
 
 	protected abstract String getConfig();
 	
@@ -82,25 +92,34 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setRootForm(mainForm);
+		formLayout.add(generalCont);
+		
 		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
 		nameCont.setLabel("admin.launcher.name", null);
 		nameCont.setElementCssClass("o_inline_cont");
 		nameCont.setRootForm(mainForm);
-		formLayout.add(nameCont);
+		generalCont.add(nameCont);
 		
 		String translateLauncherName = CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier);
-		systemNameEl = uifactory.addStaticTextElement("admin.launcher.name", null, translateLauncherName, nameCont);
+		nameEl = uifactory.addStaticTextElement("admin.launcher.name", null, translateLauncherName, nameCont);
 		
-		systemNameLink = uifactory.addFormLink("admin.launcher.name.edit", nameCont);
+		nameLink = uifactory.addFormLink("admin.launcher.name.edit", nameCont);
 		
 		String[] onValues = new String[]{ translate("on") };
-		enabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.enabled", formLayout, ON_KEYS, onValues);
+		enabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.enabled", generalCont, ON_KEYS, onValues);
 		enabledEl.select(ON_KEYS[0], catalogLauncher == null || catalogLauncher.isEnabled());
 		
-		initForm(formLayout);
+		initForm(generalCont);
 		
+		addFormPart(formLayout, ureq);
+		
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		buttonsWrapperCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
@@ -108,7 +127,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == launcherNameTranslatorCtrl) {
-			systemNameEl.setValue(CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier));
+			nameEl.setValue(CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier));
 			cmc.deactivate();
 			cleanUp();
 		} else if (cmc == source) {
@@ -126,7 +145,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == systemNameLink) {
+		if (source == nameLink) {
 			doLauncherName(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -32,15 +32,21 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +59,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLayoutController extends FormBasicController {
 	
+	private StaticTextElement titleEl;
+	private FormLink titleLink;
 	private FileElement headerBgImageEl;
 	private SingleSelection launcherTaxonomyLevelStyleEl;
+	
+	private CloseableModalController cmc;
+	private SingleKeyTranslatorController titleTranslatorCtrl;
 	
 	@Autowired
 	private CatalogV2Module catalogModule;
@@ -67,6 +78,17 @@ public class CatalogLayoutController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.layout");
+		
+		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
+		nameCont.setLabel("admin.header.search.title", null);
+		nameCont.setElementCssClass("o_inline_cont");
+		nameCont.setRootForm(mainForm);
+		formLayout.add(nameCont);
+		
+		String translateLauncherName = translate("header.search.title");
+		titleEl = uifactory.addStaticTextElement("admin.header.search.title", null, translateLauncherName, nameCont);
+		
+		titleLink = uifactory.addFormLink("admin.header.search.title.edit", nameCont);
 		
 		headerBgImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "admin.header.bg.image", "admin.header.bg.image", formLayout);
 		headerBgImageEl.setExampleKey("admin.header.bg.image.example", null);
@@ -94,7 +116,9 @@ public class CatalogLayoutController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (headerBgImageEl == source) {
+		if (source == titleLink) {
+			doLauncherName(ureq);
+		} else if (headerBgImageEl == source) {
 			if (event instanceof FileElementEvent) {
 				if (FileElementEvent.DELETE.equals(event.getCommand())) {
 					catalogModule.deleteHeaderBgImage();
@@ -121,10 +145,42 @@ public class CatalogLayoutController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == titleTranslatorCtrl) {
+			titleEl.setValue(translate("header.search.title"));
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(titleTranslatorCtrl);
+		removeAsListenerAndDispose(cmc);
+		titleTranslatorCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doLauncherName(UserRequest ureq) {
+		if (guardModalController(titleTranslatorCtrl)) return;
+		
+		titleTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), "header.search.title", CatalogV2UIFactory.class);
+		listenTo(titleTranslatorCtrl);
+
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), "close", titleTranslatorCtrl.getInitialComponent(), true,
+				translate("admin.header.search.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 }

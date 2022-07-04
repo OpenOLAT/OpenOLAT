@@ -122,7 +122,7 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		if (!StringHelper.isLong(catalogFilter.getConfig())) {
 			return null;
 		}

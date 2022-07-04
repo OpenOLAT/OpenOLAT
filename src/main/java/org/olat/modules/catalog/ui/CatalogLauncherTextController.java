@@ -17,36 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.catalog.ui.admin;
+package org.olat.modules.catalog.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.catalog.CatalogLauncher;
-import org.olat.modules.catalog.CatalogLauncherHandler;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * Initial date: 9 Jun 2022<br>
+ * Initial date: 4 Jul 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogLauncherBasicEditController extends AbstractLauncherEditController {
+public class CatalogLauncherTextController extends BasicController {
 
-	public CatalogLauncherBasicEditController(UserRequest ureq, WindowControl wControl, CatalogLauncherHandler handler,
-			CatalogLauncher catalogLauncher) {
-		super(ureq, wControl, handler, catalogLauncher);
-		initForm(ureq);
+	public CatalogLauncherTextController(UserRequest ureq, WindowControl wControl, String text) {
+		super(ureq, wControl);
+		VelocityContainer mainVC = createVelocityContainer("launch_text");
+		mainVC.contextPut("text", text);
+		putInitialPanel(mainVC);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer generalCont) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-
-	@Override
-	protected String getConfig() {
-		return null;
 	}
 
 }

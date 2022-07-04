@@ -105,7 +105,7 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		SelectionValues childrenSV = new SelectionValues();
 		childrenSV.add(SelectionValues.entry(KEY_SHOW, translator.translate("filter.taxonomy.children.show")));
 		FlexiTableMultiSelectionFilter flexiTableFilter = new FlexiTableMultiSelectionFilter(

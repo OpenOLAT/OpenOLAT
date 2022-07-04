@@ -19,27 +19,18 @@
  */
 package org.olat.modules.catalog.launcher;
 
-import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERED_NUMBER_CARDS;
-
-import java.util.Collection;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
-import org.olat.modules.catalog.CatalogV2Service;
-import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
-import org.olat.modules.catalog.ui.CatalogV2UIFactory;
-import org.olat.modules.catalog.ui.admin.CatalogLauncherRandomEditController;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.modules.catalog.ui.CatalogLauncherTextController;
+import org.olat.modules.catalog.ui.admin.CatalogLauncherTextEditController;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
@@ -52,9 +43,10 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
  *
  */
 @Service
-public class RandomHandler implements CatalogLauncherHandler {
+public class TextLauncherHandler implements CatalogLauncherHandler {
 	
-	private static final String TYPE = "random";
+	public static final String I18N_PREFIX = "launcher.text.text.id";
+	private static final String TYPE = "text";
 	
 	private static final XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
@@ -62,10 +54,7 @@ public class RandomHandler implements CatalogLauncherHandler {
 		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias("config", Config.class);
 	}
-	
-	@Autowired
-	private CatalogV2Service catalogService;
-	
+
 	@Override
 	public String getType() {
 		return TYPE;
@@ -78,55 +67,47 @@ public class RandomHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 900;
+		return 1000;
 	}
 
 	@Override
 	public boolean isMultiInstance() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public String getTypeI18nKey() {
-		return "launcher.random.type";
+		return "launcher.text.type";
 	}
 
 	@Override
 	public String getAddI18nKey() {
-		return "launcher.random.add";
+		return "launcher.text.add";
 	}
 
 	@Override
 	public String getEditI18nKey() {
-		return "launcher.random.edit";
+		return "launcher.text.edit";
 	}
 
 	@Override
 	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
-		return null;
+		Config config = fromXML(catalogLauncher.getConfig());
+		String text = translator.translate(I18N_PREFIX + config.i18nSuffix);
+		return Formatter.truncate(StringHelper.truncateText(StringHelper.xssScan(text)), 50);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogLauncher catalogLauncher) {
-		return new CatalogLauncherRandomEditController(ureq, wControl, this, catalogLauncher);
+		return new CatalogLauncherTextEditController(ureq, wControl, this, catalogLauncher);
 	}
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
 			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
-		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
 		Config config = fromXML(catalogLauncher.getConfig());
-		if (config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
-			searchParams.getIdentToEducationalTypeKeys().put(catalogLauncher.getKey().toString(), config.getEducationalTypeKeys());
-		}
-		if (config.getResourceTypes() != null && !config.getResourceTypes().isEmpty()) {
-			searchParams.getIdentToResourceTypes().put(catalogLauncher.getKey().toString(), config.getResourceTypes());
-		}
-		searchParams.setOrderBy(OrderBy.random);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERED_NUMBER_CARDS);
-		
-		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false, null);
+		String text = translator.translate(I18N_PREFIX + config.i18nSuffix);
+		return StringHelper.containsNonWhitespace(text)? new CatalogLauncherTextController(ureq, wControl, text): null;
 	}
 	
 	public Config fromXML(String xml) {
@@ -142,23 +123,14 @@ public class RandomHandler implements CatalogLauncherHandler {
 	
 	public static final class Config {
 		
-		private Collection<Long> educationalTypeKeys;
-		private Collection<String> resourceTypes;
-		
-		public Collection<Long> getEducationalTypeKeys() {
-			return educationalTypeKeys;
+		private String i18nSuffix;
+
+		public String getI18nSuffix() {
+			return i18nSuffix;
 		}
-		
-		public void setEducationalTypeKeys(Collection<Long> educationalTypeKeys) {
-			this.educationalTypeKeys = educationalTypeKeys;
-		}
-		
-		public Collection<String> getResourceTypes() {
-			return resourceTypes;
-		}
-		
-		public void setResourceTypes(Collection<String> resourceTypes) {
-			this.resourceTypes = resourceTypes;
+
+		public void setI18nSuffix(String i18nSuffix) {
+			this.i18nSuffix = i18nSuffix;
 		}
 		
 	}

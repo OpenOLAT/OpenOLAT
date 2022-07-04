@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -51,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLauncherTaxonomyController extends BasicController {
 	
+	private final Collection<Long> educationalTypeKeys;
+	private final Collection<String> resourceTypes;
 	private final MapperKey mapperThumbnailKey;
 	
 	@Autowired
@@ -60,9 +63,12 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 	@Autowired
 	private MapperService mapperService;
 
-	public CatalogLauncherTaxonomyController(UserRequest ureq, WindowControl wControl, List<TaxonomyLevel> taxonomyLevels, String title) {
+	public CatalogLauncherTaxonomyController(UserRequest ureq, WindowControl wControl, String title,
+			List<TaxonomyLevel> taxonomyLevels, Collection<Long> educationalTypeKeys, Collection<String> resourceTypes) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		this.educationalTypeKeys = educationalTypeKeys;
+		this.resourceTypes = resourceTypes;
 		this.mapperThumbnailKey = mapperService.register(null, "taxonomyLevelTeaserImage", new TaxonomyLevelTeaserImageMapper());
 		
 		VelocityContainer mainVC = createVelocityContainer("launch_taxonomy");
@@ -103,11 +109,11 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 			Link link = (Link)source;
 			if("select_tax".equals(link.getCommand())) {
 				Long key = (Long)link.getUserObject();
-				fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key)));
+				fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key), educationalTypeKeys, resourceTypes));
 			}
 		} else if ("select".equals(event.getCommand())) {
 			String key = ureq.getParameter("key");
-			fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key)));
+			fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key), educationalTypeKeys, resourceTypes));
 		}
 	}
 	

@@ -148,7 +148,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 			origFile.renameTo(normalizedFile);
 			
 			this.headerBgImageFilename = normalizedFile.getName();
-			setStringProperty(KEY_HEADER_BG_IMAGE_URI, headerBgImageFilename, true);
+			setStringProperty(KEY_HEADER_BG_IMAGE_URI, this.headerBgImageFilename, true);
 		}
 	}
 	

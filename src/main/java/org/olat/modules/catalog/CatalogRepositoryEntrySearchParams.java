@@ -42,6 +42,8 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
  */
 public class CatalogRepositoryEntrySearchParams {
 	
+	public static final String KEY_LAUNCHER = "launcher";
+	
 	public enum OrderBy {
 		key,
 		type,
@@ -81,8 +83,9 @@ public class CatalogRepositoryEntrySearchParams {
 	private Collection<Long> repositoryEntryKeys;
 	private String author;
 	private Collection<RepositoryEntryStatusEnum> status;
-	private Collection<Long> educationalTypeKeys;
-	private Map<String, List<TaxonomyLevel>> identToTaxonomyLevels = new HashMap<>(3);
+	private Map<String, Collection<String>> identToResourceTypes = new HashMap<>(2);
+	private Map<String, Collection<Long>> identToEducationalTypeKeys = new HashMap<>(2);
+	private Map<String, List<TaxonomyLevel>> identToTaxonomyLevels = new HashMap<>(2);
 	private boolean taxonomyLevelChildren = true;
 	private Boolean openAccess;
 	private Boolean showAccessMethods;
@@ -175,15 +178,15 @@ public class CatalogRepositoryEntrySearchParams {
 	public void setStatus(Collection<RepositoryEntryStatusEnum> status) {
 		this.status = status;
 	}
-
-	public Collection<Long> getEducationalTypeKeys() {
-		return educationalTypeKeys;
-	}
-
-	public void setEducationalTypeKeys(Collection<Long> educationalTypeKeys) {
-		this.educationalTypeKeys = educationalTypeKeys;
-	}
 	
+	public Map<String, Collection<String>> getIdentToResourceTypes() {
+		return identToResourceTypes;
+	}
+
+	public Map<String, Collection<Long>> getIdentToEducationalTypeKeys() {
+		return identToEducationalTypeKeys;
+	}
+
 	public Map<String, List<TaxonomyLevel>> getIdentToTaxonomyLevels() {
 		return identToTaxonomyLevels;
 	}
@@ -261,14 +264,19 @@ public class CatalogRepositoryEntrySearchParams {
 			copy.repositoryEntryKeys = new ArrayList<>(this.repositoryEntryKeys);
 		}
 		copy.author = this.author;
-		if (this.educationalTypeKeys != null) {
-			copy.educationalTypeKeys = new ArrayList<>(this.educationalTypeKeys);
+		copy.identToResourceTypes = new HashMap<>(this.identToResourceTypes.size());
+		for (Map.Entry<String, Collection<String>> entry : this.identToResourceTypes.entrySet()) {
+			copy.identToResourceTypes.put(entry.getKey(), new ArrayList<>(entry.getValue()));
 		}
-		copy.taxonomyLevelChildren = this.taxonomyLevelChildren;
-		copy.identToTaxonomyLevels= new HashMap<>(3);
+		copy.identToEducationalTypeKeys = new HashMap<>(this.identToEducationalTypeKeys.size());
+		for (Map.Entry<String, Collection<Long>> entry : this.identToEducationalTypeKeys.entrySet()) {
+			copy.identToEducationalTypeKeys.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+		}
+		copy.identToTaxonomyLevels = new HashMap<>(this.identToTaxonomyLevels.size());
 		for (Map.Entry<String, List<TaxonomyLevel>> entry : this.identToTaxonomyLevels.entrySet()) {
 			copy.identToTaxonomyLevels.put(entry.getKey(), new ArrayList<>(entry.getValue()));
 		}
+		copy.taxonomyLevelChildren = this.taxonomyLevelChildren;
 		copy.openAccess = this.openAccess;
 		copy.showAccessMethods = this.showAccessMethods;
 		if (this.accessMethods != null) {

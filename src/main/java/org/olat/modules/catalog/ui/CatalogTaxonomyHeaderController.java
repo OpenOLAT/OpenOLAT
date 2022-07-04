@@ -68,10 +68,7 @@ public class CatalogTaxonomyHeaderController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if ("select".equals(event.getCommand())) {
-			String key = ureq.getParameter("key");
-			fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key)));
-		}
+		//
 	}
 
 }

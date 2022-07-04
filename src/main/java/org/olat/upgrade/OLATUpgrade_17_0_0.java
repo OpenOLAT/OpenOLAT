@@ -63,6 +63,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_17.0.0";
 	private static final String RE_PUBLIC_VISIBILE_INIT = "RE PUBLIC VISIBILE INIT";
+	private static final String RE_PUBLISHED_DATE_INIT = "RE PUBLISHED DATE INIT";
 	private static final String OFFER_TO_ORG_INIT = "OFFER TO ORG INIT";
 	private static final String TAXONOMY_TRANSLATIONS = "TAXONOMY TRANSLATIONS";
 	
@@ -107,6 +108,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		
 		allOk &= initRePublicVisible(upgradeManager, uhd);
+		allOk &= initRePublishedDate(upgradeManager, uhd);
 		allOk &= initOfferToOrgs(upgradeManager, uhd);
 		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
 		
@@ -163,6 +165,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 			}
 		}
 	}
+	
 	private Set<Organisation> getRootOrganisations() {
 		return organisationServics.getOrganisations().stream()
 				.filter(org -> org.getParent() == null)
@@ -173,6 +176,53 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select re from repositoryentry re")
 		  .append(" where re.allUsers is true or re.guests is true or re.bookable is true");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.getResultList();
+	}
+	
+	private boolean initRePublishedDate(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(RE_PUBLISHED_DATE_INIT)) {
+			try {
+				log.info("Start re published date initialization.");
+				initRePublishedDate();
+				log.info("All re published date initialized.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(RE_PUBLISHED_DATE_INIT, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	/*
+	 * Best guess to have reasonable courses in the catalog launcher.
+	 */
+	private void initRePublishedDate() {
+		List<RepositoryEntry> entries = getPublishedEntries();
+		
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (RepositoryEntry entry : entries) {
+			entry.setStatusPublishedDate(entry.getCreationDate());
+			dbInstance.getCurrentEntityManager().merge(entry);
+			migrationCounter.incrementAndGet();
+			dbInstance.commitAndCloseSession();
+			if(migrationCounter.get() % 100 == 0) {
+				log.info("Init re public visible: num. of offers: {}", migrationCounter);
+			}
+		}
+	}
+	
+	public List<RepositoryEntry> getPublishedEntries() {
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select v from repositoryentry as v");
+		sb.append(" inner join fetch v.olatResource as res");
+		sb.and().append("v.status ").in(RepositoryEntryStatusEnum.published);
+		sb.and().append("v.statusPublishedDate is null");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)

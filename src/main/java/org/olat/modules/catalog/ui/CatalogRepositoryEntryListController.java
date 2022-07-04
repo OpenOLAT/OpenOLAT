@@ -19,6 +19,7 @@
  */
 package org.olat.modules.catalog.ui;
 
+import static org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.KEY_LAUNCHER;
 import static org.olat.modules.catalog.ui.CatalogMainController.ORES_TYPE_INFOS;
 
 import java.util.ArrayList;
@@ -134,7 +135,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private MapperService mapperService;
 
 	public CatalogRepositoryEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
-			CatalogRepositoryEntrySearchParams searchParams, TaxonomyLevel taxonomyLevel, boolean withSearch) {
+			CatalogRepositoryEntrySearchParams searchParams, boolean withSearch) {
 		super(ureq, wControl, "entry_list");
 		// Order of the translators matters.
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale()));
@@ -142,8 +143,10 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.searchParams = searchParams;
-		this.taxonomyLevel = taxonomyLevel;
 		this.withSearch = withSearch;
+		this.taxonomyLevel = searchParams.getIdentToTaxonomyLevels().containsKey(KEY_LAUNCHER)
+				? searchParams.getIdentToTaxonomyLevels().get(KEY_LAUNCHER).get(0)
+				: null;
 		this.dataSource = new CatalogRepositoryEntryDataSource(searchParams, withSearch, this, getLocale());
 		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.mapperTaxonomyLevelTeaserKey = mapperService.register(null, "taxonomyLevelTeaserImage", new TaxonomyLevelTeaserImageMapper());
@@ -225,7 +228,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		for (CatalogFilter catalogFilter : catalogFilters) {
 			CatalogFilterHandler handler = catalogService.getCatalogFilterHandler(catalogFilter.getType());
 			if (handler != null && handler.isEnabled(searchParams.isGuestOnly())) {
-				FlexiTableExtendedFilter flexiTableFilter = handler.createFlexiTableFilter(getTranslator(), catalogFilter);
+				FlexiTableExtendedFilter flexiTableFilter = handler.createFlexiTableFilter(getTranslator(), searchParams, catalogFilter);
 				if (flexiTableFilter != null) {
 					flexiTableFilters.add(flexiTableFilter);
 				}
@@ -411,7 +414,10 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		if ("ONCLICK".equals(event.getCommand())) {
 			String key = ureq.getParameter("select_taxonomy");
 			if (StringHelper.containsNonWhitespace(key)) {
-				fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key)));
+				fireEvent(ureq, new OpenTaxonomyEvent(
+						Long.valueOf(key),
+						searchParams.getIdentToEducationalTypeKeys().get(KEY_LAUNCHER),
+						searchParams.getIdentToResourceTypes().get(KEY_LAUNCHER)));
 			}
 		}
 		super.event(ureq, source, event);
@@ -433,7 +439,10 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				doOpenDetails(ureq, row);
 			} else if ("select_tax".equals(cmd)){
 				Long key = (Long)link.getUserObject();
-				fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key)));
+				fireEvent(ureq, new OpenTaxonomyEvent(
+						Long.valueOf(key),
+						searchParams.getIdentToEducationalTypeKeys().get(KEY_LAUNCHER),
+						searchParams.getIdentToResourceTypes().get(KEY_LAUNCHER)));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
