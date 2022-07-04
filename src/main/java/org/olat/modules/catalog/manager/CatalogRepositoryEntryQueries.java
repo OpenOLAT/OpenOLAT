@@ -194,7 +194,9 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "displaytext", dbInstance.getDbVendor());
 			if (searchParams.getSerachTaxonomyLevelI18nSuffix() != null && !searchParams.getSerachTaxonomyLevelI18nSuffix().isEmpty()) {
-				sb.append(" or level.i18nSuffix in :serachTaxonomyLevelI18nSuffix");
+				sb.append(" or exists (select reToTax.key from repositoryentrytotaxonomylevel as reToTax");
+				sb.append("  where reToTax.entry.key=v.key");
+				sb.append("    and reToTax.taxonomyLevel.i18nSuffix in :serachTaxonomyLevelI18nSuffix)");
 				serachTaxonomyLevelI18nSuffix = searchParams.getSerachTaxonomyLevelI18nSuffix();
 			}
 			sb.append(")");
