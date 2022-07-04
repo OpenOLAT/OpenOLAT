@@ -595,7 +595,7 @@ public class LTI13PlatformDispatcherDelegate {
 	
 	public void handleNrps(HttpServletRequest request, HttpServletResponse response) {
 		String accept = request.getHeader("accept");
-		if(!"application/vnd.ims.lti-nrps.v2.membershipcontainer+json".equals(accept)) {
+		if(!"application/vnd.ims.lti-nrps.v2.membershipcontainer+json".equals(accept) && !"*/*".equals(accept)) {
 			DispatcherModule.sendBadRequest("", response);
 			return;
 		}

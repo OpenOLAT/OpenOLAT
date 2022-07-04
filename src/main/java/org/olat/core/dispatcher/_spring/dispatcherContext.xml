@@ -104,6 +104,9 @@
 				<entry key="/lti/">
 					<ref bean="ltidispatcherbean" />
 				</entry>
+				<entry key="/mod/">
+					<ref bean="modltidispatcherbean" />
+				</entry>
 			</map>
 		</property>
 	</bean>
