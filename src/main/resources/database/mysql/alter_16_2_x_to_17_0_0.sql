@@ -108,4 +108,12 @@ alter table o_practice_global_item_ref add constraint pract_global_ident_idx for
 create index idx_pract_global_id_uu_idx on o_practice_global_item_ref (fk_identity,p_identifier);
 
 
+-- LTI 1.3
+alter table o_lti_tool_deployment add column l_nrps bool default true;
+alter table o_lti_tool_deployment add column l_context_id varchar(255);
+
+alter table o_lti_tool_deployment add column fk_group_id bigint;
+
+alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
+
 

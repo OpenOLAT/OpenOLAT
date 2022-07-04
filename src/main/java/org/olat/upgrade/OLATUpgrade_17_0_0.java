@@ -38,6 +38,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
@@ -66,6 +68,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private static final String RE_PUBLISHED_DATE_INIT = "RE PUBLISHED DATE INIT";
 	private static final String OFFER_TO_ORG_INIT = "OFFER TO ORG INIT";
 	private static final String TAXONOMY_TRANSLATIONS = "TAXONOMY TRANSLATIONS";
+	private static final String MIGRATE_LTI_13_DEPLOYMENTS = "MIGRATE LTI 13 DEPLOYMENTS";
 	
 	@Autowired
 	private DB dbInstance;
@@ -111,6 +114,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		allOk &= initRePublishedDate(upgradeManager, uhd);
 		allOk &= initOfferToOrgs(upgradeManager, uhd);
 		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
+		allOk &= migrateLTI13ToolDeployment(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -405,4 +409,45 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 			.getResultList();
 	}
 	
+	public boolean migrateLTI13ToolDeployment(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_LTI_13_DEPLOYMENTS)) {
+			try {
+				log.info("Migrate LTI 1.3 deployment context ids.");
+				
+				int counter = 0;
+				List<LTI13ToolDeployment> deployments = getToolDeployment();
+				for(LTI13ToolDeployment deployment:deployments) {
+					((LTI13ToolDeploymentImpl)deployment).setContextId(deployment.getEntry().getKey().toString());
+					dbInstance.getCurrentEntityManager().merge(deployment);
+					
+					if(++counter % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					} else {
+						dbInstance.commit();
+					}
+				}
+				dbInstance.commitAndCloseSession();
+				log.info("End migration LTI 1.3 deployment context ids: {}", deployments.size());
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_LTI_13_DEPLOYMENTS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<LTI13ToolDeployment> getToolDeployment() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select deployment from ltitooldeployment as deployment")
+		  .append(" inner join fetch deployment.tool tool")
+		  .append(" inner join fetch deployment.entry re")
+		  .append(" where deployment.contextId is null");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LTI13ToolDeployment.class)
+				.getResultList();
+	}
 }

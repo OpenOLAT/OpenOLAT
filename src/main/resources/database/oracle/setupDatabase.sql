@@ -2728,6 +2728,7 @@ create table o_lti_tool_deployment (
    creationdate date not null,
    lastmodified date not null,
    l_deployment_id varchar2(128) not null unique,
+   l_context_id varchar(255),
    l_target_url varchar2(1024),
    l_send_attributes varchar2(2048),
    l_send_custom_attributes CLOB,
@@ -2735,6 +2736,7 @@ create table o_lti_tool_deployment (
    l_coach_roles varchar2(2048),
    l_participant_roles varchar2(2048),
    l_assessable number default 0 not null,
+   l_nrps number default 1,
    l_display varchar2(32),
    l_display_height varchar2(32),
    l_display_width varchar2(32),
@@ -2742,6 +2744,7 @@ create table o_lti_tool_deployment (
    fk_tool_id number(20) not null,
    fk_entry_id number(20),
    l_sub_ident varchar2(64),
+   fk_group_id number(20),
    primary key (id)
 );
 
@@ -4775,6 +4778,8 @@ alter table o_lti_tool_deployment add constraint lti_sdep_to_tool_idx foreign ke
 create index idx_lti_sdep_to_tool_idx on o_lti_tool_deployment (fk_tool_id);
 alter table o_lti_tool_deployment add constraint lti_sdep_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 create index idx_lti_sdep_to_re_idx on o_lti_tool_deployment (fk_entry_id);
+alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
+create index idx_dep_to_group_idx on o_lti_tool_deployment (fk_group_id);
 
 alter table o_lti_shared_tool_deployment add constraint unique_deploy_platform unique (l_deployment_id, fk_platform_id);
 alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_platform_id) references o_lti_platform (id);

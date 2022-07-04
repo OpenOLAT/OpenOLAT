@@ -66,14 +66,26 @@ public interface LTI13Service {
 	
 	public void deleteToolsAndDeployments(RepositoryEntryRef ref, String subIdent);
 	
-
-	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13Tool tool, RepositoryEntry entry, String subIdent);
+	/**
+	 * Create a deployment from a tool for a course or a business group.
+	 * 
+	 * @param targetUrl The target URL
+	 * @param tool The tool to deploy
+	 * @param entry The repository entry/course
+	 * @param subIdent The sub-identifier (course element identifier)
+	 * @param businessGroup The business group
+	 * @return The persisted deployment
+	 */
+	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13Tool tool,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 	
 	public LTI13ToolDeployment updateToolDeployment(LTI13ToolDeployment deployment);
 	
 	public LTI13ToolDeployment getToolDeployment(RepositoryEntryRef entry, String subIdent);
 	
 	public LTI13ToolDeployment getToolDeploymentByKey(Long key);
+	
+	public LTI13ToolDeployment getToolDeploymentByContextId(String contextId);
 	
 	public List<LTI13ToolDeployment> getToolDeployments(LTI13Tool tool);
 	

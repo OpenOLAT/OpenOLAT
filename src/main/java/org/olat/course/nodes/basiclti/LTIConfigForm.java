@@ -1017,7 +1017,8 @@ public class LTIConfigForm extends FormBasicController {
 			backupToolDeployement = null;
 		}
 		if(toolDeployement == null || !toolDeployement.getTool().equals(tool)) {
-			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent);
+			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent, null);
+			toolDeployement.setNameAndRolesProvisioningServicesEnabled(true);
 		} else {
 			dbInstance.commit();// make sure the tool is persisted
 			toolDeployement = lti13Service.getToolDeploymentByKey(toolDeployement.getKey());

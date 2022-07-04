@@ -102,7 +102,7 @@ public class LTI13Dispatcher implements Dispatcher {
 			} else if("auth".equals(first)) {
 				platformDelegate.handleAuthorization(request, response);// tool
 			} else  if("nrps".equals(first)) {
-				platformDelegate.handleNrps(request, response);// tool
+				platformDelegate.handleNrps(path, request, response);// tool
 			} else if("ags".equals(first)) {
 				platformDelegate.handleAgs(path, request, response);// tool
 			} else if("token".equals(first)) {

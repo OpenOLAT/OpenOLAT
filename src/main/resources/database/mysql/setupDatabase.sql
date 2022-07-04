@@ -2684,6 +2684,7 @@ create table o_lti_tool_deployment (
    creationdate datetime not null,
    lastmodified datetime not null,
    l_deployment_id varchar(128) not null unique,
+   l_context_id varchar(255),
    l_target_url varchar(1024),
    l_send_attributes varchar(2048),
    l_send_custom_attributes text,
@@ -2691,6 +2692,7 @@ create table o_lti_tool_deployment (
    l_coach_roles varchar(2048),
    l_participant_roles varchar(2048),
    l_assessable bool default false not null,
+   l_nrps bool default true not null,
    l_display varchar(32),
    l_display_height varchar(32),
    l_display_width varchar(32),
@@ -2698,6 +2700,7 @@ create table o_lti_tool_deployment (
    fk_tool_id bigint not null,
    fk_entry_id bigint,
    l_sub_ident varchar(64),
+   fk_group_id bigint,
    primary key (id)
 );
 
@@ -4663,6 +4666,7 @@ alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk
 -- LTI 1.3
 alter table o_lti_tool_deployment add constraint lti_sdep_to_tool_idx foreign key (fk_tool_id) references o_lti_tool (id);
 alter table o_lti_tool_deployment add constraint lti_sdep_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
 
 alter table o_lti_shared_tool_deployment add constraint unique_deploy_platform unique (l_deployment_id, fk_platform_id);
 alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_platform_id) references o_lti_platform (id);
