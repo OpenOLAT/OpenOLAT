@@ -106,9 +106,9 @@
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.browserVersion>102.0.5005.61</test.env.webdriver.browserVersion>
+	    <test.env.webdriver.browserVersion>103.0.5060.53</test.env.webdriver.browserVersion>
 	    <test.env.webdriver.firefox.version>v0.31.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>102.0.5005.61</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>103.0.5060.53</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
