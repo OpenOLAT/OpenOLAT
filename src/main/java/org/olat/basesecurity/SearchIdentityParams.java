@@ -355,7 +355,7 @@ public class SearchIdentityParams {
 	/**
 	 * These status will override the one set with setStatus()
 	 * 
-	 * @param statusList A lsit of status
+	 * @param statusList A list of status
 	 */
 	public void setExactStatusList(List<Integer> statusList) {
 		this.exactStatusList = statusList;

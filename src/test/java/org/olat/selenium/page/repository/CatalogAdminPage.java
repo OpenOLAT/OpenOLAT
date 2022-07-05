@@ -51,6 +51,7 @@ public class CatalogAdminPage {
 		OOGraphene.waitElement(addNodeBy, browser);
 		browser.findElement(addNodeBy).click();
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_name input[type='text']");
@@ -63,7 +64,7 @@ public class CatalogAdminPage {
 		
 		//save
 		By saveBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_catalog_entry_form_buttons button.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.moveAndClick(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		By nodeTitleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[contains(text(),'" + shortTitle + "')]");
 		OOGraphene.waitElement(nodeTitleBy, browser);

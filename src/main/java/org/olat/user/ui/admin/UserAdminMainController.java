@@ -455,7 +455,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, Integer status) {
-		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(null, null, status);
+		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(null, null, null);
+		predefinedQuery.setExactStatusList(List.of(status));
 		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, false, true);
 	}
 	

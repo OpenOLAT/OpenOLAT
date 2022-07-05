@@ -21,7 +21,6 @@ package org.olat.selenium.page.group;
 
 import java.util.List;
 
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -123,14 +122,12 @@ public class MembersWizardPage {
 	}
 	
 	private MembersWizardPage searchMemberForm(UserVO user, boolean admin) {
-		//Search by username
-		By usernameBy = By.cssSelector(".o_sel_usersearch_searchform input[type='text']");
-		OOGraphene.waitElement(usernameBy, browser);
+		//Search by username or first name
+		By firstFieldBy = By.xpath("//fieldset[contains(@class,'o_sel_usersearch_searchform')]//input[@type='text'][1]");
+		OOGraphene.waitElement(firstFieldBy, browser);
 		
-		List<WebElement> searchFields = browser.findElements(usernameBy);
-		Assert.assertFalse(searchFields.isEmpty());
 		String search = admin ? user.getLogin() : user.getFirstName();
-		searchFields.get(0).sendKeys(search);
+		browser.findElement(firstFieldBy).sendKeys(search);
 
 		try {
 			By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
