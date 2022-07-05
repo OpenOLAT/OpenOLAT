@@ -41,9 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HelpSupportController extends BasicController implements GenericEventListener {
 
-	private final VelocityContainer content;
 	private ContactFormController contactForm;
-	private String contactEmail = null;
 
 	@Autowired
 	private HelpModule helpModule;
@@ -57,14 +55,13 @@ public class HelpSupportController extends BasicController implements GenericEve
 	public HelpSupportController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale()));
-		this.content = createVelocityContainer("contact");
+		VelocityContainer content = createVelocityContainer("contact");
 
 		// Read the destination email from the helpModule
-		contactEmail = helpModule.getSupportEmail();
+		String contactEmail = helpModule.getSupportEmail();
 
 		ContactMessage contactMessage = new ContactMessage(ureq.getIdentity());
-		ContactList contactList = new ContactList(contactEmail);
-
+		ContactList contactList = new ContactList(translate("help.mail.to"));
 		contactList.add(contactEmail);
 		contactMessage.addEmailTo(contactList);
 
@@ -87,7 +84,6 @@ public class HelpSupportController extends BasicController implements GenericEve
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			} else if(event.equals(Event.DONE_EVENT)) {
 				fireEvent(ureq, Event.DONE_EVENT);
-
 			}
 		}
 		super.event(ureq, source, event);
