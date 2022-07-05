@@ -90,12 +90,12 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 		} else {
 			List<Integer> exactStatusList = getStatusFromFilter(filters);
 			if(exactStatusList.isEmpty()) {
-				if(preselectedStatusList == null) {
+				if(preselectedStatusList == null || preselectedStatusList.isEmpty()) {
 					searchParams.setStatus(Identity.STATUS_VISIBLE_LIMIT);
-					searchParams.setExactStatusList(preselectedStatusList);
+					searchParams.setExactStatusList(List.of());
 				} else {
 					searchParams.setStatus(null);
-					searchParams.setExactStatusList(List.of());
+					searchParams.setExactStatusList(preselectedStatusList);
 				}
 			} else {
 				searchParams.setStatus(null);
