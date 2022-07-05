@@ -195,7 +195,7 @@ public class GroupTaskToCoachPage {
 			browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		}
 		
-		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form a.btn.o_sel_assessment_form_save_and_done");
+		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form button.btn.o_sel_assessment_form_save_and_done");
 		OOGraphene.click(saveAndCloseBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
