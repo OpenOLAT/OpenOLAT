@@ -1052,9 +1052,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21EditorPage edit() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
 
 		By editBy = By.xpath("//ul[contains(@class,'o_sel_repository_tools')]//a[contains(@onclick,'edit.cmd')]");
 		browser.findElement(editBy).click();
@@ -1087,9 +1085,7 @@ public class QTI21Page {
 	private QTI21Page openAdministrationMenu() {
 		By toolsLinkBy = By.cssSelector("ul.o_tools li.o_tool_dropdown a.o_sel_repository_tools");
 		OOGraphene.waitElement(toolsLinkBy, browser);
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
 		return this;
 	}
 	

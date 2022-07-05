@@ -333,10 +333,10 @@ public class OOGraphene {
 		if(move) {
 			scrollTo(buttonBy, browser);
 			browser.findElement(buttonBy).click();
-			OOGraphene.waitBusyAndScrollTop(browser);
+			waitBusyAndScrollTop(browser);
 		} else {
 			browser.findElement(buttonBy).click();
-			OOGraphene.waitBusy(browser);
+			waitBusy(browser);
 		}
 	}
 	
