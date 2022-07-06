@@ -174,7 +174,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Dropdown addItemTools, changeItemDropDown;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
 			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
-			newFIBLink, newNumericalLink, newInlineChoiceLink, newHotspotLink,
+			newFIBLink, newInlineChoiceLink, newNumericalLink, newHotspotLink,
 			newHottextLink, newOrderLink, newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink;
 	private Link importFromTableLink;
@@ -306,12 +306,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newFIBLink = LinkFactory.createToolLink("new.fib", translate("new.fib"), this, "o_mi_qtifib");
 		newFIBLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newFIBLink);
-		newNumericalLink = LinkFactory.createToolLink("new.fib.numerical", translate("new.fib.numerical"), this, "o_mi_qtinumerical");
-		newNumericalLink.setDomReplacementWrapperRequired(false);
-		addItemTools.addComponent(newNumericalLink);
 		newInlineChoiceLink = LinkFactory.createToolLink("new.inlinechoice", translate("new.inlinechoice"), this, "o_mi_qtiinlinechoice");
 		newInlineChoiceLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newInlineChoiceLink);
+		newNumericalLink = LinkFactory.createToolLink("new.fib.numerical", translate("new.fib.numerical"), this, "o_mi_qtinumerical");
+		newNumericalLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newNumericalLink);
 		newHottextLink = LinkFactory.createToolLink("new.hottext", translate("new.hottext"), this, "o_mi_qtihottext");
 		newHottextLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newHottextLink);

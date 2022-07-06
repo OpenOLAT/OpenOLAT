@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -317,11 +318,31 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		} else {
 			globalInlineChoices.add(index, globalInlineChoice);
 		}
+		
+		for(InlineChoiceInteractionEntry interactionEntry:inlineChoiceInteractions) {
+			InlineChoice newChoice = new InlineChoice(interactionEntry.getInteraction());
+			Identifier choiceIdentifier = generateIdentifier(globalInlineChoice);
+			newChoice.setIdentifier(choiceIdentifier);
+			newChoice.getTextOrVariables().add(new TextRun(newChoice, globalInlineChoice.getText()));
+			interactionEntry.getInlineChoices().add(newChoice);
+		}
+		
 		return globalInlineChoice;
 	}
 	
-	public void removeGlobalInlineChoice(GlobalInlineChoice choice) {
-		globalInlineChoices.remove(choice);
+	public void removeGlobalInlineChoice(GlobalInlineChoice globalChoice) {
+		String globalIdentifier = globalChoice.getIdentifier().toString();
+		globalInlineChoices.remove(globalChoice);
+		
+		for(InlineChoiceInteractionEntry interactionEntry:inlineChoiceInteractions) {
+			List<InlineChoice> choices = interactionEntry.getInlineChoices();
+			for(Iterator<InlineChoice> choiceIt=choices.iterator(); choiceIt.hasNext(); ) {
+				InlineChoice choice = choiceIt.next();
+				if(choice.getIdentifier().toString().startsWith(globalIdentifier)) {
+					choiceIt.remove();
+				}
+			}
+		}
 	}
 
 	public ScoreEvaluation getScoreEvaluationMode() {
@@ -397,8 +418,8 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 			
 			for(GlobalInlineChoice missingGlobalInlineChoice:missingGlobalInlineChoices ) {
 				InlineChoice copy = new InlineChoice(inlineChoiceInteraction);
-				String choiceIdentifier = missingGlobalInlineChoice.getIdentifier().toString();
-				copy.setIdentifier(Identifier.parseString(choiceIdentifier));
+				Identifier choiceIdentifier = generateIdentifier(missingGlobalInlineChoice);
+				copy.setIdentifier(choiceIdentifier);
 				copy.getTextOrVariables().add(new TextRun(copy, missingGlobalInlineChoice.getText()));
 				inlineChoiceInteraction.getInlineChoices().add(copy);
 			}
@@ -855,6 +876,12 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		public List<InlineChoice> getInlineChoices() {
 			return inlineChoices;
+		}
+		
+		public InlineChoice getInlineChoice(Identifier identifier) {
+			return inlineChoices.stream()
+					.filter(choice -> identifier.equals(choice.getIdentifier()))
+					.findFirst().orElse(null);
 		}
 
 		public boolean isShuffle() {

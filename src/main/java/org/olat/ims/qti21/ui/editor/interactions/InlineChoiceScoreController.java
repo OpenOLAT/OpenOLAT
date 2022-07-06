@@ -286,6 +286,8 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(assessmentModeEl.isOneSelected()) {
 			updateScoresUI();
+			onPerAnswerSelectionDefaultsScore();
+			markDirty();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -293,7 +295,32 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 	private void updateScoresUI() {
 		boolean perAnswer = assessmentModeEl.isSelected(1);
 		scoreCont.setVisible(perAnswer);
-		
+	}
+	
+	/**
+	 * Fill the scores with default values if not already set.
+	 */
+	private void onPerAnswerSelectionDefaultsScore() {
+		boolean perAnswer = assessmentModeEl.isSelected(1);
+		if(perAnswer) {
+			for(InlineChoiceInteractionWrapper wrapper:wrappers) {
+				InlineChoiceInteractionEntry interactionEntry = wrapper.getInlineChoiceInteractionEntry();
+				Identifier correctResponseId = interactionEntry.getCorrectResponseId();
+				
+				List<InlineChoiceWrapper> choiceWrappers = wrapper.getInlineChoices();
+				if(choiceWrappers != null) {
+					for(InlineChoiceWrapper choiceWrapper:choiceWrappers) {
+						if(!StringHelper.containsNonWhitespace(choiceWrapper.getPointsEl().getValue())) {
+							if(correctResponseId != null && correctResponseId.equals(choiceWrapper.getIdentifier())) {
+								choiceWrapper.getPointsEl().setValue("1");
+							} else {
+								choiceWrapper.getPointsEl().setValue("0");
+							}
+						}
+					}
+				}	
+			}	
+		}
 	}
 	
 	@Override
@@ -355,6 +382,10 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		
 		public String getId() {
 			return inlineChoice.getIdentifier().toString();
+		}
+		
+		public Identifier getIdentifier() {
+			return inlineChoice.getIdentifier();
 		}
 		
 		public InlineChoice getInlineChoice() {

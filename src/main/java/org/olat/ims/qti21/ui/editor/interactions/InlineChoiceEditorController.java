@@ -46,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -58,6 +59,7 @@ import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
@@ -200,16 +202,18 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(textEl == source) {
-			String cmd = event.getCommand();
+			String cmd = ureq.getParameter("qcmd");
 			if("inlinechoiceinteraction".equals(cmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
 				String selectedText = ureq.getParameter("selectedText");
 				String newEntry = ureq.getParameter("newEntry");
 				String emptySelection = ureq.getParameter("emptySelection");
+				doCommitGlobalChoices();
 				doInlineChoiceInteraction(ureq, responseIdentifier, selectedText, "true".equals(emptySelection), "true".equals(newEntry));
 			} else if("copy-inlinechoice".equals(cmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
 				String sourceResponseIdentifier = ureq.getParameter("sourceResponseIdentifier");
+				doCommitGlobalChoices();
 				doCopyInlineChoice(responseIdentifier, sourceResponseIdentifier);
 			}
 		} else if(addGlobalChoiceButton == source) {
@@ -231,6 +235,38 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+
+		String questionText = textEl.getRawValue();
+		if(!StringHelper.containsNonWhitespace(questionText)) {
+			textEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!questionText.contains("<inlinechoiceinteraction")) {
+			textEl.setErrorKey("error.missing.inlinechoice", null);
+			allOk &= false;
+		} else if(!validateCorrectResponses()) {
+			textEl.setErrorKey("error.missing.inlinechoice.missing.correct", null);
+			allOk &= false;
+		}
+
+		return allOk;
+	}
+	
+	private boolean validateCorrectResponses() {
+		boolean allOk = true;
+		
+		for(InlineChoiceInteractionEntry interactionEntry:itemBuilder.getInteractions()) {
+			Identifier correctResponseId = interactionEntry.getCorrectResponseId();
+			if(correctResponseId == null || interactionEntry.getInlineChoice(correctResponseId) == null) {
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -261,8 +297,22 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	
 	private void doCommitGlobalChoices() {
 		for(GlobalInlineChoiceWrapper globalChoicesWrapper:globalChoicesWrappers) {
-			String text = globalChoicesWrapper.getChoiceEl().getValue();
-			globalChoicesWrapper.getInlineChoice().setText(text);
+			String globalText = globalChoicesWrapper.getChoiceEl().getValue();
+			globalChoicesWrapper.getInlineChoice().setText(globalText);
+			String globalIdentifier = globalChoicesWrapper.getInlineChoiceIdentifier().toString();
+			
+			if(StringHelper.containsNoneOfCoDouSemi(globalIdentifier) && globalIdentifier.length() > 16) {
+				for(InlineChoiceInteractionEntry interactionEntry:itemBuilder.getInteractions()) {
+					List<InlineChoice> choices = interactionEntry.getInlineChoices();
+					for(InlineChoice choice:choices) {
+						String choiceIdentifier = choice.getIdentifier().toString();
+						if(choiceIdentifier.startsWith(globalIdentifier)) {
+							choice.getTextOrVariables().clear();
+							choice.getTextOrVariables().add(new TextRun(choice, globalText));
+						}
+					}
+				}	
+			}
 		}
 	}
 	

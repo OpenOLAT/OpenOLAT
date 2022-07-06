@@ -562,7 +562,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 
-		tabbedPane.addTab(translate("form.order"), "o_sel_assessment_item_order", itemEditor);
+		tabbedPane.addTab(translate("form.inlinechoice"), "o_sel_assessment_item_inlinechoice", itemEditor);
 		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return inlineChoiceItemBuilder;
