@@ -537,6 +537,10 @@
 .checkbox label.o_checkbox_warning {
 	color: $state-warning-text;
 }
+.o_checkbox_h_aligned {
+	display: flex;
+	align-items: center;
+}
 
 /* choice element */
 .o_choice_checkrow,

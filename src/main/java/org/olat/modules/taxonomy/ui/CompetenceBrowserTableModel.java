@@ -48,6 +48,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 			case key: return tableRow.getKey();
 			case competences: return tableRow.getTaxonomyOrLevel();
 			case identifier: return tableRow.getIdentifier();
+			case externalId: return tableRow.getExternalId();
 			case details: return tableRow.getDetailsLink();
 			default: return "ERROR";
 		}
@@ -91,6 +92,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 		key("table.header.key"),
 		competences("table.header.competence"),
 		identifier("table.header.taxonomy.level.identifier"),
+		externalId("table.header.taxonomy.level.externalId"),
 		details("table.header.info", "o_icon o_icon_fw o_icon_description"),
 		type("table.header.taxonomy.level.type");
 		

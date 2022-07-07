@@ -179,7 +179,10 @@ public class CompetencesEditController extends FormBasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			initFormEditableState(false);
 		} else if(source == openBrowserLink) {
-			ControllerCreator competenceBrowserCreator = CompetenceBrowserController::new;
+			List<Taxonomy> linkedTaxonomies = portfolioModule.getLinkedTaxonomies();
+			List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(linkedTaxonomies);
+			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> new CompetenceBrowserController(lureq,
+					lwControl, linkedTaxonomies, taxonomyLevels, false);
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
 			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		}

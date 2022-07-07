@@ -155,6 +155,16 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 		}
 	}
 	
+	public String getExternalId() {
+		if (taxonomyLevel != null) {
+			return taxonomyLevel.getExternalId();
+		} else if (taxonomy != null) {
+			return taxonomy.getExternalId();
+		} else {
+			return null;
+		}
+	}
+	
 	public String getDisplayName() {
 		if (taxonomyLevel != null) {
 			return displayName;

@@ -66,6 +66,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean domReplacementWrapperRequired = true;
+	private boolean horizontallyAlignedCheckboxes = false;
 	private String nonSelectedText = "";
 	private ConsumableBoolean formRequestEval = new ConsumableBoolean(false);
 
@@ -143,6 +144,15 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void setEscapeHtml(boolean escapeHtml) {
 		this.escapeHtml = escapeHtml;
+	}
+
+	public boolean isHorizontallyAlignedCheckboxes() {
+		return horizontallyAlignedCheckboxes;
+	}
+
+	@Override
+	public void setHorizontallyAlignedCheckboxes(boolean horizontallyAlignedCheckboxes) {
+		this.horizontallyAlignedCheckboxes = horizontallyAlignedCheckboxes;
 	}
 
 	@Override

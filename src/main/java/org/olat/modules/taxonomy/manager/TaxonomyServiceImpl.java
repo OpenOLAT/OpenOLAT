@@ -23,6 +23,7 @@ import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -142,13 +143,19 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref) {
-		return taxonomyLevelDao.getLevels(ref);
+		Collection<? extends TaxonomyRef> refs= ref != null? Collections.singletonList(ref): Collections.emptyList();
+		return taxonomyLevelDao.getLevels(refs);
+	}
+	
+	@Override
+	public List<TaxonomyLevel> getTaxonomyLevels(Collection<? extends TaxonomyRef> refs) {
+		return taxonomyLevelDao.getLevels(refs);
 	}
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref, TaxonomyLevelSearchParameters searchParams) {
 		if(searchParams == null) {
-			return taxonomyLevelDao.getLevels(ref);
+			return taxonomyLevelDao.getLevels(Collections.singletonList(ref));
 		}
 		return taxonomyLevelDao.searchLevels(ref, searchParams);
 	}

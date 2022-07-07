@@ -112,6 +112,12 @@ public class SelectionValues {
 		keyValues.removeIf(kv -> kv.getKey().equals(key));
 	}
 	
+	public void cropEnd(int toIndex) {
+		if (keyValues.size() > toIndex + 1) {
+			keyValues = new ArrayList<>(keyValues.subList(0, toIndex));
+		}
+	}
+	
 	public SelectionValue get(String key) {
 		return keyValues.stream().filter(kv -> key.equals(kv.getKey())).findFirst().orElse(null);
 	}

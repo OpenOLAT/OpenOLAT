@@ -97,6 +97,8 @@ public interface TaxonomyService {
 	 */
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref);
 	
+	public List<TaxonomyLevel> getTaxonomyLevels(Collection<? extends TaxonomyRef> refs);
+	
 	/**
 	 * @param ref The root taxonomy (optional)
 	 * @param searchParams Search parameters

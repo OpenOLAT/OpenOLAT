@@ -181,20 +181,21 @@ public class TaxonomyLevelDAO implements InitializingBean {
 				.getResultList();
 	}
 	
-	public List<TaxonomyLevel> getLevels(TaxonomyRef taxonomy) {
+	public List<TaxonomyLevel> getLevels(Collection<? extends TaxonomyRef> refs) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
 		  .append(" left join fetch level.type as type")
 		  .append(" inner join fetch level.taxonomy as taxonomy");
-		if(taxonomy != null) {
-			sb.append(" where level.taxonomy.key=:taxonomyKey");
+		if(refs != null && !refs.isEmpty()) {
+			sb.append(" where level.taxonomy.key in :taxonomyKeys");
 		}
 		
 		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class);
-		if(taxonomy != null) {
-			query.setParameter("taxonomyKey", taxonomy.getKey());
+		if(refs != null && !refs.isEmpty()) {
+			List<Long> taxonomyKeys = refs.stream().map(TaxonomyRef::getKey).collect(Collectors.toList());
+			query.setParameter("taxonomyKeys", taxonomyKeys);
 		}
 		return query.getResultList();
 	}

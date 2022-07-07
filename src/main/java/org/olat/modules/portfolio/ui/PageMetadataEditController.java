@@ -830,7 +830,10 @@ public class PageMetadataEditController extends FormBasicController {
 			sectionsEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
 			bindersEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
 		} else if (openCompetenceBrowserLink == source) {
-			ControllerCreator competenceBrowserCreator = CompetenceBrowserController::new;
+			List<Taxonomy> linkedTaxonomies = portfolioV2Module.getLinkedTaxonomies();
+			List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(linkedTaxonomies);
+			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> new CompetenceBrowserController(lureq,
+					lwControl, linkedTaxonomies, taxonomyLevels, false);
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
 			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		} else if(source instanceof FormLink) {

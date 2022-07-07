@@ -735,7 +735,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		if(qpoolTaxonomy == null) {
 			return new ArrayList<>();
 		}
-		return taxonomyLevelDao.getLevels(qpoolTaxonomy);
+		return taxonomyLevelDao.getLevels(Collections.singletonList(qpoolTaxonomy));
 	}
 
 	@Override

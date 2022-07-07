@@ -174,7 +174,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		List<TaxonomyLevel> descendants = null;
 		Taxonomy taxonomy = getTaxonomy(config);
 		if (taxonomy != null) {
-			descendants = taxonomyLevelDao.getLevels(taxonomy);
+			descendants = taxonomyLevelDao.getLevels(Collections.singletonList(taxonomy));
 		} else {
 			configTaxonomyLevel = getTaxonomyLevel(config);
 			if (configTaxonomyLevel != null) {

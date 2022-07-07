@@ -30,6 +30,7 @@ import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
@@ -115,6 +116,9 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionImpl;
 
 /**
  * Factory class to create the flexible form elements.
@@ -338,6 +342,14 @@ public class FormUIFactory {
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name, String i18nLabel,
 			FormItemContainer formLayout, WindowControl wControl, AutoCompletionSource source) {
 		AutoCompletionMultiSelectionImpl acms = new AutoCompletionMultiSelectionImpl(wControl, name, source);
+		setLabelIfNotNull(i18nLabel, acms);
+		formLayout.add(acms);
+		return acms;
+	}
+	
+	public TaxonomyLevelSelection addTaxonomyLevelSelection(String name, String i18nLabel, FormItemContainer formLayout,
+			WindowControl wControl, Set<TaxonomyLevel> allTaxonomyLevels) {
+		TaxonomyLevelSelectionImpl acms = new TaxonomyLevelSelectionImpl(wControl, name, allTaxonomyLevels);
 		setLabelIfNotNull(i18nLabel, acms);
 		formLayout.add(acms);
 		return acms;

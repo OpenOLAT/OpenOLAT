@@ -355,6 +355,9 @@ a.o_filter_clear {
 .o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {
 	margin: 5px 0 0 0;
 }
+.o_breadcrumb.o_table_flexi_breadcrumb + .o_table_batch_buttons.o_table_batch_show {
+	margin-top: 5px;
+}
 
 div.o_table_flexi div.o_table_flexi_leaf  {
 	margin-left: 1.55em;

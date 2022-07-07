@@ -135,7 +135,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-3", random(), "A level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commit();
 		
-		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(taxonomy);
+		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(List.of(taxonomy));
 		Assert.assertNotNull(levels);
 		Assert.assertTrue(levels.contains(level));
 	}
