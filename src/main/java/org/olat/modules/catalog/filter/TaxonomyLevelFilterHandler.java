@@ -76,7 +76,7 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 
 	@Override
 	public boolean isEnabled(boolean isGuestOnly) {
-		return taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		return taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 	}
 
 	@Override

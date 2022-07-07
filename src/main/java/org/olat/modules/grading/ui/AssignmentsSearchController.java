@@ -62,7 +62,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
@@ -135,9 +134,9 @@ public class AssignmentsSearchController extends FormBasicController {
 		formLayout.add(rightContainer);
 		rightContainer.setRootForm(mainForm);
 		
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if(StringHelper.isLong(taxonomyTreeKey) && taxonomyModule.isEnabled()) {
-			initFormTaxonomy(rightContainer, new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey)));
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if(taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
+			initFormTaxonomy(rightContainer, taxonomyRefs);
 		}
 		
 		SelectionValues empty = new SelectionValues();
@@ -204,8 +203,8 @@ public class AssignmentsSearchController extends FormBasicController {
 		passedEl = uifactory.addDropdownSingleselect("search.passed", leftContainer, passedKeys, passedValues);
 	}
 	
-	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
-		allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+	private void initFormTaxonomy(FormItemContainer formLayout, List<TaxonomyRef> taxonomyRefs) {
+		allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
 
 		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {

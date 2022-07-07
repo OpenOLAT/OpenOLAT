@@ -132,6 +132,7 @@ public class RepositoyUIFactory {
 	}
 	
 	public static SelectionValues createTaxonomyLevelKV(Translator translator, List<TaxonomyLevel> allTaxonomyLevels) {
+		boolean multiTaxonomy = allTaxonomyLevels.stream().map(TaxonomyLevel::getTaxonomy).distinct().count() > 1;
 		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {
 			String key = Long.toString(level.getKey());
@@ -139,6 +140,9 @@ public class RepositoyUIFactory {
 			addParentNames(translator, names, level);
 			Collections.reverse(names);
 			String value = String.join(" / ", names);
+			if (multiTaxonomy) {
+				value += level.getTaxonomy().getDisplayName() + ": ";
+			}
 			keyValues.add(entry(key, value));
 		}
 		keyValues.sort(VALUE_ASC);

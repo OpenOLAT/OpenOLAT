@@ -29,7 +29,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
@@ -64,7 +63,7 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 
 	@Override
 	public boolean isEnabled(boolean isGuestOnly) {
-		return taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		return taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 	}
 
 	@Override

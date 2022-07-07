@@ -58,9 +58,9 @@ import org.olat.course.CourseModule;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -105,6 +105,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -217,15 +219,14 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		authors.setDisplaySize(60);
 		authors.setEnabled(!readOnly);
 		
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if(StringHelper.isLong(taxonomyTreeKey)) {
-			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
 			taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
-			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRef));
+			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
 			
 			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", "cif.taxonomy.levels", formLayout,
 					getWindowControl(), allTaxonomieLevels);
-			taxonomyLevelEl.setSelection(repositoryService.getTaxonomy(repositoryEntry));
+			taxonomyLevelEl.setSelection(taxonomyLevels);
 			if (catalogModule.isEnabled()) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}

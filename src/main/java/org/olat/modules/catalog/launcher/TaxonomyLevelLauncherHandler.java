@@ -85,7 +85,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 
 	@Override
 	public boolean isEnabled() {
-		return taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		return taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 	}
 
 	@Override

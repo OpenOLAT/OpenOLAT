@@ -150,7 +150,7 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		
 		Map<Long,List<TaxonomyLevel>> levelsMap;
-		if(!viewImpls.isEmpty() && taxonomyModule.isEnabled() && StringHelper.containsNonWhitespace(repositoryModule.getTaxonomyTreeKey())) {
+		if(!viewImpls.isEmpty() && taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty()) {
 			levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevelsByEntryKeys(repoKeys);
 		} else {
 			levelsMap = Collections.emptyMap();

@@ -347,7 +347,7 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 
 	private boolean searchTaxonomyLevel(TaxonomyLevel taxonomylevel, String searchText) {
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomylevel);
-		return displayName.toLowerCase().indexOf(searchText) > 0;
+		return displayName.toLowerCase().indexOf(searchText) > -1;
 	}
 
 	private void doResetQuickSearch() {

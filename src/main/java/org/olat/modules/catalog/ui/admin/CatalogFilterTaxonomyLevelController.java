@@ -33,7 +33,6 @@ import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -63,10 +62,9 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 
 	@Override
 	protected void initForm(FormItemContainer formLayout) {
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if (StringHelper.isLong(taxonomyTreeKey)) {
-			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
-			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (!taxonomyRefs.isEmpty()) {
+			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
 			SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
 			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", formLayout,
 					keyValues.keys(), keyValues.values());

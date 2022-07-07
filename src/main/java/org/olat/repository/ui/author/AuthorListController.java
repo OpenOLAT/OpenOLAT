@@ -140,7 +140,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -284,7 +283,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		isGuestOnly = roles.isGuestOnly();
 		hasAdministratorRight = roles.isAdministrator() || roles.isLearnResourceManager();
 		hasAuthorRight =  hasAdministratorRight || roles.isAuthor();
-		taxonomyEnabled = taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		taxonomyEnabled = taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this, taxonomyEnabled);
 		initForm(ureq);
@@ -305,7 +304,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		isGuestOnly = roles.isGuestOnly();
 		hasAdministratorRight = roles.isAdministrator() || roles.isLearnResourceManager();
 		hasAuthorRight =  hasAdministratorRight || roles.isAuthor();
-		taxonomyEnabled = taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		taxonomyEnabled = taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this, taxonomyEnabled);
 		initForm(ureq);
@@ -716,10 +715,12 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		// taxonomy
-		SelectionValues taxonomyValues = getTaxonomyLevels();
-		if(taxonomyValues != null) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"),
-					AuthorSourceFilter.TAXONOMYLEVEL.name(), taxonomyValues, false));
+		if (taxonomyEnabled) {
+			SelectionValues taxonomyValues = getTaxonomyLevels();
+			if(taxonomyValues != null) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"),
+						AuthorSourceFilter.TAXONOMYLEVEL.name(), taxonomyValues, false));
+			}
 		}
 		
 		// license
@@ -739,33 +740,13 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private SelectionValues getTaxonomyLevels() {
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if(!StringHelper.isLong(taxonomyTreeKey)) {
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (taxonomyRefs.isEmpty()) {
 			return null;
 		}
 		
-		TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
-		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
-
-		SelectionValues keyValues = new SelectionValues();
-		for (TaxonomyLevel level:allTaxonomyLevels) {
-			String key = Long.toString(level.getKey());
-			List<String> names = new ArrayList<>();
-			addParentNames(names, level);
-			Collections.reverse(names);
-			String value = String.join(" / ", names);
-			keyValues.add(entry(key, value));
-		}
-		keyValues.sort(VALUE_ASC);
-		return keyValues;
-	}
-	
-	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
-		TaxonomyLevel parent = level.getParent();
-		if (parent != null) {
-			addParentNames(names, parent);
-		}
+		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+		return RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
 	}
 	
 	private SelectionValues getLicenseValues() {

@@ -22,9 +22,7 @@ package org.olat.modules.catalog.ui.admin;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,8 +39,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Config;
-import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryManager;
@@ -94,12 +92,13 @@ public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditC
 			config = handler.fromXML(getCatalogLauncher().getConfig());
 		}
 		
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if (StringHelper.isLong(taxonomyTreeKey)) {
-			Taxonomy taxonomy = taxonomyService.getTaxonomy(() -> Long.valueOf(taxonomyTreeKey));
-			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
-			SelectionValues keyValues = createTaxonomyLevelKV(taxonomy, allTaxonomyLevels);
-			keyValues.add(entry(TAXONOMY_PREFIX + taxonomy.getKey(), taxonomy.getDisplayName()));
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (!taxonomyRefs.isEmpty()) {
+			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+			SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
+			allTaxonomyLevels.stream().map(TaxonomyLevel::getTaxonomy)
+					.distinct()
+					.forEach(taxonomy -> keyValues.add(entry(TAXONOMY_PREFIX + taxonomy.getKey(), taxonomy.getDisplayName())));
 			keyValues.sort(VALUE_ASC);
 			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", generalCont,
 					keyValues.keys(), keyValues.values());
@@ -148,27 +147,6 @@ public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditC
 					resourceTypeEl.select(type, true);
 				}
 			}
-		}
-	}
-	
-	private SelectionValues createTaxonomyLevelKV(Taxonomy taxonomy, List<TaxonomyLevel> allTaxonomyLevels) {
-		SelectionValues keyValues = new SelectionValues();
-		for (TaxonomyLevel level:allTaxonomyLevels) {
-			String key = Long.toString(level.getKey());
-			ArrayList<String> names = new ArrayList<>();
-			addParentNames(names, level);
-			Collections.reverse(names);
-			String value = taxonomy.getDisplayName() + ": " + String.join(" / ", names);
-			keyValues.add(entry(key, value));
-		}
-		return keyValues;
-	}
-	
-	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
-		TaxonomyLevel parent = level.getParent();
-		if (parent != null) {
-			addParentNames(names, parent);
 		}
 	}
 	
