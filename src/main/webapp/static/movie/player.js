@@ -266,6 +266,9 @@ var BPlayer = {
 
 		var mimeType = null;
 		var extension = config.file.split('.').pop().toLowerCase().split('&').shift();
+		if(extension != null && extension.indexOf('?') >= 3) {
+			extension = extension.substring(0, extension.indexOf('?'));
+		}
 		if(config.provider == 'sound') {
 			if(extension == 'mp3') {
 				mimeType = "audio/mp3";
