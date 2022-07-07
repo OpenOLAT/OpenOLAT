@@ -42,8 +42,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.InlineChoiceEditorController.InlineChoiceInteractionWrapper;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
@@ -64,9 +64,9 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	private int counter = 0;
 	private final boolean readOnly;
 	private final boolean restrictedEdit;
-	private final InlineChoiceInteractionEntry inlineChoiceBlock;
+	private final InlineChoiceInteractionWrapper inlineChoiceBlock;
 	
-	public InlineChoiceInteractionSettingsController(UserRequest ureq, WindowControl wControl, InlineChoiceInteractionEntry choiceBlock,
+	public InlineChoiceInteractionSettingsController(UserRequest ureq, WindowControl wControl, InlineChoiceInteractionWrapper choiceBlock,
 			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, "inline_choices_settings", Util.createPackageTranslator(AssessmentTestEditorController.class, ureq.getLocale()));
 		this.inlineChoiceBlock = choiceBlock;
@@ -88,6 +88,10 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 			}
 		}
 		return null;
+	}
+	
+	public boolean hasCorrectResponse() {
+		return inlineChoiceBlock.getCorrectResponseId() != null;
 	}
 
 	@Override
@@ -214,6 +218,8 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		String correctResponseId = ureq.getParameter("correct");
 		if(StringHelper.containsNonWhitespace(correctResponseId)) {
 			inlineChoiceBlock.setCorrectResponseId(Identifier.parseString(correctResponseId));
+		} else {
+			inlineChoiceBlock.setCorrectResponseId(null);
 		}
 	}
 	
@@ -231,7 +237,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 			String text = choiceWrapper.getTextEl().getValue();
 			text = text == null ? "" : text;
 			texts.add(new TextRun(inlineChoice, text));
-			inlineChoiceBlock.getInlineChoices().add(inlineChoice);
+			inlineChoiceBlock.addInlineChoice(inlineChoice);
 		}
 	}
 	
@@ -324,6 +330,5 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		public FormLink getDeleteButton() {
 			return deleteButton;
 		}
-
 	}
 }

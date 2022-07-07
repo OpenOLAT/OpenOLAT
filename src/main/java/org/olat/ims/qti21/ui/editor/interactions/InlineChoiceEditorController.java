@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfigurationDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -46,6 +47,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -86,6 +89,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	private final boolean readOnly;
 	private final boolean restrictedEdit;
 	private List<GlobalInlineChoiceWrapper> globalChoicesWrappers = new ArrayList<>();
+	private List<InlineChoiceInteractionWrapper> interactionWrappers = new ArrayList<>();
 	private final InlineChoiceAssessmentItemBuilder itemBuilder;
 	
 	public InlineChoiceEditorController(UserRequest ureq, WindowControl wControl,
@@ -100,6 +104,10 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		this.rootContainer = rootContainer;
 		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
+
+		for(InlineChoiceInteractionEntry entry:itemBuilder.getInteractions()) {
+			interactionWrappers.add(new InlineChoiceInteractionWrapper(entry));
+		}
 		
 		initForm(ureq);
 		updateGlobalChoices();
@@ -125,7 +133,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.setReadOnly(restrictedEdit || readOnly);
 		richTextConfig.enableQTITools(false, false, false, true);
-		
+		richTextConfig.setAdditionalConfiguration(new MissingCorrectResponsesConfiguration());
 		
 		String globalPage = velocity_root + "/global_inline_choices.html";
 		globalChoicesCont = FormLayoutContainer.createCustomFormLayout("global_choices", getTranslator(), globalPage);
@@ -136,6 +144,10 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		addGlobalChoiceButton = uifactory.addFormLink("add.global.choices", formLayout, Link.BUTTON);
 		addGlobalChoiceButton.setVisible(true);
 		
+		for(GlobalInlineChoice globalChoice:itemBuilder.getGlobalInlineChoices()) {
+			globalChoicesWrappers.add(forgeRow(globalChoice));
+		}
+
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setElementCssClass("o_sel_inlinechoice_save");
@@ -156,7 +168,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			if(event == Event.DONE_EVENT) {
 				String solution = choicesSettingsCtrl.getSolution();
 				String responseIdentifier = choicesSettingsCtrl.getResponseIdentifier().toString();
-				feedbackToInlineChoiceElement(responseIdentifier, solution);
+				feedbackToInlineChoiceElement(responseIdentifier, solution, choicesSettingsCtrl.hasCorrectResponse());
 			} else if(event == Event.CANCELLED_EVENT) {
 				cancelFeedbackToInlineChoiceElement();
 			}
@@ -168,11 +180,12 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		super.event(ureq, source, event);
 	}
 	
-	private void feedbackToInlineChoiceElement(String responseIdentifier, String solution) {
+	private void feedbackToInlineChoiceElement(String responseIdentifier, String solution, boolean empty) {
 		try {
 			JSONObject jo = new JSONObject();
 			jo.put("responseIdentifier", responseIdentifier);
 			jo.put("data-qti-solution", solution);
+			jo.put("data-qti-solution-empty", Boolean.toString(empty));
 			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateInlineChoice', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
 			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 		} catch (JSONException e) {
@@ -230,8 +243,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		} else if(source instanceof TextElement) {
 			TextElement el = (TextElement)source;
 			if(el.getName().startsWith("gic_") && el.getUserObject() instanceof GlobalInlineChoiceWrapper) {
-				GlobalInlineChoiceWrapper gicw = (GlobalInlineChoiceWrapper)el.getUserObject();
-				gicw.getInlineChoice().setText(el.getValue());
+				((GlobalInlineChoiceWrapper)el.getUserObject()).setText();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -259,14 +271,29 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	private boolean validateCorrectResponses() {
 		boolean allOk = true;
 		
-		for(InlineChoiceInteractionEntry interactionEntry:itemBuilder.getInteractions()) {
+		String rawText = textEl.getRawValue();
+		for(InlineChoiceInteractionWrapper interactionEntry:interactionWrappers) {
 			Identifier correctResponseId = interactionEntry.getCorrectResponseId();
-			if(correctResponseId == null || interactionEntry.getInlineChoice(correctResponseId) == null) {
+			if(rawText.contains(interactionEntry.getResponseIdentifier().toString())
+					&& (correctResponseId == null || interactionEntry.getInlineChoice(correctResponseId) == null)) {
 				allOk &= false;
 			}
 		}
 		
 		return allOk;
+	}
+	
+	private List<String> getMissingCorrectResponses() {
+		String rawText = textEl.getRawValue();
+		List<String> responseIdentifiers = new ArrayList<>();
+		for(InlineChoiceInteractionWrapper interactionEntry:interactionWrappers) {
+			Identifier correctResponseId = interactionEntry.getCorrectResponseId();
+			if(rawText.contains(interactionEntry.getResponseIdentifier().toString())
+					&& (correctResponseId == null || interactionEntry.getInlineChoice(correctResponseId) == null)) {
+				responseIdentifiers.add(interactionEntry.getResponseIdentifier().toString());
+			}
+		}
+		return responseIdentifiers;
 	}
 
 	@Override
@@ -274,6 +301,26 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		if(readOnly) return;
 		
 		doCommitGlobalChoices();
+		
+		List<GlobalInlineChoice> globalChoices = globalChoicesWrappers.stream()
+				.map(GlobalInlineChoiceWrapper::toInlineChoice)
+				.collect(Collectors.toList());
+		itemBuilder.setGlobalInlineChoices(globalChoices);
+		
+		Map<Identifier,InlineChoiceInteractionEntry> interactionEntries = itemBuilder.getInteractions().stream()
+				.collect(Collectors.toMap(InlineChoiceInteractionEntry::getResponseIdentifier, entry -> entry));
+		for(InlineChoiceInteractionWrapper interactionWrapper: interactionWrappers) {
+			InlineChoiceInteractionEntry entry = interactionEntries.get(interactionWrapper.getResponseIdentifier());
+			if(entry == null) {
+				entry = itemBuilder.createInteraction(interactionWrapper.getResponseIdentifier().toString());
+			}
+			entry.setCorrectResponseId(interactionWrapper.getCorrectResponseId());
+			entry.setShuffle(interactionWrapper.isShuffle());
+			entry.getInlineChoices().clear();
+			for(InlineChoice choice:interactionWrapper.getInlineChoices()) {
+				entry.getInlineChoices().add(InlineChoiceAssessmentItemBuilder.cloneInlineChoice(entry.getInteraction(), choice));
+			}
+		}
 		
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
@@ -286,6 +333,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		itemBuilder.extractQuestions();
 		itemBuilder.extractInteractions();
 		itemBuilder.extractInlineChoicesSettingsFromResponseDeclaration();
+		
 		String question = itemBuilder.getQuestion();
 		textEl.setValue(question);
 	}
@@ -298,11 +346,11 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	private void doCommitGlobalChoices() {
 		for(GlobalInlineChoiceWrapper globalChoicesWrapper:globalChoicesWrappers) {
 			String globalText = globalChoicesWrapper.getChoiceEl().getValue();
-			globalChoicesWrapper.getInlineChoice().setText(globalText);
+			globalChoicesWrapper.setText();
 			String globalIdentifier = globalChoicesWrapper.getInlineChoiceIdentifier().toString();
 			
 			if(StringHelper.containsNoneOfCoDouSemi(globalIdentifier) && globalIdentifier.length() > 16) {
-				for(InlineChoiceInteractionEntry interactionEntry:itemBuilder.getInteractions()) {
+				for(InlineChoiceInteractionWrapper interactionEntry:interactionWrappers) {
 					List<InlineChoice> choices = interactionEntry.getInlineChoices();
 					for(InlineChoice choice:choices) {
 						String choiceIdentifier = choice.getIdentifier().toString();
@@ -317,44 +365,56 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void doEnableGlobalChoices() {
-		itemBuilder.addGlobalInlineChoice(-1);
+		doAddGlobalChoice(null);
 		updateGlobalChoices();
-		flc.setDirty(true);
 	}
 	
 	private void doAddGlobalChoice(GlobalInlineChoiceWrapper wrapper) {
 		int index = wrapper == null ? -1 : globalChoicesWrappers.indexOf(wrapper) + 1;
-		itemBuilder.addGlobalInlineChoice(index);
+
+		Identifier id = IdentifierGenerator.newAsIdentifier("global-1-");
+		GlobalInlineChoice globalInlineChoice = new GlobalInlineChoice(id, "");
+		GlobalInlineChoiceWrapper newWrapper = forgeRow(globalInlineChoice);
+		if(index >= 0 && index < globalChoicesWrappers.size()) {
+			globalChoicesWrappers.add(index, newWrapper);
+		} else {
+			globalChoicesWrappers.add(newWrapper);
+		}
+		
+		for(InlineChoiceInteractionWrapper interactionWrapper: interactionWrappers) {
+			Identifier identifier = itemBuilder.generateIdentifier(globalInlineChoice.getIdentifier());
+			InlineChoice inlineChoice = new InlineChoice(interactionWrapper.getInteractionEntry().getInteraction());
+			inlineChoice.setIdentifier(identifier);
+			interactionWrapper.addInlineChoice(inlineChoice);
+		}
+
 		updateGlobalChoices();
 	}
 	
 	private void doRemoveGlobalChoice(GlobalInlineChoiceWrapper wrapper) {
-		itemBuilder.removeGlobalInlineChoice(wrapper.getInlineChoice());
+		globalChoicesWrappers.remove(wrapper);
+		
+		String globalIdentifier = wrapper.getInlineChoiceIdentifier().toString();
+		for(InlineChoiceInteractionWrapper interactionWrapper: interactionWrappers) {
+			List<InlineChoice> inlineChoices = new ArrayList<>(interactionWrapper.getInlineChoices());
+			for(InlineChoice inlineChoice:inlineChoices) {
+				if(inlineChoice.getIdentifier().toString().startsWith(globalIdentifier)) {
+					interactionWrapper.removeInlineChoice(inlineChoice);
+				}
+			}
+			
+			if(interactionWrapper.getCorrectResponseId() != null && interactionWrapper.getCorrectResponseId().toString().startsWith(globalIdentifier)) {
+				interactionWrapper.setCorrectResponseId(null);
+			}
+		}
+		
 		updateGlobalChoices();
 	}
 	
 	private void updateGlobalChoices() {
-		Map<Identifier,GlobalInlineChoiceWrapper> wrapperMap = globalChoicesWrappers.stream()
-				.collect(Collectors.toMap(GlobalInlineChoiceWrapper::getInlineChoiceIdentifier, wrapper -> wrapper, (u, v) -> u));
-
-		List<GlobalInlineChoice> globalChoices = itemBuilder.getGlobalInlineChoices();
-		List<GlobalInlineChoiceWrapper> wrappers = new ArrayList<>();
-		for(GlobalInlineChoice globalChoice:globalChoices) {
-			Identifier identifier = globalChoice.getIdentifier();
-			GlobalInlineChoiceWrapper wrapper = wrapperMap.get(identifier);
-			if(wrapper == null) {
-				wrapper = forgeRow(globalChoice);
-			} else {
-				wrapper.getChoiceEl().setValue(globalChoice.getText());
-			}
-			wrappers.add(wrapper);
-		}
-
-		addGlobalChoiceButton.setVisible(globalChoices.isEmpty());
-		globalChoicesCont.setVisible(!globalChoices.isEmpty());
-		globalChoicesCont.contextPut("wrappers", wrappers);
-		globalChoicesWrappers = wrappers;
-		
+		addGlobalChoiceButton.setVisible(globalChoicesWrappers.isEmpty());
+		globalChoicesCont.setVisible(!globalChoicesWrappers.isEmpty());
+		globalChoicesCont.contextPut("wrappers", globalChoicesWrappers);
 		flc.setDirty(true);
 	}
 	
@@ -381,9 +441,9 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void doCopyInlineChoice(String responseIdentifier, String sourceResponseIdentifier) {
-		InlineChoiceInteractionEntry interaction = createInlineChoiceBlock(responseIdentifier, null);
+		InlineChoiceInteractionWrapper interaction = createInlineChoiceBlock(responseIdentifier, null);
 		
-		InlineChoiceInteractionEntry sourceInteraction = itemBuilder.getInteraction(sourceResponseIdentifier);
+		InlineChoiceInteractionWrapper sourceInteraction = getInteraction(sourceResponseIdentifier);
 		if(sourceInteraction != null) {
 			Identifier sourceCorrectResponseIdentifier = sourceInteraction.getCorrectResponseId();
 			List<InlineChoice> sourceInlineChoices = sourceInteraction.getInlineChoices();
@@ -392,9 +452,9 @@ public class InlineChoiceEditorController extends FormBasicController implements
 				Identifier sourceIdentifier = sourceInlineChoice.getIdentifier();
 				InlineChoice newChoice = null;
 				if(sourceIdentifier.toString().startsWith("global-")) {
-					GlobalInlineChoice globalChoice = itemBuilder.getGlobalInlineChoice(sourceIdentifier);
+					GlobalInlineChoiceWrapper globalChoice = getGlobalInlineChoice(sourceIdentifier);
 					if(globalChoice != null) {
-						Identifier choiceIdentifier = itemBuilder.generateIdentifier(globalChoice);
+						Identifier choiceIdentifier = itemBuilder.generateIdentifier(globalChoice.getInlineChoiceIdentifier());
 						newChoice = createInlineChoice(null, globalChoice.getText(), choiceIdentifier);
 					}
 				}
@@ -413,6 +473,27 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		}
 	}
 	
+	private InlineChoiceInteractionWrapper getInteraction(String responseIdentifier) {
+		for(InlineChoiceInteractionWrapper interactionWrapper:interactionWrappers) {
+			if(interactionWrapper.getResponseIdentifier().toString().equals(responseIdentifier)) {
+				return interactionWrapper;
+			}
+		}
+		return null;
+	}
+	
+	private GlobalInlineChoiceWrapper getGlobalInlineChoice(Identifier inlineChoiceId) {
+		String identifier = inlineChoiceId.toString();
+		
+		for(GlobalInlineChoiceWrapper globalChoiceWrapper:globalChoicesWrappers) {
+			String globalId = globalChoiceWrapper.getInlineChoiceIdentifier().toString();	
+			if(identifier.startsWith(globalId)) {
+				return globalChoiceWrapper;
+			}
+		}
+		return null;
+	}
+	
 	private void doInlineChoiceInteraction(UserRequest ureq, String responseIdentifier, String selectedText,
 			boolean emptySelection, boolean newEntry) {
 		if(choicesSettingsCtrl != null) return;
@@ -421,17 +502,17 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			selectedText = null;
 		}
 		
-		InlineChoiceInteractionEntry interaction;
+		InlineChoiceInteractionWrapper interactionWrapper;
 		if(newEntry) {
-			interaction = createInlineChoiceBlock(responseIdentifier, selectedText);
+			interactionWrapper = createInlineChoiceBlock(responseIdentifier, selectedText);
 		} else {
-			interaction = itemBuilder.getInteraction(responseIdentifier);
-			if(interaction == null) {
-				interaction = createInlineChoiceBlock(responseIdentifier, selectedText);
+			interactionWrapper = getInteraction(responseIdentifier);
+			if(interactionWrapper == null) {
+				interactionWrapper = createInlineChoiceBlock(responseIdentifier, selectedText);
 			}
 		}
 		
-		choicesSettingsCtrl = new InlineChoiceInteractionSettingsController(ureq, getWindowControl(), interaction,
+		choicesSettingsCtrl = new InlineChoiceInteractionSettingsController(ureq, getWindowControl(), interactionWrapper,
 				restrictedEdit, readOnly);
 		listenTo(choicesSettingsCtrl);
 		
@@ -440,13 +521,13 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		listenTo(cmc);
 	}
 	
-	private InlineChoiceInteractionEntry createInlineChoiceBlock(String responseIdentifier, String selectedText) {
-		InlineChoiceInteractionEntry choiceBlock = itemBuilder.createInteraction(responseIdentifier);
+	private InlineChoiceInteractionWrapper createInlineChoiceBlock(String responseIdentifier, String selectedText) {
+		InlineChoiceInteractionEntry choiceBlock = new InlineChoiceInteractionEntry(Identifier.parseString(responseIdentifier));
 		
-		List<GlobalInlineChoice> globalChoices = itemBuilder.getGlobalInlineChoices();
+		List<GlobalInlineChoiceWrapper> globalChoices = globalChoicesWrappers;
 		if(!globalChoices.isEmpty()) {
-			for(GlobalInlineChoice globalChoice:globalChoices) {
-				Identifier choiceIdentifier = itemBuilder.generateIdentifier(globalChoice);
+			for(GlobalInlineChoiceWrapper globalChoice:globalChoices) {
+				Identifier choiceIdentifier = itemBuilder.generateIdentifier(globalChoice.getInlineChoiceIdentifier());
 				InlineChoice gChoice = createInlineChoice(null, globalChoice.getText(), choiceIdentifier);
 				choiceBlock.getInlineChoices().add(gChoice);
 			}
@@ -457,7 +538,10 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		} else if(globalChoices.isEmpty()) {
 			appendNewInlineChoice(choiceBlock, "");
 		}
-		return choiceBlock;
+		
+		InlineChoiceInteractionWrapper interactionWrapper = new InlineChoiceInteractionWrapper(choiceBlock);
+		interactionWrappers.add(interactionWrapper);
+		return interactionWrapper;
 	}
 	
 	private void appendNewInlineChoice(InlineChoiceInteractionEntry choiceBlock, String text) {
@@ -467,26 +551,99 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		choiceBlock.setCorrectResponseId(responseId);
 	}
 	
-	public class GlobalInlineChoiceWrapper {
+	public static class InlineChoiceInteractionWrapper {
 		
-		private final GlobalInlineChoice inlineChoice;
+		private boolean shuffle;
+		private Identifier correctResponseId;
+		private final List<InlineChoice> inlineChoices;
+		private final InlineChoiceInteractionEntry interactionEntry;
+		
+		public InlineChoiceInteractionWrapper(InlineChoiceInteractionEntry interactionEntry) {
+			this.interactionEntry = interactionEntry;
+			shuffle = interactionEntry.isShuffle();
+			correctResponseId = interactionEntry.getCorrectResponseId();
+			inlineChoices = interactionEntry.getInlineChoices().stream()
+					.map(choice -> InlineChoiceAssessmentItemBuilder.cloneInlineChoice(interactionEntry.getInteraction(), choice))
+					.collect(Collectors.toList());
+		}
+		
+		public InlineChoiceInteractionEntry getInteractionEntry() {
+			return interactionEntry;
+		}
+		
+		public List<InlineChoice> getInlineChoices() {
+			return inlineChoices;
+		}
+		
+		public void addInlineChoice(InlineChoice inlineChoice) {
+			inlineChoices.add(inlineChoice);
+		}
+		
+		public void removeInlineChoice(InlineChoice inlineChoice) {
+			inlineChoices.remove(inlineChoice);
+		}
+		
+		public InlineChoice getInlineChoice(Identifier identifier) {
+			for(InlineChoice inlineChoice:inlineChoices) {
+				if(inlineChoice.getIdentifier().equals(identifier)) {
+					return inlineChoice;
+				}
+			}
+			return null;
+		}
+		
+		public boolean isShuffle() {
+			return shuffle;
+		}
+		
+		public void setShuffle(boolean shuffle) {
+			this.shuffle = shuffle;
+		}
+		
+		public Identifier getResponseIdentifier() {
+			return interactionEntry.getResponseIdentifier();
+		}
+		
+		public Identifier getCorrectResponseId() {
+			return correctResponseId;
+		}
+		
+		public void setCorrectResponseId(Identifier id) {
+			this.correctResponseId = id;
+		}
+	}
+	
+	public static class GlobalInlineChoiceWrapper {
+		
+		private String text;
+		private Identifier identifier;
+		
 		private final TextElement choiceEl;
 		private final FormLink addButton;
 		private final FormLink deleteButton;
 		
 		public GlobalInlineChoiceWrapper(GlobalInlineChoice inlineChoice, TextElement choiceEl, FormLink addButton, FormLink deleteButton) {
-			this.inlineChoice = inlineChoice;
+			identifier = inlineChoice.getIdentifier();
+			text = inlineChoice.getText();
 			this.choiceEl = choiceEl;
 			this.addButton = addButton;
 			this.deleteButton = deleteButton;
 		}
 		
 		public Identifier getInlineChoiceIdentifier() {
-			return inlineChoice.getIdentifier();
+			return identifier;
 		}
 
-		public GlobalInlineChoice getInlineChoice() {
-			return inlineChoice;
+		public GlobalInlineChoice toInlineChoice() {
+			return new GlobalInlineChoice(identifier, getText());
+		}
+		
+		public String getText() {
+			return text;
+		}
+		
+		public void setText() {
+			text = choiceEl.getValue();
 		}
 
 		public TextElement getChoiceEl() {
@@ -499,6 +656,21 @@ public class InlineChoiceEditorController extends FormBasicController implements
 
 		public FormLink getDeleteButton() {
 			return deleteButton;
+		}
+	}
+	
+	private class MissingCorrectResponsesConfiguration implements RichTextConfigurationDelegate {
+		@Override
+		public void appendConfigToTinyJSArray_4(StringOutput out, Translator translator) {
+			List<String> missingCorrectResponses = getMissingCorrectResponses();
+			out.append("missingCorrectResponses: [");
+			for(int i=missingCorrectResponses.size(); i-->0; ) {
+				out.append("'").append(missingCorrectResponses.get(i)).append("'");
+				if(i > 0) {
+					out.append(",");
+				}
+			}
+			out.append("],");
 		}
 	}
 }
