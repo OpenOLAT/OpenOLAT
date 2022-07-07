@@ -21,6 +21,11 @@
 	content: '\f141'
 }
 
+.inlinechoiceinteraction>span {
+	display: inline-block;
+	min-width: 10px;	
+}
+
 .inlinechoiceinteraction a.o_ops:before {
 	padding-left: 5px;
 	display: inline-block;

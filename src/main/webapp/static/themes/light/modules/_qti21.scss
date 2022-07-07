@@ -1183,6 +1183,12 @@ table.o_qti_item_kprim {
 	
 	input[type='radio'] {
 		margin-top: 11px;
+		margin-left: 60px;
+	}
+	
+	.o_up_down {
+		width: 25px;
+		display: inline-block;
 	}
 }
 

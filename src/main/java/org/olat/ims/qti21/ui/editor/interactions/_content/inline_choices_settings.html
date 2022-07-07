@@ -14,6 +14,8 @@
 	#foreach($choice in $choices)
 	<div class="form-group clearfix">
 		<div class="col-sm-3 o_inline_choice_correct_cell">
+			<span class="o_up_down">$r.render(${choice.getUpButton()})</span>
+			<span class="o_up_down">$r.render(${choice.getDownButton()})</span>
 			<input type="radio" id="oo_correct-${foreach.count}" name="correct" value="${choice.getInlineChoiceIdentifier()}" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
 			$f.appendFlexiFormDirtyForCheckbox("oo_correct-${foreach.count}")
 		</div>

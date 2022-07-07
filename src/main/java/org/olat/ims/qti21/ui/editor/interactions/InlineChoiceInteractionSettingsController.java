@@ -97,6 +97,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		shuffleEl = uifactory.addCheckboxesHorizontal("form.imd.shuffle", "form.imd.shuffle", formLayout,
 				shuffleKeyValues.keys(), shuffleKeyValues.values());
 		shuffleEl.select("on", inlineChoiceBlock.isShuffle());
+		shuffleEl.addActionListener(FormEvent.ONCHANGE);
 		
 		List<InlineChoice> choices = inlineChoiceBlock.getInlineChoices();
 		for(InlineChoice choice:choices) {
@@ -112,7 +113,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormSubmitButton("transfert", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -132,21 +133,37 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		addButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addButton.setVisible(!restrictedEdit && !readOnly);
 		
+		FormLink upButton = uifactory.addFormLink(id.concat("_up"), "up", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		upButton.setTitle(translate("up"));
+		upButton.setIconLeftCSS("o_icon o_icon-fw o_icon_move_up");
+		upButton.setVisible(!restrictedEdit && !readOnly);
+		
+		FormLink downButton = uifactory.addFormLink(id.concat("_down"), "down", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		downButton.setTitle(translate("down"));
+		downButton.setIconLeftCSS("o_icon o_icon-fw o_icon_move_down");
+		downButton.setVisible(!restrictedEdit && !readOnly);
+
 		FormLink deleteButton = uifactory.addFormLink(id.concat("_del"), "delete", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		deleteButton.setTitle(translate("remove.global.choice"));
 		deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		deleteButton.setVisible(editable);
 		
-		InlineChoiceWrapper wrapper = new InlineChoiceWrapper(choice, choiceEl, addButton, deleteButton);
+		InlineChoiceWrapper wrapper = new InlineChoiceWrapper(choice, choiceEl, addButton, upButton, downButton, deleteButton);
 		choiceEl.setUserObject(wrapper);
 		addButton.setUserObject(wrapper);
+		upButton.setUserObject(wrapper);
+		downButton.setUserObject(wrapper);
 		deleteButton.setUserObject(wrapper);
 		return wrapper;
 	}
 	
 	private void updateUI() {
 		boolean canDelete = choiceWrappers.size() > 1;
-		for(InlineChoiceWrapper choiceWrapper:choiceWrappers) {
+		boolean fixOrder = !shuffleEl.isAtLeastSelected(1);
+		for(int i=0; i<choiceWrappers.size(); i++) {
+			InlineChoiceWrapper choiceWrapper = choiceWrappers.get(i);
+			choiceWrapper.getUpButton().setVisible(fixOrder && i != 0);
+			choiceWrapper.getDownButton().setVisible(fixOrder && i != choiceWrappers.size() - 1);
 			choiceWrapper.getDeleteButton().setVisible(canDelete && isEditable(choiceWrapper.getInlineChoice()));
 		}
 	}
@@ -159,13 +176,21 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		doCommitCorrectResponseID(ureq);
 		
-		if(source instanceof FormLink) {
+		if(shuffleEl == source) {
+			updateUI();
+		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("add".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
 				doAddChoice((InlineChoiceWrapper)link.getUserObject());
 				updateUI();
 			} else if("delete".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
 				doDeleteChoice((InlineChoiceWrapper)link.getUserObject());
+				updateUI();
+			} else if("up".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
+				doUpChoice((InlineChoiceWrapper)link.getUserObject());
+				updateUI();
+			} else if("down".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
+				doDownChoice((InlineChoiceWrapper)link.getUserObject());
 				updateUI();
 			}
 		}
@@ -223,6 +248,22 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		flc.setDirty(true);
 	}
 	
+	private void doUpChoice(InlineChoiceWrapper wrapper) {
+		int index = choiceWrappers.indexOf(wrapper) - 1;
+		if(index >= 0 && index < choiceWrappers.size()) {
+			choiceWrappers.remove(wrapper);
+			choiceWrappers.add(index, wrapper);
+		}
+	}
+	
+	private void doDownChoice(InlineChoiceWrapper wrapper) {
+		int index = choiceWrappers.indexOf(wrapper) + 1;
+		if(index >= 0 && index < choiceWrappers.size()) {
+			choiceWrappers.remove(wrapper);
+			choiceWrappers.add(index, wrapper);
+		}
+	}
+	
 	private void doDeleteChoice(InlineChoiceWrapper wrapper) {
 		if(choiceWrappers.size() > 1) {
 			choiceWrappers.remove(wrapper);
@@ -234,15 +275,20 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	
 	public class InlineChoiceWrapper {
 		
-		private InlineChoice inlineChoice;
-		private TextElement textEl;
-		private FormLink addButton;
-		private FormLink deleteButton;
+		private final InlineChoice inlineChoice;
+		private final TextElement textEl;
+		private final FormLink addButton;
+		private final FormLink upButton;
+		private final FormLink downButton;
+		private final FormLink deleteButton;
 		
-		public InlineChoiceWrapper(InlineChoice inlineChoice, TextElement textEl, FormLink addButton, FormLink deleteButton) {
+		public InlineChoiceWrapper(InlineChoice inlineChoice, TextElement textEl, FormLink addButton,
+				FormLink upButton, FormLink downButton, FormLink deleteButton) {
 			this.inlineChoice = inlineChoice;
 			this.textEl = textEl;
 			this.addButton = addButton;
+			this.upButton = upButton;
+			this.downButton = downButton;
 			this.deleteButton = deleteButton;
 		}
 		
@@ -259,32 +305,25 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 			return inlineChoice;
 		}
 
-		public void setInlineChoice(InlineChoice inlineChoice) {
-			this.inlineChoice = inlineChoice;
-		}
-
 		public TextElement getTextEl() {
 			return textEl;
-		}
-
-		public void setTextEl(TextElement textEl) {
-			this.textEl = textEl;
 		}
 
 		public FormLink getAddButton() {
 			return addButton;
 		}
 
-		public void setAddButton(FormLink addButton) {
-			this.addButton = addButton;
+		public FormLink getUpButton() {
+			return upButton;
+		}
+
+		public FormLink getDownButton() {
+			return downButton;
 		}
 
 		public FormLink getDeleteButton() {
 			return deleteButton;
 		}
 
-		public void setDeleteButton(FormLink deleteButton) {
-			this.deleteButton = deleteButton;
-		}
 	}
 }
