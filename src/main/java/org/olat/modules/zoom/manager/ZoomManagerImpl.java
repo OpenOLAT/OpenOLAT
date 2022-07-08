@@ -184,11 +184,14 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         return lti13Service.updateToolDeployment(toolDeployment);
     }
 
+    @Override
     public void deleteConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
         ZoomConfig zoomConfig = getConfig(entry, subIdent, businessGroup);
-        LTI13ToolDeployment toolDeployment = zoomConfig.getLtiToolDeployment();
-        zoomConfigDao.deleteConfig(zoomConfig);
-        lti13ToolDeploymentDAO.deleteToolDeployment(toolDeployment);
+        if(zoomConfig != null) {
+        	LTI13ToolDeployment toolDeployment = zoomConfig.getLtiToolDeployment();
+	        zoomConfigDao.deleteConfig(zoomConfig);
+	        lti13ToolDeploymentDAO.deleteToolDeployment(toolDeployment);
+        }
     }
 
     @Override

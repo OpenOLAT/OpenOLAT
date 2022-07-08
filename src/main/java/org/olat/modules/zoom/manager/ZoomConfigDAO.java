@@ -82,18 +82,20 @@ public class ZoomConfigDAO {
     public ZoomConfig getConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) throws NoResultException, NonUniqueResultException {
         if (entry != null && subIdent != null) {
             String query = "select c from zoomconfig c inner join c.ltiToolDeployment as td where td.entry.id=:entryId and td.subIdent=:subIdent";
-            return dbInstance.getCurrentEntityManager()
+            List<ZoomConfig> config = dbInstance.getCurrentEntityManager()
                     .createQuery(query, ZoomConfig.class)
                     .setParameter("entryId", entry.getKey())
                     .setParameter("subIdent", subIdent)
-                    .getSingleResult();
+                    .getResultList();
+            return config == null || config.isEmpty() ? null : config.get(0);
         }
         if (businessGroup != null) {
             String query = "select c from zoomconfig c where c.ltiToolDeployment.businessGroup.id=:businessGroupId";
-            return dbInstance.getCurrentEntityManager()
+            List<ZoomConfig> config = dbInstance.getCurrentEntityManager()
                     .createQuery(query, ZoomConfig.class)
                     .setParameter("businessGroupId", businessGroup.getKey())
-                    .getSingleResult();
+                    .getResultList();
+            return config == null || config.isEmpty() ? null : config.get(0);
         }
         throw new NoResultException("Invalid set of parameters to read a Zoom config");
     }
