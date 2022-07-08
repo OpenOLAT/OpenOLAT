@@ -38,6 +38,7 @@ public class CertificateInfos {
 	private final Identity assessedIdentity;
 	
 	private Date creationDate;
+	private String externalId;
 	
 	public CertificateInfos(Identity assessedIdentity, Float score, Float maxScore, Boolean passed, Double progress) {
 		this.score = score;
@@ -73,6 +74,14 @@ public class CertificateInfos {
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	@Override

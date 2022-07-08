@@ -106,7 +106,7 @@ public class UploadExternalCertificateController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		certificatesManager.uploadStandaloneCertificate(assessedIdentity, issuedDateEl.getDate(), titleEl.getValue(), -1l, certificateEl.getUploadFile());
+		certificatesManager.uploadStandaloneCertificate(assessedIdentity, issuedDateEl.getDate(), null, null, titleEl.getValue(), -1l, certificateEl.getUploadFile());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

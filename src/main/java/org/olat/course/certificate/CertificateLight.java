@@ -35,6 +35,10 @@ public interface CertificateLight extends CreateInfo {
 	
 	public CertificateStatus getStatus();
 	
+	public String getExternalId();
+
+	public CertificateManagedFlag[] getManagedFlags();
+	
 	public String getUuid();
 
 	public Date getNextRecertificationDate();

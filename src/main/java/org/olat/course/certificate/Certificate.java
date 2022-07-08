@@ -38,6 +38,10 @@ public interface Certificate extends CreateInfo {
 	
 	public String getUuid();
 	
+	public String getExternalId();
+	
+	public CertificateManagedFlag[] getManagedFlags();
+	
 	public Date getNextRecertificationDate();
 
 	public void setNextRecertificationDate(Date nextRecertificationDate);

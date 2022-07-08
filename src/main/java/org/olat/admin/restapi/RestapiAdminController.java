@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.certificate.CertificatesModule;
 import org.olat.group.BusinessGroupModule;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryModule;
@@ -58,6 +59,7 @@ public class RestapiAdminController extends FormBasicController {
 	private MultipleSelectionElement managedGroupsEl;
 	private MultipleSelectionElement managedCalendarEl;
 	private MultipleSelectionElement managedRelationRole;
+	private MultipleSelectionElement managedCertificatesEl;
 	private MultipleSelectionElement managedUserPortraitEl;
 	private MultipleSelectionElement managedCurriculumEl;
 	private MultipleSelectionElement managedAssessmentModeEl;
@@ -79,6 +81,8 @@ public class RestapiAdminController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private CertificatesModule certificateModule;
 	@Autowired
 	private UserModule userModule;
 
@@ -143,6 +147,10 @@ public class RestapiAdminController extends FormBasicController {
 			managedRelationRole.addActionListener(FormEvent.ONCHANGE);
 			managedRelationRole.select(keys[0], securityModule.isRelationRoleManaged());
 			
+			managedCertificatesEl = uifactory.addCheckboxesHorizontal("managed.certificates", managedFlc, keys, valueOn);
+			managedCertificatesEl.addActionListener(FormEvent.ONCHANGE);
+			managedCertificatesEl.select(keys[0], certificateModule.isManagedCertificates());
+			
 			managedUserPortraitEl = uifactory.addCheckboxesHorizontal("managed.user.portrait", managedFlc, keys, valueOn);
 			managedUserPortraitEl.addActionListener(FormEvent.ONCHANGE);
 			managedUserPortraitEl.select(keys[0], userModule.isPortraitManaged());
@@ -182,6 +190,9 @@ public class RestapiAdminController extends FormBasicController {
 		} else if(source == managedAssessmentModeEl) {
 			boolean enable = managedAssessmentModeEl.isAtLeastSelected(1);
 			assessmentModule.setManagedAssessmentModes(enable);
+		} else if(source == managedCertificatesEl) {
+			boolean enable = managedCertificatesEl.isAtLeastSelected(1);
+			certificateModule.setManagedCertificates(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -33,6 +33,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.core.id.Persistable;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateStatus;
 
 /**
@@ -66,6 +67,11 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	
 	@Column(name="c_status", nullable=false, insertable=true, updatable=true)
 	private String statusString;
+	
+	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
+	private String externalId;
+	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
+	private String managedFlagsString;
 	
 	@Column(name="c_uuid", nullable=false, insertable=true, updatable=false)
 	private String uuid;
@@ -108,10 +114,33 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	}
 
 	@Override
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getManagedFlagsString() {
+		return managedFlagsString;
+	}
+
+	public void setManagedFlagsString(String managedFlagsString) {
+		this.managedFlagsString = managedFlagsString;
+	}
+	
+	@Override
+	public CertificateManagedFlag[] getManagedFlags() {
+		return CertificateManagedFlag.toEnum(managedFlagsString);
+	}
+
+	@Override
 	public CertificateStatus getStatus() {
 		return CertificateStatus.valueOf(statusString);
 	}
 
+	@Override
 	public Date getNextRecertificationDate() {
 		return nextRecertificationDate;
 	}
@@ -138,6 +167,7 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 		this.courseTitle = courseTitle;
 	}
 
+	@Override
 	public Long getOlatResourceKey() {
 		return olatResourceKey;
 	}
@@ -146,6 +176,7 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 		this.olatResourceKey = olatResourceKey;
 	}
 
+	@Override
 	public Long getIdentityKey() {
 		return identityKey;
 	}

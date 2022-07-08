@@ -117,3 +117,7 @@ alter table o_lti_tool_deployment add column fk_group_id bigint;
 alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
 
 
+-- Certificates
+alter table o_cer_certificate add column c_external_id varchar(64);
+alter table o_cer_certificate add column c_managed_flags varchar(255);
+

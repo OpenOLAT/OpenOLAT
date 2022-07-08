@@ -1640,6 +1640,8 @@ create table o_cer_certificate (
    c_status varchar(16) not null default 'pending',
    c_email_status varchar(16),
    c_uuid varchar(36) not null,
+   c_external_id varchar(64),
+   c_managed_flags varchar(255),
    c_next_recertification timestamp,
    c_path varchar(1024),
    c_last bool not null default true,

@@ -289,7 +289,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI());
 		
-		Certificate certificate = certificatesManager.uploadCertificate(identity, creationDate, entry.getOlatResource(), certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, creationDate, null, null, entry.getOlatResource(), certificateFile);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
@@ -336,7 +336,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		File certificateFile = new File(certificateUrl.toURI());
 		
 		Certificate certificate = certificatesManager
-				.uploadStandaloneCertificate(identity, creationDate, courseTitle, resourceKey, certificateFile);
+				.uploadStandaloneCertificate(identity, creationDate, null, null, courseTitle, resourceKey, certificateFile);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
@@ -381,7 +381,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		cal.set(Calendar.MILLISECOND, 0);
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		File certificateFile = new File(certificateUrl.toURI());
-		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), entry.getOlatResource(), certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entry.getOlatResource(), certificateFile);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
@@ -423,10 +423,10 @@ public class CertificatesManagerTest extends OlatTestCase {
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		File certificateFile = new File(certificateUrl.toURI());
 		//certificate linked to the course which will be deleted
-		Certificate certificateDeletedCourse = certificatesManager.uploadCertificate(identity, cal.getTime(), entryToDelete.getOlatResource(), certificateFile);
+		Certificate certificateDeletedCourse = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entryToDelete.getOlatResource(), certificateFile);
 		Assert.assertNotNull(certificateDeletedCourse);
 		//certificate of the staying course
-		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), entry.getOlatResource(), certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entry.getOlatResource(), certificateFile);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		

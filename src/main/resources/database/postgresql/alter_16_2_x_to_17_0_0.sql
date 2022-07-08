@@ -122,4 +122,7 @@ alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (f
 create index idx_dep_to_group_idx on o_lti_tool_deployment (fk_group_id);
 
 
+-- Certificates
+alter table o_cer_certificate add column c_external_id varchar(64);
+alter table o_cer_certificate add column c_managed_flags varchar(255);
 

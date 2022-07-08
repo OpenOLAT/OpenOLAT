@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.course.certificate.CertificateLight;
 
 /**
  * 
@@ -91,6 +92,8 @@ public class CertificateAndEfficiencyStatementListModel
 				return statement.getLastUserModified();
 			case certificate:
 				return statement.getCertificate();
+			case certificateExternalId:
+				return getCertificateExternalId(statement);
 			case recertification: {
 				if (statement.getCertificate() != null) {
 					return statement.getCertificate().getNextRecertificationDate();
@@ -107,6 +110,11 @@ public class CertificateAndEfficiencyStatementListModel
 				return statement.getToolsLink();
 		}
 		return null;
+	}
+	
+	public String getCertificateExternalId(CertificateAndEfficiencyStatementRow statement) {
+		CertificateLight certificate = statement.getCertificate();
+		return certificate == null ? null : certificate.getExternalId();
 	}
 	
 	public String getDisplayName(CertificateAndEfficiencyStatementRow statement) {
@@ -132,6 +140,7 @@ public class CertificateAndEfficiencyStatementListModel
 		lastModified("table.header.lastScoreDate", true), 
 		lastUserUpdate("table.header.lastUserModificationDate", true),
 		efficiencyStatement("table.header.certificate", true), 
+		certificateExternalId("table.header.external.id", true),
 		certificate("table.header.certificate", true),
 		recertification("table.header.recertification", true), 
 		deleteEfficiencyStatement("table.action.delete", false),

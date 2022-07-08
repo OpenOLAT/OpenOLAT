@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -85,6 +86,7 @@ import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
@@ -337,16 +339,15 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.certificateExternalId));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recertification, new DateFlexiCellRenderer(getLocale())));
 		
 		//artefact
-		if(assessedIdentity.equals(getIdentity())) {
-			if(portfolioV2Module.isEnabled()) {
-				DefaultFlexiColumnModel portfolioColumn = new DefaultFlexiColumnModel( Cols.artefact, CMD_MEDIA,
-						new BooleanCellRenderer(new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer()), null));
-				tableColumnModel.addFlexiColumnModel(portfolioColumn);
-			}
+		if(assessedIdentity.equals(getIdentity()) && portfolioV2Module.isEnabled()) {
+			DefaultFlexiColumnModel portfolioColumn = new DefaultFlexiColumnModel( Cols.artefact, CMD_MEDIA,
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer()), null));
+			tableColumnModel.addFlexiColumnModel(portfolioColumn);
 		}
 		
 		if (canLaunchCourse || canModify) {
@@ -405,7 +406,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		List<Long> courseEntryKeys = efficiencyStatementsList.stream()
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
-				.filter(key -> key != null)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		
 		Map<Long, AssessmentEntryScoring> courseEntryKeysToScoring = assessmentService
@@ -593,7 +594,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		List<Long> courseEntryKeys = efficiencyStatementsList.stream()
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
-				.filter(key -> key != null)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
@@ -846,7 +847,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		} else {
 			// Delete standalone certificate
 			Certificate certificate = certificatesManager.getCertificateByUuid(statement.getCertificate().getUuid());
-			
 			if (certificate != null) {
 				certificatesManager.deleteStandalonCertificate(certificate);
 			}
@@ -936,7 +936,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				toolsContainer.put("startCourse", startCourse);
 			}
 				
-			if (canModify && (row.getResourceKey() == null || row.getResourceKey().longValue() <= 0l)) {
+			if (canModify && (row.getResourceKey() == null || row.getResourceKey().longValue() <= 0l)
+					&& !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete)) {
 				deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
 				deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
 				toolsContainer.put("deleteStatement", deleteStatement);

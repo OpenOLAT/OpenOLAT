@@ -47,6 +47,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
@@ -150,7 +151,7 @@ public class IdentityCertificatesController extends BasicController implements G
 			Links links = new Links(url, displayName, certificate.getStatus().name(), needRecertification);
 			certificatesLink.add(links);
 			
-			if(canDelete) {
+			if(canDelete && !CertificateManagedFlag.isManaged(certificate, CertificateManagedFlag.delete)) {
 				Link deleteLink = LinkFactory.createLink("delete." + count++, "delete",
 						getTranslator(), mainVC, this, Link.NONTRANSLATED);
 				deleteLink.setCustomDisplayText(" ");

@@ -37,13 +37,16 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CertificatesModule extends AbstractSpringModule {
-	
+
+	private static final String MANAGED_CERTIFICATES_ENABLED = "managedCertificates";
 	private static final String CERTIFICATE_BCC = "certificate.bcc";
 	private static final String CERTIFICATE_LINEMANAGER = "certificate.linemanager";
 	private static final String CERTIFICATE_USER_MANAGER_UPLOAD = "certificate.user.manager.upload.external";
 	private static final String CERTIFICATE_USER_UPLOAD = "certificate.user.upload.external";
 	private static final String CERTIFICATE_UPLOAD_LIMIT = "certificate.upload.limit.mb";
-	
+
+	@Value("${certificate.managed}")
+	private boolean managedCertificates;
 	@Value("${certificate.bcc}")
 	private String certificateBcc;
 	@Value("${certificate.linemanager:false}")
@@ -62,6 +65,11 @@ public class CertificatesModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
+		String managed = getStringPropertyValue(MANAGED_CERTIFICATES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(managed)) {
+			managedCertificates = "true".equals(managed);
+		}
+		
 		String bccObj = getStringPropertyValue(CERTIFICATE_BCC, true);
 		if(StringHelper.containsNonWhitespace(bccObj)) {
 			certificateBcc = bccObj;
@@ -88,6 +96,15 @@ public class CertificatesModule extends AbstractSpringModule {
 	@Override
 	protected void initFromChangedProperties() {
 		init();
+	}
+	
+	public boolean isManagedCertificates() {
+		return managedCertificates;
+	}
+
+	public void setManagedCertificates(boolean enabled) {
+		managedCertificates = enabled;
+		setStringProperty(MANAGED_CERTIFICATES_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public String getCertificateBcc() {
