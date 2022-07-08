@@ -92,6 +92,7 @@ public class CopyCourseContext {
 	private List<BGTableItem> groups;
 	private List<BusinessGroupReference> newGroupReferences = new ArrayList<>();
 	private boolean hasGroups;
+	private Set<Long> groupCopyIgnoreKeys;
 	
 	// OwnersStep
 	private CopyType ownersCopyType;
@@ -474,6 +475,14 @@ public class CopyCourseContext {
 		this.hasGroups = hasGroups;
 	}
 	
+	public Set<Long> getGroupCopyIgnoreKeys() {
+		return groupCopyIgnoreKeys;
+	}
+
+	public void setGroupCopyIgnoreKeys(Set<Long> groupCopyIgnoreKeys) {
+		this.groupCopyIgnoreKeys = groupCopyIgnoreKeys;
+	}
+
 	public List<BusinessGroupReference> getNewGroupReferences() {
 		return newGroupReferences;
 	}

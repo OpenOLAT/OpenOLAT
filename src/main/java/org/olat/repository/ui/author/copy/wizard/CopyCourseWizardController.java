@@ -21,7 +21,9 @@ package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserTableDataModel;
@@ -62,14 +64,18 @@ import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
+import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.MemberView;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -137,6 +143,10 @@ public class CopyCourseWizardController extends BasicController {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CatalogManager catalogManager;
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
+	@Autowired
+	private ProjectGroupManager projectGroupManager;
 	
 	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
 		super(ureq, wControl);
@@ -194,7 +204,8 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setHasReminders(hasReminders(sourceEntry));
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
 		copyContext.setNewCoaches(getCoaches(sourceEntry));
-		copyContext.setHasGroups(hasGroups(sourceEntry));
+		copyContext.setGroupCopyIgnoreKeys(getGroupCopyIgnoreKeys(course.getCourseEnvironment().getCoursePropertyManager(), courseNodes));
+		copyContext.setHasGroups(hasGroups(sourceEntry, copyContext.getGroupCopyIgnoreKeys()));
 		copyContext.setHasCoaches(hasCoaches());
 		copyContext.setHasOwners(hasOwners(sourceEntry));
 		copyContext.setHasDisclaimer(hasDisclaimer(course));
@@ -209,7 +220,7 @@ public class CopyCourseWizardController extends BasicController {
         listenTo(copyWizardController);
         getWindowControl().pushAsModalDialog(copyWizardController.getInitialComponent());
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		fireEvent(ureq, event);
@@ -399,14 +410,39 @@ public class CopyCourseWizardController extends BasicController {
 		return reminders != null && !reminders.isEmpty();
 	}
 	
-	private boolean hasGroups(RepositoryEntry repositoryEntry) {
+	private Set<Long> getGroupCopyIgnoreKeys(CoursePropertyManager coursePropertyManager, List<CopyCourseOverviewRow> courseNodes) {
+		Set<Long> groupKeys = new HashSet<>();
+		
+		for (CopyCourseOverviewRow row : courseNodes) {
+			CourseNode courseNode = row.getCourseNode();
+			if (courseNode instanceof ProjectBrokerCourseNode) {
+				// Account group
+				Long sourceAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(coursePropertyManager, courseNode);
+				if (sourceAccountGroupKey != null) {
+					groupKeys.add(sourceAccountGroupKey);
+				}
+				// Project groups
+				Long oldBrokerId = projectBrokerManager.getProjectBrokerId(coursePropertyManager, courseNode);
+				if (oldBrokerId != null) {
+					List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
+					for (Project project : projectsFromGroup) {
+						groupKeys.add(project.getProjectGroup().getKey());
+					}
+				}
+			}
+		}
+		
+		return groupKeys;
+	}
+	
+	private boolean hasGroups(RepositoryEntry repositoryEntry, Set<Long> alwaysCopyGroupKeys) {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setRepositoryEntry(repositoryEntry);
 		
-		List<StatisticsBusinessGroupRow> groups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry());
-		
-		return !groups.isEmpty();
+		return businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry())
+				.stream()
+				.anyMatch(group -> !alwaysCopyGroupKeys.contains(group.getKey()));
 	}
 	
 	private boolean hasDisclaimer(ICourse course) {

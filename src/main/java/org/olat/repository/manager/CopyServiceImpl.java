@@ -294,7 +294,7 @@ public class CopyServiceImpl implements CopyService {
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
 			List<BusinessGroupReference> copiedGroupReferences = new ArrayList<>();
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
-				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) || context.getGroupCopyIgnoreKeys().contains(group.getKey())) {
 					continue;
 				}
 				
@@ -311,16 +311,17 @@ public class CopyServiceImpl implements CopyService {
 			break;
 		case reference: 
 			List<BusinessGroup> referencedGroups = businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1);
-			businessGroupService.addResourcesTo(referencedGroups, Collections.singletonList(target));
 			
+			List<BusinessGroup> groupsToReference = new ArrayList<>();
 			List<BusinessGroupReference> newReferencedGroups = new ArrayList<>();
 			for (BusinessGroup group : referencedGroups) {
-				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+				if (LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) || context.getGroupCopyIgnoreKeys().contains(group.getKey())) {
 					continue;
 				}
-				
+				groupsToReference.add(group);
 				newReferencedGroups.add(new BusinessGroupReference(group));
 			}
+			businessGroupService.addResourcesTo(groupsToReference, Collections.singletonList(target));
 			
 			context.setNewGroupReferences(newReferencedGroups);
 			break;
@@ -331,7 +332,7 @@ public class CopyServiceImpl implements CopyService {
 					List<BusinessGroup> customCopiedGroups = new ArrayList<>();
 					List<BusinessGroupReference> customCopiedGroupReferences = new ArrayList<>();
 					for (BusinessGroup group : groupsToCopy) {
-						if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+						if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) || context.getGroupCopyIgnoreKeys().contains(group.getKey())) {
 							continue;
 						}
 						
@@ -344,17 +345,18 @@ public class CopyServiceImpl implements CopyService {
 					businessGroupService.addResourcesTo(customCopiedGroups, Collections.singletonList(target));
 					break;
 				case reference:
-					List<BusinessGroup> groupsToReference = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(BGTableItem::getKey).collect(Collectors.toList()));
-					businessGroupService.addResourcesTo(groupsToReference, Collections.singletonList(target));
+					List<BusinessGroup> customReferencedGroups = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(BGTableItem::getKey).collect(Collectors.toList()));
 					
+					List<BusinessGroup> customGroupsToReference = new ArrayList<>();
 					List<BusinessGroupReference> newCustomReferencedGroups = new ArrayList<>();
-					for (BusinessGroup group : groupsToReference) {
-						if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+					for (BusinessGroup group : customReferencedGroups) {
+						if (LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) || context.getGroupCopyIgnoreKeys().contains(group.getKey())) {
 							continue;
 						}
-						
+						customGroupsToReference.add(group);
 						newCustomReferencedGroups.add(new BusinessGroupReference(group));
 					}
+					businessGroupService.addResourcesTo(customGroupsToReference, Collections.singletonList(target));
 					
 					context.setNewGroupReferences(newCustomReferencedGroups);
 					break;

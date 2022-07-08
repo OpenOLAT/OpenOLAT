@@ -242,14 +242,16 @@ public class GroupStep extends BasicStep {
 			params.setRepositoryEntry(repositoryEntry);
 			
 			List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry());
-			List<BGTableItem> items = new ArrayList<>(rows.size());
+			List<BGTableItem> items = new ArrayList<>(rows.size() - context.getGroupCopyIgnoreKeys().size());
 			for(StatisticsBusinessGroupRow row:rows) {
-				BGTableItem item = new BGTableItem(row, null, false, false);
-				item.setNumOfOwners(row.getNumOfCoaches());
-				item.setNumOfParticipants(row.getNumOfParticipants());
-				item.setNumWaiting(row.getNumWaiting());
-				item.setNumOfPendings(row.getNumPending());
-				items.add(item);
+				if (!context.getGroupCopyIgnoreKeys().contains(row.getKey())) {
+					BGTableItem item = new BGTableItem(row, null, false, false);
+					item.setNumOfOwners(row.getNumOfCoaches());
+					item.setNumOfParticipants(row.getNumOfParticipants());
+					item.setNumWaiting(row.getNumWaiting());
+					item.setNumOfPendings(row.getNumPending());
+					items.add(item);
+				}
 			}
 			return items;
 		}
