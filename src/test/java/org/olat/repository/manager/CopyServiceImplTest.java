@@ -22,6 +22,8 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -253,7 +255,27 @@ public class CopyServiceImplTest extends OlatTestCase {
 		
 		List<BusinessGroup> targetGroups = businessGroupService.findBusinessGroups(params, target, 0, -1);
 		
-		Assert.assertTrue(targetGroups.isEmpty());
+		// One project broker group (always copied)
+		Assert.assertEquals(1, targetGroups.size());
+	}
+	
+	@Test
+	public void ignoreGroupsKeys() {
+		context.setGroupCopyType(CopyType.copy);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setIdentity(author);
+		
+		BusinessGroup businessGroupToIgnore = businessGroupService.findBusinessGroups(params, source, 0, -1).stream()
+				.filter(group -> "CCW Rot".equals(group.getName()))
+				.findFirst().get();
+		context.setGroupCopyIgnoreKeys(Set.of(businessGroupToIgnore.getKey()));
+		target = copyService.copyLearningPathCourse(context);
+		
+		Optional<BusinessGroup> targetGroup = businessGroupService.findBusinessGroups(params, target, 0, -1).stream()
+				.filter(group -> "CCW Rot".equals(group.getName()))
+				.findFirst();
+		Assert.assertFalse(targetGroup.isPresent());
 	}
 	
 	@Test
