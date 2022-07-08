@@ -1,0 +1,17 @@
+<ul class="o_dropdown list-unstyled o_zoom_profile_tools">
+    #if($r.available("tool.edit"))
+    <li>$r.render("tool.edit")</li>
+    #end
+    #if($r.available("tool.copy"))
+    <li>$r.render("tool.copy")</li>
+    #end
+    #if($r.available("tool.delete"))
+    <li>$r.render("tool.delete")</li>
+    #end
+    #if($r.available("tool.deactivate"))
+    <li>$r.render("tool.deactivate")</li>
+    #end
+    #if($r.available("tool.activate"))
+    <li>$r.render("tool.activate")</li>
+    #end
+</ul>

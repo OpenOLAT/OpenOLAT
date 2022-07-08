@@ -79,7 +79,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 22;
+	private static final transient int CURRENTVERSION = 23;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -125,6 +125,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String BIGBLUEBUTTON_ENABLED = "BIGBLUEBUTTON_ENABLED";
 	public static final transient String BIGBLUEBUTTON_MODERATOR_STARTS_MEETING = "BIGBLUEBUTTON_MODERATOR_STARTS_MEETING";
 
+	public static final transient String ZOOM_ENABLED = "ZOOM_ENABLED";
 	public static final transient String KEY_GLOSSARY_ENABLED = "KEY_GLOSSARY_ENABLED";
 	public static final transient String KEY_GLOSSARY_SOFTKEY = "KEY_GLOSSARY_SOFTKEY";
 	public static final transient String KEY_CSS_FILEREF = "CSS_FILEREF";
@@ -460,6 +461,13 @@ public class CourseConfig implements Serializable, Cloneable {
 					configuration.put(MENU_PATH_ENABLED, Boolean.TRUE);
 				}
 				this.version = 22;
+			}
+
+			if (version == 22) {
+				if (!configuration.containsKey(ZOOM_ENABLED)) {
+					configuration.put(ZOOM_ENABLED, Boolean.FALSE);
+				}
+				this.version = 23;
 			}
 
 			/*
@@ -822,6 +830,15 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING, Boolean.valueOf(b));
 	}
 
+	public boolean isZoomEnabled() {
+		Boolean bool = (Boolean) configuration.get(ZOOM_ENABLED);
+		return bool != null && bool.booleanValue();
+	}
+
+	public void setZoomEnabled(boolean zoomEnabled) {
+		configuration.put(ZOOM_ENABLED, Boolean.valueOf(zoomEnabled));
+	}
+
 	public boolean isBlogEnabled() {
 		Boolean bool = (Boolean) configuration.get(BLOG_ENABLED);
 		return bool != null && bool.booleanValue();
@@ -1101,6 +1118,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
 		clone.setEmailEnabled(isEmailEnabled());
 		clone.setTeamsEnabled(isTeamsEnabled());
+		clone.setZoomEnabled(isZoomEnabled());
 		clone.setBigBlueButtonEnabled(isBigBlueButtonEnabled());
 		clone.setBigBlueButtonModeratorStartsMeeting(isBigBlueButtonModeratorStartsMeeting());
 		clone.setBlogEnabled(isBlogEnabled());

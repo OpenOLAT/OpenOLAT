@@ -32,7 +32,8 @@ public enum CourseTool {
 	learningpath("command.learning.path", "o_icon_learning_path"),
 	wiki("command.wiki", "o_wiki_icon"),
 	teams("command.teams", "o_vc_icon"),
-	bigbluebutton("command.bigbluebutton", "o_vc_icon");
+	bigbluebutton("command.bigbluebutton", "o_vc_icon"),
+	zoom("command.zoom", "o_vc_icon");
 	
 	private final String i18nKey;
 	private final String iconCss;

@@ -3692,6 +3692,31 @@ create table o_immunity_proof (
    primary key (id)
 );
 
+-- Zoom
+create table o_zoom_profile (
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    lastmodified datetime not null,
+    z_name varchar(255) not null,
+    z_status varchar(255) not null,
+    z_lti_key varchar(255) not null,
+    z_mail_domains varchar(1024),
+    z_students_can_host bool default false,
+    z_token varchar(255) not null,
+    fk_lti_tool_id bigint not null,
+    primary key (id)
+);
+
+create table o_zoom_config (
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    lastmodified datetime not null,
+    z_description varchar(255),
+    fk_profile bigint not null,
+    fk_lti_tool_deployment_id bigint not null,
+    primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4048,6 +4073,8 @@ alter table o_ap_participation ENGINE = InnoDB;
 alter table o_ct_location ENGINE = InnoDB;
 alter table o_ct_registration ENGINE = InnoDB;
 alter table o_immunity_proof ENGINE = InnoDB;
+alter table o_zoom_profile ENGINE = InnoDB;
+alter table o_zoom_config ENGINE = InnoDB;
 
 
 -- rating
@@ -4866,6 +4893,16 @@ create index idx_qr_id_idx on o_ct_location (l_qr_id);
 -- Immunity proof
 alter table o_immunity_proof add constraint proof_to_user_idx foreign key (fk_user) references o_bs_identity(id);
 create index idx_immunity_proof on o_immunity_proof (fk_user);
+
+-- Zoom
+alter table o_zoom_profile add constraint zoom_profile_tool_idx foreign key (fk_lti_tool_id) references o_lti_tool (id);
+create index idx_zoom_profile_tool_idx on o_zoom_profile (fk_lti_tool_id);
+
+alter table o_zoom_config add constraint zoom_config_profile_idx foreign key (fk_profile) references o_zoom_profile (id);
+create index idx_zoom_config_profile_idx on o_zoom_config (fk_profile);
+
+alter table o_zoom_config add constraint zoom_config_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
+create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_deployment_id);
 
 
 insert into hibernate_unique_key values ( 0 );

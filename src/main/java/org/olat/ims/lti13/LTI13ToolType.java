@@ -36,6 +36,10 @@ public enum LTI13ToolType {
 	 */
 	EXT_TEMPLATE,
 	/**
+	 * Zoom tool deployments
+	 */
+	ZOOM,
+	/**
 	 * Not used (backwards compatibility)
 	 */
 	SHARED

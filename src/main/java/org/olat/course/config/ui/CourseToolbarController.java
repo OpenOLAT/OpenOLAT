@@ -76,6 +76,10 @@ import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.zoom.ZoomConfig;
+import org.olat.modules.zoom.ZoomManager;
+import org.olat.modules.zoom.ZoomModule;
+import org.olat.modules.zoom.ZoomProfile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -127,6 +131,8 @@ public class CourseToolbarController extends FormBasicController {
 	private MultipleSelectionElement teamsEl;
 	private MultipleSelectionElement bigBlueButtonEl;
 	private MultipleSelectionElement bigBlueButtonModeratorStartsMeetingEl;
+	private MultipleSelectionElement zoomEl;
+	private SingleSelection zoomProfileEl;
 
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController blogSearchCtrl;
@@ -154,7 +160,11 @@ public class CourseToolbarController extends FormBasicController {
 	private TeamsModule teamsModule;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
-		
+	@Autowired
+	private ZoomModule zoomModule;
+	@Autowired
+	private ZoomManager zoomManager;
+
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, ICourse course, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
@@ -295,7 +305,22 @@ public class CourseToolbarController extends FormBasicController {
 			bigBlueButtonModeratorStartsMeetingEl.setEnabled(editable && !managedBigBlueButton);
 			bigBlueButtonModeratorStartsMeetingEl.setVisible(bigBlueButtonEl.isSelected(0));
 		}
-		
+
+		boolean zoomVisible = zoomModule.isEnabled() && zoomModule.isEnabledForCourseTool();
+		if (zoomVisible) {
+			boolean zoomEnabled = courseConfig.isZoomEnabled();
+			boolean managedZoom = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.zoom);
+			zoomEl = uifactory.addCheckboxesHorizontal("zoomIsOn", "chkbx.zoom.onoff", formLayout, onKeys, onValues);
+			zoomEl.addActionListener(FormEvent.ONCHANGE);
+			zoomEl.select(onKeys[0], zoomEnabled);
+			zoomEl.setEnabled(editable && !managedZoom);
+			if (managedZoom && zoomEnabled) {
+				canHideToolbar &= false;
+			}
+
+			zoomProfileEl = uifactory.addDropdownSingleselect("chkbx.zoom.profile", formLayout, new String[0], new String[0]);
+		}
+
 		boolean blogEnabled = courseConfig.isBlogEnabled();
 		boolean managedBlog = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.blog);
 		blogEl = uifactory.addCheckboxesHorizontal("blogIsOn", "chkbx.blog.onoff", formLayout, onKeys, onValues);
@@ -403,6 +428,7 @@ public class CourseToolbarController extends FormBasicController {
 		
 		updateUI();
 		updateToolbar();
+		updateZoomUI();
 	}
 	
 	private void updateDocumentsUI() {
@@ -477,6 +503,8 @@ public class CourseToolbarController extends FormBasicController {
 				showWarning("chkbx.toolbar.off.warning");
 			}
 			updateToolbar();
+		} else if (zoomEl == source) {
+			updateZoomUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -523,6 +551,41 @@ public class CourseToolbarController extends FormBasicController {
 		updateDocumentsUI();
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
+	}
+
+	private void updateZoomUI() {
+		if (zoomEl == null) {
+			return;
+		}
+
+		boolean enabled = zoomEl.isSelected(0);
+		zoomProfileEl.setVisible(enabled);
+
+		String subIdent = course.getResourceableId().toString();
+		zoomManager.initializeConfig(entry, subIdent, null, ZoomManager.ApplicationType.courseTool);
+
+		ZoomManager.KeysAndValues profiles = zoomManager.getProfilesAsKeysAndValues();
+		zoomProfileEl.setKeysAndValues(profiles.keys, profiles.values, null);
+		ZoomConfig zoomConfig = zoomManager.getConfig(entry, subIdent, null);
+
+		String profileKey = zoomConfig.getProfile().getKey().toString();
+		zoomProfileEl.select(profileKey, true);
+		if (!zoomProfileEl.isOneSelected() && !profiles.isEmpty()) {
+			zoomProfileEl.select(profiles.keys[0], true);
+		}
+	}
+
+	private void doUpdateZoomConfig(boolean enableZoom, boolean updateZoom) {
+		String subIdent = course.getResourceableId().toString();
+		if (enableZoom) {
+			ZoomProfile zoomProfile = zoomManager.getProfile(zoomProfileEl.getSelectedKey());
+			ZoomConfig zoomConfig = zoomManager.getConfig(entry, subIdent, null);
+			zoomManager.recreateConfig(zoomConfig, entry, subIdent, null, zoomProfile);
+		} else {
+			if (updateZoom) {
+				zoomManager.deleteConfig(entry, subIdent, null);
+			}
+		}
 	}
 
 	@Override
@@ -676,7 +739,12 @@ public class CourseToolbarController extends FormBasicController {
 		boolean bigBlueButtonModeratorStarts = bigBlueButtonModeratorStartsMeetingEl == null || bigBlueButtonModeratorStartsMeetingEl.isSelected(0);
 		updateBigBlueButton |= courseConfig.isBigBlueButtonModeratorStartsMeeting() != bigBlueButtonModeratorStarts;
 		courseConfig.setBigBlueButtonModeratorStartsMeeting(bigBlueButtonModeratorStarts && toolbarEnabled);
-		
+
+		boolean enableZoom = zoomEl != null && zoomEl.isSelected(0);
+		boolean updateZoom = courseConfig.isZoomEnabled() != enableZoom;
+		courseConfig.setZoomEnabled(enableZoom && toolbarEnabled);
+		doUpdateZoomConfig(enableZoom, updateZoom);
+
 		boolean enableBlog = blogEl.isSelected(0);
 		boolean updateBlog = courseConfig.isBlogEnabled() != enableBlog;
 		courseConfig.setBlogEnabled(enableBlog && toolbarEnabled);
@@ -790,7 +858,17 @@ public class CourseToolbarController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.bigbluebutton, course.getResourceableId()), course);
 		}
-		
+
+		if (updateZoom) {
+			ILoggingAction loggingAction = enableZoom ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_ZOOM_ENABLED :
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_ZOOM_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.zoom, course.getResourceableId()), course);
+		}
+
 		if(updateBlog) {
 			ILoggingAction loggingAction = enableBlog ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BLOG_ENABLED:

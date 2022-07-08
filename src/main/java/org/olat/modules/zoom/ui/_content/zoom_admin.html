@@ -1,0 +1,14 @@
+#if ($isLtiAvailable)
+<div class="clearfix">
+	$r.render("segments")<br>	
+		
+	#if($r.available("segmentCmp"))
+		$r.render("segmentCmp")
+	#end
+</div>
+#else
+<div class="o_warning">
+	<i class="o_icon o_icon-fw o_icon_warn"> </i>
+	$r.translate("zoom.module.ltiWarning")
+</div>
+#end

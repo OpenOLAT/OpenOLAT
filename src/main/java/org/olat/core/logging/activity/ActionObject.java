@@ -109,6 +109,6 @@ public enum ActionObject {
 	assessmentdocument,
 	completionType,
 	teams,
-	bigbluebutton;
-
+	bigbluebutton,
+	zoom;
 }

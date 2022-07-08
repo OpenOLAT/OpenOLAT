@@ -11,6 +11,9 @@ $r.render("choiceOfTools")
 #if ($r.isTrue($teamsToolEnabled))
 	$r.render("teamsform")
 #end
+#if ($r.isTrue($zoomToolEnabled))
+	$r.render("zoomform")
+#end
 #if ($folderToolEnabled)
 	$r.render("folderform")
 	#if ($isOlatAdmin)

@@ -126,3 +126,37 @@ create index idx_dep_to_group_idx on o_lti_tool_deployment (fk_group_id);
 alter table o_cer_certificate add column c_external_id varchar(64);
 alter table o_cer_certificate add column c_managed_flags varchar(255);
 
+
+-- Zoom
+create table o_zoom_profile (
+                                id bigserial,
+                                creationdate timestamp not null,
+                                lastmodified timestamp not null,
+                                z_name varchar(255) not null,
+                                z_status varchar(255) not null,
+                                z_lti_key varchar(255) not null,
+                                z_mail_domains varchar(1024),
+                                z_students_can_host bool default false,
+                                z_token varchar(255) not null,
+                                fk_lti_tool_id int8 not null,
+                                primary key (id)
+);
+
+create table o_zoom_config (
+                               id bigserial,
+                               creationdate timestamp not null,
+                               lastmodified timestamp not null,
+                               z_description varchar(255),
+                               fk_profile int8 not null,
+                               fk_lti_tool_deployment_id int8 not null,
+                               primary key (id)
+);
+
+alter table o_zoom_profile add constraint zoom_profile_tool_idx foreign key (fk_lti_tool_id) references o_lti_tool (id);
+create index idx_zoom_profile_tool_idx on o_zoom_profile (fk_lti_tool_id);
+
+alter table o_zoom_config add constraint zoom_config_profile_idx foreign key (fk_profile) references o_zoom_profile (id);
+create index idx_zoom_config_profile_idx on o_zoom_config (fk_profile);
+
+alter table o_zoom_config add constraint zoom_config_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
+create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_deployment_id);

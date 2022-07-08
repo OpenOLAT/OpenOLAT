@@ -26,10 +26,7 @@
 package org.olat.collaboration;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
@@ -107,6 +104,7 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
+import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -199,10 +197,14 @@ public class CollaborationTools implements Serializable {
 	 */
 	public static final String TOOL_BIGBLUEBUTTON = "hasBigBlueButton";
 	/**
-	 * constant used to identify the BigBlueButton for a group
+	 * constant used to identify Microsoft Teams for a group
 	 */
 	public static final String TOOL_TEAMS = "hasTeams";
-	
+	/**
+	 * constant used to identify Zoom for a group
+	 */
+	public static final String TOOL_ZOOM = "hasZoom";
+
 	/**
 	 * Only owners have write access to the calendar.
 	 */
@@ -638,6 +640,9 @@ public class CollaborationTools implements Serializable {
 		return new TeamsMeetingsRunController(ureq, wControl, null, null, group, administrator, administrator, readOnly);
 	}
 
+	public ZoomRunController createZoomController(final UserRequest ureq, WindowControl wControl, BusinessGroup group, boolean admin, boolean coach, boolean participant) {
+		return new ZoomRunController(ureq, wControl, null, null, group, participant, admin, coach);
+	}
 	/**
 	 * @param toolToChange
 	 * @param enable
