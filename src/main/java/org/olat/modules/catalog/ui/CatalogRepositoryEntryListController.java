@@ -383,7 +383,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			searchParams.setSearchString(searchString);
 			Set<String> serachTaxonomyLevelI18nSuffix = i18nManager
 					.findI18nKeysByOverlayValue(searchString, TaxonomyUIFactory.PREFIX_DISPLAY_NAME, getLocale(),
-							TaxonomyUIFactory.BUNDLE_NAME)
+							TaxonomyUIFactory.BUNDLE_NAME, false)
 					.stream().map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
 					.collect(Collectors.toSet());
 			searchParams.setSerachTaxonomyLevelI18nSuffix(serachTaxonomyLevelI18nSuffix);

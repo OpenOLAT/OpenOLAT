@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -531,7 +532,7 @@ public class I18nManager {
 		return foundTranslationItems;
 	}
 
-	private Pattern makeFuzzySearchPattern(String searchString) {
+	private static Pattern makeFuzzySearchPattern(String searchString) {
 		searchString = searchString.toLowerCase();
 		String[] parts = searchString.split("\\*");
 		// Build pattern
@@ -586,9 +587,10 @@ public class I18nManager {
 	
 	/**
 	 * Searches in overlay translations for the searchString.
-	 * The search happens in searchLocale and if in the default locale as a fallback.
+	 * The search looks in the searchLocale and if not found in the default locale as a fallback.
 	 */
-	public Set<String> findI18nKeysByOverlayValue(String searchString, String keyPrefix, Locale searchLocale, String limitToBundleName) {
+	public Set<String> findI18nKeysByOverlayValue(String searchString, String keyPrefix, Locale searchLocale,
+			String limitToBundleName, boolean exactMatch) {
 		Locale overlayLocale = i18nModule.getOverlayLocales().get(searchLocale);
 		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
 		
@@ -613,20 +615,54 @@ public class I18nManager {
 			}
 		}
 		
-		Pattern p = makeFuzzySearchPattern(searchString);
+		Predicate<String> matcher = exactMatch
+				? new ExactMatcher(searchString)
+				: new FuzzyMatcher(searchString);
+		
 		Set<String> matchingKeys = new HashSet<>();
 		for (Entry<String, TranslationValues> entry : keyToTranslationValues.entrySet()) {
 			TranslationValues translationValues = entry.getValue();
 			String value = translationValues.getOverlayValue() != null
 					? translationValues.getOverlayValue()
 					: translationValues.getOverlayDefaultValue();
-			Matcher m = p.matcher(value.toLowerCase());
-			if (m.find()) {
+			if (matcher.test(value.toLowerCase())) {
 				matchingKeys.add(entry.getKey());
 			}
 		}
 		
 		return matchingKeys;
+	}
+	
+
+	
+	private static final class ExactMatcher implements Predicate<String> {
+		
+		private String searchString;
+
+		public ExactMatcher(String searchString) {
+			this.searchString = searchString.toLowerCase();
+		}
+
+		@Override
+		public boolean test(String value) {
+			return searchString.equals(value);
+		}
+		
+	}
+	
+	private static final class FuzzyMatcher implements Predicate<String> {
+		
+		private final Pattern pattern;
+
+		public FuzzyMatcher(String searchString) {
+			this.pattern = makeFuzzySearchPattern(searchString);
+		}
+
+		@Override
+		public boolean test(String value) {
+			return pattern.matcher(value.toLowerCase()).find();
+		}
+		
 	}
 	
 	private static final class TranslationValues {

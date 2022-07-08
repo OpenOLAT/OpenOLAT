@@ -286,17 +286,17 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			.getResultList();
 	}
 	
-	public List<TaxonomyLevel> getLevelsByDisplayName(TaxonomyRef taxonomy, String displayName) {
+	public List<TaxonomyLevel> getLevelsByI18nSuffix(TaxonomyRef taxonomy, Collection<String> i18nSuffix) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
 		  .append(" left join fetch level.type as type")
 		  .append(" inner join fetch level.taxonomy as taxonomy")
-		  .append(" where level.taxonomy.key=:taxonomyKey and level.displayName=:displayName");
+		  .append(" where level.taxonomy.key=:taxonomyKey and level.i18nSuffix in :i18nSuffix");
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class)
 			.setParameter("taxonomyKey", taxonomy.getKey())
-			.setParameter("displayName", displayName)
+			.setParameter("i18nSuffix", i18nSuffix)
 			.getResultList();
 	}
 	

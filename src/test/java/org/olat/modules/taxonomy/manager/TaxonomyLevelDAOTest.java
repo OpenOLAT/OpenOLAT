@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -205,14 +206,19 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getLevelsByDisplayName() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-104", "Named taxonomy", null, null);
-		String displayName = UUID.randomUUID().toString();
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("L-1", random(), displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1", random(), null, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-2", random(), null, "A basic level", null, null, null, null, taxonomy);
+		taxonomyLevelDao.createTaxonomyLevel("L-3", random(), null, "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
-		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevelsByDisplayName(taxonomy, displayName);
+		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevelsByI18nSuffix(taxonomy, Collections.emptyList());
+		Assert.assertTrue(levels.isEmpty());
+		
+		levels = taxonomyLevelDao.getLevelsByI18nSuffix(taxonomy, List.of(level1.getI18nSuffix(), level2.getI18nSuffix()));
 		Assert.assertNotNull(levels);
-		Assert.assertEquals(1, levels.size());
-		Assert.assertEquals(level, levels.get(0));
+		Assert.assertEquals(2, levels.size());
+		Assert.assertTrue(levels.contains(level1));
+		Assert.assertTrue(levels.contains(level1));
 	}
 	
 	@Test

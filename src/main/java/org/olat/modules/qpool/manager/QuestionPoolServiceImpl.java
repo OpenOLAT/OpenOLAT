@@ -21,6 +21,7 @@
 package org.olat.modules.qpool.manager;
 
 import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.PREFIX_DISPLAY_NAME;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -96,7 +97,6 @@ import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -744,7 +744,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		if(qpoolTaxonomy == null) {
 			return new ArrayList<>();
 		}
-		return taxonomyLevelDao.getLevelsByDisplayName(qpoolTaxonomy, displayName);
+		
+		Set<String> i18nSuffix = i18nManager
+				.findI18nKeysByOverlayValue(displayName, PREFIX_DISPLAY_NAME, I18nModule.getDefaultLocale(), BUNDLE_NAME, true)
+				.stream()
+				.map(key -> key.substring(PREFIX_DISPLAY_NAME.length()))
+				.collect(Collectors.toSet());
+		return taxonomyLevelDao.getLevelsByI18nSuffix(qpoolTaxonomy, i18nSuffix);
 	}
 
 	@Override
@@ -759,7 +765,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				null, null, null, null, parent, null, qpoolTaxonomy);
 		
 		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
-		I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
+		I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
 		i18nManager.saveOrUpdateI18nItem(displayNameItem, displayName);
 		
 		return taxonomyLevel;

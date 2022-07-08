@@ -202,7 +202,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 						tableEl.getQuickSearchString(),
 						TaxonomyUIFactory.PREFIX_DISPLAY_NAME,
 						getLocale(),
-						TaxonomyUIFactory.BUNDLE_NAME).stream()
+						TaxonomyUIFactory.BUNDLE_NAME, false).stream()
 				.map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
 				.collect(Collectors.toSet());
 		searchParams.setQuickSearchI18nSuffix(quickSearchI18nSuffix);
