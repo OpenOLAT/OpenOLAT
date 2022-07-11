@@ -377,7 +377,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		}
 		dbInstance.commit();
 		
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		Assert.assertEquals(4, pages.size());
 		
 		//the author move an assigment
@@ -469,7 +469,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// check that the student has it's 4 pages
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		Assert.assertEquals(4, pages.size());
 		
 		//author create a new section and move an assignment
@@ -585,7 +585,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// check that the student has it's 4 pages
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		Assert.assertEquals(5, pages.size());
 		
 		//author create 2 new sections, move the 4 to the top
@@ -771,7 +771,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// check that the student has it's 8 pages
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		Assert.assertEquals(6, pages.size());
 		dbInstance.commit();
 

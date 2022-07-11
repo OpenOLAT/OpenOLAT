@@ -60,6 +60,7 @@ import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.ContainerPart;
 import org.olat.modules.portfolio.model.PageBodyImpl;
 import org.olat.modules.portfolio.model.PageImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -194,39 +195,19 @@ public class PageDAO {
 				.getSingleResult();
 	}
 	
-	public List<Page> getPages(BinderRef binder, String searchString) {
+	public List<Page> getPages(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
-		  .append(" where section.binder.key=:binderKey");
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			searchString = makeFuzzyQueryString(searchString);
-			sb.append(" and (");
-			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
-			sb.append(" or ");
-			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
-			sb.append(" or exists (select cat from pfcategoryrelation rel ")
-			  .append("   inner join rel.category cat")
-			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
-			  .append(" )");
-			sb.append(" or exists (select competence from pfpagetotaxonomycompetence competenceRel ")
-			  .append("   inner join competenceRel.taxonomyCompetence as competence")
-			  .append("   inner join competence.taxonomyLevel level")
-			  .append("   where competenceRel.portfolioPage.key = page.key and lower(level.displayName) like :searchString")
-			  .append(" )");
-			sb.append(")");
-		}
-		sb.append(" order by section.pos, page.pos");
+		  .append(" where section.binder.key=:binderKey")
+		  .append(" order by section.pos, page.pos");
 		
-		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
-			.setParameter("binderKey", binder.getKey());
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			query.setParameter("searchString", searchString.toLowerCase());
-		}
-		return query.getResultList();
+			.setParameter("binderKey", binder.getKey())
+			.getResultList();
 	}
 	
 	public List<Page> getPages(PortfolioServiceSearchOptions options) {
@@ -309,7 +290,7 @@ public class PageDAO {
 			query.setParameter("categoryCountSize", Long.valueOf(options.getCategories().size()));
 		}
 		if(options.getTaxonomyLevels() != null && !options.getTaxonomyLevels().isEmpty()) {
-			List<Long> levelKeys = options.getTaxonomyLevels().stream().map(level -> level.getKey()).collect(Collectors.toList());
+			List<Long> levelKeys = options.getTaxonomyLevels().stream().map(TaxonomyLevel::getKey).collect(Collectors.toList());
 			query.setParameter("levelKeys", levelKeys);
 			query.setParameter("competenceCountSize", Long.valueOf(levelKeys.size()));
 		}

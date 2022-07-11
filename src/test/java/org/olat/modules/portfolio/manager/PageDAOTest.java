@@ -97,7 +97,7 @@ public class PageDAOTest extends OlatTestCase {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		List<Page> pages = pageDao.getPages(binder, null);
+		List<Page> pages = pageDao.getPages(binder);
 		Assert.assertNotNull(pages);
 		Assert.assertEquals(5, pages.size());
 
@@ -161,20 +161,12 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//reload
-		List<Page> sectionPages = pageDao.getPages(binder, null);
+		List<Page> sectionPages = pageDao.getPages(binder);
 		Assert.assertNotNull(sectionPages);
 		Assert.assertEquals(3, sectionPages.size());
 		Assert.assertTrue(sectionPages.contains(page1));
 		Assert.assertTrue(sectionPages.contains(page2));
 		Assert.assertTrue(sectionPages.contains(page3));
-		
-		//reload
-		List<Page> searchedPages = pageDao.getPages(binder, "juno");
-		Assert.assertNotNull(searchedPages);
-		Assert.assertEquals(1, searchedPages.size());
-		Assert.assertFalse(searchedPages.contains(page1));
-		Assert.assertFalse(searchedPages.contains(page2));
-		Assert.assertTrue(searchedPages.contains(page3));
 	}
 	
 	@Test

@@ -121,7 +121,7 @@ public class BinderOnePageController extends BasicController {
 		mainVC.contextPut("binderKey", binder.getKey());		
 		//load pages
 		List<Section> sections = portfolioService.getSections(binder);
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		
 		for(Section section:sections) {
 			loadSection(section);

@@ -181,7 +181,7 @@ public class BinderAssessmentController extends FormBasicController {
 			allClosed &= section.getSectionStatus() == SectionStatus.closed;
 		}
 
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		for(Page page:pages) {
 			AssessmentSectionWrapper row = sectionToRows.get(page.getSection());
 			if(row != null) {

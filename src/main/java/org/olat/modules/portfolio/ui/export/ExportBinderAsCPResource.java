@@ -210,7 +210,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 		try(ZipOutputStream zout = new ZipOutputStream(out)) {
 			//load pages
 			List<Section> sections = portfolioService.getSections(binder);
-			List<Page> pages = portfolioService.getPages(binder, null);
+			List<Page> pages = portfolioService.getPages(binder);
 			
 			//manifest
 			ManifestType manifest = createImsManifest(binder, sections, pages);

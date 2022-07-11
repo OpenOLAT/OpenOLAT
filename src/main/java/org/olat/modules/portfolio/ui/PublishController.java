@@ -236,7 +236,7 @@ public class PublishController extends BasicController implements TooledControll
 		}
 		
 		//pages
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		for(Page page:pages) {
 			boolean canEditPageAccessRights = secCallback.canEditAccessRights(page);
 			boolean canViewPageAccessRights = secCallback.canViewAccessRights(page);
