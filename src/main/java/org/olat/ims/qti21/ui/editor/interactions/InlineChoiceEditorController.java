@@ -139,9 +139,8 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		globalChoicesCont = FormLayoutContainer.createCustomFormLayout("global_choices", getTranslator(), globalPage);
 		formLayout.add(globalChoicesCont);
 		globalChoicesCont.setLabel("form.imd.global.inline.choices", null);
-		globalChoicesCont.setVisible(false);
 
-		addGlobalChoiceButton = uifactory.addFormLink("add.global.choices", formLayout, Link.BUTTON);
+		addGlobalChoiceButton = uifactory.addFormLink("add.global.choice", formLayout, Link.BUTTON);
 		addGlobalChoiceButton.setVisible(true);
 		
 		for(GlobalInlineChoice globalChoice:itemBuilder.getGlobalInlineChoices()) {
@@ -180,12 +179,12 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		super.event(ureq, source, event);
 	}
 	
-	private void feedbackToInlineChoiceElement(String responseIdentifier, String solution, boolean empty) {
+	private void feedbackToInlineChoiceElement(String responseIdentifier, String solution, boolean correctResponse) {
 		try {
 			JSONObject jo = new JSONObject();
 			jo.put("responseIdentifier", responseIdentifier);
 			jo.put("data-qti-solution", solution);
-			jo.put("data-qti-solution-empty", Boolean.toString(empty));
+			jo.put("data-qti-correct-response", Boolean.toString(correctResponse));
 			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateInlineChoice', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
 			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 		} catch (JSONException e) {
@@ -413,7 +412,6 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	
 	private void updateGlobalChoices() {
 		addGlobalChoiceButton.setVisible(globalChoicesWrappers.isEmpty());
-		globalChoicesCont.setVisible(!globalChoicesWrappers.isEmpty());
 		globalChoicesCont.contextPut("wrappers", globalChoicesWrappers);
 		flc.setDirty(true);
 	}
@@ -441,7 +439,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void doCopyInlineChoice(String responseIdentifier, String sourceResponseIdentifier) {
-		InlineChoiceInteractionWrapper interaction = createInlineChoiceBlock(responseIdentifier, null);
+		InlineChoiceInteractionWrapper interaction = createInlineChoiceInteraction(responseIdentifier, null);
 		
 		InlineChoiceInteractionWrapper sourceInteraction = getInteraction(sourceResponseIdentifier);
 		if(sourceInteraction != null) {
@@ -504,11 +502,11 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		
 		InlineChoiceInteractionWrapper interactionWrapper;
 		if(newEntry) {
-			interactionWrapper = createInlineChoiceBlock(responseIdentifier, selectedText);
+			interactionWrapper = createInlineChoiceInteraction(responseIdentifier, selectedText);
 		} else {
 			interactionWrapper = getInteraction(responseIdentifier);
 			if(interactionWrapper == null) {
-				interactionWrapper = createInlineChoiceBlock(responseIdentifier, selectedText);
+				interactionWrapper = createInlineChoiceInteraction(responseIdentifier, selectedText);
 			}
 		}
 		
@@ -521,7 +519,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		listenTo(cmc);
 	}
 	
-	private InlineChoiceInteractionWrapper createInlineChoiceBlock(String responseIdentifier, String selectedText) {
+	private InlineChoiceInteractionWrapper createInlineChoiceInteraction(String responseIdentifier, String selectedText) {
 		InlineChoiceInteractionEntry choiceBlock = new InlineChoiceInteractionEntry(Identifier.parseString(responseIdentifier));
 		
 		List<GlobalInlineChoiceWrapper> globalChoices = globalChoicesWrappers;
@@ -668,6 +666,23 @@ public class InlineChoiceEditorController extends FormBasicController implements
 				out.append("'").append(missingCorrectResponses.get(i)).append("'");
 				if(i > 0) {
 					out.append(",");
+				}
+			}
+			out.append("],\n");
+			out.append("correctResponses: [");
+			boolean first = true;
+			for(InlineChoiceInteractionWrapper interactionEntry:interactionWrappers) {
+				Identifier responseIdentifier = interactionEntry.getResponseIdentifier();
+				Identifier correctResponseId = interactionEntry.getCorrectResponseId();
+				InlineChoice correctChoice = interactionEntry.getInlineChoice(correctResponseId);
+				if(correctChoice != null) {
+					if(first) {
+						first = false;
+					} else {
+						out.append(",");
+					}
+					String text = InlineChoiceAssessmentItemBuilder.getText(correctChoice);
+					out.append("{ id:\"").append(responseIdentifier.toString()).append("\", value:\"").append(text).append("\"}");
 				}
 			}
 			out.append("],");

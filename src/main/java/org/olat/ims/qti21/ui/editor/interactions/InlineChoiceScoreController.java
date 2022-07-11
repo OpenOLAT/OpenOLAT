@@ -208,7 +208,7 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 			//remove removed entry
 			for(Iterator<InlineChoiceInteractionWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
 				Identifier responseIdentifier = wrapperIt.next().getResponseIdentifier();
-				if(itemBuilder.getInteraction(responseIdentifier.toString()) == null) {
+				if(itemBuilder.getInteractionEntry(responseIdentifier) == null) {
 					wrapperIt.remove();
 				}
 			}

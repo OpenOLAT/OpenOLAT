@@ -203,7 +203,7 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 				
 				ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
 				if(responseDeclaration != null && responseDeclaration.hasBaseType(BaseType.IDENTIFIER) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
-					InlineChoiceInteractionEntry inlineChoiceBlock = getInteraction(inlineChoiceInteraction.getResponseIdentifier().toString());
+					InlineChoiceInteractionEntry inlineChoiceBlock = getInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
 					extractInlineChoicesInteractionSettingsFromResponseDeclaration(responseDeclaration, inlineChoiceBlock);
 					String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
 					if(inlineChoiceBlock.getCorrectResponseId() != null && inlineChoiceBlock.getSolution() != null) {
@@ -256,14 +256,17 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		return new ArrayList<>(inlineChoiceInteractions);
 	}
 	
-	public InlineChoiceInteractionEntry getInteraction(String responseIdentifier) {
-		Identifier responseIdent = Identifier.assumedLegal(responseIdentifier);
+	public InlineChoiceInteractionEntry getInteractionEntry(Identifier responseIdentifier) {
 		for(InlineChoiceInteractionEntry interaction:inlineChoiceInteractions) {
-			if(responseIdent.equals(interaction.getResponseIdentifier())) {
+			if(responseIdentifier.equals(interaction.getResponseIdentifier())) {
 				return interaction;
 			}
 		}
 		return null;
+	}
+	
+	public InlineChoiceInteractionEntry getInteractionEntry(String responseIdentifier) {
+		return getInteractionEntry(Identifier.assumedLegal(responseIdentifier));
 	}
 	
 	public InlineChoiceInteractionEntry createInteraction(String responseIdentifier) {
@@ -415,8 +418,12 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 			</mapping>
 		</responseDeclaration>
 		*/
-		for(InlineChoiceInteractionEntry inlineChoiceInteractionEntry:inlineChoiceInteractions) {
-			if(inlineChoiceInteractionEntry.getResponseIdentifier() != null && inlineChoiceInteractionEntry.getCorrectResponseId() != null) {
+		List<InlineChoiceInteraction> interactions = getInlineChoiceInteractionsFromBody();
+		for(InlineChoiceInteraction inlineChoiceInteraction:interactions) {
+			InlineChoiceInteractionEntry inlineChoiceInteractionEntry = getInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
+			if(inlineChoiceInteractionEntry != null
+					&& inlineChoiceInteractionEntry.getResponseIdentifier() != null
+					&& inlineChoiceInteractionEntry.getCorrectResponseId() != null) {
 				ResponseDeclaration responseDeclaration = createInlineChoiceResponseDeclaration(assessmentItem,
 						inlineChoiceInteractionEntry.getResponseIdentifier(), inlineChoiceInteractionEntry.getCorrectResponseId());
 				responseDeclarations.add(responseDeclaration);
@@ -465,6 +472,14 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
+	private List<InlineChoiceInteraction> getInlineChoiceInteractionsFromBody() {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		return interactions.stream()
+				.filter(InlineChoiceInteraction.class::isInstance)
+				.map(InlineChoiceInteraction.class::cast)
+				.collect(Collectors.toList());
+	}
+	
 	@Override
 	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if((correctFeedback != null || incorrectFeedback != null) && scoreEvaluation == ScoreEvaluation.perAnswer) {
@@ -497,9 +512,9 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		 */
 
 		int count = 0;
-		List<InlineChoiceInteractionEntry> entries = new ArrayList<>(inlineChoiceInteractions);
-		for(count = 0; count <entries.size(); count++) {
-			InlineChoiceInteractionEntry inlineChoiceInteractionEntry = entries.get(count);
+		List<InlineChoiceInteraction> interactions = getInlineChoiceInteractionsFromBody();
+		for(count = 0; count <interactions.size(); count++) {
+			InlineChoiceInteraction inlineChoiceInteractionEntry = interactions.get(count);
 			String scoreIdentifier = "SCORE_" + inlineChoiceInteractionEntry.getResponseIdentifier().toString();
 			buildScoreRulePerAnswer(count, inlineChoiceInteractionEntry, Identifier.parseString(scoreIdentifier), responseRules);
 		}
@@ -522,12 +537,12 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 			Sum sum = new Sum(scoreOutcome);
 			scoreOutcome.setExpression(sum);
 			
-			for(InlineChoiceInteractionEntry inlineChoiceInteractionEntry:entries) {
+			for(InlineChoiceInteraction inlineChoiceInteraction:interactions) {
 				
 				{//variable score
 					Variable scoreVariable = new Variable(sum);
 					sum.getExpressions().add(scoreVariable);
-					String scoreIdentifier = "SCORE_" + inlineChoiceInteractionEntry.getResponseIdentifier().toString();
+					String scoreIdentifier = "SCORE_" + inlineChoiceInteraction.getResponseIdentifier().toString();
 					scoreVariable.setIdentifier(ComplexReferenceIdentifier.parseString(scoreIdentifier));
 					
 					//create associated outcomeDeclaration
@@ -539,7 +554,7 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 				{//variable minscore
 					Variable minScoreVariable = new Variable(sum);
 					sum.getExpressions().add(minScoreVariable);
-					String scoreIdentifier = "MINSCORE_" + inlineChoiceInteractionEntry.getResponseIdentifier().toString();
+					String scoreIdentifier = "MINSCORE_" + inlineChoiceInteraction.getResponseIdentifier().toString();
 					minScoreVariable.setIdentifier(ComplexReferenceIdentifier.parseString(scoreIdentifier));
 					
 					//create associated outcomeDeclaration
@@ -571,7 +586,7 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 	 * @param scoreIdentifier The identifier of the score
 	 * @param responseRules The list of response rules
 	 */
-	private void buildScoreRulePerAnswer(int count, InlineChoiceInteractionEntry entry, Identifier scoreIdentifier,
+	private void buildScoreRulePerAnswer(int count, InlineChoiceInteraction entry, Identifier scoreIdentifier,
 			 List<ResponseRule> responseRules) {
 		SetOutcomeValue mapOutcomeValue = new SetOutcomeValue(assessmentItem.getResponseProcessing());
 		responseRules.add(count, mapOutcomeValue);
@@ -618,7 +633,8 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 			And and = new And(responseIf);
 			responseIf.setExpression(and);
 			
-			for(InlineChoiceInteractionEntry inlineChoiceEntry:inlineChoiceInteractions) {
+			List<InlineChoiceInteraction> interactions = getInlineChoiceInteractionsFromBody();
+			for(InlineChoiceInteraction inlineChoiceEntry:interactions) {
 				ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
 						.assumedLegal(inlineChoiceEntry.getResponseIdentifier().toString());
 				
@@ -631,7 +647,7 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 					
 				Correct correct = new Correct(match);
 				correct.setIdentifier(responseIdentifier);
-				match.getExpressions().add(correct);	
+				match.getExpressions().add(correct);
 			}
 			
 			{// outcome max score -> score
