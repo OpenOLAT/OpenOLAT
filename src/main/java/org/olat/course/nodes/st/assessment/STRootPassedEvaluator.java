@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.LazyInitializationException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.PassCounter.Counts;
@@ -123,7 +124,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 				// Failed if course end date is over
 				RepositoryEntryLifecycle lifecycle = getLifecycle(courseEntry);
 				if (lifecycle != null && lifecycle.getValidTo() != null) {
-					Date validTo = lifecycle.getValidTo();
+					Date validTo =  DateUtils.setTime(lifecycle.getValidTo(), 23, 59, 59);
 					if (validTo.before(new Date())) {
 						return Boolean.FALSE;
 					}
