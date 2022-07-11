@@ -113,7 +113,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
                 .toArray(String[]::new);
         keysAndValues.values = profiles
                 .stream()
-                .map(p -> p.getName())
+                .map(ZoomProfile::getName)
                 .toArray(String[]::new);
 
         return keysAndValues;
@@ -127,6 +127,11 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     @Override
     public void deleteProfile(ZoomProfile zoomProfile) {
         zoomProfileDao.deleteProfile(zoomProfile);
+    }
+
+    @Override
+    public boolean isInUse(ZoomProfile zoomProfile) {
+        return zoomProfileDao.isInUse(zoomProfile);
     }
 
     @Override

@@ -45,13 +45,14 @@ public class ZoomProfileEditController extends FormBasicController {
     private static final String[] onKeys = new String[]{ "on" };
 
     private ZoomProfile zoomProfile;
-    private String clientId;
-    private String token;
+    private final String clientId;
+    private final String token;
 
     private TextElement profileNameEl;
     private TextElement ltiKeyEl;
     private TextElement mailDomainsEl;
     private MultipleSelectionElement studentsCanHostEl;
+    private StaticTextElement clientEl;
     private StaticTextElement tokenEl;
 
     @Autowired
@@ -84,6 +85,7 @@ public class ZoomProfileEditController extends FormBasicController {
 
         String ltiKey = zoomProfile == null ? null : zoomProfile.getLtiKey();
         ltiKeyEl = uifactory.addTextElement("zoom.profile.ltiKey", "zoom.profile.ltiKey", 255, ltiKey, formLayout);
+        ltiKeyEl.setHelpTextKey("zoom.profile.ltiKey.help", null);
         ltiKeyEl.setMandatory(true);
 
         String mailDomains = zoomProfile == null ? null : zoomProfile.getMailDomains();
@@ -95,8 +97,9 @@ public class ZoomProfileEditController extends FormBasicController {
                 "zoom.profile.studentsCanHost", formLayout, onKeys, checkboxValues);
         studentsCanHostEl.select(onKeys[0], studentsCanHost);
 
-        uifactory.addStaticTextElement("zoom.profile.clientId", clientId, formLayout)
-                .setElementCssClass("text-muted");
+        clientEl = uifactory.addStaticTextElement("zoom.profile.clientId", clientId, formLayout);
+        clientEl.setHelpTextKey("zoom.profile.clientId.help", null);
+        clientEl.setElementCssClass("text-muted");
 
         tokenEl = uifactory.addStaticTextElement("zoom.profile.token", token, formLayout);
         tokenEl.setHelpTextKey("zoom.profile.token.help", new String[0]);

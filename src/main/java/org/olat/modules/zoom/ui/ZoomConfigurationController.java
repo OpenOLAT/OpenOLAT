@@ -78,6 +78,7 @@ public class ZoomConfigurationController extends FormBasicController {
     private CloseableModalController modalCtrl;
     private ZoomProfileEditController editZoomProfileCtrl;
     private ConfirmDeleteProfileController confirmDeleteProfileCtrl;
+    private ProfileInUseController profileInUseCtrl;
 
     @Autowired
     private ZoomModule zoomModule;
@@ -135,6 +136,21 @@ public class ZoomConfigurationController extends FormBasicController {
     }
 
     @Override
+    protected boolean validateFormLogic(UserRequest ureq) {
+        boolean valid = super.validateFormLogic(ureq);
+
+        boolean enabled = moduleEnabledEl.isSelected(0);
+        if (enabled) {
+            if (profilesTableModel.getRowCount() == 0) {
+                profilesTableEl.setErrorKey("zoom.profiles.mandatory", null);
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+
+    @Override
     protected void formOK(UserRequest ureq) {
         boolean enabled = moduleEnabledEl.isSelected(0);
         zoomModule.setEnabled(enabled);
@@ -160,6 +176,9 @@ public class ZoomConfigurationController extends FormBasicController {
             }
             modalCtrl.deactivate();
             cleanUp();
+        } else if (profileInUseCtrl == source) {
+            modalCtrl.deactivate();
+            cleanUp();
         } else if (confirmDeleteProfileCtrl == source) {
             if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
                 loadModel();
@@ -178,12 +197,14 @@ public class ZoomConfigurationController extends FormBasicController {
         removeAsListenerAndDispose(modalCtrl);
         removeAsListenerAndDispose(editZoomProfileCtrl);
         removeAsListenerAndDispose(confirmDeleteProfileCtrl);
+        removeAsListenerAndDispose(profileInUseCtrl);
 
         calloutCtrl = null;
         toolsCtrl = null;
         modalCtrl = null;
         editZoomProfileCtrl = null;
         confirmDeleteProfileCtrl = null;
+        profileInUseCtrl = null;
     }
 
     @Override
@@ -216,7 +237,7 @@ public class ZoomConfigurationController extends FormBasicController {
     }
     
     private void loadModel() {
-        List<ZoomProfileRow> profileRows = zoomManager.getProfiles().stream().map(zoomProfile -> mapZoomProfileToRow(zoomProfile)).collect(toList());
+        List<ZoomProfileRow> profileRows = zoomManager.getProfiles().stream().map(this::mapZoomProfileToRow).collect(toList());
         profilesTableModel.setObjects(profileRows);
         profilesTableEl.reset(true, true, true);
     }
@@ -272,7 +293,7 @@ public class ZoomConfigurationController extends FormBasicController {
         editZoomProfileCtrl = new ZoomProfileEditController(ureq, getWindowControl(), zoomProfile);
         listenTo(editZoomProfileCtrl);
 
-        String title = translate("zoom.profile.edit", new String[] { zoomProfile.getName() });
+        String title = translate("zoom.profile.edit", zoomProfile.getName());
         modalCtrl = new CloseableModalController(getWindowControl(), "close",
                 editZoomProfileCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
@@ -285,6 +306,23 @@ public class ZoomConfigurationController extends FormBasicController {
         loadModel();
     }
 
+    private void doWarnProfileInUse(UserRequest ureq, ZoomProfileRow row) {
+        if (guardModalController(profileInUseCtrl)) {
+            return;
+        }
+
+        ZoomProfile zoomProfile = row.getZoomProfile();
+
+        profileInUseCtrl = new ProfileInUseController(ureq, getWindowControl(), zoomProfile);
+        listenTo(profileInUseCtrl);
+
+        String title = translate("zoom.profile.in.use.title", zoomProfile.getName());
+        modalCtrl = new CloseableModalController(getWindowControl(), "close",
+                profileInUseCtrl.getInitialComponent(), true, title);
+        modalCtrl.activate();
+        listenTo(modalCtrl);
+    }
+
     private void doConfirmDelete(UserRequest ureq, ZoomProfileRow row) {
         if (guardModalController(confirmDeleteProfileCtrl)) return;
 
@@ -293,7 +331,7 @@ public class ZoomConfigurationController extends FormBasicController {
         confirmDeleteProfileCtrl = new ConfirmDeleteProfileController(ureq, getWindowControl(), zoomProfile);
         listenTo(confirmDeleteProfileCtrl);
 
-        String title = translate("confirm.delete.profile.title", new String[] { zoomProfile.getName() });
+        String title = translate("confirm.delete.profile.title", zoomProfile.getName());
         modalCtrl = new CloseableModalController(getWindowControl(), "close",
                 confirmDeleteProfileCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
@@ -316,9 +354,9 @@ public class ZoomConfigurationController extends FormBasicController {
 
     private class ToolsController extends BasicController {
         private final VelocityContainer mainVC;
-        private Link editLink;
-        private Link copyLink;
-        private Link deleteLink;
+        private final Link editLink;
+        private final Link copyLink;
+        private final Link deleteLink;
         private Link deactivateLink;
         private Link activateLink;
 
@@ -365,7 +403,11 @@ public class ZoomConfigurationController extends FormBasicController {
             } else if (copyLink == source) {
                 doCopy(ureq, row);
             } else if (deleteLink == source) {
-                doConfirmDelete(ureq, row);
+                if (zoomManager.isInUse(row.getZoomProfile())) {
+                    doWarnProfileInUse(ureq, row);
+                } else {
+                    doConfirmDelete(ureq, row);
+                }
             } else if (deactivateLink == source) {
                 doDeactivate(ureq, row);
             } else if (activateLink == source) {

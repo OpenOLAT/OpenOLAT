@@ -69,6 +69,8 @@ public interface ZoomManager {
 
     void deleteProfile(ZoomProfile zoomProfile);
 
+    boolean isInUse(ZoomProfile zoomProfile);
+
     boolean configExists(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 
     ZoomConfig getConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);

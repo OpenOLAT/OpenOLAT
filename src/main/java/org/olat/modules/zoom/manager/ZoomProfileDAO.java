@@ -74,4 +74,13 @@ public class ZoomProfileDAO {
     public void deleteProfile(ZoomProfile zoomProfile) {
         dbInstance.deleteObject(zoomProfile);
     }
+
+    public boolean isInUse(ZoomProfile zoomProfile) {
+        String query = "select 1 from zoomconfig c where c.profile=:zoomProfile";
+        return !dbInstance.getCurrentEntityManager()
+                .createQuery(query)
+                .setParameter("zoomProfile", zoomProfile)
+                .getResultList()
+                .isEmpty();
+    }
 }
