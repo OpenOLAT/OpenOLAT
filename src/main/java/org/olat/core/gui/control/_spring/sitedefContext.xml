@@ -131,6 +131,8 @@
 	
 	<bean id="managersSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.ManagersSecurityCallback"/>
 	
+	<bean id="groupMemberOrManagerSecurityCallback" class="org.olat.core.gui.control.navigation.callback.GroupMemberOrManagerSecurityCallback"/>
+	
 	<bean id="registredSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserSecurityCallback"/>
 
 	<bean id="registredOrGuestSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserOrGuestSecurityCallback"/>
