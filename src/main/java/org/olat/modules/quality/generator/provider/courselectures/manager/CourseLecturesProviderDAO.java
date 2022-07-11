@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -162,32 +161,11 @@ public class CourseLecturesProviderDAO {
 			}
 			sb.append(")");
 		}
-		if (!searchParams.getCourseRefs().isEmpty()) {
-			sb.and().append("lb.fk_entry in :courseKeys");
-		}
 		if (!searchParams.getWhiteListRefs().isEmpty()) {
-			sb.and();
-			sb.append("lb.fk_entry in (");
-			sb.append("    select distinct v.repositoryentry_id");
-			sb.append("      from o_repositoryentry v");
-			sb.append("           inner join o_re_to_group rel");
-			sb.append("             on rel.fk_entry_id = v.repositoryentry_id");
-			sb.append("           inner join o_cur_curriculum_element el");
-			sb.append("             on el.fk_group = rel.fk_group_id");
-			sb.append("     where el.id in (:whiteListKeys)");
-			sb.append("    )");
+			sb.and().append("lb.fk_entry in :whiteListKeys");
 		}
 		if (!searchParams.getBlackListRefs().isEmpty()) {
-			sb.and();
-			sb.append("lb.fk_entry not in (");
-			sb.append("    select distinct v.repositoryentry_id");
-			sb.append("      from o_repositoryentry v");
-			sb.append("           inner join o_re_to_group rel");
-			sb.append("             on rel.fk_entry_id = v.repositoryentry_id");
-			sb.append("           inner join o_cur_curriculum_element el");
-			sb.append("             on el.fk_group = rel.fk_group_id");
-			sb.append("     where el.id in (:blackListKeys)");
-			sb.append("    )");
+			sb.and().append("lb.fk_entry not in :blackListKeys");
 		}
 		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) in (");
@@ -398,28 +376,11 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getTeacherRef() != null) {
 			sb.and().append("membership.identity.key = :teacherKey");
 		}
-		if (!searchParams.getCourseRefs().isEmpty()) {
-			sb.and().append("course.key in :courseKeys");
-		}
 		if (!searchParams.getWhiteListRefs().isEmpty()) {
-			sb.and();
-			sb.append("course.key in (");
-			sb.append("    select distinct v.key");
-			sb.append("      from repositoryentry as v");
-			sb.append("           inner join v.groups as rel");
-			sb.append("           inner join curriculumelement as el on (el.group.key=rel.group.key)");
-			sb.append("     where el.key in (:whiteListKeys)");
-			sb.append("    )");
+			sb.and().append("course.key in :whiteListKeys");
 		}
 		if (!searchParams.getBlackListRefs().isEmpty()) {
-			sb.and();
-			sb.append("course.key not in (");
-			sb.append("    select distinct v.key");
-			sb.append("      from repositoryentry as v");
-			sb.append("           inner join v.groups as rel");
-			sb.append("           inner join curriculumelement as el on (el.group.key=rel.group.key)");
-			sb.append("     where el.key in (:blackListKeys)");
-			sb.append("    )");
+			sb.and().append("course.key not in :blackListKeys");
 		}
 		if (!searchParams.getOrganisationRefs().isEmpty()) {
 			sb.and();
@@ -467,17 +428,13 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getTeacherRef() != null) {
 			query.setParameter("teacherKey", searchParams.getTeacherRef().getKey());
 		}
-		if (!searchParams.getCourseRefs().isEmpty()) {
-			List<Long> courseKeys = searchParams.getCourseRefs().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
-			query.setParameter("courseKeys", courseKeys);
-		}
 		if (!searchParams.getWhiteListRefs().isEmpty()) {
-			List<Long> curriculumElementKeys = searchParams.getWhiteListRefs().stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
-			query.setParameter("whiteListKeys", curriculumElementKeys);
+			List<Long> whiteListKeys = searchParams.getWhiteListRefs().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+			query.setParameter("whiteListKeys", whiteListKeys);
 		}
 		if (!searchParams.getBlackListRefs().isEmpty()) {
-			List<Long> curriculumElementKeys = searchParams.getBlackListRefs().stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
-			query.setParameter("blackListKeys", curriculumElementKeys);
+			List<Long> blackListKeys = searchParams.getBlackListRefs().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+			query.setParameter("blackListKeys", blackListKeys);
 		}
 		if (!searchParams.getOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {

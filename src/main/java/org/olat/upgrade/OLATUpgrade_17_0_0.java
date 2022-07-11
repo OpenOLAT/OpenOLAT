@@ -40,6 +40,15 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.manager.CurriculumRepositoryEntryRelationDAO;
+import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.manager.QualityGeneratorConfigsImpl;
+import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesProvider;
+import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
+import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
@@ -69,6 +78,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private static final String OFFER_TO_ORG_INIT = "OFFER TO ORG INIT";
 	private static final String TAXONOMY_TRANSLATIONS = "TAXONOMY TRANSLATIONS";
 	private static final String MIGRATE_LTI_13_DEPLOYMENTS = "MIGRATE LTI 13 DEPLOYMENTS";
+	private static final String QM_GENERATOR_LIST = "QM GENERATOR LIST";
 	
 	@Autowired
 	private DB dbInstance;
@@ -88,6 +98,8 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDAO;
 	
 	public OLATUpgrade_17_0_0() {
 		super();
@@ -115,6 +127,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		allOk &= initOfferToOrgs(upgradeManager, uhd);
 		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
 		allOk &= migrateLTI13ToolDeployment(upgradeManager, uhd);
+		allOk &= migrateQmGeneratorList(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -450,4 +463,53 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 				.createQuery(sb.toString(), LTI13ToolDeployment.class)
 				.getResultList();
 	}
+	
+	private boolean migrateQmGeneratorList(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(QM_GENERATOR_LIST)) {
+			try {
+				log.info("Start migration of quality generator list");
+				migrateQmGeneratorList();
+				log.info("End of migration of quality generator list");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(QM_GENERATOR_LIST, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateQmGeneratorList() {
+		List<QualityGenerator> generators = getGenerators();
+		
+		for (QualityGenerator generator : generators) {
+			migrateQmGeneratorList(generator);
+			dbInstance.commitAndCloseSession();
+		}
+	}
+
+	private List<QualityGenerator> getGenerators() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select generator");
+		sb.append("  from qualitygenerator as generator");
+		sb.append(" where generator.type").in(CourseLecturesProvider.TYPE);
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityGenerator.class)
+				.getResultList();
+	}
+	
+	private void migrateQmGeneratorList(QualityGenerator generator) {
+		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
+		List<CurriculumElementRef> whiteListRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		List<RepositoryEntry> whiteListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(whiteListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
+		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, whiteListEntries);
+		
+		List<CurriculumElementRef> blackListRefs = CurriculumElementBlackListController.getCurriculumElementRefs(configs);
+		List<RepositoryEntry> blackListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(blackListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
+		RepositoryEntryBlackListController.setRepositoryEntryRefs(configs, blackListEntries);
+	}
+	
 }

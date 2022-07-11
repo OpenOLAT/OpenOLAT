@@ -199,7 +199,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setCourseRefs(Arrays.asList(course1, course2));
+		searchParams.setWhiteListRefs(Arrays.asList(course1, course2));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
@@ -210,28 +210,17 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByWhiteList() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
-				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element",
-				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
 		createLectureBlock(course1, teacher, 1);
 		createLectureBlock(course2, teacher, 1);
 		createLectureBlock(otherCourse, teacher, 1);
-		curriculumService.addRepositoryEntry(element, course1, false);
-		curriculumService.addRepositoryEntry(element, course2, false);
-		curriculumService.addRepositoryEntry(otherElement, otherCourse, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setWhiteListRefs(Arrays.asList(element));
+		searchParams.setWhiteListRefs(Arrays.asList(course1, course2));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
@@ -242,28 +231,17 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByBlackList() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
-				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element",
-				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
 		createLectureBlock(course1, teacher, 1);
 		createLectureBlock(course2, teacher, 1);
 		createLectureBlock(otherCourse, teacher, 1);
-		curriculumService.addRepositoryEntry(element, course1, false);
-		curriculumService.addRepositoryEntry(element, course2, false);
-		curriculumService.addRepositoryEntry(otherElement, otherCourse, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setBlackListRefs(Arrays.asList(otherElement));
+		searchParams.setBlackListRefs(Arrays.asList(otherCourse));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
@@ -634,7 +612,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setCourseRefs(Arrays.asList(course1, trashed));
+		searchParams.setWhiteListRefs(Arrays.asList(course1, trashed));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
