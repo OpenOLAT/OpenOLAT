@@ -641,8 +641,9 @@ public class CollaborationTools implements Serializable {
 	}
 
 	public ZoomRunController createZoomController(final UserRequest ureq, WindowControl wControl, BusinessGroup group, boolean admin, boolean coach, boolean participant) {
-		return new ZoomRunController(ureq, wControl, null, null, group, participant, admin, coach);
+		return new ZoomRunController(ureq, wControl, null, null, group, admin, coach, participant);
 	}
+
 	/**
 	 * @param toolToChange
 	 * @param enable
