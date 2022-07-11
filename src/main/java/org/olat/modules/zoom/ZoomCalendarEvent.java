@@ -19,6 +19,7 @@
  */
 package org.olat.modules.zoom;
 
+import com.mysql.cj.util.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
@@ -37,7 +38,7 @@ public class ZoomCalendarEvent {
 
     private static final Logger log = Tracing.createLoggerFor(ZoomCalendarEvent.class);
 
-    static final String ZOOM_DESCRIPTION_REGEX = "https://[a-z0-9.]*/j/([0-9]*)";
+    static final String ZOOM_DESCRIPTION_REGEX = "https://[-a-zA-Z0-9.]*/j/([0-9]*)";
     static final Pattern ZOOM_DESCRIPTION_PATTERN = Pattern.compile(ZOOM_DESCRIPTION_REGEX);
 
     String name;
@@ -76,6 +77,14 @@ public class ZoomCalendarEvent {
         if (meetingIdMatcher.find()) {
             meetingId = meetingIdMatcher.group(1);
         }
+        if (StringUtils.isEmptyOrWhitespaceOnly(meetingId)) {
+            log.warn("Cannot extract Meeting ID from Zoom description");
+        }
+        printDebugOutput();
+    }
+
+    private void printDebugOutput() {
+        log.debug("Meeting '" + name + "' (" + meetingId + "'), description='" + description + "', contextId=" + contextId + ", from " + getStartDate() + " to " + getEndDate());
     }
 
     public Date getStartDate() {

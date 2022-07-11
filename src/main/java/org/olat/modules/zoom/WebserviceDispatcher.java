@@ -28,12 +28,12 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,7 +65,7 @@ public class WebserviceDispatcher implements Dispatcher {
     @Autowired
     private ZoomManager zoomManager;
 
-    class ZoomCalendarPayload {
+    static class ZoomCalendarPayload {
         String token;
         List<ZoomCalendarEvent> events;
 
@@ -93,7 +93,10 @@ public class WebserviceDispatcher implements Dispatcher {
         String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
         String requestUri = request.getRequestURI();
         String commandUri = requestUri.substring(uriPrefix.length());
+        log.debug("Method: " + request.getMethod() + ", URI prefix: " + uriPrefix + ", request URI: " + requestUri);
         if ("rest/server.php".equals(commandUri)) {
+            ServletUtil.printOutRequestHeaders(request);
+            ServletUtil.printOutRequestParameters(request);
             ZoomCalendarPayload payload = new ZoomCalendarPayload(request);
             for (ZoomCalendarEvent event : payload.events) {
                 processEvent(event, payload.token);
@@ -110,17 +113,17 @@ public class WebserviceDispatcher implements Dispatcher {
                 if (toolDeployment.getEntry() != null) {
                     ICourse course = CourseFactory.loadCourse(toolDeployment.getEntry());
                     Kalendar calendar = calendarManager.getCalendar(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
-                    addCalendarEvent(calendar, event, zoomConfig, Locale.getDefault());
+                    addCalendarEvent(calendar, event, zoomConfig, course, null);
                 }
                 if (toolDeployment.getBusinessGroup() != null) {
                     Kalendar calendar = calendarManager.getCalendar(CalendarManager.TYPE_GROUP, toolDeployment.getBusinessGroup().getResourceableId().toString());
-                    addCalendarEvent(calendar, event, zoomConfig, Locale.getDefault());
+                    addCalendarEvent(calendar, event, zoomConfig, null, toolDeployment.getBusinessGroup());
                 }
             }
         }
     }
 
-    private void addCalendarEvent(Kalendar calendar, ZoomCalendarEvent event, ZoomConfig zoomConfig, Locale locale) {
+    private void addCalendarEvent(Kalendar calendar, ZoomCalendarEvent event, ZoomConfig zoomConfig, ICourse course, BusinessGroup businessGroup) {
         CalendarManagedFlag[] managedFlags = { CalendarManagedFlag.all };
         if (!calendarModule.isManagedCalendars()) {
             calendarModule.setManagedCalendars(true);
@@ -133,37 +136,49 @@ public class WebserviceDispatcher implements Dispatcher {
             existingEvent.setBegin(event.getStartDate());
             existingEvent.setEnd(event.getEndDate());
             if (existingEvent.getKalendarEventLinks() == null || existingEvent.getKalendarEventLinks().isEmpty()) {
-                existingEvent.setKalendarEventLinks(List.of(generateEventLink(event, zoomConfig, locale)));
+                KalendarEventLink calendarEventLink = generateEventLink(event, zoomConfig, course, businessGroup);
+                if (calendarEventLink != null) {
+                    existingEvent.setKalendarEventLinks(List.of(calendarEventLink));
+                }
             }
             calendarManager.updateEventFrom(calendar, existingEvent);
+            log.debug("Updated calendar event for meeting " + event.getMeetingId());
         } else {
             KalendarEvent calendarEvent = new KalendarEvent(event.getMeetingId(), null, event.name, event.getStartDate(), event.getEndDate());
             calendarEvent.setDescription("");
             calendarEvent.setManagedFlags(managedFlags);
-            calendarEvent.setKalendarEventLinks(List.of(generateEventLink(event, zoomConfig, locale)));
+            KalendarEventLink calendarEventLink = generateEventLink(event, zoomConfig, course, businessGroup);
+            if (calendarEventLink != null) {
+                calendarEvent.setKalendarEventLinks(List.of(calendarEventLink));
+            }
             calendarManager.addEventTo(calendar, calendarEvent);
+            log.debug("Added calendar event for meeting " + event.getMeetingId());
         }
     }
 
-    private KalendarEventLink generateEventLink(ZoomCalendarEvent event, ZoomConfig zoomConfig, Locale locale) {
-        Translator translator = Util.createPackageTranslator(WebserviceDispatcher.class, locale);
+    private KalendarEventLink generateEventLink(ZoomCalendarEvent event, ZoomConfig zoomConfig, ICourse course, BusinessGroup businessGroup) {
         LTI13ToolDeployment toolDeployment = zoomConfig.getLtiToolDeployment();
         if (toolDeployment.getEntry() != null) {
             StringBuilder businessPath = new StringBuilder(128);
             businessPath.append("[RepositoryEntry:").append(toolDeployment.getEntry().getKey()).append("]");
+            String displayName;
             if (zoomConfig.getDescription().contains(ZoomManager.ApplicationType.courseElement.name())) {
                 businessPath.append("[CourseNode:").append(toolDeployment.getSubIdent()).append("]");
+                displayName = course.getRunStructure().getNode(toolDeployment.getSubIdent()).getShortName();
+                log.debug("Creating calendar link for course element '" + displayName + "' (" + toolDeployment.getSubIdent() + ")");
             } else {
                 businessPath.append("[zoom:0]");
+                displayName = course.getCourseTitle();
+                log.debug("Creating calendar link for course tool for course '" + displayName + "' (" + toolDeployment.getSubIdent() + ")");
             }
             String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath.toString());
-            return new KalendarEventLink("zoom", event.getMeetingId(), translator.translate("zoom.calendar.link.text", event.getMeetingId()), url, "o_CourseModule_icon");
+            return new KalendarEventLink("zoom", event.getMeetingId(), displayName, url, "o_CourseModule_icon");
         }
         if (toolDeployment.getBusinessGroup() != null) {
-            StringBuilder businessPath = new StringBuilder(128);
-            businessPath.append("[BusinessGroup:").append(toolDeployment.getBusinessGroup().getKey()).append("][toolzoom:0]");
-            String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath.toString());
-            return new KalendarEventLink("zoom", event.getMeetingId(), translator.translate("zoom.calendar.link.text", event.getMeetingId()), url, "o_icon_group");
+            String businessPath = "[BusinessGroup:" + businessGroup.getKey() + "][toolzoom:0]";
+            String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath);
+            log.debug("Creating calendar link for group '" + businessGroup.getName() + "' (" + businessGroup.getKey().toString() + ")");
+            return new KalendarEventLink("zoom", event.getMeetingId(), businessGroup.getName(), url, "o_icon_group");
         }
         return null;
     }
