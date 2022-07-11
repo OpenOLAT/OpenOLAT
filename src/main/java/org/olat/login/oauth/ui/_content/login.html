@@ -1,7 +1,18 @@
-<ul class="o_login_social list-unstyled">
-#foreach ($item in $formitemnames)
-	#if ($f.isVisible($item))
-		<li>$r.render(${item})</li>
-	#end
-#end
-</ul>
+<div class="o_login_form o_login_social">
+	<fieldset class="o_form form ">
+		<legend>		
+			$r.translate("login.form")
+		</legend> 
+		<div class="o_desc">
+			$r.translate("login.intro")
+		</div> 
+		<ul class="list-unstyled">
+		#foreach ($item in $formitemnames)
+			#if ($f.isVisible($item))
+				<li>$r.render(${item})</li>
+			#end
+		#end
+		</ul>
+		$r.translate("login.customfootermsg")
+	</fieldset>
+</div>

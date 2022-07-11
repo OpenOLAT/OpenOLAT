@@ -215,11 +215,16 @@ body.o_dmz {
 	
 	
 	.o_login_social {
-		position: relative;
-		padding: $padding-large-vertical $padding-base-horizontal;
+		.o_desc {
+			margin-bottom: 0 !important;
+		}
+		ul {
+			position: relative;
+			padding: $padding-large-vertical 0;
+		}
 	
 		li {
-			padding: $padding-large-vertical $padding-base-horizontal;
+			padding: $padding-large-vertical 0;
 		}
 		
 		li>a {
