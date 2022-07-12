@@ -330,10 +330,19 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		mainVC.remove("segments");
 	}
 
+	public void reload() {
+		if (overviewCtrl != null) {
+			overviewCtrl.reload();
+		}
+		if (courseNodeOverviewCtrl != null) {
+			courseNodeOverviewCtrl.reload();
+		}
+	}
+	
 	public void reloadAssessmentModes() {
 		if (overviewCtrl != null) {
 			overviewCtrl.reloadAssessmentModes();
 		}
 	}
-	
+
 }

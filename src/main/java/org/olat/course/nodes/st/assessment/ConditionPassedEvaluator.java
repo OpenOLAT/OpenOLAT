@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.hibernate.LazyInitializationException;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
@@ -62,8 +63,11 @@ public class ConditionPassedEvaluator implements PassedEvaluator {
 						passed = Boolean.FALSE;
 					} else if(failedType == FailedEvaluationType.failedAsNotPassedAfterEndDate) {
 						RepositoryEntryLifecycle lifecycle = getRepositoryEntryLifecycle(courseEntry);
-						if(lifecycle != null && lifecycle.getValidTo() != null && lifecycle.getValidTo().compareTo(new Date()) < 0) {
-							passed = Boolean.FALSE;
+						if(lifecycle != null && lifecycle.getValidTo() != null) {
+							Date validTo =  DateUtils.setTime(lifecycle.getValidTo(), 23, 59, 59);
+							if (validTo.before(new Date())) {
+								passed = Boolean.FALSE;
+							}
 						}
 					}
 				}

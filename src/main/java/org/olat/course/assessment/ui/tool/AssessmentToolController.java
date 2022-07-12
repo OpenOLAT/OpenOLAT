@@ -252,6 +252,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			courseAssessmentService.evaluateAll(course, true);
 		}
+		if (courseTreeCtrl != null) {
+			courseTreeCtrl.reload();
+		}
 	}
 
 	private AssessmentCourseTreeController doTreeView(UserRequest ureq) {
