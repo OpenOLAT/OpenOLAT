@@ -495,14 +495,16 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	protected void forgeLinks(AccessInfo infos) {
-		FormLink editLink = uifactory.addFormLink("edit_" + (++counter), "edit", "offer.edit", null, offersContainer, Link.LINK);
+		FormLink editLink = uifactory.addFormLink("edit_" + (++counter), "edit", "offer.edit", null, offersContainer, Link.BUTTON);
 		editLink.setUserObject(infos);
+		editLink.setGhost(true);
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		offersContainer.add(editLink.getName(), editLink);
 		infos.setEditButton(editLink);
 
-		FormLink delLink = uifactory.addFormLink("del_" + (++counter), "delete", "offer.delete", null, offersContainer, Link.LINK);
+		FormLink delLink = uifactory.addFormLink("del_" + (++counter), "delete", "offer.delete", null, offersContainer, Link.BUTTON);
 		delLink.setUserObject(infos);
+		delLink.setGhost(true);
 		delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		offersContainer.add(delLink.getName(), delLink);
 		infos.setDeleteButton(delLink);

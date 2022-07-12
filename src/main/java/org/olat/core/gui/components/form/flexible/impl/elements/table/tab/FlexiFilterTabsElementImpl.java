@@ -66,8 +66,9 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		component.setDomReplacementWrapperRequired(false);
 
 		String dispatchId = component.getDispatchID();
-		removeFiltersButton = new FormLinkImpl(dispatchId.concat("_rmrFiltersButton"), "rmrFiltersButton", "remove.active.filters", Link.LINK);
+		removeFiltersButton = new FormLinkImpl(dispatchId.concat("_rmrFiltersButton"), "rmrFiltersButton", "remove.active.filters", Link.BUTTON);
 		removeFiltersButton.setDomReplacementWrapperRequired(false);
+		removeFiltersButton.setGhost(true);
 		removeFiltersButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		removeFiltersButton.setElementCssClass("o_table_remove_filters");
 		removeFiltersButton.setTranslator(translator);

@@ -88,15 +88,19 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		if (presentation == Link.BUTTON_XSMALL) {
 			cssSb.append("btn btn-xs ");
 			cssSb.append(link.isPrimary() ? "btn-primary" : "btn-default");
+			cssSb.append(link.isGhost()? " o_button_ghost": "");
 		} else if (presentation == Link.BUTTON_SMALL) {
 			cssSb.append("btn btn-sm ");
 			cssSb.append(link.isPrimary() ? "btn-primary" : "btn-default");
+			cssSb.append(link.isGhost()? " o_button_ghost": "");
 		} else if (presentation == Link.BUTTON) {
 			cssSb.append("btn ");
 			cssSb.append(link.isPrimary() ? "btn-primary" : "btn-default");
+			cssSb.append(link.isGhost()? " o_button_ghost": "");
 		} else if (presentation == Link.BUTTON_LARGE) {
 			cssSb.append("btn btn-lg ");
 			cssSb.append(link.isPrimary() ? "btn-primary" : "btn-default");
+			cssSb.append(link.isGhost()? " o_button_ghost": "");
 		} else if (presentation == Link.LINK_BACK) {
 			cssSb.append("o_link_back");
 		} else if (presentation == Link.TOOLENTRY_DEFAULT) {

@@ -326,6 +326,12 @@ $o-toggle-text-color			: $text-muted !default;
 $o-button-dirty-color			: $btn-warning-color !default;
 $o-button-dirty-bg				: $btn-warning-bg !default; 
 $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
+/* Ghost button */
+$o-button-ghost-color					: $link-color !default;
+$o-button-ghost-background-color			: transparent !default;
+$o-button-ghost-border-color				: transparent !default;
+$o-button-ghost-hover-background-color	: rgba($link-color, 0.1) !default;
+$o-button-ghost-hover-border-color		: $link-color !default;
 
 /* Login page */
 $o-login-header-color			: $brand-primary !default;
