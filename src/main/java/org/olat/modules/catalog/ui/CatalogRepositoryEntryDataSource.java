@@ -127,7 +127,7 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 					handler.enrichSearchParams(searchParams, filter);
 				} else if (filter.getFilter().equals(CatalogRepositoryEntryListController.FILTER_SPECIAL_RE_KEYS)) {
 					List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-					if (values.isEmpty()) {
+					if (values == null || values.isEmpty()) {
 						searchParams.setRepositoryEntryKeys(null);
 					} else {
 						@SuppressWarnings("unchecked")
