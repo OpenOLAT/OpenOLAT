@@ -20,7 +20,13 @@
 package org.olat.modules.taxonomy.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -38,15 +44,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFl
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.CompetenceBrowserTableModel.CompetenceBrowserCols;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 26.03.2021<br>
@@ -57,19 +61,24 @@ public class CompetenceBrowserController extends FormBasicController {
 
 	private static final String OPEN_INFO = "open_info";
 	
+	private FormLink selectButton;
 	private CompetenceBrowserTableModel tableModel;
 	private CompetenceBrowserTableRow rootCrumb;
 	private FlexiTableElement tableEl;
 	
 	private CloseableCalloutWindowController ccmc;
 	
-	@Autowired
-	private TaxonomyService taxonomyService;
-	@Autowired
-	private PortfolioV2Module portfolioModule;
-	
-	public CompetenceBrowserController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+	private final List<Taxonomy> taxonomies;
+	private final Map<Taxonomy, List<TaxonomyLevel>> taxonomyToLevels;
+	private final boolean withSelection;
+
+
+	public CompetenceBrowserController(UserRequest ureq, WindowControl wControl, List<Taxonomy> taxonomies,
+			Collection<TaxonomyLevel> taxonomyLevels, boolean withSelection) {
+		super(ureq, wControl, "competence_browse");
+		this.taxonomies = taxonomies;
+		this.taxonomyToLevels = taxonomyLevels.stream().collect(Collectors.groupingBy(TaxonomyLevel::getTaxonomy));
+		this.withSelection = withSelection;
 		
 		initForm(ureq);
 		loadModel();
@@ -82,6 +91,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceBrowserCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.competences, new TreeNodeFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceBrowserCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.details));
 		
 		// Create table model
@@ -91,6 +101,11 @@ public class CompetenceBrowserController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "browser_table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setPageSize(20);
+		if (withSelection) {
+			tableEl.setMultiSelect(true);
+			selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(selectButton);
+		}
 		
 		// Create a fake root crumb
 		rootCrumb = new CompetenceBrowserTableRow(getTranslator());
@@ -100,11 +115,10 @@ public class CompetenceBrowserController extends FormBasicController {
 		List<CompetenceBrowserTableRow> rows = new ArrayList<>();
 		
 		int linkCounter = 0;
-		List<Taxonomy> linkedTaxonomies = portfolioModule.getLinkedTaxonomies();
 		
-		if (linkedTaxonomies != null) {
-			for (Taxonomy taxonomy : linkedTaxonomies) {
-				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(null, taxonomy, null);
+		if (taxonomies != null) {
+			for (Taxonomy taxonomy : taxonomies) {
+				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(taxonomy);
 				if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
 					FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 					taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
@@ -113,8 +127,11 @@ public class CompetenceBrowserController extends FormBasicController {
 				}
 				rows.add(taxonomyRow);
 				
-				for (TaxonomyLevel level : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(null, taxonomy, level);
+				List<TaxonomyLevel> taxonomyLevels = taxonomyToLevels.getOrDefault(taxonomy, Collections.emptyList());
+				for (TaxonomyLevel level : taxonomyLevels) {
+					String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+					String description = TaxonomyUIFactory.translateDescription(getTranslator(), level);
+					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(taxonomy, level, displayName, description);
 					if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
 						FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 						levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
@@ -158,6 +175,9 @@ public class CompetenceBrowserController extends FormBasicController {
 					tableModel.filter(tableEl.getQuickSearchString(), null);
 				}
 			}
+		} else if (selectButton == source) {
+			List<TaxonomyLevel> taxonomyLevels = getSelectedTaxonomyLevels();
+			fireEvent(ureq, new TaxonomyLevelSelectionEvent(taxonomyLevels));
 		} else if (source instanceof FormLink) {
 			FormLink sFl = (FormLink) source;
 			if (sFl.getCmd().equals(OPEN_INFO)) {
@@ -185,4 +205,30 @@ public class CompetenceBrowserController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// Nothing to save here
 	}
+	
+	private List<TaxonomyLevel> getSelectedTaxonomyLevels() {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		return selectedIndex.stream()
+				.map(index -> tableModel.getObject(index.intValue()).getTaxonomyLevel())
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+	
+	public static final class TaxonomyLevelSelectionEvent extends Event {
+		
+		private static final long serialVersionUID = 8214549556291099273L;
+		
+		private final List<TaxonomyLevel> taxonomyLevels;
+		
+		public TaxonomyLevelSelectionEvent(List<TaxonomyLevel> taxonomyLevels) {
+			super("tax-level-.selection");
+			this.taxonomyLevels = taxonomyLevels;
+		}
+		
+		public List<TaxonomyLevel> getTaxonomyLevels() {
+			return taxonomyLevels;
+		}
+		
+	}
+	
 }

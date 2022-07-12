@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -128,6 +129,7 @@ public class LTIConfigForm extends FormBasicController {
 	private MultipleSelectionElement sendName;
 	private MultipleSelectionElement sendEmail;
 	private MultipleSelectionElement doDebug;
+	private SpacerElement debugSpacer;
 
 	private TextElement scaleFactorEl;
 	private TextElement cutValueEl;
@@ -510,6 +512,9 @@ public class LTIConfigForm extends FormBasicController {
 		
 		// Show beta info
 		setFormInfo(lti13 ? "warn.beta.feature" : null);
+		
+		doDebug.setVisible(!lti13);
+		debugSpacer.setVisible(!lti13);
 	}
 	
 	protected void initLti10Form(FormItemContainer formLayout) {
@@ -660,7 +665,7 @@ public class LTIConfigForm extends FormBasicController {
 			}
 		}
 		
-		uifactory.addSpacerElement("debug", formLayout, false);
+		debugSpacer = uifactory.addSpacerElement("debug", formLayout, false);
 		
 		doDebug = uifactory.addCheckboxesHorizontal("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null});
 		doDebug.select("xx", doDebugConfig);
@@ -1012,7 +1017,8 @@ public class LTIConfigForm extends FormBasicController {
 			backupToolDeployement = null;
 		}
 		if(toolDeployement == null || !toolDeployement.getTool().equals(tool)) {
-			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent);
+			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent, null);
+			toolDeployement.setNameAndRolesProvisioningServicesEnabled(true);
 		} else {
 			dbInstance.commit();// make sure the tool is persisted
 			toolDeployement = lti13Service.getToolDeploymentByKey(toolDeployement.getKey());

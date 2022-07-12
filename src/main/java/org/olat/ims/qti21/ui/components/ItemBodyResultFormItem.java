@@ -89,12 +89,19 @@ public class ItemBodyResultFormItem extends AssessmentObjectFormItem {
 	public void setReport(boolean report) {
 		component.setReport(report);
 	}
+	
+	public boolean isOffline() {
+		return component.isOffline();
+	}
+
+	public void setOffline(boolean print) {
+		component.setOffline(print);
+	}
 
 	@Override
 	public ItemBodyResultComponent getComponent() {
 		return component;
 	}
-	
 
 	@Override
 	protected Component getFormItemComponent() {

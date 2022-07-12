@@ -57,6 +57,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
@@ -107,6 +108,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	
 	public TaxonomyLevelCompetenceController(UserRequest ureq, WindowControl wControl, TaxonomyLevel taxonomyLevel) {
 		super(ureq, wControl, "level_competences");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.taxonomyLevel = taxonomyLevel;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -332,7 +334,8 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 			showWarning("atleast.one.competence");
 		} else {
 			String title = translate("confirmation.remove.competence.title");
-			String text = translate("confirmation.remove.competence", new String[] { names.toString(), StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
+			String text = translate("confirmation.remove.competence",
+					new String[] { names.toString(), StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)) });
 			confirmDeleteDialog = activateOkCancelDialog(ureq, title, text, confirmDeleteDialog);
 			confirmDeleteDialog.setUserObject(selectedRows);
 		}

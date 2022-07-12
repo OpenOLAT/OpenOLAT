@@ -63,6 +63,8 @@ import org.olat.course.CourseModule;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -86,6 +88,8 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	
 	@Autowired
 	private EfficiencyStatementManager esm;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * Constructor
@@ -199,9 +203,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.ControllerEventListener#dispatchEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
 		if (source == tableCtr) {
@@ -212,11 +214,10 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 					int rowid = te.getRowId();
 					final UserEfficiencyStatementLight statement = efficiencyStatementsListModel.getEfficiencyStatementAt(rowid);
 					// will not be disposed on course run dispose, popus up as new browserwindow
-					ControllerCreator ctrlCreator = new ControllerCreator() {
-						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, statement.getResourceKey());
-							return new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyCtrl);
-						}					
+					ControllerCreator ctrlCreator = (lureq, lwControl) -> {
+						RepositoryEntry re = repositoryService.loadByResourceKey(statement.getResourceKey());
+						CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, re);
+						return new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyCtrl);				
 					};
 					//wrap the content controller into a full header layout
 					ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
@@ -286,8 +287,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator<UserEfficiencyStatementLight> getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator<UserEfficiencyStatementLight>(){			
+	@Override
+	protected Comparator<UserEfficiencyStatementLight> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<>(){			
 			public int compare(final UserEfficiencyStatementLight s1, final UserEfficiencyStatementLight s2) {	
 				int comparisonResult = 0;
 				if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	

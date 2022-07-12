@@ -621,7 +621,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		String thisConf = super.getDisplayOption(false);
 		if (thisConf == null
-				&& config.get(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE).equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
+				&& STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.get(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
 			log.debug("no displayOption set, use default (content) {}",  thisConf);
 
 			return CourseNode.DISPLAY_OPTS_CONTENT;

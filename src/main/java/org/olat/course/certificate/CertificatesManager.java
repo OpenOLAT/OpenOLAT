@@ -119,6 +119,19 @@ public interface CertificatesManager {
 	public List<CertificateLight> getLastCertificates(IdentityRef identity);
 	
 	/**
+	 * List the certificates of a user or a learn resource.
+	 * 
+	 * @param identity The certificates owner
+	 * @param resource The learn resource
+	 * @param externalId The external identifier
+	 * @param managedOnly if true returns only the managed ones, if false all
+	 * @param lastOnly if true returns only the last one, if false all
+	 * @return A list of light certificates
+	 */
+	public List<CertificateLight> getCertificates(IdentityRef identity, OLATResource resource,
+			String externalId, Boolean managedOnly, Boolean lastOnly);
+	
+	/**
 	 * Return the last certificates of all users f the specified course.
 	 * @param resourceKey The resource primary key of the course.
 	 * @return A list of certificates
@@ -167,9 +180,11 @@ public interface CertificatesManager {
 	
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
 
-	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile);
+	public Certificate uploadCertificate(Identity identity, Date creationDate,
+			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource, File certificateFile);
 	
-	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, String courseTitle, Long resourceKey, File certificateFile);
+	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
+			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey, File certificateFile);
 	
 	public void generateCertificates(List<CertificateInfos> infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 

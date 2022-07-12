@@ -55,6 +55,7 @@ import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.ui.TaxonomyListDataModel.TaxonomyCols;
@@ -171,7 +172,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.taxonomy", "open.taxonomy", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 
-		boolean repoEnabled = taxonomy.getKey().toString().equals(repositoryModule.getTaxonomyTreeKey());
+		boolean repoEnabled = repositoryModule.getTaxonomyRefs().stream().map(TaxonomyRef::getKey).anyMatch(key -> key.equals(taxonomy.getKey()));
 		boolean docPoolEnabled = taxonomy.getKey().toString().equals(docPoolModule.getTaxonomyTreeKey());
 		boolean qPoolEnabled = taxonomy.getKey().toString().equals(questionPoolModule.getTaxonomyQPoolKey());
 		boolean ePortfolioEnabled = portfolioModule.isTaxonomyLinkingEnabled() && portfolioModule.isTaxonomyLinked(taxonomy.getKey());

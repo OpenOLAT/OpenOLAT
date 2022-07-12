@@ -19,7 +19,10 @@
  */
 package org.olat.repository.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -29,12 +32,13 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -59,7 +63,7 @@ public class RepositoryAdminController extends FormBasicController {
 	private MultipleSelectionElement ratingEl;
 	private MultipleSelectionElement commentEl;
 	private MultipleSelectionElement myCourseSearchEl;
-	private SingleSelection taxonomyTreeEl;
+	private MultipleSelectionElement taxonomyEl;
 	
 	
 	@Autowired
@@ -97,32 +101,14 @@ public class RepositoryAdminController extends FormBasicController {
 		ratingEl.addActionListener(FormEvent.ONCHANGE);
 		ratingEl.select(keys[0], ratingEnabled);
 		
-		// Taxonomy
-		String selectedTaxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
-		String[] taxonomyKeys = new String[taxonomyList.size() + 1];
-		String[] taxonomyValues = new String[taxonomyList.size() + 1];
-		taxonomyKeys[0] = "";
-		taxonomyValues[0] = "-";
-		for(int i=taxonomyList.size(); i-->0; ) {
-			Taxonomy taxonomy = taxonomyList.get(i);
-			taxonomyKeys[i + 1] = taxonomy.getKey().toString();
-			taxonomyValues[i + 1] = taxonomy.getDisplayName();
-		}
-		taxonomyTreeEl = uifactory.addDropdownSingleselect("selected.taxonomy.tree", searchCont, taxonomyKeys, taxonomyValues, null);
-		taxonomyTreeEl.addActionListener(FormEvent.ONCHANGE);
-		boolean found = false;
-		if(StringHelper.containsNonWhitespace(selectedTaxonomyTreeKey)) {
-			for(String taxonomyKey:taxonomyKeys) {
-				if(taxonomyKey.equals(selectedTaxonomyTreeKey)) {
-					taxonomyTreeEl.select(taxonomyKey, true);
-					found = true;
-				}
-			}
-		}
-		if(!found && taxonomyKeys.length > 0) {
-			taxonomyTreeEl.select(taxonomyKeys[0], true);
-		}
+		SelectionValues taxonomySV = new SelectionValues();
+		taxonomyService.getTaxonomyList().forEach(
+				taxonomy -> taxonomySV.add(entry(
+						taxonomy.getKey().toString(), 
+						taxonomy.getDisplayName())));
+		taxonomyEl = uifactory.addCheckboxesVertical("selected.taxonomy.tree", searchCont, taxonomySV.keys(), taxonomySV.values(), 1);
+		repositoryModule.getTaxonomyRefs().forEach(taxonomy -> taxonomyEl.select(taxonomy.getKey().toString(), true));
+		taxonomyEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Leave
 		FormLayoutContainer leaveCont = FormLayoutContainer.createDefaultFormLayout("leave", getTranslator());
@@ -163,11 +149,12 @@ public class RepositoryAdminController extends FormBasicController {
 			boolean on = !ratingEl.getSelectedKeys().isEmpty();
 			repositoryModule.setRatingEnabled(on);
 			getWindowControl().setInfo("saved");
-		} else if(taxonomyTreeEl == source) {
-			String selectedTaxonomyTreeKey = taxonomyTreeEl.isOneSelected()
-					? taxonomyTreeEl.getSelectedKey()
-					: null;
-			repositoryModule.setTaxonomyTreeKey(selectedTaxonomyTreeKey);
+		} else if(taxonomyEl == source) {
+			List<TaxonomyRef> taxonomyRefs = taxonomyEl.getSelectedKeys().stream()
+					.map(Long::valueOf)
+					.map(TaxonomyRefImpl::new).
+					collect(Collectors.toList());
+			repositoryModule.setTaxonomyRefs(taxonomyRefs);
 			getWindowControl().setInfo("saved");
 		} else if(leaveEl == source) {
 			String selectedOption = leaveEl.getSelectedKey();

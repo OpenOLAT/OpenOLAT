@@ -19,16 +19,25 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
+
+import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.portfolio.manager.PortfolioPageToTaxonomyCompetenceDAO;
 import org.olat.modules.quality.manager.QualityDataCollectionDAO;
@@ -48,6 +57,7 @@ import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,6 +85,10 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private TaxonomyLevelTypeToTypeDAO taxonomyLevelTypeToTypeDao;
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
@@ -114,24 +128,34 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	public List<TaxonomyInfos> getTaxonomyInfosList() {
 		return taxonomyDao.getTaxonomyInfosList();
 	}
+	
+	@Override
+	public String createI18nSuffix() {
+		return UUID.randomUUID().toString().replace("-", "");
+	}
 
 	@Override
-	public TaxonomyLevel createTaxonomyLevel(String identifier, String displayName, String description,
-			String externalId, TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, Taxonomy taxonomy) {
-		return taxonomyLevelDao.createTaxonomyLevel(identifier, displayName, description,
-				externalId, flags,
-				parent, null, taxonomy);
+	public TaxonomyLevel createTaxonomyLevel(String identifier, String i18nSuffix, String externalId,
+			TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, Taxonomy taxonomy) {
+		return taxonomyLevelDao.createTaxonomyLevel(identifier, i18nSuffix, null, null, externalId,
+				flags, parent, null, taxonomy);
 	}
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref) {
-		return taxonomyLevelDao.getLevels(ref);
+		Collection<? extends TaxonomyRef> refs= ref != null? Collections.singletonList(ref): Collections.emptyList();
+		return taxonomyLevelDao.getLevels(refs);
+	}
+	
+	@Override
+	public List<TaxonomyLevel> getTaxonomyLevels(Collection<? extends TaxonomyRef> refs) {
+		return taxonomyLevelDao.getLevels(refs);
 	}
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref, TaxonomyLevelSearchParameters searchParams) {
 		if(searchParams == null) {
-			return taxonomyLevelDao.getLevels(ref);
+			return taxonomyLevelDao.getLevels(Collections.singletonList(ref));
 		}
 		return taxonomyLevelDao.searchLevels(ref, searchParams);
 	}
@@ -206,7 +230,17 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			//questions
 			taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
 		}
-
+		
+		// Delete translations
+		String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + reloadedTaxonomyLevel.getI18nSuffix();
+		String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + reloadedTaxonomyLevel.getI18nSuffix();
+		for (Locale overlayLocale : i18nModule.getOverlayLocales().values()) {
+			I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, displayNameKey, overlayLocale);
+			i18nManager.saveOrUpdateI18nItem(displayNameItem, null);
+			I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, descriptionKey, overlayLocale);
+			i18nManager.saveOrUpdateI18nItem(descriptionItem, null);
+		}
+		
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 	}
 
@@ -230,6 +264,36 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Override
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level) {
 		return taxonomyLevelDao.getDocumentsLibrary(level);
+	}
+	
+	@Override
+	public boolean storeBackgroundImage(TaxonomyLevel level, Identity savedBy, File file, String filename) {
+		return taxonomyLevelDao.storeBackgroundImage(level, savedBy, file, filename);
+	}
+	
+	@Override
+	public void deleteBackgroundImage(TaxonomyLevel level) {
+		taxonomyLevelDao.deleteBackgroundImage(level);
+	}
+	
+	@Override
+	public VFSLeaf getBackgroundImage(TaxonomyLevel level) {
+		return taxonomyLevelDao.getBackgroundImage(level);
+	}
+	
+	@Override
+	public boolean storeTeaserImage(TaxonomyLevel level, Identity savedBy, File file, String filename) {
+		return taxonomyLevelDao.storeTeaserImage(level, savedBy, file, filename);
+	}
+	
+	@Override
+	public void deleteTeaserImage(TaxonomyLevel level) {
+		taxonomyLevelDao.deleteTeaserImage(level);
+	}
+	
+	@Override
+	public VFSLeaf getTeaserImage(TaxonomyLevel level) {
+		return taxonomyLevelDao.getTeaserImage(level);
 	}
 
 	@Override

@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterRef;
@@ -145,7 +144,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 
 	private Map<RepositoryEntryRef, List<TaxonomyLevel>> loadRepositoryEntryToTaxonomyLevels(List<RepositoryEntry> repositoryEntries) {
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels;
-		if(!repositoryEntries.isEmpty() && taxonomyModule.isEnabled() && StringHelper.containsNonWhitespace(repositoryModule.getTaxonomyTreeKey())) {
+		if (!repositoryEntries.isEmpty() && taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty()) {
 			reToTaxonomyLevels = repositoryService.getTaxonomy(repositoryEntries, false);
 		} else {
 			reToTaxonomyLevels = Collections.emptyMap();

@@ -108,6 +108,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.resource.OLATResource;
 
 import com.thoughtworks.xstream.XStream;
@@ -753,7 +754,12 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course,
 			ICourse sourceCourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCourse, context);
-		if (processType.equals(Processing.runstructure)) {
+		if (context != null) {
+			CopyCourseOverviewRow row = context.getCourseNodesMap().get(getIdent());
+			if (row != null && row.getCourseNode() instanceof ProjectBrokerCourseNode) {
+				copy((ProjectBrokerCourseNode)row.getCourseNode(), this, sourceCourse, course, context.getExecutingIdentity());
+			}
+		} else if (processType.equals(Processing.runstructure)) {
 			// initialize the managers and services
 			ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 			ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);

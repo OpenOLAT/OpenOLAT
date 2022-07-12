@@ -66,6 +66,7 @@ import org.olat.basesecurity.RelationSearchParams;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -101,6 +102,7 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEmailRightProvider;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -523,6 +525,47 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
+	public List<CertificateLight> getCertificates(IdentityRef identity, OLATResource resource,
+			String externalId, Boolean managedOnly, Boolean lastOnly) {
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select cer from certificatelight cer");
+		if(identity != null) {
+			sb.and().append("cer.identityKey=:identityKey");
+		}
+		if(resource != null) {
+			sb.and().append("cer.olatResourceKey=:resourceKey");
+		}
+		if(lastOnly != null && lastOnly.booleanValue()) {
+			sb.and().append("cer.last=true");
+		}
+		
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			sb.and().append("cer.externalId=:externalId");
+		} else if(managedOnly != null) {
+			if(managedOnly.booleanValue()) {
+				sb.and().append("cer.externalId is not null");
+			} else {
+				sb.and().append("cer.externalId is null");
+			}
+		}
+		
+		sb.append(" order by cer.creationDate desc");
+		TypedQuery<CertificateLight> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CertificateLight.class);
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		if(resource != null) {
+			query.setParameter("resourceKey", resource.getKey());
+		}
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			query.setParameter("externalId", externalId);
+		}
+		return query.getResultList();
+	}
+
+	@Override
 	public List<CertificateLight> getLastCertificates(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificatelight cer")
@@ -673,7 +716,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile) {
+	public Certificate uploadCertificate(Identity identity, Date creationDate,
+			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource, File certificateFile) {
 		CertificateImpl certificate = new CertificateImpl();
 		certificate.setOlatResource(resource);
 		certificate.setArchivedResourceKey(resource.getKey());
@@ -687,6 +731,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setLastModified(certificate.getCreationDate());
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setExternalId(externalId);
+		certificate.setManagedFlagsString(CertificateManagedFlag.toString(managedFlags));
 		certificate.setLast(true);
 		certificate.setStatus(CertificateStatus.ok);
 
@@ -715,7 +761,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	@Override
-	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, String courseTitle, Long resourceKey, File certificateFile) {
+	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
+			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey, File certificateFile) {
 		CertificateStandalone certificate = new CertificateStandalone();
 		certificate.setArchivedResourceKey(resourceKey);
 		if(creationDate != null) {
@@ -727,6 +774,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setExternalId(externalId);
+		certificate.setManagedFlagsString(CertificateManagedFlag.toString(managedFlags));
 		certificate.setLast(true);
 		certificate.setCourseTitle(courseTitle);
 		certificate.setStatus(CertificateStatus.ok);
@@ -841,6 +890,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setLastModified(certificate.getCreationDate());
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setExternalId(certificateInfos.getExternalId());
 		certificate.setLast(true);
 		certificate.setCourseTitle(entry.getDisplayname());
 		certificate.setStatus(CertificateStatus.pending);

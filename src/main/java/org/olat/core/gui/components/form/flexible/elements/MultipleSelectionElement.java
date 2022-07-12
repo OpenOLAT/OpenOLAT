@@ -135,6 +135,11 @@ public interface MultipleSelectionElement extends SelectionElement {
 	public void setEscapeHtml(boolean escapeHtml);
 	
 	/**
+	 * Enable to horizontally align the check and the label.
+	 */
+	public void setHorizontallyAlignedCheckboxes(boolean horizontallyAlignedCheckboxes);
+	
+	/**
 	 * @return true if the state of a check box is changed only by ajax
 	 * 					events and not by the submission of a form.
 	 */

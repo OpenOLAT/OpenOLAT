@@ -37,6 +37,9 @@ import org.olat.core.util.ValidationStatus;
  */
 abstract class FormButton extends FormItemImpl {
 	
+	private String iconLeftCSS;
+	private String iconRightCSS;
+	
 	private boolean newWindowAfterDispatchUrl;
 
 	/**
@@ -52,6 +55,22 @@ abstract class FormButton extends FormItemImpl {
 	 */
 	public FormButton(String id, String name) {
 		super(id, name, false);
+	}
+	
+	public String getIconLeftCSS() {
+		return iconLeftCSS;
+	}
+
+	public void setIconLeftCSS(String iconLeftCSS) {
+		this.iconLeftCSS = iconLeftCSS;
+	}
+
+	public String getIconRightCSS() {
+		return iconRightCSS;
+	}
+
+	public void setIconRightCSS(String iconRightCSS) {
+		this.iconRightCSS = iconRightCSS;
 	}
 	
 	public boolean isNewWindowAfterDispatchUrl() {

@@ -1,0 +1,9 @@
+#if ($isConfigAvailable)
+<div class="o_button_group">
+    $r.render("zoom.start")
+</div>
+#elseif ($isConfigInactive)
+<div class="o_warning">
+    $r.translate("zoom.config.inactive.warning", $zoomProfileName)
+</div>
+#end

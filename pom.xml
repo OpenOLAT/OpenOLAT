@@ -64,7 +64,7 @@
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.21</org.springframework.version>
 		<org.hibernate.version>5.6.9.Final</org.hibernate.version>
-		<apache.cxf>3.5.2</apache.cxf>
+		<apache.cxf>3.5.3</apache.cxf>
 		<apache.pdfbox>2.0.26</apache.pdfbox>
 		<apache.poi>5.2.2</apache.poi>
 		<apache.log4j>2.17.2</apache.log4j>
@@ -106,9 +106,9 @@
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.browserVersion>102.0.5005.61</test.env.webdriver.browserVersion>
+	    <test.env.webdriver.browserVersion>103.0.5060.53</test.env.webdriver.browserVersion>
 	    <test.env.webdriver.firefox.version>v0.31.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>102.0.5005.61</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>103.0.5060.53</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
@@ -1563,7 +1563,7 @@
 								<Implementation-Build>${buildNumber}</Implementation-Build>
 							</manifestEntries>
 						</archive>
-						<warSourceExcludes>**/*.pxm, **/*.psd, **/*.sh, static/bootstrap/**, **/*.README</warSourceExcludes>
+						<warSourceExcludes>**/*.pxm, **/*.psd, **/*.sh, **/*.README</warSourceExcludes>
 						<webResources>
 							<resource>
 								<directory>src/main/webapp</directory>
@@ -2287,7 +2287,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.50.0-SNAPSHOT</version>
+			<version>0.51.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
@@ -2298,7 +2298,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.12.0</version>
+			<version>1.13.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>

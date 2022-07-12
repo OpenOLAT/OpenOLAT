@@ -318,6 +318,9 @@
 .o_dimmed, %o_dimmed { 
 	@include opacity(.4);
 }
+.o_muted, %o_muted {
+	color: $text-muted;
+}
 /* selected text */
 .o_selected, %o_selected { 
 	font-weight: bold; 

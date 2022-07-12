@@ -21,6 +21,7 @@ package org.olat.modules.catalog.filter;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -36,6 +37,7 @@ import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -102,23 +104,44 @@ public class EducationalTypeHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		
+		Collection<Long> launcherEducationalTypeKeys = searchParams.getIdentToEducationalTypeKeys().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
+		
+		// Only one educational type: Filter makes no sense.
+		if (launcherEducationalTypeKeys != null && launcherEducationalTypeKeys.size() == 1) {
+			return null;
+		}
+		
 		SelectionValues educationalTypeKV = new SelectionValues();
-		repositoryManager.getAllEducationalTypes()
+		repositoryManager.getAllEducationalTypes().stream()
+				.filter(educationalType -> filterByLauncherTypes(educationalType, launcherEducationalTypeKeys))
 				.forEach(type -> educationalTypeKV
 				.add(entry(
 						type.getKey().toString(),
 						repositoryTranslator.translate(RepositoyUIFactory.getI18nKey(type)))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.educational.type"), TYPE,
+		FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.educational.type"), TYPE,
 				educationalTypeKV, catalogFilter.isDefaultVisible());
+		filter.setUserObject(catalogFilter.getKey().toString());
+		return filter;
+	}
+
+	private boolean filterByLauncherTypes(RepositoryEntryEducationalType educationalType, Collection<Long> launcherEducationalTypeKeys) {
+		return launcherEducationalTypeKeys == null || launcherEducationalTypeKeys.isEmpty()
+				? true
+				: launcherEducationalTypeKeys.contains(educationalType.getKey());
 	}
 
 	@Override
 	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
 		List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getLongValues();
-		searchParams.setEducationalTypeKeys(educationalTypes);
+		String ident = (String)flexiTableFilter.getUserObject();
+		if (educationalTypes != null && !educationalTypes.isEmpty()) {
+			searchParams.getIdentToEducationalTypeKeys().put(ident, educationalTypes);
+		} else {
+			searchParams.getIdentToEducationalTypeKeys().remove(ident);
+		}
 	}
 }

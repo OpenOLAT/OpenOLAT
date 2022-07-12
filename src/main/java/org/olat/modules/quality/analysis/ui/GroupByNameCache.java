@@ -43,6 +43,7 @@ import org.olat.modules.quality.analysis.GroupByKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityMainController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,11 +240,12 @@ class GroupByNameCache {
 	}
 
 	private Map<String, Name> loadContextTaxonomyLevelGroupNames() {
-		Map<String, Name> keyToName = new HashMap<>();
-		List<TaxonomyLevel> elements = analysisService.loadContextTaxonomyLevels(searchParams, false);
-		for (TaxonomyLevel element : elements) {
-			String key = element.getKey().toString();
-			String value = element.getDisplayName();
+		List<TaxonomyLevel> levels = analysisService.loadContextTaxonomyLevels(searchParams, false);
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
+		Map<String, Name> keyToName = new HashMap<>(levels.size());
+		for (TaxonomyLevel level : levels) {
+			String key = level.getKey().toString();
+			String value = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level);
 			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;

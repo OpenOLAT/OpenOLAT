@@ -24,6 +24,8 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Helper to create openolat docs help links.  
@@ -36,13 +38,16 @@ import org.olat.core.gui.components.link.ExternalLink;
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
+@Service
 public class OpenOlatDocsHelper {
-	private static final String docsBaseUrl = "https://docs.openolat.org/";
+
+	@Value("${help.ooDocs.link:https://docs.openolat.org/}")
+	private String docsBaseUrl;
 	
 	public static final Locale EN_Locale = new Locale("en");
 	public static final Locale DE_Locale = new Locale("de");
 
-	public static final String getURL(Locale locale, String page) {
+	public String getURL(Locale locale, String page) {
 		StringBuilder sb = new StringBuilder(64);
 		sb.append(docsBaseUrl);
 		// for DE use DE prefix, for all other languages use EN as manual language
@@ -56,7 +61,7 @@ public class OpenOlatDocsHelper {
 		return sb.toString();
 	}
 
-	public static final Component createHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
+	public Component createHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
 		ExternalLink helpLink = new ExternalLink("topnav.help." + page);
 		helpLink.setName(title);

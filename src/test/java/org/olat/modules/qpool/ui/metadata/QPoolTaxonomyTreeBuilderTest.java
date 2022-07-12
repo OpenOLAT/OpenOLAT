@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -39,6 +40,8 @@ import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.test.KeyTranslator;
 
 
 /**
@@ -66,7 +69,9 @@ public class QPoolTaxonomyTreeBuilderTest {
 	private static final String RUSSIAN = "russian";
 	private static final Long LATIN_KEY = 6l;
 	private static final String LATIN = "latin";
-
+	
+	private KeyTranslator translator;
+	
 	@Mock
 	private QPoolService qpoolService;
 	@Mock
@@ -83,11 +88,14 @@ public class QPoolTaxonomyTreeBuilderTest {
 		when(qpoolService.getTaxonomyLevel(any(), any())).thenReturn(createLevelsWithCompetence());
 		
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(false);
+		
+		translator = new KeyTranslator(Locale.ENGLISH);
+		translator.setPrefix("prefix");
 	}
 	
 	@Test
 	public void shouldGetSelectableKeysIfProzessless() {
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -104,7 +112,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableKeysWithEmptyEntryIfProzessless() {
-		sut.loadTaxonomyLevelsSelection(null, true, false);
+		sut.loadTaxonomyLevelsSelection(translator, null, true, false);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -122,36 +130,36 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableValuesIfProzessless() {
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {
-				LANGUAGE, 
-				INTENDENTION + ENGLISH,
-				INTENDENTION + HINDI,
-				INTENDENTION + LATIN,
-				INTENDENTION + RUSSIAN,
-				MATH,
-				INTENDENTION + ALGEBRA,
-				INTENDENTION + GEOM};
+				translated(LANGUAGE), 
+				INTENDENTION + translated(ENGLISH),
+				INTENDENTION + translated(HINDI),
+				INTENDENTION + translated(LATIN),
+				INTENDENTION + translated(RUSSIAN),
+				translated(MATH),
+				INTENDENTION + translated(ALGEBRA),
+				INTENDENTION + translated(GEOM)};
 		assertArrayEquals(expectedValues, values);
 	}
 	
 	@Test
 	public void shouldGetSelectableValuesWithEmptyEntryIfProzesless() {
-		sut.loadTaxonomyLevelsSelection(null, true, false);
+		sut.loadTaxonomyLevelsSelection(translator, null, true, false);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {
 				"-",
-				LANGUAGE,
-				INTENDENTION + ENGLISH,
-				INTENDENTION + HINDI,
-				INTENDENTION + LATIN,
-				INTENDENTION + RUSSIAN,
-				MATH,
-				INTENDENTION + ALGEBRA,
-				INTENDENTION + GEOM};
+				translated(LANGUAGE),
+				INTENDENTION + translated(ENGLISH),
+				INTENDENTION + translated(HINDI),
+				INTENDENTION + translated(LATIN),
+				INTENDENTION + translated(RUSSIAN),
+				translated(MATH),
+				INTENDENTION + translated(ALGEBRA),
+				INTENDENTION + translated(GEOM)};
 		assertArrayEquals(expectedValues, values);
 	}
 	
@@ -159,7 +167,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	public void shouldGetSelectableKeysIfReviewProzess() {
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(true);
 		
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -174,14 +182,14 @@ public class QPoolTaxonomyTreeBuilderTest {
 	public void shouldGetSelectableValuesIfReviewProzess() {
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(true);
 		
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {
-				HINDI, 
-				MATH,
-				INTENDENTION + ALGEBRA,
-				INTENDENTION + GEOM};
+				translated(HINDI), 
+				translated(MATH),
+				INTENDENTION + translated(ALGEBRA),
+				INTENDENTION + translated(GEOM)};
 		assertArrayEquals(expectedValues, values);
 	}
 	
@@ -189,7 +197,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	public void shouldGetTreeKeysIfReviewProzess() {
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(true);
 		
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		List<TaxonomyLevel> keys = sut.getTreeTaxonomyLevels();
 		
 		assertThat(keys.get(0).getKey()).isEqualTo(HINDI_KEY);
@@ -198,7 +206,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldFindTaxonomyLevel() {
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		TaxonomyLevel taxonomyLevel = sut.getTaxonomyLevel(Long.toString(RUSSIAN_KEY));
 		
 		assertThat(taxonomyLevel.getKey()).isEqualTo(RUSSIAN_KEY);
@@ -206,7 +214,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldFindTaxonomyLevelExcludesEmptyEntry() {
-		sut.loadTaxonomyLevelsMy(null);
+		sut.loadTaxonomyLevelsMy(translator, null);
 		TaxonomyLevel taxonomyLevel = sut.getTaxonomyLevel("-1");
 		
 		assertThat(taxonomyLevel).isNull();
@@ -242,13 +250,17 @@ public class QPoolTaxonomyTreeBuilderTest {
 		return levelsWithCompetence;
 	}
 	
+	private String translated(String displayName) {
+		return "prefix" + TaxonomyUIFactory.PREFIX_DISPLAY_NAME + displayName;
+	}
+	
 	@SuppressWarnings("serial")
 	private static class TestableTaxonomyLevel extends TaxonomyLevelImpl {
 		private final Long key;
 
 		public TestableTaxonomyLevel(Long key, String displayName, TaxonomyLevel parent) {
 			this.key = key;
-			setDisplayName(displayName);
+			setI18nSuffix(displayName);
 			setParent(parent);
 			String parentPathKeys = parent != null? parent.getMaterializedPathKeys(): "";
 			setMaterializedPathKeys(parentPathKeys + "/" + key);

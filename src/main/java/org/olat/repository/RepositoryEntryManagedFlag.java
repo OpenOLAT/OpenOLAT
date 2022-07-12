@@ -53,6 +53,7 @@ public enum RepositoryEntryManagedFlag {
       email(settings, all),
       teams(settings, all),
       bigbluebutton(settings, all),
+	  zoom(settings, all),
       blog(settings, all),
       wiki(settings, all),
       forum(settings, all),

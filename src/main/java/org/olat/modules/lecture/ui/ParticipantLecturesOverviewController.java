@@ -169,7 +169,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	
 	public int getRowCount() {
 		int rows = genericTable.getTableModel().getRowCount();
-		for(AggregatedElement element:this.aggregatedElements) {
+		for(AggregatedElement element:aggregatedElements) {
 			rows += element.getTable().getTableModel().getRowCount();
 		}
 		return rows;
@@ -319,7 +319,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	}
 	
 	public void loadModel() {
-		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity);
+		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity, getIdentity());
 		if(filterByEntries != null && !filterByEntries.isEmpty()) {
 			Set<Long> acceptedEntries = filterByEntries.stream()
 					.map(RepositoryEntryRef::getKey).collect(Collectors.toSet());

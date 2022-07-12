@@ -89,7 +89,6 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_REMINDER2_AFTER_DC_DAYS = "reminder2.after.dc.start.days";
 	public static final String CONFIG_KEY_ROLES = "participants.roles";
 	public static final String CONFIG_KEY_TITLE = "title";
-	public static final String CONFIG_KEY_WHITE_LIST = "white.list";
 	public static final String ROLES_DELIMITER = ",";
 
 	@Autowired

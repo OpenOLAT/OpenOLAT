@@ -19,9 +19,12 @@
  */
 package org.olat.modules.portfolio.ui.component;
 
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.translateDisplayName;
+
 import java.text.Collator;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -29,7 +32,9 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -39,6 +44,12 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
  */
 public class CompetencesCellRenderer implements FlexiCellRenderer {
 
+	private final Translator taxonomyTranslator;
+
+	public CompetencesCellRenderer(Locale locale) {
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
+	}
+
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
@@ -47,12 +58,12 @@ public class CompetencesCellRenderer implements FlexiCellRenderer {
 			@SuppressWarnings("unchecked")
 			List<TaxonomyCompetence> competences = (List<TaxonomyCompetence>)cellValue;
 			Collator collator = Collator.getInstance(translator.getLocale());
-			competences.sort((c1, c2) -> collator.compare(c1.getTaxonomyLevel().getDisplayName(), c2.getTaxonomyLevel().getDisplayName()));
+			competences.sort((c1, c2) -> collator.compare(translateDisplayName(taxonomyTranslator, c1.getTaxonomyLevel()), translateDisplayName(taxonomyTranslator, c2.getTaxonomyLevel())));
 			
 			if(competences.size() > 0) {
 				for(TaxonomyCompetence competence : competences) {
 					target.append("<span class='o_tag o_competence o_small o_block_inline' id='").append("o_competence_" + competence.getKey()).append("'>");
-					target.append(competence.getTaxonomyLevel().getDisplayName());
+					target.append(translateDisplayName(taxonomyTranslator, competence.getTaxonomyLevel()));
 					target.append("</span>");
 					target.append("<script>")
 					  	  .append("jQuery(function() {\n")

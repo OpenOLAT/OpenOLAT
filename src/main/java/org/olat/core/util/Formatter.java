@@ -710,7 +710,7 @@ public class Formatter {
 		StringBuilder sb = new StringBuilder(768);
 		sb.append("window.MathJax = {\n")
 		  .append("  tex: {\n")
-		  .append("    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]\n")
+		  .append("    inlineMath: [['$$', '$$'], ['\\\\(', '\\\\)']]\n")
 		  .append("  },\n")
 		  .append("  options: {\n")
 		  .append("    enableMenu: false,\n")

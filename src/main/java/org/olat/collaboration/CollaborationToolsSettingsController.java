@@ -52,6 +52,9 @@ import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonCollaborationSettingsController;
 import org.olat.modules.teams.ui.TeamsCollaborationSettingsController;
+import org.olat.modules.zoom.ZoomManager;
+import org.olat.modules.zoom.ZoomModule;
+import org.olat.modules.zoom.ui.ZoomCollaborationSettingsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,6 +74,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private FolderToolSettingsController folderForm;
 	private TeamsCollaborationSettingsController teamsController; 
 	private BigBlueButtonCollaborationSettingsController bigBlueButtonController;
+	private ZoomCollaborationSettingsController zoomController;
 
 	private boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
@@ -82,10 +86,17 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private QuotaManager quotaManager;
 	@Autowired
 	private CalendarModule calendarModule;
+	@Autowired
+	private ZoomModule zoomModule;
+	@Autowired
+	private ZoomManager zoomManager;
 
 	/**
-	 * @param ureq
-	 * @param tools
+	 * Initializes this controller.
+	 *
+	 * @param ureq The user request.
+	 * @param wControl The window control.
+	 * @param businessGroup The group.
 	 */
 	public CollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
@@ -120,7 +131,12 @@ public class CollaborationToolsSettingsController extends BasicController {
 			vc_collabtools.contextPut("teamsToolEnabled", Boolean.FALSE);
 		}
 		
-		
+		if (zoomModule.isEnabledForGroupTool() && collabTools.isToolEnabled(CollaborationTools.TOOL_ZOOM)) {
+			addZoomTool(ureq);
+		} else {
+			vc_collabtools.contextPut("zoomToolEnabled", Boolean.FALSE);
+		}
+
 		UserSession usess = ureq.getUserSession();
 		
 		if (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin()) {
@@ -219,6 +235,27 @@ public class CollaborationToolsSettingsController extends BasicController {
 		vc_collabtools.contextPut("teamsToolEnabled", Boolean.TRUE);
 		vc_collabtools.put("teamsform", teamsController.getInitialComponent());
 	}
+
+	private void addZoomTool(UserRequest ureq) {
+		removeAsListenerAndDispose(zoomController);
+
+		zoomManager.initializeConfig(null, null, businessGroup, ZoomManager.ApplicationType.groupTool);
+
+		zoomController = new ZoomCollaborationSettingsController(ureq, getWindowControl(), businessGroup);
+		zoomController.setEnabled(!managed);
+		listenTo(zoomController);
+
+		vc_collabtools.contextPut("zoomToolEnabled", Boolean.TRUE);
+		vc_collabtools.put("zoomform", zoomController.getInitialComponent());
+	}
+
+	private void removeZoomTool(UserRequest ureq) {
+		removeAsListenerAndDispose(zoomController);
+
+		zoomManager.deleteConfig(null, null, businessGroup);
+
+		vc_collabtools.contextPut("zoomToolEnabled", Boolean.FALSE);
+	}
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
@@ -273,13 +310,20 @@ public class CollaborationToolsSettingsController extends BasicController {
 			vc_collabtools.contextPut("bigBlueButtonToolEnabled", Boolean.FALSE);
 		}
 		
-		// update BigBlueButton form: only show when enabled
+		// update Teams form: only show when enabled
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_TEAMS)) {
 			addTeamsTool(ureq);
 		} else {
 			vc_collabtools.contextPut("teamsToolEnabled", Boolean.FALSE);
 		}
-		
+
+		// update Zoom form: only show when enabled
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_ZOOM)) {
+			addZoomTool(ureq);
+		} else {
+			removeZoomTool(ureq);
+		}
+
 		// update calendar form: only show when enabled
 		boolean newCalendarEnabledState = collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR);
 		if (newCalendarEnabledState != lastCalendarEnabledState) {

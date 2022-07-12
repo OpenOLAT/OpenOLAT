@@ -49,6 +49,7 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.wiki.WikiModule;
+import org.olat.modules.zoom.ZoomModule;
 
 /**
  * Description:<BR>
@@ -125,8 +126,13 @@ public class CollaborationToolsFactory {
 		if(teamsModule.isEnabled() && teamsModule.isGroupsEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_TEAMS);
 		}
-		
-		TOOLS = ArrayHelper.toArray(toolArr);				
+
+		ZoomModule zoomModule = CoreSpringFactory.getImpl(ZoomModule.class);
+		if (zoomModule.isEnabled() && zoomModule.isEnabledForGroupTool()) {
+			toolArr.add(CollaborationTools.TOOL_ZOOM);
+		}
+
+		TOOLS = ArrayHelper.toArray(toolArr);
 	}
 	
 	private boolean hasBigBlueButtonTemplates() {

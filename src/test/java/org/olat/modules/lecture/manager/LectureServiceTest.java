@@ -169,7 +169,7 @@ public class LectureServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//add
-		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(participant);
+		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(participant, null);
 		Assert.assertNotNull(statistics);
 		Assert.assertEquals(1, statistics.size());
 	}
@@ -210,7 +210,7 @@ public class LectureServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check first participant
-		List<LectureBlockStatistics> statistics_1 = lectureService.getParticipantLecturesStatistics(participant1);
+		List<LectureBlockStatistics> statistics_1 = lectureService.getParticipantLecturesStatistics(participant1, null);
 		Assert.assertNotNull(statistics_1);
 		Assert.assertEquals(1, statistics_1.size());
 		LectureBlockStatistics statistic_1 = statistics_1.get(0);
@@ -219,7 +219,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertEquals(6, statistic_1.getTotalAbsentLectures());
 		
 		//check second participant
-		List<LectureBlockStatistics> statistics_2 = lectureService.getParticipantLecturesStatistics(participant2);
+		List<LectureBlockStatistics> statistics_2 = lectureService.getParticipantLecturesStatistics(participant2, null);
 		Assert.assertNotNull(statistics_2);
 		Assert.assertEquals(1, statistics_2.size());
 		LectureBlockStatistics statistic_2 = statistics_2.get(0);

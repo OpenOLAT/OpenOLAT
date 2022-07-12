@@ -57,7 +57,7 @@ public class TaxonomyTreeController extends BasicController {
 		taxonomiesTree.setDropEnabled(false);
 		taxonomiesTree.setRootVisible(false);
 		taxonomiesTree.addListener(this);
-		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyModel, taxonomy);
+		new TaxonomyAllTreesBuilder(getLocale()).loadTreeModel(taxonomyModel, taxonomy);
 
 		mainVC.put("trees", taxonomiesTree);
 		putInitialPanel(mainVC);

@@ -169,7 +169,7 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage closeAndPublishAssessment() {
-		By saveBy = By.cssSelector("a.btn.o_sel_assessment_form_save_and_done");
+		By saveBy = By.cssSelector("button.btn.o_sel_assessment_form_save_and_done");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

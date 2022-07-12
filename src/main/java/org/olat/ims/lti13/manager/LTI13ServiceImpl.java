@@ -370,8 +370,9 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13Tool tool, RepositoryEntry entry, String subIdent) {
-		return lti13ToolDeploymentDao.createDeployment(targetUrl, tool, entry, subIdent);
+	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13Tool tool,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+		return lti13ToolDeploymentDao.createDeployment(targetUrl, tool, entry, subIdent, businessGroup);
 	}
 
 	@Override
@@ -412,6 +413,11 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	@Override
 	public LTI13ToolDeployment getToolDeploymentByKey(Long key) {
 		return lti13ToolDeploymentDao.loadDeploymentByKey(key);
+	}
+	
+	@Override
+	public LTI13ToolDeployment getToolDeploymentByContextId(String contextId) {
+		return lti13ToolDeploymentDao.loadDeploymentByContextId(contextId);
 	}
 	
 	@Override

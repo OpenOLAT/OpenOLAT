@@ -184,7 +184,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			roleList.add(OrganisationRoles.valueOf(role));
 		}
 
-		boolean isInvitee = rolesStr.contains(OrganisationRoles.invitee.name());
 		boolean isGuestOnly = false;
 		if(!rolesStr.contains(OrganisationRoles.user.name())) {
 			isGuestOnly = rolesStr.contains(OrganisationRoles.guest.name());
@@ -194,7 +193,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		for(Map.Entry<OrganisationRef, List<OrganisationRoles>> entry:orgToRoles.entrySet()) {
 			rolesByOrganisations.add(new RolesByOrganisation(entry.getKey(), entry.getValue()));
 		}
-		return Roles.valueOf(rolesByOrganisations, isGuestOnly, isInvitee);
+		return Roles.valueOf(rolesByOrganisations, isGuestOnly);
 	}
 
 	@Override

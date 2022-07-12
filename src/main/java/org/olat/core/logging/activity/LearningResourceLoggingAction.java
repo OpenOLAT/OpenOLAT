@@ -128,7 +128,11 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.bigbluebutton).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_BIGBLUEBUTTON_DISABLED = 
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.bigbluebutton).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
-	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_BLOG_ENABLED = 
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_ZOOM_ENABLED =
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.zoom).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_ZOOM_DISABLED =
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.zoom).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_BLOG_ENABLED =
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.blog).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_BLOG_DISABLED = 
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.blog).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);

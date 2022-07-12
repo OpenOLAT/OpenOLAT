@@ -104,6 +104,12 @@
 				<entry key="/lti/">
 					<ref bean="ltidispatcherbean" />
 				</entry>
+				<entry key="/mod/">
+					<ref bean="modltidispatcherbean" />
+				</entry>
+				<entry key="/webservice/">
+					<ref bean="webservicedispatcherbean" />
+				</entry>
 			</map>
 		</property>
 	</bean>

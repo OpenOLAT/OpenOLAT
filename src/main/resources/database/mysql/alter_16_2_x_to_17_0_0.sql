@@ -23,6 +23,12 @@ create index idx_offer_guest_idx on o_ac_offer (guest_access);
 create index idx_offer_open_idx on o_ac_offer (open_access);
 
 alter table o_repositoryentry add column publicvisible bool default false not null;
+alter table o_repositoryentry add column status_published_date datetime;
+
+-- Taxonomy
+alter table o_tax_taxonomy_level add column t_i18n_suffix varchar(64);
+alter table o_tax_taxonomy_level add column t_media_path varchar(255);
+alter table o_tax_taxonomy_level modify column t_displayname varchar(255);
 
 
 -- Catalog V2
@@ -48,8 +54,6 @@ create table o_ca_filter (
    c_config varchar(1024),
    primary key (id)
 );
-
-alter table o_repositoryentry add column status_published_date datetime;
 
 alter table o_ca_launcher ENGINE = InnoDB;
 alter table o_ca_filter ENGINE = InnoDB;
@@ -104,4 +108,52 @@ alter table o_practice_global_item_ref add constraint pract_global_ident_idx for
 create index idx_pract_global_id_uu_idx on o_practice_global_item_ref (fk_identity,p_identifier);
 
 
+-- LTI 1.3
+alter table o_lti_tool_deployment add column l_nrps bool default true;
+alter table o_lti_tool_deployment add column l_context_id varchar(255);
 
+alter table o_lti_tool_deployment add column fk_group_id bigint;
+
+alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
+
+
+-- Certificates
+alter table o_cer_certificate add column c_external_id varchar(64);
+alter table o_cer_certificate add column c_managed_flags varchar(255);
+
+
+-- Zoom
+create table o_zoom_profile (
+                                id bigint not null auto_increment,
+                                creationdate datetime not null,
+                                lastmodified datetime not null,
+                                z_name varchar(255) not null,
+                                z_status varchar(255) not null,
+                                z_lti_key varchar(255) not null,
+                                z_mail_domains varchar(1024),
+                                z_students_can_host bool default false,
+                                z_token varchar(255) not null,
+                                fk_lti_tool_id bigint not null,
+                                primary key (id)
+);
+alter table o_zoom_profile ENGINE = InnoDB;
+
+create table o_zoom_config (
+                               id bigint not null auto_increment,
+                               creationdate datetime not null,
+                               lastmodified datetime not null,
+                               z_description varchar(255),
+                               fk_profile bigint not null,
+                               fk_lti_tool_deployment_id bigint not null,
+                               primary key (id)
+);
+alter table o_zoom_config ENGINE = InnoDB;
+
+alter table o_zoom_profile add constraint zoom_profile_tool_idx foreign key (fk_lti_tool_id) references o_lti_tool (id);
+create index idx_zoom_profile_tool_idx on o_zoom_profile (fk_lti_tool_id);
+
+alter table o_zoom_config add constraint zoom_config_profile_idx foreign key (fk_profile) references o_zoom_profile (id);
+create index idx_zoom_config_profile_idx on o_zoom_config (fk_profile);
+
+alter table o_zoom_config add constraint zoom_config_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
+create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_deployment_id);

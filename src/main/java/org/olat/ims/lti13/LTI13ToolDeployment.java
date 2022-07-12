@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.repository.RepositoryEntry;
 
@@ -42,6 +43,8 @@ public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
 	 * @return
 	 */
 	public String getDeploymentId();
+	
+	public String getContextId();
 	
 	public String getTargetUrl();
 	
@@ -85,6 +88,10 @@ public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
 
 	public void setAssessable(boolean assessable);
 	
+	public boolean isNameAndRolesProvisioningServicesEnabled();
+
+	public void setNameAndRolesProvisioningServicesEnabled(boolean nameAndRolesProvisioningServices);
+	
 	// display options
 	
 	public String getDisplay();
@@ -112,5 +119,7 @@ public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
 	public RepositoryEntry getEntry();
 	
 	public String getSubIdent();
+	
+	public BusinessGroup getBusinessGroup();
 
 }

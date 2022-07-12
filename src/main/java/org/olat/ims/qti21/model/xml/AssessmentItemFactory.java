@@ -73,10 +73,12 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
@@ -350,7 +352,7 @@ public class AssessmentItemFactory {
 	
 	public static TextEntryInteraction appendTextEntryInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
 		P paragraph = new P(itemBody);
-		TextRun text = new TextRun(paragraph, "New text");
+		TextRun text = new TextRun(paragraph, "New text ");
 		paragraph.getInlines().add(text);
 		TextEntryInteraction textInteraction = new TextEntryInteraction(paragraph);
 		textInteraction.setResponseIdentifier(responseDeclarationId);
@@ -443,6 +445,58 @@ public class AssessmentItemFactory {
 				appendStringValue(correctResponse, alternative.getAlternative());
 			}
 		}
+		return responseDeclaration;
+	}
+	
+	public static InlineChoiceInteraction appendInlineChoiceInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		P paragraph = new P(itemBody);
+		TextRun text = new TextRun(paragraph, "New text ");
+		paragraph.getInlines().add(text);
+		
+		// Inline choice
+		InlineChoiceInteraction inlineChoiceInteraction = new InlineChoiceInteraction(paragraph);
+		inlineChoiceInteraction.setResponseIdentifier(responseDeclarationId);
+		inlineChoiceInteraction.setShuffle(true);
+		paragraph.getInlines().add(inlineChoiceInteraction);
+		itemBody.getBlocks().add(paragraph);
+
+		return inlineChoiceInteraction;
+	}
+	
+	public static InlineChoiceInteraction createInlineChoiceInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		// Inline choice
+		InlineChoiceInteraction inlineChoiceInteraction = new InlineChoiceInteraction(itemBody);
+		inlineChoiceInteraction.setResponseIdentifier(responseDeclarationId);
+		inlineChoiceInteraction.setShuffle(true);
+		return inlineChoiceInteraction;
+	}
+	
+	public static InlineChoice createInlineChoice(InlineChoiceInteraction choiceInteraction, String text, Identifier identifier) {
+		InlineChoice newChoice = new InlineChoice(choiceInteraction);
+		newChoice.setIdentifier(identifier);
+		newChoice.getTextOrVariables().add(new TextRun(newChoice, text));
+		return newChoice;
+	}
+	
+	public static InlineChoice appendInlineChoice(InlineChoiceInteraction choiceInteraction, String text, Identifier identifier) {
+		InlineChoice newChoice = new InlineChoice(choiceInteraction);
+		newChoice.setIdentifier(identifier);
+		newChoice.getTextOrVariables().add(new TextRun(newChoice, text));
+		choiceInteraction.getNodeGroups().getInlineChoiceGroup().getInlineChoices().add(newChoice);
+		return newChoice;
+	}
+	
+	public static ResponseDeclaration createInlineChoiceResponseDeclaration(AssessmentItem assessmentItem,
+			Identifier declarationId, Identifier correctResponseId) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+		
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		appendIdentifierValue(correctResponse, correctResponseId);
 		return responseDeclaration;
 	}
 	

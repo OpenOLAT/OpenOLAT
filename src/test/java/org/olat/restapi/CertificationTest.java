@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import javax.ws.rs.core.MediaType;
@@ -49,8 +50,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.manager.CertificatesManagerTest;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.restapi.CertificateVO;
+import org.olat.course.certificate.restapi.CertificateVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
@@ -179,6 +183,44 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertNotNull(certificateLeaf);
 		Assert.assertTrue(certificateLeaf.getSize() > 500);
 	}
+	
+	@Test
+	public void getCertificateByExternalId() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		String externalId = UUID.randomUUID().toString();
+		
+		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
+		Assert.assertNotNull(certificateUrl);
+		File certificateFile = new File(certificateUrl.toURI()); 
+		Certificate certificate = certificatesManager
+				.uploadCertificate(assessedIdentity, new Date(), externalId, null, entry.getOlatResource(), certificateFile);
+		dbInstance.commitAndCloseSession();
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(entry.getOlatResource().getKey().toString())
+				.path("certificates")
+				.queryParam("externalId", externalId)
+				.build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+
+		CertificateVOes certificateVoes = conn.parse(response, CertificateVOes.class);
+		Assert.assertNotNull(certificateVoes);
+		Assert.assertNotNull(certificateVoes.getCertificates());
+		Assert.assertEquals(1, certificateVoes.getCertificates().size());
+		
+		CertificateVO certificateVo = certificateVoes.getCertificates().get(0);
+		Assert.assertNotNull(certificateVo);
+		Assert.assertEquals(certificate.getKey(), certificateVo.getKey());
+
+		conn.shutdown();
+	}
 
 	@Test
 	public void uploadCertificate() throws IOException, URISyntaxException {
@@ -268,8 +310,8 @@ public class CertificationTest extends OlatRestTestCase {
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-15");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-5");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author)
-				;
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
 		dbInstance.commitAndCloseSession();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2));

@@ -493,6 +493,36 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadRepositoryEntries_filterBy_ResourceType() {
+		TestCatalogItem catalogItem = createCatalogItem(3);
+		String resourceType0 = catalogItem.getRepositoryEntry(0).getOlatResource().getResourceableTypeName();
+		String resourceType1 = catalogItem.getRepositoryEntry(1).getOlatResource().getResourceableTypeName();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.getIdentToResourceTypes().put("1", List.of(resourceType0));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0));
+		
+		searchParams.getIdentToResourceTypes().put("1", List.of(resourceType0, resourceType1));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1));
+		
+		searchParams.getIdentToResourceTypes().put("1", List.of(resourceType0, resourceType1));
+		searchParams.getIdentToResourceTypes().put("2", List.of(resourceType1));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(1));
+		
+		searchParams.getIdentToResourceTypes().put("1", List.of(resourceType0));
+		searchParams.getIdentToResourceTypes().put("2", List.of(resourceType1));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.isEmpty();
+	}
+	
+	@Test
 	public void shouldLoadRepositoryEntries_filterBy_EducationalType() {
 		TestCatalogItem catalogItem = createCatalogItem(4);
 		RepositoryEntryEducationalType educationalType1 = repositoryManager.createEducationalType(random());
@@ -504,11 +534,27 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
-		searchParams.setEducationalTypeKeys(List.of(educationalType1.getKey(), educationalType2.getKey()));
+		searchParams.getIdentToEducationalTypeKeys().put("1", List.of(educationalType1.getKey()));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0));
+		
+		searchParams.getIdentToEducationalTypeKeys().put("1", List.of(educationalType1.getKey(), educationalType2.getKey()));
 		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1));
+		
+		searchParams.getIdentToEducationalTypeKeys().put("1", List.of(educationalType1.getKey(), educationalType2.getKey()));
+		searchParams.getIdentToEducationalTypeKeys().put("2", List.of(educationalType2.getKey()));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(1));
+		
+		searchParams.getIdentToEducationalTypeKeys().put("1", List.of(educationalType1.getKey()));
+		searchParams.getIdentToEducationalTypeKeys().put("2", List.of(educationalType2.getKey()));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.isEmpty();
 	}
 	
 	@Test
@@ -516,9 +562,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		TestCatalogItem catalogItem = createCatalogItem(5);
 		
 		Taxonomy taxonomy = taxonomyService.getTaxonomyList().get(0);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomyLevel1, taxonomy);
-		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);
@@ -561,9 +607,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		TestCatalogItem catalogItem = createCatalogItem(5);
 		
 		Taxonomy taxonomy = taxonomyService.getTaxonomyList().get(0);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomyLevel1, taxonomy);
-		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);

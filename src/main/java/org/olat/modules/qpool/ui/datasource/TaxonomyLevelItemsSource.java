@@ -39,8 +39,8 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 
 	private final TaxonomyLevel taxonomyLevel;
 	
-	public TaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, locale, taxonomyLevel.getDisplayName());
+	public TaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
+		super(me, roles, locale, displayName);
 		this.taxonomyLevel = taxonomyLevel;
 		getDefaultParams().setLikeTaxonomyLevel(taxonomyLevel);
 	}

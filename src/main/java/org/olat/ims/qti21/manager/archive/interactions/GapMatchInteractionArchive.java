@@ -137,7 +137,6 @@ public class GapMatchInteractionArchive extends DefaultInteractionArchive  {
 	}
 	
 	public List<Gap> getGaps(Interaction interaction) {
-		List<Gap> gaps = QueryUtils.search(Gap.class, interaction.getNodeGroups().getBlockStaticGroup().getBlockStatics());
-		return gaps;
+		return QueryUtils.search(Gap.class, interaction.getNodeGroups().getBlockStaticGroup().getBlockStatics());
 	}
 }

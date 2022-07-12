@@ -21,6 +21,7 @@ package org.olat.repository;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,8 @@ import org.olat.course.site.CourseSite;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
 import org.olat.modules.catalog.site.CatalogContextEntryControllerCreator;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.site.CatalogAdminSite;
 import org.olat.repository.site.MyCoursesSite;
 import org.olat.repository.site.RepositorySite;
@@ -126,6 +129,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private Set<String> educationalDefaultTypesEnabled;
 	
 	private String taxonomyTreeKey;
+	private List<TaxonomyRef> taxonomyRefs;
 	
 	@Autowired
 	private BusinessGroupModule groupModule;
@@ -237,6 +241,7 @@ public class RepositoryModule extends AbstractSpringModule {
 		String taxonomyTreeKeyObj = getStringPropertyValue(TAXONOMY_TREE_KEY, true);
 		if(StringHelper.containsNonWhitespace(taxonomyTreeKeyObj)) {
 			taxonomyTreeKey = taxonomyTreeKeyObj;
+			taxonomyRefs = null;
 		}
 		
 		String wizardTypeEnabledObj = getStringPropertyValue(WIZARD_TYPES_ENABLED, true);
@@ -440,16 +445,30 @@ public class RepositoryModule extends AbstractSpringModule {
 		lifecycleNotificationByCloseDelete = enable ? "enabled" : "disabled";
 		setStringProperty(LIFECYCLE_NOTIFICATION_CLOSE_DELETE, lifecycleNotificationByCloseDelete, true);
 	}
-
-	public String getTaxonomyTreeKey() {
-		return taxonomyTreeKey;
-	}
-
-	public void setTaxonomyTreeKey(String taxonomyTreeKey) {
-		this.taxonomyTreeKey = taxonomyTreeKey;
-		setStringProperty(TAXONOMY_TREE_KEY, taxonomyTreeKey, true);
-	}
 	
+	public List<TaxonomyRef> getTaxonomyRefs() {
+		if (taxonomyRefs == null) {
+			if (StringHelper.containsNonWhitespace(taxonomyTreeKey)) {
+				taxonomyRefs = Arrays.stream(taxonomyTreeKey.split(","))
+					.filter(StringHelper::isLong)
+					.map(Long::valueOf)
+					.map(TaxonomyRefImpl::new)
+					.collect(Collectors.toList());
+			} else {
+				taxonomyRefs = Collections.emptyList();
+			}
+		}
+		return taxonomyRefs;
+	}
+
+	public void setTaxonomyRefs(List<TaxonomyRef> taxonomyRefs) {
+		this.taxonomyTreeKey = taxonomyRefs != null && !taxonomyRefs.isEmpty()
+				? taxonomyRefs.stream().map(TaxonomyRef::getKey).map(String::valueOf).collect(Collectors.joining(","))
+				: null;
+		setStringProperty(TAXONOMY_TREE_KEY, taxonomyTreeKey, true);
+		this.taxonomyRefs = null;
+	}
+
 	public Set<String> getEnabledWizardTypes() {
 		if (wizardTypesEnabled == null) {
 			wizardTypesEnabled = StringHelper.containsNonWhitespace(wizardTypesEnabledConfig)

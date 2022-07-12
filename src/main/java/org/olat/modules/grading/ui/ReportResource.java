@@ -277,7 +277,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		searchParams.setManager(manager);
 		searchParams.setReferenceEntry(referenceEntry);
 		
-		List<GradingAssignmentWithInfos> assignmentsWithInfos = gradingService.getGradingAssignmentsWithInfos(searchParams);
+		List<GradingAssignmentWithInfos> assignmentsWithInfos = gradingService.getGradingAssignmentsWithInfos(searchParams, translator.getLocale());
 		for(GradingAssignmentWithInfos assignmentWithInfos:assignmentsWithInfos) {
 			createAssignmentsData(assignmentWithInfos, sheet, workbook);
 		}

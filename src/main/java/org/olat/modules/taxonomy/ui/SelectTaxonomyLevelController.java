@@ -80,7 +80,7 @@ public class SelectTaxonomyLevelController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyTreesModel);
+		new TaxonomyAllTreesBuilder(getLocale()).loadTreeModel(taxonomyTreesModel);
 	}
 
 	@Override

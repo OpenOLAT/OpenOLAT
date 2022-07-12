@@ -42,6 +42,7 @@ import org.olat.ims.qti21.model.statistics.StatisticsItem;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.HottextInteractionStatisticsController;
+import org.olat.ims.qti21.ui.statistics.interactions.InlineChoiceInteractionsStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.MatchStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.OrderInteractionStatisticsController;
@@ -57,6 +58,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
@@ -148,11 +150,16 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		List<String> interactionIds = new ArrayList<>(interactions.size());
 		int counter = 0;
 		List<TextEntryInteraction> textEntryInteractions = new ArrayList<>();
+		List<InlineChoiceInteraction> inlineChoiceInteractions = new ArrayList<>();
 		for(Interaction interaction:interactions) {
+			if(interaction instanceof EndAttemptInteraction) {
+				continue;
+			}
+			
 			if(interaction instanceof TextEntryInteraction) {
 				textEntryInteractions.add((TextEntryInteraction)interaction);
-			} else if(interaction instanceof EndAttemptInteraction) {
-				continue;
+			} else if(interaction instanceof InlineChoiceInteraction) {
+				inlineChoiceInteractions.add((InlineChoiceInteraction)interaction);
 			} else {
 				Component cmp = interactionControllerFactory(ureq, interaction, itemStats);
 				String componentId = "interaction" + counter++;
@@ -163,6 +170,12 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		if(!textEntryInteractions.isEmpty()) {
 			Controller interactionCtrl = new TextEntryInteractionsStatisticsController(ureq, getWindowControl(), itemRef, item, textEntryInteractions, resourceResult);
+			listenTo(interactionCtrl);
+			String componentId = "interaction" + counter++;
+			mainVC.put(componentId, interactionCtrl.getInitialComponent());
+			interactionIds.add(componentId);
+		} else if(!inlineChoiceInteractions.isEmpty()) {
+			Controller interactionCtrl = new InlineChoiceInteractionsStatisticsController(ureq, getWindowControl(), itemRef, item, inlineChoiceInteractions, resourceResult);
 			listenTo(interactionCtrl);
 			String componentId = "interaction" + counter++;
 			mainVC.put(componentId, interactionCtrl.getInitialComponent());

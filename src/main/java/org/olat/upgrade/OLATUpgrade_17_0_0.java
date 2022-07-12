@@ -19,8 +19,11 @@
  */
 package org.olat.upgrade;
 
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -31,11 +34,30 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.manager.CurriculumRepositoryEntryRelationDAO;
+import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.manager.QualityGeneratorConfigsImpl;
+import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesProvider;
+import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
+import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +74,11 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_17.0.0";
 	private static final String RE_PUBLIC_VISIBILE_INIT = "RE PUBLIC VISIBILE INIT";
+	private static final String RE_PUBLISHED_DATE_INIT = "RE PUBLISHED DATE INIT";
 	private static final String OFFER_TO_ORG_INIT = "OFFER TO ORG INIT";
+	private static final String TAXONOMY_TRANSLATIONS = "TAXONOMY TRANSLATIONS";
+	private static final String MIGRATE_LTI_13_DEPLOYMENTS = "MIGRATE LTI 13 DEPLOYMENTS";
+	private static final String QM_GENERATOR_LIST = "QM GENERATOR LIST";
 	
 	@Autowired
 	private DB dbInstance;
@@ -65,7 +91,15 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	@Autowired
 	private OrganisationService organisationServics;
 	@Autowired
-	private CatalogManager catalogV1Manager;
+	private I18nModule i18nModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
+	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDAO;
 	
 	public OLATUpgrade_17_0_0() {
 		super();
@@ -89,7 +123,11 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		
 		allOk &= initRePublicVisible(upgradeManager, uhd);
+		allOk &= initRePublishedDate(upgradeManager, uhd);
 		allOk &= initOfferToOrgs(upgradeManager, uhd);
+		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
+		allOk &= migrateLTI13ToolDeployment(upgradeManager, uhd);
+		allOk &= migrateQmGeneratorList(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -144,6 +182,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 			}
 		}
 	}
+	
 	private Set<Organisation> getRootOrganisations() {
 		return organisationServics.getOrganisations().stream()
 				.filter(org -> org.getParent() == null)
@@ -154,6 +193,53 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select re from repositoryentry re")
 		  .append(" where re.allUsers is true or re.guests is true or re.bookable is true");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.getResultList();
+	}
+	
+	private boolean initRePublishedDate(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(RE_PUBLISHED_DATE_INIT)) {
+			try {
+				log.info("Start re published date initialization.");
+				initRePublishedDate();
+				log.info("All re published date initialized.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(RE_PUBLISHED_DATE_INIT, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	/*
+	 * Best guess to have reasonable courses in the catalog launcher.
+	 */
+	private void initRePublishedDate() {
+		List<RepositoryEntry> entries = getPublishedEntries();
+		
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (RepositoryEntry entry : entries) {
+			entry.setStatusPublishedDate(entry.getCreationDate());
+			dbInstance.getCurrentEntityManager().merge(entry);
+			migrationCounter.incrementAndGet();
+			dbInstance.commitAndCloseSession();
+			if(migrationCounter.get() % 100 == 0) {
+				log.info("Init re public visible: num. of offers: {}", migrationCounter);
+			}
+		}
+	}
+	
+	public List<RepositoryEntry> getPublishedEntries() {
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select v from repositoryentry as v");
+		sb.append(" inner join fetch v.olatResource as res");
+		sb.and().append("v.status ").in(RepositoryEntryStatusEnum.published);
+		sb.and().append("v.statusPublishedDate is null");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
@@ -268,6 +354,162 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("resourceKey", offer.getResource().getKey())
 				.getResultList().isEmpty();
+	}
+	
+	private boolean initTaxonomyTranslations(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(TAXONOMY_TRANSLATIONS)) {
+			try {
+				log.info("Start taxonomy translations initialization.");
+				initTaxonomyTranslations();
+				log.info("All taxonomy translations initialized.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(TAXONOMY_TRANSLATIONS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	@SuppressWarnings("deprecation")
+	private void initTaxonomyTranslations() {
+		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
+
+		List<TaxonomyLevel> taxonomyLevels = getTaxonomyLevels();
+		
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+			if (taxonomyLevel instanceof TaxonomyLevelImpl) {
+				TaxonomyLevelImpl impl = (TaxonomyLevelImpl)taxonomyLevel;
+				
+				String mediaPath = taxonomyLevelDao.createLevelMediaStorage(taxonomyLevel.getTaxonomy(), taxonomyLevel);
+				impl.setMediaPath(mediaPath);
+				
+				String i18nSuffix = taxonomyService.createI18nSuffix();
+				impl.setI18nSuffix(i18nSuffix);
+				dbInstance.getCurrentEntityManager().merge(impl);
+				
+				String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + i18nSuffix;
+				String displayName = i18nManager.getLocalizedString(BUNDLE_NAME, displayNameKey, null, overlayDefaultLocale, true, false);
+				if (!StringHelper.containsNonWhitespace(displayName)) {
+					I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, displayNameKey, overlayDefaultLocale);
+					i18nManager.saveOrUpdateI18nItem(displayNameItem, impl.getDisplayName());
+				}
+				
+				String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + i18nSuffix;
+				String description = i18nManager.getLocalizedString(BUNDLE_NAME, descriptionKey, null, overlayDefaultLocale, true, false);
+				if (!StringHelper.containsNonWhitespace(description)) {
+					I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, descriptionKey, overlayDefaultLocale);
+					i18nManager.saveOrUpdateI18nItem(descriptionItem, impl.getDescription());
+				}
+				
+				migrationCounter.incrementAndGet();
+				dbInstance.commitAndCloseSession();
+				if (migrationCounter.get() % 100 == 0) {
+					log.info("Init taxonomy translations: num. of taxonomy levels: {}", migrationCounter);
+				}
+			}
+		}
+	}
+
+	private List<TaxonomyLevel> getTaxonomyLevels() {
+		String query = "select level from ctaxonomylevel as level";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, TaxonomyLevel.class)
+			.getResultList();
+	}
+	
+	public boolean migrateLTI13ToolDeployment(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_LTI_13_DEPLOYMENTS)) {
+			try {
+				log.info("Migrate LTI 1.3 deployment context ids.");
+				
+				int counter = 0;
+				List<LTI13ToolDeployment> deployments = getToolDeployment();
+				for(LTI13ToolDeployment deployment:deployments) {
+					((LTI13ToolDeploymentImpl)deployment).setContextId(deployment.getEntry().getKey().toString());
+					dbInstance.getCurrentEntityManager().merge(deployment);
+					
+					if(++counter % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					} else {
+						dbInstance.commit();
+					}
+				}
+				dbInstance.commitAndCloseSession();
+				log.info("End migration LTI 1.3 deployment context ids: {}", deployments.size());
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_LTI_13_DEPLOYMENTS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<LTI13ToolDeployment> getToolDeployment() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select deployment from ltitooldeployment as deployment")
+		  .append(" inner join fetch deployment.tool tool")
+		  .append(" inner join fetch deployment.entry re")
+		  .append(" where deployment.contextId is null");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LTI13ToolDeployment.class)
+				.getResultList();
+	}
+	
+	private boolean migrateQmGeneratorList(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(QM_GENERATOR_LIST)) {
+			try {
+				log.info("Start migration of quality generator list");
+				migrateQmGeneratorList();
+				log.info("End of migration of quality generator list");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(QM_GENERATOR_LIST, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateQmGeneratorList() {
+		List<QualityGenerator> generators = getGenerators();
+		
+		for (QualityGenerator generator : generators) {
+			migrateQmGeneratorList(generator);
+			dbInstance.commitAndCloseSession();
+		}
+	}
+
+	private List<QualityGenerator> getGenerators() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select generator");
+		sb.append("  from qualitygenerator as generator");
+		sb.append(" where generator.type").in(CourseLecturesProvider.TYPE);
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityGenerator.class)
+				.getResultList();
+	}
+	
+	private void migrateQmGeneratorList(QualityGenerator generator) {
+		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
+		List<CurriculumElementRef> whiteListRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		List<RepositoryEntry> whiteListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(whiteListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
+		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, whiteListEntries);
+		
+		List<CurriculumElementRef> blackListRefs = CurriculumElementBlackListController.getCurriculumElementRefs(configs);
+		List<RepositoryEntry> blackListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(blackListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
+		RepositoryEntryBlackListController.setRepositoryEntryRefs(configs, blackListEntries);
 	}
 	
 }

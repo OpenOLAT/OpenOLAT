@@ -37,6 +37,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.EmailStatus;
 
@@ -78,6 +79,11 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	
 	@Column(name="c_uuid", nullable=false, insertable=true, updatable=false)
 	private String uuid;
+	
+	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
+	private String externalId;
+	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
+	private String managedFlagsString;
 	
 	@Column(name="c_next_recertification", nullable=true, insertable=true, updatable=true)
 	private Date nextRecertificationDate;
@@ -180,6 +186,28 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	public void setLast(boolean last) {
 		this.last = last;
+	}
+
+	@Override
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getManagedFlagsString() {
+		return managedFlagsString;
+	}
+
+	public void setManagedFlagsString(String managedFlagsString) {
+		this.managedFlagsString = managedFlagsString;
+	}
+
+	@Override
+	public CertificateManagedFlag[] getManagedFlags() {
+		return CertificateManagedFlag.toEnum(managedFlagsString);
 	}
 
 	@Override

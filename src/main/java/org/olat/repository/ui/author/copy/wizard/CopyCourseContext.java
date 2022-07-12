@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -92,6 +93,7 @@ public class CopyCourseContext {
 	private List<BGTableItem> groups;
 	private List<BusinessGroupReference> newGroupReferences = new ArrayList<>();
 	private boolean hasGroups;
+	private Set<Long> groupCopyIgnoreKeys = Collections.emptySet();
 	
 	// OwnersStep
 	private CopyType ownersCopyType;
@@ -474,6 +476,14 @@ public class CopyCourseContext {
 		this.hasGroups = hasGroups;
 	}
 	
+	public Set<Long> getGroupCopyIgnoreKeys() {
+		return groupCopyIgnoreKeys;
+	}
+
+	public void setGroupCopyIgnoreKeys(Set<Long> groupCopyIgnoreKeys) {
+		this.groupCopyIgnoreKeys = groupCopyIgnoreKeys;
+	}
+
 	public List<BusinessGroupReference> getNewGroupReferences() {
 		return newGroupReferences;
 	}

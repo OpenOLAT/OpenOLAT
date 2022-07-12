@@ -77,13 +77,12 @@
 					</div>
 
 					<script>
-					/* <![CDATA[ */
+					"use strict";
 					#if ($!helper.getMediaType($episode.getEnclosure()) == "video")
 						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",$!helper.getWidth($episode),$!helper.getHeight($episode),false,null,"video",undefined,false,false,true);
 					#else
 						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
 					#end
-					/* ]]> */
 					</script>
 				</div>
 				#end

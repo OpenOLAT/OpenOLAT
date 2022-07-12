@@ -35,6 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Container;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -66,12 +67,18 @@ public class TabbedPane extends Container implements Activateable2 {
 	private boolean hideDisabledTab = false;
 	private final List<TabPane> tabPanes = new ArrayList<>(5);
 	private Translator compTrans;
+	private final TabbedPaneItem item;
 	
 	/**
 	 * @param name
 	 */
 	public TabbedPane(String name, Locale locale) {
+		this(null, name, locale);
+	}
+	
+	public TabbedPane(TabbedPaneItem item, String name, Locale locale) {
 		super(name);
+		this.item = item;
 		compTrans = Util.createPackageTranslator(this.getClass(), locale);		
 		setDomReplacementWrapperRequired(false);// we provide our own DOM replacement ID
 	}
@@ -96,6 +103,10 @@ public class TabbedPane extends Container implements Activateable2 {
 	 */
 	public void setDirtyCheck(boolean dirtyCheck) {
 		this.dirtyCheck = dirtyCheck;
+	}
+	
+	public TabbedPaneItem getTabbedPaneItem() {
+		return item;
 	}
 
 	@Override
@@ -167,7 +178,20 @@ public class TabbedPane extends Container implements Activateable2 {
 		}
 		return tabPanes.size() - 1;
 	}
-
+	
+	protected int addTab(String displayName, FormItem item) {
+		return addTab(displayName, null, item);
+	}
+	
+	protected int addTab(String displayName, String elementCssClass, FormItem item) {
+		tabPanes.add(new TabPane(displayName, elementCssClass, item));
+		if (selectedPane == -1) {
+			selectedPane = 0; // if no pane has been selected, select the first one
+			super.put("atp", item.getComponent()); 
+		}
+		return tabPanes.size() - 1;
+	}
+	
 	public int addTab(String displayName, Controller controller) {
 		return addTab(displayName, null, controller);
 	}
@@ -322,6 +346,13 @@ public class TabbedPane extends Container implements Activateable2 {
 	protected TabPane getTabPaneAt(int position) {
 		return tabPanes.get(position);
 	}
+	
+	/**
+	 * @return An unmodifiable copy of the list of tab panes
+	 */
+	protected List<TabPane> getTabPanes() {
+		return List.copyOf(tabPanes);
+	}
 
 	/**
 	 * @param position
@@ -426,12 +457,13 @@ public class TabbedPane extends Container implements Activateable2 {
 		}
 	}
 	
-	private static class TabPane {
+	protected static class TabPane {
 		
 		private boolean enabled = true;
 		private final String displayName;
 		private final String elementCssClass;
 		private Component component;
+		private FormItem componentItem;
 		private Controller controller;
 		private TabComponentCreator componentCreator;
 		private TabControllerCreator controllerCreator;
@@ -440,6 +472,14 @@ public class TabbedPane extends Container implements Activateable2 {
 			this.displayName = displayName;
 			this.elementCssClass = elementCssClass;
 			this.component = component;
+			this.enabled = true;
+		}
+		
+		public TabPane(String displayName, String elementCssClass, FormItem item) {
+			this.displayName = displayName;
+			this.elementCssClass = elementCssClass;
+			this.componentItem = item;
+			this.component = item.getComponent();
 			this.enabled = true;
 		}
 		
@@ -514,6 +554,14 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		public void setComponent(Component component) {
 			this.component = component;
+		}
+
+		public FormItem getComponentItem() {
+			return componentItem;
+		}
+
+		public void setComponentItem(FormItem componentItem) {
+			this.componentItem = componentItem;
 		}
 	}
 }

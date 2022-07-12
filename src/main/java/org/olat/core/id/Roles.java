@@ -43,19 +43,17 @@ public class Roles implements Serializable {
 	private static final long serialVersionUID = 4726449291059674346L;
 
 	private final boolean isGuestOnly;
-	private final boolean isInvitee;
 	
 	private List<RolesByOrganisation> rolesByOrganisations;
 
-	private Roles(List<RolesByOrganisation> rolesByOrganisations, boolean isGuestOnly, boolean isInvitee) {
+	private Roles(List<RolesByOrganisation> rolesByOrganisations, boolean isGuestOnly) {
 		this.rolesByOrganisations = rolesByOrganisations;
 		this.isGuestOnly = isGuestOnly;
-		this.isInvitee = isInvitee;
 	}
 	
 	public static final Roles guestRoles() {
 		RolesByOrganisation guest = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.guest });
-		return new Roles(Collections.singletonList(guest), true, false);
+		return new Roles(Collections.singletonList(guest), true);
 	}
 	
 	/**
@@ -65,17 +63,17 @@ public class Roles implements Serializable {
 	 */
 	public static final Roles userRoles() {
 		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user });
-		return new Roles(Collections.singletonList(lrm), false, false);
+		return new Roles(Collections.singletonList(lrm), false);
 	}
 	
 	public static final Roles authorRoles() {
 		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user, OrganisationRoles.author });
-		return new Roles(Collections.singletonList(lrm), false, false);
+		return new Roles(Collections.singletonList(lrm), false);
 	}
 	
 	public static final Roles administratorRoles() {
 		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user, OrganisationRoles.administrator });
-		return new Roles(Collections.singletonList(lrm), false, false);
+		return new Roles(Collections.singletonList(lrm), false);
 	}
 	
 	public static final Roles administratorAndManagersRoles() {
@@ -88,16 +86,16 @@ public class Roles implements Serializable {
 				OrganisationRoles.curriculummanager,
 				OrganisationRoles.learnresourcemanager	
 		});
-		return new Roles(Collections.singletonList(lrm), false, false);
+		return new Roles(Collections.singletonList(lrm), false);
 	}
 	
 	public static final Roles learnResourceManagerRoles() {
 		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user, OrganisationRoles.learnresourcemanager });
-		return new Roles(Collections.singletonList(lrm), false, false);
+		return new Roles(Collections.singletonList(lrm), false);
 	}
 	
-	public static final Roles valueOf(List<RolesByOrganisation> rolesByOrganisations, boolean isGuestOnly, boolean isInvitee) {
-		return new Roles(new ArrayList<>(rolesByOrganisations), isGuestOnly, isInvitee);
+	public static final Roles valueOf(List<RolesByOrganisation> rolesByOrganisations, boolean isGuestOnly) {
+		return new Roles(new ArrayList<>(rolesByOrganisations), isGuestOnly);
 	}
 	
 	public RolesByOrganisation getRoles(OrganisationRef organisation) {
@@ -279,7 +277,7 @@ public class Roles implements Serializable {
 	}
 
 	public boolean isInvitee() {
-		return isInvitee;
+		return hasRole(OrganisationRoles.invitee);
 	}
 
 	public boolean isGuestOnly() {
@@ -291,7 +289,7 @@ public class Roles implements Serializable {
 		return hasRole(targetOrganisations, role);
 	}
 	
-	public boolean isMyInvitee(OrganisationRoles role, Roles targetRoles) {
+	public boolean isInviteeOf(OrganisationRoles role, Roles targetRoles) {
 		List<OrganisationRef> targetOrganisations = targetRoles.getOrganisationsWithRole(OrganisationRoles.invitee);
 		return hasRole(targetOrganisations, role);
 	}
@@ -300,12 +298,7 @@ public class Roles implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		
-		
-		
-		
 		result = prime * result + (isGuestOnly ? 1231 : 1237);
-		result = prime * result + (isInvitee ? 1231 : 1237);
 		return result;
 	}
 
@@ -316,7 +309,7 @@ public class Roles implements Serializable {
 		}
 		if (obj instanceof Roles) {
 			Roles roles = (Roles) obj;
-			if(roles.isGuestOnly != isGuestOnly || roles.isInvitee != isInvitee) {
+			if(roles.isGuestOnly != isGuestOnly) {
 				return false;
 			}
 			if((roles.rolesByOrganisations == null || roles.rolesByOrganisations.isEmpty())

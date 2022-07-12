@@ -471,12 +471,19 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		return statusPublishedDate;
 	}
 
+	/**
+	 * Do not use that method if you do not really have to!
+	 * Use setEntryStatus(RepositoryEntryStatusEnum entryStatus).
+	 */
+	public void setStatusPublishedDate(Date statusPublishedDate) {
+		this.statusPublishedDate = statusPublishedDate;
+	}
+
 	/*
 	 * if a repository entry is public visible the offers for guests, open access and bookings are available.
 	 * Oh the other hand if a repository entry is not public visible offers for guests, open access and bookings are not available.
 	 * In this case the members of the repository entry can only be managed in the members management.
 	 */
-
 	public boolean isPublicVisible() {
 		return publicVisible;
 	}

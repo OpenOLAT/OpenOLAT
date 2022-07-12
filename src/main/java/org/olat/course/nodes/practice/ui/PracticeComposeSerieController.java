@@ -52,6 +52,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
@@ -65,6 +66,7 @@ import org.olat.course.nodes.practice.ui.events.StartPracticeEvent;
 import org.olat.course.nodes.practice.ui.renders.LevelCircleCellRenderer;
 import org.olat.course.nodes.practice.ui.renders.PercentCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,6 +105,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 	public PracticeComposeSerieController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, PracticeCourseNode courseNode) {
 		super(ureq, wControl, "compose");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		numOfLevels = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_NUM_LEVELS, 3);
@@ -159,7 +162,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 		if(descendantLevels != null && !descendantLevels.isEmpty()) {
 			SelectionValues taxonomyLevelsValues = new SelectionValues();
 			for(TaxonomyLevel level:descendantLevels) {
-				taxonomyLevelsValues.add(SelectionValues.entry(level.getKey().toString(), level.getDisplayName()));
+				taxonomyLevelsValues.add(SelectionValues.entry(level.getKey().toString(), TaxonomyUIFactory.translateDisplayName(getTranslator(), level)));
 			}
 			taxonomyLevelsValues.add(SelectionValues.entry(NOT_ASSIGNED, translate("wo.taxonomy.level.label")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.taxonomy.level.label"),

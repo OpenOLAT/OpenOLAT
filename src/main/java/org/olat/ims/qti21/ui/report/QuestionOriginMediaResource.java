@@ -37,6 +37,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -50,6 +51,7 @@ import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
@@ -311,7 +313,9 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 				QuestionItem item = items.get(0);
 				String authors = getAuthors(item);
 				String license = getLicense(item);
-				infos = new QuestionInformations(authors, item, license);
+				Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, translator.getLocale());
+				String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+				infos = new QuestionInformations(authors, item, license, taxonomyLevelDisplayName);
 			}
 
 			if(StringHelper.containsNonWhitespace(masterIdentifier)) {
@@ -460,13 +464,13 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 
 		private MasterInformations masterInformations;
 		
-		public QuestionInformations(String author, QuestionItem item, String license) {
+		public QuestionInformations(String author, QuestionItem item, String license, String taxonomyLevelDisplayName) {
 			identifier = item.getIdentifier();
 			title = item.getTitle();
 			this.author = author;
 			keywords = item.getKeywords();
 			taxonomyPath = item.getTaxonomicPath();
-			taxonomyLevel = item.getTaxonomyLevelName();
+			taxonomyLevel = taxonomyLevelDisplayName;
 			topic = item.getTopic();
 			context = item.getEducationalContextLevel();
 			type = item.getItemType();

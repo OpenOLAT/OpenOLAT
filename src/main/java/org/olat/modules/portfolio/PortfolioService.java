@@ -509,7 +509,7 @@ public interface PortfolioService {
 	 * @param binder
 	 * @return the list of pages of the specified binder.
 	 */
-	public List<Page> getPages(BinderRef binder, String searchString);
+	public List<Page> getPages(BinderRef binder);
 	
 	/**
 	 * 

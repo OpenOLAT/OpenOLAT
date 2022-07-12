@@ -21,6 +21,7 @@ package org.olat.modules.lecture.model;
 
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
  * 
@@ -32,11 +33,13 @@ public class LectureCurriculumElementInfos {
 	
 	private final Curriculum curriculum;
 	private final CurriculumElement element;
+	private final CurriculumElementType elementType;
 	private final long numOfParticipants;
 	
-	public LectureCurriculumElementInfos(CurriculumElement element, long numOfParticipants) {
+	public LectureCurriculumElementInfos(CurriculumElement element, CurriculumElementType elementType, long numOfParticipants) {
 		curriculum = element.getCurriculum();
 		this.element = element;
+		this.elementType = elementType;
 		this.numOfParticipants = numOfParticipants;
 	}
 
@@ -46,6 +49,10 @@ public class LectureCurriculumElementInfos {
 
 	public CurriculumElement getElement() {
 		return element;
+	}
+	
+	public CurriculumElementType getElementType() {
+		return elementType;
 	}
 
 	public long getNumOfParticipants() {

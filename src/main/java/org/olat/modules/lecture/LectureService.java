@@ -725,10 +725,11 @@ public interface LectureService {
 	/**
 	 * Returns the statistics for the specified participant.
 	 * 
-	 * @param identity The participant
+	 * @param participantIdentity The participant
+	 * @param identity The user which request the data
 	 * @return A list of statistics
 	 */
-	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef identity);
+	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef participantIdentity, Identity identity);
 	
 	/**
 	 * Return all the statistics for a course / repository entry.

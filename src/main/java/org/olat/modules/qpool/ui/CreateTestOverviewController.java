@@ -51,6 +51,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -58,6 +59,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,6 +89,7 @@ public class CreateTestOverviewController extends FormBasicController {
 	public CreateTestOverviewController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items,
 			ExportFormatOptions format, QPoolSecurityCallback secCallback) {
 		super(ureq, wControl, "create_test");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.format = format;
 		withTaxonomy = secCallback.canUseTaxonomy();
 		withLicenses = licenseModule.isEnabled(licenseHandler);
@@ -131,7 +134,10 @@ public class CreateTestOverviewController extends FormBasicController {
 		Map<Long,ResourceLicense> resourceLicensesMap = resourceLicenses.stream()
 			.collect(Collectors.toMap(ResourceLicense::getResId, l -> l, (u, v) -> u));
 		List<QuestionRow> rows = items.stream()
-				.map(item -> new QuestionRow(item, resourceLicensesMap.get(item.getKey())))
+				.map(item -> new QuestionRow(
+						item,
+						resourceLicensesMap.get(item.getKey()),
+						TaxonomyUIFactory.translateDisplayName(getTranslator(), item.getTaxonomyLevel())))
 				.collect(Collectors.toList());
 		itemsModel.setObjects(rows);
 		if(withLicenses) {
@@ -224,10 +230,12 @@ public class CreateTestOverviewController extends FormBasicController {
 		
 		private final QuestionItemShort question;
 		private final ResourceLicense license;
+		private final String taxonomyLevelDisplayName;
 		
-		public QuestionRow(QuestionItemShort question, ResourceLicense license) {
+		public QuestionRow(QuestionItemShort question, ResourceLicense license, String taxonomyLevelDisplayName) {
 			this.question = question;
 			this.license = license;
+			this.taxonomyLevelDisplayName = taxonomyLevelDisplayName;
 		}
 		
 		public String getTitle() {
@@ -239,7 +247,7 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 		
 		public String getTaxonomyLevelName() {
-			return question.getTaxonomyLevelName();
+			return taxonomyLevelDisplayName;
 		}
 		
 		public String getTaxonomyPath() {

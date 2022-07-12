@@ -47,6 +47,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -93,7 +94,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		this.roles = roles;
 		this.locale = locale;
 		this.securityCallback = qPoolSecurityCallbackFactory.createQPoolSecurityCallback(roles);
-		this.translator = translator;
+		this.translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale
+				, Util.createPackageTranslator(QuestionPoolMainEditorController.class, locale, translator));
 		this.qpoolService = qpoolService;
 		this.qpoolTaxonomyTreeBuilder = qpoolTaxonomyTreeBuilder;
 		buildTreeModel();
@@ -270,10 +272,11 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildMyTaxonomyNodes(TreeNode parentNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsMy(identity);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsMy(translator, identity);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-			TreeNode node = new MyTaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel);
+			TreeNode node = new MyTaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel,
+					TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel));
 			parentNode.addChild(node);
 		}
 	}
@@ -293,7 +296,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public void buildReviewSubTreeModel(TreeNode rootNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsReview(identity);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsReview(translator, identity);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		if(!taxonomyLevels.isEmpty()) {
 			reviewNode = new GenericTreeNode(translator.translate("menu.review"));
@@ -302,7 +305,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel, identity, roles, locale);
+				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel,
+						TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel), identity, roles, locale);
 				reviewNode.addChild(node);
 			}
 			setFirstChildAsDelegate(reviewNode);
@@ -312,7 +316,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public void buildFinalSubTreeModel(TreeNode rootNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsFinal(identity);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsFinal(translator, identity);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		if (!taxonomyLevels.isEmpty()) {
 			finalNode = new GenericTreeNode(translator.translate("menu.final"));
@@ -320,7 +324,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(finalNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new FinalTreeNode(stackPanel, securityCallback, taxonomyLevel);
+				TreeNode node = new FinalTreeNode(stackPanel, securityCallback, taxonomyLevel,
+						TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel));
 				finalNode.addChild(node);
 			}
 			setFirstChildAsDelegate(finalNode);

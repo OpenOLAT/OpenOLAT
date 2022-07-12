@@ -39,7 +39,6 @@ import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -58,9 +57,11 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseModule;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -100,10 +101,12 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private TextElement expenditureOfWork;
 	private TextAreaElement licenseFreetextEl;
 	private SingleSelection licenseEl;
-	private MultipleSelectionElement taxonomyLevelEl;
+	private TaxonomyLevelSelection taxonomyLevelEl;
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -216,10 +219,17 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		authors.setDisplaySize(60);
 		authors.setEnabled(!readOnly);
 		
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if(StringHelper.isLong(taxonomyTreeKey)) {
-			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
-			initFormTaxonomy(formLayout, taxonomyRef);
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
+			taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
+			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
+			
+			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", "cif.taxonomy.levels", formLayout,
+					getWindowControl(), allTaxonomieLevels);
+			taxonomyLevelEl.setSelection(taxonomyLevels);
+			if (catalogModule.isEnabled()) {
+				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
+			}
 		}
 		
 		if (!usedInWizard && CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
@@ -311,20 +321,6 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		sb.append("</ul>");
 	}
 
-	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
-		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
-		taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
-
-		SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
-		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
-				keyValues.keys(), keyValues.values(), null, null);
-		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);
-		taxonomyLevelEl.setEnabled(!readOnly);
-		if (catalogModule.isEnabled()) {
-			taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
-		}
-	}
-
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -400,22 +396,24 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			
 			// Taxonomy levels
 			if (taxonomyLevelEl != null) {
-				Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
-				List<String> currentKeys = taxonomyLevels.stream()
-						.map(l -> l.getKey().toString())
+				Collection<Long> selectedLevelKeys = taxonomyLevelEl.getSelection().stream()
+						.map(TaxonomyLevelRef::getKey)
+						.collect(Collectors.toList());
+				List<Long> currentKeys = taxonomyLevels.stream()
+						.map(TaxonomyLevel::getKey)
 						.collect(Collectors.toList());
 				// add newly selected keys
-				Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
+				Collection<Long> addKeys = new HashSet<>(selectedLevelKeys);
 				addKeys.removeAll(currentKeys);
-				for (String addKey : addKeys) {
-					TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
+				for (Long addKey : addKeys) {
+					TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> addKey);
 					taxonomyLevels.add(level);
 				}
 				// remove newly unselected keys
-				Collection<String> removeKeys = new HashSet<>(currentKeys);
+				Collection<Long> removeKeys = new HashSet<>(currentKeys);
 				removeKeys.removeAll(selectedLevelKeys);
-				for (String removeKey: removeKeys) {
-					taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey().toString()));
+				for (Long removeKey: removeKeys) {
+					taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey()));
 				}
 			}
 	
@@ -460,22 +458,24 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			}
 			
 			if (taxonomyLevelEl != null) {
-				Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
-				List<String> currentKeys = taxonomyLevels.stream()
-						.map(l -> l.getKey().toString())
+				Collection<Long> selectedLevelKeys = taxonomyLevelEl.getSelection().stream()
+						.map(TaxonomyLevelRef::getKey)
+						.collect(Collectors.toList());
+				List<Long> currentKeys = taxonomyLevels.stream()
+						.map(TaxonomyLevel::getKey)
 						.collect(Collectors.toList());
 				// add newly selected keys
-				Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
+				Collection<Long> addKeys = new HashSet<>(selectedLevelKeys);
 				addKeys.removeAll(currentKeys);
-				for (String addKey : addKeys) {
-					TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
+				for (Long addKey : addKeys) {
+					TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> addKey);
 					taxonomyLevels.add(level);
 				}
 				// remove newly unselected keys
-				Collection<String> removeKeys = new HashSet<>(currentKeys);
+				Collection<Long> removeKeys = new HashSet<>(currentKeys);
 				removeKeys.removeAll(selectedLevelKeys);
-				for (String removeKey: removeKeys) {
-					taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey().toString()));
+				for (Long removeKey: removeKeys) {
+					taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey()));
 				}
 				context.setTaxonomyLevels(taxonomyLevels);
 			}

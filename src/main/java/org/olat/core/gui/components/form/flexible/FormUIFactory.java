@@ -29,6 +29,8 @@ import java.io.File;
 import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
@@ -97,6 +99,7 @@ import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -113,6 +116,9 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionImpl;
 
 /**
  * Factory class to create the flexible form elements.
@@ -336,6 +342,14 @@ public class FormUIFactory {
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name, String i18nLabel,
 			FormItemContainer formLayout, WindowControl wControl, AutoCompletionSource source) {
 		AutoCompletionMultiSelectionImpl acms = new AutoCompletionMultiSelectionImpl(wControl, name, source);
+		setLabelIfNotNull(i18nLabel, acms);
+		formLayout.add(acms);
+		return acms;
+	}
+	
+	public TaxonomyLevelSelection addTaxonomyLevelSelection(String name, String i18nLabel, FormItemContainer formLayout,
+			WindowControl wControl, Set<TaxonomyLevel> allTaxonomyLevels) {
+		TaxonomyLevelSelectionImpl acms = new TaxonomyLevelSelectionImpl(wControl, name, allTaxonomyLevels);
 		setLabelIfNotNull(i18nLabel, acms);
 		formLayout.add(acms);
 		return acms;
@@ -1484,6 +1498,14 @@ public class FormUIFactory {
 			formLayout.add(link);
 		}
 		return link;
+	}
+	
+	public TabbedPaneItem addTabbedPane(String name, Locale locale, FormItemContainer formLayout) {
+		TabbedPaneItem tabbedPane = new TabbedPaneItem(name, locale);
+		if(formLayout != null) {
+			formLayout.add(tabbedPane);
+		}
+		return tabbedPane;
 	}
 	
 }

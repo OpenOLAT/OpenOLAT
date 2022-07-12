@@ -58,9 +58,9 @@ import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
-import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
+import org.olat.course.nodes.practice.manager.SearchPracticeItemHelper;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.PracticeResourceInfos;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
@@ -78,6 +78,7 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -140,6 +141,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	public PracticeConfigurationController(UserRequest ureq, WindowControl wControl, ICourse course, PracticeCourseNode courseNode) {
 		super(ureq, wControl, "practice_edit", Util.createPackageTranslator(QuestionListController.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -213,7 +215,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		SelectionValues levelKeys;
 		if(taxonomy != null) {
 			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
-			levelKeys = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
+			levelKeys = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
 		} else {
 			levelKeys = new SelectionValues();
 		}
@@ -423,7 +425,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		for(PracticeItem item:items) {
 			QuestionItem qItem = item.getItem();
 			if(qItem != null) {
-				String levelName = qItem.getTaxonomyLevelName();
+				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel());
 				if(StringHelper.containsNonWhitespace(levelName)) {
 					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
 					String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
@@ -460,7 +462,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private PracticeResourceTaxonomyRow putTaxonomyLevelInMap(TaxonomyLevel level, Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap) {
 		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level);
+		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level, TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 		for(String key:keys) {
 			taxonomyLevelsMap.put(key, row);
 		}

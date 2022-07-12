@@ -44,6 +44,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,7 +65,8 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 	
 	QualityUIContextsParticipationBuilder(QualityExecutorParticipation participation, Locale locale) {
 		this.qualityParticipation = participation;
-		translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		translator = Util.createPackageTranslator(QualityMainController.class, locale,
+				Util.createPackageTranslator(TaxonomyUIFactory.class, locale));
 		CoreSpringFactory.autowireObject(this);
 	}
 
@@ -247,7 +249,7 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 				String key = taxonomyLevelType != null
 						? taxonomyLevelType.getDisplayName()
 						: translator.translate("executor.participation.taxonomy.level");
-				String value = taxonomyLevel.getDisplayName();
+				String value = TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel);
 				KeyValue keyValue = new KeyValue(key, value);
 				keyValues.add(keyValue);
 			}

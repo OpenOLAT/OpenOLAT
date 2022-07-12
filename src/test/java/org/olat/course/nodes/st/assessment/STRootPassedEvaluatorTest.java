@@ -24,6 +24,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Date;
+
 import org.assertj.core.util.DateUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -300,6 +302,28 @@ public class STRootPassedEvaluatorTest {
 		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
+		
+		assertThat(passed).isNull();
+	}
+	
+	@Test
+	public void shouldReturnNullIfCourseHasEndedAndItIsNotPassedButItsToday() {
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, null);
+		CourseNode courseNode = new STCourseNode();
+		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		RepositoryEntryLifecycle lifecycle = new RepositoryEntryLifecycle();
+		lifecycle.setValidTo(new Date());
+		RepositoryEntry endedEntry = new RepositoryEntry();
+		endedEntry.setLifecycle(lifecycle);
+		
+		Counts counts = new CountsImpl(3, 2, 0);
+		PassCounter passCounter = mock(PassCounter.class);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
+		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
+		
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
 		
 		assertThat(passed).isNull();
 	}

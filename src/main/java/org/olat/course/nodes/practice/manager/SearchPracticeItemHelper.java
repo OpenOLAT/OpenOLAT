@@ -21,8 +21,11 @@ package org.olat.course.nodes.practice.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
 import org.olat.course.nodes.practice.PracticeFilterRule.Type;
@@ -32,6 +35,7 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -52,8 +56,10 @@ public class SearchPracticeItemHelper {
 				&& !QTI21QuestionType.upload.name().equals(type);
 	}
 
-	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams) {
-		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams, Locale locale) {
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
+		String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(displayName, item.getTaxonomicPath());
 		if(searchParams.hasExactTaxonomyLevels()
 				&& (taxonomicPathKey == null || !searchParams.getExactTaxonomicPathKeys().contains(taxonomicPathKey))) {
 			return false;

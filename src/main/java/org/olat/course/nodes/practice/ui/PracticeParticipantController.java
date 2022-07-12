@@ -51,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
@@ -68,6 +69,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,6 +121,7 @@ public class PracticeParticipantController extends FormBasicController {
 			PracticeCourseNode courseNode, UserCourseEnvironment userCourseEnv, Identity practicingIdentity,
 			List<PracticeResource> cachedResources, List<PracticeItem> cachedItems) {
 		super(ureq, wControl, "practice_participant");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
@@ -373,7 +376,8 @@ public class PracticeParticipantController extends FormBasicController {
 	private PracticeParticipantTaxonomyStatisticsRow putTaxonomyLevelInMap(TaxonomyLevel level,
 			Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps) {
 		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-		PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(keys, level, numOfLevels);
+		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+		PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(keys, level, numOfLevels, displayName);
 		for(String key:keys) {
 			levelMaps.put(key, row);
 		}

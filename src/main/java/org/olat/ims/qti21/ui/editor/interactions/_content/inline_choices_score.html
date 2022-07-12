@@ -1,0 +1,30 @@
+<label>$r.translate("form.score.answer.title")</label>
+
+#foreach($interactionWrapper in $interactionWrappers)
+<div class="o_qti_inlinechoices_scores_map">
+	#if($r.isNotEmpty($interactionWrapper.context))
+		<p>$r.xssScan($interactionWrapper.context)</p>
+	#end
+	<table class="table o_sel_inline_choices_scores">
+		<thead><tr>
+			<th scope='col'>$r.translate("form.score.answer.correct")</th>
+			<th scope='col'>$r.translate("form.score.answer")</th>
+			<th scope='col'>$r.translate("form.score.answer.points")</th>
+		</tr></thead>
+		<tbody>
+		#set($choices = ${interactionWrapper.getInlineChoices()})
+		#foreach($choice in $choices)
+		<tr>
+			<td><input type="radio" name="$choice.id" value="$choice.id" #if(${choice.isCorrect()}) checked #end disabled></td>
+			<td>$r.escapeHtml($choice.text)</td>
+			<td>$r.render($choice.getPointsEl())
+			#if($f.hasError($choice.getPointsEl().getComponent().getComponentName()))
+				<div>$r.render("${choice.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
+			#end
+			</td>
+		</tr>
+		#end
+		</tbody>
+	</table>
+</div>
+#end

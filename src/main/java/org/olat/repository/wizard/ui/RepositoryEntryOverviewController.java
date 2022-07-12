@@ -44,6 +44,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -86,6 +87,7 @@ public class RepositoryEntryOverviewController extends BasicController {
 	protected RepositoryEntryOverviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("entry_overview");
 		putInitialPanel(mainVC);
@@ -199,7 +201,7 @@ public class RepositoryEntryOverviewController extends BasicController {
 	}
 	
 	private void addParentTaxonomyLevelNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
+		names.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
 			addParentTaxonomyLevelNames(names, parent);

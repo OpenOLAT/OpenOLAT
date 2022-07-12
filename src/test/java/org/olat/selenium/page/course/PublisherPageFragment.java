@@ -66,7 +66,7 @@ public class PublisherPageFragment {
 	public void quickPublish(UserAccess access) {
 		assertOnPublisher()
 			.nextSelectNodes()
-			.selectAccess(access, false)
+			.selectAccess(access)
 			.nextAccess()
 			.selectCatalog(false)
 			.nextCatalog() // -> no problem found
@@ -81,13 +81,13 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment nextAccess() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_course_editor_publish"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_course_editor_publish"), browser);
 		return this;
 	}
 	
 	public PublisherPageFragment nextCatalog() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_warnings"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_warnings"), browser);
 		return this;
 	}
 	
@@ -96,7 +96,7 @@ public class PublisherPageFragment {
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -109,7 +109,7 @@ public class PublisherPageFragment {
 	 * @param catalog Web publishing for guest access
 	 * @return Itself
 	 */
-	public PublisherPageFragment selectAccess(UserAccess access, boolean catalog) {
+	public PublisherPageFragment selectAccess(UserAccess access) {
 		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
 		OOGraphene.scrollTo(publishStatusBy, browser);
 		WebElement publishStatusEl = browser.findElement(publishStatusBy);
@@ -137,7 +137,7 @@ public class PublisherPageFragment {
 			new BookingPage(browser)
 				.openAddDropMenu()
 				.addGuestMethod()
-				.configureGuestMethod("Hello", catalog);
+				.configureGuestMethod("Hello");
 		}
 		
 		return this;

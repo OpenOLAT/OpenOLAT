@@ -53,6 +53,7 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -71,6 +72,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -134,6 +136,7 @@ public class EditLectureBlockController extends FormBasicController {
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, LectureBlock lectureBlock, boolean readOnly) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
@@ -274,7 +277,7 @@ public class EditLectureBlockController extends FormBasicController {
 			StringBuilder sb = new StringBuilder();
 			for(TaxonomyLevel level:levels) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(level.getDisplayName());
+				sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 			}
 			uifactory.addStaticTextElement("lecture.taxonomy", sb.toString(), formLayout);
 		}

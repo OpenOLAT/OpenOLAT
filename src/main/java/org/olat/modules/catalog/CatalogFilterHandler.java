@@ -52,7 +52,7 @@ public interface CatalogFilterHandler {
 	
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter);
 	
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter);
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter);
 	
 	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter);
 

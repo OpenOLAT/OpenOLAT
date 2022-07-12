@@ -2,20 +2,20 @@
 	<h3>$r.xssScan($msg)</h3>
 	<fieldset class="o_form form-horizontal $f.getContainerCssClass()">
 		<div class="form-group">
-			<div class="col-sm-6 o_practice_label">
+			<div class="col-xs-6 o_practice_label">
 				<label>$r.translate("procent.correct")</label>
 			</div>
-			<div class="col-sm-6 o_practice_data o_practice_data_correct">
+			<div class="col-xs-6 o_practice_data o_practice_data_correct">
 				<span><i class="o_icon o_icon_check"> </i> $procentCorrect%</span>
 			</div>
 		</div>
 		
 		#if($r.isNotEmpty($currentSeriesProgress))
 		<div class="form-group">
-			<div class="col-sm-6 o_practice_label">
+			<div class="col-xs-6 o_practice_label">
 				<label>$r.translate("current.challenge")</label>
 			</div>
-			<div class="col-sm-6 o_practice_data o_practice_challenge">
+			<div class="col-xs-6 o_practice_data o_practice_challenge">
 				<div class="o_practice_series_progress">
 					<div class="progress" style="width: 100%;">
 						<div class="progress-bar" style="width: ${currentSeriesProgress}%; animation: moveprogress 1s;"> </div>
@@ -34,14 +34,13 @@
 		#end
 	
 		<div class="form-group">
-			<div class="col-sm-6 o_practice_label">
-				<label>$r.translate("today.duration")</label>
+			<div class="col-xs-6 o_practice_label">
+				<label for="learn-duration">$r.translate("today.duration")</label>
 			</div>
-			<div class="col-sm-6 o_practice_data">
-				<span>$durationToday</span>
+			<div class="col-xs-6 o_practice_data">
+				<span id="learn-duration">$durationToday</span>
 			</div>
 		</div>
-
 	</fieldset>
 </div>
 <div class="o_button_group">

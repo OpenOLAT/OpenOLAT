@@ -52,6 +52,9 @@ public class OODocsLinkSPI implements HelpLinkSPI {
 	@Autowired
 	HelpModule helpModule;
 	
+	@Autowired
+	private OpenOlatDocsHelper openOlatDocsHelper;
+	
 	@Override
 	public UserTool getHelpUserTool(WindowControl wControl) {
 		return new ConfluenceUserTool();
@@ -80,14 +83,14 @@ public class OODocsLinkSPI implements HelpLinkSPI {
 	@Override
 	public String getURL(Locale locale, String page) {
 		// delegate to helper
-		return OpenOlatDocsHelper.getURL(locale, page);
+		return openOlatDocsHelper.getURL(locale, page);
 	}
 
 	@Override
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
 		// delegate to helper
-		return OpenOlatDocsHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
+		return openOlatDocsHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 	
 	@Override

@@ -21,6 +21,7 @@ package org.olat.course.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +31,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -119,7 +122,11 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 				if(trigger == FullyAssessedTrigger.statusDone) {
 					List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
 					SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(null, courseEntry, this);
-					List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, null);
+					Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
+					if(locale == null) {
+						locale = I18nModule.getDefaultLocale();
+					}
+					List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, locale);
 	
 					int questionsPerSerie = getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
 					if(items.size() < questionsPerSerie) {

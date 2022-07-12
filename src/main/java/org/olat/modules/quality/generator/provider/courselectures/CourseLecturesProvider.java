@@ -48,7 +48,6 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -64,11 +63,12 @@ import org.olat.modules.quality.generator.provider.courselectures.manager.Course
 import org.olat.modules.quality.generator.provider.courselectures.manager.LectureBlockInfo;
 import org.olat.modules.quality.generator.provider.courselectures.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.courselectures.ui.CourseLectureProviderConfigController;
-import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
-import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +99,6 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_TITLE = "title";
 	public static final String CONFIG_KEY_TOTAL_LECTURES_MIN = "total.lecture";
 	public static final String CONFIG_KEY_TOTAL_LECTURES_MAX = "total.lecture.max";
-	public static final String CONFIG_KEY_WHITE_LIST = "white.list";
 	public static final String CONFIG_KEY_TOPIC = "topic";
 	public static final String CONFIG_KEY_TOPIC_COACH = "config.topic.coach";
 	public static final String CONFIG_KEY_TOPIC_COURSE = "config.topic.course";
@@ -159,7 +158,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	public Controller getWhiteListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
-		return new CurriculumElementWhiteListController(ureq, wControl, stackPanel, generator, configs);
+		return new RepositoryEntryWhiteListController(ureq, wControl, stackPanel, configs);
 	}
 
 	@Override
@@ -171,7 +170,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	public Controller getBlackListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
-		return new CurriculumElementBlackListController(ureq, wControl, stackPanel, generator, configs);
+		return new RepositoryEntryBlackListController(ureq, wControl, stackPanel, configs);
 	}
 
 	@Override
@@ -328,8 +327,11 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		searchParams.setFrom(from);
 		searchParams.setTo(to);
 		
-		Collection<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
-		searchParams.setWhiteListRefs(curriculumElementRefs);
+		List<RepositoryEntryRef> whiteListRefs = RepositoryEntryWhiteListController.getRepositoryEntryRefs(configs);
+		searchParams.setWhiteListRefs(whiteListRefs);
+		
+		List<RepositoryEntryRef> blackListRefs = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs);
+		searchParams.setBlackListRefs(blackListRefs);
 		
 		String minLectures = configs.getValue(CONFIG_KEY_TOTAL_LECTURES_MIN);
 		if (StringHelper.containsNonWhitespace(minLectures)) {

@@ -57,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLauncherRepositoryEntriesController extends BasicController implements Controller {
 	
+	public static final int PREFERED_NUMBER_CARDS = 15;
 	private static final String[] SWIPER_JS = new String[] { "js/swiper/swiper-bundle.min.js" };
 
 	private final VelocityContainer mainVC;

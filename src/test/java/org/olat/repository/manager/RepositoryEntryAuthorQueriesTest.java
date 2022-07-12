@@ -554,9 +554,9 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	public void searchViews_taxonomyLevels() {
 		Identity reOwner = JunitTestHelper.createAndPersistIdentityAsRndAuthor(random());
 		Taxonomy taxonomy = taxomomyService.createTaxonomy(random(), random(), random(), null);
-		TaxonomyLevel level1 = taxomomyService.createTaxonomyLevel(random(), random(), random(), null, null, null, taxonomy);
-		TaxonomyLevel level2 = taxomomyService.createTaxonomyLevel(random(), random(), random(), null, null, null, taxonomy);
-		TaxonomyLevel levelOther = taxomomyService.createTaxonomyLevel(random(), random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel level1 = taxomomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxomomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel levelOther = taxomomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(reOwner, entry1, GroupRoles.owner.name());

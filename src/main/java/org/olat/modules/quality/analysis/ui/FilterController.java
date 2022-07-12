@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -71,6 +72,7 @@ import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,6 +143,7 @@ public class FilterController extends FormBasicController {
 	public FilterController(UserRequest ureq, WindowControl wControl, Form form, AnalysisSearchParameter searchParams,
 			AvailableAttributes availableAttributes) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.searchParams = searchParams;
 		this.availableAttributes = availableAttributes;
 		this.sessionInformationsAvailable = getSessionInformationAvailable(form);
@@ -720,7 +723,7 @@ public class FilterController extends FormBasicController {
 		for (TaxonomyLevel level : levels) {
 			String key = Long.toString(level.getKey());
 			ArrayList<String> names = new ArrayList<>();
-			QualityUIFactory.addParentTaxonomyLevelNames(names, level);
+			QualityUIFactory.addParentTaxonomyLevelNames(getTranslator(), names, level);
 			Collections.reverse(names);
 			String value = String.join(" / ", names);
 			keyValues.add(entry(key, value));
@@ -730,7 +733,7 @@ public class FilterController extends FormBasicController {
 		// Replace with the intended value (but keep the sort order).
 		for (TaxonomyLevel level : levels) {
 			String key = QualityUIFactory.getTaxonomyLevelKey(level);
-			String intendedLevel = QualityUIFactory.getIntendedTaxonomyLevel(level);
+			String intendedLevel = QualityUIFactory.getIntendedTaxonomyLevel(getTranslator(), level);
 			keyValues.replaceOrPut(entry(key, intendedLevel));
 		}
 

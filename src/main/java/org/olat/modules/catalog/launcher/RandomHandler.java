@@ -19,12 +19,17 @@
  */
 package org.olat.modules.catalog.launcher;
 
+import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERED_NUMBER_CARDS;
+
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
@@ -33,9 +38,12 @@ import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
-import org.olat.modules.catalog.ui.admin.CatalogLauncherBasicEditController;
+import org.olat.modules.catalog.ui.admin.CatalogLauncherRandomEditController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -47,6 +55,13 @@ import org.springframework.stereotype.Service;
 public class RandomHandler implements CatalogLauncherHandler {
 	
 	private static final String TYPE = "random";
+	
+	private static final XStream configXstream = XStreamHelper.createXStreamInstance();
+	static {
+		Class<?>[] types = new Class[] { Config.class };
+		configXstream.addPermission(new ExplicitTypePermission(types));
+		configXstream.alias("config", Config.class);
+	}
 	
 	@Autowired
 	private CatalogV2Service catalogService;
@@ -87,24 +102,65 @@ public class RandomHandler implements CatalogLauncherHandler {
 	}
 
 	@Override
-	public String getDetails(CatalogLauncher catalogLauncher) {
+	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
 		return null;
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogLauncher catalogLauncher) {
-		return new CatalogLauncherBasicEditController(ureq, wControl, this, catalogLauncher);
+		return new CatalogLauncherRandomEditController(ureq, wControl, this, catalogLauncher);
 	}
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
 			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
 		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
+		Config config = fromXML(catalogLauncher.getConfig());
+		if (config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
+			searchParams.getIdentToEducationalTypeKeys().put(catalogLauncher.getKey().toString(), config.getEducationalTypeKeys());
+		}
+		if (config.getResourceTypes() != null && !config.getResourceTypes().isEmpty()) {
+			searchParams.getIdentToResourceTypes().put(catalogLauncher.getKey().toString(), config.getResourceTypes());
+		}
 		searchParams.setOrderBy(OrderBy.random);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, 12);
+		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERED_NUMBER_CARDS);
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false, null);
+	}
+	
+	public Config fromXML(String xml) {
+		if (StringHelper.containsNonWhitespace(xml)) {
+			return (Config)configXstream.fromXML(xml);
+		}
+		return new Config();
+	}
+
+	public String toXML(Config config) {
+		return configXstream.toXML(config);
+	}
+	
+	public static final class Config {
+		
+		private Collection<Long> educationalTypeKeys;
+		private Collection<String> resourceTypes;
+		
+		public Collection<Long> getEducationalTypeKeys() {
+			return educationalTypeKeys;
+		}
+		
+		public void setEducationalTypeKeys(Collection<Long> educationalTypeKeys) {
+			this.educationalTypeKeys = educationalTypeKeys;
+		}
+		
+		public Collection<String> getResourceTypes() {
+			return resourceTypes;
+		}
+		
+		public void setResourceTypes(Collection<String> resourceTypes) {
+			this.resourceTypes = resourceTypes;
+		}
+		
 	}
 
 }

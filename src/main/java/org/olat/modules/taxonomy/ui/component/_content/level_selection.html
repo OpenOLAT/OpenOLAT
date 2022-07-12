@@ -1,0 +1,31 @@
+<div class="clearfix">
+	<div class="input-group o_tax_ls_search">
+		<div class="input-group-btn">
+			$r.render("quickSearchButton")
+		</div>
+		$r.render("quicksearch")
+		<div class="input-group-btn">
+			$r.render("resetQuickSearch")
+		</div>
+	</div>
+</div>
+<div class="clearfix o_filter_search_list_values o_tax_ls_selections">
+	$r.render("taxonomy.level.selection.selection.none_LABEL")
+	$r.render("taxonomy.level.selection.selection_LABEL")
+	#if($expand)
+		$r.render("taxonomy.level.selection.selection.none")
+		$r.render("taxonomy.level.selection.selection")
+	#end
+	#if($r.visible("expandButton"))
+		<div class="o_button_group o_tax_ls_expand">$r.render("expandButton")</div>
+	#end
+	$r.render("taxonomy.level.selection.results.none_LABEL")
+	$r.render("taxonomy.level.selection.results.none")
+	$r.render("taxonomy.level.selection.results_LABEL")
+	$r.render("taxonomy.level.selection.results")
+</div>
+<small>$r.render("taxonomy.level.selection.results.more")</small>
+<div class="o_button_group o_button_group_right o_button_group_bottom">
+	$r.render("taxonomy.level.selection.browser")
+	$r.render("taxonomy.level.selection.select")
+</div>

@@ -45,13 +45,14 @@ import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistic
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
+import org.olat.ims.qti21.model.statistics.InlineChoiceInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.NumericalInputInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.OrderStatistics;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
-import org.olat.ims.qti21.model.statistics.StatisticsPart;
 import org.olat.ims.qti21.model.statistics.StatisticsItem;
+import org.olat.ims.qti21.model.statistics.StatisticsPart;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
@@ -65,6 +66,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
@@ -834,6 +836,48 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		return new TextEntryInteractionStatistics(responseIdentifier, caseSensitive, correctResponse, alternatives, points);
+	}
+	
+	@Override
+	public List<InlineChoiceInteractionStatistics> getInlineChoiceInteractionsStatistic(String itemRefIdent,
+			AssessmentItem item, List<InlineChoiceInteraction> interactions, QTI21StatisticSearchParams searchParams) {
+		
+		List<InlineChoiceInteractionStatistics> statistics = new ArrayList<>();
+		
+		for(InlineChoiceInteraction interaction:interactions) {
+			InlineChoiceInteractionStatistics interactionStatistics = new InlineChoiceInteractionStatistics(interaction);
+			
+			statistics.add(interactionStatistics);
+			
+			Identifier responseIdentifier = interaction.getResponseIdentifier();
+			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(responseIdentifier);
+			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
+				Identifier correctResponseId = QtiNodesExtractor.getIdentifierFromCorrectResponse(responseDeclaration.getCorrectResponse());
+				if(correctResponseId != null) {
+					interactionStatistics.setCorrectResponseId(correctResponseId);
+					String correctResponse = correctResponseId.toString();
+	
+					List<RawData> datas = getRawDatas(itemRefIdent, responseIdentifier.toString(), searchParams);
+					for(RawData data:datas) {
+						Long count = data.getCount();
+						if(count != null && count.longValue() > 0) {
+							String response = data.getStringuifiedResponse();
+							if(response != null && response.length() >= 2 && response.startsWith("[") && response.endsWith("]")) {
+								response = response.substring(1, response.length() - 1);
+							}
+							
+							if(correctResponse.equals(response)) {
+								interactionStatistics.addCorrect(1);
+							} else {
+								interactionStatistics.addIncorrect(1);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return statistics;
 	}
 	
 	private List<RawData> getRawDatas(String itemRefIdent, String responseIdentifier, QTI21StatisticSearchParams searchParams) {

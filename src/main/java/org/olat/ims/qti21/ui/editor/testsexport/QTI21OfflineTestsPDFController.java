@@ -306,12 +306,14 @@ public class QTI21OfflineTestsPDFController extends FormBasicController {
 		solutionFormItem.setShowSolution(true);
 		solutionFormItem.setScorePerAnswers(solution);
 		solutionFormItem.setReport(true);
+		solutionFormItem.setOffline(true);
 		initInteractionResultFormItem(solutionFormItem, sessionState);
 		layoutCont.add(solutionId, solutionFormItem);
 
 		// response
 		String responseId = "responseItem" + count++;
 		ItemBodyResultFormItem responseFormItem = new ItemBodyResultFormItem(responseId, resolvedAssessmentItem);
+		responseFormItem.setOffline(true);
 		initInteractionResultFormItem(responseFormItem, sessionState);
 		layoutCont.add(responseId, responseFormItem);
 

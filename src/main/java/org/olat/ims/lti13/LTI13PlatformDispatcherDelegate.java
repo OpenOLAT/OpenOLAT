@@ -54,6 +54,8 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Constants.Errors;
 import org.olat.ims.lti13.LTI13Constants.UserAttributes;
@@ -116,6 +118,8 @@ public class LTI13PlatformDispatcherDelegate {
 	private UserSessionManager userSessionMgr;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 
 	/**
@@ -231,13 +235,12 @@ public class LTI13PlatformDispatcherDelegate {
 			.claim(LTI13Constants.Claims.RESOURCE_LINK.url(), resourceLink);
 
 		appendContext(deployment, builder);
-		appendNRPS(builder);
+		appendNameAndRolesProvisioningServices(deployment, builder);
 		appendPresentation(deployment, builder);
 		appendAttributes(identity, deployment, builder);
 		appendCustomAttributes(identity, deployment, builder);
 		appendRolesClaim(deployment, loginHint, builder);
 		appendAGSClaims(deployment, builder);
-		//appendBasicOutcomes(sub, deployment, builder);
 		
 		builder
 			.claim(LTI13Constants.Claims.VERSION.url(), "1.3.0")
@@ -354,29 +357,50 @@ public class LTI13PlatformDispatcherDelegate {
 	}
 	
 	private void appendContext(LTI13ToolDeployment deployment, JwtBuilder builder) {
-		RepositoryEntry entry = deployment.getEntry();
-		if(entry != null) {
-			Map<String,Object> contextMap = new LinkedHashMap<>();
-			contextMap.put("id", deployment.getEntry().getKey().toString());
+		Map<String,Object> contextMap = new LinkedHashMap<>();
+		contextMap.put("id", deployment.getContextId());
+		if(deployment.getEntry() != null) {
+			RepositoryEntry entry = deployment.getEntry();
 			contextMap.put("label", entry.getDisplayname());
 			contextMap.put("title", entry.getDisplayname());
 			contextMap.put("type", List.of("course"));
-			builder.claim(LTI13Constants.Claims.CONTEXT.url(), contextMap);
+		} else if(deployment.getBusinessGroup() != null) {
+			BusinessGroup businessGroup = deployment.getBusinessGroup();
+			contextMap.put("label", businessGroup.getName());
+			contextMap.put("title", businessGroup.getName());
+			contextMap.put("type", List.of(LTI13Constants.ContextTypes.GROUP));
 		}
+		builder.claim(LTI13Constants.Claims.CONTEXT.url(), contextMap);
 	}
 	
-	private void appendNRPS(JwtBuilder builder) {
+	private void appendNameAndRolesProvisioningServices(LTI13ToolDeployment deployment, JwtBuilder builder) {
+		if(!deployment.isNameAndRolesProvisioningServicesEnabled()) return;
+		
 		Map<String,Object> nrpsMap = new LinkedHashMap<>();
-		nrpsMap.put("context_memberships_url", Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_NRPS_PATH);
+		nrpsMap.put("context_memberships_url", getNameAndRolesProvisioningServicesURL(deployment));
 		nrpsMap.put("service_versions", List.of("2.0"));
 		builder.claim(LTI13Constants.Claims.NAMES_AND_ROLES_SERVICE.url(), nrpsMap);
 	}
 	
+	public static String getNameAndRolesProvisioningServicesURL(LTI13ToolDeployment deployment) {
+		if(deployment.getEntry() != null && deployment.getEntry().toString().equals(deployment.getContextId())) {
+			// This is the beta version of the URL before 17.0
+			return Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_NRPS_PATH;
+		}
+		return Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_NRPS_PATH + "/" + deployment.getContextId() + "/memberships/";
+	}
+	
+	/**
+	 * The assignment and grading service is only supported on course element of courses.
+	 * 
+	 * @param deployment The tool deployment
+	 * @param builder The JWT to enhance with an ASG claim
+	 */
 	private void appendAGSClaims(LTI13ToolDeployment deployment, JwtBuilder builder) {
-		if(!deployment.isAssessable()) return;
+		if(!deployment.isAssessable() || deployment.getEntry() == null || !StringHelper.containsNonWhitespace(deployment.getSubIdent())) return;
 		
 		Map<String,Object> map = new LinkedHashMap<>();
-		if(deployment.getEntry() != null && StringHelper.containsNonWhitespace(deployment.getSubIdent())) {
+		if(StringHelper.containsNonWhitespace(deployment.getSubIdent())) {
 			List<String> agsScopes = List.of(LTI13Constants.Scopes.AGS_LINE_ITEM.url(),
 					LTI13Constants.Scopes.AGS_LINE_ITEM_READ_ONLY.url(),
 					LTI13Constants.Scopes.AGS_RESULT_READ_ONLY.url(),
@@ -407,25 +431,23 @@ public class LTI13PlatformDispatcherDelegate {
 		Map<String,String> resourceLink = new LinkedHashMap<>();
 
 		if(deployment.getEntry() != null && StringHelper.containsNonWhitespace(deployment.getSubIdent())) {
-			resourceLink.put("id", deployment.getEntry().getKey() + "_" + StringHelper.containsNonWhitespace(deployment.getSubIdent()));
-			resourceLink.put("title", deployment.getEntry().getDisplayname());
-			if(StringHelper.containsNonWhitespace(deployment.getEntry().getDescription())) {
-				resourceLink.put("description", deployment.getEntry().getDescription());
+			RepositoryEntry entry = deployment.getEntry();
+			resourceLink.put("id", entry.getKey() + "_" + StringHelper.containsNonWhitespace(deployment.getSubIdent()));
+			resourceLink.put("title", entry.getDisplayname());
+			if(StringHelper.containsNonWhitespace(entry.getDescription())) {
+				resourceLink.put("description", entry.getDescription());
+			}
+		} else if(deployment.getBusinessGroup() != null) {
+			BusinessGroup businessGroup = deployment.getBusinessGroup();
+			resourceLink.put("id", businessGroup.getKey().toString());
+			resourceLink.put("title", businessGroup.getName());
+			if(StringHelper.containsNonWhitespace(businessGroup.getDescription())) {
+				resourceLink.put("description", businessGroup.getDescription());
 			}
 		}
 		
 		return resourceLink;
 	}
-	
-	/*
-	private void appendBasicOutcomes(String sub, LTI13ToolDeployment deployment, JwtBuilder builder) {
-		if(deployment.getEntry() == null) return;
-		
-		Map<String,String> map = new LinkedHashMap<>();
-		map.put("lis_result_sourcedid", deployment.getEntry().getKey() + "_" + deployment.getSubIdent() + "_" + sub);
-		map.put("lis_outcome_service_url", Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_BS_PATH + "/" + deployment.getKey() + "/results/" + cn.getIdent()));
-		builder.claim(LTI13Constants.Claims.BASIC_OUTCOMES.url(), map);
-	}*/
 	
 	private void sendFormRedirect(HttpServletRequest request, HttpServletResponse response, String redirectUri, Map<String,String> params) {
 		StringBuilder sb = new StringBuilder();
@@ -593,13 +615,13 @@ public class LTI13PlatformDispatcherDelegate {
 	// Names services
 	////////////////////////
 	
-	public void handleNrps(HttpServletRequest request, HttpServletResponse response) {
+	public void handleNrps(String[] path, HttpServletRequest request, HttpServletResponse response) {
 		String accept = request.getHeader("accept");
-		if(!"application/vnd.ims.lti-nrps.v2.membershipcontainer+json".equals(accept)) {
+		if(!"application/vnd.ims.lti-nrps.v2.membershipcontainer+json".equals(accept) && !"*/*".equals(accept)) {
 			DispatcherModule.sendBadRequest("", response);
 			return;
 		}
-		
+
 		Jws<Claims> jws = getAccessToken(request);
 		if(jws == null) {
 			DispatcherModule.sendForbidden("", response);
@@ -608,40 +630,86 @@ public class LTI13PlatformDispatcherDelegate {
 			String toolIss = claims.getAudience();
 			String clientId = claims.getSubject();
 			
-			LTI13Tool tool = lti13Service.getToolBy(toolIss, clientId);
-			List<LTI13ToolDeployment> deployments = lti13Service.getToolDeployments(tool);
-			if(deployments.size() == 1) {
-				LTI13ToolDeployment deployment = deployments.get(0);
-				List<Identity> identities = repositoryService.getMembers(deployment.getEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
-				
-				MembershipContainer container = new MembershipContainer();
-				container.setId(Settings.getServerContextPathURI() + "/auth/RepositoryEntry/" + deployment.getEntry().getKey());
-				
-				Context context = new Context();
-				context.setId(deployment.getEntry().getKey().toString());
-				context.setLabel(deployment.getEntry().getDisplayname());
-				context.setTitle(deployment.getEntry().getDisplayname());
-				container.setContext(context);
-				
-				List<Member> members = new ArrayList<>();
-				for(Identity identity:identities) {
-					User user = identity.getUser();
-					Member member = new Member();
-					member.setStatus("Active");
-					member.setGivenName(user.getFirstName());
-					member.setFamilyName(user.getLastName());
-					member.setName(userManager.getUserDisplayName(identity));
-					member.setEmail(user.getEmail());
-					member.setUserId(identity.getKey().toString());
-					member.setRoles(List.of(LTI13Constants.Roles.LEARNER.name()));
-					members.add(member);
+			if(path.length == 1 && "nrps".equals(path[0])) {
+				LTI13Tool tool = lti13Service.getToolBy(toolIss, clientId);
+				List<LTI13ToolDeployment> deployments = lti13Service.getToolDeployments(tool);
+				if(deployments.size() == 1) {
+					MembershipContainer container = handleNrps(deployments.get(0));
+					sendJSON(container, response);
 				}
-				
-				container.setMembers(members);
-				
-				sendJSON(container, response);
+			} else if(path.length == 3 && "nrps".equals(path[0]) && StringHelper.containsNonWhitespace(path[1]) && "memberships".equals(path[2])) {
+				LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByContextId(path[1]);
+				if(deployment != null) {
+					MembershipContainer container = handleNrps(deployment);
+					sendJSON(container, response);
+				}
 			}
 		}
+	}
+	
+	private MembershipContainer handleNrps(LTI13ToolDeployment deployment) {
+		if(deployment.getEntry() != null) {
+			return handleNrpsRepositoryEntry(deployment);
+		}
+		if(deployment.getBusinessGroup() != null) {
+			return handleNrpsBusinessGroup(deployment);
+		}
+		return null;
+	}
+	
+	private MembershipContainer handleNrpsRepositoryEntry(LTI13ToolDeployment deployment) {
+		List<Identity> participants = repositoryService.getMembers(deployment.getEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+		
+		MembershipContainer container = new MembershipContainer();
+		RepositoryEntry entry = deployment.getEntry();
+		container.setId(Settings.getServerContextPathURI() + "/auth/RepositoryEntry/" + entry.getKey());
+		
+		Context context = new Context();
+		context.setId(deployment.getContextId());
+		context.setLabel(entry.getDisplayname());
+		context.setTitle(entry.getDisplayname());
+		container.setContext(context);
+
+		container.setMembers(toLtiLearners(participants));
+		
+		return container;
+	}
+	
+	private MembershipContainer handleNrpsBusinessGroup(LTI13ToolDeployment deployment) {
+		List<Identity> participants = businessGroupService.getMembers(deployment.getBusinessGroup(), GroupRoles.participant.name());
+		
+		MembershipContainer container = new MembershipContainer();
+		BusinessGroup businessGroup = deployment.getBusinessGroup();
+		container.setId(Settings.getServerContextPathURI() + "/auth/BusinessGroup/" + businessGroup.getKey());
+		
+		Context context = new Context();
+		context.setId(deployment.getContextId());
+		context.setLabel(businessGroup.getName());
+		context.setTitle(businessGroup.getName());
+		container.setContext(context);
+		
+		container.setMembers(toLtiLearners(participants));
+		
+		return container;
+	}
+	
+	private List<Member> toLtiLearners(List<Identity> identities) {
+		List<Member> members = new ArrayList<>();
+		if(identities != null) {
+			for(Identity identity:identities) {
+				User user = identity.getUser();
+				Member member = new Member();
+				member.setStatus("Active");
+				member.setGivenName(user.getFirstName());
+				member.setFamilyName(user.getLastName());
+				member.setName(userManager.getUserDisplayName(identity));
+				member.setEmail(user.getEmail());
+				member.setUserId(identity.getKey().toString());
+				member.setRoles(List.of(LTI13Constants.Roles.LEARNER.name()));
+				members.add(member);
+			}
+		}
+		return members;
 	}
 	
 	//////////////////
@@ -665,7 +733,7 @@ public class LTI13PlatformDispatcherDelegate {
 		Long deploymentKey = Long.valueOf(path[1]);
 		Long resourceId = Long.valueOf(path[3]);
 		LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByKey(deploymentKey);
-		if(!resourceId.equals(deployment.getEntry().getOlatResource().getResourceableId())) {
+		if(deployment == null || deployment.getEntry() == null || !resourceId.equals(deployment.getEntry().getOlatResource().getResourceableId())) {
 			DispatcherModule.sendBadRequest("", response);
 			return;
 		}

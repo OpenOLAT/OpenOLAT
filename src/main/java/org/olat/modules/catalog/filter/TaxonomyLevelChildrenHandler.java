@@ -29,7 +29,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
@@ -64,7 +63,7 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 
 	@Override
 	public boolean isEnabled(boolean isGuestOnly) {
-		return taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		return taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 	}
 
 	@Override
@@ -105,7 +104,7 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		SelectionValues childrenSV = new SelectionValues();
 		childrenSV.add(SelectionValues.entry(KEY_SHOW, translator.translate("filter.taxonomy.children.show")));
 		FlexiTableMultiSelectionFilter flexiTableFilter = new FlexiTableMultiSelectionFilter(

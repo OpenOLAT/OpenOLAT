@@ -27,17 +27,19 @@ import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistic
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
+import org.olat.ims.qti21.model.statistics.InlineChoiceInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.OrderStatistics;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
-import org.olat.ims.qti21.model.statistics.StatisticsPart;
 import org.olat.ims.qti21.model.statistics.StatisticsItem;
+import org.olat.ims.qti21.model.statistics.StatisticsPart;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
@@ -98,6 +100,9 @@ public interface QTI21StatisticsManager {
 	
 	public List<AbstractTextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent,
 			AssessmentItem item, List<TextEntryInteraction> interactions, QTI21StatisticSearchParams searchParams);
+	
+	public List<InlineChoiceInteractionStatistics> getInlineChoiceInteractionsStatistic(String itemRefIdent,
+			AssessmentItem item, List<InlineChoiceInteraction> interactions, QTI21StatisticSearchParams searchParams);
 	
 	/**
 	 * 

@@ -22,12 +22,15 @@ package org.olat.modules.taxonomy.manager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -35,6 +38,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyModel;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelRow;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -47,20 +51,17 @@ public class TaxonomyAllTreesBuilder {
 	public static final String ROOT = "root";
 	public static final String LEVEL_PREFIX = "level-";
 
+	private final Translator taxonomyTranslator;
 	private final TaxonomyService taxonomyService;
 	
-	public TaxonomyAllTreesBuilder() {
+	public TaxonomyAllTreesBuilder(Locale locale) {
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 	}
 	
-	/**
-	 * 
-	 * @param taxonomy
-	 * @return
-	 */
-	public List<TreeNode> getFlattedModel(Taxonomy taxonomy, boolean withRootNode) {
+	public List<TreeNode> getFlattedModel(Taxonomy taxonomy, boolean withRootNode, Locale locale) {
 		GenericTreeModel taxonomyTreeModel = new GenericTreeModel();
-		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyTreeModel, taxonomy);
+		new TaxonomyAllTreesBuilder(locale).loadTreeModel(taxonomyTreeModel, taxonomy);
 		List<TreeNode> nodeList = new ArrayList<>();
 		TreeHelper.makeTreeFlat(taxonomyTreeModel.getRootNode(), nodeList);
 		if(withRootNode) {
@@ -122,7 +123,7 @@ public class TaxonomyAllTreesBuilder {
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
 				node = new GenericTreeNode(nodeKey(taxonomyLevel));
-				node.setTitle(taxonomyLevel.getDisplayName());
+				node.setTitle(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel));
 				node.setIconCssClass("o_icon_taxonomy_level");
 				node.setUserObject(taxonomyLevel);
 				fieldKeyToNode.put(key, node);
@@ -138,7 +139,7 @@ public class TaxonomyAllTreesBuilder {
 				GenericTreeNode parentNode = fieldKeyToNode.get(parentKey);
 				if(parentNode == null) {
 					parentNode = new GenericTreeNode("level-" + parentLevel.getKey());
-					parentNode.setTitle(parentLevel.getDisplayName());
+					parentNode.setTitle(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, parentLevel));
 					parentNode.setIconCssClass("o_icon_taxonomy_level");
 					parentNode.setUserObject(parentLevel);
 					fieldKeyToNode.put(parentKey, parentNode);

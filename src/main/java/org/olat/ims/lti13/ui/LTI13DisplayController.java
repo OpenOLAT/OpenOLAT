@@ -62,9 +62,13 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	
 	public LTI13DisplayController(UserRequest ureq, WindowControl wControl,
 			LTI13ToolDeployment toolDeployment, UserCourseEnvironment userCourseEnv) {
+		this(ureq, wControl, toolDeployment, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+	}
+
+	public LTI13DisplayController(UserRequest ureq, WindowControl wControl, LTI13ToolDeployment toolDeployment, boolean admin, boolean coach, boolean participant) {
 		super(ureq, wControl);
 		this.toolDeployment = toolDeployment;
-		String loginHint = loginHint(userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+		String loginHint = loginHint(admin, coach, participant);
 		initLaunch(loginHint);
 	}
 	

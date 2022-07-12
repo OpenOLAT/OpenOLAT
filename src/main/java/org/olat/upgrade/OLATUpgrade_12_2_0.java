@@ -215,7 +215,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 	private TaxonomyLevel copyTaxonomyLevel(Taxonomy taxonomy, TaxonomyLevel parent, UpgradeTaxonomyLevel upgradeLevel) {
 		String id = upgradeLevel.getKey().toString();
 		String displayName = upgradeLevel.getField();
-		return taxonomyLevelDao.createTaxonomyLevel(displayName, displayName, "", id, null, parent, null, taxonomy);
+		return taxonomyLevelDao.createTaxonomyLevel(displayName, null, displayName, "", id, null, parent, null, taxonomy);
 	}
 	
 	private Taxonomy getQPoolTaxonomy() {

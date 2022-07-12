@@ -27,8 +27,8 @@
 	<import resource="classpath:/org/olat/modules/contacttracing/_spring/contactTracingContext.xml"/>
 	<import resource="classpath:/org/olat/modules/immunityproof/_spring/immunityProofContext.xml"/>
 	<import resource="classpath:/org/olat/modules/message/_spring/assessmentMessageContext.xml"/>
-	
-	
+	<import resource="classpath:/org/olat/modules/zoom/_spring/zoomContext.xml"/>
+
 	<!-- Forum admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8208" />

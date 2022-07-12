@@ -124,7 +124,7 @@
 			 .attr('fill', '#000')
 			 .style('text-anchor', 'middle')
 			 .text(settings.yLeftLegend);
-    };
+    }
 
 	function rightAnswerPerItem($obj, settings) {
 		var placeholderwidth = $obj.width();
@@ -209,7 +209,7 @@
 			 .attr('fill', '#000')
 			 .style('text-anchor', 'middle')
 			 .text(settings.yLeftLegend);
-    };
+    }
 
 	function horizontalBarMultipleChoiceSurvey($obj, settings) {
 		var placeholderwidth = $obj.width();
@@ -294,7 +294,7 @@
 			 .attr('fill', 'rgb(48,48,48)')
 			 .attr('stroke', 'none')
 			 .text(function(d) { return (d[1] <= 0) ? '' : d[1]; });
-    };
+    }
 
 	function horizontalBarMultipleChoice($obj, settings) {
 		var placeholderwidth = $obj.width();
@@ -428,7 +428,7 @@
 			 .attr('fill', 'rgb(48,48,48)')
 			 .attr('stroke', 'none')
 			 .text(function(d) { return (d[3] <= 0) ? '' : d[3]; });
-    };
+    }
 
 	function horizontalBarSingleChoice($obj, settings) {
 		var placeholderwidth = $obj.width();
@@ -519,7 +519,7 @@
 			 .attr('fill', '#000')
 			 .style('text-anchor', 'middle')
 			 .text(settings.yLeftLegend);
-    };
+    }
 
 	function histogramDuration($obj, settings) {
 		var placeholderheight = $obj.height();
@@ -637,7 +637,7 @@
 			 .attr('fill', '#000')
 			 .style('text-anchor', 'middle')
 			 .text(settings.yRightLegend);
-    };
+    }
 
 	function histogramScore($obj, settings) {
 		var placeholderheight = $obj.height();
@@ -758,7 +758,7 @@
 			 .attr('fill', '#000')
 			 .style('text-anchor', 'middle')
 			 .text(settings.yRightLegend);
-    };
+    }
 
 	function highScore($obj, settings) {
 		var placeholderheight = $obj.height();
@@ -876,5 +876,5 @@
 			 .attr('fill', '#000')
   			 .style('text-anchor', 'middle')
   			 .text(settings.yRightLegend);
-	};   
+	}
 }( jQuery ));

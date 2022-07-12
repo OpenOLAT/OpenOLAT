@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
@@ -61,7 +62,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.user.UserManager;
@@ -110,6 +111,7 @@ public class AssignmentsSearchController extends FormBasicController {
 	public AssignmentsSearchController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry referenceEntry, Identity grader, boolean myView, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "assignments_search", rootForm);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.grader = grader;
 		this.myView = myView;
 		this.referenceEntry = referenceEntry;
@@ -132,9 +134,9 @@ public class AssignmentsSearchController extends FormBasicController {
 		formLayout.add(rightContainer);
 		rightContainer.setRootForm(mainForm);
 		
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if(StringHelper.isLong(taxonomyTreeKey) && taxonomyModule.isEnabled()) {
-			initFormTaxonomy(rightContainer, new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey)));
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if(taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
+			initFormTaxonomy(rightContainer, taxonomyRefs);
 		}
 		
 		SelectionValues empty = new SelectionValues();
@@ -201,8 +203,8 @@ public class AssignmentsSearchController extends FormBasicController {
 		passedEl = uifactory.addDropdownSingleselect("search.passed", leftContainer, passedKeys, passedValues);
 	}
 	
-	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
-		allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+	private void initFormTaxonomy(FormItemContainer formLayout, List<TaxonomyRef> taxonomyRefs) {
+		allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
 
 		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {
@@ -220,7 +222,7 @@ public class AssignmentsSearchController extends FormBasicController {
 	}
 	
 	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
+		names.add(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
 			addParentNames(names, parent);

@@ -92,7 +92,7 @@ public class TaxonomyTreePage {
 		By nameBy = By.cssSelector("div.o_sel_taxonomy_level_name input[type='text']");
 		browser.findElement(nameBy).sendKeys(name);
 		
-		By saveBy = By.cssSelector("fieldset.o_sel_taxonomy_level_form button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_sel_taxonomy_level_form button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		

@@ -133,6 +133,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			.append("  dateFormat:'").append(format).append("',\n")
 			.append("  firstDay:1,\n")
 			.append("  showOn:'focus',\n")
+			.append("  showAnim: '',\n")
 			.append("  monthNames:[")
 			  .append("'").append(dateTranslator.translate("month.long.jan")).append("',")
 			  .append("'").append(dateTranslator.translate("month.long.feb")).append("',")

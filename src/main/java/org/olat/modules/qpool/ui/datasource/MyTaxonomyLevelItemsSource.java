@@ -34,8 +34,8 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  */
 public class MyTaxonomyLevelItemsSource extends TaxonomyLevelItemsSource {
 	
-	public MyTaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, locale, taxonomyLevel);
+	public MyTaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
+		super(me, roles, locale, taxonomyLevel, displayName);
 		setStatusFilter(QuestionStatus.draft);
 		getDefaultParams().setOnlyAuthor(me);
 	}

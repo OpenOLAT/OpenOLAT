@@ -28,6 +28,7 @@ package org.olat.core.gui.components.tabbedpane;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -46,6 +47,8 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		TabbedPane tb = (TabbedPane)source;
+		TabbedPaneItem tbi = tb.getTabbedPaneItem();
+		
 		int cnt = tb.getTabCount();
 		if (cnt == 0) return; // nothing to render
 		
@@ -74,7 +77,15 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 			if (i != selPane && cnt > 1) {
 				if (tb.isEnabled(i)) {
 					sb.append("'><a ");
-					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, tb.isDirtyCheck(), true, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
+					if(tbi == null) {
+						ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, tb.isDirtyCheck(), true, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
+					} else {
+						String dispatchId = tbi.getFormDispatchId();
+						sb.append("href=\"javascript:;\" onclick=\"")
+						  .append(FormJSHelper.getXHRFnCallFor(tbi.getRootForm(), dispatchId, 1, false, true, true,
+								  new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i))))
+						  .append(";\" ");
+					}
 					sb.append(">");				
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href

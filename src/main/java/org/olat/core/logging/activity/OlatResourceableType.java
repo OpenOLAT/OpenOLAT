@@ -95,6 +95,7 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	adobeconnect,
 	bigbluebutton,
 	teams,
+	zoom,
 
 	/** business path component **/
 	businessPath,

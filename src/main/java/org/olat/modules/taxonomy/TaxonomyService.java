@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 
@@ -60,9 +62,10 @@ public interface TaxonomyService {
 	 */
 	public List<TaxonomyInfos> getTaxonomyInfosList();
 	
-
-	public TaxonomyLevel createTaxonomyLevel(String identifier, String displayName, String description, String externalId,
-			TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, Taxonomy taxonomy);
+	public String createI18nSuffix();
+	
+	public TaxonomyLevel createTaxonomyLevel(String identifier, String i18nSuffix, String externalId, TaxonomyLevelManagedFlag[] flags,
+			TaxonomyLevel parent, Taxonomy taxonomy);
 	
 	/**
 	 * 
@@ -75,6 +78,7 @@ public interface TaxonomyService {
 	 * The operation move the following elements from the source taxonomy
 	 * level to the target taxonomy level:
 	 * <ul>
+	 *  <li>The translations
 	 *  <li>The documents
 	 *  <li>The children
 	 *  <li>The competence
@@ -92,6 +96,8 @@ public interface TaxonomyService {
 	 * @return A list of levels
 	 */
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref);
+	
+	public List<TaxonomyLevel> getTaxonomyLevels(Collection<? extends TaxonomyRef> refs);
 	
 	/**
 	 * @param ref The root taxonomy (optional)
@@ -160,6 +166,18 @@ public interface TaxonomyService {
 	 * @return A directory where the documents of deleted levels are stored
 	 */
 	public VFSContainer getLostAndFoundDirectory(Taxonomy taxonomy);
+	
+	public boolean storeBackgroundImage(TaxonomyLevel level, Identity savedBy, File file, String filename);
+	
+	public void deleteBackgroundImage(TaxonomyLevel level);
+	
+	public VFSLeaf getBackgroundImage(TaxonomyLevel level);
+	
+	public boolean storeTeaserImage(TaxonomyLevel level, Identity savedBy, File file, String filename);
+	
+	public void deleteTeaserImage(TaxonomyLevel level);
+	
+	public VFSLeaf getTeaserImage(TaxonomyLevel level);
 	
 
 	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId, boolean allowedAsCompetence, Taxonomy taxonomy);

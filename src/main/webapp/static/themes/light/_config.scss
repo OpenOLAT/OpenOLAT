@@ -381,6 +381,7 @@ $o-coursesite-details-bg		: $btn-success-bg !default;
 $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
+$o-cat2-header-hight			: 240px  !default;
 
 /* Repository */
 $o-repo-preparation-color			: #4a6785;	/* blue */
@@ -702,24 +703,24 @@ $o-qti-match-true-false-right-bg						: lighten($brand-success, 40%) !default;
 $o-qti-match-true-false-wrong-bg						: lighten($brand-danger, 40%) !default;
 $o-qti-match-kprim-correct-bg						: lighten($brand-success, 40%) !default;
 $o-qti-match-kprim-wrong-bg							: lighten($brand-danger, 40%) !default;
-$o-qti-order-source-border-style						: dashed !default;
+$o-qti-order-source-border-style					: dashed !default;
 $o-qti-order-sources-border-color					: $o-qti-run-infos-border-color !default;
 $o-qti-order-border-radius							: $panel-border-radius !default;
 $o-qti-order-source-bg								: $state-warning-bg !default;
 $o-qti-order-sources-bg								: $o-qti-run-infos-bg !default;
 $o-qti-order-drop-accept-border-color				: darken($brand-info, 25%) !default;
 $o-qti-order-target-bg								: $state-info-bg !default;
-$o-qti-order-target-border-color						: $brand-info !default;
+$o-qti-order-target-border-color					: $brand-info !default;
 $o-qti-textEntryInteraction-color					: $text-color !default;
 $o-qti-textEntryInteraction-bg						: #fff !default;
-$o-qti-textEntryInteraction-border-color				: $o-qti-gap-border-color !default;
-$o-qti-textEntryInteraction-filled-color				: $o-qti-userselection-color !default;
+$o-qti-textEntryInteraction-border-color			: $o-qti-gap-border-color !default;
+$o-qti-textEntryInteraction-filled-color			: $o-qti-userselection-color !default;
 $o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
 $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
 
+$o-qti-inline-choice-print-border-color				: #999 !default;
 
-$o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
-$o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
+$o-qti-editor-box-border-color						: #e5e5e5;
 
 /* Video module */
 $o-video-marker-bg-color							: #efefef;
@@ -1096,4 +1097,12 @@ $o-practice-rank-me-color					: $brand-primary;
 
 /* Swiper */
 $o-swiper-color								: $btn-primary-bg !default;
+$o-swiper-button-width						: 40px !default;
+$o-swiper-button-height						: 40px !default;
+$o-swiper-button-color						: $btn-default-color !default;
+$o-swiper-button-bg-color					: $btn-default-bg !default;
+$o-swiper-button-border						: 1px solid $btn-default-border !default;
+$o-swiper-button-border-radius				: $border-radius-base !default;
+$o-swiper-button-hover-color					: $brand-primary !default;
+$o-swiper-button-hover-box-shadow			: 0px 2px 4px rgba(0, 0, 0, 0.075) !default;
 

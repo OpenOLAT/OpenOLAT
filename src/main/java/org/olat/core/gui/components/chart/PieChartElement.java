@@ -56,6 +56,12 @@ public class PieChartElement extends FormItemImpl {
 		component.setLayer(layer);
 	}
 	
+	@Override
+	public void setElementCssClass(String elementCssClass) {
+		super.setElementCssClass(elementCssClass);
+		component.setElementCssClass(elementCssClass);
+	}
+	
 	public String getTitle() {
 		return component.getTitle();
 	}

@@ -22,23 +22,33 @@ package org.olat.modules.catalog.ui.admin;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogLauncher;
-import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
-import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Config;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,56 +59,94 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditController {
 	
+	private static final String TAXONOMY_PREFIX = "Taxonomy::";
+	
 	private SingleSelection taxonomyLevelEl;
+	private MultipleSelectionElement educationalTypeEl;
+	private MultipleSelectionElement resourceTypeEl;
+	
+	private final TaxonomyLevelLauncherHandler handler;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public CatalogLauncherTaxonomyEditController(UserRequest ureq, WindowControl wControl,
-			CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {
+			TaxonomyLevelLauncherHandler handler, CatalogLauncher catalogLauncher) {
 		super(ureq, wControl, handler, catalogLauncher);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		this.handler = handler;
 		initForm(ureq);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout) {
-		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
-		if (StringHelper.isLong(taxonomyTreeKey)) {
-			Taxonomy taxonomy = taxonomyService.getTaxonomy(() -> Long.valueOf(taxonomyTreeKey));
-			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
-			SelectionValues keyValues = createTaxonomyLevelKV(taxonomy, allTaxonomyLevels);
-			keyValues.add(entry(TaxonomyLevelLauncherHandler.TAXONOMY_PREFIX + taxonomy.getKey(), taxonomy.getDisplayName()));
+	protected void initForm(FormItemContainer generalCont) {
+		Config config = null;
+		if (getCatalogLauncher() != null) {
+			config = handler.fromXML(getCatalogLauncher().getConfig());
+		}
+		
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (!taxonomyRefs.isEmpty()) {
+			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+			SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
+			allTaxonomyLevels.stream().map(TaxonomyLevel::getTaxonomy)
+					.distinct()
+					.forEach(taxonomy -> keyValues.add(entry(TAXONOMY_PREFIX + taxonomy.getKey(), taxonomy.getDisplayName())));
 			keyValues.sort(VALUE_ASC);
-			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", formLayout,
+			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", generalCont,
 					keyValues.keys(), keyValues.values());
 			taxonomyLevelEl.setMandatory(true);
-			String key = getCatalogLauncher() != null? getCatalogLauncher().getConfig(): null;
+			String key = null;
+			if (config != null) {
+				if (config.getTaxonomyKey() != null) {
+					key = TAXONOMY_PREFIX + config.getTaxonomyKey();
+				} else if (config.getTaxonomyLevelKey() != null) {
+					key = config.getTaxonomyLevelKey().toString();
+				}
+			}
 			if (StringHelper.containsNonWhitespace(key) && taxonomyLevelEl.containsKey(key)) {
 				taxonomyLevelEl.select(key, true);
 			}
 		}
-	}
-	
-	private SelectionValues createTaxonomyLevelKV(Taxonomy taxonomy, List<TaxonomyLevel> allTaxonomyLevels) {
-		SelectionValues keyValues = new SelectionValues();
-		for (TaxonomyLevel level:allTaxonomyLevels) {
-			String key = Long.toString(level.getKey());
-			ArrayList<String> names = new ArrayList<>();
-			addParentNames(names, level);
-			Collections.reverse(names);
-			String value = taxonomy.getDisplayName() + ": " + String.join(" / ", names);
-			keyValues.add(entry(key, value));
+		
+		// educational type
+		SelectionValues educationalTypeKV = new SelectionValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+		educationalTypeEl = uifactory.addCheckboxesDropdown("educationalType", "admin.educational.types",
+				generalCont, educationalTypeKV.keys(), educationalTypeKV.values());
+		if (config != null && config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
+			for (Long key : config.getEducationalTypeKeys()) {
+				if (educationalTypeEl.getKeys().contains(key.toString())) {
+					educationalTypeEl.select(key.toString(), true);
+				}
+			}
 		}
-		return keyValues;
-	}
-	
-	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
-		TaxonomyLevel parent = level.getParent();
-		if (parent != null) {
-			addParentNames(names, parent);
+		
+		// type of resources
+		SelectionValues resourceTypeSV = new SelectionValues();
+		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+		for (OrderedRepositoryHandler handler:supportedHandlers) {
+			String type = handler.getHandler().getSupportedType();
+			String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
+			resourceTypeSV.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
+		}
+		resourceTypeEl = uifactory.addCheckboxesDropdown("resourceType", "admin.resource.types",
+				generalCont, resourceTypeSV.keys(), resourceTypeSV.values(), null, resourceTypeSV.icons());
+		if (config != null && config.getResourceTypes()!= null && !config.getResourceTypes().isEmpty()) {
+			for (String type : config.getResourceTypes()) {
+				if (resourceTypeEl.getKeys().contains(type)) {
+					resourceTypeEl.select(type, true);
+				}
+			}
 		}
 	}
 	
@@ -116,7 +164,32 @@ public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditC
 
 	@Override
 	protected String getConfig() {
-		return taxonomyLevelEl.getSelectedKey();
+		Config config = new Config();
+		
+		String selectedKey = taxonomyLevelEl.getSelectedKey();
+		if (selectedKey.startsWith(TAXONOMY_PREFIX)) {
+			String taxonomyKey = selectedKey.substring(TAXONOMY_PREFIX.length());
+			config.setTaxonomyKey(Long.valueOf(taxonomyKey));
+		} else {
+			config.setTaxonomyLevelKey(Long.valueOf(selectedKey));
+		}
+		
+		if (educationalTypeEl.isAtLeastSelected(1)) {
+			Collection<Long> educationalTypeKeys = educationalTypeEl.getSelectedKeys().stream()
+					.map(Long::valueOf)
+					.collect(Collectors.toSet());
+			config.setEducationalTypeKeys(educationalTypeKeys);
+		} else {
+			config.setEducationalTypeKeys(null);
+		}
+		
+		if (resourceTypeEl.isAtLeastSelected(1)) {
+			config.setResourceTypes(new HashSet<>(resourceTypeEl.getSelectedKeys()));
+		} else {
+			config.setResourceTypes(null);
+		}
+		
+		return handler.toXML(config);
 	}
 
 }

@@ -46,6 +46,7 @@ import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -64,6 +65,8 @@ import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.HottextEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.InlineChoiceEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.InlineChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MatchEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MatchScoreController;
@@ -296,6 +299,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 			case drawing: itemBuilder = initDrawingEditors(ureq, item); break;
 			case hottext: itemBuilder = initHottextEditors(ureq, item); break;
 			case order: itemBuilder = initOrderEditors(ureq, item); break;
+			case inlinechoice: itemBuilder = initInlineChoiceEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq, item); break;
 		}
 		return type;
@@ -544,6 +548,24 @@ public class AssessmentItemEditorController extends BasicController implements A
 		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return orderItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initInlineChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		InlineChoiceAssessmentItemBuilder inlineChoiceItemBuilder = new InlineChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new InlineChoiceEditorController(ureq, getWindowControl(), inlineChoiceItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
+		listenTo(itemEditor);
+		scoreEditor = new InlineChoiceScoreController(ureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), inlineChoiceItemBuilder,
+				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
+				restrictedEdit, readOnly);
+		listenTo(feedbackEditor);
+
+		tabbedPane.addTab(translate("form.inlinechoice"), "o_sel_assessment_item_inlinechoice", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
+		return inlineChoiceItemBuilder;
 	}
 
 	@Override

@@ -62,6 +62,7 @@ import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherDataModel.CatalogLauncherCols;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,6 +91,7 @@ public class CatalogLauncherListController extends FormBasicController {
 
 	public CatalogLauncherListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale(), getTranslator()));
 		
 		initForm(ureq);
@@ -169,7 +171,7 @@ public class CatalogLauncherListController extends FormBasicController {
 				row.setHandler(handler);
 				row.setTranslatedType(translate(handler.getTypeI18nKey()));
 				row.setTranslatedName(CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, catalogLauncher));
-				row.setDetails(handler.getDetails(catalogLauncher));
+				row.setDetails(handler.getDetails(getTranslator(), catalogLauncher));
 			}
 			
 			UpDown upDown = UpDownFactory.createUpDown("up_down_" + catalogLauncher.getKey(), UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);

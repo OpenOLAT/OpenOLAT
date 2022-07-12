@@ -335,4 +335,16 @@ public class LTI13Constants {
 	    	//
 	    }
 	}
+	
+	public static class ContextTypes {
+		
+		public static final String COURSE_TEMPLATE = "http://purl.imsglobal.org/vocab/lis/v2/course#CourseTemplate";
+	    public static final String COURSE_OFFERING = "http://purl.imsglobal.org/vocab/lis/v2/course#CourseOffering";
+	    public static final String COURSE_SECTION = "http://purl.imsglobal.org/vocab/lis/v2/course#CourseSection";
+	    public static final String GROUP = "http://purl.imsglobal.org/vocab/lis/v2/course#Group";
+	    
+	    private ContextTypes() {
+	    	//
+	    }
+	}
 }

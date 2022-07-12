@@ -1,0 +1,14 @@
+Type	Inlinechoice	
+Title	Hansel und Gretel	
+Description	Eine lange Geschichte	
+Points	1	
+Text	Vor einem grossen Walde wohnte ein armer 
+1	|.|;|!		|
+Text	Holzhacker mit seiner Frau und seinen zwei Kindern	
+1	|.|;|!	;	|
+Text	das Bubchen hiesst Hansel und das Madchen Gretel
+1	|.|;|!	.	|
+Text	Er hatte wenig zu beissen und zu brechen
+1	|.|;|!	!	|
+		
+

@@ -35,9 +35,11 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeAssessmentItemGlobalRef;
 import org.olat.course.nodes.practice.PracticeResource;
@@ -72,6 +74,7 @@ import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.resource.OLATResource;
@@ -253,10 +256,12 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			List<QuestionItem> items = practiceQuestionItemQueries.searchItems(searchParams, collections, pools, shares,
 					searchParams.getIdentity());
 			log.debug("{} questions from QPool", items.size());
+			Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 			for(QuestionItem item:items) {
 				String identifier = item.getIdentifier();
 				if(!identifiers.contains(identifier) && SearchPracticeItemHelper.autoAnswer(item)) {
-					proposedItems.add(new PracticeItem(item));
+					String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+					proposedItems.add(new PracticeItem(item, displayName));
 					identifiers.add(identifier);
 				}
 			}
@@ -533,6 +538,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		List<AssessmentItemRef> assessmentItemRefs = resolvedAssessmentTest.getAssessmentItemRefs();
 		
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 		List<PracticeItem> items = new ArrayList<>(assessmentItemRefs.size());
 		for(AssessmentItemRef ref:assessmentItemRefs) {
 			URI systemId = resolvedAssessmentTest.getSystemIdByItemRefMap().get(ref);
@@ -550,7 +556,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 
 			if(!identifiers.contains(identifier)
 					&& SearchPracticeItemHelper.autoAnswer(item)
-					&& SearchPracticeItemHelper.accept(item, searchParams)) {
+					&& SearchPracticeItemHelper.accept(item, searchParams, locale)) {
 				
 				String displayName = item.getTitle();
 				if(displayName == null) {
@@ -562,8 +568,9 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 						}
 					}
 				}
-
-				items.add(new PracticeItem(identifier, displayName, ref, item, testEntry));
+				
+				String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+				items.add(new PracticeItem(identifier, displayName, ref, item, taxonomyLevelDisplayName, testEntry));
 				identifiers.add(identifier);
 			}
 		}

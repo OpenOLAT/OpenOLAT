@@ -20,6 +20,9 @@
  */
 package org.olat.modules.qpool.manager;
 
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
+import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.PREFIX_DISPLAY_NAME;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
@@ -46,6 +50,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -146,6 +153,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private LicenseService licenseService;
 	@Autowired
 	private PracticeResourceDAO practiceResourceDao;
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 
 	@Override
 	public void deleteItems(List<? extends QuestionItemShort> items) {
@@ -724,7 +735,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		if(qpoolTaxonomy == null) {
 			return new ArrayList<>();
 		}
-		return taxonomyLevelDao.getLevels(qpoolTaxonomy);
+		return taxonomyLevelDao.getLevels(Collections.singletonList(qpoolTaxonomy));
 	}
 
 	@Override
@@ -733,7 +744,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		if(qpoolTaxonomy == null) {
 			return new ArrayList<>();
 		}
-		return taxonomyLevelDao.getLevelsByDisplayName(qpoolTaxonomy, displayName);
+		
+		Set<String> i18nSuffix = i18nManager
+				.findI18nKeysByOverlayValue(displayName, PREFIX_DISPLAY_NAME, I18nModule.getDefaultLocale(), BUNDLE_NAME, true)
+				.stream()
+				.map(key -> key.substring(PREFIX_DISPLAY_NAME.length()))
+				.collect(Collectors.toSet());
+		return taxonomyLevelDao.getLevelsByI18nSuffix(qpoolTaxonomy, i18nSuffix);
 	}
 
 	@Override
@@ -744,7 +761,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		if(qpoolTaxonomy == null) {
 			return null;
 		}
-		return taxonomyLevelDao.createTaxonomyLevel(identifier, displayName, "", null, null, parent, null, qpoolTaxonomy);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel(identifier, UUID.randomUUID().toString().replace("-", ""),
+				null, null, null, null, parent, null, qpoolTaxonomy);
+		
+		Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
+		I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
+		i18nManager.saveOrUpdateI18nItem(displayNameItem, displayName);
+		
+		return taxonomyLevel;
 	}
 	
 	@Override

@@ -35,7 +35,9 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -69,7 +71,7 @@ public class MergeTaxonomyLevelController extends FormBasicController {
 		super(ureq, wControl, "merge_taxonomy_levels");
 		this.levels = levels;
 
-		treeModel = new TaxonomyAllTreesBuilder().buildTreeModel(taxonomy);
+		treeModel = new TaxonomyAllTreesBuilder(getLocale()).buildTreeModel(taxonomy);
 		for(TaxonomyLevel level:levels) {
 			selectedNodeIds.add(TaxonomyAllTreesBuilder.nodeKey(level));
 		}
@@ -147,12 +149,13 @@ public class MergeTaxonomyLevelController extends FormBasicController {
 		TreeNode selectedNode = treeModel.getNodeById(selectedNodeKey);
 		TaxonomyLevel mergeTo = (TaxonomyLevel)selectedNode.getUserObject();
 
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		StringBuilder sb = new StringBuilder();
 		for(TaxonomyLevel level:levels) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 			if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel, mergeTo)) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
+				sb.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel)));
 			}
 		}
 		

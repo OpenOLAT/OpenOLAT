@@ -73,10 +73,12 @@ public class LTI13Dispatcher implements Dispatcher {
 	throws ServletException, IOException {
 		final String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		final String origUri = request.getRequestURI();
-		final String ltiUri = origUri.substring(uriPrefix.length());
-		
+		String ltiUri = origUri.substring(uriPrefix.length());
 		log.debug("LTI dispatcher: {}", ltiUri);
-		
+		execute(ltiUri, request, response);
+	}
+	
+	protected void execute(String ltiUri, HttpServletRequest request, HttpServletResponse response) {
 		if(!lti13Module.isEnabled()) {
 			DispatcherModule.sendForbidden("not_enabled", response);
 			return;
@@ -100,7 +102,7 @@ public class LTI13Dispatcher implements Dispatcher {
 			} else if("auth".equals(first)) {
 				platformDelegate.handleAuthorization(request, response);// tool
 			} else  if("nrps".equals(first)) {
-				platformDelegate.handleNrps(request, response);// tool
+				platformDelegate.handleNrps(path, request, response);// tool
 			} else if("ags".equals(first)) {
 				platformDelegate.handleAgs(path, request, response);// tool
 			} else if("token".equals(first)) {

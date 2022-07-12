@@ -32,12 +32,14 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyVFSSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,6 +62,7 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 	public DocumentPoolLevelController(UserRequest ureq, WindowControl wControl,
 			TaxonomyLevel level, TaxonomyTreeNode node, TaxonomyVFSSecurityCallback secCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 		
 		if(taxonomyLevel == null) {
@@ -75,11 +78,11 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 				iconCssClass = node.getIconCssClass();
 			}
 			mainVC.contextPut("iconCssClass", iconCssClass);
-			mainVC.contextPut("displayName", StringHelper.escapeHtml(level.getDisplayName()));
+			mainVC.contextPut("displayName", StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)));
 			mainVC.contextPut("identifier", StringHelper.escapeHtml(level.getIdentifier()));
 			
 			if(node.isDocumentsLibraryEnabled() && node.isCanRead()) {
-				String name = level.getDisplayName();
+				String name = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
 				VFSContainer documents = taxonomyService.getDocumentsLibrary(level);
 				documents.setLocalSecurityCallback(secCallback);
 				VFSContainer namedContainer = new NamedContainerImpl(name, documents);

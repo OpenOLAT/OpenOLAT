@@ -264,6 +264,13 @@ svg {
 	}
 }
 
+.o_practice_piechart {
+	max-width: 200px;
+	min-width: 150px;
+	max-height: 200px;
+	min-height: 150px;
+}
+
 .o_practice_statistics {
 	padding: 1em;
 	position: relative;
@@ -313,8 +320,6 @@ svg {
 
 .o_practice_end {
 	text-align: center;
-	max-width: 480px;
-	margin: 0 auto;
 	
 	.o_practice_label {
 		text-align: right;
@@ -326,6 +331,11 @@ svg {
 	
 	.o_practice_data_correct {
 		color: $brand-success;
+	}
+	
+	>fieldset {
+		max-width: 480px;
+		margin: 0 auto;
 	}
 }
 

@@ -402,6 +402,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "inactivegroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_INACTIVE);
 			case "logondeniedgroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_LOGIN_DENIED);
 			case "deletedusers": return createDeletedUserController(ureq, bwControl);
+			// type
+			case "externaluser": return createUserSearchController(ureq, bwControl, OrganisationRoles.invitee);
+			case "registrateduser": return createUserSearchController(ureq, bwControl, OrganisationRoles.user);
+			case "guestuser": return createUserSearchController(ureq, bwControl, OrganisationRoles.guest);
 			// predefined queries
 			case "userswithoutgroup":
 				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups(), false, true, true, true);
@@ -451,7 +455,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, Integer status) {
-		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(null, null, status);
+		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(null, null, null);
+		predefinedQuery.setExactStatusList(List.of(status));
 		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, false, true);
 	}
 	
@@ -587,6 +592,11 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				buildTreeRelationsSubMenu(relationsNode, roles);
 			}
 		}
+		// User type
+		GenericTreeNode typeNode = appendNode("menu.user.type", "menu.user.type.alt",
+				new Presentation("menu.user.type", "menu.user.type.intro"), "o_sel_useradmin_user_type", root);
+		buildTreeUserTypeSubMenu(typeNode);
+		
 		// Sub menu status
 		GenericTreeNode statusNode = appendNode("menu.status", "menu.status.alt",
 				new Presentation("menu.status", "menu.status.intro"), "o_sel_useradmin_status", root);
@@ -672,10 +682,6 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			buildTreeNodeRole(accessNode, OrganisationRoles.administrator);
 			buildTreeNodeRole(accessNode, OrganisationRoles.sysadmin);
 		}
-		
-		if (identityRoles.isRolesManager() || identityRoles.isAdministrator()) {
-			buildTreeNodeRole(accessNode, OrganisationRoles.invitee);
-		}
 	}
 	
 	private void buildTreeNodeRole(GenericTreeNode accessNode, Enum<?> role) {
@@ -719,6 +725,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			contraTreeNode.setUserObject(new IdentityRelation(relationRole, true));
 			relationsNode.addChild(contraTreeNode);
 		}
+	}
+	
+	private void buildTreeUserTypeSubMenu(GenericTreeNode accessNode) {
+		appendNode("menu.user.external.user", "menu.user.external.user.alt", "externaluser", "o_sel_useradmin_external_user", accessNode);
+		appendNode("menu.user.registrated.user", "menu.user.registrated.user.alt", "registrateduser", "o_sel_useradmin_registrated_user", accessNode);
+		appendNode("menu.user.guest", "menu.user.guest.alt", "guestuser", "o_sel_useradmin_guest_user", accessNode);
+		
 	}
 	
 	private void buildTreeStatusSubMenu(GenericTreeNode accessNode) {

@@ -62,6 +62,7 @@ import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogFilterDataModel.CatalogFilterCols;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,6 +91,7 @@ public class CatalogFilterListController extends FormBasicController {
 
 	public CatalogFilterListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale(), getTranslator()));
 		
 		initForm(ureq);

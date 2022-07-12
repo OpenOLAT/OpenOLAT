@@ -27,10 +27,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,6 +55,7 @@ public class ReviewStartController extends FormBasicController {
 	
 	public ReviewStartController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean ignoreCompetences) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.item = item;
 		this.ignoreCompetences = ignoreCompetences;
 		
@@ -69,7 +72,7 @@ public class ReviewStartController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_qpool_confirm_start_form");
 		setFormDescription("process.start.review.description", new String[] {item.getTitle()});
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, ignoreCompetences);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, ignoreCompetences);
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
 				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		taxonomyLevelEl.setMandatory(true);

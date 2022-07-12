@@ -40,7 +40,7 @@ public class CatalogLauncherBasicEditController extends AbstractLauncherEditCont
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout) {
+	protected void initForm(FormItemContainer generalCont) {
 		//
 	}
 

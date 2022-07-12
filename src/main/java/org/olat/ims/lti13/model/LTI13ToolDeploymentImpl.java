@@ -38,6 +38,8 @@ import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
@@ -70,6 +72,9 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
     @Column(name="l_deployment_id", nullable=false, insertable=true, updatable=false)
 	private String deploymentId;
     
+    @Column(name="l_context_id", nullable=false, insertable=true, updatable=false)
+	private String contextId;
+    
     @Column(name="l_target_url", nullable=true, insertable=true, updatable=true)
 	private String targetUrl;
     
@@ -87,6 +92,9 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
     
     @Column(name="l_assessable", nullable=true, insertable=true, updatable=true)
     private boolean assessable;
+    
+    @Column(name="l_nrps", nullable=true, insertable=true, updatable=true)
+    private boolean nameAndRolesProvisioningServices;
 
     @Column(name="l_display", nullable=true, insertable=true, updatable=true)
     private String display;
@@ -106,6 +114,10 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 	private RepositoryEntry entry;
 	@Column(name="l_sub_ident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
+	
+	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=false)
+	private BusinessGroup businessGroup;
 	
 
 	@Override
@@ -143,6 +155,15 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 
 	public void setDeploymentId(String deploymentId) {
 		this.deploymentId = deploymentId;
+	}
+
+	@Override
+	public String getContextId() {
+		return contextId;
+	}
+
+	public void setContextId(String contextId) {
+		this.contextId = contextId;
 	}
 
 	@Override
@@ -264,6 +285,15 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 	public void setAssessable(boolean assessable) {
 		this.assessable = assessable;
 	}
+	
+	@Override
+	public boolean isNameAndRolesProvisioningServicesEnabled() {
+		return nameAndRolesProvisioningServices;
+	}
+
+	public void setNameAndRolesProvisioningServicesEnabled(boolean nameAndRolesProvisioningServices) {
+		this.nameAndRolesProvisioningServices = nameAndRolesProvisioningServices;
+	}
 
 	@Override
 	public String getDisplay() {
@@ -340,6 +370,15 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 
 	public void setSubIdent(String subIdent) {
 		this.subIdent = subIdent;
+	}
+	
+	@Override
+	public BusinessGroup getBusinessGroup() {
+		return businessGroup;
+	}
+
+	public void setBusinessGroup(BusinessGroup businessGroup) {
+		this.businessGroup = businessGroup;
 	}
 
 	@Override

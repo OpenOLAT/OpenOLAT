@@ -23,6 +23,7 @@ package org.olat.search.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
@@ -31,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -44,6 +44,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.SearchServiceUIFactory;
@@ -129,7 +130,8 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 				if ("TaxonomyLevel".equals(tokenType)) {
 					TaxonomyLevel level = CoreSpringFactory.getImpl(TaxonomyService.class)
 							.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.parseLong(tokenKey)));
-					return level == null ? "" : level.getDisplayName();
+					Translator taxonomyTanslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
+					return level == null ? "" : TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, level);
 				}
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
 				if ("DocumentPool".equals(tokenType)) {

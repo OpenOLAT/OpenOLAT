@@ -24,8 +24,11 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -36,9 +39,11 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNodeComparator {
 	
 	private final Collator collator;
+	private final Translator taxonomyTranslator;
 	
 	public CertificateAndEfficiencyStatementTreeComparator(Locale locale) {
 		collator = Collator.getInstance(locale);
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 	}
 
 	@Override
@@ -50,7 +55,7 @@ public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNo
 		if(r1.isTaxonomy() && r2.isTaxonomy()) {
 			TaxonomyLevel t1 = r1.getTaxonomyLevel();
 			TaxonomyLevel t2 = r2.getTaxonomyLevel();
-			c = compareStrings(t1.getDisplayName(), t2.getDisplayName());
+			c = compareStrings(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, t1), TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, t2));
 			if(c == 0) {
 				c = compareLongs(t1.getKey(), t2.getKey());
 			}

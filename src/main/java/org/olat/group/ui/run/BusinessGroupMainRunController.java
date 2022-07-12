@@ -96,6 +96,8 @@ import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiModule;
+import org.olat.modules.zoom.ZoomModule;
+import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -138,6 +140,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final OLATResourceable ORES_TOOLOPENMEETINGS = OresHelper.createOLATResourceableType("toolopenmeetings");
 	public static final OLATResourceable ORES_TOOLADOBECONNECT = OresHelper.createOLATResourceableType("tooladobeconnect");
 	public static final OLATResourceable ORES_TOOLBIGBLUEBUTTON = OresHelper.createOLATResourceableType("toolbigbluebutton");
+	public static final OLATResourceable ORES_ZOOM = OresHelper.createOLATResourceableType("toolzoom");
 	public static final OLATResourceable ORES_TOOLWIKI = OresHelper.createOLATResourceableType(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 
 	// activity identifiers are used as menu user objects and for the user
@@ -174,6 +177,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final String ACTIVITY_MENUSELECT_BIGBLUEBUTTON = "MENU_SHOW_BIGBLUEBUTTON";
 	/* activity identifier: user selected show Teams in menu */
 	public static final String ACTIVITY_MENUSELECT_TEAMS = "MENU_SHOW_TEAMS";
+	/* activity identifier: user selected show Zoom in menu */
+	public static final String ACTIVITY_MENUSELECT_ZOOM = "MENU_SHOW_ZOOM";
 	/* activity identifier: user selected show access control in menu */
 	/* access control of resources */
 	public static final String ACTIVITY_MENUSELECT_AC = "MENU_SHOW_AC";
@@ -226,6 +231,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private GenericTreeNode nodeAdobeConnect;
 	private GenericTreeNode nodeBigBlueButton;
 	private GenericTreeNode nodeTeams;
+	private GenericTreeNode nodeZoom;
 	private GenericTreeNode nodeContact;
 	private GenericTreeNode nodeGroupOwners;
 	private GenericTreeNode nodeResources;
@@ -255,6 +261,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private AdobeConnectModule adobeConnectModule;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private ZoomModule zoomModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;	
 
@@ -719,6 +727,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			doBigBlueButton(ureq);
 		} else if(ACTIVITY_MENUSELECT_TEAMS.equals(cmd)) {
 			doTeams(ureq);
+		} else if (ACTIVITY_MENUSELECT_ZOOM.equals(cmd)) {
+			doZoom(ureq);
 		} else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
 			doAccessControlHistory(ureq);
 		} 
@@ -908,6 +918,24 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		return teamsToolCtrl;
 	}
 
+	private ZoomRunController doZoom(UserRequest ureq) {
+		addLoggingResourceable(LoggingResourceable.wrap(ORES_ZOOM, OlatResourceableType.zoom));
+
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_ZOOM);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(ce.getOLATResourceable()));
+		addToHistory(ureq, bwControl);
+
+		CollaborationTools collabtools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		boolean coach = businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.coach.name());
+		boolean participant = !coach && !isAdmin;
+		ZoomRunController zoomToolCtrl = collabtools.createZoomController(ureq, bwControl, businessGroup, isAdmin, coach, participant);
+		collabToolCtr = zoomToolCtrl;
+		listenTo(collabToolCtr);
+		mainPanel.setContent(collabToolCtr.getInitialComponent());
+		return zoomToolCtrl;
+	}
+
 	private Activateable2 doAdministration(UserRequest ureq) {
 		removeAsListenerAndDispose(bgEditCntrllr);
 		
@@ -1094,6 +1122,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setSelectedNode(nodeTeams);
 			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.teamsavailable");
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_ZOOM)) {
+			if (nodeZoom != null) {
+				doZoom(ureq);
+				bgTree.setSelectedNode(nodeZoom);
+			} else if (mainPanel != null) {
+				String text = translate("warn.zoomnotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
 				mainPanel.setContent(mc.getInitialComponent());
@@ -1379,7 +1417,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 			nodeBigBlueButton = gtnChild;
 		}
-	
+
+		if (zoomModule.isEnabled() && zoomModule.isEnabledForGroupTool()
+				&& collabTools.isToolEnabled(CollaborationTools.TOOL_ZOOM)) {
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("zoom"));
+			gtnChild.setTitle(translate("menutree.zoom"));
+			gtnChild.setUserObject(ACTIVITY_MENUSELECT_ZOOM);
+			gtnChild.setAltText(translate("menutree.zoom.alt"));
+			gtnChild.setIconCssClass("o_vc_icon");
+			root.addChild(gtnChild);
+			nodeZoom = gtnChild;
+		}
+
 		if (isAdmin) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("admin"));
 			gtnChild.setTitle(translate("menutree.administration"));

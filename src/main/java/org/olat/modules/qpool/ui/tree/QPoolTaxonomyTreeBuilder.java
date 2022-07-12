@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -37,6 +38,7 @@ import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -53,6 +55,7 @@ public class QPoolTaxonomyTreeBuilder {
 	
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 
+	private Translator translator;
 	private boolean addEmptyEntry;
 	private List<String> materializedPathKeysWithCompetence;
 	private List<TaxonomyLevel> selectableTaxonomyLevels;
@@ -66,13 +69,14 @@ public class QPoolTaxonomyTreeBuilder {
 	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private QPoolService qpoolService;
-	
+
 	public QPoolTaxonomyTreeBuilder() {
 		reset();
 	}
 
-	public void loadTaxonomyLevelsSelection(Identity identity, boolean withEmptyEntry, boolean ignoreCompetences) {
+	public void loadTaxonomyLevelsSelection(Translator translator, Identity identity, boolean withEmptyEntry, boolean ignoreCompetences) {
 		reset();
+		this.translator = translator;
 		addEmptyEntry = withEmptyEntry;
 		if (ignoreCompetences || qpoolModule.isIgnoreCompetences()) {
 			loadAllTaxonomyLevels();
@@ -81,18 +85,21 @@ public class QPoolTaxonomyTreeBuilder {
 		}
 	}
 	
-	public void loadTaxonomyLevelsMy(Identity identity) {
+	public void loadTaxonomyLevelsMy(Translator translator,Identity identity) {
 		reset();
-		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage,  TaxonomyCompetenceTypes.teach);
+		this.translator = translator;
+		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
 	}
 	
-	public void loadTaxonomyLevelsReview(Identity identity) {
+	public void loadTaxonomyLevelsReview(Translator translator,Identity identity) {
 		reset();
-		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage,  TaxonomyCompetenceTypes.teach);
+		this.translator = translator;
+		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
 	}
 	
-	public void loadTaxonomyLevelsFinal(Identity identity) {
+	public void loadTaxonomyLevelsFinal(Translator translator,Identity identity) {
 		reset();
+		this.translator = translator;
 		TaxonomyCompetenceTypes[] types;
 		if (qpoolModule.isFinalVisibleTeach()) {
 			types = new TaxonomyCompetenceTypes[] {TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach};
@@ -132,7 +139,7 @@ public class QPoolTaxonomyTreeBuilder {
 	
 	private void prefillMaterializedPathKeysWithCompetence(List<TaxonomyLevel> levels) {
 		materializedPathKeysWithCompetence = levels.stream()
-				.map(level -> level.getMaterializedPathKeys())
+				.map(TaxonomyLevel::getMaterializedPathKeys)
 				.collect(Collectors.toList());
 	}
 
@@ -205,7 +212,8 @@ public class QPoolTaxonomyTreeBuilder {
 		for(int i=selectableTaxonomyLevels.size(); i-->0; ) {
 			TaxonomyLevel level = selectableTaxonomyLevels.get(i);
 			selectableKeys[i] = Long.toString(level.getKey());
-			selectableValues[i] = computeIntendention(level, new StringBuilder()).append(level.getDisplayName()).toString();
+			selectableValues[i] = computeIntendention(level, new StringBuilder())
+					.append(TaxonomyUIFactory.translateDisplayName(translator, level)).toString();
 			taxonomicPaths[i] = level.getMaterializedPathIdentifiers();
 			taxonomicKeyPaths[i] = level.getMaterializedPathKeys();
 		}
@@ -288,7 +296,7 @@ public class QPoolTaxonomyTreeBuilder {
 
 		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevels();
 		Map<Long,TaxonomyLevel> keytoLevels = taxonomyLevels.stream()
-				.collect(Collectors.toMap(l -> l.getKey(), l -> l));
+				.collect(Collectors.toMap(TaxonomyLevel::getKey, l -> l));
 
 		Map<Long,TaxonomyLevelNode> fieldKeyToNode = new HashMap<>();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
@@ -329,7 +337,7 @@ public class QPoolTaxonomyTreeBuilder {
 	}
 	
 	private void sort(TaxonomyLevelNode parent) {
-		parent.sort(new TaxonomyLevelNodeComparator());
+		parent.sort(new TaxonomyLevelNodeComparator(translator));
 		for(int i=parent.getChildCount(); i-->0; ) {
 			sort((TaxonomyLevelNode)parent.getChildAt(i));
 		}
@@ -354,7 +362,13 @@ public class QPoolTaxonomyTreeBuilder {
 		
     }
 	
-	private class TaxonomyLevelNodeComparator implements Comparator<INode> {
+	private static final class TaxonomyLevelNodeComparator implements Comparator<INode> {
+		
+		private final Translator translator;
+		
+		public TaxonomyLevelNodeComparator(Translator translator) {
+			this.translator = translator;
+		}
 
 		@Override
 		public int compare(INode i1, INode i2) {
@@ -370,7 +384,7 @@ public class QPoolTaxonomyTreeBuilder {
 			if(i1 instanceof TaxonomyLevelNode) {
 				TaxonomyLevelNode t1 = (TaxonomyLevelNode)i1;
 				if(t1.getTaxonomyLevel() != null) {
-					displayName1 = t1.getTaxonomyLevel().getDisplayName();
+					displayName1 = TaxonomyUIFactory.translateDisplayName(translator, t1.getTaxonomyLevel());
 					s1 = t1.getTaxonomyLevel().getSortOrder();
 				}
 			}
@@ -378,7 +392,7 @@ public class QPoolTaxonomyTreeBuilder {
 			if(i2 instanceof TaxonomyLevelNode) {
 				TaxonomyLevelNode t2 = (TaxonomyLevelNode)i2;
 				if(t2.getTaxonomyLevel() != null) {
-					displayName2 = t2.getTaxonomyLevel().getDisplayName();
+					displayName2 = TaxonomyUIFactory.translateDisplayName(translator, t2.getTaxonomyLevel());
 					s2 = t2.getTaxonomyLevel().getSortOrder();
 				}
 			}

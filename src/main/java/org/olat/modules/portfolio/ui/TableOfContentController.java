@@ -409,7 +409,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfComments(binder);
-		List<Page> pages = portfolioService.getPages(binder, null);
+		List<Page> pages = portfolioService.getPages(binder);
 		for(Page page:pages) {
 			Section section = page.getSection();
 			if(section != null && sectionMap.containsKey(section.getKey())) {

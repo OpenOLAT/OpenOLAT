@@ -390,10 +390,10 @@ public class UserAdminController extends BasicController implements Activateable
 				|| managerRoles.isManagerOf(OrganisationRoles.principal, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
-				|| managerRoles.isMyInvitee(OrganisationRoles.administrator, identityRoles)
-				|| managerRoles.isMyInvitee(OrganisationRoles.principal, identityRoles)
-				|| managerRoles.isMyInvitee(OrganisationRoles.rolesmanager, identityRoles)
-				|| managerRoles.isMyInvitee(OrganisationRoles.usermanager, identityRoles);
+				|| managerRoles.isInviteeOf(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isInviteeOf(OrganisationRoles.principal, identityRoles)
+				|| managerRoles.isInviteeOf(OrganisationRoles.rolesmanager, identityRoles)
+				|| managerRoles.isInviteeOf(OrganisationRoles.usermanager, identityRoles);
 	}
 
 	/**

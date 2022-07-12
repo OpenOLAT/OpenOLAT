@@ -46,6 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
@@ -320,19 +321,22 @@ public class LectureBlockDAO {
 	
 	public List<LectureCurriculumElementInfos> searchCurriculumElements(LectureCurriculumElementSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select curEl,")
+		sb.append("select curEl, curElType,")
 		  .append(" (select count(distinct participants.key) from bgroupmember as participants")
 		  .append("   where curEl.group.key=participants.group.key and participants.role='").append(GroupRoles.participant.name()).append("'")
 		  .append("   and exists (select blockToGroup.key from lectureblocktogroup blockToGroup where blockToGroup.group.key=curEl.group.key) ")
 		  .append(" ) as numOfParticipants")
 		  .append(" from curriculumelement curEl")
+		  .append(" left join curEl.type curElType")
 		  .append(" inner join fetch curEl.group curElGroup")
 		  .append(" inner join fetch curEl.curriculum cur")
 		  .append(" left join fetch cur.organisation organis")
-		  .append(" where exists (select v.key from repositoryentry as v")
-		  .append("  inner join v.groups as relGroup")
-		  .append("  inner join lectureentryconfig config on (config.entry.key=v.key)")
-		  .append("  where relGroup.group.key=curElGroup.key and config.lectureEnabled=true")
+		  .append(" where (exists (select v.key from repositoryentry as v")
+		  .append("   inner join v.groups as relGroup")
+		  .append("   inner join lectureentryconfig config on (config.entry.key=v.key)")
+		  .append("   where relGroup.group.key=curElGroup.key and config.lectureEnabled=true")
+		  .append("  )")
+		  .append("  or curEl.lecturesEnabledString='enabled' or curElType.lecturesEnabledString='enabled'")
 		  .append(" )");
 		// generic search
 		Long key = null;
@@ -405,7 +409,7 @@ public class LectureBlockDAO {
 		
 		List<Object[]> rawObjects = query.getResultList();
 		return rawObjects.stream().map(objects
-				-> new LectureCurriculumElementInfos((CurriculumElement)objects[0], PersistenceHelper.extractPrimitiveLong(objects, 1)))
+				-> new LectureCurriculumElementInfos((CurriculumElement)objects[0], (CurriculumElementType)objects[1], PersistenceHelper.extractPrimitiveLong(objects, 2)))
 				.collect(Collectors.toList());
 	}
 	

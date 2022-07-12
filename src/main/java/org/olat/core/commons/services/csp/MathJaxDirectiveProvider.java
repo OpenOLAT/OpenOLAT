@@ -19,8 +19,9 @@
  */
 package org.olat.core.commons.services.csp;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -66,15 +67,32 @@ public class MathJaxDirectiveProvider implements CSPDirectiveProvider {
 	}
 
 	private Collection<String> getUrls() {
-		String mathJaxCdn = WebappHelper.getMathJaxCdn();
-		if(StringHelper.containsNonWhitespace(mathJaxCdn)
-				&& (mathJaxCdn.startsWith("//") || mathJaxCdn.startsWith("https://") || mathJaxCdn.startsWith("http://"))) {
-			if(mathJaxCdn.startsWith("//")) {
-				mathJaxCdn = "https:" + mathJaxCdn;
+		List<String> urls = new ArrayList<>(2);
+		String mathJaxCdn = cdnToUrl(WebappHelper.getMathJaxCdn());
+		if(mathJaxCdn != null) {
+			urls.add(mathJaxCdn);
+		}
+		String mathLiveCdn = cdnToUrl(WebappHelper.getMathLiveCdn());
+		if(mathLiveCdn != null) {
+			urls.add(mathLiveCdn);
+		}
+		return urls;
+	}
+	
+	private String cdnToUrl(String cdn) {
+		if(StringHelper.containsNonWhitespace(cdn)
+				&& (cdn.startsWith("//") || cdn.startsWith("https://") || cdn.startsWith("http://"))) {
+			if(cdn.startsWith("//")) {
+				cdn = "https:" + cdn;
 			}
-			return Collections.singletonList(mathJaxCdn);
+			if(cdn.endsWith(".js")) {
+				int lastIndex = cdn.lastIndexOf('/');
+				if(lastIndex >= 0) {
+					cdn = cdn.substring(0, lastIndex);
+				}
+			}
+			return cdn;
 		}
 		return null;
 	}
-
 }

@@ -34,8 +34,8 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  */
 public class ReviewItemsSource extends TaxonomyLevelItemsSource {
 
-	public ReviewItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, locale, taxonomyLevel);
+	public ReviewItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
+		super(me, roles, locale, taxonomyLevel, displayName);
 		setStatusFilter(QuestionStatus.review);
 		getDefaultParams().setExcludeAuthor(me);
 		getDefaultParams().setExcludeRated(me);

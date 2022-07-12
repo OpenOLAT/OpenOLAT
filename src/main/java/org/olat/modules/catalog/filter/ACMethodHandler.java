@@ -105,7 +105,7 @@ public class ACMethodHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		SelectionValues accessMethodKV = new SelectionValues();
 		acService.getAvailableMethods().stream()
 				.filter(AccessMethod::isVisibleInGui)

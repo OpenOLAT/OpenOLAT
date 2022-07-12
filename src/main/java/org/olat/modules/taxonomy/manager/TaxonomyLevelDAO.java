@@ -33,12 +33,18 @@ import java.util.stream.Collectors;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -61,8 +67,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TaxonomyLevelDAO implements InitializingBean {
+	
+	private static final Logger log = Tracing.createLoggerFor(TaxonomyLevelDAO.class);
 
-	private File rootDirectory, taxonomyLevelDirectory;
+	private File rootDirectory, taxonomyLevelDirectory, taxonomyLevelMediaDirectory;
 	
 	@Autowired
 	private DB dbInstance;
@@ -75,11 +83,20 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		if(!taxonomyLevelDirectory.exists()) {
 			taxonomyLevelDirectory.mkdirs();
 		}
+		taxonomyLevelMediaDirectory = new File(rootDirectory, "levels_media");
+		if(!taxonomyLevelMediaDirectory.exists()) {
+			taxonomyLevelMediaDirectory.mkdirs();
+		}
 	}
 	
-	public TaxonomyLevel createTaxonomyLevel(String identifier, String displayName, String description,
-			String externalId, TaxonomyLevelManagedFlag[] flags,
-			TaxonomyLevel parent, TaxonomyLevelType type, Taxonomy taxonomy) {
+	/**
+	 * Do not set display name and description. Use the i18nManager.
+	 * Thouse values are only present here because of the Upgrader. 
+	 */
+	@SuppressWarnings("deprecation")
+	public TaxonomyLevel createTaxonomyLevel(String identifier, String i18nSuffix, String displayName,
+			String description, String externalId,
+			TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, TaxonomyLevelType type, Taxonomy taxonomy) {
 		TaxonomyLevelImpl level = new TaxonomyLevelImpl();
 		level.setCreationDate(new Date());
 		level.setLastModified(level.getCreationDate());
@@ -89,6 +106,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		} else {
 			level.setIdentifier(UUID.randomUUID().toString());
 		}
+		level.setI18nSuffix(i18nSuffix);
 		level.setManagedFlagsString(TaxonomyLevelManagedFlag.toString(flags));
 		level.setDisplayName(displayName);
 		level.setDescription(description);
@@ -99,6 +117,8 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		dbInstance.getCurrentEntityManager().persist(level);
 		String storage = createLevelStorage(taxonomy, level);
 		level.setDirectoryPath(storage);
+		String mediaPath = createLevelMediaStorage(taxonomy, level);
+		level.setMediaPath(mediaPath);
 		
 		String identifiersPath = getMaterializedPathIdentifiers(parent, level);
 		String keysPath = getMaterializedPathKeys(parent, level);
@@ -161,20 +181,21 @@ public class TaxonomyLevelDAO implements InitializingBean {
 				.getResultList();
 	}
 	
-	public List<TaxonomyLevel> getLevels(TaxonomyRef taxonomy) {
+	public List<TaxonomyLevel> getLevels(Collection<? extends TaxonomyRef> refs) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
 		  .append(" left join fetch level.type as type")
 		  .append(" inner join fetch level.taxonomy as taxonomy");
-		if(taxonomy != null) {
-			sb.append(" where level.taxonomy.key=:taxonomyKey");
+		if(refs != null && !refs.isEmpty()) {
+			sb.append(" where level.taxonomy.key in :taxonomyKeys");
 		}
 		
 		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class);
-		if(taxonomy != null) {
-			query.setParameter("taxonomyKey", taxonomy.getKey());
+		if(refs != null && !refs.isEmpty()) {
+			List<Long> taxonomyKeys = refs.stream().map(TaxonomyRef::getKey).collect(Collectors.toList());
+			query.setParameter("taxonomyKeys", taxonomyKeys);
 		}
 		return query.getResultList();
 	}
@@ -194,13 +215,12 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		Long quickId = null;
 		String quickRefs = null;
 		String quickText = null;
+		Collection<String> quickI18nSuffix = null;
 		if(StringHelper.containsNonWhitespace(searchParams.getQuickSearch())) {
 			quickRefs = searchParams.getQuickSearch();
+			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
 			sb.where().append("(level.externalId=:quickRef or ");
 			PersistenceHelper.appendFuzzyLike(sb, "level.identifier", "quickText", dbInstance.getDbVendor());
-			sb.append(" or ");
-			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
-			PersistenceHelper.appendFuzzyLike(sb, "level.displayName", "quickText", dbInstance.getDbVendor());
 			if(StringHelper.isLong(quickRefs)) {
 				try {
 					quickId = Long.parseLong(quickRefs);
@@ -208,6 +228,10 @@ public class TaxonomyLevelDAO implements InitializingBean {
 				} catch (NumberFormatException e) {
 					//
 				}
+			}
+			if (searchParams.getQuickSearchI18nSuffix() != null && !searchParams.getQuickSearchI18nSuffix().isEmpty()) {
+				sb.append(" or level.i18nSuffix in :quickI18nSuffix");
+				quickI18nSuffix = searchParams.getQuickSearchI18nSuffix();
 			}
 			sb.append(")");	
 		}
@@ -234,6 +258,9 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		if(quickText != null) {
 			query.setParameter("quickText", quickText);
 		}
+		if(quickI18nSuffix != null) {
+			query.setParameter("quickI18nSuffix", quickI18nSuffix);
+		}
 		if (searchParams.isAllowedAsSubject() != null) {
 			query.setParameter("subjectAllowed", searchParams.isAllowedAsSubject().booleanValue());
 		}
@@ -259,17 +286,17 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			.getResultList();
 	}
 	
-	public List<TaxonomyLevel> getLevelsByDisplayName(TaxonomyRef taxonomy, String displayName) {
+	public List<TaxonomyLevel> getLevelsByI18nSuffix(TaxonomyRef taxonomy, Collection<String> i18nSuffix) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
 		  .append(" left join fetch level.type as type")
 		  .append(" inner join fetch level.taxonomy as taxonomy")
-		  .append(" where level.taxonomy.key=:taxonomyKey and level.displayName=:displayName");
+		  .append(" where level.taxonomy.key=:taxonomyKey and level.i18nSuffix in :i18nSuffix");
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class)
 			.setParameter("taxonomyKey", taxonomy.getKey())
-			.setParameter("displayName", displayName)
+			.setParameter("i18nSuffix", i18nSuffix)
 			.getResultList();
 	}
 	
@@ -516,11 +543,96 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	
 	public String createLevelStorage(Taxonomy taxonomy, TaxonomyLevel level) {
 		File taxonomyDirectory = new File(taxonomyLevelDirectory, taxonomy.getKey().toString());
+		return createLevelStorage(taxonomyDirectory, level);
+	}
+	
+	public String createLevelMediaStorage(Taxonomy taxonomy, TaxonomyLevel level) {
+		File taxonomyDirectory = new File(taxonomyLevelMediaDirectory, taxonomy.getKey().toString());
+		return createLevelStorage(taxonomyDirectory, level);
+	}
+
+	private String createLevelStorage(File taxonomyDirectory, TaxonomyLevel level) {
 		File storage = new File(taxonomyDirectory, level.getKey().toString());
 		storage.mkdirs();
 		
 		Path relativePath = rootDirectory.toPath().relativize(storage.toPath());
 		return relativePath.toString();
+	}
+	
+	public VFSContainer getLevelMediaStorage(TaxonomyLevel level) {
+		String path = ((TaxonomyLevelImpl)level).getMediaPath();
+		if(!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		path = "/" + TaxonomyService.DIRECTORY + path;
+		return VFSManager.olatRootContainer(path, null);
+	}
+
+	public VFSLeaf getBackgroundImage(TaxonomyLevel level) {
+		return getFirstImage(level, "background");
+	}
+
+	public VFSLeaf getTeaserImage(TaxonomyLevel level) {
+		return getFirstImage(level, "teaser");
+	}
+	
+	public VFSLeaf getFirstImage(TaxonomyLevel level, String path) {
+		if (level != null) {
+			VFSContainer mediaStorage = getLevelMediaStorage(level);
+			VFSContainer imageContainer = VFSManager.getOrCreateContainer(mediaStorage, path);
+			if (!imageContainer.getItems().isEmpty()) {
+				VFSItem vfsItem = imageContainer.getItems().get(0);
+				if (vfsItem instanceof VFSLeaf) {
+					return (VFSLeaf)vfsItem;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public boolean storeBackgroundImage(TaxonomyLevel level, Identity savedBy, File file, String filename) {
+		return storeImage(level, "background", savedBy, file, filename);
+	}
+	
+	public boolean storeTeaserImage(TaxonomyLevel level, Identity savedBy, File file, String filename) {
+		return storeImage(level, "teaser", savedBy, file, filename);
+	}
+	
+	public boolean storeImage(TaxonomyLevel level, String path, Identity savedBy, File file, String filename) {
+		if (file == null || !file.exists() || !file.isFile()) {
+			return false;
+		}
+		
+		try {
+			VFSContainer imageContainer = VFSManager.getOrCreateContainer(getLevelMediaStorage(level), path);
+			tryToStore(imageContainer, savedBy, file, filename);
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public void deleteBackgroundImage(TaxonomyLevel level) {
+		deleteImage(level, "background");
+	}
+
+	public void deleteTeaserImage(TaxonomyLevel level) {
+		deleteImage(level, "teaser");
+	}
+	
+	public void deleteImage(TaxonomyLevel level, String path) {
+		VFSContainer imageContainer = VFSManager.getOrCreateContainer(getLevelMediaStorage(level), path);
+		imageContainer.delete();
+	}
+	
+	private void tryToStore(VFSContainer imageContainer, Identity savedBy, File file, String filename) {
+		imageContainer.delete();
+		
+		String cleandFilename = FileUtils.cleanFilename(filename);
+		VFSLeaf vfsLeaf = VFSManager.resolveOrCreateLeafFromPath(imageContainer, cleandFilename);
+		VFSManager.copyContent(file, vfsLeaf, savedBy);
 	}
 	
 	private static class PathMaterializedPathLengthComparator implements Comparator<TaxonomyLevel> {

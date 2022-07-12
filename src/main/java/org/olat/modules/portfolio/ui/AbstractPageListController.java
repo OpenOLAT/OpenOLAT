@@ -77,6 +77,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -107,6 +108,7 @@ import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -160,6 +162,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate,
 			boolean withSections, boolean withComments, boolean flatList) {
 		super(ureq, wControl, vTemplate);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.config = config;
 		this.flatList = flatList;
 		this.stackPanel = stackPanel;
@@ -177,6 +180,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate,
 			boolean withSections, boolean withComments, boolean flatList) {
 		super(ureq, wControl, LAYOUT_CUSTOM, vTemplate, rootForm);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.config = config;
 		this.flatList = flatList;
 		this.secCallback = secCallback;
@@ -300,7 +304,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
 		if (taxonomyLinkingEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer(getLocale())));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.binder));
@@ -397,7 +401,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected void loadCompetencesFilter(Section section) {
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		portfolioService.getCompetencesAndUsage(section).forEach((taxonomyLevel, usage) -> {
-			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel) + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
 				css += " o_tag_selected";
@@ -417,11 +421,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	 * Load competences for all currently listed pages
 	 */
 	protected void loadCompetencesFilter() {
-		List<Page> pages = model.getObjects().stream().map(row -> row.getPage()).collect(Collectors.toList());
+		List<Page> pages = model.getObjects().stream().map(PortfolioElementRow::getPage).collect(Collectors.toList());
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		
 		portfolioService.getCompetencesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
-			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel) + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
 				css += " o_tag_selected";
@@ -464,7 +468,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	 * Load categories for all currently listed pages
 	 */
 	protected void loadCategoriesFilter() {
-		List<Page> pages = model.getObjects().stream().map(row -> row.getPage()).collect(Collectors.toList());
+		List<Page> pages = model.getObjects().stream().map(PortfolioElementRow::getPage).collect(Collectors.toList());
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		
 		portfolioService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
@@ -711,7 +715,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		}
 		
 		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(row.getPage(), true);
-		row.setPageCompetences(competences);
+		row.setPageCompetences(competences, getLocale());
 	}
 	
 	private List<String> getCategories(OLATResourceable ores, Map<OLATResourceable,List<Category>> categorizedElementMap) {

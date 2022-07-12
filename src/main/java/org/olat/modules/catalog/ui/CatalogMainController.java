@@ -19,6 +19,9 @@
  */
 package org.olat.modules.catalog.ui;
 
+import static org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.KEY_LAUNCHER;
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,12 +39,15 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Levels;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,6 +81,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	
 	public CatalogMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.defaultSearchParams = createDefaultSearchParams(ureq);
 		
 		mainVC = createVelocityContainer("main");
@@ -139,11 +146,11 @@ public class CatalogMainController extends BasicController implements Activateab
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, ose.getState());
 			} else if (event instanceof OpenTaxonomyEvent) {
 				OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
-				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey());
+				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
 			}
 		} else if (source instanceof CatalogRepositoryEntryListController) {
 			OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
-			doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey());
+			doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
 		}
 		super.event(ureq, source, event);
 	}
@@ -189,7 +196,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_SEARCH), null);
 				CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
-				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, null, false);
+				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, false);
 				listenTo(catalogRepositoryEntryListCtrl);
 				stackPanel.pushController(translate("search"), catalogRepositoryEntryListCtrl);
 			}
@@ -197,16 +204,16 @@ public class CatalogMainController extends BasicController implements Activateab
 		catalogRepositoryEntryListCtrl.search(ureq, searchString, reset);
 	}
 
-	private void doOpenTaxonomy(UserRequest ureq, Long taxonomyLevelKey) {
+	private void doOpenTaxonomy(UserRequest ureq, Long taxonomyLevelKey, Collection<Long> eductaionalTypeKeys, Collection<String> resourceTypes) {
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> taxonomyLevelKey);
-		doOpenTaxonomyLevel(ureq, taxonomyLevel);
+		doOpenTaxonomyLevel(ureq, taxonomyLevel, eductaionalTypeKeys, resourceTypes);
 	}
 
-	private void doOpenTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+	private void doOpenTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel, Collection<Long> eductaionalTypeKeys, Collection<String> resourceTypes) {
 		if (taxonomyLevel != null) {
 			popUpToTaxonomyCtrl();
 			doOpenTaxonomyHeader(ureq, taxonomyLevel);
-			doOpenTaxonomyList(ureq, taxonomyLevel);
+			doOpenTaxonomyList(ureq, taxonomyLevel, eductaionalTypeKeys, resourceTypes);
 		}
 	}
 	
@@ -216,10 +223,11 @@ public class CatalogMainController extends BasicController implements Activateab
 	 */
 	private void doActivateTaxonomy(UserRequest ureq, Long key) {
 		for (CatalogLauncher catalogLauncher : launchersCtrl.getTaxonomyLevelCatalogLaunchers()) {
-			List<TaxonomyLevel> taxonomyLevels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key);
+			Levels levels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key);
+			List<TaxonomyLevel> taxonomyLevels = levels.getTaxonomyLevels();
 			if (taxonomyLevels != null) {
 				stackPanel.popUpToRootController(ureq);
-				taxonomyLevels.forEach(level -> doOpenTaxonomyLevel(ureq, level));
+				taxonomyLevels.forEach(level -> doOpenTaxonomyLevel(ureq, level, levels.getEducationalTypeKeys(), levels.getResourceTypes()));
 				break;
 			}
 		}
@@ -240,16 +248,22 @@ public class CatalogMainController extends BasicController implements Activateab
 		mainVC.put("header", headerTaxonomyCtrl.getInitialComponent());
 	}
 	
-	private void doOpenTaxonomyList(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+	private void doOpenTaxonomyList(UserRequest ureq, TaxonomyLevel taxonomyLevel, Collection<Long> eductaionalTypeKeys, Collection<String> resourceTypes) {
 		removeAsListenerAndDispose(catalogRepositoryEntryListCtrl);
 		catalogRepositoryEntryListCtrl = null;
 	
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_TAXONOMY, taxonomyLevel.getKey()), null);
 		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
-		searchParams.getIdentToTaxonomyLevels().put("launcher", Collections.singletonList(taxonomyLevel));
-		CatalogRepositoryEntryListController taxonomyListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, taxonomyLevel, true);
+		searchParams.getIdentToTaxonomyLevels().put(KEY_LAUNCHER, Collections.singletonList(taxonomyLevel));
+		if (eductaionalTypeKeys != null && !eductaionalTypeKeys.isEmpty()) {
+			searchParams.getIdentToEducationalTypeKeys().put(KEY_LAUNCHER, eductaionalTypeKeys);
+		}
+		if (resourceTypes != null && !resourceTypes.isEmpty()) {
+			searchParams.getIdentToResourceTypes().put(KEY_LAUNCHER, resourceTypes);
+		}
+		CatalogRepositoryEntryListController taxonomyListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, true);
 		listenTo(taxonomyListCtrl);
-		stackPanel.pushController(taxonomyLevel.getDisplayName(), taxonomyListCtrl);
+		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
 	}
 
 }

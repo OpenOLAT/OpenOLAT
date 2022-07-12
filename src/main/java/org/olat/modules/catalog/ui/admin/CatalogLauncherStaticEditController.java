@@ -79,12 +79,12 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout) {
+	protected void initForm(FormItemContainer generalCont) {
 		String page = velocity_root + "/launcher_static.html";
 		reCont = FormLayoutContainer.createCustomFormLayout("static", getTranslator(), page);
 		reCont.setRootForm(mainForm);
 		reCont.setLabel("launcher.static.resources", null);
-		formLayout.add(reCont);
+		generalCont.add(reCont);
 		
 		addResourceLink = uifactory.addFormLink("launcher.static.resources.add", reCont, Link.BUTTON);
 		addResourceLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");

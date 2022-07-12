@@ -1350,7 +1350,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 	}
 	
-	private boolean isAdminSearchAllowed() {
+	protected boolean isAdminSearchAllowed() {
 		return roles.isAdministrator() || roles.isGroupManager() 
 				|| (roles.isLearnResourceManager() && groupModule.isResourceManagersAllowedToLinkGroups());
 	}

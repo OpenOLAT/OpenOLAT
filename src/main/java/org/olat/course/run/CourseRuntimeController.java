@@ -19,10 +19,7 @@
  */
 package org.olat.course.run;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -166,6 +163,8 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
+import org.olat.modules.zoom.ZoomModule;
+import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -214,7 +213,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		efficiencyStatementsLink, noteLink, leaveLink, disclaimerLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
-		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink,
+		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink, zoomLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link copyWithWizardLink;
@@ -244,6 +243,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
 	private BigBlueButtonRunController bigBlueButtonCtrl;
+	private ZoomRunController zoomCtrl;
 	private AssessmentModeListController assessmentModeCtrl;
 	private StopAssessmentWarningController stopAssessmentCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
@@ -282,6 +282,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private LearningPathService learningPathService;
 	@Autowired 
 	private CourseDisclaimerManager disclaimerManager;
+	@Autowired
+	private ZoomModule zoomModule;
+
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -1086,7 +1089,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			bigBlueButtonLink.setVisible(cc.isBigBlueButtonEnabled());
 			toolbarPanel.addTool(bigBlueButtonLink);
 		}
-		
+
+		if (!assessmentLock && disclaimerAccepted && userCourseEnv != null) {
+			zoomLink = LinkFactory.createToolLink("zoom", translate(CourseTool.zoom.getI18nKey()), this, CourseTool.zoom.getIconCss());
+			zoomLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[zoom:0]"));
+			zoomLink.setVisible(cc.isZoomEnabled() && zoomModule.isEnabled() && zoomModule.isEnabledForCourseTool());
+			toolbarPanel.addTool(zoomLink);
+		}
+
 		if(!assessmentLock && disclaimerAccepted && userCourseEnv != null) {
 			blogLink = LinkFactory.createToolLink("blog", translate(CourseTool.blog.getI18nKey()), this, CourseTool.blog.getIconCss());
 			blogLink.setUrl(BusinessControlFactory.getInstance()
@@ -1269,6 +1280,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doTeams(ureq);
 		} else if(bigBlueButtonLink == source) {
 			doBigBlueButton(ureq);
+		} else if (zoomLink == source) {
+			doZoom(ureq);
 		} else if(blogLink == source) {
 			doBlog(ureq);
 		} else if(wikiLink == source) {
@@ -1431,6 +1444,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case documents: doDocuments(ureq); break;
 						case bigbluebutton: doBigBlueButton(ureq); break;
 						case teams: doTeams(ureq); break;
+						case zoom: doZoom(ureq); break;
 					}
 					delayedClose = null;
 				} else {
@@ -1534,6 +1548,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Teams".equalsIgnoreCase(type)) {
 				if (teamsLink != null && teamsLink.isVisible()) {
 					activateSubEntries(ureq, doTeams(ureq), entries);
+				}
+			} else if ("Zoom".equalsIgnoreCase(type)) {
+				if (zoomLink != null && zoomLink.isVisible()) {
+					activateSubEntries(ureq, doZoom(ureq), entries);
 				}
 			} else if("BigBlueButton".equalsIgnoreCase(type)) {
 				if (bigBlueButtonLink != null && bigBlueButtonLink.isVisible()) {
@@ -1763,6 +1781,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doWiki(ureq);
 			} else {
 				doShowToolNotAvailable(CourseTool.wiki);
+			}
+		}
+		break;
+		case zoom: {
+			if (zoomLink != null && zoomLink.isVisible()) {
+				doZoom(ureq);
+			} else {
+				doShowToolNotAvailable(CourseTool.zoom);
 			}
 		}
 		break;
@@ -2441,7 +2467,26 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		delayedClose = Delayed.bigbluebutton;
 		return null;
 	}
-	
+
+	private ZoomRunController doZoom(UserRequest ureq) {
+		if (delayedClose == Delayed.zoom || requestForClose(ureq)) {
+			removeCustomCSS();
+
+			OLATResourceable ores = OresHelper.createOLATResourceableType("zoom");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+			RepositoryEntry entry = getRepositoryEntry();
+			String subIdent = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
+			zoomCtrl = new ZoomRunController(ureq, swControl, entry, subIdent, null, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+			pushController(ureq, translate("command.zoom"), zoomCtrl);
+			setActiveTool(zoomLink);
+			currentToolCtr = zoomCtrl;
+			return zoomCtrl;
+		}
+		delayedClose = Delayed.zoom;
+		return null;
+	}
+
 	private WikiToolController doWiki(UserRequest ureq) {
 		if(delayedClose == Delayed.wiki || requestForClose(ureq)) {
 			removeCustomCSS();
@@ -2693,6 +2738,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case zoom: {
+				if (zoomLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					zoomLink.setVisible(cc.isZoomEnabled() && zoomModule.isEnabled() && zoomModule.isEnabledForCourseTool());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case blog: {
 				if(blogLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2923,6 +2977,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		forum,
 		documents,
 		teams,
-		bigbluebutton
+		bigbluebutton,
+		zoom
 	}
 }

@@ -20,6 +20,7 @@
 package org.olat.modules.quality.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -145,16 +146,16 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "Taxonomy", "", null);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "level 1", "", null,
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null,
+				null, taxonomy);
+		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null,
 				null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 2 parent", "",
-				null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 2", "", null,
-				null, taxonomyLevel2Parent, taxonomy);
-		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 3", "", null,
-				null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null,
+				taxonomyLevel2Parent, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null,
+				null, taxonomy);
 		TaxonomyLevel taxonomyLevelOfCurriculumElement = taxonomyService
-				.createTaxonomyLevel(UUID.randomUUID().toString(), "Level of element", "", null, null, null, taxonomy);
+				.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null, null, taxonomy);
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevel1);
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevel2);
 		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement1, taxonomyLevelOfCurriculumElement);
@@ -246,16 +247,16 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "Taxonomy", "", null);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 1", "", null,
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null,
+				null, taxonomy);
+		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null,
 				null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 2 parent", "",
-				null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 2", "", null,
-				null, taxonomyLevel2Parent, taxonomy);
-		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 2", "", null,
-				null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null,
+				taxonomyLevel2Parent, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null,
+				null, taxonomy);
 		TaxonomyLevel taxonomyLevelOfCurriculumElement = taxonomyService
-				.createTaxonomyLevel(UUID.randomUUID().toString(), "Taxonomy curr. el.", "", null, null, null, taxonomy);
+				.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null, null, taxonomy);
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevel1);
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevel2);
 		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement1, taxonomyLevelOfCurriculumElement);

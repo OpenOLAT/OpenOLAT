@@ -35,10 +35,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
@@ -49,7 +45,7 @@ import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.manager.QualityGeneratorConfigsImpl;
-import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -76,8 +72,6 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private CurriculumService curriculumService;
 	
 	@Autowired
 	private CourseLecturesProvider sut;
@@ -93,12 +87,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		repositoryService.addOrganisation(courseEntry, courseOrganisation1);
 		Organisation courseOrganisation2 = createOrganisation(defaultOrganisation);
 		repositoryService.addOrganisation(courseEntry, courseOrganisation2);
-		CurriculumElement element = createCurriculumElement();
-		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, courseEntry);
 		
 		Date lastRun = DateUtils.addDays(new Date(), -2);
 		Date now = new Date();
@@ -118,12 +110,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date startDate = DateUtils.addDays(new Date(), -2);
 		Date startEnd = DateUtils.addDays(new Date(), -1);
 		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
-		CurriculumElement element = createCurriculumElement();
-		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, courseEntry);
 		
 		Date lastRun = DateUtils.addDays(new Date(), -2);
 		Date now = new Date();
@@ -139,12 +129,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date startDate = DateUtils.addDays(new Date(), -12);
 		Date startEnd = DateUtils.addDays(new Date(), -11);
 		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
-		CurriculumElement element = createCurriculumElement();
-		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, courseEntry);
 		
 		Date lastRun = DateUtils.addDays(new Date(), -20);
 		Date now = new Date();
@@ -162,12 +150,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date startDate = DateUtils.addDays(now, 3);
 		Date startEnd = DateUtils.addDays(now, 4);
 		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
-		CurriculumElement element = createCurriculumElement();
-		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, courseEntry);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, "5");
 		
 		Date lastRun = DateUtils.addDays(now, -9);
@@ -193,12 +179,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date startDate = DateUtils.addDays(now,-2);
 		Date startEnd = DateUtils.addDays(now, -1);
 		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
-		CurriculumElement element = createCurriculumElement();
-		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, courseEntry);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, "2");
 		
 		Date lastRun = DateUtils.addDays(now, -9);
@@ -218,12 +202,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date lectureStart = DateUtils.addDays(now, -2);
 		Date lectureEnd = DateUtils.addDays(now, -1);
 		RepositoryEntry courseEntry = createCourseWithLecture(lectureStart, lectureEnd);
-		CurriculumElement element = createCurriculumElement();
-		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		int durationDays = 10;
-		QualityGeneratorConfigs configs = createConfigs(generator, valueOf(durationDays), element);
+		QualityGeneratorConfigs configs = createConfigs(generator, valueOf(durationDays), courseEntry);
 		int startDataCollectionBeforeEnd = 45;
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END, valueOf(startDataCollectionBeforeEnd));
 		
@@ -254,8 +236,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		return courseEntry;
 	}
 
-	private QualityGeneratorConfigs createConfigs(QualityGenerator generator, String durationDays,
-			CurriculumElementRef curriculumElementRef) {
+	private QualityGeneratorConfigs createConfigs(QualityGenerator generator, String durationDays, RepositoryEntry courseEntry) {
 		QualityGeneratorConfigs configs = new QualityGeneratorConfigsImpl(generator);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TITLE, "DATA_COLLECTION_TITLE");
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ROLES, "coach");
@@ -263,8 +244,8 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MAX, "10000");
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE, CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_LAST);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_DURATION_DAYS, durationDays);
-		// Restrict to a single curriculum element
-		CurriculumElementWhiteListController.setCurriculumElementRefs(configs, Collections.singletonList(curriculumElementRef));
+		// Restrict to a single course
+		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, Collections.singletonList(courseEntry));
 		dbInstance.commitAndCloseSession();
 		return configs;
 	}
@@ -284,15 +265,6 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), random(), parent, null);
 		dbInstance.commitAndCloseSession();
 		return organisation;
-	}
-
-	private CurriculumElement createCurriculumElement() {
-		Organisation organisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), organisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), null, null,
-				null, null, null, null, null, null, curriculum);
-		dbInstance.commitAndCloseSession();
-		return curriculumElement;
 	}
 
 }

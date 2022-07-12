@@ -308,6 +308,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		String cssClass = check.getCssClass(); //optional CSS class
 		sb.append("<div>", !inline); // normal checkboxes need a wrapper (bootstrap) ...
 		sb.append("<label class='").append("checkbox-inline ", inline); // ... and inline a class on the label (bootstrap)			
+		sb.append(" o_checkbox_h_aligned ", stF.isHorizontallyAlignedCheckboxes());
 		sb.append(cssClass, cssClass != null).append("' for=\"").append(formDispatchId).append("\">");
 		
 		

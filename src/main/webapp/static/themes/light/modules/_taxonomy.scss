@@ -73,3 +73,48 @@
 		margin-top: 0px;
 	}		
 }
+
+/** Taxonomy level selection element **/
+.o_tax_ls_button {
+	width: 100%;
+	max-width: 100%;
+	min-height: $input-height-base;
+	white-space: initial;
+	display: flex;
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+	.o_tax_ls_tags {
+		display: flex;
+		flex-wrap: wrap;
+		.o_tag {
+			white-space: initial;
+			background-color: #ffffff;
+			color: $o-competences-font-color;
+			border-color: $o-competences-color; 
+			border-radius: 0.5em;
+		}
+	}
+}
+.o_tax_ls_selections {
+	padding-right: 15px;
+}
+.o_tax_ls_search {
+	margin-bottom: 10px;
+}
+.o_tax_ls_option {
+	max-width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+.o_tax_ls_expand {
+	border-top: 1px solid #e7e7e7;
+	.o_tax_ls_expand_button {
+		height: 20px;
+		width: 32px;
+		padding: 0px 8px;
+		border: 1px solid #e7e7e7;
+		border-top-left-radius: 0px;
+		border-top-right-radius: 0px;
+	}
+}

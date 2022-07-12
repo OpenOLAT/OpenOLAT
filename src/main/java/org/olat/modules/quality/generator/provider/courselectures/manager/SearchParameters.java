@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
-import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -49,9 +48,8 @@ public class SearchParameters {
 	private QualityGeneratorRef excludeGeneratorAndTopicIdentityRef;
 	private QualityGeneratorRef excludeGeneratorAndTopicRepositoryRef;
 	private IdentityRef teacherRef;
-	private Collection<? extends RepositoryEntryRef> courseRefs;
-	private Collection<? extends CurriculumElementRef> whiteListRefs;
-	private Collection<? extends CurriculumElementRef> blackListRefs;
+	private Collection<? extends RepositoryEntryRef> whiteListRefs;
+	private Collection<? extends RepositoryEntryRef> blackListRefs;
 	private List<? extends OrganisationRef> organisationRefs;
 	private Date from;
 	private Date to;
@@ -129,36 +127,25 @@ public class SearchParameters {
 		this.teacherRef = teacherRef;
 	}
 
-	public Collection<? extends RepositoryEntryRef> getCourseRefs() {
-		if (courseRefs == null) {
-			courseRefs = Collections.emptyList();
-		}
-		return courseRefs;
-	}
-
-	public void setCourseRefs(Collection<? extends RepositoryEntryRef> courseRefs) {
-		this.courseRefs = courseRefs;
-	}
-
-	public Collection<? extends CurriculumElementRef> getWhiteListRefs() {
+	public Collection<? extends RepositoryEntryRef> getWhiteListRefs() {
 		if (whiteListRefs == null) {
 			whiteListRefs = Collections.emptyList();
 		}
 		return whiteListRefs;
 	}
 
-	public void setWhiteListRefs(Collection<? extends CurriculumElementRef> whiteListRefs) {
+	public void setWhiteListRefs(Collection<? extends RepositoryEntryRef> whiteListRefs) {
 		this.whiteListRefs = whiteListRefs;
 	}
 
-	public Collection<? extends CurriculumElementRef> getBlackListRefs() {
+	public Collection<? extends RepositoryEntryRef> getBlackListRefs() {
 		if (blackListRefs == null) {
 			blackListRefs = Collections.emptyList();
 		}
 		return blackListRefs;
 	}
 
-	public void setBlackListRefs(Collection<? extends CurriculumElementRef> blackListRefs) {
+	public void setBlackListRefs(Collection<? extends RepositoryEntryRef> blackListRefs) {
 		this.blackListRefs = blackListRefs;
 	}
 
@@ -218,12 +205,18 @@ public class SearchParameters {
 		builder.append(excludeGeneratorAndTopicRepositoryRef);
 		builder.append(", teacherRef=");
 		builder.append(teacherRef);
-		builder.append(", courseRefs=");
-		builder.append(courseRefs);
-		builder.append(", curriculumElementRefs={");
+		builder.append(", whiteListRefs={");
 		if (whiteListRefs != null) {
 			builder.append(whiteListRefs.stream()
-					.map(CurriculumElementRef::getKey)
+					.map(RepositoryEntryRef::getKey)
+					.map(k -> k.toString())
+					.collect(Collectors.joining(", ")));
+		}
+		builder.append("]");
+		builder.append(", blackListRefs={");
+		if (blackListRefs != null) {
+			builder.append(blackListRefs.stream()
+					.map(RepositoryEntryRef::getKey)
 					.map(k -> k.toString())
 					.collect(Collectors.joining(", ")));
 		}

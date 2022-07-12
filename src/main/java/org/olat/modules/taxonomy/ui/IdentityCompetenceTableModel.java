@@ -63,7 +63,7 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 			case taxonomyDisplayName: return row.getTaxonomy().getDisplayName();
 			case taxonomyExternalId: return row.getTaxonomy().getExternalId();
 			case taxonomyLevelIdentifier: return row.getTaxonomyLevel().getIdentifier();
-			case taxonomyLevelDisplayName: return row.getTaxonomyLevel().getDisplayName();
+			case taxonomyLevelDisplayName: return row.getDisplayName();
 			case taxonomyLevelType: {
 				TaxonomyLevelType type = row.getTaxonomyLevel().getType();
 				return type == null ? null : type.getDisplayName();

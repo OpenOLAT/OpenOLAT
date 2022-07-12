@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.QItemType;
@@ -41,6 +42,7 @@ import org.olat.modules.qpool.ui.datasource.FinalItemsSource;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +63,7 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 	public ItemListMyCompetencesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback,
 			String restrictToFormat, List<QItemType> excludeTypes) {
 		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, excludeTypes, "qti-select");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 	}
 	
 	public boolean hasCompetences() {
@@ -73,7 +76,7 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 		getItemsTable().setMultiSelect(true);
 		selectLink = uifactory.addFormLink("select-to-import", "select", null, formLayout, Link.BUTTON);
 
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsFinal(getIdentity());
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsFinal(getTranslator(), getIdentity());
 		String[] levelKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 		String[] levelValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
 
@@ -117,7 +120,8 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 		if(level == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
-			FinalItemsSource source = new FinalItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), level);
+			FinalItemsSource source = new FinalItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(),
+					level, TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
 			source.getDefaultParams().setFormat(restrictToFormat);
 			source.getDefaultParams().setExcludedItemTypes(excludeTypes);
 			updateSource(source);

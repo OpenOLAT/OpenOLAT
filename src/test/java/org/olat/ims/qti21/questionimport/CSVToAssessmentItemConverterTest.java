@@ -31,12 +31,15 @@ import org.junit.Test;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.test.JunitTestHelper;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
@@ -133,5 +136,37 @@ public class CSVToAssessmentItemConverterTest {
 		Assert.assertEquals(10.0d, numerical3.getLowerTolerance(), 0.00001);
 		Assert.assertEquals(10.0d, numerical3.getUpperTolerance(), 0.00001);
 		Assert.assertEquals(ToleranceMode.RELATIVE, numerical3.getToleranceMode());
+	}
+	
+	@Test
+	public void importInlineChoices() throws IOException {
+		ImportOptions options = new ImportOptions();
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, Locale.ENGLISH, qtiSerializer);
+		try(InputStream inStream = JunitTestHelper.class.getResourceAsStream("file_resources/qti21/import_qti21_inlinechoices.txt")) {
+			String input = IOUtils.toString(inStream, StandardCharsets.UTF_8);
+			converter.parse(input);
+		} catch(IOException e) {
+			throw e;
+		}
+		
+		List<AssessmentItemAndMetadata> itemsAndData = converter.getItems();
+		Assert.assertNotNull(itemsAndData);
+		Assert.assertEquals(1, itemsAndData.size());
+		
+		// first item
+		AssessmentItemAndMetadata item = itemsAndData.get(0);
+		AssessmentItemBuilder itemBuilder = item.getItemBuilder();
+		Assert.assertEquals(1.0d, itemBuilder.getMaxScoreBuilder().getScore().doubleValue(), 0.00001);
+		
+		List<Interaction> interactions = itemBuilder.getAssessmentItem().getItemBody().findInteractions();
+		Assert.assertEquals(4, interactions.size());
+		
+		InlineChoiceInteraction inlineChoiceInteraction = (InlineChoiceInteraction)interactions.get(0);
+		List<InlineChoice> inlineChoices = inlineChoiceInteraction.getInlineChoices();
+		Assert.assertEquals("", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(0)));
+		Assert.assertEquals(".", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(1)));
+		Assert.assertEquals(";", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(2)));
+		Assert.assertEquals("!", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(3)));
 	}
 }

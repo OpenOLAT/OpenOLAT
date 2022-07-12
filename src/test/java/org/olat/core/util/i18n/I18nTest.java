@@ -550,6 +550,42 @@ public class I18nTest extends OlatTestCase {
 		// multi line value search
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Die Aktion konnte nicht ausgef\u00FChrt werden", testLocale, testLocale, null, true).size());
 	}
+	
+	@Test
+	public void testFindI18nKeysByOverlayValue_fuzzyMatch() {
+		assertTrue(Locale.GERMAN.equals(I18nModule.getDefaultLocale()));
+		
+		String bundleName = "org.olat.core.util.i18n.junittestdata.findinoverlay";
+		String prefix = "test.";
+		Locale searchLocale = i18nMgr.getLocaleOrDefault("nl_NL");
+		String searchString = "go";
+		
+		Set<String> keysByOverlayValue = i18nMgr.findI18nKeysByOverlayValue(searchString, prefix, searchLocale, bundleName, false);
+		assertTrue(keysByOverlayValue.contains("test.fuzzy.matching.overlay.no.default"));
+		assertTrue(keysByOverlayValue.contains("test.fuzzy.matching.overlay.non.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.fuzzy.non.matching.overlay.non.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.fuzzy.non.matching.overlay.matching.default"));
+		assertTrue(keysByOverlayValue.contains("test.fuzzy.no.overlay.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.fuzzy.other.locale"));
+	}
+	
+	@Test
+	public void testFindI18nKeysByOverlayValue_exactMatch() {
+		assertTrue(Locale.GERMAN.equals(I18nModule.getDefaultLocale()));
+		
+		String bundleName = "org.olat.core.util.i18n.junittestdata.findinoverlay";
+		String prefix = "test.";
+		Locale searchLocale = i18nMgr.getLocaleOrDefault("nl_NL");
+		String searchString = "Where do you go?";
+		
+		Set<String> keysByOverlayValue = i18nMgr.findI18nKeysByOverlayValue(searchString, prefix, searchLocale, bundleName, true);
+		assertTrue(keysByOverlayValue.contains("test.exact.matching.overlay.no.default"));
+		assertTrue(keysByOverlayValue.contains("test.exact.matching.overlay.non.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.exact.non.matching.overlay.non.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.exact.non.matching.overlay.matching.default"));
+		assertTrue(keysByOverlayValue.contains("test.exact.no.overlay.matching.default"));
+		assertFalse(keysByOverlayValue.contains("test.exact.other.locale"));
+	}
 
 	/**
 	 * Test methods i18nManager.findMissingI18nItems()

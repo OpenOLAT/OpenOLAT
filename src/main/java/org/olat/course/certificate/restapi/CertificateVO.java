@@ -23,7 +23,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateManagedFlag;
 
 /**
  * 
@@ -37,17 +39,38 @@ public class CertificateVO {
 	
 	private Long key;
 	private Long identityKey;
+	private String courseTitle;
+	private Long courseResourceKey;
 	private String uuid;
+	private String externalId;
+	private String managedFlags;
 	
 	public CertificateVO() {
 		// make JAX-RS happy
 	}
 	
-	public CertificateVO(CertificateLight certificate) {
-		key = certificate.getKey();
-		identityKey = certificate.getIdentityKey();
-		uuid = certificate.getUuid();
-		
+	public static CertificateVO valueOf(CertificateLight certificate) {
+		CertificateVO vo = new CertificateVO();
+		vo.setKey(certificate.getKey());
+		vo.setIdentityKey(certificate.getIdentityKey());
+		vo.setCourseTitle(certificate.getCourseTitle());
+		vo.setCourseResourceKey(certificate.getOlatResourceKey());
+		vo.setUuid(certificate.getUuid());
+		vo.setExternalId(certificate.getExternalId());
+		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
+		return vo;
+	}
+	
+	public static CertificateVO valueOf(Certificate certificate) {
+		CertificateVO vo = new CertificateVO();
+		vo.setKey(certificate.getKey());
+		vo.setIdentityKey(certificate.getIdentity().getKey());
+		vo.setCourseTitle(certificate.getCourseTitle());
+		vo.setCourseResourceKey(certificate.getArchivedResourceKey());
+		vo.setUuid(certificate.getUuid());
+		vo.setExternalId(certificate.getExternalId());
+		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
+		return vo;
 	}
 
 	public Long getKey() {
@@ -66,6 +89,22 @@ public class CertificateVO {
 		this.identityKey = identityKey;
 	}
 
+	public Long getCourseResourceKey() {
+		return courseResourceKey;
+	}
+
+	public void setCourseResourceKey(Long courseResourceKey) {
+		this.courseResourceKey = courseResourceKey;
+	}
+
+	public String getCourseTitle() {
+		return courseTitle;
+	}
+
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
+	}
+
 	public String getUuid() {
 		return uuid;
 	}
@@ -73,7 +112,20 @@ public class CertificateVO {
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
-	
-	
 
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getManagedFlags() {
+		return managedFlags;
+	}
+
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
+	}
 }

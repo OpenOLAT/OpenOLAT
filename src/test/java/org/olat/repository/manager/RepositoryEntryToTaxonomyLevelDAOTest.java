@@ -19,6 +19,8 @@
  */
 package org.olat.repository.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
 				RepositoryEntryStatusEnum.trash, null);
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-400", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 	
 		dbInstance.commitAndCloseSession();
 		
@@ -78,7 +80,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-401", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -97,7 +99,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -113,7 +115,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -135,7 +137,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402-by-keys", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-402", "My taxonomy level by key", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-402", random(), "My taxonomy level by key", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
 		
@@ -157,7 +159,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
 		

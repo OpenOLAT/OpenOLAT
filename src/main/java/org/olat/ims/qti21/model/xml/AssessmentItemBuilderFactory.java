@@ -33,6 +33,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -69,6 +70,7 @@ public class AssessmentItemBuilderFactory {
 			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(translator.translate("new.hotspot"), qtiService.qtiSerializer()); break;
 			case hottext: itemBuilder = new HottextAssessmentItemBuilder(translator.translate("new.hottext"), translator.translate("new.hottext.start"), translator.translate("new.hottext.text"), qtiService.qtiSerializer()); break;
 			case order: itemBuilder = new OrderAssessmentItemBuilder(translator.translate("new.order"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
+			case inlinechoice: itemBuilder = new InlineChoiceAssessmentItemBuilder(translator.translate("new.inlinechoice"), qtiService.qtiSerializer()); break; 
 			default: return null;
 		}
 		return itemBuilder;

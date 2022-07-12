@@ -75,7 +75,7 @@ public class LTI13AssessmentEntryDAOTest extends OlatTestCase {
 		String subIdentity = UUID.randomUUID().toString();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, subIdent);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 
 		securityManager.createAndPersistAuthentication(participant, LTI13Service.LTI_PROVIDER, tool.getToolDomain(), subIdentity, null, null);

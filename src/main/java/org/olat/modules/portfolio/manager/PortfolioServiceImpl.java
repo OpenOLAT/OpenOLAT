@@ -674,8 +674,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Page> getPages(BinderRef binder, String searchString) {
-		return pageDao.getPages(binder, searchString);
+	public List<Page> getPages(BinderRef binder) {
+		return pageDao.getPages(binder);
 	}
 
 	@Override

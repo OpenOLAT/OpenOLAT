@@ -59,6 +59,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -107,6 +108,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 
 	public CompetencesOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity assessedIdentity, boolean canModify, boolean usedAsPersonalTool) {
 		super(ureq, wControl, "identity_competences");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		this.stackPanel = stackPanel;
 		this.assessedIdentity = assessedIdentity;
@@ -135,7 +137,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		
 		// Load taxonomy levels to competences
 		taxonomyLevels = competences.stream()
-				.map(competence -> competence.getTaxonomyLevel())
+				.map(TaxonomyCompetence::getTaxonomyLevel)
 				.distinct()
 				.collect(Collectors.toList());
 		
@@ -461,7 +463,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 	private void doConfirmRemove(UserRequest ureq, CompetencesOverviewTableRow row) {
 		String title = translate("remove");
 		String competence = translate(row.getCompetence().getCompetenceType().name());
-		String levelDisplayName = StringHelper.escapeHtml(row.getLevel().getDisplayName());
+		String levelDisplayName = StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), row.getLevel()));
 		String text = translate("confirmation.remove.competence", new String[] { competence, levelDisplayName });
 		removeCompentenceConfirmationCtrl = activateOkCancelDialog(ureq, title, text, removeCompentenceConfirmationCtrl);
 		removeCompentenceConfirmationCtrl.setUserObject(row);

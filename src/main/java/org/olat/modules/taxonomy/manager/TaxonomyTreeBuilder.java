@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -43,6 +45,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * Build the tree of taxonomy
@@ -94,13 +97,14 @@ public class TaxonomyTreeBuilder {
 			}
 			root.setUserObject(taxonomy);
 
+			if(locale == null) {
+				locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
+			}
+			
 			//taxonomy directory
 			if(enableTemplates) {
 				VFSContainer taxonomyDirectory = taxonomyService.getDocumentsLibrary(taxonomy);
 				TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory, TaxonomyTreeNodeType.templates);
-				if(locale == null) {
-					locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
-				}
 				taxonomyDirectorNode.setTitle(templateDirectory);
 				taxonomyDirectorNode.setUserObject(taxonomyDirectory);
 				root.addChild(taxonomyDirectorNode);
@@ -109,14 +113,16 @@ public class TaxonomyTreeBuilder {
 			//taxonomy levels
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomy);
 			Map<Long,TaxonomyLevel> keytoLevels = levels.stream()
-					.collect(Collectors.toMap(l -> l.getKey(), l -> l));
+					.collect(Collectors.toMap(TaxonomyLevel::getKey, l -> l));
 			
+			Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 			Map<Long,TaxonomyTreeNode> fieldKeyToNode = new HashMap<>();
 			for(TaxonomyLevel taxonomyLevel:levels) {
 				Long key = taxonomyLevel.getKey();
 				TaxonomyTreeNode node = fieldKeyToNode.get(key);
 				if(node == null) {
-					node = new TaxonomyTreeNode(taxonomy, taxonomyLevel, getType(taxonomyLevel));
+					String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel);
+					node = new TaxonomyTreeNode(taxonomy, taxonomyLevel, displayName, getType(taxonomyLevel));
 					TaxonomyLevelType type = taxonomyLevel.getType();
 					if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 						node.setIconCssClass(type.getCssClass());
@@ -133,7 +139,8 @@ public class TaxonomyTreeBuilder {
 					TaxonomyTreeNode parentNode = fieldKeyToNode.get(parentKey);
 					if(parentNode == null) {
 						parentLevel = keytoLevels.get(parentKey);//to use the fetched type
-						parentNode = new TaxonomyTreeNode(taxonomy, parentLevel, getType(parentLevel));
+						String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel);
+						parentNode = new TaxonomyTreeNode(taxonomy, parentLevel, displayName, getType(parentLevel));
 						TaxonomyLevelType type = parentLevel.getType();
 						if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 							parentNode.setIconCssClass(type.getCssClass());

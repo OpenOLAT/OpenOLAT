@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
@@ -37,6 +39,7 @@ import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.PageListSortableDataModelDelegate.ListComparator.Mode;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -47,10 +50,12 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
 public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDelegate<PortfolioElementRow> {
 	
 	private final boolean flat;
+	private final Translator taxonomyTanslator;
 	
 	public PageListSortableDataModelDelegate(SortKey orderBy, PageListDataModel tableModel, boolean flat, Locale locale) {
 		super(orderBy, tableModel, locale);
 		this.flat = flat;
+		this.taxonomyTanslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 	}
 
 	@Override
@@ -63,8 +68,8 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 				case key: comparator = new PageCreationDateComparator(); break;
 				case status: comparator = new StatusComparator(); break;
 				case comment: comparator = new CommentsComparator(); break;
-				case competences: comparator = new ListComparator(getCollator(), Mode.Competence); break;
-				case categories: comparator = new ListComparator(getCollator(), Mode.Category); break;
+				case competences: comparator = new ListComparator(getCollator(), taxonomyTanslator, Mode.Competence); break;
+				case categories: comparator = new ListComparator(getCollator(), taxonomyTanslator, Mode.Category); break;
 				default: comparator = new DefaultComparator(); break;
 			}
 		}
@@ -116,11 +121,13 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 	
 	public static final class ListComparator implements Comparator<PortfolioElementRow> {
 		
-		private Collator collator;	
-		private Mode mode;
+		private final Collator collator;
+		private final Translator taxonomyTanslator;
+		private final Mode mode;
 		
-		public ListComparator(Collator collator, Mode mode) {
+		public ListComparator(Collator collator, Translator taxonomyTanslator, Mode mode) {
 			this.collator = collator;
+			this.taxonomyTanslator = taxonomyTanslator;
 			this.mode = mode;
 		}
 		
@@ -135,13 +142,17 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 					List<TaxonomyCompetence> comp2 = (List<TaxonomyCompetence>) o2.getPageCompetencesObjects();
 					
 					if (comp1 != null && !comp1.isEmpty()) {
-						c1 = comp1.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList());
+						c1 = comp1.stream()
+								.map(competence -> TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, competence.getTaxonomyLevel()))
+								.collect(Collectors.toList());
 					} else {
 						c1 = new ArrayList<>();
 					}
 					
 					if (comp2 != null && !comp2.isEmpty()) {
-						c2 = comp2.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList());
+						c2 = comp2.stream()
+								.map(competence -> TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, competence.getTaxonomyLevel()))
+								.collect(Collectors.toList());
 					} else {
 						c2 = new ArrayList<>();
 					}

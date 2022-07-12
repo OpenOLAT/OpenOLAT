@@ -292,6 +292,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		scoreCont.add(altPointElId, altPointEl);
 		return new FIBAlternativeWrapper(alternative, altPointEl);
 	}
+	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);

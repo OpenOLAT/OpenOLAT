@@ -1666,6 +1666,8 @@ create table o_cer_certificate (
    c_status varchar2(16 char) default 'pending' not null,
    c_email_status varchar2(16 char),
    c_uuid varchar2(36 char) not null,
+   c_external_id varchar(64),
+   c_managed_flags varchar(255),
    c_next_recertification date,
    c_path varchar2(1024 char),
    c_last number default 1 not null,
@@ -2728,6 +2730,7 @@ create table o_lti_tool_deployment (
    creationdate date not null,
    lastmodified date not null,
    l_deployment_id varchar2(128) not null unique,
+   l_context_id varchar(255),
    l_target_url varchar2(1024),
    l_send_attributes varchar2(2048),
    l_send_custom_attributes CLOB,
@@ -2735,6 +2738,7 @@ create table o_lti_tool_deployment (
    l_coach_roles varchar2(2048),
    l_participant_roles varchar2(2048),
    l_assessable number default 0 not null,
+   l_nrps number default 1,
    l_display varchar2(32),
    l_display_height varchar2(32),
    l_display_width varchar2(32),
@@ -2742,6 +2746,7 @@ create table o_lti_tool_deployment (
    fk_tool_id number(20) not null,
    fk_entry_id number(20),
    l_sub_ident varchar2(64),
+   fk_group_id number(20),
    primary key (id)
 );
 
@@ -3257,11 +3262,13 @@ create table o_tax_taxonomy_level (
   creationdate date not null,
   lastmodified date not null,
   t_identifier varchar2(64 char),
-  t_displayname varchar2(255 char) not null,
+  t_i18n_suffix varchar2(64 char),
+  t_displayname varchar2(255 char),
   t_description CLOB,
   t_external_id varchar2(64 char),
   t_sort_order number(20),
   t_directory_path varchar2(255 char),
+  t_media_path varchar2(255 char),
   t_m_path_keys varchar2(255 char),
   t_m_path_identifiers varchar2(1024 char),
   t_enabled number default 1,
@@ -3748,6 +3755,30 @@ create table o_immunity_proof (
    primary key (id)
 );
 
+-- Zoom
+create table o_zoom_profile (
+    id number(20) generated always as identity,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    z_name varchar(255) not null,
+    z_status varchar(255) not null,
+    z_lti_key varchar(255) not null,
+    z_mail_domains varchar(1024),
+    z_students_can_host number default 0 not null,
+    z_token varchar(255) not null,
+    fk_lti_tool_id number(20) not null,
+    primary key (id)
+);
+
+create table o_zoom_config (
+    id number(20) generated always as identity,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    z_description varchar(255),
+    fk_profile number(20) not null,
+    fk_lti_tool_deployment_id number(20) not null,
+    primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -4773,6 +4804,8 @@ alter table o_lti_tool_deployment add constraint lti_sdep_to_tool_idx foreign ke
 create index idx_lti_sdep_to_tool_idx on o_lti_tool_deployment (fk_tool_id);
 alter table o_lti_tool_deployment add constraint lti_sdep_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 create index idx_lti_sdep_to_re_idx on o_lti_tool_deployment (fk_entry_id);
+alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
+create index idx_dep_to_group_idx on o_lti_tool_deployment (fk_group_id);
 
 alter table o_lti_shared_tool_deployment add constraint unique_deploy_platform unique (l_deployment_id, fk_platform_id);
 alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_platform_id) references o_lti_platform (id);
@@ -5055,6 +5088,16 @@ create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 -- Immunity proof
 alter table o_immunity_proof add constraint proof_to_user_idx foreign key (fk_user) references o_bs_identity (id);
 create index idx_proof_to_user_idx on o_immunity_proof (fk_user);
+
+-- Zoom
+alter table o_zoom_profile add constraint zoom_profile_tool_idx foreign key (fk_lti_tool_id) references o_lti_tool (id);
+create index idx_zoom_profile_tool_idx on o_zoom_profile (fk_lti_tool_id);
+
+alter table o_zoom_config add constraint zoom_config_profile_idx foreign key (fk_profile) references o_zoom_profile (id);
+create index idx_zoom_config_profile_idx on o_zoom_config (fk_profile);
+
+alter table o_zoom_config add constraint zoom_config_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
+create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_deployment_id);
 
 
 commit

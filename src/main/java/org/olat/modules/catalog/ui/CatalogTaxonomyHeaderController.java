@@ -25,7 +25,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -34,12 +40,16 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  *
  */
 public class CatalogTaxonomyHeaderController extends BasicController {
+	
+	@Autowired
+	private TaxonomyService taxonomyService;
 
 	public CatalogTaxonomyHeaderController(UserRequest ureq, WindowControl wControl, TaxonomyLevel taxonomyLevel) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("header_taxonomy");
 		
-		mainVC.contextPut("displayName", taxonomyLevel.getDisplayName());
+		mainVC.contextPut("displayName", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 		if (taxonomyLevel.getType() != null) {
 			mainVC.contextPut("typeDisplayName", taxonomyLevel.getType().getDisplayName());
 		}
@@ -47,15 +57,18 @@ public class CatalogTaxonomyHeaderController extends BasicController {
 			mainVC.contextPut("cssClass", taxonomyLevel.getType().getCssClass());
 		}
 		
+		VFSLeaf image = taxonomyService.getBackgroundImage(taxonomyLevel);
+		if (image != null) {
+			String mapperUri = registerMapper(ureq, new VFSMediaMapper(image));
+			mainVC.contextPut("bgImageUrl", mapperUri);
+		}
+		
 		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if ("select".equals(event.getCommand())) {
-			String key = ureq.getParameter("key");
-			fireEvent(ureq, new OpenTaxonomyEvent(Long.valueOf(key)));
-		}
+		//
 	}
 
 }

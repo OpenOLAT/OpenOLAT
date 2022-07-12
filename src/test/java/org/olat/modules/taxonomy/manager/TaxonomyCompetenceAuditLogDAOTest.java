@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -55,7 +57,7 @@ public class TaxonomyCompetenceAuditLogDAOTest extends OlatTestCase {
 	public void auditLog() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-1");
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-24", "Competence", "", null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level", "A very difficult competence", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", random(), "Competence level", "A very difficult competence", null, null, null, null, taxonomy);
 		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id, null);
 		dbInstance.commit();
 		

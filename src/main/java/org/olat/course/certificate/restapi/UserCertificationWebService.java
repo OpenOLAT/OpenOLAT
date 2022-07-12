@@ -28,12 +28,14 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -50,7 +52,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateImpl;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +74,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Tag(name = "Users")
+@Tag(name = "Certificates")
 @Component
 @Path("users/{identityKey}/certificates")
 public class UserCertificationWebService {
@@ -77,6 +83,8 @@ public class UserCertificationWebService {
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
 
@@ -97,7 +105,9 @@ public class UserCertificationWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCertificate(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+	public Response getCertificate(@PathParam("identityKey") Long identityKey,
+			@QueryParam("managed") Boolean managed, @QueryParam("last") Boolean last,
+			@QueryParam("externalId") String externalId, @Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -106,9 +116,14 @@ public class UserCertificationWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<CertificateLight> certificates = certificatesManager.getLastCertificates(identity);
+		List<CertificateLight> certificates;
+		if(managed != null || last != null || StringHelper.containsNonWhitespace(externalId)) {
+			certificates = certificatesManager.getCertificates(identity, null, externalId, managed, last);
+		} else {
+			certificates = certificatesManager.getLastCertificates(identity);
+		}
 		List<CertificateVO> certificatesVoList = certificates.stream()
-				.map(CertificateVO::new)
+				.map(CertificateVO::valueOf)
 				.collect(Collectors.toList());
 		CertificateVOes certificateVOes = new CertificateVOes();
 		certificateVOes.setCertificates(certificatesVoList);
@@ -122,7 +137,7 @@ public class UserCertificationWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({"application/pdf"})
-	public Response getCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("certificateKey") Long certificateKey,
+	public Response headCertificateInfos(@PathParam("identityKey") Long identityKey, @PathParam("certificateKey") Long certificateKey,
 			@Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -144,6 +159,33 @@ public class UserCertificationWebService {
 		}
 		return Response.ok().build();
 	}
+	
+	@GET
+	@Path("{certificateKey}")
+	@Operation(summary = "Return the certificate", description = "Return the certificate")
+	@ApiResponse(responseCode = "200", description = "The certificate")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCertificateInfos(@PathParam("identityKey") Long identityKey, @PathParam("certificateKey") Long certificateKey,
+			@Context HttpServletRequest request) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		if(!isAdminOf(identity, request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		Certificate certificate = certificatesManager.getCertificateById(certificateKey);
+		if(certificate == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		} else if(!identityKey.equals(certificate.getIdentity().getKey())) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+
+		CertificateVO certificateVo = CertificateVO.valueOf(certificate);
+		return Response.ok(certificateVo).build();
+	}
 
 	/**
 	 * Return the certificate as PDF file.
@@ -160,7 +202,7 @@ public class UserCertificationWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({"application/pdf"})
-	public Response getCertificate(@PathParam("identityKey") Long identityKey, @PathParam("certificateKey") Long certificateKey,
+	public Response getCertificatePdf(@PathParam("identityKey") Long identityKey, @PathParam("certificateKey") Long certificateKey,
 			@Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -182,6 +224,49 @@ public class UserCertificationWebService {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		return Response.ok(certificateFile.getInputStream()).build();
+	}
+	
+	@DELETE
+	@Path("{certificateKey}")
+	@Operation(summary = "Delete certificate", description = "Delete certificate")
+	@ApiResponse(responseCode = "200", description = "The certificate was deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
+	public Response deleteCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("certificateKey") Long certificateKey,
+			@Context HttpServletRequest request) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		} 
+		
+		if(!isAdminOf(identity, request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		Certificate certificate = certificatesManager.getCertificateById(certificateKey);
+		if(certificate == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		if(!identityKey.equals(certificate.getIdentity().getKey())) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		
+		if(certificate instanceof CertificateImpl && ((CertificateImpl)certificate).getOlatResource() != null) {
+			certificatesManager.deleteCertificate(certificate);
+		} else {
+			Long archivedResourceKey = certificate.getArchivedResourceKey();
+			if(archivedResourceKey == null || archivedResourceKey.longValue() <= 0l) {
+				certificatesManager.deleteStandalonCertificate(certificate);
+			} else {
+				OLATResource resource = resourceManager.findResourceById(archivedResourceKey);
+				if(resource == null) {
+					certificatesManager.deleteStandalonCertificate(certificate);
+				} else {
+					certificatesManager.deleteCertificate(certificate);
+				}
+			}
+		}
+		return Response.ok().build();
 	}
 	
 	/**
@@ -208,6 +293,8 @@ public class UserCertificationWebService {
 			String courseTitle = partsReader.getValue("courseTitle");
 			String creationDateStr = partsReader.getValue("creationDate");
 			String archivedResource = partsReader.getValue("archivedResourceKey");
+			String externalId = partsReader.getValue("externalId");
+			CertificateManagedFlag[] managedFlags = CertificateManagedFlag.toEnum(partsReader.getValue("managedFlags"));
 			Long archivedResourceKey = null;
 			if(StringHelper.isLong(archivedResource)) {
 				archivedResourceKey = Long.valueOf(archivedResource);
@@ -229,7 +316,7 @@ public class UserCertificationWebService {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
-			certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, archivedResourceKey, tmpFile);
+			certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, externalId, managedFlags, courseTitle, archivedResourceKey, tmpFile);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

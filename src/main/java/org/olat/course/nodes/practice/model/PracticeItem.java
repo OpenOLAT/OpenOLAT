@@ -47,8 +47,8 @@ public class PracticeItem {
 	private final String taxonomicPath;
 	private final TaxonomyLevel taxonomyLevel;
 	
-	public PracticeItem(QuestionItem item) {
-		this(item.getIdentifier(), item.getTitle(), null, item, null);
+	public PracticeItem(QuestionItem item, String taxonomyLevelName) {
+		this(item.getIdentifier(), item.getTitle(), null, item, taxonomyLevelName, null);
 	}
 	
 	/**
@@ -59,13 +59,13 @@ public class PracticeItem {
 	 * @param item The metadata of the item
 	 * @param entry the test
 	 */
-	public PracticeItem(String identifier, String displayName, AssessmentItemRef ref, QuestionItem item, RepositoryEntry entry) {
+	public PracticeItem(String identifier, String displayName, AssessmentItemRef ref, QuestionItem item, String taxonomyLevelName, RepositoryEntry entry) {
 		this.ref = ref;
 		this.item = item;
 		this.entry = entry;
 		this.identifier = identifier;
 		this.displayName = displayName;
-		taxonomyLevelName = item == null ? null : item.getTaxonomyLevelName();
+		this.taxonomyLevelName = taxonomyLevelName;
 		taxonomicPath = item == null ? null : item.getTaxonomicPath();
 		taxonomyLevel = item == null ? null : item.getTaxonomyLevel();
 	}

@@ -21,6 +21,7 @@ package org.olat.modules.quality.manager;
 
 import static java.util.Collections.singletonList;
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -274,11 +275,11 @@ public class QualityTestHelper {
 	}
 	
 	public TaxonomyLevel createTaxonomyLevel(Taxonomy taxonomy) {
-		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, null, taxonomy);
+		return taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 	}
 	
 	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent) {
-		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, parent, parent.getTaxonomy());
+		return taxonomyService.createTaxonomyLevel(random(), random(), null, null, parent, parent.getTaxonomy());
 	}
 
 	QualityReminder createReminder() {
