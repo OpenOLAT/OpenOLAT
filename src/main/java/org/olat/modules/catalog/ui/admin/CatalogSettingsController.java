@@ -21,17 +21,27 @@ package org.olat.modules.catalog.ui.admin;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogV1MigrationService;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.CatalogV2Module.CatalogV1Migration;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +54,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CatalogSettingsController extends FormBasicController {
+	
+	public static final Event MIGRATED_EVENT = new Event("vat.v1.event");
 
 	private static final String KEY_NONE = "none";
 	private static final String KEY_V1 = "v1";
 	private static final String KEY_V2 = "v2";
+	
+	private DialogBoxController migrateDialogCtrl;
 
 	private SingleSelection enabledEl;
+	private FormLayoutContainer migrationStartCont;
+	private FormLink migrationStartLink;
+	private StaticTextElement migrationRunningEl;
 
 	@Autowired
 	private CatalogV2Module catalogV2Module;
 	@Autowired
+	private CatalogV1MigrationService migrationService;
+	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private TaskExecutorManager taskExecutorManager;
 
 	public CatalogSettingsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale()));
@@ -78,13 +99,55 @@ public class CatalogSettingsController extends FormBasicController {
 		} else {
 			enabledEl.select(KEY_NONE, true);
 		}
+		
+		migrationStartCont = FormLayoutContainer.createButtonLayout("migraton", getTranslator());
+		migrationStartCont.setRootForm(mainForm);
+		formLayout.add(migrationStartCont);
+		migrationStartLink = uifactory.addFormLink("admin.migration", migrationStartCont, Link.BUTTON);
+		
+		migrationRunningEl = uifactory.addStaticTextElement("admin.migration.running", null,
+				translate("admin.migration.running"), formLayout);
+		
+		updateMigrationUI();
+	}
+
+	private void updateMigrationUI() {
+		migrationStartCont.setVisible(false);
+		migrationRunningEl.setVisible(false);
+		if (catalogV2Module.isEnabled()) {
+			if (CatalogV1Migration.pending == catalogV2Module.getCatalogV1Migration()) {
+				migrationStartCont.setVisible(true);
+			} else if (CatalogV1Migration.running == catalogV2Module.getCatalogV1Migration()) {
+				migrationRunningEl.setVisible(true);
+			}
+		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (migrateDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				migrationStartCont.setVisible(false);
+				migrationRunningEl.setVisible(true);
+				flc.setDirty(true);
+				taskExecutorManager.execute(() -> {
+					migrationService.migrate(getIdentity());
+					updateMigrationUI();
+					fireEvent(ureq, MIGRATED_EVENT);
+				});
+			}
+		}
+		super.event(ureq, source, event);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enabledEl) {
 			doSetEnabled();
+			updateMigrationUI();
 			fireEvent(ureq, FormEvent.CHANGED_EVENT);
+		} else if (source == migrationStartLink) {
+			doConfirmMigraion(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -105,6 +168,12 @@ public class CatalogSettingsController extends FormBasicController {
 			catalogV2Module.setEnabled(false);
 			repositoryModule.setCatalogEnabled(false);
 		}
+	}
+
+	private void doConfirmMigraion(UserRequest ureq) {
+		String title = translate("admin.migration.confirm.title");
+		String text = translate("admin.migration.confirm.text");
+		migrateDialogCtrl = activateYesNoDialog(ureq, title, text, migrateDialogCtrl);
 	}
 
 }

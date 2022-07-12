@@ -46,7 +46,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
 public class TextLauncherHandler implements CatalogLauncherHandler {
 	
 	public static final String I18N_PREFIX = "launcher.text.text.id";
-	private static final String TYPE = "text";
+	public static final String TYPE = "text";
 	
 	private static final XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {

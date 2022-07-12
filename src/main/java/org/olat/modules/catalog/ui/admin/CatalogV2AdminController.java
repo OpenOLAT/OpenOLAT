@@ -67,8 +67,8 @@ public class CatalogV2AdminController  extends BasicController implements Activa
 	private final Link layoutLink;
 	private final Link catalogV1Link;
 	
-	private Controller settingsCtrl;
-	private Controller launchersCtrl;
+	private CatalogSettingsController settingsCtrl;
+	private CatalogLauncherListController launchersCtrl;
 	private Controller filtersCtrl;
 	private Controller layoutCtrl;
 	private Controller catalogV1Ctrl;
@@ -153,6 +153,10 @@ public class CatalogV2AdminController  extends BasicController implements Activa
 		if (source == settingsCtrl) {
 			if (event == FormEvent.CHANGED_EVENT) {
 				updateUI();
+			} else if (event == CatalogSettingsController.MIGRATED_EVENT) {
+				if (launchersCtrl != null) {
+					launchersCtrl.loadModel();
+				}
 			}
 		}
 		super.event(ureq, source, event);

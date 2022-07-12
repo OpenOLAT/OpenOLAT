@@ -45,12 +45,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff {
 	
+	public enum CatalogV1Migration { pending, running, done }
 	public static final Set<String> HEADER_BG_IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE = "rectangle";
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE = "square";
 	private static final Path HEADER_BG_DIR = Paths.get(WebappHelper.getUserDataRoot(), "customizing", "catalog", "header", "background");
 	
 	private static final String KEY_ENABLED = "catalog.v2.enabled";
+	private static final String KEY_CATALOG_V1_MIGRATION = "catalog.v1.migration";
 	private static final String KEY_WEB_PUBLISH_ENABLED = "catalog.v2.web.publish.enabled";
 	private static final String KEY_HEADER_BG_IMAGE_URI = "catalog.v2.header.bg.image.filename";
 	private static final String KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE = "catalog.v2.launcher.taxonomy.level.style";
@@ -63,6 +65,8 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private String headerBgImageFilename;
 	@Value("${catalog.v2.launcher.taxonomy.levelstyle:rectangle}")
 	private String launcherTaxonomyLevelStyle;
+	
+	private CatalogV1Migration catalogV1Migration;
 	
 	@Autowired
 	public CatalogV2Module(CoordinatorManager coordinatorManager) {
@@ -86,6 +90,13 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 		
 		headerBgImageFilename = getStringPropertyValue(KEY_HEADER_BG_IMAGE_URI, headerBgImageFilename);
 		launcherTaxonomyLevelStyle = getStringPropertyValue(KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE, launcherTaxonomyLevelStyle);
+		
+		String catalogV1MigrationObj = getStringPropertyValue(KEY_CATALOG_V1_MIGRATION, true);
+		if (StringHelper.containsNonWhitespace(catalogV1MigrationObj)) {
+			catalogV1Migration = CatalogV1Migration.valueOf(catalogV1MigrationObj);
+		} else {
+			catalogV1Migration = CatalogV1Migration.pending;
+		}
 	}
 
 	@Override
@@ -101,6 +112,18 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setBooleanProperty(KEY_ENABLED, enabled, true);
+	}
+	
+	public CatalogV1Migration getCatalogV1Migration() {
+		if (catalogV1Migration == null) {
+			catalogV1Migration = CatalogV1Migration.done;
+		}
+		return catalogV1Migration;
+	}
+
+	public void setCatalogV1Migration(CatalogV1Migration catalogV1Migration) {
+		this.catalogV1Migration = catalogV1Migration;
+		setStringProperty(KEY_CATALOG_V1_MIGRATION, catalogV1Migration.name(), true);
 	}
 
 	public boolean isWebPublishEnabled() {
