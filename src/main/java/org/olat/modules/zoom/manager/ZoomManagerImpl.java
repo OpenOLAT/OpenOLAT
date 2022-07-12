@@ -19,15 +19,27 @@
  */
 package org.olat.modules.zoom.manager;
 
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
-import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
-import org.olat.ims.lti13.LTI13ToolType;
+import org.olat.ims.lti13.*;
+import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
 import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomManager;
@@ -37,8 +49,8 @@ import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -51,6 +63,13 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
 
     private static final Logger log = Tracing.createLoggerFor(ZoomManagerImpl.class);
 
+    private static final String TARGET_LINK_URL = "https://applications.zoom.us/lti/advantage";
+    private static final String LOGIN_INITIATION_URL_PREFIX = "https://applications.zoom.us/lti/advantage/login/";
+    private static final String REDIRECTION_URLS = "https://applications.zoom.us/lti/rich/oauth/complete"
+            + "\r\n"
+            + "https://applications.zoom.us/lti/advantage/oauth/complete";
+    private static final String PUBLIC_JWK_URL = "https://applications.zoom.us/lti/advantage/jwks";
+
     @Autowired
     private ZoomProfileDAO zoomProfileDao;
 
@@ -61,7 +80,19 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     private LTI13Service lti13Service;
 
     @Autowired
+    private LTI13Module lti13Module;
+
+    @Autowired
+    private LTI13ToolDAO lti13ToolDAO;
+
+    @Autowired
     private LTI13ToolDeploymentDAO lti13ToolDeploymentDAO;
+
+    @Autowired
+    private HttpClientService httpClientService;
+
+    @Autowired
+    private DB dbInstance;
 
     @Override
     public ZoomProfile createProfile(String name, String ltiKey, String clientId, String token) {
@@ -71,15 +102,11 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
 
     LTI13Tool createLtiTool(String name, String ltiKey, String clientId) {
         String toolName = name + " (Zoom Profile)";
-        String toolUrl = "https://applications.zoom.us/lti/advantage";
-        String initiateLoginUrl = "https://applications.zoom.us/lti/advantage/login/" + ltiKey;
-        String redirectionUrls = "https://applications.zoom.us/lti/rich/oauth/complete"
-                + "\r\n"
-                + "https://applications.zoom.us/lti/advantage/oauth/complete";
-        LTI13Tool ltiTool = lti13Service.createExternalTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectionUrls, LTI13ToolType.ZOOM);
+        String initiateLoginUrl = LOGIN_INITIATION_URL_PREFIX + ltiKey;
+        LTI13Tool ltiTool = lti13Service.createExternalTool(toolName, TARGET_LINK_URL, clientId, initiateLoginUrl, REDIRECTION_URLS, LTI13ToolType.ZOOM);
         ltiTool.setPublicKeyTypeEnum(LTI13Tool.PublicKeyType.URL);
         ltiTool.setPublicKey(null);
-        ltiTool.setPublicKeyUrl("https://applications.zoom.us/lti/advantage/jwks");
+        ltiTool.setPublicKeyUrl(PUBLIC_JWK_URL);
         return lti13Service.updateTool(ltiTool);
     }
 
@@ -175,8 +202,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     }
 
     public LTI13ToolDeployment createLtiToolDeployment(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
-        String targetUrl = "https://applications.zoom.us/lti/advantage";
-        LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(targetUrl, tool, entry, subIdent, businessGroup);
+        LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(TARGET_LINK_URL, tool, entry, subIdent, businessGroup);
         toolDeployment.setSendUserAttributesList(List.of("email"));
         toolDeployment.setSendCustomAttributes("");
         toolDeployment.setParticipantRoles("Learner");
@@ -218,5 +244,94 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
             }
         }
         return true;
+    }
+
+    @Override
+    public ZoomConnectionResponse checkConnection(String ltiKey, String clientId, String ltiMessageHint) {
+        LTI13Tool temporaryTool = null;
+        LTI13ToolDeployment temporaryDeployment = null;
+        try {
+            temporaryTool = createLtiTool("Zoom connection check", ltiKey, clientId);
+            temporaryDeployment = createLtiToolDeployment(temporaryTool, null, null, null);
+            dbInstance.commit();
+
+            String loginHint = getLoginHint(temporaryDeployment, true, false, false);
+
+            log.debug("Try connecting to '{}'", temporaryTool.getInitiateLoginUrl());
+
+            HttpPost post = new HttpPost(temporaryTool.getInitiateLoginUrl());
+            post.addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            post.addHeader("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8,it;q=0.7");
+            post.addHeader("Content-Type", "application/x-www-form-urlencoded");
+            post.addHeader("Referer", lti13Module.getPlatformIss());
+            for (Header header : post.getAllHeaders()) {
+                log.debug("Header: {} = {}", header.getName(), header.getValue());
+            }
+
+            List<NameValuePair> parameters = new ArrayList<>(10);
+            parameters.add(new BasicNameValuePair("client_id", clientId));
+            parameters.add(new BasicNameValuePair("iss", lti13Module.getPlatformIss()));
+            parameters.add(new BasicNameValuePair("login_hint", loginHint));
+            parameters.add(new BasicNameValuePair("lti_deployment_id", temporaryDeployment.getDeploymentId()));
+            parameters.add(new BasicNameValuePair("lti_message_hint", ltiMessageHint));
+            parameters.add(new BasicNameValuePair("target_link_uri", TARGET_LINK_URL));
+            post.setEntity(new UrlEncodedFormEntity(parameters));
+            for (NameValuePair parameter : parameters) {
+                log.debug("Parameter: {} = {}", parameter.getName(), parameter.getValue());
+            }
+
+            ZoomConnectionResponse response = execute(post);
+            log.debug("Zoom response: {}", response.getStatus());
+            log.debug("Zoom page: {}", response.getContent());
+            return response;
+        } catch (Exception e) {
+            log.error(e);
+            return new ZoomConnectionResponse(500, "");
+        } finally {
+            if (temporaryDeployment != null) {
+                lti13ToolDeploymentDAO.deleteToolDeployment(temporaryDeployment);
+            }
+            if (temporaryTool != null) {
+                lti13ToolDAO.deleteTool(temporaryTool);
+            }
+            dbInstance.commit();
+        }
+    }
+
+    private String getLoginHint(LTI13ToolDeployment deployment, boolean admin, boolean coach, boolean participant) {
+        LTI13Key platformKey = lti13Service.getLastPlatformKey();
+
+        log.debug("Login hint: admin={}, coach={}, participant={}, deployment={}/{}, keyId={}",
+                admin, coach, participant, deployment.getKey(), deployment.getDeploymentId(), platformKey.getKeyId());
+
+        JwtBuilder builder = Jwts.builder()
+                .setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+                .setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
+                .setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
+                .claim("deploymentKey", deployment.getKey())
+                .claim("deploymentId", deployment.getDeploymentId())
+                .claim("courseadmin", Boolean.toString(admin))
+                .claim("coach", Boolean.toString(coach))
+                .claim("participant", Boolean.toString(participant));
+
+        return builder.signWith(platformKey.getPrivateKey()).compact();
+    }
+
+    private ZoomConnectionResponse execute(HttpUriRequest request) {
+        try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+             CloseableHttpResponse response = httpClient.execute(request)) {
+            int status = response.getStatusLine().getStatusCode();
+            HttpEntity entity = response.getEntity();
+            String content;
+            if (entity == null) {
+                content = "";
+            } else {
+                content = EntityUtils.toString(entity);
+            }
+            return new ZoomConnectionResponse(status, content);
+        } catch(IOException e) {
+            log.error(e);
+            return new ZoomConnectionResponse(500, null);
+        }
     }
 }
