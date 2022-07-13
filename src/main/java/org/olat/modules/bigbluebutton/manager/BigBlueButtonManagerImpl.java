@@ -1000,6 +1000,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			.parameter("password", password)
 			.optionalParameter("userID", userId)
 			.optionalParameter("avatarURL", avatarUrl);
+
+		if (identity != null) {
+			String lang = identity.getUser().getPreferences().getLanguage();
+			uriBuilder.optionalParameter("userdata-bbb_override_default_locale", lang);
+		}
 		
 		boolean guestFlag;
 		if(moderator) {
