@@ -343,6 +343,10 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	}
 	
 	public boolean hasCatalogV1Entry(Offer offer) {
+		if (offer == null || offer.getResource() == null || offer.getResource().getKey() == null) {
+			return false;
+		}
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select cei.key");
 		sb.append("  from catalogentry as cei");
