@@ -28,6 +28,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -162,5 +163,14 @@ public interface DocEditorService {
 	public void deleteUserInfo(Identity identity);
 	
 	public UserInfo getUserInfo(Identity identity);
+
+
+	/**
+	 * Get a CSS class for the specified mode
+	 * @param mode
+	 * @param vfsItem
+	 * @return The CSS class
+	 */
+	public String getModeIcon(Mode mode, VFSItem vfsItem);
 
 }

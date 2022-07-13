@@ -134,7 +134,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 			// deleted files
 				target.append("<li><a class=\"o_bc_deletedfiles\"");
 				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "dfiles"))
-				   .append("><i class='o_icon o_icon_recycle o_icon-fw'></i> ")
+				   .append(" role='button'><i class='o_icon o_icon_recycle o_icon-fw'></i> ")
 				   .append(translator.translate("dfiles"))
 				   .append("</a></li>");
 			}
@@ -145,7 +145,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					//option copy file
 					target.append("<li><a class=\"o_bc_copy\" ");
 					ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "copyfile" ))
-					   .append("><i class='o_icon o_icon_copy o_icon-fw'></i> ")
+					   .append(" role='button'><i class='o_icon o_icon_copy o_icon-fw'></i> ")
 					   .append(translator.translate("copyfile"))
 					   .append("</a></li>");
 				}
@@ -153,7 +153,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 				// option upload	
 				target.append("<li><a class='o_bc_upload' ");
 				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "ul" ))
-				   .append("><i class='o_icon o_icon_upload o_icon-fw'></i> ")
+				   .append(" role='button'><i class='o_icon o_icon_upload o_icon-fw'></i> ")
 				   .append(translator.translate("ul"))
 				   .append("</a></li>");
 	
@@ -161,7 +161,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					// option new folder
 					target.append("<li><a class=\"b_bc_newfolder\" ");
 					ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cf" ))
-					   .append("><i class='o_icon o_icon_new_folder o_icon-fw'></i> ")
+					   .append(" role='button'><i class='o_icon o_icon_new_folder o_icon-fw'></i> ")
 					   .append(translator.translate("cf"))
 					   .append("</a></li>");
 				}
@@ -169,7 +169,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 				// option new file
 				target.append("<li><a class=\"b_bc_newfile\" ");
 				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cfile" ))
-				   .append("><i class='o_icon o_icon_new_document o_icon-fw'></i> ")
+				   .append(" role='button'><i class='o_icon o_icon_new_document o_icon-fw'></i> ")
 				   .append(translator.translate("cfile"))
 				   .append("</a></li>");
 			}

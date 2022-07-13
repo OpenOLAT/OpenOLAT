@@ -236,9 +236,13 @@ ul.o_dropdown {
 		margin: 0 -5px; /* remove ugly border */
 	}
 }
-.o_bc_table .o_table_checkall {
-	width: 1%;
-}	
+
+.o_bc_table {
+	white-space: nowrap;
+	.o_table_checkall {
+		width: 1%;
+	}	
+}
 
 /* HTML editor */
 .o_htmleditor {
