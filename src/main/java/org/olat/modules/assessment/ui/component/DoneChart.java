@@ -44,6 +44,7 @@ public class DoneChart extends FormBaseComponentImpl {
 	
 	public void setDonePercent(int donePercent) {
 		this.donePercent = donePercent;
+		setDirty(true);
 	}
 
 	@Override

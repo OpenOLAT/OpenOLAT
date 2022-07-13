@@ -44,6 +44,7 @@ public class PassedChart extends FormBaseComponentImpl {
 	
 	public void setPassedPercent(PassedPercent passedPercent) {
 		this.passedPercent = passedPercent;
+		setDirty(true);
 	}
 
 	@Override

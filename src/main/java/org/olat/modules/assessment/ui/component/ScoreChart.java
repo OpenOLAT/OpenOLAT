@@ -48,6 +48,7 @@ public class ScoreChart extends DefaultD3Component {
 
 	public void setMinScore(Double minScore) {
 		this.minScore = minScore;
+		setDirty(true);
 	}
 
 	public Double getMaxScore() {
@@ -56,6 +57,7 @@ public class ScoreChart extends DefaultD3Component {
 
 	public void setMaxScore(Double maxScore) {
 		this.maxScore = maxScore;
+		setDirty(true);
 	}
 
 	public Map<Integer, Long> getScoreToCount() {
@@ -64,6 +66,7 @@ public class ScoreChart extends DefaultD3Component {
 
 	public void setScoreToCount(Map<Integer, Long> scoreToCount) {
 		this.scoreToCount = scoreToCount;
+		setDirty(true);
 	}
 
 	@Override
