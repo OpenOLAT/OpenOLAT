@@ -357,6 +357,31 @@
 	filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, .5));
 }
 
+/* make subtitles better readable, relative to screen size but not too small or too large */
+.mejs__captions-layer {
+	font-size: clamp(1.5rem, 2.5vw, 3rem); 
+	line-height: clamp(1.5rem, 2.5vw, 3rem); 	
+	
+	/* position captions nicely at the bottom in the center, don't use full width for better readibility */
+	.mejs__captions-position {
+		bottom: 2rem !important;
+		transition: bottom 0.5s;
+		width: 80%;
+		left: 50%;
+		margin-left: -40%;
+		
+		/* make space for controll bar */
+		&.mejs__captions-position-hover {
+			bottom: 4rem !important;
+		}
+	}
+}
+.mejs__fullscreen .mejs__captions-layer {
+	font-size: clamp(1rem, 2.5vw, 1.5rem); 
+	line-height: clamp(1rem, 2.5vw, 1.5rem); 		
+}
+
+
 /* chapters */
 .o_video .mejs__chapters-button > .mejs__chapters-selector {
     margin-right: -55px;
