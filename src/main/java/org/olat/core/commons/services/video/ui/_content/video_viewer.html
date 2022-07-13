@@ -1,0 +1,31 @@
+## make sure it uses same markup, css and mediaelementjs plugins as in 
+## src/main/java/org/olat/modules/video/ui/_content/video_run.html
+<div class="o_video_run o_block_large_bottom clearfix" id="$r.getCId()">
+	<div class="olatFlashMovieViewer">
+		<video id="$r.getId("o_vid")" controls autoplay preload="none" oncontextmenu="return false;" class="o_video">			
+	    	<source type="video/mp4" src="$videoUrl" title="$!videoTitle"/>
+		</video>
+		<script>
+		## using jQuery
+		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
+		jQuery('#$r.getId("o_vid")').mediaelementplayer({
+			enablePluginDebug: BPlayer.debugEnabled,
+
+			## Configuration for flash fallback			
+			## Set mode:'shim' to force flash usage
+			pluginPath: mediaElementBaseUrl,
+			stretching: 'responsive',
+			hls: {
+		        path: '$r.staticLink("movie/mediaelementjs/hls/hls.min.js")',
+		    },
+		    flv : {
+		        path: '$r.staticLink("movie/mediaelementjs/flv/flv.min.js")',
+		        withCredentials: true
+		    },
+			## Enabled features - should be same order as in player.js. 
+			features: ['playpause','current','volume','progress','duration','speed','fullscreen'],
+			            	         			
+		});
+		</script>
+	</div>
+</div>
