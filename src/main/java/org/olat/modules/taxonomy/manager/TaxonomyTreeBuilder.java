@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import static org.olat.core.util.StringHelper.EMPTY;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -121,7 +123,7 @@ public class TaxonomyTreeBuilder {
 				Long key = taxonomyLevel.getKey();
 				TaxonomyTreeNode node = fieldKeyToNode.get(key);
 				if(node == null) {
-					String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel);
+					String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel, EMPTY);
 					node = new TaxonomyTreeNode(taxonomy, taxonomyLevel, displayName, getType(taxonomyLevel));
 					TaxonomyLevelType type = taxonomyLevel.getType();
 					if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {

@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.author;
 
+import static org.olat.core.util.StringHelper.EMPTY;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -52,7 +54,11 @@ public class TaxonomyLevelRenderer implements FlexiCellRenderer {
 		if (cellValue != null) {
 			@SuppressWarnings("unchecked")
 			List<TaxonomyLevel> taxonomyLevels = (List<TaxonomyLevel>)cellValue;
-			taxonomyLevels.sort((l1, l2) -> TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, l1).compareToIgnoreCase(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, l2)));
+			taxonomyLevels.sort((l1, l2) -> {
+				String dn1 = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, l1, EMPTY);
+				String dn2 = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, l2, EMPTY);
+				return dn1.compareToIgnoreCase(dn2);
+			});
 			for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 				target.append("<div class='o_nowrap'>").append(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel)).append("</div>");
 			}

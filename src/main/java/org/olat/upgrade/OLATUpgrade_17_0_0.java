@@ -122,10 +122,10 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		
+		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
 		allOk &= initRePublicVisible(upgradeManager, uhd);
 		allOk &= initRePublishedDate(upgradeManager, uhd);
 		allOk &= initOfferToOrgs(upgradeManager, uhd);
-		allOk &= initTaxonomyTranslations(upgradeManager, uhd);
 		allOk &= migrateLTI13ToolDeployment(upgradeManager, uhd);
 		allOk &= migrateQmGeneratorList(upgradeManager, uhd);
 		

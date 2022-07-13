@@ -44,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +69,9 @@ import com.thoughtworks.xstream.core.util.Base64Encoder;
 public class StringHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(StringHelper.class);
+	
+	public static final Supplier<String> NULL = () -> null;
+	public static final Supplier<String> EMPTY = () -> "";
 
 	private static final NumberFormat numFormatter;
 	private static final String WHITESPACE_REGEXP = "^\\s*$";

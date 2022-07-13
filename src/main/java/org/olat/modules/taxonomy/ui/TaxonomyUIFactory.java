@@ -19,7 +19,10 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.function.Supplier;
+
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -39,13 +42,17 @@ public class TaxonomyUIFactory {
 	}
 	
 	public static String translateDisplayName(Translator translator, TaxonomyLevel level) {
-		if (level == null) return null;
+		return translateDisplayName(translator, level, StringHelper.NULL);
+	}
+	
+	public static String translateDisplayName(Translator translator, TaxonomyLevel level, Supplier<String> notFound) {
+		if (level == null) return notFound.get();
 		
 		String i18nKey = getDisplayNameI18nKey(level);
 		// Always fallback to default, even in debug modus
 		String translation = translator.translate(i18nKey, null, 0, true);
 		if (translation == null || i18nKey.equals(translation) || translation.length() > 256) {
-			translation = null;
+			translation = notFound.get();
 		}
 		return translation;
 	}

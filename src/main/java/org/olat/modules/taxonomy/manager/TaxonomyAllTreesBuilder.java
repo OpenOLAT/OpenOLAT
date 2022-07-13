@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import static org.olat.core.util.StringHelper.EMPTY;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,7 +125,7 @@ public class TaxonomyAllTreesBuilder {
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
 				node = new GenericTreeNode(nodeKey(taxonomyLevel));
-				node.setTitle(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel));
+				node.setTitle(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel, EMPTY));
 				node.setIconCssClass("o_icon_taxonomy_level");
 				node.setUserObject(taxonomyLevel);
 				fieldKeyToNode.put(key, node);
