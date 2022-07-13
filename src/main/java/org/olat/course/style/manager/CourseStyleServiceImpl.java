@@ -19,23 +19,17 @@
  */
 package org.olat.course.style.manager;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.nodes.INode;
@@ -257,7 +251,7 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 			// computeIfAbsent does not update infinispan hit/miss stats?!
 			Boolean transparency = imageTransparencyCache.get(cacheKey);
 			if (transparency == null) {
-				transparency = Boolean.valueOf(getTransparency(vfsLeaf));
+				transparency = Boolean.valueOf(isImageTransparent(vfsLeaf));
 				imageTransparencyCache.put(cacheKey, transparency);
 			}
 			return transparency.booleanValue();
@@ -282,32 +276,25 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 		return cacheKey;
 	}
 
-	private boolean getTransparency(VFSLeaf vfsLeaf) {
-		try (InputStream is = vfsLeaf.getInputStream()) {
-			BufferedImage image = ImageIO.read(is);
-			return getTransparency(image);
-		} catch (Exception e) {
-			log.warn("Transparency of image leaf not determined");
+	private boolean isImageTransparent(VFSLeaf vfsLeaf) {
+		if (vfsLeaf instanceof LocalImpl) {
+			File basefile = ((LocalImpl)vfsLeaf).getBasefile();
+			return isImageTransparent(basefile);
 		}
+		log.warn("Transparency of image file not determined (vfsLeaf): {}", vfsLeaf.getName());
 		return false;
 	}
 	
 	@Override
 	public boolean isImageTransparent(File file) {
-		try(InputStream in = new FileInputStream(file);
-				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
-			BufferedImage image = ImageIO.read(bis);
-			return getTransparency(image);
+		try {
+			// As a first approach we only check if the image has a alpha channel, but not
+			// if the image really has at least one transparent pixel.
+			return ImageUtils.hasAlphaChannel(file)? true: false;
 		} catch (Exception e) {
-			log.warn("Transparency of image file not determined");
+			log.warn("Transparency of image file not determined (file): {}", file.getAbsolutePath());
 		}
 		return false;
-	}
-
-	private boolean getTransparency(BufferedImage image) {
-		// As a first approach we only check if the image has a alpha channel, but not
-		// if the image really has at least one transparent pixel.
-		return ImageUtils.hasAlphaChannel(image)? true: false;
 	}
 	
 	@Override
