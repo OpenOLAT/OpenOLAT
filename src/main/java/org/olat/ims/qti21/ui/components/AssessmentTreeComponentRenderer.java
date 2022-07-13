@@ -137,8 +137,9 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
+		String title = breakTitle(sectionNode.getSectionPartTitle());
 		sb.append("<li class='o_assessmentsection o_qti_menu_item'>")
-		  .append("<header><h4>").append(StringHelper.escapeHtml(sectionNode.getSectionPartTitle())).append("</h4>");
+		  .append("<header><h4>").append(StringHelper.escapeHtml(title)).append("</h4>");
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
 		sectionNode.getChildren().forEach(child
@@ -221,10 +222,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			int num = component.getCandidateSessionContext().getNumber(itemNode);
 			title = translator.translate("question.title", Integer.toString(num));
 		}
-		if(title != null) {
-			title = title.replace("_", " ");
-		}
-		
+		title = breakTitle(title);
 		sb.append("<span class='questionTitle'>").append(title).append("</span>");
 
 		if(event == null) {
@@ -233,6 +231,13 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("</a>");
 		}
 		return event;
+	}
+	
+	private String breakTitle(String title) {
+		if(title != null) {
+			title = title.replace("_", " ");
+		}
+		return title;
 	}
 	
 	private void renderItemStatus(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
