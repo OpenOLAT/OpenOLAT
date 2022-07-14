@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -65,7 +66,7 @@ public class RegistrationForm2 extends FormBasicController {
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = RegistrationForm2.class.getCanonicalName();
 	
 	private String languageKey;
-	private List<UserPropertyHandler> userPropertyHandlers;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	
 	private SingleSelection lang;
@@ -76,6 +77,8 @@ public class RegistrationForm2 extends FormBasicController {
 	
 	private final String proposedUsername;
 	private final String email;
+	private final String firstName;
+	private final String lastName;
 	private final boolean userInUse;
 	private final boolean usernameReadonly;
 	private final SyntaxValidator passwordSyntaxValidator;
@@ -91,17 +94,20 @@ public class RegistrationForm2 extends FormBasicController {
 	private RegistrationManager registrationManager;
 
 	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
-			String email, boolean userInUse, boolean usernameReadonly) {
-		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+			String firstName, String lastName, String email, boolean userInUse, boolean usernameReadonly) {
+		super(ureq, wControl, "registration_form_2", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.languageKey = languageKey;
 		this.proposedUsername = proposedUsername;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.email = email;
 		this.userInUse = userInUse;
 		this.usernameReadonly = usernameReadonly;
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
 
 		initForm(ureq);
 	}
@@ -168,41 +174,24 @@ public class RegistrationForm2 extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("title.register");
-		formLayout.setElementCssClass("o_sel_registration_2_form");
-		// first the configured user properties
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
+		FormLayoutContainer accessCont = FormLayoutContainer.createDefaultFormLayout("access", getTranslator());
+		accessCont.setFormTitle(translate("registration.form.login.data.title"));
+		formLayout.add(accessCont);
+		initLoginDataForm(accessCont);
 		
-		
-		// Add all available user fields to this form
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) continue;
-			
-			FormItem fi = userPropertyHandler
-					.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
-			fi.setElementCssClass("o_sel_registration_" + userPropertyHandler.getName());
-			propFormItems.put(userPropertyHandler.getName(), fi);
-			if (UserConstants.EMAIL.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
-				((TextElement)fi).setValue(email);
-			}
-		}
-		
-		uifactory.addSpacerElement("lang", formLayout, true);
-		// second the user language
-		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
-		String[] languageKeys = StringHelper.getMapKeysAsStringArray(languages);
-		String[] languageValues = StringHelper.getMapValuesAsStringArray(languages);
-		lang = uifactory.addDropdownSingleselect("user.language", formLayout, languageKeys, languageValues, null);
-		if(languages.containsKey(languageKey)) {
-			lang.select(languageKey, true);
-		} else if(languageKeys.length > 0) {
-			lang.select(languageKeys[0], true);
-		}
-		
-		uifactory.addSpacerElement("loginstuff", formLayout, true);
-
+		FormLayoutContainer userCont = FormLayoutContainer.createDefaultFormLayout("user", getTranslator());
+		userCont.setFormTitle(translate("registration.form.personal.data.title"));
+		formLayout.add(userCont);
+		initUserDataForm(userCont, ureq);
+	}
+	
+	private void initLoginDataForm(FormLayoutContainer formLayout) {
 		if(usernameReadonly) {
 			usernameStatic = uifactory.addStaticTextElement("username", "user.login", proposedUsername, formLayout);
+			usernameStatic.setMandatory(true);
+			if(proposedUsername != null && proposedUsername.equals(email)) {
+				usernameStatic.setLabel("user.login.email", null);
+			}
 		} else {
 			uifactory.addStaticTextElement("form.username.rules", null, translate("form.username.rules"), formLayout);
 			usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
@@ -218,8 +207,9 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		String descriptions = formatDescriptionAsList(passwordSyntaxValidator.getAllDescriptions(), getLocale());
-		uifactory.addStaticTextElement("form.password.rules", null,
-				translate("form.password.rules", new String[] { descriptions }), formLayout);
+		descriptions = "<div class='o_desc'>" + translate("form.password.rules", descriptions) + "</div>";
+		StaticTextElement hintEl = uifactory.addStaticTextElement("form.password.rules", null, descriptions, formLayout);
+		hintEl.setDomWrapperElement(DomWrapperElement.div);
 		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
 		newpass1.setElementCssClass("o_sel_registration_cred1");
 		newpass1.setMandatory(true);
@@ -228,17 +218,47 @@ public class RegistrationForm2 extends FormBasicController {
 		newpass2.setElementCssClass("o_sel_registration_cred2");
 		newpass2.setMandatory(true);
 		newpass2.setAutocomplete("new-password");
+	}
+
+	private void initUserDataForm(FormLayoutContainer formLayout, UserRequest ureq) {
+		// Add all available user fields to this form
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			
+			FormItem fi = userPropertyHandler
+					.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
+			fi.setElementCssClass("o_sel_registration_" + userPropertyHandler.getName());
+			propFormItems.put(userPropertyHandler.getName(), fi);
+			
+			if (UserConstants.EMAIL.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
+				((TextElement)fi).setValue(email);
+			} else if (UserConstants.FIRSTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
+				((TextElement)fi).setValue(firstName);
+			} else if (UserConstants.LASTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
+				((TextElement)fi).setValue(lastName);
+			}
+		}
+		
+		// second the user language
+		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
+		String[] languageKeys = StringHelper.getMapKeysAsStringArray(languages);
+		String[] languageValues = StringHelper.getMapValuesAsStringArray(languages);
+		lang = uifactory.addDropdownSingleselect("user.language", formLayout, languageKeys, languageValues, null);
+		if(languages.containsKey(languageKey)) {
+			lang.select(languageKey, true);
+		} else if(languageKeys.length > 0) {
+			lang.select(languageKeys[0], true);
+		}
 	
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("submit.speichernUndweiter", buttonLayout);
-			
+		uifactory.addFormSubmitButton("submit.speichernUndweiter", buttonLayout);	
 	}
 
 	@Override
-	protected boolean validateFormLogic (UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		// validate each user field
@@ -254,27 +274,7 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		// Transient identity for validations
-		String username = usernameEl.getValue();
-		TransientIdentity newIdentity = new TransientIdentity();
-		newIdentity.setName(username);
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
-			newIdentity.setProperty(userPropertyHandler.getName(), userPropertyHandler.getStringValue(propertyItem));
-		}
-		
-		// validate if username does match the syntactical login requirements
-		usernameEl.clearError();
-		if (!StringHelper.containsNonWhitespace(username)) {
-			usernameEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		} else {
-			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
-			if (!validationResult.isValid()) {
-				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-				usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
-				allOk &= false;
-			}
-		}
+		allOk &= validateUsername();
 		
 		if (newpass1.getValue().equals("")) {
 			newpass1.setErrorKey("form.check4", null);
@@ -285,6 +285,50 @@ public class RegistrationForm2 extends FormBasicController {
 			newpass2.setErrorKey("form.check4", null);
 			allOk &= false;
 		}
+		
+		allOk &= validatePassword();
+		return allOk;
+	}
+	
+	private boolean validateUsername() {
+		boolean allOk = true;
+		
+		if(usernameEl != null) {
+			String username = usernameEl.getValue();
+			TransientIdentity newIdentity = new TransientIdentity();
+			newIdentity.setName(username);
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
+				newIdentity.setProperty(userPropertyHandler.getName(), userPropertyHandler.getStringValue(propertyItem));
+			}
+			
+			// validate if username does match the syntactical login requirements
+			usernameEl.clearError();
+			if (!StringHelper.containsNonWhitespace(username)) {
+				usernameEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else {
+				ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
+				if (!validationResult.isValid()) {
+					String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
+					usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
+					allOk &= false;
+				}
+			}
+		}
+	
+		return allOk;
+	}
+	
+	private boolean validatePassword() {
+		boolean allOk = true;
+		
+		newpass1.clearError();
+		newpass2.clearError();
+		
+		String username = usernameEl == null ? proposedUsername : usernameEl.getValue();
+		TransientIdentity newIdentity = new TransientIdentity();
+		newIdentity.setName(username);
 		
 		String newPassword = newpass1.getValue();
 		ValidationResult validationResult = passwordSyntaxValidator.validate(newPassword, newIdentity);

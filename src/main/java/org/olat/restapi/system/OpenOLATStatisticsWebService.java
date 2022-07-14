@@ -41,7 +41,7 @@ import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.modules.portfolio.manager.InvitationDAO;
+import org.olat.modules.invitation.InvitationService;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.system.vo.IndexerStatisticsVO;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;
@@ -213,7 +213,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		stats.setActiveUserCountLast6Month(activeUserCount6Month);
 
 		// externalUserCount="12" // EP invite identities, later maybe also used in courses for MOOCS, external experts etc)
-		long invitationsCount = CoreSpringFactory.getImpl(InvitationDAO.class).countInvitations();
+		long invitationsCount = CoreSpringFactory.getImpl(InvitationService.class).countInvitations();
 		stats.setExternalUserCount(invitationsCount);
 
 		// blockedUserCount="0" // identities in login blocked state

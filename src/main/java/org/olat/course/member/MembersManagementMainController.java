@@ -51,6 +51,7 @@ import org.olat.course.groupsandrights.GroupsAndRightsController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
+import org.olat.modules.invitation.ui.InvitationListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.resource.accesscontrol.ACService;
@@ -74,6 +75,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private static final String CMD_BOOKING = "Booking";
 	private static final String CMD_RIGHTS = "Rights";
 	private static final String CMD_CONSENTS = "Consents";
+	private static final String CMD_INVITATIONS = "Invitations";
 
 	private final MenuTree menuTree;
 	private final VelocityContainer mainVC;
@@ -84,6 +86,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private CourseBusinessGroupListController groupsCtrl;
 	private MembersOverviewController membersOverviewCtrl;
 	private GroupsAndRightsController rightsController;
+	private InvitationListController invitationListCtrl;
 	private CourseDisclaimerConsentOverviewController disclaimerController;
 	
 	private boolean membersDirty;
@@ -92,6 +95,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	
 	private final boolean entryAdmin;
 	private final boolean principal;
+	private final boolean canInvite;
 	private final boolean groupManagementRight;
 	private final boolean memberManagementRight;
 	private final MemberListSecurityCallback secCallback;
@@ -105,12 +109,13 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin, boolean principal,
-			boolean groupManagementRight, boolean memberManagementRight) {
+			boolean groupManagementRight, boolean memberManagementRight, boolean canInvite) {
 		super(ureq, wControl);
 		this.repoEntry = re;
 		this.toolbarPanel = toolbarPanel;
 		this.entryAdmin = entryAdmin;
 		this.principal = principal;
+		this.canInvite = canInvite;
 		this.groupManagementRight = groupManagementRight;
 		this.memberManagementRight = memberManagementRight;
 		this.coachCourseEnv = coachCourseEnv;
@@ -172,6 +177,13 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				node.setCssClass("o_sel_membersmgt_orders");
 				root.addChild(node);
 			}
+		}
+		
+		if(entryAdmin || principal || memberManagementRight) {
+			GenericTreeNode node = new GenericTreeNode(translate("menu.invitations"), CMD_INVITATIONS);
+			node.setAltText(translate("menu.invitations.alt"));
+			node.setCssClass("o_sel_membersmgt_invitations");
+			root.addChild(node);
 		}
 
 		if(entryAdmin || principal) {
@@ -235,7 +247,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		if(CMD_MEMBERS.equals(cmd)) {
 			if(entryAdmin ||  principal || memberManagementRight) {
 				if(membersOverviewCtrl == null) {
-					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback);
+					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, canInvite);
 					listenTo(membersOverviewCtrl);
 				} else if(membersDirty) {
 					membersOverviewCtrl.reloadMembers();
@@ -282,6 +294,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				mainVC.put("content", disclaimerController.getInitialComponent());
 				selectedCtrl = disclaimerController;
 			}
+		} else if (CMD_INVITATIONS.equals(cmd)) {
+			selectedCtrl = doOpenInvitations(ureq, bwControl);
 		}
 		
 		TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menuTree.getTreeModel().getRootNode());
@@ -289,5 +303,19 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			menuTree.setSelectedNodeId(selTreeNode.getIdent());
 		}
 		return selectedCtrl;
+	}
+	
+	private InvitationListController doOpenInvitations(UserRequest ureq, WindowControl bwControl) {
+		if (entryAdmin || principal || memberManagementRight) {
+			if(invitationListCtrl == null) {
+				invitationListCtrl = new InvitationListController(ureq, bwControl, repoEntry);
+				listenTo(invitationListCtrl);
+			} else {
+				invitationListCtrl.reloadModel();
+			}
+			mainVC.put("content", invitationListCtrl.getInitialComponent());
+			return invitationListCtrl;
+		}
+		return null;
 	}
 }

@@ -14,16 +14,15 @@
 <div class="o_header_with_buttons">
 	<h4><i class="o_icon o_icon_group"> </i> $r.translate("menu.members")</h4>
 	<div class="o_button_group">
-		#if($r.available("addMembers") && $r.available("importMembers"))<div class="btn-group">#end
-		#if($r.available("addMembers"))
+		#if($r.visible("addMembers") && $r.visible("addmore"))
+		<div class="btn-group">
 			$r.render("addMembers")
+			$r.render("addmore")
+		</div>
 		#end
-		#if($r.available("importMembers"))
-			$r.render("importMembers")
-		#end
-		#if($r.available("addMembers") && $r.available("importMembers"))</div>#end
-		#if($r.available("dedupMembers"))
-			$r.render("dedupMembers")
+		
+		#if($r.visible("more"))
+			$r.render("more")
 		#end
 	</div>
 </div>

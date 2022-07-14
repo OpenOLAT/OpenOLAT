@@ -281,6 +281,11 @@ body.o_dmz {
 	}
 }
 
+/* Registration */
+.o_sel_registration_2_form .form-control-static  .o_desc {
+	margin: 0;
+}
+
 @media (max-width: $screen-xs-max) { 
 	body.o_dmz {
 		#o_bg {

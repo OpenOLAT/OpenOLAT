@@ -73,14 +73,10 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		menuVC.setDomReplacementWrapperRequired(false);
 		if(ureq.getIdentity() != null) {
 			UserSession usess = ureq.getUserSession();
-			if(usess != null && usess.getRoles() != null) {
-				boolean isGuest = usess.getRoles().isGuestOnly();
-				boolean isInvitee = usess.getRoles().isInvitee();
-				if(!isGuest && !isInvitee) {
-					loadPersonalTools(ureq);
-				}
+			if(usess != null && usess.getRoles() != null && !usess.getRoles().isGuestOnly()) {
+				loadPersonalTools(ureq);
 			}
-			menuVC.contextPut("authenticated", usess.isAuthenticated());
+			menuVC.contextPut("authenticated", usess != null && usess.isAuthenticated());
 		}
 		putInitialPanel(menuVC);
 	}

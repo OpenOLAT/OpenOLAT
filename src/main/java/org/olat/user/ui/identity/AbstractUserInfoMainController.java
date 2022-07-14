@@ -22,6 +22,7 @@ package org.olat.user.ui.identity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
@@ -44,7 +45,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.co.ContactFormController;
-import org.olat.modules.portfolio.manager.InvitationDAO;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
@@ -76,7 +76,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 	@Autowired
 	protected UserManager userManager;
 	@Autowired
-	private InvitationDAO invitationDao;
+	private BaseSecurity securityManager;
 	@Autowired
 	protected CalendarModule calendarModule;
 	@Autowired
@@ -88,9 +88,8 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		super(ureq, wControl);
 		this.chosenIdentity = chosenIdentity;
 		
-		isInvitee = invitationDao.isInvitee(chosenIdentity);
+		isInvitee = securityManager.getRoles(chosenIdentity).isInviteeOnly();
 		isDeleted = chosenIdentity.getStatus().equals(Identity.STATUS_DELETED);
-
 	}
 	
 	

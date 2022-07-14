@@ -551,6 +551,11 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty("guest.login.links", guestLoginLinksEnabled, true);
 	}
 	
+	/**
+	 * This was used to defined the portfolio invitations.
+	 * 
+	 * @return
+	 */
 	public boolean isInvitationEnabled() {
 		return "enabled".equals(invitationEnabled);
 	}

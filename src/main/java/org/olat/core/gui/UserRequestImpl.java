@@ -165,7 +165,7 @@ public class UserRequestImpl implements UserRequest {
 	public UserSession getUserSession() {
 		UserSession result = userSessionMgr.getUserSession(getHttpReq());
 		if (result == null) {
-			log.warn("getUserSession: null, this="+this, new RuntimeException("getUserSession"));
+			log.warn("getUserSession: null, this={}", this, new RuntimeException("getUserSession"));
 		}
 		return result;
 	}

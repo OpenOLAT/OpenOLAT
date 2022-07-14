@@ -56,7 +56,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.login.LoginModule;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -110,13 +110,13 @@ public class PublishController extends BasicController implements TooledControll
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
-	private LoginModule loginModule;
-	@Autowired
 	private MailManager mailManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private InvitationModule invitationModule;
 	@Autowired
 	private PortfolioService portfolioService;
 	
@@ -171,14 +171,12 @@ public class PublishController extends BasicController implements TooledControll
 			addAccessRightsLink.setElementCssClass("o_sel_pf_access_member");
 			accessDropdown.addComponent(addAccessRightsLink);
 			
-			if(loginModule.isInvitationEnabled()) {
+			if(invitationModule.isPortfolioInvitationEnabled()) {
 				addInvitationLink = LinkFactory.createToolLink("add.invitation", translate("add.invitation"), this);
 				addInvitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_anonymous");
 				addInvitationLink.setElementCssClass("o_sel_pf_access_invitation");
 				accessDropdown.addComponent(addInvitationLink);
 			}
-			
-			
 			
 			stackPanel.addTool(accessDropdown, Align.right);
 		}

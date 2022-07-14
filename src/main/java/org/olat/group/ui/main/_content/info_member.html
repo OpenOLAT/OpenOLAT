@@ -1,29 +1,23 @@
-<div class="o_header_with_buttons">
-	<h3>$fullname</h3>
-	#if($r.available("home") || $r.available("contact") || $r.available("assessment"))
-	<div class="o_button_group o_button_group_right">
-		#if($r.available("home"))
-			$r.render("home")
-		#end
-		#if($r.available("contact"))
-			$r.render("contact")
-		#end
-		#if($r.available("assessment"))
-			$r.render("assessment")
-		#end
-	</div>
+#if($r.available("home") || $r.available("contact") || $r.available("assessment"))
+<div class="o_button_group o_button_group_right">
+	#if($r.available("home"))
+		$r.render("home")
+	#end
+	#if($r.available("contact"))
+		$r.render("contact")
+	#end
+	#if($r.available("assessment"))
+		$r.render("assessment")
 	#end
 </div>
-<div class="o_user_infos">
+#end
+<div class="o_member_infos">
 	<div class="o_user_portrait">$r.render("image")</div>
-	<div class="o_user_infos_inner">
-		<div class="container-fluid">
-			<div class="col-sm-8">
+	<div class="o_member_infos_inner">
+		<h3>$fullname</h3>
+		<div>
 			$r.render("userProperties")
-			</div>
-			<div class="col-sm-4">
 			$r.render("resourceInfos")
-			</div>
 		</div>
 	</div>
 </div>

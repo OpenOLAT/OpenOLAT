@@ -92,7 +92,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 			loginLink.setTitle("topnav.login.alt");
 		}
 		
-		if(ureq.getIdentity() != null && !isGuest && !isInvitee) {
+		if(ureq.getIdentity() != null && !isGuest) {
 			loadPersonalTools(ureq);
 			
 			// the user profile

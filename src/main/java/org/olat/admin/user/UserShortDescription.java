@@ -81,7 +81,7 @@ public class UserShortDescription extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 
-		initProperties(usageIdentifier, identity, isAdministrativeUser,true, Rows.builder().build());
+		initProperties(usageIdentifier, identity, isAdministrativeUser, true, Rows.builder().build());
 	}
 	
 	// Used in coaching tool -> user relations

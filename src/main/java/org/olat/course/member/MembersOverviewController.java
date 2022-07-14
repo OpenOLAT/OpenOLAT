@@ -28,6 +28,8 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
@@ -60,6 +62,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.InvitationContext;
+import org.olat.course.member.wizard.InvitationFinishCallback;
+import org.olat.course.member.wizard.Invitation_1_MailStep;
 import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.course.member.wizard.MembersContext;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -72,6 +77,7 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -97,6 +103,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	private Link overrideLink;
 	private Link unOverrideLink;
+	private Link invitationLink;
 	private final Link dedupLink;
 	private final Link addMemberLink;
 	private final Link importMemberLink;
@@ -106,6 +113,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	private final Link allMembersLink;
 	private final Link waitingListLink;
 	private final Link participantsLink;
+	private final Dropdown moreDropdown;
+	private final Dropdown addMemberDropdown; 
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
@@ -119,6 +128,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private AbstractMemberListController searchCtrl;
 
 	private CloseableModalController cmc;
+	private StepsMainRunController invitationWizard;
 	private StepsMainRunController importMembersWizard;
 	private DedupMembersConfirmationController dedupCtrl;
 	
@@ -129,6 +139,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
+	private InvitationModule invitationModule;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -138,7 +150,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	private BusinessGroupService businessGroupService;
 	
 	public MembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback) {
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback,
+			boolean canInvite) {
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
 		this.toolbarPanel = toolbarPanel;
@@ -178,15 +191,39 @@ public class MembersOverviewController extends BasicController implements Activa
 		addMemberLink.setElementCssClass("o_sel_course_add_member");
 		addMemberLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 		mainVC.put("addMembers", addMemberLink);
-		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		
+		addMemberDropdown = new Dropdown("addmore", null, false, getTranslator());
+		addMemberDropdown.setOrientation(DropdownOrientation.right);
+		addMemberDropdown.setEmbbeded(true);
+		addMemberDropdown.setButton(true);
+		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
+		mainVC.put("addmore", addMemberDropdown);
+		
+		importMemberLink = LinkFactory.createLink("import.member", mainVC, this);
 		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 		importMemberLink.setElementCssClass("o_sel_course_import_members");
 		importMemberLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
-		mainVC.put("importMembers", importMemberLink);
-		dedupLink = LinkFactory.createButton("dedup.members", mainVC, this);
+		addMemberDropdown.addComponent(importMemberLink);
+		
+		if(invitationModule.isCourseInvitationEnabled() && canInvite) {
+			invitationLink = LinkFactory.createLink("invitation.member", mainVC, this);
+			invitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+			invitationLink.setElementCssClass("o_sel_course_invitations");
+			invitationLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
+			addMemberDropdown.addComponent(invitationLink);
+		}
+
+		moreDropdown = new Dropdown("more", null, false, getTranslator());
+		moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
+		moreDropdown.setOrientation(DropdownOrientation.right);
+		moreDropdown.setButton(true);
+		moreDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
+		mainVC.put("more", moreDropdown);
+		
+		dedupLink = LinkFactory.createLink("dedup.members", mainVC, this);
 		dedupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_cleanup");
 		dedupLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
-		mainVC.put("dedupMembers", dedupLink);
+		moreDropdown.addComponent(dedupLink);
 		
 		putInitialPanel(mainVC);
 	}
@@ -252,6 +289,8 @@ public class MembersOverviewController extends BasicController implements Activa
 			doChooseMembers(ureq);
 		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
+		} else if (source == invitationLink) {
+			doInvitation(ureq);
 		} else if (source == dedupLink) {
 			doDedupMembers(ureq);
 		} else if (source == overrideLink) {
@@ -263,11 +302,10 @@ public class MembersOverviewController extends BasicController implements Activa
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == importMembersWizard) {
+		if(source == importMembersWizard || source == invitationWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
-				removeAsListenerAndDispose(importMembersWizard);
-				importMembersWizard = null;
+				cleanUp();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					if(selectedCtrl != null) {
 						selectedCtrl.reloadModel();
@@ -287,8 +325,12 @@ public class MembersOverviewController extends BasicController implements Activa
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(importMembersWizard);
+		removeAsListenerAndDispose(invitationWizard);
 		removeAsListenerAndDispose(dedupCtrl);
 		removeAsListenerAndDispose(cmc);
+		importMembersWizard = null;
+		invitationWizard = null;
 		dedupCtrl = null;
 		cmc = null;
 	}
@@ -425,6 +467,18 @@ public class MembersOverviewController extends BasicController implements Activa
 		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
 		
 		switchToAllMembers(ureq);
+	}
+	
+	protected void doInvitation(UserRequest ureq) {
+		removeAsListenerAndDispose(invitationWizard);
+
+		InvitationContext invitationContext = InvitationContext.valueOf(repoEntry, overrideManaged);
+		Step start = new Invitation_1_MailStep(ureq, invitationContext);
+		StepRunnerCallback finish = new InvitationFinishCallback(invitationContext);
+		invitationWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("invitation.member"), "o_sel_course_member_invitation_wizard");
+		listenTo(invitationWizard);
+		getWindowControl().pushAsModalDialog(invitationWizard.getInitialComponent());
 	}
 	
 	protected void doDedupMembers(UserRequest ureq) {

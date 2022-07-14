@@ -1,10 +1,14 @@
 <div id="callout_$r.getCId()" class="popover in bottom #if($r.isTrue($wider))o_wide_popover #end" style="z-index:$zindexarea;">
 	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
+	#if($r.isNotEmpty($title))
+		<div class="popover-title">$r.escapeHtml($title)</div>
+	#end
 	<div class="popover-content">$r.render("cont")</div>
 	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
 </div>
 <div id="callout_overlay_$r.getCId()" class="o_callout_overlay" style="z-index:$zindexoverlay;"></div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#callout_$r.getCId()').each(function(index, el) {
 		var targetEl = jQuery('#$guimsgtarget,#o_c$guimsgtarget');

@@ -98,6 +98,9 @@ public class CourseRoleCellRenderer implements FlexiCellRenderer {
 			and = and(sb, and);
 			sb.append(translator.translate("role.pending"));
 		}
+		if(membership.isExternalUser()) {
+			sb.append(" ").append(translator.translate("role.external.user"));
+		}
 	}
 	
 	private final boolean and(StringOutput sb, boolean and) {

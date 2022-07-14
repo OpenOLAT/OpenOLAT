@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -62,6 +64,7 @@ public class MemberInfoController extends FormBasicController {
 	private StaticTextElement membershipCreationEl;
 
 	private final Identity identity;
+	private final Roles identityRoles;
 	private Long repoEntryKey;
 	private UserCourseInformations courseInfos;
 	private BusinessGroupMembershipInfos businessGroupInfos;
@@ -70,6 +73,8 @@ public class MemberInfoController extends FormBasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -84,6 +89,7 @@ public class MemberInfoController extends FormBasicController {
 
 		this.identity = identity;
 		this.withLinks = withLinks;
+		identityRoles = securityManager.getRoles(identity);
 		
 		if(repoEntry != null) {
 			repoEntryKey = repoEntry.getKey();
@@ -106,8 +112,19 @@ public class MemberInfoController extends FormBasicController {
 		}
 		
 		//user properties
-		FormLayoutContainer userPropertiesContainer = FormLayoutContainer.createDefaultFormLayout_6_6("userProperties", getTranslator());
+		FormLayoutContainer userPropertiesContainer = FormLayoutContainer.createTableCondensedLayout("userProperties", getTranslator());
+		userPropertiesContainer.contextPut("striped", Boolean.TRUE);
 		formLayout.add("userProperties", userPropertiesContainer);
+		
+		String typei18n;
+		if(identityRoles.isInvitee()) {
+			typei18n = "user.type.invitee";
+		} else if(identityRoles.isGuestOnly()) {
+			typei18n = "user.type.guest";
+		} else {
+			typei18n = "user.type.user";
+		}
+		uifactory.addStaticTextElement("up_user_type", "user.type", translate(typei18n), userPropertiesContainer);
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(getClass().getCanonicalName(), false);
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -124,7 +141,8 @@ public class MemberInfoController extends FormBasicController {
 
 		Formatter formatter = Formatter.getInstance(getLocale());
 		//course informations
-		FormLayoutContainer resourceInfosContainer = FormLayoutContainer.createDefaultFormLayout_9_3("courseInfos", getTranslator());
+		FormLayoutContainer resourceInfosContainer = FormLayoutContainer.createTableCondensedLayout("courseInfos", getTranslator());
+		resourceInfosContainer.contextPut("striped", Boolean.TRUE);
 		formLayout.add("resourceInfos", resourceInfosContainer);
 		if(courseInfos != null) {
 			String firstTime = formatter.formatDate(courseInfos.getInitialLaunch());

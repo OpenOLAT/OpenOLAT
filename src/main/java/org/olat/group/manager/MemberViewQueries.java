@@ -24,10 +24,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
@@ -35,6 +37,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -103,6 +106,8 @@ public class MemberViewQueries {
 		}
 
 		getPending(views, businessGroup, params, userPropertyHandlers, locale);
+		// Pending create the membership object
+		getExternalUsers(views, businessGroup);
 		
 		List<MemberView> members = new ArrayList<>(views.values());
 		filterByRoles(members, params);
@@ -161,6 +166,7 @@ public class MemberViewQueries {
 
 		Map<Identity,MemberView> views = getMembersView(entry, params, userPropertyHandlers, locale);
 		getPending(views, entry, params, userPropertyHandlers, locale);
+		getExternalUsers(views, entry);
 		
 		List<MemberView> members = new ArrayList<>(views.values());
 		filterByRoles(members, params);
@@ -244,6 +250,27 @@ public class MemberViewQueries {
 		return elements.stream().collect(Collectors.toMap(CurriculumElement::getGroup, el -> el, (el1, el2) -> el1));
 	}
 	
+	private void getExternalUsers(Map<Identity,MemberView> views, RepositoryEntry repositoryEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select inviteeMembership.identity.key")
+		  .append(" from repoentrytogroup as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join bgroupmember as inviteeMembership on (membership.identity.key=inviteeMembership.identity.key)")
+		  .append(" where relGroup.entry.key=:repositoryEntryKey and inviteeMembership.role ").in(OrganisationRoles.invitee);
+		
+		List<Long> externalIdentityKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
+				.getResultList();
+		Set<Long> externalIdentityKeySet = new HashSet<>(externalIdentityKeys);
+		for(Map.Entry<Identity,MemberView> view:views.entrySet()) {
+			if(externalIdentityKeySet.contains(view.getKey().getKey())) {
+				view.getValue().getMemberShip().setExternalUser(true);
+			}
+		}
+	}
+	
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		StringBuilder sb = new StringBuilder();
@@ -265,6 +292,27 @@ public class MemberViewQueries {
 		List<Identity> identities = query.getResultList();
 		for(Identity identity:identities) {
 			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).getMemberShip().setPending(true);
+		}
+	}
+	
+	private void getExternalUsers(Map<Identity,MemberView> views, BusinessGroup businessGroup) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select inviteeMembership.identity.key")
+		  .append(" from businessgroup as grp")
+		  .append(" inner join grp.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join bgroupmember as inviteeMembership on (membership.identity.key=inviteeMembership.identity.key)")
+		  .append(" where grp.key=:groupKey and inviteeMembership.role ").in(OrganisationRoles.invitee);
+		
+		List<Long> externalIdentityKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("groupKey", businessGroup.getKey())
+				.getResultList();
+		Set<Long> externalIdentityKeySet = new HashSet<>(externalIdentityKeys);
+		for(Map.Entry<Identity,MemberView> view:views.entrySet()) {
+			if(externalIdentityKeySet.contains(view.getKey().getKey())) {
+				view.getValue().getMemberShip().setExternalUser(true);
+			}
 		}
 	}
 	

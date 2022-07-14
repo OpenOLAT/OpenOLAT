@@ -40,6 +40,7 @@ import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
 import org.olat.course.disclaimer.ui.CourseDisclaimerController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,18 +59,22 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	private Link executionSettingsLink;
 	private Link disclaimerLink;
 	
-	private CourseOptionsController optionsCtrl;
 	private CourseToolbarController toolbarCtrl;
 	private CourseLayoutGeneratorController layoutCtrl;
+	private CourseOptionsAndInvitationSettingsController optionsCtrl;
 	private CourseAssessmentSettingsController assessmentSettingsCtrl;
 	private CourseExecutionSettingsController executionSettingsCtrl;
 	private CourseDisclaimerController courseDisclaimerCtrl;
 	
+	private final RepositoryEntrySecurity reSecurity;
+	
 	@Autowired
 	private CourseModule courseModule;
 	
-	public CourseSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry entry) {
+	public CourseSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry entry, RepositoryEntrySecurity reSecurity) {
 		super(ureq, wControl, stackPanel, entry);
+		this.reSecurity = reSecurity;
 	}
 
 	@Override
@@ -249,7 +254,7 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		
 		ICourse course = CourseFactory.loadCourse(entry);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Options"), null);
-		optionsCtrl = new CourseOptionsController(ureq, swControl, entry, course, !readOnly);
+		optionsCtrl = new CourseOptionsAndInvitationSettingsController(ureq, swControl, entry, course, reSecurity, !readOnly);
 		listenTo(optionsCtrl);
 		mainPanel.setContent(optionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(optionsLink);

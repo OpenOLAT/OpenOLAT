@@ -59,7 +59,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -92,7 +91,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
-import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -127,7 +125,6 @@ public class CourseOptionsController extends FormBasicController {
 	private FormLink selectCoachFolderLink;
 	private boolean coachFolderPathSelected;
 
-	private LockResult lockEntry;
 	private final boolean editable;
 	private CourseConfig courseConfig;
 	private final RepositoryEntry entry;
@@ -140,8 +137,6 @@ public class CourseOptionsController extends FormBasicController {
 	private BCCourseNodeEditChooseFolderForm folderSelectCtrl;
 
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryManager repositoryService;
@@ -152,17 +147,14 @@ public class CourseOptionsController extends FormBasicController {
 	 * @param name
 	 * @param chatEnabled
 	 */
-	public CourseOptionsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, ICourse course, boolean canEdit) {
+	CourseOptionsController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, ICourse course, boolean editable) {
 		super(ureq, wControl, "course_options");
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(BCCourseNodeConfigController.class, getLocale(), getTranslator()));
-		this.courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
+		courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		this.entry = entry;
-		
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
-				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
-		editable = (lockEntry != null && lockEntry.isSuccess()) && canEdit;
+		this.editable = editable;
 
 		initForm(ureq);
 		updateToolbar();
@@ -175,8 +167,8 @@ public class CourseOptionsController extends FormBasicController {
 				// Something is wrong here, maybe the glossary has been deleted. Try to
 				// remove glossary from configuration
 				doRemoveGlossary();
-				log.warn("Course with ID::" + entry.getOlatResource().getResourceableId() + " had a config for a glossary softkey::"
-						+ courseConfig.getGlossarySoftKey() + " but no such glossary was found");				
+				log.warn("Course with ID::{} had a config for a glossary softkey::{} but no such glossary was found",
+						entry.getOlatResource().getResourceableId(), courseConfig.getGlossarySoftKey() );				
 			} else if(editable) {
 				glossaryNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
 				glossaryNameEl.setUserObject(repoEntry);
@@ -209,27 +201,6 @@ public class CourseOptionsController extends FormBasicController {
 			addFolderCommand.setVisible(editable);
 			folderReadOnlyEl.setVisible(false);
 		}
-		
-		if(lockEntry != null && !lockEntry.isSuccess()) {
-			String lockerName = "???";
-			if(lockEntry.getOwner() != null) {
-				lockerName = userManager.getUserDisplayName(lockEntry.getOwner());
-			}
-			if(lockEntry.isDifferentWindows()) {
-				showWarning("error.editoralreadylocked.same.user", new String[] { lockerName });
-			} else {
-				showWarning("error.editoralreadylocked", new String[] { lockerName });
-			}
-		}
-	}
-	
-	@Override
-	protected void doDispose() {
-		if (lockEntry != null && lockEntry.isSuccess()) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
-		}
-        super.doDispose();
 	}
 	
 	@Override

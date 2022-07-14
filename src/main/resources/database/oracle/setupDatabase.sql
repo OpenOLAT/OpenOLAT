@@ -93,6 +93,7 @@ CREATE TABLE o_gp_business (
   maxparticipants number(11),
   waitinglist_enabled number,
   autocloseranks_enabled number,
+  invitations_coach_enabled number default 1 not null,
   ownersintern number default 0 not null,
   participantsintern number default 0 not null,
   waitingintern number default 0 not null,
@@ -826,6 +827,10 @@ create table o_bs_invitation (
    first_name varchar(64 char),
    last_name varchar(64 char),
    mail varchar(128 char),
+   i_type varchar(32) default 'binder' not null,
+   i_url varchar(512),
+   i_roles varchar(255),
+   i_registration number default 0 not null,
    fk_group_id number(20),
    fk_identity_id number(20),
    primary key (id)

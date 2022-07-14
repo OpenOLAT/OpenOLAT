@@ -243,6 +243,8 @@ public class BusinessGroupDAO {
 		return groups == null || groups.isEmpty() ? null : groups.get(0);
 	}
 	
+	
+	
 	public BusinessGroup loadForUpdate(Long id) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from businessgroup bgi ")

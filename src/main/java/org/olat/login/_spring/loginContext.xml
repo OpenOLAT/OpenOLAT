@@ -62,7 +62,7 @@
 		<property name="order" value="8810" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.login.LoginAdminController"/>
+				<property name="className" value="org.olat.login.GuestAndInvitationAdminController"/>
 			</bean>
 		</property>
 		<property name="navigationKey" value="loginadmin" />

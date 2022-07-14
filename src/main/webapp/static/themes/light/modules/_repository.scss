@@ -411,3 +411,26 @@ a.o_repo_tools_status {
 	}	
 }
 
+/* Member management */
+.o_member_infos {
+	position: relative;
+	
+	.o_user_portrait {
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+	
+	.o_member_infos_inner {
+		margin-left: 120px;
+	}
+	.o_member_infos_inner>div {
+		display: grid;
+		grid-template-columns: 2fr 2fr;
+		column-gap: 20px;
+	}
+}
+
+
+
+

@@ -145,6 +145,10 @@ public interface BusinessGroup extends BusinessGroupShort, BusinessGroupLifecycl
 
 	public void setDownloadMembersLists(boolean downloadMembersLists);
 	
+	public boolean isInvitationByCoachWithAuthorRightsEnabled();
+	
+	public void setInvitationByCoachWithAuthorRightsEnabled(boolean enabled);
+	
 	public boolean isAllowToLeave();
 	
 	public void setAllowToLeave(boolean allow);

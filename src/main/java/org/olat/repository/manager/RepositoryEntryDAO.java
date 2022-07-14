@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -265,6 +266,23 @@ public class RepositoryEntryDAO {
 			return null;
 		}
 		return entries.get(0);
+	}
+	
+	public List<RepositoryEntry> loadByResourceGroup(Group group) {
+		if(group == null) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where relGroup.group.key=:groupKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("groupKey", group.getKey())
+				.getResultList();
 	}
 
 	/**

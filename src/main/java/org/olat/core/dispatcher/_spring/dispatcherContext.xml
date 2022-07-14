@@ -114,14 +114,6 @@
 		</property>
 	</bean>
 	
-	
-	<bean id="restdispatcher" class="org.olat.dispatcher.RESTDispatcher">
-		<property name="securityManager" ref="baseSecurityManager" />
-		<property name="userSessionManager" ref="userSessionManager" />
-		<property name="restSecurityBean" ref="restSecurityBean" />
-		<property name="loginModule" ref="loginModule" />
-	</bean>
-	
 	<bean id="oauthcallback" class="org.olat.login.oauth.OAuthDispatcher" />
 	
 	<bean id="getgocallback" class="org.olat.modules.gotomeeting.oauth.GetGoOAuthDispatcher" />
@@ -165,6 +157,18 @@
 						</property>
 					</bean>
 				</entry>
+				<!-- registration invitation -->
+				<entry key="/invitationregister/">
+					<bean
+						class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<!-- creates a BasicFullWebappController with DMZ content -->
+							<bean
+								class="org.olat.modules.invitation.InvitationRegistrationContentControllerCreator" />
+						</property>
+					</bean>
+				</entry>
+				
 				<!-- triggers password change workflow -->
 				<entry key="/pwchange/">
 					<bean

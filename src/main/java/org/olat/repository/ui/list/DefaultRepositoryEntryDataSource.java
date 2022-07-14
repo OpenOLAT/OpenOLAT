@@ -172,6 +172,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				if (filterVals != null) {
 					filterVals.forEach(filterVal -> searchParams.addFilter(Filter.valueOf(filterVal)));
 				}
+				break;
 			case EDUCATIONALTYPE:
 				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
 				searchParams.setEducationalTypeKeys(educationalTypes);

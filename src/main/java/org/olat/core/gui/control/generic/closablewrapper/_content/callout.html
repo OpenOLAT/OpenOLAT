@@ -5,7 +5,7 @@
 </div>
 #if($closable)
 <script>
-/* <![CDATA[ */	
+"use strict";
 jQuery(function() {
 	jQuery('#callout_layer_$r.getCId()').each(function(index, el) {
 		jQuery(el).parents('div.popover').next('div.o_callout_overlay').each(function(index2, el2) {
@@ -15,6 +15,5 @@ jQuery(function() {
 		});
 	});
 });
-/* ]]> */
 </script>
 #end

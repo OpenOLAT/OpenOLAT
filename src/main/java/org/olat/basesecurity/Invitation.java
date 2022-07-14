@@ -20,7 +20,11 @@
 
 package org.olat.basesecurity;
 
+import java.util.List;
+
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.modules.invitation.InvitationTypeEnum;
 
 /**
  * Description:<br>
@@ -30,7 +34,7 @@ import org.olat.core.id.Identity;
  * Initial Date:  10 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface Invitation {
+public interface Invitation extends CreateInfo {
 	
 	public Long getKey();
 
@@ -47,6 +51,16 @@ public interface Invitation {
 	public String getMail();
 	
 	public void setMail(String mail);
+	
+	public List<String> getRoleList();
+	
+	public void setRoleList(List<String> roles);
+	
+	public boolean isRegistration();
+
+	public void setRegistration(boolean registration);
+	
+	public InvitationTypeEnum getType();
 	
 	public Group getBaseGroup();
 	

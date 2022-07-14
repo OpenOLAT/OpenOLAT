@@ -107,6 +107,8 @@ public class BusinessGroupMailing {
 				return BGMailHelper.createRemoveWaitinglistMailTemplate(group, ureqIdentity);
 			case graduateFromWaitingListToParticpant:
 				return BGMailHelper.createWaitinglistTransferMailTemplate(group, ureqIdentity);
+			case invitation:
+				return BGMailHelper.createInvitationMailTemplate(group, ureqIdentity);
 		}
 		return null;
 	}
@@ -176,6 +178,7 @@ public class BusinessGroupMailing {
 		addToWaitingList,
 		removeToWaitingList,
 		graduateFromWaitingListToParticpant,
+		invitation
 	}
 	
 	public static class MailTemplateDelegate extends MailTemplate {

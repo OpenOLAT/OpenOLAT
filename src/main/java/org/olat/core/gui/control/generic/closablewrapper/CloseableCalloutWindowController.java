@@ -36,7 +36,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -94,7 +93,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 	 */
 	public CloseableCalloutWindowController(UserRequest ureq, WindowControl wControl, Component calloutWindowContent,
 			String targetDomID, String title, boolean closable, String cssClasses) {
-		this(ureq, wControl, calloutWindowContent, targetDomID, title, closable, cssClasses, new CalloutSettings());
+		this(ureq, wControl, calloutWindowContent, targetDomID, title, closable, cssClasses, new CalloutSettings(title));
 	}
 	
 	public CloseableCalloutWindowController(UserRequest ureq, WindowControl wControl, Component calloutWindowContent,
@@ -106,6 +105,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 		if (ajax) {
 			final Panel guiMsgPlace = new Panel("guimessage_place");
 			calloutVC = new VelocityContainer("closeablewrapper", velocity_root + "/callout.html", null, this) {
+				@Override
 				public void validate(UserRequest uureq, ValidationResult vr) {
 					super.validate(uureq, vr);
 					// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
@@ -122,10 +122,6 @@ public class CloseableCalloutWindowController extends BasicController implements
 			// Config options, see setter methods
 			calloutVC.contextPut("closable", Boolean.toString(closable));
 			calloutVC.contextPut("cssClasses", (cssClasses == null ? "small" : cssClasses));
-			if (title != null) {
-				String escapedTitle = StringHelper.escapeJavaScript(StringHelper.escapeHtml(title));
-				calloutVC.contextPut("title", escapedTitle);
-			}
 			putInitialPanel(calloutVC);
 		} else {
 			// Fallback to old-school modal dialog

@@ -2134,6 +2134,30 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.basesecurity.Invitation">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+						<!--  the login field is always available, this is
+						defined within the UserSearchform.java -->
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>
+						</property>
+					</bean>
+				</entry>
 
 				<!--
 					Default configuration in case nothing else matches.

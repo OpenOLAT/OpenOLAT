@@ -37,7 +37,7 @@ public class LoginUIFactory {
 	
 	public static String formatDescriptionAsList(List<ValidationDescription> descriptions, Locale locale) {
 		return descriptions.stream()
-				.map(d -> "<br/>  - " + d.getText(locale))
+				.map(d -> "<br>  - " + d.getText(locale))
 				.collect(Collectors.joining());
 	}
 	

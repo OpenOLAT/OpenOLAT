@@ -42,6 +42,7 @@ public class CourseMembership {
 	private boolean curriculumElementMasterCoach;
 	
 	private boolean pending;
+	private boolean externalUser;
 	private boolean managedMembersRepo;
 	
 	public CourseMembership() {
@@ -78,6 +79,14 @@ public class CourseMembership {
 
 	public void setPending(boolean pending) {
 		this.pending = pending;
+	}
+
+	public boolean isExternalUser() {
+		return externalUser;
+	}
+
+	public void setExternalUser(boolean externalUser) {
+		this.externalUser = externalUser;
 	}
 
 	public boolean isManagedMembersRepo() {

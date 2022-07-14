@@ -524,7 +524,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		filterCtrl.addControllerListener(this);
 
 		filtersCallout = new CloseableCalloutWindowController(ureq, wControl, filterCtrl.getInitialComponent(),
-				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true));
+				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true, null));
 		filtersCallout.addControllerListener(this);
 		filtersCallout.activate();
 	}

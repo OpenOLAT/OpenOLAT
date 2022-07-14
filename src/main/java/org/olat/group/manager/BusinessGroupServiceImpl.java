@@ -280,6 +280,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
+	public BusinessGroup updateOptions(BusinessGroup group, boolean invitationByCoachWithAuthorsRightsEnabled) {
+		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group);
+		BusinessGroup mergedGroup = null;
+		if(reloadedBusinessGroup != null) {
+			reloadedBusinessGroup.setInvitationByCoachWithAuthorRightsEnabled(invitationByCoachWithAuthorsRightsEnabled);
+			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
+			//prevent lazy loading issues
+			mergedGroup.getBaseGroup().getKey();
+		}
+		dbInstance.commit();
+		return mergedGroup;
+	}
+
+	@Override
 	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allow) {
 		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group);
 		BusinessGroup mergedGroup = null;

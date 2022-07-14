@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.Callout
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -205,6 +206,9 @@ public class GuiStackNiceImpl implements GuiStack {
 			inset.contextPut("arrow", settings.isArrow());
 			inset.contextPut("wider", settings.isWider());
 			inset.contextPut("orientation", settings.getOrientation().name());
+			if(StringHelper.containsNonWhitespace(settings.getTitle())) {
+				inset.contextPut("title", settings.getTitle());
+			}
 		} else {
 			inset.contextPut("arrow", Boolean.TRUE);
 			inset.contextPut("wider", Boolean.FALSE);

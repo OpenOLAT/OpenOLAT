@@ -70,7 +70,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
-import org.olat.modules.portfolio.manager.InvitationDAO;
+import org.olat.modules.invitation.InvitationService;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -85,6 +85,7 @@ public class AuthHelper {
 	public static final String ATTRIBUTE_LANGUAGE = "language";
 	public static final String ATTRIBUTE_IS_REST = "isrest";
 	public static final String ATTRIBUTE_IS_WEBDAV = "iswebdav";
+	public static final String ATTRIBUTE_INVITATION = "invitation";
 	/**
 	 * <code>LOGOUT_PAGE</code>
 	 */
@@ -93,6 +94,9 @@ public class AuthHelper {
 	public static final int LOGIN_DENIED = 2;
 	public static final int LOGIN_NOTAVAILABLE = 3;
 	public static final int LOGIN_INACTIVE = 4;
+	public static final int LOGIN_REGISTER = 5;
+	public static final int LOGIN_NEED_LOGIN = 6;
+	
 
 	private static final int MAX_SESSION_NO_LIMIT = 0;
 
@@ -239,23 +243,30 @@ public class AuthHelper {
 		log.error("Guest account has user permissions: {}", guestIdent);
 		return LOGIN_DENIED;
 	}
+	
+
 
 	public static int doInvitationLogin(String invitationToken, UserRequest ureq, Locale locale) {
-		InvitationDAO invitationDao = CoreSpringFactory.getImpl(InvitationDAO.class);
-		boolean hasPolicies = invitationDao.hasInvitations(invitationToken);
+		InvitationService invitationService = CoreSpringFactory.getImpl(InvitationService.class);
+		boolean hasPolicies = invitationService.hasInvitations(invitationToken);
 		if(!hasPolicies) {
 			return LOGIN_DENIED;
 		}
 
 		UserManager um = UserManager.getInstance();
 		GroupDAO groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
-		Invitation invitation = invitationDao.findInvitation(invitationToken);
+		Invitation invitation = invitationService.findInvitation(invitationToken);
 		if(invitation == null) {
 			return LOGIN_DENIED;
 		}
+		UserSession usess = ureq.getUserSession();
+		usess.putEntryInNonClearedStore(ATTRIBUTE_INVITATION, invitation);
 
 		//check if identity exists
-		Identity identity = um.findUniqueIdentityByEmail(invitation.getMail());
+		Identity identity = invitation.getIdentity();
+		if(identity == null) {
+			identity = um.findUniqueIdentityByEmail(invitation.getMail());
+		}
 		if(identity != null) {
 			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 			if(organisationService.hasRole(identity, OrganisationRoles.user)) {
@@ -265,6 +276,16 @@ public class AuthHelper {
 				if(!groupDao.hasRole(invitation.getBaseGroup(), identity, GroupRoles.invitee.name())) {
 					groupDao.addMembershipTwoWay(invitation.getBaseGroup(), identity, GroupRoles.invitee.name());
 					DBFactory.getInstance().commit();
+				}
+				if(invitation.isRegistration()) {
+					BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+					Authentication authentication = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
+					if(authentication == null) {
+						return LOGIN_REGISTER;	
+					}
+					// Make sure the membership are set
+					invitationService.acceptInvitation(invitation, identity);
+					return LOGIN_NEED_LOGIN;
 				}
 
 				int result = doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
@@ -281,7 +302,7 @@ public class AuthHelper {
 		}
 
 		//invitation ok -> create a temporary user
-		Identity invitee = invitationDao.createIdentityFrom(invitation, locale);
+		Identity invitee = invitationService.createIdentityFrom(invitation, locale);
 		return doLogin(invitee, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 	}
 
@@ -480,5 +501,4 @@ public class AuthHelper {
 	public static int getMaxSessions() {
 		return maxSessions;
 	}
-
 }

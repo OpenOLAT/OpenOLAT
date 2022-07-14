@@ -44,6 +44,7 @@ public class MembershipConfigurationForm extends FormBasicController {
 	private SelectionElement allowToLeaveEl;
 	
 	private final boolean managed;
+	private final boolean readOnly;
 	
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
@@ -54,9 +55,10 @@ public class MembershipConfigurationForm extends FormBasicController {
 	 * @param wControl
 	 * @param managed
 	 */
-	public MembershipConfigurationForm(UserRequest ureq, WindowControl wControl, boolean managed) {
+	public MembershipConfigurationForm(UserRequest ureq, WindowControl wControl, boolean managed, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_DEFAULT_6_6);
 		this.managed = managed;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 	
@@ -85,7 +87,12 @@ public class MembershipConfigurationForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		allowToLeaveEl = uifactory.addCheckboxesHorizontal("allow.leaving", "allow.leaving.group", formLayout, new String[]{"xx"}, new String[]{""});
-		allowToLeaveEl.addActionListener(FormEvent.ONCLICK);
+		if(readOnly) {
+			allowToLeaveEl.setEnabled(false);
+		} else {
+			allowToLeaveEl.addActionListener(FormEvent.ONCLICK);
+		}
+		
 		if(managed) {
 			allowToLeaveEl.setEnabled(false);
 		} else if(businessGroupModule.isAllowLeavingGroupOverride()) {

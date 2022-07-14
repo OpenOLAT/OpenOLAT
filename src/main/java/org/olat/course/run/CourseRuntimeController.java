@@ -19,7 +19,10 @@
  */
 package org.olat.course.run;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -155,6 +158,8 @@ import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
+import org.olat.modules.invitation.InvitationConfigurationPermission;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
@@ -278,6 +283,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseDBManager courseDBManager;
 	@Autowired
 	private SearchModule searchModule;
+	@Autowired
+	private InvitationModule invitationModule;
 	@Autowired
 	private LearningPathService learningPathService;
 	@Autowired 
@@ -1834,8 +1841,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				
 				WindowControl bwControl = getSubWindowControl("Settings");
 				RepositoryEntry refreshedEntry = loadRepositoryEntry();
+				RepositoryEntrySecurity security = reSecurity.getWrappedSecurity();
 				CourseSettingsController ctrl
-					= new CourseSettingsController(ureq, addToHistory(ureq, bwControl), toolbarPanel, refreshedEntry);
+					= new CourseSettingsController(ureq, addToHistory(ureq, bwControl), toolbarPanel, refreshedEntry, security);
 				listenTo(ctrl);
 				settingsCtrl = pushController(ureq, translate("details.settings"), ctrl);
 				currentToolCtr = settingsCtrl;
@@ -1857,10 +1865,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(currentToolCtr instanceof MembersManagementMainController) {
 					((MembersManagementMainController)currentToolCtr).activate(ureq, null, null);
 				} else {
+					boolean canInvite = isAllowedToInvite();
 					WindowControl bwControl = getSubWindowControl("MembersMgmt");
 					MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel,
 							getRepositoryEntry(), getUserCourseEnvironment(), reSecurity.isEntryAdmin(), reSecurity.isPrincipal() || reSecurity.isMasterCoach(),
-							hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT), hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT));
+							hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT), hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT), canInvite);
 					listenTo(ctrl);
 					membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
 					setActiveTool(membersLink);
@@ -1871,6 +1880,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			delayedClose = Delayed.members;
 		}
 		return membersCtrl;
+	}
+	
+	private boolean isAllowedToInvite() {
+		if(!invitationModule.isCourseInvitationEnabled()) {
+			return false;
+		}
+		
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+		CourseConfig cc = course.getCourseConfig(); // do not cache cc, not save
+		RepositoryEntrySecurity wreSecurity = reSecurity.getWrappedSecurity();
+		return wreSecurity.isAdministrator() || wreSecurity.isLearnResourceManager()
+				|| (wreSecurity.isAuthor() && wreSecurity.isEntryAdmin()
+						&& invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.allResources)
+				|| (wreSecurity.isAuthor() && wreSecurity.isEntryAdmin()
+						&& invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.perResource
+						&& cc.isInvitationByOwnersWithAuthorRightsEnabled());
 	}
 	
 	private void doConfirmLeave(UserRequest ureq) {

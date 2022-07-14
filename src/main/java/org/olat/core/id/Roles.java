@@ -279,6 +279,10 @@ public class Roles implements Serializable {
 	public boolean isInvitee() {
 		return hasRole(OrganisationRoles.invitee);
 	}
+	
+	public boolean isInviteeOnly() {
+		return hasRole(OrganisationRoles.invitee) && !hasRole(OrganisationRoles.user);
+	}
 
 	public boolean isGuestOnly() {
 		return hasRole(OrganisationRoles.guest) || isGuestOnly;

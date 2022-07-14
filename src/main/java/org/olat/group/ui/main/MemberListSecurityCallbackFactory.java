@@ -55,5 +55,4 @@ public class MemberListSecurityCallbackFactory {
 			return canRemoveMembers;
 		}
 	}
-
 }

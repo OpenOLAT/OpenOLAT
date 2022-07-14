@@ -38,7 +38,8 @@ public class MemberRow {
 	private Date lastTime;
 	
 	private String onlineStatus;
-	private FormLink toolsLink, chatLink;
+	private FormLink toolsLink;
+	private FormLink chatLink;
 	
 	private final MemberView view;
 	

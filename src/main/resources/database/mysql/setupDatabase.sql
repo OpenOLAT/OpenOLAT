@@ -91,6 +91,7 @@ create table if not exists o_gp_business (
    maxparticipants integer,
    waitinglist_enabled bit,
    autocloseranks_enabled bit,
+   invitations_coach_enabled bool default true not null,
    ownersintern bit not null default 0,
    participantsintern bit not null default 0,
    waitingintern bit not null default 0,
@@ -869,6 +870,10 @@ create table if not exists o_bs_invitation (
    first_name varchar(64),
    last_name varchar(64),
    mail varchar(128),
+   i_type varchar(32) default 'binder' not null,
+   i_url varchar(512),
+   i_roles varchar(255),
+   i_registration bool default false not null,
    fk_group_id bigint,
    fk_identity_id bigint,
    primary key (id)

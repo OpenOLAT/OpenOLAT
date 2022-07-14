@@ -87,6 +87,7 @@ import org.olat.user.ui.admin.authentication.UserAuthenticationsEditorController
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
 import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.data.UserDataExportController;
+import org.olat.user.ui.identity.ChangeInviteePrefsController;
 import org.olat.user.ui.identity.UserRelationsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -209,13 +210,10 @@ public class UserAdminController extends BasicController implements Activateable
 				exportDataButton.setIconLeftCSS("o_icon o_icon_download");
 			}
 			
-			userShortDescrCtr = new UserShortDescription(ureq, wControl, identity);
-			listenTo(userShortDescrCtr);
-			myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
-
 			setBackButtonEnabled(true); // default
 			setShowTitle(true);
 			initTabbedPane(editedIdentity, ureq);
+			// Exposer portrait and short description
 			exposeUserDataToVC(ureq, editedIdentity);
 			putInitialPanel(myContent);
 		} else {
@@ -407,10 +405,13 @@ public class UserAdminController extends BasicController implements Activateable
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
 		userTabP.addListener(this);
 	
+		// Edited identity as "user" role
 		boolean isAdminOf = managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles);
 		boolean isPrincipalOf = managerRoles.isManagerOf(OrganisationRoles.principal, editedRoles);
 		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
 		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
+		
+		boolean isInvitee = editedRoles.isInviteeOnly();
 
 		if(isAdminOf || isUserManagerOf || isRolesManagerOf) {
 			userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
@@ -428,6 +429,12 @@ public class UserAdminController extends BasicController implements Activateable
 				listenTo(prefsCtr);
 				return prefsCtr.getInitialComponent();
 			});
+		} else if(isInvitee) {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UPREFS), uureq -> {
+				prefsCtr = new ChangeInviteePrefsController(uureq, getWindowControl(), identity);
+				listenTo(prefsCtr);
+				return prefsCtr.getInitialComponent();
+			});
 		}
 
 		if (isPasswordChangesAllowed(identity)) {
@@ -438,13 +445,15 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 
-		if (isAdminOf) {
+		if (isAdminOf || isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UAUTH),  uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
 				return authenticationsCtr.getInitialComponent();
 			});
+		}
 
+		if(isAdminOf) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPROP), uureq -> {
 				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);
 				listenTo(propertiesCtr);
@@ -452,7 +461,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 		
-		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
+		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf || isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
 				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
@@ -466,6 +475,8 @@ public class UserAdminController extends BasicController implements Activateable
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();
 			});
+			
+			//TODO external portfolio list
 		}
 
 		if (isAdminOf || isPrincipalOf || isRolesManagerOf) {
@@ -567,7 +578,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 		
-		if(gradingModule.isEnabled()) {
+		if(gradingModule.isEnabled() && !isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GRADER),  uureq -> {
 				graderOverviewCtrl = new GraderUserOverviewController(uureq, getWindowControl(), identity);
 				listenTo(graderOverviewCtrl);
@@ -587,7 +598,8 @@ public class UserAdminController extends BasicController implements Activateable
 		if (managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles)
 				|| (managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles)
-						&& !editedRoles.isAdministrator() && !editedRoles.isRolesManager())) {
+						&& !editedRoles.isAdministrator() && !editedRoles.isRolesManager())
+				|| editedRoles.isInviteeOnly()) {
 			// show pwd form only if user has also right to create new passwords in case
 			// of a user that has no password yet
 			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.isIdentityInLDAPSecGroup(identity)) {

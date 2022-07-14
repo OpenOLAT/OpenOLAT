@@ -1016,7 +1016,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private void doRun(UserRequest ureq, SingleRoleRepositoryEntrySecurity srSecurity) {
 		RepositoryEntrySecurity security = srSecurity.getWrappedSecurity();
-		if(security .isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
+		if(security.isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
 			launchContent(ureq);
 		} else {
 			if(security.canLaunch()) {

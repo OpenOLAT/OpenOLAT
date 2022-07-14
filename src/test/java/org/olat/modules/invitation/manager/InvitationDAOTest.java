@@ -17,19 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.manager;
+package org.olat.modules.invitation.manager;
 
 import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.invitation.model.InvitationImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +51,11 @@ public class InvitationDAOTest extends OlatTestCase {
 	@Autowired
 	private InvitationDAO invitationDao;
 	@Autowired
-	private BaseSecurity securityManager;
-	
+	private InvitationService invitationService;
 	
 	@Test
 	public void createAndPersistInvitation() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
+		Invitation invitation = createDummyInvitation();
 		Assert.assertNotNull(invitation);
 		dbInstance.commit();
 		
@@ -66,7 +67,7 @@ public class InvitationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void findInvitation_token() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
+		Invitation invitation = createDummyInvitation();
 		Assert.assertNotNull(invitation);
 		dbInstance.commitAndCloseSession();
 		
@@ -87,14 +88,14 @@ public class InvitationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isInvitee() {
-		Invitation invitation = invitationDao.createInvitation();
+		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.binder);
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		invitation.setFirstName("Fiona");
 		invitation.setLastName("Laurence".concat(uuid));
 		invitation.setMail(uuid.concat("@frentix.com"));
 
 		Group group = groupDao.createGroup();
-		Identity id2 = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
+		Identity id2 = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Invitee-2");
 		dbInstance.commitAndCloseSession();
 		
@@ -105,73 +106,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void createAndUpdateInvitation() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
-		dbInstance.commit();
-
-		Invitation updatedInvitation = invitationDao.update(invitation, "Kanu", "Unchou", "kanu.unchou@frentix.com");
-		dbInstance.commit();
-		
-		Assert.assertEquals("Kanu", updatedInvitation.getFirstName());
-		Assert.assertEquals("Unchou", updatedInvitation.getLastName());
-		Assert.assertEquals("kanu.unchou@frentix.com", updatedInvitation.getMail());
-		
-		Invitation reloadedInvitation = invitationDao.findInvitation(invitation.getToken());
-		Assert.assertEquals("Kanu", reloadedInvitation.getFirstName());
-		Assert.assertEquals("Unchou", reloadedInvitation.getLastName());
-		Assert.assertEquals("kanu.unchou@frentix.com", reloadedInvitation.getMail());
-	}
-	
-	@Test
-	public void createIdentityFrom_invitation() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
-		String uuid = UUID.randomUUID().toString().replace("-", "");
-		invitation = invitationDao.update(invitation, "Clara", uuid, uuid + "@frentix.com");
-		dbInstance.commit();
-		
-		// create the identity of the invitee
-		Identity invitee = invitationDao.createIdentityFrom(invitation, Locale.ENGLISH);
-		Assert.assertNotNull(invitee);
-		Assert.assertNotNull(invitee.getKey());
-		dbInstance.commitAndCloseSession();
-		
-		// reload and check
-		Identity reloadIdentity = securityManager.loadIdentityByKey(invitee.getKey());
-		Assert.assertNotNull(reloadIdentity);
-		Assert.assertNotNull(reloadIdentity.getUser());
-		Assert.assertEquals(invitee.getKey(), reloadIdentity.getKey());
-		Assert.assertEquals("Clara", reloadIdentity.getUser().getFirstName());
-		Assert.assertEquals(uuid, reloadIdentity.getUser().getLastName());
-		Assert.assertEquals(uuid + "@frentix.com", reloadIdentity.getUser().getEmail());
-	}
-	
-	@Test
-	public void loadOrCreateIdentityAndPersistInvitation() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
-		String uuid = UUID.randomUUID().toString().replace("-", "");
-		invitation = invitationDao.update(invitation, "Flora", uuid, uuid + "@frentix.com");
-		Group group = groupDao.createGroup();
-		dbInstance.commit();
-		
-		// use the create part of the method
-		Identity identity = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
-		Assert.assertNotNull(identity);
-		Assert.assertNotNull(identity.getKey());
-		dbInstance.commitAndCloseSession();
-		
-		// reload and check
-		Identity reloadIdentity = securityManager.loadIdentityByKey(identity.getKey());
-		Assert.assertNotNull(reloadIdentity);
-		Assert.assertNotNull(reloadIdentity.getUser());
-		Assert.assertEquals(identity.getKey(), reloadIdentity.getKey());
-		Assert.assertEquals("Flora", reloadIdentity.getUser().getFirstName());
-		Assert.assertEquals(uuid, reloadIdentity.getUser().getLastName());
-		Assert.assertEquals(uuid + "@frentix.com", reloadIdentity.getUser().getEmail());
-	}
-	
-	@Test
 	public void countInvitations() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
+		Invitation invitation = createDummyInvitation();
 		dbInstance.commit();
 		Assert.assertNotNull(invitation);
 		
@@ -181,7 +117,7 @@ public class InvitationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deleteInvitationByGroup() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
+		Invitation invitation = createDummyInvitation();
 		dbInstance.commit();
 		Assert.assertNotNull(invitation);
 		
@@ -190,5 +126,14 @@ public class InvitationDAOTest extends OlatTestCase {
 		
 		Invitation deletedInvitation = invitationDao.findInvitation(invitation.getToken());
 		Assert.assertNull(deletedInvitation);
+	}
+	
+
+	private Invitation createDummyInvitation() {
+		Group group = groupDao.createGroup();
+		InvitationImpl invitation = (InvitationImpl)invitationDao.createInvitation(InvitationTypeEnum.binder);
+		invitation.setBaseGroup(group);
+		dbInstance.getCurrentEntityManager().persist(invitation);
+		return invitation;
 	}
 }

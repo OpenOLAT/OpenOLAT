@@ -43,9 +43,10 @@ public class GroupMemberOrManagerSecurityCallback implements SiteSecurityCallbac
 		}
 		
 		Roles roles = usess.getRoles();
+		roles.isInvitee();
 		Identity ident = ureq.getIdentity();
 		return roles.isAdministrator() 
 				|| roles.isGroupManager() 
-				|| (businessGroupService.findBusinessGroups(ident,1 , null).size() > 0);
+				|| !businessGroupService.findBusinessGroups(ident, 1).isEmpty();
 	}
 }

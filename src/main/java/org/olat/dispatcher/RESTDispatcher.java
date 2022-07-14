@@ -24,6 +24,7 @@
 */
 package org.olat.dispatcher;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Locale;
@@ -52,8 +53,11 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.LoginModule;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -74,46 +78,21 @@ import org.olat.restapi.security.RestSecurityHelper;
  * Initial Date:  24.04.2009 <br>
  * @author patrickb
  */
+@Service("restdispatcher")
 public class RESTDispatcher implements Dispatcher {
 	
 	private static final Logger log = Tracing.createLoggerFor(RESTDispatcher.class);
 	
+	@Autowired
 	private LoginModule loginModule;
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private InvitationModule invitationModule;
+	@Autowired
 	private RestSecurityBean restSecurityBean;
+	@Autowired
 	private UserSessionManager userSessionManager;
-	
-	/**
-	 * [used by Spring]
-	 * @param loginModule
-	 */
-	public void setLoginModule(LoginModule loginModule) {
-		this.loginModule = loginModule;
-	}
-	
-	/**
-	 * [user by Spring]
-	 * @param restSecurityBean
-	 */
-	public void setRestSecurityBean(RestSecurityBean restSecurityBean) {
-		this.restSecurityBean = restSecurityBean;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param userSessionManager
-	 */
-	public void setUserSessionManager(UserSessionManager userSessionManager) {
-		this.userSessionManager = userSessionManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param securityManager The base security manager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -151,7 +130,7 @@ public class RESTDispatcher implements Dispatcher {
 			}
 		} catch (Exception e) {
 			DispatcherModule.sendBadRequest(origUri, response);
-			log.warn("Error with business path: " + origUri, e);
+			log.warn("Error with business path: {}", origUri, e);
 			return;
 		}
 		
@@ -229,16 +208,18 @@ public class RESTDispatcher implements Dispatcher {
 			//prepare for redirect
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
-			if (invitationAccess != null && loginModule.isInvitationEnabled()) {
+			if (invitationAccess != null && invitationModule.isInvitationEnabled()) {
 			// try to log in as anonymous
 				// use the language from the lang parameter if available, otherwise use the system default locale
 				Locale guestLoc = getLang(ureq);
 				int loginStatus = AuthHelper.doInvitationLogin(invitationAccess, ureq, guestLoc);
-				if ( loginStatus == AuthHelper.LOGIN_OK) {
+				if (loginStatus == AuthHelper.LOGIN_OK) {
 					Identity invite = usess.getIdentity();
 					securityManager.setIdentityLastLogin(invite);					
 					//logged in as invited user, continue
 					ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
+				} else if (loginStatus == AuthHelper.LOGIN_REGISTER) {
+					redirectRegister(response);
 				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 					DispatcherModule.redirectToServiceNotAvailable(response);
 				} else {
@@ -274,6 +255,14 @@ public class RESTDispatcher implements Dispatcher {
 			url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 		}
 		DispatcherModule.redirectTo(ureq.getHttpResp(), url);
+	}
+	
+	private void redirectRegister(HttpServletResponse response) {
+		try {
+			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "invitationregister/");
+		} catch (IOException e) {
+			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);
+		}
 	}
 	
 	/**

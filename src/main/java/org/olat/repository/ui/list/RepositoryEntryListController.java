@@ -693,7 +693,7 @@ public class RepositoryEntryListController extends FormBasicController
 		addToHistory(ureq, state);
 	}
 	
-	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if(tab == null) return;
 		tableEl.setSelectedFilterTab(ureq, tab);
 	}

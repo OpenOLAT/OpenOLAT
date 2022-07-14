@@ -24,7 +24,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.AbstractMemberListController;
-import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
+import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 
@@ -38,8 +38,8 @@ public class MemberListController extends AbstractMemberListController {
 	private final SearchMembersParams searchParams;
 	
 	public MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BusinessGroup group, SearchMembersParams searchParams) {
-		super(ureq, wControl, group, "all_member_list", MemberListSecurityCallbackFactory.adminRights(), stackPanel);
+			BusinessGroup group, SearchMembersParams searchParams, MemberListSecurityCallback secCallback) {
+		super(ureq, wControl, group, "all_member_list", secCallback, stackPanel);
 		this.searchParams = searchParams;
 	}
 	

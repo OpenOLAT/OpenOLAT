@@ -17,29 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.manager;
+package org.olat.modules.invitation.manager;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
-import org.olat.modules.portfolio.model.InvitationImpl;
-import org.olat.user.UserManager;
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.group.BusinessGroupRef;
+import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,97 +50,28 @@ import org.springframework.stereotype.Service;
 @Service(value="invitationDao")
 public class InvitationDAO {
 	
-	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private GroupDAO groupDao;
-	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
-	private OrganisationService organisationService;
 	
-	public Invitation createInvitation() {
+	public Invitation createInvitation(InvitationTypeEnum type) {
 		InvitationImpl invitation = new InvitationImpl();
 		invitation.setToken(UUID.randomUUID().toString());
+		invitation.setType(type);
 		return invitation;
 	}
 	
-	/**
-	 * Create and persist an invitation with its security group and security token.
-	 * @return
-	 */
-	public Invitation createAndPersistInvitation() {
-		Group group = groupDao.createGroup();
-		
-		InvitationImpl invitation = new InvitationImpl();
-		invitation.setToken(UUID.randomUUID().toString());
-		invitation.setBaseGroup(group);
-		dbInstance.getCurrentEntityManager().persist(invitation);
-		return invitation;
-	}
-	
-	public Invitation update(Invitation invitation, String firstName, String lastName, String email) {
-		List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
-		for(Identity identity:identities) {
-			User user = identity.getUser();
-			if(email.equals(user.getEmail())) {
-				user.setProperty(UserConstants.FIRSTNAME, firstName);
-				user.setProperty(UserConstants.LASTNAME, lastName);
-				user.setProperty(UserConstants.EMAIL, email);
-				userManager.updateUserFromIdentity(identity);
-			}
-		}
-		
-		invitation.setFirstName(firstName);
-		invitation.setLastName(lastName);
-		invitation.setMail(email);
-		return dbInstance.getCurrentEntityManager().merge(invitation);
-	}
-	
-	public Identity createIdentityFrom(Invitation invitation, Locale locale) {
-		if(invitation.getIdentity() != null) {
-			return securityManager.loadIdentityByKey(invitation.getIdentity().getKey());
-		}
-		
-		String tempUsername = UUID.randomUUID().toString();
-		User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
-		user.getPreferences().setLanguage(locale.toString());
-		Identity invitee = securityManager.createAndPersistIdentityAndUser(null, tempUsername, null, user, null, null, null, null, null);
-		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
-		organisationService.addMember(invitee, OrganisationRoles.invitee);
-		return invitee;
-	}
-	
-	public Identity loadOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale) {
-		// create identity only if such a user does not already exist
-
-		Identity invitee;
-		if(invitation.getIdentity() != null) {
-			invitee = invitation.getIdentity();
+	public Invitation persist(Invitation invitation) {
+		if(invitation.getKey() != null) {
+			invitation = dbInstance.getCurrentEntityManager().merge(invitation);
 		} else {
-			invitee = userManager.findUniqueIdentityByEmail(invitation.getMail());
-			if (invitee == null) {
-				User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
-				user.getPreferences().setLanguage(locale.toString());
-				invitee = securityManager.createAndPersistIdentityAndUser(null, null, null, user, null, null, null, null, null);
-			}
+			dbInstance.getCurrentEntityManager().persist(invitation);
 		}
-		
-		// create the invitation
-		group = groupDao.loadGroup(group.getKey());
-		((InvitationImpl)invitation).setCreationDate(new Date());
-		((InvitationImpl)invitation).setBaseGroup(group);
-		((InvitationImpl)invitation).setIdentity(invitee);
-		dbInstance.getCurrentEntityManager().persist(invitation);
-
-		// add invitee to the security group of that portfolio element
-		groupDao.addMembershipTwoWay(group, invitee, GroupRoles.invitee.name());
-		organisationService.addMember(invitee, OrganisationRoles.invitee);			
-		return invitee;
+		return invitation;
 	}
+	
+	public Invitation update(Invitation invitation) {
+		return dbInstance.getCurrentEntityManager().merge(invitation);
+	} 
 	
 	/**
 	 * Is the invitation linked to any valid policies
@@ -158,9 +83,13 @@ public class InvitationDAO {
 		sb.append("select invitation.key from binvitation as invitation")
 		  .append(" inner join invitation.baseGroup as baseGroup")
 		  .append(" where invitation.token=:token")
-		  .append(" and exists(select binder from pfbinder as binder")
+		  .append(" and (exists (select binder.key from pfbinder as binder")
 		  .append("   where binder.baseGroup.key=baseGroup.key")
-		  .append(" )");
+		  .append(" ) or exists (select relGroup.key from repoentrytogroup as relGroup")
+		  .append("   where relGroup.group.key=baseGroup.key")
+		  .append(" ) or exists (select bgi.key from businessgroup as bgi")
+		  .append("   where bgi.baseGroup.key=baseGroup.key")
+		  .append(" ))");
 
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -218,6 +147,36 @@ public class InvitationDAO {
 				  .getResultList();
 		if(invitations.isEmpty()) return null;
 		return invitations.get(0);
+	}
+	
+	public List<Invitation> findInvitation(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select invitation from binvitation as invitation ")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" inner join repoentrytogroup as reToGroup on (bGroup.key = reToGroup.group.key)")
+		  .append(" left join fetch invitation.identity ident")
+		  .append(" left join fetch ident.user as identUser")
+		  .where().append("reToGroup.entry.key=:repositoryEntryKey and reToGroup.defaultGroup=true");
+
+		return dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Invitation.class)
+				  .setParameter("repositoryEntryKey", entry.getKey())
+				  .getResultList();
+	}
+	
+	public List<Invitation> findInvitation(BusinessGroupRef businessGroup) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select invitation from binvitation as invitation ")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" inner join businessgroup as bgi on (bGroup.key = bgi.baseGroup.key)")
+		  .append(" left join fetch invitation.identity ident")
+		  .append(" left join fetch ident.user as identUser")
+		  .where().append("bgi.key=:businessGroupKey");
+
+		return dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Invitation.class)
+				  .setParameter("businessGroupKey", businessGroup.getKey())
+				  .getResultList();
 	}
 	
 	/**

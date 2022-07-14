@@ -238,7 +238,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 		selectionCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectionCtrl.getInitialComponent(),
-				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, false));
+				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, false, null));
 		calloutCtrl.addControllerListener(this);
 		calloutCtrl.activate();
 	}

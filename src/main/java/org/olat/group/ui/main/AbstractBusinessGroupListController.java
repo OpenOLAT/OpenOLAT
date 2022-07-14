@@ -979,7 +979,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		return tableEl.getSelectedFilterTab() != null;
 	}
 	
-	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		tableEl.setSelectedFilterTab(ureq, tab);
 		changeFilterTab(ureq, tab);
 		doSearch(ureq, tab);

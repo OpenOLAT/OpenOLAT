@@ -98,8 +98,8 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 	}
 	
 	private void showInfo(WindowControl wControl, String i18nKey, int numOfUsers) {
-		String title = translator.translate("info.header", null);
-		String msg = translator.translate(i18nKey, new String[] { Integer.toString(numOfUsers) });
+		String title = translator.translate("info.header");
+		String msg = translator.translate(i18nKey, Integer.toString(numOfUsers));
 		wControl.getWindowBackOffice().sendCommandTo(new ShowInfoCommand(title, msg));
 	}
 	

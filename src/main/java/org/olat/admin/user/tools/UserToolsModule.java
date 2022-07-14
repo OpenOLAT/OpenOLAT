@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.help.HelpUserToolExtension;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.Extension;
@@ -31,6 +32,7 @@ import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.home.HomeMainController;
@@ -116,6 +118,12 @@ public class UserToolsModule extends AbstractSpringModule {
 		if(!isUserToolsDisabled()) {
 			List<UserToolExtension> extensions = getAllUserToolExtensions(ureq);
 			Set<String> availableToolSet = getAvailableUserToolSet();
+			UserSession usess = ureq.getUserSession();
+			if(usess != null && usess.getRoles().isInviteeOnly()) {
+				// Invitee are limited to subscription, help and password
+				availableToolSet.retainAll(getInviteeToolSet());	
+			}
+			
 			for(UserToolExtension extension:extensions) {
 				if(extension.isEnabled() &&
 						(availableToolSet.isEmpty() || availableToolSet.contains(extension.getUniqueExtensionID()))) {
@@ -126,14 +134,19 @@ public class UserToolsModule extends AbstractSpringModule {
 		return tools;
 	}
 	
+	public Set<String> getInviteeToolSet() {
+		return Set.of(HelpUserToolExtension.HELP_USER_TOOL_ID,
+				"org.olat.home.HomeMainController:org.olat.home.controllerCreators.NotificationsControllerCreator",
+				"org.olat.home.HomeMainController:org.olat.user.ChangePasswordController");
+	}
+	
 	public List<UserToolExtension> getAllUserToolExtensions(UserRequest ureq) {
 		List<UserToolExtension> userTools = new ArrayList<>();
 		for (Extension anExt : extManager.getExtensions()) {
-			if(anExt.isEnabled()){
+			if(anExt.isEnabled()) {
 				ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
-				if (ae != null && ae instanceof UserToolExtension) {
-					UserToolExtension gAe = (UserToolExtension) ae;
-					userTools.add(gAe);
+				if (ae instanceof UserToolExtension) {
+					userTools.add((UserToolExtension)ae);
 				}
 			}
 		}

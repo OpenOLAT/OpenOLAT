@@ -36,9 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LoginAdminController extends FormBasicController {
+public class GuestAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement guestLoginEl, guestLinkEl, invitationLoginEl, fullTextSearchEl;
+	private MultipleSelectionElement guestLoginEl;
+	private MultipleSelectionElement guestLinkEl;
+	private MultipleSelectionElement fullTextSearchEl;
 	
 	private static final String[] keys = new String[]{ "on" };
 	private final String[] values;
@@ -48,7 +50,7 @@ public class LoginAdminController extends FormBasicController {
 	@Autowired
 	private SearchModule searchModule;
 	
-	public LoginAdminController(UserRequest ureq, WindowControl wControl) {
+	public GuestAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		values = new String[]{ translate("enabled") };
@@ -68,10 +70,6 @@ public class LoginAdminController extends FormBasicController {
 		guestLinkEl.select(keys[0], loginModule.isGuestLoginLinksEnabled());
 		guestLinkEl.addActionListener(FormEvent.ONCHANGE);
 		
-		invitationLoginEl = uifactory.addCheckboxesHorizontal("invitation.login", "invitation.login", formLayout, keys, values);
-		invitationLoginEl.select(keys[0], loginModule.isInvitationEnabled());
-		invitationLoginEl.addActionListener(FormEvent.ONCHANGE);
-		
 		fullTextSearchEl = uifactory.addCheckboxesHorizontal("guest.search", "guest.search", formLayout, keys, values);
 		fullTextSearchEl.select(keys[0], searchModule.isGuestEnabled());
 		fullTextSearchEl.addActionListener(FormEvent.ONCHANGE);
@@ -85,9 +83,6 @@ public class LoginAdminController extends FormBasicController {
 		} else if(guestLinkEl == source) {
 			boolean enabled = guestLinkEl.isAtLeastSelected(1);
 			loginModule.setGuestLoginLinksEnabled(enabled);
-		} else if(invitationLoginEl == source) {
-			boolean enabled = invitationLoginEl.isAtLeastSelected(1);
-			loginModule.setInvitationEnabled(enabled);
 		} else if(fullTextSearchEl == source) {
 			boolean enabled = fullTextSearchEl.isAtLeastSelected(1);
 			searchModule.setGuestEnabled(enabled);

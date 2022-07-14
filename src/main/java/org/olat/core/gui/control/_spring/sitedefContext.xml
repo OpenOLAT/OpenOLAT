@@ -10,6 +10,11 @@
 	<context:component-scan base-package="org.olat.core.gui.control.navigation" />
 	
 	<!-- classes implementing the SiteDefinition interface -->
+	<bean id="olatsites_invitations" class="org.olat.modules.invitation.site.InvitationsSiteDef">
+		<property name="order" value="-1" />
+		<property name="enabled" value="${site.invitations.enable}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="inviteeSiteSecurityCallback"/>
+	</bean>
 	
 	<bean id="coursesite_infos_1" class="org.olat.course.site.CourseSiteDef">
 	   <property name="order" value="1" />
@@ -136,6 +141,8 @@
 	<bean id="registredSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserSecurityCallback"/>
 
 	<bean id="registredOrGuestSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserOrGuestSecurityCallback"/>
+	
+	<bean id="inviteeSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.InviteeSecurityCallback"/>
 	
 	<bean id="immunityProofSecurityCallback" class="org.olat.modules.immunityproof.ui.site.ImmunityProofSecurityCallback">
 		<property name="immunityProofModule" ref="immunityProofModule" />

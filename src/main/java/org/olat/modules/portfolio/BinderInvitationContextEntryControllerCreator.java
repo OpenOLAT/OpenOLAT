@@ -86,8 +86,7 @@ public class BinderInvitationContextEntryControllerCreator extends DefaultContex
 		}
 		
 		final PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		boolean visible = portfolioService.isMember(binder, ureq.getIdentity(), PortfolioRoles.invitee.name());
-		return visible;
+		return portfolioService.isMember(binder, ureq.getIdentity(), PortfolioRoles.invitee.name());
 	}
 	
 	/**
@@ -101,5 +100,4 @@ public class BinderInvitationContextEntryControllerCreator extends DefaultContex
 		}
 		return cachedBinder;
 	}
-
 }

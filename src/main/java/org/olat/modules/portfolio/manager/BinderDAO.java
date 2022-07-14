@@ -42,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
@@ -704,6 +705,20 @@ public class BinderDAO {
 		List<Binder> binders = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("resourceKey", resource.getKey())
+			.getResultList();
+		return binders == null || binders.isEmpty() ? null : binders.get(0);
+	}
+	
+	public Binder loadByGroup(Group group) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join fetch binder.baseGroup as baseGroup")
+		  .append(" inner join fetch binder.olatResource as olatResource")
+		  .append(" where baseGroup.key=:groupKey");
+		
+		List<Binder> binders = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("groupKey", group.getKey())
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
 	}

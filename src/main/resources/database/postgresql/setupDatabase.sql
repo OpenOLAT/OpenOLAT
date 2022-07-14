@@ -89,6 +89,7 @@ create table o_gp_business (
    maxparticipants int4,
    waitinglist_enabled bool,
    autocloseranks_enabled bool,
+   invitations_coach_enabled bool default true not null,
    ownersintern bool not null default false,
    participantsintern bool not null default false,
    waitingintern bool not null default false,
@@ -773,6 +774,10 @@ create table o_bs_invitation (
    first_name varchar(64),
    last_name varchar(64),
    mail varchar(128),
+   i_type varchar(32) default 'binder' not null,
+   i_url varchar(512),
+   i_roles varchar(255),
+   i_registration bool default false not null,
    fk_group_id int8,
    fk_identity_id int8,
    primary key (id)

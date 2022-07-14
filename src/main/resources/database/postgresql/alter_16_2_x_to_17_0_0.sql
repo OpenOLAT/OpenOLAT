@@ -160,3 +160,13 @@ create index idx_zoom_config_profile_idx on o_zoom_config (fk_profile);
 
 alter table o_zoom_config add constraint zoom_config_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_deployment_id);
+
+-- External users
+alter table o_gp_business add column invitations_coach_enabled bool default true not null;
+
+alter table o_bs_invitation add column i_type varchar(32) default 'binder' not null;
+alter table o_bs_invitation add column i_url varchar(512) default null;
+alter table o_bs_invitation add column i_roles varchar(255) default null;
+alter table o_bs_invitation add column i_registration bool default false not null;
+
+

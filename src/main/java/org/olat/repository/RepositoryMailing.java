@@ -142,6 +142,12 @@ public class RepositoryMailing {
 		String bodyKey = "notification.mail.delete.body";
 		return createMailTemplate(re, actor, subjectKey, bodyKey);
 	}
+
+	public static RepositoryEntryMailTemplate getInvitationTemplate(RepositoryEntry re, Identity ureqIdentity) {
+		String subjectKey = "notification.mail.invitation.subject";
+		String bodyKey = "notification.mail.invitation.body";
+		return createMailTemplate(re, ureqIdentity, subjectKey, bodyKey);
+	}
 	
 	public static MailTemplate getDefaultTemplate(Type type, RepositoryEntry re, Identity ureqIdentity) {
 		if(type == null) return null;
@@ -223,11 +229,7 @@ public class RepositoryMailing {
 		deleteSoftEntry
 	}
 	
-	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {
-		// build learning resources as list of url as string
-		final String reName = re.getDisplayname();
-		final String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
-		final String reUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + re.getKey();
+	private static RepositoryEntryMailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
 		String[] bodyArgs = new String[] {
@@ -242,41 +244,75 @@ public class RepositoryMailing {
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
 		
-		return new MailTemplate(subject, body, null) {
-			
-			private final static String COURSE_NAME = "courseName";
-			private final static String COURSE_DESCRIPTION = "courseDescription";
-			private final static String COURSE_URL = "courseUrl";
-			private final static String COURSE_REF = "courseRef";
-			
-			@Override
-			public Collection<String> getVariableNames() {
-				Set<String> variableNames = new HashSet<>();
-				variableNames.addAll(getStandardIdentityVariableNames());
-				variableNames.add(COURSE_NAME);
-				variableNames.add(COURSE_DESCRIPTION);
-				variableNames.add(COURSE_URL);
-				variableNames.add(COURSE_REF);
-				return variableNames;
-			}
-			
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				// Put user variables into velocity context
-				fillContextWithStandardIdentityValues(context, identity, locale);
+		return new RepositoryEntryMailTemplate(subject, body, re, locale);
+	}
+	
+	public static class RepositoryEntryMailTemplate extends MailTemplate {
+		
+		private static final String COURSE_NAME = "courseName";
+		private static final String COURSE_DESCRIPTION = "courseDescription";
+		private static final String COURSE_URL = "courseUrl";
+		private static final String COURSE_REF = "courseRef";
+		
+		private final Locale locale;
+		private final RepositoryEntry re;
+		
+		private String url;
+		
+		public RepositoryEntryMailTemplate(String subject, String body, RepositoryEntry re, Locale locale) {
+			super(subject, body, null);	
+			this.re = re;
+			this.locale = locale;
+		}
+		
+		public void setCourseUrl(String url) {
+			this.url = url;
+		}
+
+		@Override
+		public Collection<String> getVariableNames() {
+			Set<String> variableNames = new HashSet<>();
+			variableNames.addAll(getStandardIdentityVariableNames());
+			variableNames.add(COURSE_NAME);
+			variableNames.add(COURSE_DESCRIPTION);
+			variableNames.add(COURSE_URL);
+			variableNames.add(COURSE_REF);
+			return variableNames;
+		}
+		
+		@Override
+		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			// Put user variables into velocity context
+			fillContextWithStandardIdentityValues(context, identity, locale);
+			if(identity != null) {
 				User user = identity.getUser();
 				context.put("login", UserManager.getInstance().getUserDisplayEmail(user, locale));
-				// Put variables from greater context
-				context.put(COURSE_NAME, reName);
-				context.put("coursename", reName);
-				context.put(COURSE_DESCRIPTION, redescription);
-				context.put("coursedescription", redescription);
-				context.put(COURSE_URL, reUrl);
-				context.put("courseurl", reUrl);
-				String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
-				context.put(COURSE_REF, courseRef);
-				context.put("courseref", courseRef);
 			}
-		};
+			
+			String reName = re.getDisplayname();
+			context.put(COURSE_NAME, reName);
+			context.put("coursename", reName);
+			
+			String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
+			context.put(COURSE_DESCRIPTION, redescription);
+			context.put("coursedescription", redescription);
+			
+			String reUrl;
+			if(StringHelper.containsNonWhitespace(url)) {
+				reUrl = url;
+			} else {
+				reUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + re.getKey();
+			}
+			context.put(COURSE_URL, reUrl);
+			context.put("courseurl", reUrl);
+
+			String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
+			context.put(COURSE_REF, courseRef);
+			context.put("courseref", courseRef);
+		}
+		
+		
+		
+		
 	}
 }

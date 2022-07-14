@@ -19,12 +19,15 @@
  * <p>
  */
 
-package org.olat.modules.portfolio.model;
+package org.olat.modules.invitation.model;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -33,6 +36,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -40,9 +44,10 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.model.GroupImpl;
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.invitation.InvitationTypeEnum;
 
 /**
  * 
@@ -55,7 +60,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="binvitation")
 @Table(name="o_bs_invitation")
-public class InvitationImpl implements CreateInfo, Persistable, Invitation {
+public class InvitationImpl implements Persistable, Invitation {
 
 	private static final long serialVersionUID = -9122616013810215550L;
 	
@@ -84,6 +89,16 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 	@Column(name="mail", nullable=true, unique=true, insertable=true, updatable=true)
 	private String mail;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name="i_type", nullable=false, unique=false, insertable=true, updatable=false)
+	private InvitationTypeEnum type;
+	@Column(name="i_roles", nullable=true, unique=false, insertable=true, updatable=true)
+	private String roles;
+	@Column(name="i_registration", nullable=true, unique=false, insertable=true, updatable=true)
+	private boolean registration;
+	@Column(name="i_url", nullable=true, unique=false, insertable=true, updatable=true)
+	private String url;
+
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group baseGroup;
@@ -92,6 +107,10 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity_id", nullable=true, insertable=true, updatable=true)
 	private Identity identity;
+	
+	public InvitationImpl() {
+		//
+	}
 	
 	@Override
 	public Long getKey() {
@@ -147,6 +166,60 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 	}
 
 	@Override
+	public InvitationTypeEnum getType() {
+		return type;
+	}
+
+	public void setType(InvitationTypeEnum type) {
+		this.type = type;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getRoles() {
+		return roles;
+	}
+
+	public void setRoles(String roles) {
+		this.roles = roles;
+	}
+	
+	@Override
+	@Transient
+	public List<String> getRoleList() {
+		if(StringHelper.containsNonWhitespace(roles)) {
+			String[] rolesArr = roles.split("[,]");
+			return List.of(rolesArr);
+		}
+		return List.of();
+	}
+
+	@Override
+	public void setRoleList(List<String> roles) {
+		if(roles == null || roles.isEmpty()) {
+			this.roles = null;
+		} else {
+			this.roles = String.join(",", roles);
+		}
+	}
+	
+	@Override
+	public boolean isRegistration() {
+		return registration;
+	}
+
+	@Override
+	public void setRegistration(boolean registration) {
+		this.registration = registration;
+	}
+
+	@Override
 	public Group getBaseGroup() {
 		return baseGroup;
 	}
@@ -155,6 +228,7 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 		this.baseGroup = baseGroup;
 	}
 
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}

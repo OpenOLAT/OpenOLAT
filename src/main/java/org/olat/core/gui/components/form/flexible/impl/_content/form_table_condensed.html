@@ -7,7 +7,7 @@
 		#if ($off_info) <div class="o_info">$off_info</div> #end
 	</div></div>
 #end
-<table class="o_tabled_form table table-condensed">
+<table class="o_tabled_form table #if($r.isTrue($striped)) table-striped #end table-condensed">
 #if ($off_title) 
 	<thead><tr class="">
 		<th colspan="2">$off_title</th>

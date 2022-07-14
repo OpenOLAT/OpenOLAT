@@ -90,6 +90,8 @@ import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.invitation.InvitationModule;
+import org.olat.modules.invitation.ui.InvitationListController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.teams.TeamsModule;
@@ -136,6 +138,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final OLATResourceable ORES_TOOLRESOURCES = OresHelper.createOLATResourceableType("toolresources");
 	public static final OLATResourceable ORES_TOOLPORTFOLIO = OresHelper.createOLATResourceableType("toolportfolio");
 	public static final OLATResourceable ORES_TOOLBOOKING = OresHelper.createOLATResourceableType("toolbooking");
+	public static final OLATResourceable ORES_TOOLINVITATIONS = OresHelper.createOLATResourceableType("toolinvitations");
 	public static final OLATResourceable ORES_TOOLTEAMS = OresHelper.createOLATResourceableType("toolteams");
 	public static final OLATResourceable ORES_TOOLOPENMEETINGS = OresHelper.createOLATResourceableType("toolopenmeetings");
 	public static final OLATResourceable ORES_TOOLADOBECONNECT = OresHelper.createOLATResourceableType("tooladobeconnect");
@@ -182,6 +185,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	/* activity identifier: user selected show access control in menu */
 	/* access control of resources */
 	public static final String ACTIVITY_MENUSELECT_AC = "MENU_SHOW_AC";
+	/* activity identifier: invitations list */
+	public static final String ACTIVITY_MENUSELECT_INVITATIONS = "MENU_SHOW_INVITATIONS";
 
 	private Panel mainPanel;
 	private VelocityContainer main;
@@ -198,6 +203,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	
 	private BusinessGroupEditController bgEditCntrllr;
 	private Controller bgACHistoryCtrl;
+	private InvitationListController invitationsCtrl; 
 	private BusinessGroupResourceController resourcesCtr;
 	private GroupMembersRunController groupMembersToggleViewController;
 	private InactiveMessageController warningCtrl;
@@ -253,6 +259,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private CalendarModule calendarModule;
 	@Autowired
 	private InstantMessagingModule imModule;
+	@Autowired
+	private InvitationModule invitationModule;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 	@Autowired
@@ -729,7 +737,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			doTeams(ureq);
 		} else if (ACTIVITY_MENUSELECT_ZOOM.equals(cmd)) {
 			doZoom(ureq);
-		} else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
+		} else if (ACTIVITY_MENUSELECT_INVITATIONS.equals(cmd)) {
+			doInvitations(ureq);
+		}  else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
 			doAccessControlHistory(ureq);
 		} 
 		
@@ -947,6 +957,17 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		listenTo(bgEditCntrllr);
 		mainPanel.setContent(bgEditCntrllr.getInitialComponent());
 		return bgEditCntrllr;
+	}
+	
+	private void doInvitations(UserRequest ureq) {
+		removeAsListenerAndDispose(invitationsCtrl);
+		
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLINVITATIONS, null, getWindowControl());
+		addToHistory(ureq, bwControl);
+		
+		invitationsCtrl = new InvitationListController(ureq, getWindowControl(), businessGroup);
+		listenTo(invitationsCtrl);
+		mainPanel.setContent(invitationsCtrl.getInitialComponent());
 	}
 	
 	private Activateable2 doAccessControlHistory(UserRequest ureq) {
@@ -1448,6 +1469,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
 				gtnChild.setAltText(translate("menutree.ac.alt"));
 				gtnChild.setIconCssClass("o_icon_booking");
+				root.addChild(gtnChild);
+			}
+			
+			if(invitationModule.isBusinessGroupInvitationEnabled()) {
+				gtnChild = new GenericTreeNode(nodeIdPrefix.concat("invitations"));
+				gtnChild.setTitle(translate("menutree.invitations"));
+				gtnChild.setUserObject(ACTIVITY_MENUSELECT_INVITATIONS);
+				gtnChild.setIdent(ACTIVITY_MENUSELECT_INVITATIONS);
+				gtnChild.setAltText(translate("menutree.invitations.alt"));
+				gtnChild.setIconCssClass("o_icon_message_open");
 				root.addChild(gtnChild);
 			}
 		}

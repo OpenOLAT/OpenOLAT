@@ -56,13 +56,14 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElement;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.manager.InvitationDAO;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.user.UserManager;
@@ -81,9 +82,13 @@ public class InvitationEditRightsController extends FormBasicController {
 	private static final String[] theValues = new String[]{ "" };
 	
 	private FormLink removeLink;
-	private FormLink selectAll, deselectAll;
-	private TextElement subjectEl, bodyEl;
-	private TextElement firstNameEl, lastNameEl, mailEl;
+	private FormLink selectAll;
+	private FormLink deselectAll;
+	private TextElement subjectEl; 
+	private TextElement bodyEl;
+	private TextElement lastNameEl;
+	private TextElement firstNameEl;
+	private TextElement mailEl;
 	
 	private int counter;
 
@@ -99,9 +104,9 @@ public class InvitationEditRightsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private InvitationDAO invitationDao;
-	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private InvitationService invitationService;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -116,10 +121,10 @@ public class InvitationEditRightsController extends FormBasicController {
 		}
 		
 		if(invitee != null) {
-			invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
+			invitation = invitationService.findInvitation(binder, invitee);
 		} 
 		if(invitation == null) {
-			invitation = invitationDao.createInvitation();
+			invitation = invitationService.createInvitation(InvitationTypeEnum.binder);
 			if(invitee != null) {
 				invitation.setFirstName(invitee.getUser().getFirstName());
 				invitation.setLastName(invitee.getUser().getLastName());
@@ -152,7 +157,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		super(ureq, wControl, "invitee_access_rights");
 		this.binder = binder;
 		this.invitee = invitee;
-		invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
+		invitation = invitationService.findInvitation(binder, invitee);
 		initForm(ureq);
 		loadModel();
 	}
@@ -325,12 +330,12 @@ public class InvitationEditRightsController extends FormBasicController {
 			invitation.setFirstName(firstNameEl.getValue());
 			invitation.setLastName(lastNameEl.getValue());
 			invitation.setMail(mailEl.getValue());
-			invitee = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
+			invitee = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
 			portfolioService.changeAccessRights(Collections.singletonList(invitee), changes);
 			sendInvitation();
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
-			invitationDao.update(invitation, firstNameEl.getValue(), lastNameEl.getValue(), mailEl.getValue());
+			invitationService.update(invitation, firstNameEl.getValue(), lastNameEl.getValue(), mailEl.getValue());
 			portfolioService.changeAccessRights(Collections.singletonList(invitee), changes);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
@@ -378,7 +383,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	private void doRemoveInvitation() {
 		portfolioService.removeAccessRights(binder, invitee,
 				PortfolioRoles.invitee, PortfolioRoles.readInvitee);
-		invitationDao.deleteInvitation(invitation);
+		invitationService.deleteInvitation(invitation);
 	}
 
 	private void sendInvitation() {

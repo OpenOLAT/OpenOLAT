@@ -30,6 +30,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -54,6 +56,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,6 +70,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.member.PermissionHelper;
 import org.olat.course.member.PermissionHelper.BGPermission;
 import org.olat.course.member.PermissionHelper.RepoPermission;
+import org.olat.course.member.wizard.InvitationContext;
 import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -115,8 +119,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	private EditGroupMembershipTableDataModel groupTableDataModel;
 	private EditCurriculumMembershipTableDataModel curriculumTableDataModel;
 	
-	private static final String[] repoRightsKeys = { "owner", "tutor", "participant" };
-	
 	private final Identity member;
 	private final List<Identity> members;
 	private List<RepositoryEntryMembership> memberships;
@@ -132,10 +134,14 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	private final Curriculum curriculum;
 	private final CurriculumElement rootCurriculumElement;
 	
+	private final List<String> allowedRoles;
+	
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -149,6 +155,12 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		this.members = null;
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
+		if(organisationService.hasRole(member, OrganisationRoles.invitee)) {
+			allowedRoles = List.of(GroupRoles.coach.name(), GroupRoles.participant.name());
+		} else {
+			allowedRoles = null;
+		}
+		
 		curriculum = null;
 		rootCurriculumElement = null;
 		this.withButtons = true;
@@ -180,54 +192,13 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		}
 	}
 	
-	public EditSingleOrImportMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
-		
-		this.member = null;
-		this.members = (members == null ? null : new ArrayList<>(members));
-		this.repoEntry = repoEntry;
-		this.businessGroup = businessGroup;
-		curriculum = null;
-		rootCurriculumElement = null;
-		this.withButtons = true;
-		this.overrideManaged = overrideManaged;
-		this.curriculumEditable = false;
-		extendedCurriculumRoles = false;
-		
-		memberships = Collections.emptyList();
-
-		initForm(ureq);
-		loadModel(ureq, member);
-	}
-	
-	public EditSingleOrImportMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
-		
-		member = null;
-		this.members = (members == null ? null : new ArrayList<>(members));
-		repoEntry = null;
-		businessGroup = null;
-		this.curriculum = curriculum;
-		this.rootCurriculumElement = curriculumElement;
-		this.withButtons = false;
-		this.overrideManaged = overrideManaged;
-		this.curriculumEditable = true;
-		extendedCurriculumRoles = true;
-		
-		memberships = Collections.emptyList();
-
-		initForm(ureq);
-		loadModel(ureq, member);
-	}
-	
 	public EditSingleOrImportMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
 			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
 		super(ureq, wControl, "edit_member");
 		
 		this.member = member;
 		this.members = null;
+		this.allowedRoles = null;
 		repoEntry = null;
 		businessGroup = null;
 		this.curriculum = curriculum;
@@ -250,6 +221,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		member = null;
+		this.allowedRoles = null;
 		this.members = (members == null ? null : new ArrayList<>(members));
 		repoEntry = membersContext.getRepoEntry();
 		businessGroup = membersContext.getGroup();
@@ -266,13 +238,35 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		loadModel(ureq, member);
 	}
 	
+	public EditSingleOrImportMembershipController(UserRequest ureq, WindowControl wControl,
+			InvitationContext membersContext, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
+		
+		member = null;
+		members = null;
+		allowedRoles = List.of(GroupRoles.coach.name(), GroupRoles.participant.name());
+		repoEntry = membersContext.getRepoEntry();
+		businessGroup = membersContext.getBusinessGroup();
+		curriculum = null;
+		rootCurriculumElement = null;
+		this.withButtons = false;
+		overrideManaged = membersContext.isOverrideManaged();
+		curriculumEditable = false;
+		extendedCurriculumRoles = false;
+		
+		memberships = Collections.emptyList();
+
+		initForm(ureq);
+		loadModel(ureq, member);
+	}
+	
 	private void loadModel(UserRequest ureq, Identity memberToLoad) {
 		Roles roles = ureq.getUserSession().getRoles();
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		if(repoEntry == null && businessGroup != null) {
-			List<Long> keys = new ArrayList<>();
-			keys.add(businessGroup.getKey());
-			params.setBusinessGroupKeys(keys);
+			List<Long> businessGroupKeys = new ArrayList<>();
+			businessGroupKeys.add(businessGroup.getKey());
+			params.setBusinessGroupKeys(businessGroupKeys);
 		} else {
 			params.setRepositoryEntry(repoEntry);
 		}
@@ -452,7 +446,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String name;
@@ -466,25 +459,56 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 				name = "";
 			}
 			name = StringHelper.escapeHtml(name);
-			String title = translate("edit.member.title", new String[]{ name });
+			String title = translate("edit.member.title", name);
 			layoutCont.contextPut("editTitle", title);
 		}
-		//repository entry rights
+		
+		// Repository entry rights
 		if(repoEntry != null) {
-			String[] repoValues = new String[] {
-					translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
-			};
-			boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement) && !overrideManaged;
-			repoRightsEl = uifactory.addCheckboxesVertical("repoRights", null, formLayout, repoRightsKeys, repoValues, 1);
-			repoRightsEl.setEnabled(!managed);
-			if(member != null) {
-				RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
+			initRepositoryEntryForm(formLayout);
+		}
+		initBusinessGroupForm(formLayout);
+		initCurriculumForm(formLayout);
+		
+		if(withButtons) {
+			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+			formLayout.add(buttonLayout);
+			buttonLayout.setRootForm(mainForm);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("ok", buttonLayout);
+		}
+	}
+	
+	private void initRepositoryEntryForm(FormItemContainer formLayout) {
+		SelectionValues repoValues = new SelectionValues();
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.owner.name())) {
+			repoValues.add(SelectionValues.entry("owner", translate("role.repo.owner")));
+		}
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.coach.name())) {
+			repoValues.add(SelectionValues.entry("tutor", translate("role.repo.tutor")));
+		}
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.participant.name())) {
+			repoValues.add(SelectionValues.entry("participant", translate("role.repo.participant")));
+		}
+
+		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement) && !overrideManaged;
+		repoRightsEl = uifactory.addCheckboxesVertical("repoRights", null, formLayout, repoValues.keys(), repoValues.values(), 1);
+		repoRightsEl.setEnabled(!managed);
+		if(member != null) {
+			RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
+			if(repoValues.containsKey("owner")) {
 				repoRightsEl.select("owner", repoPermission.isOwner());
+			}
+			if(repoValues.containsKey("tutor")) {
 				repoRightsEl.select("tutor", repoPermission.isTutor());
+			}
+			if(repoValues.containsKey("participant")) {
 				repoRightsEl.select("participant", repoPermission.isParticipant());
 			}
 		}
+	}
 
+	private void initBusinessGroupForm(FormItemContainer formLayout) {
 		//group rights
 		FlexiTableColumnModel groupTableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.groupName));
@@ -492,9 +516,15 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.participantCount));
 		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.header.freePlace", 3,
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none)));
-		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.tutor));
-		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.participant));
-		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.waitingList));
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.coach.name())) {
+			groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.tutor));
+		}
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.participant.name())) {
+			groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.participant));
+		}
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.waiting.name())) {
+			groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.waitingList));
+		}
 		
 		groupTableDataModel = new EditGroupMembershipTableDataModel(Collections.<MemberGroupOption>emptyList(), groupTableColumnModel);
 		groupTableEl = uifactory.addTableElement(getWindowControl(), "groupList", groupTableDataModel, getTranslator(), formLayout);
@@ -513,10 +543,18 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		
 		groupDropDown = uifactory.addDropdownMenu("group.bulk.actions", "bulk.actions", "bulk.actions", formLayout, getTranslator());
 		groupDropDown.setIconCSS("o_icon o_icon_check_on");
-		groupDropDown.addElement(selectAllGroupCoachesButton);
-		groupDropDown.addElement(selectAllGroupParticipantsButton);
-		groupDropDown.addElement(selectAllGroupWaitingButton);
-		
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.coach.name())) {
+			groupDropDown.addElement(selectAllGroupCoachesButton);
+		}
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.participant.name())) {
+			groupDropDown.addElement(selectAllGroupParticipantsButton);
+		}
+		if(allowedRoles == null || allowedRoles.contains(GroupRoles.waiting.name())) {
+			groupDropDown.addElement(selectAllGroupWaitingButton);
+		}
+	}
+	
+	private void initCurriculumForm(FormItemContainer formLayout) {
 		// curriculum rights
 		FlexiTableColumnModel curriculumTableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(curriculum == null) {
@@ -563,14 +601,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		curriculumDropDown.addElement(selectAllCurriculumOwnersButton);
 		curriculumDropDown.addElement(selectAllCurriculumCoachesButton);
 		curriculumDropDown.addElement(selectAllCurriculumParticipantsButton);
-
-		if(withButtons) {
-			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-			formLayout.add(buttonLayout);
-			buttonLayout.setRootForm(mainForm);
-			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-			uifactory.addFormSubmitButton("ok", buttonLayout);
-		}
 	}
 
 	public Identity getMember() {

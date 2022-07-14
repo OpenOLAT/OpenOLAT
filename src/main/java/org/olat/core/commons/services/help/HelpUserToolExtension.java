@@ -36,6 +36,8 @@ import org.olat.core.id.Roles;
  *
  */
 public class HelpUserToolExtension extends UserToolExtension {
+	
+	public static final String HELP_USER_TOOL_ID = "org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension";
 
 	@Override
 	public String getShortCutCssId() {
@@ -54,7 +56,7 @@ public class HelpUserToolExtension extends UserToolExtension {
 
 	@Override
 	public String getUniqueExtensionID() {
-		return "org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension";
+		return HELP_USER_TOOL_ID;
 	}
 
 	@Override
@@ -63,10 +65,9 @@ public class HelpUserToolExtension extends UserToolExtension {
 			return null;
 		}
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles == null || roles.isInvitee()) {
+		if(roles == null) {
 			return null;
 		}
-		
 		return super.createUserTool(ureq, wControl, locale);
 	}
 

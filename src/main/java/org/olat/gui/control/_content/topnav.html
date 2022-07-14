@@ -24,7 +24,7 @@
 			#end
 		#end
 	#end
-	#if (!$isGuest && !$isInvitee)
+	#if (!$isGuest)
 		<li id="o_navbar_my_menu" class="o_portrait">
 			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" onclick="OPOL.navbar.toggleRight(); return false;">
 				$r.render("portrait")
@@ -32,16 +32,13 @@
 				<b class="caret"> </b>
 			</a>
 		</li>
-	#elseif(!$isInvitee)
-		<li id="o_navbar_login">
-			$r.render("topnav.login")
-		</li>
 	#end
 	</ul>
 </div>
 
 ## focus search input field whenever search is displayed
 <script>
+"use strict";
 jQuery('#o_help_tool_toggler').click(function () {
 	setTimeout(function() {
 		jQuery('#o_help_tool_toggler[aria-expanded="true"] + .dropdown-menu #o_navbar_help_list input:text').focus();	

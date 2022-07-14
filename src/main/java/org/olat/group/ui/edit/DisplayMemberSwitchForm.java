@@ -53,7 +53,10 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 	private SelectionElement showOwners, showPartips, showWaitingList;
 	private SelectionElement openOwners, openPartips, openWaitingList;
 	private SelectionElement downloadList;
-	private boolean hasOwners, hasPartips, hasWaitingList;
+	
+	private boolean hasOwners;
+	private boolean hasPartips;
+	private boolean hasWaitingList;
 
 	/**
 	 * @param name
@@ -61,7 +64,8 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 	 * @param hasPartips
 	 * @param hasOwners
 	 */
-	public DisplayMemberSwitchForm(UserRequest ureq, WindowControl wControl, boolean hasOwners, boolean hasPartips, boolean hasWaitingList) {
+	public DisplayMemberSwitchForm(UserRequest ureq, WindowControl wControl,
+			boolean hasOwners, boolean hasPartips, boolean hasWaitingList) {
 		super(ureq, wControl, LAYOUT_DEFAULT_6_6);
 		this.hasOwners = hasOwners;
 		this.hasPartips = hasPartips;

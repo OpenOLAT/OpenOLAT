@@ -172,6 +172,12 @@ public class BGMailHelper {
 		String bodyKey = "notification.mail.waitingList.transfer.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
+	
+	public static MailTemplate createInvitationMailTemplate(BusinessGroupShort group, Identity actor) {
+		String subjectKey = "notification.mail.invitation.subject";
+		String bodyKey = "notification.mail.invitation.body";
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
+	}
 
 	/**
 	 * Internal helper - does all the magic
@@ -317,7 +323,6 @@ public class BGMailHelper {
 		}
 		
 		return new BGMailTemplateInfos(group.getName(), groupNameWithUrl, groupDescription, courseList, reactionTime);
-		
 	}
 	
 	public static final class BGMailTemplateInfos {
@@ -385,6 +390,10 @@ public class BGMailHelper {
 			this.infos = infos;
 			this.translator = translator;
 			this.overrideIdentity = overrideIdentity;
+		}
+		
+		public BGMailTemplateInfos getInfos() {
+			return infos;
 		}
 		
 		public static final Collection<String> allVariableNames() {

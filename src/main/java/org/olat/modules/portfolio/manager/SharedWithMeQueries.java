@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.BinderStatus;
@@ -167,7 +168,7 @@ public class SharedWithMeQueries {
 	}
 	
 	private List<AssessedBinder> searchSharedBindersOne(Identity member, String searchString) {
-		StringBuilder sb = new StringBuilder(2048);
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select binder.key, binder.title, entry.displayname, aEntry.score, aEntry.passed, owner")
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
@@ -178,16 +179,16 @@ public class SharedWithMeQueries {
 		  .append(" left join assessmententry as aEntry on (aEntry.identity.key=owner.key and aEntry.repositoryEntry.key=entry.key and ((binder.subIdent is null and aEntry.subIdent is null) or binder.subIdent=aEntry.subIdent))")
 		  .append(" where (")
 		  .append(" exists (select membership.key from bgroupmember as membership")
-		  .append("   where membership.group.key=baseGroup.key and membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
+		  .append("   where membership.group.key=baseGroup.key and membership.identity.key=:identityKey and membership.role ").in(PortfolioRoles.coach, PortfolioRoles.reviewer, PortfolioRoles.invitee)
 		  .append(" )")
 		  .append(" or exists (select section.key from pfsection as section")
 		  .append("   inner join section.baseGroup as sectionGroup")
-		  .append("   inner join sectionGroup.members as sectionMembership on (sectionMembership.identity.key=:identityKey and sectionMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
+		  .append("   inner join sectionGroup.members as sectionMembership on (sectionMembership.identity.key=:identityKey and sectionMembership.role ").in(PortfolioRoles.coach, PortfolioRoles.reviewer, PortfolioRoles.invitee).append(")")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" )")
 		  .append(" or exists (select page.key from pfpage as page")
 		  .append("   inner join page.baseGroup as pageGroup")
-		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
+		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role ").in(PortfolioRoles.coach, PortfolioRoles.reviewer, PortfolioRoles.invitee).append(")")
 		  .append("   where page.section.binder.key=binder.key")
 		  .append(" ))");
 		if(StringHelper.containsNonWhitespace(searchString)) {

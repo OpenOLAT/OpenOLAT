@@ -188,22 +188,26 @@
 	}
 	/* optimize for header spacing */
 	h1 +.o_button_group {
-			margin-top: ($line-height-computed * 1.4);
+		margin-top: ($line-height-computed * 1.4);
 	}	
 	h2 +.o_button_group {
-			margin-top: ($line-height-computed * 1.2);
+		margin-top: ($line-height-computed * 1.2);
 	}	
 	h3 +.o_button_group {
-			margin-top: ($line-height-computed);
+		margin-top: ($line-height-computed);
 	}	
 	h4 +.o_button_group {
-			margin-top: ($line-height-computed * 0.5);
+		margin-top: ($line-height-computed * 0.5);
 	}	
 	h5 +.o_button_group {
-			margin-top: math.div($line-height-computed, 3);
+		margin-top: math.div($line-height-computed, 3);
 	}	
 	h6 +.o_button_group {
-			margin-top: ($line-height-computed * 0.25);
+		margin-top: ($line-height-computed * 0.25);
+	}
+	
+	.o_button_group .btn-group, .o_button_group .btn {
+		margin-bottom: 0;
 	}	
 }
 /* special case for no-margin headers in content area */
