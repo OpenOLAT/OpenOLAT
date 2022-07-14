@@ -144,11 +144,19 @@ public abstract class FormBasicController extends BasicController {
 	
 
 	protected FormBasicController(UserRequest ureq, WindowControl wControl, int layout) {
-		this(ureq, wControl, null, layout);
+		this(ureq, wControl, null, layout, null);
+	}
+
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, int layout, Translator fallbackTranslator) {
+		this(ureq, wControl, null, layout, fallbackTranslator);
 	}
 
 	protected FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, int layout){
-		super(ureq, wControl);
+		this(ureq, wControl, mainFormId, layout, null);
+	}
+
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, int layout, Translator fallbackTranslator){
+		super(ureq, wControl, fallbackTranslator);
 		if (layout == LAYOUT_HORIZONTAL) {
 			// init with horizontal layout
 			flc = FormLayoutContainer.createHorizontalFormLayout("ffo_horizontal", getTranslator());		

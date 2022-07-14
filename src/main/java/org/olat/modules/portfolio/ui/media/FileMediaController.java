@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
@@ -142,8 +144,11 @@ public class FileMediaController extends BasicController implements PageElementE
 			if (mode != null) {
 				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,
 						this);
-				String editIcon = Mode.EDIT.equals(mode)? "o_icon_edit": "o_icon_preview";
-				editLink.setIconLeftCSS("o_icon " + editIcon);
+				String editIcon = docEditorService.getModeIcon(mode, vfsLeaf.getName());
+				editLink.setIconLeftCSS("o_icon o_icon-fw " + editIcon);
+				editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+				Translator buttonTranslator = Util.createPackageTranslator(DocEditorController.class, getLocale());
+				editLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, vfsLeaf.getName(), buttonTranslator)));
 				editLink.setUserObject(mode);
 				editLink.setNewWindow(true, true);
 			}

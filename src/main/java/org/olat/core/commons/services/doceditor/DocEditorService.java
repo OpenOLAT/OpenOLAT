@@ -25,10 +25,10 @@ import java.util.Optional;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -168,9 +168,18 @@ public interface DocEditorService {
 	/**
 	 * Get a CSS class for the specified mode
 	 * @param mode
-	 * @param vfsItem
+	 * @param fileName
 	 * @return The CSS class
 	 */
-	public String getModeIcon(Mode mode, VFSItem vfsItem);
+	public String getModeIcon(Mode mode, String fileName);
+
+	/**
+	 * Get the label for a button representing the current mode and file type
+	 * @param mode
+	 * @param fileName
+	 * @param translator A translator that can translate from the DocEditorController namespace
+	 * @return 
+	 */
+	public String getModeButtonLabel(Mode mode, String fileName, Translator trans);
 
 }

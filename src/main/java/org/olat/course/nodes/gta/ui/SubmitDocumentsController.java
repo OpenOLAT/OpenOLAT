@@ -29,10 +29,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -56,6 +58,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -65,6 +68,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -124,7 +128,7 @@ class SubmitDocumentsController extends FormBasicController {
 			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
 			boolean readOnly, boolean externalEditor, boolean embeddedEditor, Date deadline, String docI18nKey,
 			VFSContainer copySourceContainer, String copyEnding, String copyI18nKey) {
-		super(ureq, wControl, "documents");
+		super(ureq, wControl, "documents", Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
@@ -189,8 +193,8 @@ class SubmitDocumentsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy.i18nKey(), DocCols.createdBy.ordinal()));
 		
 		if (embeddedEditor) {
-			String openI18n = readOnly? "table.header.view": "table.header.edit";
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
+			String openI18n = "table.header.view";
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open", docEditorService)));
 		}
 		if(!readOnly) {
 			if(externalEditor) {
@@ -629,7 +633,7 @@ class SubmitDocumentsController extends FormBasicController {
 					return cal.getTime();
 				}
 				case createdBy: return solution.getCreatedBy();
-				case mode: return solution.getMode();
+				case mode: return Pair.of(solution.getMode(), solution.getFile().getName());
 				default: return "ERROR";
 			}
 		}

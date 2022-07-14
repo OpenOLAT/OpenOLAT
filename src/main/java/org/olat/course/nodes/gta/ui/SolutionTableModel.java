@@ -19,8 +19,10 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.course.nodes.gta.model.Solution;
 
 /**
  * 
@@ -37,12 +39,13 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 	@Override
 	public Object getValueAt(int row, int col) {
 		SolutionRow solutionRow = getObject(row);
+		Solution solution = solutionRow.getSolution();
 		switch(SolCols.values()[col]) {
 			case title: return solutionRow.getSolution().getTitle();
 			case file: return solutionRow.getDownloadLink() == null
-					? solutionRow.getSolution().getFilename() : solutionRow.getDownloadLink();
+					? solution.getFilename() : solutionRow.getDownloadLink();
 			case author: return solutionRow.getAuthor();
-			case mode: return solutionRow.getMode();
+			case mode: return Pair.of(solutionRow.getMode(), solution.getFilename());
 			default: return "ERROR";
 		}
 	}
@@ -51,7 +54,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 		title("task.title"),
 		file("task.file"),
 		author("table.header.author"),
-		mode("table.header.edit");
+		mode("table.header.view");
 		
 		private final String i18nKey;
 	

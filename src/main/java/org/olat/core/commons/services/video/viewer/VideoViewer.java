@@ -51,7 +51,8 @@ public class VideoViewer implements DocEditor {
 
 	public static final String TYPE = "video";
 	public static final String FORMAT_MP4 = "mp4";
-	public static final String FORMAT_MV4 = "mv4";
+	public static final String FORMAT_M4V = "m4v";
+	public static final String FORMAT_MPG = "mpg";
 	
 	@Override
 	public boolean isEnable() {
@@ -109,7 +110,8 @@ public class VideoViewer implements DocEditor {
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean metadataAvailable) {
 		if (Mode.EDIT == mode) return false;
 		if (FORMAT_MP4.equalsIgnoreCase(suffix)) return true;
-		if (FORMAT_MV4.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_M4V.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_MPG.equalsIgnoreCase(suffix)) return true;
 		return false;
 	}
 

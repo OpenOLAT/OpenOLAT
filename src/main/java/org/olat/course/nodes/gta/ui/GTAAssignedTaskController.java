@@ -22,6 +22,10 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 
 import org.olat.core.commons.modules.singlepage.SinglePageController;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,11 +36,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -64,6 +72,9 @@ public class GTAAssignedTaskController extends BasicController {
 	
 	@Autowired
 	private GTAManager gtaManager;
+
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	/**
 	 * 
@@ -80,7 +91,7 @@ public class GTAAssignedTaskController extends BasicController {
 	public GTAAssignedTaskController(UserRequest ureq, WindowControl wControl, Task task,
 			TaskDefinition taskDef, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			String i18nDescription, String i18nWarning, String message) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
 		
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
@@ -102,6 +113,7 @@ public class GTAAssignedTaskController extends BasicController {
 			String[] infos = new String[] { taskFile.getName(), TaskHelper.format(fileSizeInMB) };
 			String taskInfos = translate("download.task.infos", infos);
 			String cssIcon = CSSHelper.createFiletypeIconCssClassFor(taskFile.getName());
+			mainVC.contextPut("cssIcon", cssIcon);
 			if(taskDef != null) {
 				mainVC.contextPut("taskDescription", taskDef.getDescription());
 			}
@@ -116,16 +128,33 @@ public class GTAAssignedTaskController extends BasicController {
 			downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
 			if(taskDef != null) {
 				downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
-				downloadLink.setIconLeftCSS("o_icon " + cssIcon);
 			} else {
 				downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
-				downloadLink.setIconLeftCSS("o_icon " + cssIcon + " o_icon_warning");
+				downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_warning");
 				downloadLink.setEnabled(false);
 			}
 			downloadLink.setTitle(taskInfos);
 			if(!taskFile.getName().endsWith(".html")) {
 				downloadLink.setTarget("_blank");
 			}
+			
+			// Link to preview the file (if possible)
+			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+			VFSLeaf vfsLeaf = (VFSLeaf)tasksContainer.resolve(taskFile.getName());
+			if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.VIEW, true)) {
+				Link previewLink = LinkFactory.createLink("preview", "preview", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				previewLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, taskFile.getName(), getTranslator())));
+				previewLink.setIconLeftCSS("o_icon o_icon-fw " + docEditorService.getModeIcon(Mode.VIEW, taskFile.getName()));
+				previewLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+				previewLink.setAriaRole("button");
+				previewLink.setUserObject(vfsLeaf);			
+				previewLink.setNewWindow(true, true);
+			}
+			
+			// Meta data
+			
+			mainVC.contextPut("type", taskFile.getName().substring(taskFile.getName().lastIndexOf(".") + 1).toUpperCase());
+			mainVC.contextPut("size", VFSManager.getUsageKB(vfsLeaf));
 		}
 
 		putInitialPanel(mainVC);
@@ -149,6 +178,9 @@ public class GTAAssignedTaskController extends BasicController {
 				mdr = new FileMediaResource(taskFile, true);
 			}
 			ureq.getDispatchResult().setResultingMediaResource(mdr);
+		} else if(source instanceof Link && "preview".equals(((Link)source).getCommand())) {
+			Link previewLink = (Link)source;
+			doOpenPreview(ureq, (VFSLeaf)previewLink.getUserObject());
 		}
 	}
 
@@ -166,6 +198,14 @@ public class GTAAssignedTaskController extends BasicController {
 		cmc = null;
 		viewTaskCtrl = null;
 	}
+	
+	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
+		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+	}
+
 	
 	private void doPreview(UserRequest ureq) {
 		if(guardModalController(viewTaskCtrl)) return;

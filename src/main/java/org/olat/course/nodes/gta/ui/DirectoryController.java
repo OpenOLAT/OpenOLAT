@@ -25,6 +25,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.modules.singlepage.SinglePageController;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -38,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
@@ -48,10 +53,12 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +86,9 @@ public class DirectoryController extends BasicController implements Activateable
 	
 	@Autowired
 	private UserManager userManager;
+
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	private final Formatter format;
 	
@@ -90,7 +100,7 @@ public class DirectoryController extends BasicController implements Activateable
 	public DirectoryController(UserRequest ureq, WindowControl wControl,
 			File documentsDir, VFSContainer documentsContainer,
 			String i18nDescription, String i18nBulkDownload, String zipName) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
 		this.zipName = zipName;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
@@ -114,14 +124,42 @@ public class DirectoryController extends BasicController implements Activateable
 		List<DocumentInfos> linkNames = new ArrayList<>();
 		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		for(File document:documents) {
+			// Link to download the file in filename
 			String linkId = "doc-" + CodeHelper.getRAMUniqueID();
 			Link link = LinkFactory.createLink(linkId, "download", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			link.setCustomDisplayText(StringHelper.escapeHtml(document.getName()));
-			String cssClass = CSSHelper.createFiletypeIconCssClassFor(document.getName());
-			link.setIconLeftCSS("o_icon o_icon-fw " + cssClass);
 			link.setUserObject(document);
 			if(!document.getName().endsWith(".html")) {
 				link.setTarget("_blank");
+			}
+
+			// Explicit download link
+			String downloadLinkId = "dow-" + CodeHelper.getRAMUniqueID();
+			Link downoadLink = LinkFactory.createLink(downloadLinkId, "download", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			downoadLink.setCustomDisplayText(translate("download"));
+			downoadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+			downoadLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+			downoadLink.setAriaRole("button");
+			
+			downoadLink.setUserObject(document);
+			if(!document.getName().endsWith(".html")) {
+				downoadLink.setTarget("_blank");
+			}
+
+			
+			// Link to preview the file (if possible)
+			VFSLeaf vfsLeaf = (VFSLeaf)documentsContainer.resolve(document.getName());
+			String previewLinkCompName = null;
+			if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.VIEW, true)) {
+				String previewLinkId = "prev-" + CodeHelper.getRAMUniqueID();
+				Link previewLink = LinkFactory.createLink(previewLinkId, "preview", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				previewLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, document.getName(), getTranslator())));
+				previewLink.setIconLeftCSS("o_icon o_icon-fw " + docEditorService.getModeIcon(Mode.VIEW, document.getName()));
+				previewLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+				previewLink.setAriaRole("button");
+				previewLink.setUserObject(vfsLeaf);			
+				previewLink.setNewWindow(true, true);
+				previewLinkCompName = previewLink.getComponentName();
 			}
 			
 			String createdBy = null;
@@ -137,7 +175,8 @@ public class DirectoryController extends BasicController implements Activateable
 				}
 			}
 
-			linkNames.add(new DocumentInfos(link.getComponentName(), createdBy, lastModified));
+			String cssClass = CSSHelper.createFiletypeIconCssClassFor(document.getName());
+			linkNames.add(new DocumentInfos(link.getComponentName(), downoadLink.getComponentName(), previewLinkCompName, createdBy, lastModified, cssClass));
 		}
 		mainVC.contextPut("linkNames", linkNames);
 		if(bulkReviewLink != null) {
@@ -163,10 +202,15 @@ public class DirectoryController extends BasicController implements Activateable
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(bulkReviewLink == source) {
 			doBulkdownload(ureq);
-		} else if(source instanceof Link && "download".equals(((Link)source).getCommand())) {
-			Link downloadLink = (Link)source;
-			doDownload(ureq, (File)downloadLink.getUserObject());
-		}
+		} else if(source instanceof Link) {
+			if ("download".equals(((Link)source).getCommand())) {
+				Link downloadLink = (Link)source;
+				doDownload(ureq, (File)downloadLink.getUserObject());
+			} else if ("preview".equals(((Link)source).getCommand())) {
+				Link previewLink = (Link)source;
+				doOpenPreview(ureq, (VFSLeaf)previewLink.getUserObject());
+			}
+		} 
 	}
 
 	@Override
@@ -203,20 +247,42 @@ public class DirectoryController extends BasicController implements Activateable
 		ureq.getDispatchResult().setResultingMediaResource(mdr);
 	}
 	
+	
+	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(this.documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+	}
+
+	
 	public static final class DocumentInfos {
 		
 		private final String linkName;
+		private final String downloadLinkName;
+		private final String previewLinkName;
 		private final String createdBy;
 		private final String lastModified;
+		private final String cssClass;
 		
-		public DocumentInfos(String linkName, String createdBy, String lastModified) {
+		public DocumentInfos(String linkName, String downloadLinkName, String previewLinkName, String createdBy, String lastModified, String cssClass) {
 			this.linkName = linkName;
+			this.downloadLinkName = downloadLinkName;
+			this.previewLinkName = previewLinkName;
 			this.createdBy = createdBy;
 			this.lastModified = lastModified;
+			this.cssClass = cssClass;
 		}
 
 		public String getLinkName() {
 			return linkName;
+		}
+
+		public String getDownloadLinkName() {
+			return downloadLinkName;
+		}
+
+		public String getPreviewLinkName() {
+			return previewLinkName;
 		}
 
 		public String getCreatedBy() {
@@ -226,5 +292,9 @@ public class DirectoryController extends BasicController implements Activateable
 		public String getLastModified() {
 			return lastModified;
 		}
-	}
+
+		public String getCssClass() {
+			return cssClass;
+		}
+}
 }

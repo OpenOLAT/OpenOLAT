@@ -28,6 +28,7 @@ import java.util.List;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -61,6 +62,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -114,7 +116,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	
 	public AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
 		this.config = config;
 		this.gtaNode = gtaNode;
 		this.readOnly = readOnly;
@@ -122,6 +124,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
+		setTranslator(getTranslator());
 		initForm(ureq);
 	}
 
@@ -147,8 +150,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		fileExistsRenderer = new WarningFlexiCellRenderer();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
 		
-		String openI18n = readOnly? "table.header.view": "table.header.edit";
-		DefaultFlexiColumnModel openColumn = new DefaultFlexiColumnModel(openI18n, TDCols.mode.ordinal(), "open", new ModeCellRenderer("open"));
+		String openI18n = "table.header.view";
+		DefaultFlexiColumnModel openColumn = new DefaultFlexiColumnModel(openI18n, TDCols.mode.ordinal(), "open", new ModeCellRenderer("open", docEditorService));
 		openColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(openColumn);
 		if(!readOnly) {

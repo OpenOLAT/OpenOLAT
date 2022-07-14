@@ -12,7 +12,20 @@
 </div>
 #end
 #if($r.available("download.link"))
-	<h5>$r.render("download.link")</h5>
+<div class="o_flex_block_one_line_left o_gta_document">
+	<i class="o_icon o_icon-2x o_icon-fw $cssIcon o_flex_item_fix"> </i>
+	<div class="o_flex_item_max">
+		<h5>$r.render("download.link")</h5>
+		<div class="text-muted small">
+			$type | $r.formatBytes($size)
+		</div>
+	</div>
+	<div class="o_flex_item_fix o_gta_document_actions">
+		#if($r.available("preview"))
+			$r.render("preview")
+		#end
+	</div>
+</div>
 #end
 #if($taskDescription && !$taskDescription.isEmpty())
 	<p>$r.xssScan($taskDescription)</p>

@@ -44,6 +44,7 @@ import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.UserInfo;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -385,13 +386,23 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public String getModeIcon(Mode mode, VFSItem vfsItem) {
+	public String getModeIcon(Mode mode, String fileName) {
 		if (Mode.EDIT.equals(mode)) {
 			return "o_icon_edit";
-		} else if (vfsItem.getName().endsWith(".mp4") || vfsItem.getName().endsWith(".mv4")) {
+		} else if (fileName.endsWith("mp4") || fileName.endsWith("m4v") || fileName.endsWith("mpg")) {
 			return "o_icon_video_play";			
 		}		
 		return "o_icon_preview";
+	}
+
+	@Override
+	public String getModeButtonLabel(Mode mode, String fileName, Translator translator) {
+		if (Mode.EDIT.equals(mode)) {
+			return translator.translate("edit.button");	
+		} else if (fileName.endsWith("mp4") || fileName.endsWith("m4v") || fileName.endsWith("mpg")) {
+			return translator.translate("play.button");	
+		}		
+		return translator.translate("open.button");	
 	}
 
 

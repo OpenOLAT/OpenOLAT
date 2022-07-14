@@ -20,3 +20,32 @@ p.o_gta_reopen_warning {
 	margin-top: -20px;
 	@extend %o_warning;
 }
+
+.o_gta_document {
+	margin: 5px 0;
+	padding: 5px 0;
+	border-bottom: 1px solid #eee;
+	
+	i.o_flex_item_fix {
+		margin-bottom: auto;	
+		margin-top: auto;	
+		margin-right: 5px;
+	}
+	.o_gta_document_actions {
+		margin-top: auto;	
+		
+		@media (max-width: $screen-xs-max) { 
+			.btn span {
+				display: none;
+			}		
+		}
+	}
+	
+	h5 {
+		margin: 0;
+		a .btn {
+			margin-left: 10px;
+		}
+	}
+	
+}

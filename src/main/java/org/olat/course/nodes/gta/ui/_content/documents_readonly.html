@@ -7,7 +7,25 @@
 </div>
 <ul class="list-unstyled">
 #foreach($docInfo in $linkNames)
-	<li>$r.render($docInfo.linkName) #if($docInfo.createdBy)<small>$r.translate("created.by",$docInfo.createdBy)</small>#end #if($r.isNotNull($docInfo.lastModified))<small>$r.translate("lastmodified",$docInfo.lastModified)</small>#end</li>
+	<li class="o_flex_block_one_line_left o_gta_document">
+		<i class="o_icon o_icon-2x o_icon-fw $docInfo.cssClass o_flex_item_fix"> </i>
+		<div class="o_flex_item_max">
+			<h5>
+				$r.render($docInfo.linkName) 
+			</h5 >
+			<div class="text-muted small">
+				#if($docInfo.createdBy)<small>$r.translate("created.by",$docInfo.createdBy)</small>#end 
+				#if($r.isNotNull($docInfo.lastModified))
+				<small>$r.translate("lastmodified",$docInfo.lastModified)</small>#end
+			</div>		
+		</div>
+		<div class="o_flex_item_fix o_gta_document_actions">
+			#if($r.available($docInfo.previewLinkName))
+				$r.render($docInfo.previewLinkName)
+			#end
+			$r.render($docInfo.downloadLinkName)
+		</div>
+	</li>
 #end
 </ul>
 #if($r.available("download"))

@@ -40,6 +40,7 @@ import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -59,6 +60,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -419,14 +421,10 @@ public class ListRenderer {
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
 						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
-				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");
-				   if ("o_icon_edit".equals(openIcon)) {
-					   sb.append(StringHelper.escapeHtml(translator.translate("edit")));					   
-				   } else if ("o_icon_video_play".equals(openIcon)) {
-					   sb.append(StringHelper.escapeHtml(translator.translate("mf.play")));					   					   					   
-				   } else {
-					   sb.append(StringHelper.escapeHtml(translator.translate("mf.open")));					   					   
-				   }				   
+				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");	
+				   Translator labelTranslator = Util.createPackageTranslator(DocEditorController.class, translator.getLocale());
+				   String buttonLabel = getOpenButtonLabel(child, metadata, canWrite, identity, roles, labelTranslator);
+				   sb.append(StringHelper.escapeHtml(buttonLabel));
 				   sb.append("</span></a>");
 			}
 		}
@@ -554,9 +552,21 @@ public class ListRenderer {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
 			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
-				return docEditorService.getModeIcon(Mode.EDIT, vfsLeaf);
+				return docEditorService.getModeIcon(Mode.EDIT, vfsLeaf.getMetaInfo().getFilename());
 			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
-				return docEditorService.getModeIcon(Mode.VIEW, vfsLeaf);
+				return docEditorService.getModeIcon(Mode.VIEW, vfsLeaf.getMetaInfo().getFilename());
+			}
+		}
+		return null;
+	}
+
+	private String getOpenButtonLabel(VFSItem child, VFSMetadata metadata, boolean canWrite, Identity identity, Roles roles, Translator labelTranslator) {
+		if (child instanceof VFSLeaf) {
+			VFSLeaf vfsLeaf = (VFSLeaf) child;
+			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
+				return docEditorService.getModeButtonLabel(Mode.EDIT, vfsLeaf.getMetaInfo().getFilename(), labelTranslator);
+			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
+				return docEditorService.getModeButtonLabel(Mode.VIEW, vfsLeaf.getMetaInfo().getFilename(), labelTranslator);
 			}
 		}
 		return null;
