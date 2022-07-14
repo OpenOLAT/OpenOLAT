@@ -187,6 +187,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 	}
 	
+	public void reload() {
+		statisticCtrl.reload();
+	}
+	
 	public void reloadAssessmentModes() {
 		assessmentModeListCtrl.loadModel();
 	}
@@ -219,4 +223,5 @@ public class AssessmentCourseOverviewController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+
 }

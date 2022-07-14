@@ -163,6 +163,11 @@ public interface FormLink extends FormItem {
 	public void setPrimary(boolean isPrimary);
 	
 	/**
+	 * @param true: link is rendered with ghost button style
+	 */
+	public void setGhost(boolean ghost);
+	
+	/**
 	 * 
 	 * @return true if the flexi form link will check if the form is dirty
 	 */

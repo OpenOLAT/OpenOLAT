@@ -65,6 +65,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private boolean hasCustomDisabledCss = false;
 	private boolean domReplacementWrapperRequired = false;
 	private boolean isPrimary = false;
+	private boolean ghost = false;
 	private boolean ownDirtyFormWarning = false;
 	private boolean newWindow;
 	private boolean newWindowAfterDispatchUrl;
@@ -254,6 +255,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setElementCssClass(getElementCssClass());
 		component.setTitle(title);
 		component.setPrimary(isPrimary);
+		component.setGhost(ghost);
 		component.setAriaLabel(ariaLabel);
 		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
 		component.setPopup(popup);
@@ -476,6 +478,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		if (component != null) {
 			component.setPrimary(isPrimary);
 		}		
+	}
+
+	@Override
+	public void setGhost(boolean ghost) {
+		this.ghost = ghost;
+		if (component != null) {
+			component.setGhost(ghost);
+		}
 	}
 	
 	@Override

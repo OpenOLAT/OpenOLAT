@@ -383,5 +383,16 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		userInfoDao.delete(identity);
 		accessDao.deleteByIdentity(identity);
 	}
+	
+	@Override
+	public String getModeIcon(Mode mode, VFSItem vfsItem) {
+		if (Mode.EDIT.equals(mode)) {
+			return "o_icon_edit";
+		} else if (vfsItem.getName().endsWith(".mp4") || vfsItem.getName().endsWith(".mv4")) {
+			return "o_icon_video_play";			
+		}		
+		return "o_icon_preview";
+	}
+
 
 }

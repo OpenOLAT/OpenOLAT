@@ -20,12 +20,16 @@
 package org.olat.modules.zoom.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +58,7 @@ public class ZoomProfileEditController extends FormBasicController {
     private MultipleSelectionElement studentsCanHostEl;
     private StaticTextElement clientEl;
     private StaticTextElement tokenEl;
+    private FormLink checkConnectionButton;
 
     @Autowired
     private LTI13IDGenerator idGenerator;
@@ -113,6 +118,7 @@ public class ZoomProfileEditController extends FormBasicController {
         formLayout.add("buttons", buttons);
         uifactory.addFormCancelButton("cancel", buttons, ureq, getWindowControl());
         uifactory.addFormSubmitButton("save", buttons);
+        checkConnectionButton = uifactory.addFormLink("zoom.check.connection", buttons, Link.BUTTON);
     }
 
     @Override
@@ -131,6 +137,23 @@ public class ZoomProfileEditController extends FormBasicController {
         zoomProfile = zoomManager.updateProfile(zoomProfile);
 
         fireEvent(ureq, Event.DONE_EVENT);
+    }
+
+    @Override
+    protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+        if (source == checkConnectionButton) {
+            doCheckConnection();
+        }
+        super.formInnerEvent(ureq, source, event);
+    }
+
+    private void doCheckConnection() {
+        ZoomManager.ZoomConnectionResponse response = zoomManager.checkConnection(ltiKeyEl.getValue(), clientId, getIdentity().getKey().toString());
+        if (response.isOk()) {
+            showInfo("zoom.check.connection.ok");
+        } else {
+            showError("zoom.check.connection.error");
+        }
     }
 
     @Override

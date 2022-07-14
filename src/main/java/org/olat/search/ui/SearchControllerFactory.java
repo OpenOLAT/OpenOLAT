@@ -20,6 +20,8 @@
 
 package org.olat.search.ui;
 
+import static org.olat.core.util.StringHelper.EMPTY;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -131,7 +133,7 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 					TaxonomyLevel level = CoreSpringFactory.getImpl(TaxonomyService.class)
 							.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.parseLong(tokenKey)));
 					Translator taxonomyTanslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
-					return level == null ? "" : TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, level);
+					return level == null ? "" : TaxonomyUIFactory.translateDisplayName(taxonomyTanslator, level, EMPTY);
 				}
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
 				if ("DocumentPool".equals(tokenType)) {

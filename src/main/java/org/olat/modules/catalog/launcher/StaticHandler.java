@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class StaticHandler implements CatalogLauncherHandler {
 	
-	private static final String TYPE = "static";
+	public static final String TYPE = "static";
 	private static final String SEPARTOR = ",";
 	
 	@Autowired

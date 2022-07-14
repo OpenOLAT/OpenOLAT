@@ -1359,6 +1359,10 @@ table.o_qti_item_kprim {
 		
 		header {
 			margin: 0 0 1em 0;
+			
+			h4 {
+				overflow-wrap: break-word;
+			}
 		}
 		
 		header div.rubric {

@@ -19,7 +19,10 @@
  */
 package org.olat.core.commons.services.image;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.PixelGrabber;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +34,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.swing.ImageIcon;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -88,6 +92,30 @@ public class ImageUtils {
 		}
 	}
 
+	public static boolean hasAlphaChannel(File file) {
+		long start = System.currentTimeMillis();
+		
+		boolean alphaChanel = false;
+		try {
+			Image image = new ImageIcon(file.toURI().toURL()).getImage();
+			if (image instanceof BufferedImage) {
+				BufferedImage bufferedimage = (BufferedImage) image;
+				alphaChanel = hasAlphaChannel(bufferedimage);
+			} else {
+				PixelGrabber pg = new PixelGrabber(image, 0, 0, 1, 1, false);
+				pg.grabPixels();
+				ColorModel cm = pg.getColorModel();
+				alphaChanel = cm.hasAlpha();
+			}
+		} catch (Exception e) {
+			log.warn("Could not load image: " + file.getAbsolutePath(), e);
+		}
+		long end = System.currentTimeMillis();
+		log.debug("{} has alpha channel: {} ({} millisec)", file.getAbsolutePath(), alphaChanel, (end-start));
+		
+		return alphaChanel;
+	}
+	
 	public static boolean hasAlphaChannel(BufferedImage image){
 		return image.getColorModel().hasAlpha();
 	}

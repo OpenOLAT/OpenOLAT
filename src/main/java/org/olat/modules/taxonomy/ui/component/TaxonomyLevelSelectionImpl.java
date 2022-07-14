@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -220,6 +221,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 		String linkTitle = allTaxonomyLevels.stream()
 				.filter(level -> selectedKeys.contains(level.getKey()))
 				.map(level -> TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level))
+				.filter(Objects::nonNull)
 				.sorted(Collator.getInstance(getTranslator().getLocale()))
 				.map(this::toLabel)
 				.collect(Collectors.joining());

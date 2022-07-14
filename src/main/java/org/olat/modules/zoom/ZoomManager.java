@@ -82,4 +82,29 @@ public interface ZoomManager {
     LTI13ToolDeployment createLtiToolDeployment(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 
     void deleteConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+
+    ZoomConnectionResponse checkConnection(String ltiKey, String clientId, String ltiMessageHint);
+
+    class ZoomConnectionResponse {
+
+        private final int status;
+        private final String content;
+
+        public ZoomConnectionResponse(int status, String content) {
+            this.status = status;
+            this.content = content;
+        }
+
+        public boolean isOk() {
+            return status == 200;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public String getContent() {
+            return content;
+        }
+    }
 }

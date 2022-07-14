@@ -158,7 +158,7 @@ public class CatalogLauncherListController extends FormBasicController {
 		addLauncherDropdown.setVisible(addLauncherDropdown.size() > 0);
 	}
 
-	private void loadModel() {
+	void loadModel() {
 		List<CatalogLauncher> catalogLaunchers = catalogService.getCatalogLaunchers(new CatalogLauncherSearchParams());
 		Collections.sort(catalogLaunchers);
 		List<CatalogLauncherRow> rows = new ArrayList<>(catalogLaunchers.size());

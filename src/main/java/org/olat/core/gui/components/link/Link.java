@@ -88,6 +88,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	private int presentation;
 	private int presentationBeforeCustomCSS;
 	private boolean primary;
+	private boolean ghost;
 	private boolean focus;
 	private String i18n;
 	private String title;
@@ -239,6 +240,14 @@ public class Link extends AbstractComponent implements ComponentCollection {
 		primary = isPrimary;
 	}
 	
+	public boolean isGhost() {
+		return ghost;
+	}
+
+	public void setGhost(boolean ghost) {
+		this.ghost = ghost;
+	}
+
 	/**
 	 * Sets the focus in the DOM tree to this link element if possible. Note that only one
 	 * DOM element can have the focus, so this does not give any guarantee that the focus will

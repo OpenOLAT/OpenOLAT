@@ -197,6 +197,10 @@ public class InfoMessageManager implements GenericEventListener {
 		if (maintenanceMessage.hasMessage()) {
 			String newMaintenanceMessage = maintenanceMessage.getTimedMessage();
 			String oldMaintenanceMessage = GlobalStickyMessage.getGlobalStickyMessage(true);
+			if (oldMaintenanceMessage == null) {
+				// fix for comparison with the empty timed message
+				oldMaintenanceMessage = SysInfoMessage.EMPTY_MESSAGE;
+			}
 			if (!newMaintenanceMessage.equals(oldMaintenanceMessage)) {
 				GlobalStickyMessage.setGlobalStickyMessage(newMaintenanceMessage, true);			
 			}			
@@ -204,6 +208,10 @@ public class InfoMessageManager implements GenericEventListener {
 		if (maintenanceMessageNodeOnly.hasMessage()) {
 			String newMaintenanceNodeOnlyMessage = maintenanceMessageNodeOnly.getTimedMessage();
 			String oldMaintenanceNodeOnlyMessage = GlobalStickyMessage.getGlobalStickyMessage(false);
+			if (oldMaintenanceNodeOnlyMessage == null) {
+				// fix for comparison with the empty timed message
+				oldMaintenanceNodeOnlyMessage = SysInfoMessage.EMPTY_MESSAGE;
+			}
 			if (!newMaintenanceNodeOnlyMessage.equals(oldMaintenanceNodeOnlyMessage)) {
 				GlobalStickyMessage.setGlobalStickyMessage(newMaintenanceNodeOnlyMessage, false);			
 			}			

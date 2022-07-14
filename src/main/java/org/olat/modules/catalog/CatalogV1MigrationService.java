@@ -17,38 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.assessment.ui.component;
+package org.olat.modules.catalog;
 
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 14 Feb 2022<br>
+ * Initial date: 11 Jul 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DoneChart extends FormBaseComponentImpl {
-	
-	private static final DoneChartRenderer RENDERER = new DoneChartRenderer();
-	
-	private int donePercent;
+public interface CatalogV1MigrationService {
 
-	public DoneChart(String name) {
-		super(name);
-	}
-	
-	public int getDonePercent() {
-		return donePercent;
-	}
-	
-	public void setDonePercent(int donePercent) {
-		this.donePercent = donePercent;
-		setDirty(true);
-	}
+	void migrate(Identity executor);
 
-	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
-	}
 }

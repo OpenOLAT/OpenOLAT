@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.component;
 
+import static org.olat.core.util.StringHelper.EMPTY;
 import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.translateDisplayName;
 
 import java.text.Collator;
@@ -57,10 +58,15 @@ public class CompetencesCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof Collection) {
 			@SuppressWarnings("unchecked")
 			List<TaxonomyCompetence> competences = (List<TaxonomyCompetence>)cellValue;
-			Collator collator = Collator.getInstance(translator.getLocale());
-			competences.sort((c1, c2) -> collator.compare(translateDisplayName(taxonomyTranslator, c1.getTaxonomyLevel()), translateDisplayName(taxonomyTranslator, c2.getTaxonomyLevel())));
 			
 			if(competences.size() > 0) {
+				Collator collator = Collator.getInstance(translator.getLocale());
+				competences.sort((c1, c2) -> {
+					String dn1 = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, c1.getTaxonomyLevel(), EMPTY);
+					String dn2 = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, c2.getTaxonomyLevel(), EMPTY);
+					return collator.compare(dn1, dn2);
+				});
+				
 				for(TaxonomyCompetence competence : competences) {
 					target.append("<span class='o_tag o_competence o_small o_block_inline' id='").append("o_competence_" + competence.getKey()).append("'>");
 					target.append(translateDisplayName(taxonomyTranslator, competence.getTaxonomyLevel()));

@@ -185,19 +185,30 @@ public class ListRenderer {
 		.append("\" title=\"").append(translator.translate("checkall")).append("\"")
 		.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>");
 		
+		// name
 		sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
 		   .append(">").append(translator.translate("header.Name")).append("</a>").append("</th>");
 		
+		// open
+		sb.append("<th>");
+		sb.append(translator.translate("header.open"));
+		sb.append("</th>");
+
+		// size and date
 		sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_SIZE.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_SIZE))
 		   .append(">").append(translator.translate("header.Size")).append("</a>")
 		   .append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_DATE.equals(sortOrder)).append("' ");	
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_DATE))
 		   .append(">").append(translator.translate("header.Modified")).append("</a></th>");
+		
+		// license
 		if (licensesEnabled) {
 			sb.append("<th>").append(translator.translate("header.license")).append("</th>");
 		}
+		
+		// version
 		if(canVersion) {
 			sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_REV.equals(sortOrder)).append("' ");		
 			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_REV))																																					// file size column
@@ -210,13 +221,6 @@ public class ListRenderer {
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_LOCK));
 		sb.append("><i class=\"o_icon o_icon_locked  o_icon-lg\" title=\"");
 		sb.append(translator.translate("lock.title")).append("\"></i></a></th>");
-		
-		// open
-		sb.append("<th>");
-		sb.append("<i class=\"o_icon o_icon_edit o_icon-lg\"");
-		sb.append(" title=\"").append(translator.translate("header.open")).append("\">");
-		sb.append("</i>");
-		sb.append("</th>");
 		
 		// meta data column
 		sb.append("<th><i class=\"o_icon o_icon-fw o_icon-lg o_icon_edit_metadata\" title=\"")
@@ -404,6 +408,30 @@ public class ListRenderer {
 			}
 		}
 		sb.append("</td><td>");
+		
+		// open
+		if (!xssErrors) {
+			Identity identity = fc.getIdentityEnvironnement().getIdentity();
+			Roles roles = fc.getIdentityEnvironnement().getRoles();
+			String openIcon = getOpenIconCss(child, metadata, canWrite, identity, roles);
+			if (openIcon != null) {
+				sb.append("<a ");
+				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
+						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
+				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
+				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");
+				   if ("o_icon_edit".equals(openIcon)) {
+					   sb.append(StringHelper.escapeHtml(translator.translate("edit")));					   
+				   } else if ("o_icon_video_play".equals(openIcon)) {
+					   sb.append(StringHelper.escapeHtml(translator.translate("mf.play")));					   					   					   
+				   } else {
+					   sb.append(StringHelper.escapeHtml(translator.translate("mf.open")));					   					   
+				   }				   
+				   sb.append("</span></a>");
+			}
+		}
+		sb.append("</td><td>");
+		
 		// filesize
 		if (!isContainer) {
 			// append filesize
@@ -471,29 +499,6 @@ public class ListRenderer {
 			sb.append("\">&#160;</i>");
 		}
 		sb.append("</td><td>");
-		
-		// open
-		if (!xssErrors) {
-			Identity identity = fc.getIdentityEnvironnement().getIdentity();
-			Roles roles = fc.getIdentityEnvironnement().getRoles();
-			String openIcon = getOpenIconCss(child, metadata, canWrite, identity, roles);
-			if (openIcon != null) {
-				sb.append("<a ");
-				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
-						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
-				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
-//				sb.append("\"><i class=\"o_icon o_icon-fw ").append(openIcon).append("\"></i></a>");
-				   sb.append("\" class='bctn bxtn-default btn-xs'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");
-				   if ("o_icon_edit".equals(openIcon)) {
-					   sb.append(StringHelper.escapeHtml(translator.translate("edit")));					   
-				   } else {
-					   sb.append(StringHelper.escapeHtml(translator.translate("mf.open")));					   					   
-				   }
-				   
-				   sb.append("</span></a>");
-			}
-		}
-		sb.append("</td><td>");
 
 		// Info link
 		if (canWrite) {
@@ -549,9 +554,9 @@ public class ListRenderer {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
 			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
-				return "o_icon_edit";
+				return docEditorService.getModeIcon(Mode.EDIT, vfsLeaf);
 			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
-				return "o_icon_preview";
+				return docEditorService.getModeIcon(Mode.VIEW, vfsLeaf);
 			}
 		}
 		return null;

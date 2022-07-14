@@ -21,6 +21,7 @@ package org.olat.modules.taxonomy.ui.component;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
+import static org.olat.core.util.StringHelper.EMPTY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -346,7 +347,7 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 	}
 
 	private boolean searchTaxonomyLevel(TaxonomyLevel taxonomylevel, String searchText) {
-		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomylevel);
+		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomylevel, EMPTY);
 		return displayName.toLowerCase().indexOf(searchText) > -1;
 	}
 

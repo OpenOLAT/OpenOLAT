@@ -158,7 +158,6 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			scoreChart = new ScoreChart("score.chart");
 			scoreChart.setMinScore(scoreStat.getMin());
 			scoreChart.setMaxScore(scoreStat.getMax());
-			scoreChart.setDomReplacementWrapperRequired(false);
 			flc.put("score.chart", scoreChart);
 		}
 		
@@ -176,7 +175,6 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			undefinedLink.setEnabled(!readOnly);
 			
 			passedChart = new PassedChart("passed.chart");
-			passedChart.setDomReplacementWrapperRequired(false);
 			flc.put("passed.chart", passedChart);
 		} else if (PercentStat.status == percentStat) {
 			doneLink = uifactory.addFormLink("num.done", "num.done", null, null, formLayout, Link.NONTRANSLATED);
@@ -188,7 +186,6 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			notDoneLink.setEnabled(!readOnly);
 
 			doneChart = new DoneChart("done.chart");
-			doneChart.setDomReplacementWrapperRequired(false);
 			flc.put("done.chart", doneChart);
 		}
 		

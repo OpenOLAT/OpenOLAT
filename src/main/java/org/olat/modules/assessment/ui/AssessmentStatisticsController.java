@@ -58,6 +58,10 @@ public class AssessmentStatisticsController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
+	public void reload() {
+		statsCtrl.reload();
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == statsCtrl) {

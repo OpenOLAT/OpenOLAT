@@ -163,6 +163,18 @@
 .o_button_group_bottom {
 	margin-bottom: 0;
 }
+
+/* Ghost button */
+.btn.o_button_ghost {
+	color: $o-button-ghost-color;
+	background-color: $o-button-ghost-background-color;
+	border-color: $o-button-ghost-border-color;
+	&:hover {
+		background-color: $o-button-ghost-hover-background-color;
+		border-color: $o-button-ghost-hover-border-color;
+	}
+}
+
 /* use as wrapper when buttons should be right aligned next to a title */
 .o_header_with_buttons {
 	@include clearfix();
