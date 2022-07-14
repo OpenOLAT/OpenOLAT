@@ -53,6 +53,12 @@ public interface AssessmentModeCoordinationService {
 	
 	public boolean isDisadvantageCompensationExtensionTime(AssessmentMode assessmentMode);
 	
+	/**
+	 * Send events for all assessment modes for the specified course.
+	 * 
+	 * @param entry The learn resource / course
+	 */
+	public void sendEvent(RepositoryEntry entry);
 	
 	public void processRepositoryEntryChangedStatus(RepositoryEntry entry);
 	

@@ -218,6 +218,22 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		}
 	}
 	
+	
+	
+	@Override
+	public void sendEvent(RepositoryEntry entry) {
+		try {
+			Date now = now();
+			List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(entry, now);
+			for(AssessmentMode mode:modes) {
+				sendEvent(mode, now, false);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			dbInstance.rollbackAndCloseSession();
+		}
+	}
+
 	@Override
 	public void processRepositoryEntryChangedStatus(RepositoryEntry entry) {
 		if(entry != null && (entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
@@ -393,7 +409,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			if(identitiesKeys.contains(identity.getKey())) {
 				int extraTimeInSeconds = compensation.getExtraTime().intValue();
 				AssessmentTestSession testSession = identityToSessions.get(identity.getKey());
-				if(testSession != null && testSession.getExtraTime() != null) {
+				if(testSession != null && testSession.getExtraTime() != null && testSession.getExtraTime().intValue() > 0) {
 					extraTimeInSeconds += testSession.getExtraTime().intValue();
 					identityToSessions.remove(identity.getKey());
 				}
@@ -407,8 +423,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		}
 		
 		for(AssessmentTestSession testSession:testSessions) {
+			Long assessedIdentityKey = testSession.getIdentity().getKey();
 			if(testSession.getExtraTime() != null && testSession.getExtraTime().intValue() > 0
-					&& identitiesKeys.contains(testSession.getIdentity().getKey())) {	
+					&& identitiesKeys.contains(assessedIdentityKey)) {	
 				int extraTimeInSeconds = testSession.getExtraTime().intValue();
 				Date compensatedDate = DateUtils.addSeconds(mode.getEnd(), extraTimeInSeconds);
 				if(compensatedDate.compareTo(now) >= 0) {

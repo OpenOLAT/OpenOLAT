@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,6 +49,7 @@ import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
@@ -82,9 +84,13 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 	private DisadvantageCompensation compensation;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchFormCtrl;
@@ -250,6 +256,10 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 			String afterXml = disadvantageCompensationService.toXml(compensation);
 			disadvantageCompensationService.auditLog(Action.update, beforeXml, afterXml, compensation, getIdentity());
 		}
+		
+		dbInstance.commit();
+		assessmentModeCoordinationService.sendEvent(entry);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

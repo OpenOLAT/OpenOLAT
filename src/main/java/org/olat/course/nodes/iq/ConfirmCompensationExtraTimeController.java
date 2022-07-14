@@ -22,6 +22,7 @@ package org.olat.course.nodes.iq;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
@@ -65,9 +67,13 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 	private DisadvantageCompensation compensation;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public ConfirmCompensationExtraTimeController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, RepositoryEntry entry, CourseNode courseNode, AssessmentTestSession lastSession) {
@@ -196,6 +202,9 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 			String afterXml = disadvantageCompensationService.toXml(compensation);
 			disadvantageCompensationService.auditLog(Action.update, beforeXml, afterXml, compensation, getIdentity());
 		}
+		
+		dbInstance.commit();
+		assessmentModeCoordinationService.sendEvent(entry);
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

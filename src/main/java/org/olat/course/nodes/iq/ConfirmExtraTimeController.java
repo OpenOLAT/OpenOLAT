@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -35,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
@@ -54,15 +56,22 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 	private List<AssessmentMode> assessmentModes;
 	private List<AssessmentTestSession> testSessions;
 	
+	private final RepositoryEntry entry;
+	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public ConfirmExtraTimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, List<AssessmentTestSession> testSessions) {
 		super(ureq, wControl, "confirm_extra_time");
+		this.entry = entry;
 		this.testSessions = testSessions;
 		assessmentModes = assessmentModeManager.getCurrentAssessmentMode(entry, new Date());
 		initForm(ureq);
@@ -161,6 +170,8 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 		for (AssessmentTestSession testSession:testSessions) {
 			qtiService.extraTimeAssessmentTestSession(testSession, extraTime, getIdentity());
 		}
+		dbInstance.commit();
+		assessmentModeCoordinationService.sendEvent(entry);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
