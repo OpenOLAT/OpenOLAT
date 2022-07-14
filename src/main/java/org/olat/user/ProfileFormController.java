@@ -82,7 +82,9 @@ import de.bps.olat.user.ChangeEMailController;
  */
 public class ProfileFormController extends FormBasicController {
 
-	private static final String usageIdentifier= ProfileFormController.class.getCanonicalName();
+	private static final String USAGE_USER_IDENTIFIER = ProfileFormController.class.getCanonicalName();
+	private static final String USAGE_INVITEE_IDENTIFIER = ProfileFormController.class.getCanonicalName() + "_invitee";
+	
 	private static final String SEPARATOR = "\n____________________________________________________________________\n";
 
 	private final Map<String, FormItem> formItems = new HashMap<>();
@@ -102,7 +104,9 @@ public class ProfileFormController extends FormBasicController {
 	
 	private final boolean canModify;
 	private final boolean logoEnabled;
+	private final boolean inviteeOnly;
 	private final boolean isAdministrativeUser;
+	private final String usageIdentifier;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private boolean portraitDeleted = false;
@@ -157,6 +161,9 @@ public class ProfileFormController extends FormBasicController {
 		this.identityToModify = identityToModify;
 		logoEnabled = userModule.isLogoByProfileEnabled();
 		
+		final Roles roles = securityManager.getRoles(identityToModify);
+		inviteeOnly = roles.isInviteeOnly();
+		usageIdentifier = inviteeOnly ? USAGE_INVITEE_IDENTIFIER : USAGE_USER_IDENTIFIER;
 		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifier, isAdministrativeUser);
 		
@@ -227,20 +234,21 @@ public class ProfileFormController extends FormBasicController {
 		FormLayoutContainer aboutMeContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
 		aboutMeContainer.setFormTitle(translate("form.group.about"));
 		aboutMeContainer.setElementCssClass("o_user_aboutme");
-		aboutMeContainer.setVisible(userModule.isUserAboutMeEnabled());
+		aboutMeContainer.setVisible(userModule.isUserAboutMeEnabled() && !inviteeOnly);
 		formLayout.add(aboutMeContainer);
 		
 		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text",
 				conf.getTextAboutMe(), 10, -1, false, null, null, aboutMeContainer,
 				ureq.getUserSession(), getWindowControl());
-		textAboutMe.setVisible(userModule.isUserAboutMeEnabled());
+		textAboutMe.setVisible(userModule.isUserAboutMeEnabled() && !inviteeOnly);
 		textAboutMe.setEnabled(canModify);
 		textAboutMe.setMaxLength(10000);
 		
 		//upload image
 		FormLayoutContainer groupContainer = FormLayoutContainer.createDefaultFormLayout("portraitupload", getTranslator());
 		groupContainer.setFormTitle(translate("ul.header"));
+		groupContainer.setVisible(!inviteeOnly);
 		formLayout.add(groupContainer);
 
 		File portraitFile = dps.getLargestPortrait(identityToModify);
@@ -260,6 +268,7 @@ public class ProfileFormController extends FormBasicController {
 		portraitUpload.setHelpTextKey("ul.select.fhelp", null);
 		portraitUpload.setDeleteEnabled(true);
 		portraitUpload.setEnabled(portraitEnable);
+		portraitUpload.setVisible(!inviteeOnly);
 		if(portraitFile != null) {
 			portraitUpload.setInitialFile(portraitFile);
 		}
@@ -269,6 +278,7 @@ public class ProfileFormController extends FormBasicController {
 			//upload image
 			groupContainer = FormLayoutContainer.createDefaultFormLayout("logoupload", getTranslator());
 			groupContainer.setFormTitle(translate("logo.header"));
+			groupContainer.setVisible(!inviteeOnly);
 			formLayout.add(groupContainer);
 
 			File logoFile = dps.getLargestLogo(identityToModify);
@@ -279,6 +289,7 @@ public class ProfileFormController extends FormBasicController {
 			logoUpload.setHelpTextKey("ul.select.fhelp", null);
 			logoUpload.setDeleteEnabled(true);
 			logoUpload.setEnabled(canModify);
+			logoUpload.setVisible(!inviteeOnly);
 			if(logoFile != null) {
 				logoUpload.setInitialFile(logoFile);
 			}
@@ -695,7 +706,7 @@ public class ProfileFormController extends FormBasicController {
 
 	private boolean isAllowedToChangeEmailWithoutVerification(UserRequest ureq) {
 		Roles managerRoles = ureq.getUserSession().getRoles();
-		Roles identityToModifyRoles  = securityManager.getRoles(identityToModify);
+		Roles identityToModifyRoles = securityManager.getRoles(identityToModify);
 		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityToModifyRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityToModifyRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityToModifyRoles);

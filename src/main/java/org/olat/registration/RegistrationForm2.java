@@ -298,7 +298,7 @@ public class RegistrationForm2 extends FormBasicController {
 			TransientIdentity newIdentity = new TransientIdentity();
 			newIdentity.setName(username);
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-				FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
+				FormItem propertyItem = propFormItems.get(userPropertyHandler.getName());
 				newIdentity.setProperty(userPropertyHandler.getName(), userPropertyHandler.getStringValue(propertyItem));
 			}
 			

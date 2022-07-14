@@ -362,6 +362,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 				stackPanel.popController(userAdminCtr);
 			} else if(event == Event.CHANGED_EVENT) {
 				tableDirty = true;
+			} else if(event instanceof ReloadIdentityEvent) {
+				doSelectIdentity(ureq, userAdminCtr.getEditedIdentity());
 			}
 		} else if(contactCtr == source) {
 			cmc.deactivate();
@@ -464,6 +466,15 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		} else {
 			doSelectIdentity(ureq, previousRow);
 		}
+	}
+	
+
+	private UserAdminController doSelectIdentity(UserRequest ureq, Identity user) {
+		IdentityPropertiesRow userRow = tableModel.getObject(user);
+		if(userRow != null) {
+			return doSelectIdentity(ureq, userRow); 
+		}
+		return null;
 	}
 
 	private UserAdminController doSelectIdentity(UserRequest ureq, IdentityPropertiesRow userRow) {

@@ -83,6 +83,9 @@ import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
+import org.olat.user.ui.admin.ReloadIdentityEvent;
+import org.olat.user.ui.admin.UserAccountController;
+import org.olat.user.ui.admin.UserRolesController;
 import org.olat.user.ui.admin.authentication.UserAuthenticationsEditorController;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
 import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
@@ -110,6 +113,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_FOUND_PROPERTY		= "found.property";
 	private static final String NLS_EDIT_UPROFILE		= "edit.uprofile";
 	private static final String NLS_EDIT_UPREFS			= "edit.uprefs";
+	private static final String NLS_EDIT_UACCOUNT		= "edit.uaccount";
 	private static final String NLS_EDIT_UPCRED 		= "edit.upwd";
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
@@ -136,6 +140,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private final Roles editedRoles;
 	private final boolean allowedToManage;
 	private int rolesTab;
+	private int accountTab;
 
 	private Link deleteLink;
 	
@@ -144,9 +149,10 @@ public class UserAdminController extends BasicController implements Activateable
 	private Controller prefsCtr;
 	private Controller pwdCtr;
 	private Controller quotaCtr;
-	private Controller rolesCtr;
 	private Controller propertiesCtr;
 	private Controller userShortDescrCtr;
+	private UserRolesController rolesCtr;
+	private UserAccountController accountCtrl;
 	private CurriculumListController curriculumCtr;
 	private UserRelationsController relationsCtrl;
 	private DisplayPortraitController portraitCtr;
@@ -251,6 +257,10 @@ public class UserAdminController extends BasicController implements Activateable
 			List<ContextEntry> tabEntries = BusinessControlFactory.getInstance()
 					.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", Long.valueOf(rolesTab)));
 			userTabP.activate(ureq, tabEntries, state);
+		} else if("account".equalsIgnoreCase(entryPoint) && accountTab >= 0) {
+			List<ContextEntry> tabEntries = BusinessControlFactory.getInstance()
+					.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", Long.valueOf(accountTab)));
+			userTabP.activate(ureq, tabEntries, state);
 		} else if("table".equalsIgnoreCase(entryPoint)) {
 			if(entries.size() > 2) {
 				List<ContextEntry> subEntries = entries.subList(2, entries.size());
@@ -310,6 +320,12 @@ public class UserAdminController extends BasicController implements Activateable
 				userProfileCtr.resetForm(ureq, editedIdentity);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+		} else if(accountCtrl == source) {
+			if(event instanceof ReloadIdentityEvent) {
+				fireEvent(ureq, event);
+			} else if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		} else if(source == exportDataCtrl) {
 			cmc.deactivate();
 			cleanUp();
@@ -340,7 +356,7 @@ public class UserAdminController extends BasicController implements Activateable
 		listenTo(exportDataCtrl);
 		
 		String fullname = userManager.getUserDisplayName(editedIdentity);
-		String title = translate("export.user.data.title", new String[] { fullname });
+		String title = translate("export.user.data.title", fullname);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportDataCtrl.getInitialComponent(),
 				true, title);
 		listenTo(cmc);
@@ -355,7 +371,7 @@ public class UserAdminController extends BasicController implements Activateable
 		listenTo(confirmDeleteUserCtlr);
 		
 		String fullname = userManager.getUserDisplayName(editedIdentity);
-		String title = translate("delete.user.data.title", new String[] { fullname });
+		String title = translate("delete.user.data.title", fullname);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteUserCtlr.getInitialComponent(),
 				true, title);
 		listenTo(cmc);
@@ -412,13 +428,15 @@ public class UserAdminController extends BasicController implements Activateable
 		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 		
 		boolean isInvitee = editedRoles.isInviteeOnly();
+		boolean isGuest = editedRoles.isGuestOnly();
 
 		if(isAdminOf || isUserManagerOf || isRolesManagerOf) {
 			userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
 			listenTo(userProfileCtr);
 			userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
 		} else {
-			profileCtr = new ProfileFormController(ureq, getWindowControl(), identity, true, false);
+			boolean canModify = isInvitee && (managerRoles.isAdministrator() || managerRoles.isRolesManager() || managerRoles.isUserManager());
+			profileCtr = new ProfileFormController(ureq, getWindowControl(), identity, true, canModify);
 			listenTo(profileCtr);
 			userTabP.addTab(translate(NLS_EDIT_UPROFILE), profileCtr.getInitialComponent());
 		}
@@ -434,6 +452,22 @@ public class UserAdminController extends BasicController implements Activateable
 				prefsCtr = new ChangeInviteePrefsController(uureq, getWindowControl(), identity);
 				listenTo(prefsCtr);
 				return prefsCtr.getInitialComponent();
+			});
+		}
+		
+		// the controller manager is read-write permissions
+		accountTab = userTabP.addTab(ureq, translate(NLS_EDIT_UACCOUNT), uureq -> {
+			accountCtrl = new UserAccountController(getWindowControl(), uureq, identity);
+			listenTo(accountCtrl);
+			return accountCtrl.getInitialComponent();
+		});
+		
+		if(!isInvitee && !isGuest) {
+			// the controller manager is read-write permissions
+			rolesTab = userTabP.addTab(ureq, translate(NLS_EDIT_UROLES), uureq -> {
+				rolesCtr = new UserRolesController(getWindowControl(), uureq, identity);
+				listenTo(rolesCtr);
+				return rolesCtr.getInitialComponent();
 			});
 		}
 
@@ -515,13 +549,6 @@ public class UserAdminController extends BasicController implements Activateable
 				return subscriptionsCtr.getInitialComponent();
 			});
 		}
-
-		// the controller manager is read-write permissions
-		rolesTab = userTabP.addTab(ureq, translate(NLS_EDIT_UROLES), uureq -> {
-			rolesCtr = new SystemRolesAndRightsController(getWindowControl(), uureq, identity);
-			listenTo(rolesCtr);
-			return rolesCtr.getInitialComponent();
-		});
 		
 		if (securityModule.isRelationRoleEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_RELATIONS),  uureq -> {

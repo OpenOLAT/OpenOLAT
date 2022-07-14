@@ -20,7 +20,10 @@
 package org.olat.user.ui.admin;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
@@ -50,6 +53,19 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		this.userModule = userModule;
 		this.lifecycleManager = lifecycleManager;
 		now = CalendarUtils.startOfDay(new Date());
+	}
+	
+	public IdentityPropertiesRow getObject(IdentityRef identity) {
+		List<IdentityPropertiesRow> rows = getObjects();
+		if(identity != null && rows != null) {
+			final Long identityKey = identity.getKey();
+			return rows.stream()
+					.filter(Objects::nonNull)
+					.filter(row -> row.getIdentityKey().equals(identityKey))
+					.findFirst()
+					.orElse(null);
+		}
+		return null;
 	}
 
 	@Override

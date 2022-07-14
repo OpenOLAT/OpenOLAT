@@ -71,6 +71,18 @@ public enum OrganisationRoles {
 		return OrganisationRoles.isValue(value);
 	}
 	
+	public static List<OrganisationRoles> toValues(List<String> roles) {
+		List<OrganisationRoles> roleList = new ArrayList<>();
+		if(roles != null && !roles.isEmpty()) {
+			for(String role:roles) {
+				if(valid(role)) {
+					roleList.add(OrganisationRoles.valueOf(role));
+				}
+			}
+		}
+		return roleList;
+	}
+	
 	public static List<String> toList(OrganisationRoles... roles) {
 		List<String> roleList = new ArrayList<>();
 		if(roles != null && roles.length > 0 && roles[0] != null) {

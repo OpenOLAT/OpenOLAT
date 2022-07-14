@@ -163,6 +163,29 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<!--
+					Forms that show user properties with role invitee
+				-->
+				<entry key="org.olat.user.ProfileFormController_invitee">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Users Profile-Form (Home->Settings)" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<!--
 					Indexed for fulltext search (only the fields that a user selects to publish are indexed)

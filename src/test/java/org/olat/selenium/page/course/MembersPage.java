@@ -57,8 +57,14 @@ public class MembersPage {
 	}
 	
 	public MembersWizardPage importMembers() {
+		By moreBy = By.className("o_sel_add_more");
+		OOGraphene.waitElement(moreBy, browser);
+		browser.findElement(moreBy).click();
+
 		By importMembersBy = By.className("o_sel_course_import_members");
+		OOGraphene.waitElement(importMembersBy, browser);
 		browser.findElement(importMembersBy).click();
+		
 		OOGraphene.waitModalWizard(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_user_import textarea.form-control"), browser);
 		return new MembersWizardPage(browser);

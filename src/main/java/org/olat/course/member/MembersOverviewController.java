@@ -194,6 +194,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		
 		addMemberDropdown = new Dropdown("addmore", null, false, getTranslator());
 		addMemberDropdown.setOrientation(DropdownOrientation.right);
+		addMemberDropdown.setElementCssClass("o_sel_add_more");
 		addMemberDropdown.setEmbbeded(true);
 		addMemberDropdown.setButton(true);
 		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
