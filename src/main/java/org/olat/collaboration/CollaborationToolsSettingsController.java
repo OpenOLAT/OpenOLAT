@@ -54,7 +54,7 @@ import org.olat.modules.bigbluebutton.ui.BigBlueButtonCollaborationSettingsContr
 import org.olat.modules.teams.ui.TeamsCollaborationSettingsController;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomModule;
-import org.olat.modules.zoom.ui.ZoomCollaborationSettingsController;
+import org.olat.modules.zoom.ui.ZoomUpdateConfigController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,7 +74,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private FolderToolSettingsController folderForm;
 	private TeamsCollaborationSettingsController teamsController; 
 	private BigBlueButtonCollaborationSettingsController bigBlueButtonController;
-	private ZoomCollaborationSettingsController zoomController;
+	private ZoomUpdateConfigController zoomController;
 
 	private boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
@@ -239,9 +239,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private void addZoomTool(UserRequest ureq) {
 		removeAsListenerAndDispose(zoomController);
 
-		zoomManager.initializeConfig(null, null, businessGroup, ZoomManager.ApplicationType.groupTool);
-
-		zoomController = new ZoomCollaborationSettingsController(ureq, getWindowControl(), businessGroup);
+		zoomController = new ZoomUpdateConfigController(ureq, getWindowControl(), null, null, businessGroup, ZoomManager.ApplicationType.groupTool);
 		zoomController.setEnabled(!managed);
 		listenTo(zoomController);
 

@@ -26,6 +26,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.modules.zoom.ZoomManager;
+import org.olat.modules.zoom.ui.ZoomUpdateConfigController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -38,12 +40,12 @@ public class ZoomEditController extends ActivateableTabbableDefaultController {
 
     private TabbedPane tabbedPane;
 
-    private ZoomEditConfig zoomConfig;
+    private final ZoomUpdateConfigController zoomConfig;
 
     public ZoomEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, String courseNodeIdent) {
         super(ureq, wControl);
 
-        zoomConfig = new ZoomEditConfig(ureq, wControl, courseEntry, courseNodeIdent);
+        zoomConfig = new ZoomUpdateConfigController(ureq, wControl, courseEntry, courseNodeIdent, null, ZoomManager.ApplicationType.courseElement);
         listenTo(zoomConfig);
     }
 

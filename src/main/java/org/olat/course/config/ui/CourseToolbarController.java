@@ -562,7 +562,7 @@ public class CourseToolbarController extends FormBasicController {
 		zoomProfileEl.setVisible(enabled);
 
 		String subIdent = course.getResourceableId().toString();
-		zoomManager.initializeConfig(entry, subIdent, null, ZoomManager.ApplicationType.courseTool);
+		zoomManager.initializeConfig(entry, subIdent, null, ZoomManager.ApplicationType.courseTool, getIdentity().getUser());
 
 		ZoomManager.KeysAndValues profiles = zoomManager.getProfilesAsKeysAndValues();
 		zoomProfileEl.setKeysAndValues(profiles.keys, profiles.values, null);
