@@ -98,6 +98,7 @@ public class ZoomConfigurationController extends FormBasicController {
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         setFormTitle("zoom.title");
         setFormInfo("zoom.info");
+        setFormContextHelp("manual_admin/administration/Zoom/");
 
         moduleEnabledEl = uifactory.addCheckboxesHorizontal("zoom.module.enabled", formLayout, enabledKeys, enabledValues);
         moduleEnabledEl.select(enabledKeys[0], zoomModule.isEnabled());

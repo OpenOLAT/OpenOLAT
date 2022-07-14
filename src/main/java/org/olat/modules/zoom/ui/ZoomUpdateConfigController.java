@@ -118,13 +118,13 @@ public class ZoomUpdateConfigController extends FormBasicController {
     protected void formOK(UserRequest ureq) {
         if (profileEl.isOneSelected()) {
             ZoomProfile zoomProfile = zoomManager.getProfile(profileEl.getSelectedKey());
-            ZoomConfig zoomConfig = zoomManager.getConfig(null, null, businessGroup);
+            ZoomConfig zoomConfig = zoomManager.getConfig(courseEntry, subIdent, businessGroup);
             if (StringHelper.containsNonWhitespace(zoomProfile.getMailDomains())) {
                 profileEl.setExampleKey("zoom.profile.mailDomains.example", new String[] { zoomProfile.getMailDomains() });
             } else {
                 profileEl.setExampleKey(null, null);
             }
-            zoomManager.recreateConfig(zoomConfig, null, null, businessGroup, zoomProfile);
+            zoomManager.recreateConfig(zoomConfig, courseEntry, subIdent, businessGroup, zoomProfile);
         }
         fireEvent(ureq, Event.DONE_EVENT);
     }
