@@ -45,6 +45,7 @@ public class InvitationModule extends AbstractSpringModule {
 	private static final String INVITATION_BUSINESS_GROUP_ROLE = "invitation.business.group.role";
 	private static final String INVITATION_COURSE_OWNER_PERMISSION = "invitation.course.owner.permission";
 	private static final String INVITATION_BUSINESS_GROUP_COACH_PERMISSION = "invitation.business.group.coach.permission";
+	private static final String INVITATION_EXPIRATION_ACCOUNT_AFTER = "invitation.expiration.account";
 
 	@Value("${invitation.course:enabled}")
 	private String courseInvitationEnabled;
@@ -59,6 +60,9 @@ public class InvitationModule extends AbstractSpringModule {
 	private String businessGroupRolesConfiguration;
 	@Value("${invitation.business.group.coach.permission:perResource}")
 	private String businessGroupCoachPermission;
+	
+	@Value("${invitation.expiration.account:180}")
+	private String expirationAccountInDays;
 
 	private LoginModule loginModule;
 	
@@ -87,6 +91,8 @@ public class InvitationModule extends AbstractSpringModule {
 		
 		courseOwnerPermission = getStringPropertyValue(INVITATION_COURSE_OWNER_PERMISSION, courseOwnerPermission);
 		businessGroupCoachPermission = getStringPropertyValue(INVITATION_BUSINESS_GROUP_COACH_PERMISSION, businessGroupCoachPermission);
+		
+		expirationAccountInDays = getStringPropertyValue(INVITATION_EXPIRATION_ACCOUNT_AFTER, expirationAccountInDays);
 	}
 	
 	public boolean isInvitationEnabled() {
@@ -163,5 +169,17 @@ public class InvitationModule extends AbstractSpringModule {
 
 	public void setPortfolioInvitationEnabled(boolean enabled) {
 		loginModule.setInvitationEnabled(enabled);
+	}
+
+	public int getExpirationAccountInDays() {
+		if(StringHelper.isLong(expirationAccountInDays)) {
+			return Integer.parseInt(expirationAccountInDays);
+		}
+		return -1;
+	}
+
+	public void setExpirationAccountInDays(String days) {
+		expirationAccountInDays = days;
+		setStringProperty(INVITATION_EXPIRATION_ACCOUNT_AFTER, days, true);
 	}
 }

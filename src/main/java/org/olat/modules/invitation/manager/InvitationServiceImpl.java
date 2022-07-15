@@ -34,6 +34,7 @@ import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -42,12 +43,14 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationEntry;
@@ -84,6 +87,8 @@ public class InvitationServiceImpl implements InvitationService {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private InvitationModule invitationModule;
+	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
@@ -94,7 +99,6 @@ public class InvitationServiceImpl implements InvitationService {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	
 	@Override
 	public Invitation createInvitation(InvitationTypeEnum type) {
 		return invitationDao.createInvitation(type);
@@ -116,8 +120,15 @@ public class InvitationServiceImpl implements InvitationService {
 	}
 	
 	@Override
-	public Identity  getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale) {
+	public Identity  getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale, Identity doer) {
 		// create identity only if such a user does not already exist
+		
+		Date expirationDate = null;
+		int expireAfter = invitationModule.getExpirationAccountInDays();
+		if(expireAfter > 0) {
+			expirationDate = DateUtils.addDays(new Date(), expireAfter);
+			expirationDate = CalendarUtils.endOfDay(expirationDate);
+		}
 
 		Identity invitee;
 		if(invitation.getIdentity() != null) {
@@ -127,7 +138,11 @@ public class InvitationServiceImpl implements InvitationService {
 			if (invitee == null) {
 				User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 				user.getPreferences().setLanguage(locale.toString());
-				invitee = securityManager.createAndPersistIdentityAndUser(null, invitation.getMail(), null, user, null, null, null, null, null);
+				invitee = securityManager.createAndPersistIdentityAndUser(null, invitation.getMail(), null, user, null, null, null, null, expirationDate);
+			} else if(invitee.getExpirationDate() != null && invitee.getExpirationDate().before(expirationDate)) {
+				securityManager.saveIdentityExpirationDate(invitee, expirationDate, doer);
+			} else if(invitee.getExpirationDate() == null && securityManager.getRoles(invitee).isInviteeOnly()) {
+				securityManager.saveIdentityExpirationDate(invitee, expirationDate, doer);
 			}
 		}
 		
@@ -140,7 +155,8 @@ public class InvitationServiceImpl implements InvitationService {
 
 		// add invitee to the security group of that portfolio element
 		groupDao.addMembershipTwoWay(group, invitee, GroupRoles.invitee.name());
-		organisationService.addMember(invitee, OrganisationRoles.invitee);			
+		organisationService.addMember(invitee, OrganisationRoles.invitee);
+		
 		return invitee;
 	}
 

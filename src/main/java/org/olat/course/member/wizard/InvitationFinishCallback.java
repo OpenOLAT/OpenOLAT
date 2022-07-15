@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
@@ -35,6 +34,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.mail.ContactList;
@@ -71,8 +71,6 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private InvitationService invitationService;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -89,20 +87,15 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		Step step;
-		if(context.getIdentity() == null) {
+		if(context.getIdentity() == null || context.isIdentityInviteeOnly()) {
 			step = executeInvitation(ureq, wControl);
 		} else {
-			boolean isInviteeOnly = securityManager.getRoles(context.getIdentity()).isInviteeOnly();
-			if(isInviteeOnly) {
-				step = executeInvitation(ureq, wControl);
-			} else {
-				step = executeMembership(ureq, wControl);
-			}
+			step = executeMembership(ureq, wControl, context.getIdentity());
 		}
 		return step;
 	}
 	
-	private Step executeMembership(UserRequest ureq, WindowControl wControl) {
+	private Step executeMembership(UserRequest ureq, WindowControl wControl, Identity identity) {
 		MemberPermissionChangeEvent changes = context.getMemberPermissions();
 			
 		MailTemplate template = context.getMailTemplate();
@@ -111,12 +104,12 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		MailPackage reMailing = new MailPackage(template, result, wControl.getBusinessControl().getAsString(), template != null);
 			
 		Roles roles = ureq.getUserSession().getRoles();
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(List.of(context.getIdentity()));
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(List.of(identity));
 		if(!repoChanges.isEmpty() && context.getRepoEntry() != null) {
 			repositoryManager.updateRepositoryEntryMemberships(ureq.getIdentity(), roles, context.getRepoEntry(), repoChanges, reMailing);
 		}
 		//commit all changes to the group memberships
-		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(List.of(context.getIdentity()));
+		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(List.of(identity));
 		if(!allModifications.isEmpty()) {
 			MailPackage mailing = new MailPackage(template, result, wControl.getBusinessControl().getAsString(), template != null);
 			businessGroupService.updateMemberships(ureq.getIdentity(), allModifications, mailing);
@@ -211,7 +204,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			return StepsMainRunController.DONE_UNCHANGED;
 		}
 		
-		invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale());
+		invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
 		
 		ContactList contactList = new ContactList("Invitation");
 		contactList.add(context.getEmail());

@@ -80,7 +80,7 @@ public class InvitationUserInfosController extends StepFormBasicController {
 		formLayout.setElementCssClass("o_external_user_data");
 		
 		User existingUser = context.getIdentity() == null ? null : context.getIdentity().getUser();
-		if(existingUser != null) {
+		if(existingUser != null && !context.isIdentityInviteeOnly()) {
 			setFormWarning("warn.user.already.exists");
 		}
 		

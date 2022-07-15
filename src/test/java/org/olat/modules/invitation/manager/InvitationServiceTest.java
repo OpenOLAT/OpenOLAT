@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -98,6 +99,8 @@ public class InvitationServiceTest extends OlatTestCase {
 	
 	@Test
 	public void loadOrCreateIdentityAndPersistInvitation() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("invitation-admin-2");
+		
 		Invitation invitation = createDummyInvitation();
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		invitation = invitationService.update(invitation, "Flora", uuid, uuid + "@frentix.com");
@@ -105,7 +108,7 @@ public class InvitationServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// use the create part of the method
-		Identity identity = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
+		Identity identity = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH, admin);
 		Assert.assertNotNull(identity);
 		Assert.assertNotNull(identity.getKey());
 		dbInstance.commitAndCloseSession();

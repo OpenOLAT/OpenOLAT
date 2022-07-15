@@ -88,6 +88,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isInvitee() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("invitation-admin-1");
+		
 		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.binder);
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		invitation.setFirstName("Fiona");
@@ -95,7 +97,7 @@ public class InvitationDAOTest extends OlatTestCase {
 		invitation.setMail(uuid.concat("@frentix.com"));
 
 		Group group = groupDao.createGroup();
-		Identity id2 = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
+		Identity id2 = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH, admin);
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Invitee-2");
 		dbInstance.commitAndCloseSession();
 		

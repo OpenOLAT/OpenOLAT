@@ -46,6 +46,7 @@ public class InvitationContext {
 	private MailTemplate mailTemplate;
 	
 	private Identity identity;
+	private boolean identityInviteeOnly;
 	
 	private MailerResult result;
 	
@@ -102,9 +103,14 @@ public class InvitationContext {
 	public Identity getIdentity() {
 		return identity;
 	}
+	
+	public boolean isIdentityInviteeOnly() {
+		return identityInviteeOnly;
+	}
 
-	public void setIdentity(Identity identity) {
+	public void setIdentity(Identity identity, boolean identityInviteeOnly) {
 		this.identity = identity;
+		this.identityInviteeOnly = identityInviteeOnly;
 	}
 
 	public MailerResult getResult() {

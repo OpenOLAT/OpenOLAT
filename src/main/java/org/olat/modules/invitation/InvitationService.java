@@ -64,7 +64,7 @@ public interface InvitationService {
 	
 	public List<Invitation> findInvitations(BusinessGroupRef businessGroup);
 	
-	public Identity getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale);
+	public Identity getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale, Identity doer);
 	
 	public Invitation update(Invitation invitation, String firstName, String lastName, String email);
 	
