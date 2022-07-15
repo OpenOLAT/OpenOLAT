@@ -68,7 +68,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
-import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
