@@ -20,6 +20,7 @@
 package org.olat.modules.zoom.manager;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.model.ZoomProfileImpl;
@@ -68,10 +69,14 @@ public class ZoomProfileDAO {
     }
 
     public List<ZoomProfileWithConfigCount> getProfilesWithConfigCounts() {
-        String q = "select profile, count(profile) from zoomconfig config join config.profile as profile group by profile";
-        return (List<ZoomProfileWithConfigCount>) dbInstance
+        String queryString = "select profile," +
+                " (select count(config.key) from zoomconfig as config" +
+                " where config.profile.key = profile.key" +
+                " ) as numberOfApplications " +
+                "from zoomprofile as profile";
+        return dbInstance
                 .getCurrentEntityManager()
-                .createQuery(q)
+                .createQuery(queryString, Object[].class)
                 .getResultList()
                 .stream()
                 .map(ZoomProfileWithConfigCount::new).collect(Collectors.toList());
@@ -99,10 +104,9 @@ public class ZoomProfileDAO {
         private final ZoomProfile zoomProfile;
         private final Long configCount;
 
-        public ZoomProfileWithConfigCount(Object object) {
-            Object[] objectArray = (Object[]) object;
+        public ZoomProfileWithConfigCount(Object[] objectArray) {
             this.zoomProfile = (ZoomProfile) objectArray[0];
-            this.configCount = (Long) objectArray[1];
+            this.configCount = PersistenceHelper.extractPrimitiveLong(objectArray, 1);
         }
 
         public ZoomProfile getZoomProfile() {

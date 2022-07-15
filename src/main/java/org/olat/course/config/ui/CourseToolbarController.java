@@ -580,10 +580,8 @@ public class CourseToolbarController extends FormBasicController {
 		if (enableZoom) {
 			ZoomProfile zoomProfile = zoomManager.getProfile(zoomProfileEl.getSelectedKey());
 			ZoomConfig zoomConfig = zoomManager.getConfig(entry, subIdent, null);
-			zoomManager.recreateConfig(zoomConfig, entry, subIdent, null, zoomProfile);
-		} else {
-			if (updateZoom) {
-				zoomManager.deleteConfig(entry, subIdent, null);
+			if (zoomConfig.getProfile() != zoomProfile) {
+				zoomManager.recreateConfig(zoomConfig, entry, subIdent, null, zoomProfile);
 			}
 		}
 	}

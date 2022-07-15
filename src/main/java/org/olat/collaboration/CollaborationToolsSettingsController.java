@@ -249,9 +249,6 @@ public class CollaborationToolsSettingsController extends BasicController {
 
 	private void removeZoomTool(UserRequest ureq) {
 		removeAsListenerAndDispose(zoomController);
-
-		zoomManager.deleteConfig(null, null, businessGroup);
-
 		vc_collabtools.contextPut("zoomToolEnabled", Boolean.FALSE);
 	}
 	
