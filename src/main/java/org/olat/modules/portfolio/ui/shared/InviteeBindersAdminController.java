@@ -58,6 +58,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.ui.InvitationURLController;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -128,9 +129,10 @@ public class InviteeBindersAdminController extends FormBasicController {
 	}
 	
 	private void loadModel(String searchString) {
-		List<Invitation> invitations = invitationService.findInvitations(invitee);
-		Map<Group,Invitation> groupToInvitations = invitations.stream().filter(invitation -> invitation.getBaseGroup() != null)
-				.collect(Collectors.toMap(Invitation::getBaseGroup, invitation -> invitation, (u, v) -> u));
+		List<InvitationEntry> invitations = invitationService.findInvitations(invitee);
+		Map<Group,Invitation> groupToInvitations = invitations.stream()
+				.filter(invitation -> invitation.getInvitationGroup() != null)
+				.collect(Collectors.toMap(InvitationEntry::getInvitationGroup, InvitationEntry::getInvitation, (u, v) -> u));
 
 		List<AssessedBinder> assessedBinders = portfolioService.searchSharedBindersWith(invitee, searchString);
 		List<InviteeBinderAdminRow> rows = new ArrayList<>(assessedBinders.size());

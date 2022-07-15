@@ -19,6 +19,8 @@
  */
 package org.olat.admin.user.groups;
 
+import org.olat.basesecurity.Invitation;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -37,12 +39,16 @@ public class GroupOverviewRow implements BusinessGroupShort {
 	private final Long key;
 	private final String name;
 	private final BusinessGroupManagedFlag[] managedflags;
+	
+	private final Invitation invitation;
+	private FormLink invitationLink;
 
-	public GroupOverviewRow(BusinessGroup businessGroup, BusinessGroupMembership member, Boolean allowLeave) {
+	public GroupOverviewRow(BusinessGroup businessGroup, BusinessGroupMembership member, Invitation invitation, Boolean allowLeave) {
 		key = businessGroup.getKey();
 		name = businessGroup.getName();
 		managedflags = businessGroup.getManagedFlags();
 		this.member = member;
+		this.invitation = invitation;
 		this.allowLeave = allowLeave;
 	}
 
@@ -77,6 +83,18 @@ public class GroupOverviewRow implements BusinessGroupShort {
 
 	public Boolean getAllowLeave() {
 		return allowLeave;
+	}
+
+	public Invitation getInvitation() {
+		return invitation;
+	}
+
+	public FormLink getInvitationLink() {
+		return invitationLink;
+	}
+
+	public void setInvitationLink(FormLink invitationLink) {
+		this.invitationLink = invitationLink;
 	}
 
 	@Override

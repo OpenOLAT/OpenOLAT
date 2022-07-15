@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.course.CourseOverviewMembershipDataModel.MSCols;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -52,6 +54,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -76,6 +79,9 @@ import org.olat.group.ui.main.CourseRoleCellRenderer;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.model.InvitationEntry;
+import org.olat.modules.invitation.ui.InvitationURLController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -110,16 +116,22 @@ public class CourseOverviewController extends FormBasicController  {
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmSendMailBox;
+	private InvitationURLController invitationUrlCtrl;
+	private CloseableCalloutWindowController urlCalloutCtrl;
 	private CourseLeaveDialogBoxController removeFromCourseDlg;
 	private ReferencableEntriesSearchController repoSearchCtr;
 	private EditSingleMembershipController editSingleMemberCtrl;
 	
+	private int counter = 0;
 	private final boolean canModify;
+	private final boolean isInvitee;
 	private final Identity editedIdentity;
 	private final boolean isLastVisitVisible;
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private MemberViewQueries memberQueries;
 	@Autowired
@@ -133,6 +145,8 @@ public class CourseOverviewController extends FormBasicController  {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private InvitationService invitationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
@@ -145,8 +159,9 @@ public class CourseOverviewController extends FormBasicController  {
 
 		editedIdentity = identity;
 		this.canModify = canModify;
+		isInvitee = securityManager.getRoles(editedIdentity).isInvitee();
 		isLastVisitVisible = securityModule.isUserLastVisitVisible(ureq.getUserSession().getRoles());
-		
+
 		initForm(ureq);
 		updateModel();
 	}
@@ -166,11 +181,18 @@ public class CourseOverviewController extends FormBasicController  {
 		if(isLastVisitVisible) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.lastTime));
 		}
+		
+		DefaultFlexiColumnModel invitationLinkCol = new DefaultFlexiColumnModel(isInvitee, MSCols.invitationLink);
+		invitationLinkCol.setExportable(false);
+		invitationLinkCol.setAlwaysVisible(isInvitee);
+		columnsModel.addFlexiColumnModel(invitationLinkCol);
+		
 		if(canModify) {
 			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), TABLE_ACTION_EDIT);
 			editCol.setAlwaysVisible(true);
 			editCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(editCol);
+			
 			DefaultFlexiColumnModel leaveCol = new DefaultFlexiColumnModel(MSCols.allowLeave.i18nHeaderKey(),
 					MSCols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE,
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(MSCols.allowLeave.i18nHeaderKey()), TABLE_ACTION_UNSUBSCRIBE), null));
@@ -185,7 +207,12 @@ public class CourseOverviewController extends FormBasicController  {
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(MSCols.entry.sortKey(), true));
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "course-overview-v2");
+		
+		String key = "course-overview-v2";
+		if(isInvitee) {
+			key += "-invitee";
+		}
+		tableEl.setAndLoadPersistedPreferences(ureq, key);
 		
 		if(canModify) {
 			tableEl.setMultiSelect(true);
@@ -193,7 +220,9 @@ public class CourseOverviewController extends FormBasicController  {
 			leaveButton = uifactory.addFormLink("table.header.leave", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(leaveButton);
 			
-			addAsOwner = uifactory.addFormLink("add.course.owner", formLayout, Link.BUTTON);
+			if(!isInvitee) {
+				addAsOwner = uifactory.addFormLink("add.course.owner", formLayout, Link.BUTTON);
+			}
 			addAsTutor = uifactory.addFormLink("add.course.tutor", formLayout, Link.BUTTON);
 			addAsParticipant = uifactory.addFormLink("add.course.participant", formLayout, Link.BUTTON);
 		}
@@ -201,10 +230,20 @@ public class CourseOverviewController extends FormBasicController  {
 
 	private void updateModel() {
 		List<MemberView> memberships = memberQueries.getIdentityMemberships(editedIdentity);
+		List<InvitationEntry> invitations = invitationService.findInvitations(editedIdentity);
+		Map<Long,Invitation> repoEntryKeyToInvitations = invitations.stream()
+				.filter(invitation -> invitation.getEntry() != null)
+				.collect(Collectors.toMap(InvitationEntry::getEntryKey, InvitationEntry::getInvitation, (u,v) -> u));
 
 		Map<OLATResource,CourseMemberView> resourceToViewMap = new HashMap<>();
 		for(MemberView membership: memberships) {
-			resourceToViewMap.put(membership.getOLATResource(), new CourseMemberView(membership));
+			Invitation invitation = null;
+			if(membership.getRepositoryEntryKey() != null) {
+				invitation = repoEntryKeyToInvitations.get(membership.getRepositoryEntryKey());
+				membership.getMemberShip().setExternalUser(invitation != null);
+			}
+			CourseMemberView view = forgeRow(membership, invitation);
+			resourceToViewMap.put(membership.getOLATResource(), view);
 		}
 		
 		List<UserCourseInformations> userCourseInfos = userInfosMgr.getUserCourseInformations(editedIdentity);
@@ -219,6 +258,20 @@ public class CourseOverviewController extends FormBasicController  {
 		List<CourseMemberView> views = new ArrayList<>(resourceToViewMap.values());
 		tableDataModel.setObjects(views);
 		tableEl.reset(true, true, true);
+	}
+	
+	private CourseMemberView forgeRow(MemberView membership, Invitation invitation) {
+		CourseMemberView row = new CourseMemberView(membership, invitation);
+		
+		if(invitation != null) {
+			FormLink invitationLink = uifactory.addFormLink("invitation_" + (++counter), "invitation", "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			invitationLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
+			invitationLink.setTitle(translate("invitation.link.long"));
+			row.setInvitationLink(invitationLink);
+			invitationLink.setUserObject(row);	
+		}
+		
+		return row;
 	}
 	
 	@Override
@@ -251,6 +304,12 @@ public class CourseOverviewController extends FormBasicController  {
 					CourseMemberView item = tableDataModel.getObject(se.getIndex());
 					doOpenEdit(ureq, item);
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof CourseMemberView) {
+				CourseMemberView row = (CourseMemberView)link.getUserObject();
+				doOpenInvitationLink(ureq, link.getFormDispatchId(), row);
 			}
 		}
 	}
@@ -303,16 +362,25 @@ public class CourseOverviewController extends FormBasicController  {
 			
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == cmc) {
+		} else if(invitationUrlCtrl == source) {
+			if(urlCalloutCtrl != null) {
+				urlCalloutCtrl.deactivate();
+			}
+			cleanUp();
+		} else if(source == cmc || urlCalloutCtrl == source) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(removeFromCourseDlg);
+		removeAsListenerAndDispose(invitationUrlCtrl);
+		removeAsListenerAndDispose(urlCalloutCtrl);
 		removeAsListenerAndDispose(repoSearchCtr);
 		removeAsListenerAndDispose(cmc);
 		removeFromCourseDlg = null;
+		invitationUrlCtrl = null;
+		urlCalloutCtrl = null;
 		repoSearchCtr = null;
 		cmc = null;
 	}
@@ -331,6 +399,18 @@ public class CourseOverviewController extends FormBasicController  {
 	
 	private void launch(UserRequest ureq, Long repoKey) {
 		NewControllerFactory.getInstance().launch("[RepositoryEntry:" + repoKey + "]", ureq, getWindowControl());
+	}
+	
+	private void doOpenInvitationLink(UserRequest ureq, String elementId, CourseMemberView row) {
+		String url = invitationService.toUrl(row.getInvitation());
+		invitationUrlCtrl = new InvitationURLController(ureq, getWindowControl(), url);
+		listenTo(invitationUrlCtrl);
+
+		String title = translate("invitation.link.long");
+		urlCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				invitationUrlCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(urlCalloutCtrl);
+		urlCalloutCtrl.activate();
 	}
 	
 	private void doOpenEdit(UserRequest ureq, CourseMemberView member) {

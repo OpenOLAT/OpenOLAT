@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
@@ -70,6 +71,8 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private InvitationService invitationService;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -89,7 +92,12 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		if(context.getIdentity() == null) {
 			step = executeInvitation(ureq, wControl);
 		} else {
-			step = executeMembership(ureq, wControl);
+			boolean isInviteeOnly = securityManager.getRoles(context.getIdentity()).isInviteeOnly();
+			if(isInviteeOnly) {
+				step = executeInvitation(ureq, wControl);
+			} else {
+				step = executeMembership(ureq, wControl);
+			}
 		}
 		return step;
 	}

@@ -22,6 +22,8 @@ package org.olat.admin.user.course;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.Invitation;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.MemberView;
@@ -41,10 +43,13 @@ public class CourseMemberView {
 	private Date firstTime;
 	private Date lastTime;
 	private final MemberView memberView;
-
 	
-	public CourseMemberView(MemberView view) {
+	private final Invitation invitation;
+	private FormLink invitationLink;
+	
+	public CourseMemberView(MemberView view, Invitation invitation) {
 		this.memberView = view;
+		this.invitation = invitation;
 	}
 	
 	public Long getRepoKey() {
@@ -127,5 +132,17 @@ public class CourseMemberView {
 		}
 
 		return true;
+	}
+
+	public Invitation getInvitation() {
+		return invitation;
+	}
+
+	public FormLink getInvitationLink() {
+		return invitationLink;
+	}
+
+	public void setInvitationLink(FormLink invitationLink) {
+		this.invitationLink = invitationLink;
 	}
 }

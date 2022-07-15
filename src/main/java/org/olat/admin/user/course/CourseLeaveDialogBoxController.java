@@ -84,9 +84,9 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 		String identityName = userManager.getUserDisplayName(leavingIdentity);
 		String leaveText;
 		if(groupsToLeave.isEmpty()) {
-			leaveText = translate("unsubscribe.text", new String[]{identityName, repoEntryToLeaveNames.toString()});
+			leaveText = translate("unsubscribe.text", identityName, repoEntryToLeaveNames.toString());
 		} else {
-			leaveText = translate("unsubscribe.withgroups.text", new String[]{identityName, repoEntryToLeaveNames.toString(), groupToLeaveNames.toString()});
+			leaveText = translate("unsubscribe.withgroups.text", identityName, repoEntryToLeaveNames.toString(), groupToLeaveNames.toString());
 		}
 		
 		setFormTranslatedWarning(leaveText);

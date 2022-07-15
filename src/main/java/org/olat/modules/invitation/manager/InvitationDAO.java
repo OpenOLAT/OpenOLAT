@@ -19,6 +19,7 @@
  */
 package org.olat.modules.invitation.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +34,9 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -150,18 +153,28 @@ public class InvitationDAO {
 		return invitations.get(0);
 	}
 	
-	public List<Invitation> findInvitations(Identity identity) {
+	public List<InvitationEntry> findInvitations(Identity identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select invitation from binvitation as invitation")
+		sb.append("select invitation, v from binvitation as invitation")
 		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" left join repoentrytogroup as reToGroup on (bGroup.key = reToGroup.group.key and reToGroup.defaultGroup=true)")
+		  .append(" left join reToGroup.entry as v ")
+		  .append(" left join fetch v.olatResource as vResource ")
 		  .append(" left join bGroup.members as members")
 		  .append(" where invitation.identity.key=:inviteeKey or (invitation.identity.key is null and invitation.mail=:email)");
 
-		return dbInstance.getCurrentEntityManager()
-				  .createQuery(sb.toString(), Invitation.class)
+		List<Object[]> raws = dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Object[].class)
 				  .setParameter("inviteeKey", identity.getKey())
 				  .setParameter("email", identity.getUser().getEmail())
 				  .getResultList();
+		List<InvitationEntry> invitations = new ArrayList<>(raws.size());
+		for(Object[] raw:raws) {
+			Invitation invitation = (Invitation)raw[0];
+			RepositoryEntry entry = (RepositoryEntry)raw[1];
+			invitations.add(new InvitationEntry(invitation, entry));
+		}
+		return invitations;
 	}
 	
 	public List<Invitation> findInvitation(RepositoryEntryRef entry) {

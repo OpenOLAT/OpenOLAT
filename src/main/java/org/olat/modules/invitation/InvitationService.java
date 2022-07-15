@@ -28,6 +28,7 @@ import org.olat.basesecurity.Invitation;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.portfolio.Binder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -57,7 +58,7 @@ public interface InvitationService {
 
 	public Invitation findInvitation(Binder binder, IdentityRef identity);
 
-	public List<Invitation> findInvitations(Identity identity);
+	public List<InvitationEntry> findInvitations(Identity identity);
 
 	public List<Invitation> findInvitations(RepositoryEntryRef entry);
 	

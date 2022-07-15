@@ -36,6 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  */
 public class CourseOverviewMembershipDataModel extends DefaultFlexiTableDataModel<CourseMemberView>
 implements SortableFlexiTableDataModel<CourseMemberView> {
+	
+	private static final MSCols[] COLS = MSCols.values();
 
 	private final Locale locale;
 	
@@ -60,7 +62,7 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 
 	@Override
 	public Object getValueAt(CourseMemberView view, int col) {
-		switch(MSCols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return view.getRepoKey();
 			case entry: return view.getEntry();
 			case title: return view.getDisplayName();
@@ -70,6 +72,7 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 			case firstTime: return view.getFirstTime();
 			case lastTime: return view.getLastTime();
 			case allowLeave: return view.isFullyManaged() ? Boolean.FALSE : Boolean.TRUE;
+			case invitationLink: return view.getInvitationLink();
 			default: return "ERROR";
 		}
 	}
@@ -83,7 +86,8 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 		role("table.header.role"),
 		lastTime("table.header.lastTime"),
 		firstTime("table.header.firstTime"),
-		allowLeave("table.header.leave");
+		allowLeave("table.header.leave"),
+		invitationLink("table.header.invitation");
 		
 		private final String i18n;
 		

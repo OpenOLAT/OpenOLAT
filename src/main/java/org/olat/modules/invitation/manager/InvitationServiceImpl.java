@@ -50,6 +50,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.manager.BinderDAO;
@@ -164,7 +165,7 @@ public class InvitationServiceImpl implements InvitationService {
 	}
 
 	@Override
-	public List<Invitation> findInvitations(Identity identity) {
+	public List<InvitationEntry> findInvitations(Identity identity) {
 		return invitationDao.findInvitations(identity);
 	}
 

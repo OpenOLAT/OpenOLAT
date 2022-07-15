@@ -25,11 +25,15 @@
 
 package org.olat.admin.user.groups;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 
@@ -37,34 +41,37 @@ import org.olat.group.BusinessGroupMembership;
  * @author gnaegi
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-class BusinessGroupTableModelWithType extends DefaultTableDataModel<GroupOverviewRow> {
-	private final int columnCount;
-	private final Translator trans;
-
-	/**
-	 * @param owned list of business groups
-	 */
-	public BusinessGroupTableModelWithType(Translator trans, int columnCount) {
-		super(new ArrayList<GroupOverviewRow>());
-		this.trans = trans;
-		this.columnCount = columnCount;
+class BusinessGroupTableModelWithType extends DefaultFlexiTableDataModel<GroupOverviewRow>
+implements SortableFlexiTableDataModel<GroupOverviewRow> {
+	
+	private static final Cols[] COLS = Cols.values(); 
+	
+	private final Locale locale;
+	
+	public BusinessGroupTableModelWithType(FlexiTableColumnModel columnsModel, Locale locale) {
+		super(columnsModel);
+		this.locale = locale;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
-	public int getColumnCount() {
-		return columnCount;
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<GroupOverviewRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(views);
+		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public Object getValueAt(int row, int col) {
-		GroupOverviewRow wrapped = objects.get(row);
-		switch (Cols.values()[col]) {
-			case name:
-				return wrapped;
+		GroupOverviewRow wrapped = getObject(row);
+		return getValueAt(wrapped, col);
+	}
+
+	@Override
+	public Object getValueAt(GroupOverviewRow wrapped, int col) {
+		switch (COLS[col]) {
+			case key: return wrapped.getKey();
+			case name: return wrapped;
 			case allowLeave: {
 				Boolean allowed = wrapped.getAllowLeave();
 				if(allowed != null && allowed.booleanValue()) {
@@ -75,8 +82,7 @@ class BusinessGroupTableModelWithType extends DefaultTableDataModel<GroupOvervie
 				}
 				return allowed;
 			}
-			case role:
-				return wrapped.getMembership();
+			case role: return wrapped.getMembership();
 			case firstTime: {
 				BusinessGroupMembership membership = wrapped.getMembership();
 				return membership == null ? null : membership.getCreationDate();
@@ -85,41 +91,39 @@ class BusinessGroupTableModelWithType extends DefaultTableDataModel<GroupOvervie
 				BusinessGroupMembership membership = wrapped.getMembership();
 				return membership == null ? null : membership.getLastModified();
 			}
-			case key:
-				return wrapped.getKey().toString();
-			default:
-				return "ERROR";
+			case invitationLink: return wrapped.getInvitationLink();
+			default: return "ERROR";
 		}
 	}
 	
-	@Override
-	public Object createCopyWithEmptyList() {
-		return new BusinessGroupTableModelWithType(trans, columnCount);
-	}
-
-	/**
-	 * @param owned
-	 */
-	public void setEntries(List<GroupOverviewRow> owned) {
-		setObjects(owned);
-	}
-	
-	public enum Cols {
+	public enum Cols implements FlexiSortableColumnDef {
 		name("table.header.bgname"),
 		key("table.header.key"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),
-		allowLeave("table.header.leave");
+		allowLeave("table.header.leave"),
+		invitationLink("table.header.invitation");
 		
-		private final String i18n;
+		private final String i18nKey;
 		
-		private Cols(String i18n) {
-			this.i18n = i18n;
+		private Cols(String i18nKey) {
+			this.i18nKey = i18nKey;
 		}
 		
-		public String i18n() {
-			return i18n;
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

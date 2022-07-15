@@ -499,14 +499,14 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf || isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
-				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
 				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
 				listenTo(grpCtr);
 				return grpCtr.getInitialComponent();
 			});
 	
 			userTabP.addTab(ureq, translate(NLS_VIEW_COURSES), uureq -> {
-				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
 				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();

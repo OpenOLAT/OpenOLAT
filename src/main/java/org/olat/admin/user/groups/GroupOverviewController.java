@@ -24,29 +24,34 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.groups.BusinessGroupTableModelWithType.Cols;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.table.TableMultiSelectEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -64,6 +69,10 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BGRoleCellRenderer;
+import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.model.InvitationEntry;
+import org.olat.modules.invitation.ui.InvitationURLController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,71 +85,94 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  22.09.2008 <br>
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GroupOverviewController extends BasicController {
+public class GroupOverviewController extends FormBasicController {
 	private static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	private static final String TABLE_ACTION_UNSUBSCRIBE = "unsubscribe";
+
+	private FormLink addGroups;
+	private FormLink leaveLink;
+	private FlexiTableElement tableEl;
+	private BusinessGroupTableModelWithType tableDataModel;
 	
-	private final VelocityContainer vc;
-	private final TableController groupListCtr;
-	private final BusinessGroupTableModelWithType tableDataModel;
-	
-	private Link addGroups;
-	private DialogBoxController confirmSendMailBox;
 	private CloseableModalController cmc;
 	private GroupSearchController groupsCtrl;
+	private DialogBoxController confirmSendMailBox;
+	private InvitationURLController invitationUrlCtrl;
 	private GroupLeaveDialogBoxController removeFromGrpDlg;
+	private CloseableCalloutWindowController urlCalloutCtrl;
+	
+	private int counter = 0;
+	private final Identity identity;
+	private final boolean canEdit;
+	private final boolean canOpenGroup;
+	private final boolean isInvitee;
 
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private BusinessGroupModule groupModule;
+	@Autowired
+	private InvitationService invitationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
-	
-	private final Identity identity;
 
-	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, boolean canEdit, boolean canOpenGroup) {
-		super(ureq, control, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
-		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));
-		
-		this.identity = identity;
+	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity editedIdentity,
+			boolean canEdit, boolean canOpenGroup) {
+		super(ureq, control, "groupoverview", Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));	
+		this.identity = editedIdentity;
+		this.canEdit = canEdit;
+		this.canOpenGroup = canOpenGroup;
+		isInvitee = securityManager.getRoles(editedIdentity).isInvitee();
 
-		vc = createVelocityContainer("groupoverview");
-
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("table.empty"), (canEdit ? translate("table.empty.hint") : null), "o_icon_group");
-		tableConfig.setTableEmptyNextPrimaryAction(translate("add.groups"), "o_icon_add");
-		groupListCtr = new TableController(tableConfig, ureq, control, getTranslator());
-		listenTo(groupListCtr);
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(canOpenGroup ? TABLE_ACTION_LAUNCH : null, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
-		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
-		if(canEdit) {
-			groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(),
-					TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
-			
-			groupListCtr.setMultiSelect(true);
-			groupListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
-			addGroups = LinkFactory.createButton("add.groups", vc, this);
-			addGroups.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-		}
-		
-		tableDataModel = new BusinessGroupTableModelWithType(getTranslator(), 4);
-		groupListCtr.setTableDataModel(tableDataModel);		
-		vc.put("table.groups", groupListCtr.getInitialComponent());	
+		initForm(ureq);
 		updateModel();
-		putInitialPanel(vc);
 	}
 
-	/**
-	 * @param ureq
-	 * @param control
-	 * @param identity
-	 * @return
-	 */
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key));
+		String action = canOpenGroup ? TABLE_ACTION_LAUNCH : null;
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name, action, new BusinessGroupNameCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, new BGRoleCellRenderer(getLocale())));
+		
+		DefaultFlexiColumnModel invitationLinkCol = new DefaultFlexiColumnModel(isInvitee, Cols.invitationLink);
+		invitationLinkCol.setExportable(false);
+		invitationLinkCol.setAlwaysVisible(isInvitee);
+		columnsModel.addFlexiColumnModel(invitationLinkCol);
+		
+		if(canEdit) {
+			DefaultFlexiColumnModel leaveCol = new DefaultFlexiColumnModel(Cols.allowLeave, TABLE_ACTION_UNSUBSCRIBE,
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("table.header.leave"), TABLE_ACTION_UNSUBSCRIBE), null));
+			leaveCol.setAlwaysVisible(true);
+			leaveCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(leaveCol);	
+		}
+		
+		tableDataModel = new BusinessGroupTableModelWithType(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table.groups", tableDataModel, 25, false, getTranslator(), formLayout);
+		if(canEdit) {
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
+			tableEl.setEmptyTableSettings("table.empty.hint", null, "o_icon_group", "add.groups", "o_icon_add", false);					
+			
+			leaveLink = uifactory.addFormLink("table.leave", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(leaveLink);
+			
+			addGroups = uifactory.addFormLink("add.groups", formLayout, Link.BUTTON);
+			addGroups.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		} else {
+			tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, false);	
+		}
+	}
+
 	private void updateModel() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setIdentity(identity);
@@ -157,6 +189,10 @@ public class GroupOverviewController extends BasicController {
 				groupKeysWithMembers.add(view.getKey());
 			}
 		}
+		
+		List<InvitationEntry> invitations = invitationService.findInvitations(identity);
+		Map<Group,Invitation> groupToInvitations = invitations.stream()
+				.collect(Collectors.toMap(InvitationEntry::getInvitationGroup, InvitationEntry::getInvitation, (u, v) -> u));
 
 		//retrieve all user's membership if there are more than 50 groups
 		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(groupKeysWithMembers, identity);
@@ -168,57 +204,31 @@ public class GroupOverviewController extends BasicController {
 		List<GroupOverviewRow> items = new ArrayList<>();
 		for(BusinessGroup group:groups) {
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
-			GroupOverviewRow tableItem = new GroupOverviewRow(group, membership, Boolean.TRUE);
-			items.add(tableItem);
+			Invitation invitation = groupToInvitations.get(group.getBaseGroup());
+			items.add(forgeRow(group, membership, invitation));
 		}
-		tableDataModel.setEntries(items);
-		groupListCtr.modelChanged();
+		tableDataModel.setObjects(items);
+		tableEl.reset(true, true, true);
 	}
-
-	@Override
-	protected void event(	UserRequest ureq, Component source, Event event) {
-		if (source == addGroups){
-			doGroupAddDialog(ureq);
-		}
-	}
-
-	private void doGroupAddDialog(UserRequest ureq) {
-		groupsCtrl = new GroupSearchController(ureq, getWindowControl());
-		listenTo(groupsCtrl);
+	
+	private GroupOverviewRow forgeRow(BusinessGroup group, BusinessGroupMembership membership, Invitation invitation) {
+		GroupOverviewRow row = new GroupOverviewRow(group, membership, invitation, Boolean.TRUE);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), true, translate("add.groups"), true);
-		listenTo(cmc);
-		cmc.activate();
+		if(invitation != null) {
+			FormLink invitationLink = uifactory.addFormLink("invitation_" + (++counter), "invitation", "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			invitationLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
+			invitationLink.setTitle(translate("invitation.link.long"));
+			row.setInvitationLink(invitationLink);
+			invitationLink.setUserObject(row);	
+		}
+		
+		return row;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
-		if (source == groupListCtr){
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				GroupOverviewRow item = tableDataModel.getObject(te.getRowId());
-				BusinessGroup currBusinessGroup = businessGroupService.loadBusinessGroup(item.getKey());
-				if (currBusinessGroup==null) {
-					//group seems to be removed meanwhile, reload table and show error
-					showError("group.removed");
-					updateModel();	
-				} else if (TABLE_ACTION_LAUNCH.equals(te.getActionId())) {
-					NewControllerFactory.getInstance().launch("[BusinessGroup:" + currBusinessGroup.getKey() + "]", ureq, getWindowControl());
-				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(te.getActionId())){
-					doLeave(ureq, Collections.singletonList(currBusinessGroup));
-				}
-			} else if (event instanceof TableMultiSelectEvent) {
-				TableMultiSelectEvent mse = (TableMultiSelectEvent)event;
-				List<GroupOverviewRow> items = tableDataModel.getObjects(mse.getSelection());
-				if (TABLE_ACTION_UNSUBSCRIBE.equals(mse.getAction())){
-					List<BusinessGroup> groups = toBusinessGroups(items);
-					doLeave(ureq, groups);
-				}
-			} else if (event.equals(TableController.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION)) {
-				doGroupAddDialog(ureq);
-			}
-		}	else if (source == groupsCtrl && event instanceof AddToGroupsEvent){
+		if (source == groupsCtrl && event instanceof AddToGroupsEvent){
 			AddToGroupsEvent groupsEv = (AddToGroupsEvent) event;
 			if (groupsEv.isEmpty()) {
 				// no groups selected
@@ -252,18 +262,83 @@ public class GroupOverviewController extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUpPopups();
-		} else if (source == cmc) {
+		} else if(invitationUrlCtrl == source) {
+			if(urlCalloutCtrl != null) {
+				urlCalloutCtrl.deactivate();
+			}
+			cleanUpPopups();
+		} else if (source == cmc || source == urlCalloutCtrl) {
 			cleanUpPopups();
 		}
 	}
 	
 	private void cleanUpPopups() {
-		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(invitationUrlCtrl);
 		removeAsListenerAndDispose(removeFromGrpDlg);
+		removeAsListenerAndDispose(urlCalloutCtrl);
 		removeAsListenerAndDispose(groupsCtrl);
-		cmc = null;
-		groupsCtrl = null;
+		removeAsListenerAndDispose(cmc);
+		invitationUrlCtrl = null;
 		removeFromGrpDlg = null;
+		urlCalloutCtrl = null;
+		groupsCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == addGroups){
+			doGroupAddDialog(ureq);
+		} else if(source == leaveLink) {
+			doConfirmLeave(ureq);
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if (TABLE_ACTION_LAUNCH.equals(se.getCommand())) {
+					GroupOverviewRow item = tableDataModel.getObject(se.getIndex());
+					doLaunch(ureq, item);
+				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(se.getCommand())) {
+					GroupOverviewRow item = tableDataModel.getObject(se.getIndex());
+					doConfirmLeave(ureq, item);
+				}
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doGroupAddDialog(ureq);
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof GroupOverviewRow) {
+				GroupOverviewRow row = (GroupOverviewRow)link.getUserObject();
+				doOpenInvitationLink(ureq, link.getFormDispatchId(), row);
+			}
+		}
+		
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	private void doLaunch(UserRequest ureq, GroupOverviewRow row) {
+		BusinessGroup currBusinessGroup = businessGroupService.loadBusinessGroup(row.getKey());
+		if (currBusinessGroup==null) {
+			//group seems to be removed meanwhile, reload table and show error
+			showError("group.removed");
+			updateModel();	
+		} else {
+			String businessPath = "[BusinessGroup:" + currBusinessGroup.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		}
+	}
+	
+	private void doGroupAddDialog(UserRequest ureq) {
+		groupsCtrl = new GroupSearchController(ureq, getWindowControl());
+		listenTo(groupsCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), true, translate("add.groups"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doAddToGroups(AddToGroupsEvent e, boolean sendMail) {
@@ -287,7 +362,43 @@ public class GroupOverviewController extends BasicController {
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
 	}
 	
-	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {
+	private void doOpenInvitationLink(UserRequest ureq, String elementId, GroupOverviewRow row) {
+		String url = invitationService.toUrl(row.getInvitation());
+		invitationUrlCtrl = new InvitationURLController(ureq, getWindowControl(), url);
+		listenTo(invitationUrlCtrl);
+
+		String title = translate("invitation.link.long");
+		urlCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				invitationUrlCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(urlCalloutCtrl);
+		urlCalloutCtrl.activate();
+	}
+	
+	private void doConfirmLeave(UserRequest ureq, GroupOverviewRow row) {
+		BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(row.getKey());
+		if (businessGroup == null) {
+			showError("group.removed");
+			updateModel();	
+		} else {
+			doConfirmLeave(ureq, List.of(businessGroup));
+		}
+	}
+	
+	private void doConfirmLeave(UserRequest ureq) {
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		List<Long> groupKeys = new ArrayList<>(selectedIndexes.size());
+		for(Integer selectedIndex:selectedIndexes) {
+			GroupOverviewRow row = tableDataModel.getObject(selectedIndex.intValue());
+			if(row != null) {
+				groupKeys.add(row.getKey());
+			}
+		}
+
+		List<BusinessGroup> businessGroups = businessGroupService.loadBusinessGroups(groupKeys);
+		doConfirmLeave(ureq, businessGroups);
+	}
+	
+	private void doConfirmLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {
 		List<BusinessGroup> groupsToDelete = new ArrayList<>(1);
 		for(BusinessGroup group:groupsToLeave) {
 			int numOfOwners = businessGroupService.countMembers(group, GroupRoles.coach.name());
@@ -338,13 +449,5 @@ public class GroupOverviewController extends BasicController {
 			groupNames.append(group.getName());
 		}
 		showInfo("unsubscribe.successful", groupNames.toString());	
-	}
-	
-	private List<BusinessGroup> toBusinessGroups(List<GroupOverviewRow> items) {
-		List<Long> groupKeys = new ArrayList<>();
-		for(GroupOverviewRow item:items) {
-			groupKeys.add(item.getKey());
-		}
-		return businessGroupService.loadBusinessGroups(groupKeys);
 	}
 }
