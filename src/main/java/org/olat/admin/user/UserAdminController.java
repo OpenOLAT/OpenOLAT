@@ -72,6 +72,7 @@ import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.ui.GraderUserOverviewController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
+import org.olat.modules.portfolio.ui.shared.InviteeBindersAdminController;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.CompetencesOverviewController;
 import org.olat.properties.Property;
@@ -130,7 +131,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_COMPETENCES	= "view.competences";
 	private static final String NLS_VIEW_CURRICULUM		= "view.curriculum";
 	private static final String NLS_VIEW_GRADER			= "view.grader";
-	
+	private static final String NLS_VIEW_PORTFOLIO		= "view.portfolio";
 
 	private VelocityContainer myContent;
 	private final TooledStackedPanel stackPanel;
@@ -143,6 +144,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private int accountTab;
 
 	private Link deleteLink;
+	private Link backLink;
+	private Link exportDataButton;
 	
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
@@ -156,10 +159,9 @@ public class UserAdminController extends BasicController implements Activateable
 	private CurriculumListController curriculumCtr;
 	private UserRelationsController relationsCtrl;
 	private DisplayPortraitController portraitCtr;
+	private InviteeBindersAdminController portfolioCtr;
 	private GraderUserOverviewController graderOverviewCtrl;
 	private UserAuthenticationsEditorController authenticationsCtr;
-	private Link backLink;
-	private Link exportDataButton;
 	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
@@ -510,7 +512,11 @@ public class UserAdminController extends BasicController implements Activateable
 				return courseCtr.getInitialComponent();
 			});
 			
-			//TODO external portfolio list
+			userTabP.addTab(ureq, translate(NLS_VIEW_PORTFOLIO), uureq -> {
+				portfolioCtr = new InviteeBindersAdminController(uureq, getWindowControl(), identity);
+				listenTo(portfolioCtr);
+				return portfolioCtr.getInitialComponent();
+			});
 		}
 
 		if (isAdminOf || isPrincipalOf || isRolesManagerOf) {

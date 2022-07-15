@@ -30,6 +30,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationImpl;
@@ -147,6 +148,20 @@ public class InvitationDAO {
 				  .getResultList();
 		if(invitations.isEmpty()) return null;
 		return invitations.get(0);
+	}
+	
+	public List<Invitation> findInvitations(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select invitation from binvitation as invitation")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" left join bGroup.members as members")
+		  .append(" where invitation.identity.key=:inviteeKey or (invitation.identity.key is null and invitation.mail=:email)");
+
+		return dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Invitation.class)
+				  .setParameter("inviteeKey", identity.getKey())
+				  .setParameter("email", identity.getUser().getEmail())
+				  .getResultList();
 	}
 	
 	public List<Invitation> findInvitation(RepositoryEntryRef entry) {

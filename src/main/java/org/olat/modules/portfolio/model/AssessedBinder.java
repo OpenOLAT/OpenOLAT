@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntryLight;
 
@@ -36,6 +37,7 @@ public class AssessedBinder implements AssessmentEntryLight {
 	
 	private final Long binderKey;
 	private final String binderTitle;
+	private final Long entryKey;
 	private final String entryDisplayname;
 	
 	private final Boolean passed;
@@ -53,14 +55,18 @@ public class AssessedBinder implements AssessmentEntryLight {
 	
 	private Date recentLaunch;
 	
-	public AssessedBinder(Long binderKey, String binderTitle, String entryDisplayname,
-			Boolean passed, BigDecimal score, Identity assessedIdentity) {
+	private final Group baseGroup;
+	
+	public AssessedBinder(Long binderKey, String binderTitle, Long entryKey, String entryDisplayname,
+			Boolean passed, BigDecimal score, Identity assessedIdentity, Group baseGroup) {
 		this.binderKey = binderKey;
 		this.binderTitle = binderTitle;
+		this.entryKey = entryKey;
 		this.entryDisplayname = entryDisplayname;
 		this.passed = passed;
 		this.score = score;
 		this.assessedIdentity = assessedIdentity;
+		this.baseGroup = baseGroup;
 	}
 	
 	public Long getBinderKey() {
@@ -71,12 +77,20 @@ public class AssessedBinder implements AssessmentEntryLight {
 		return binderTitle;
 	}
 	
+	public Group getBaseGroup() {
+		return baseGroup;
+	}
+
 	public Date getLastModified() {
 		return lastModified;
 	}
 	
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+	
+	public Long getEntryKey() {
+		return entryKey;
 	}
 	
 	public String getEntryDisplayname() {

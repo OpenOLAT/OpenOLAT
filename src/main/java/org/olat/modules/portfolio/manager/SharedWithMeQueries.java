@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -169,7 +170,7 @@ public class SharedWithMeQueries {
 	
 	private List<AssessedBinder> searchSharedBindersOne(Identity member, String searchString) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select binder.key, binder.title, entry.displayname, aEntry.score, aEntry.passed, owner")
+		sb.append("select binder.key, binder.title, entry.key, entry.displayname, aEntry.score, aEntry.passed, owner, baseGroup")
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as ownership on (ownership.role='").append(PortfolioRoles.owner.name()).append("')")
@@ -222,11 +223,13 @@ public class SharedWithMeQueries {
 			int pos = 0;
 			Long binderKey = (Long)object[pos++];
 			String binderTitle = (String)object[pos++];
+			Long entryKey = (Long)object[pos++];
 			String entryDisplayname = (String)object[pos++];
 			BigDecimal score = (BigDecimal)object[pos++];
 			Boolean passed = (Boolean)object[pos++];
 			Identity owner = (Identity)object[pos++];
-			assessedBinders.add(new AssessedBinder(binderKey, binderTitle, entryDisplayname, passed, score, owner));
+			Group baseGroup = (Group)object[pos];
+			assessedBinders.add(new AssessedBinder(binderKey, binderTitle, entryKey, entryDisplayname, passed, score, owner, baseGroup));
 		}
 		return assessedBinders;
 	}

@@ -19,6 +19,8 @@
  */
 package org.olat.login;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,6 +32,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.invitation.ui.InvitationAdminSettingsController;
 
 /**
@@ -38,7 +44,7 @@ import org.olat.modules.invitation.ui.InvitationAdminSettingsController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GuestAndInvitationAdminController extends BasicController {
+public class GuestAndInvitationAdminController extends BasicController implements Activateable2 {
 	
 	private final Link guestLink;
 	private final Link invitationLink;
@@ -66,6 +72,20 @@ public class GuestAndInvitationAdminController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Guest".equalsIgnoreCase(resourceTypeName)) {
+			doOpenGuestSettings(ureq);
+			segmentView.select(guestLink);
+		} else if("Invitation".equalsIgnoreCase(resourceTypeName)) {
+			doOpenExternalUserSettings(ureq);
+			segmentView.select(invitationLink);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -83,17 +103,21 @@ public class GuestAndInvitationAdminController extends BasicController {
 
 	private void doOpenGuestSettings(UserRequest ureq) {
 		if(guestAdminCtrl == null) {
-			guestAdminCtrl = new GuestAdminController(ureq, getWindowControl());
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Guest"), null);
+			guestAdminCtrl = new GuestAdminController(ureq, bwControl);
 			listenTo(guestAdminCtrl);
 		}
 		mainVC.put("segmentCmp", guestAdminCtrl.getInitialComponent());
+		addToHistory(ureq, guestAdminCtrl);
 	}
 	
 	private void doOpenExternalUserSettings(UserRequest ureq) {
 		if(invitationAdminCtrl == null) {
-			invitationAdminCtrl = new InvitationAdminSettingsController(ureq, getWindowControl());
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Invitation"), null);
+			invitationAdminCtrl = new InvitationAdminSettingsController(ureq, bwControl);
 			listenTo(invitationAdminCtrl);
 		}
 		mainVC.put("segmentCmp", invitationAdminCtrl.getInitialComponent());
+		addToHistory(ureq, invitationAdminCtrl);
 	}
 }

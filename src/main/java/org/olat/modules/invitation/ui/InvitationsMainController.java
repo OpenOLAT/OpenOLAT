@@ -35,7 +35,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.ui.main.BusinessGroupListController;
-import org.olat.modules.portfolio.ui.shared.SharedBindersController;
+import org.olat.modules.portfolio.ui.shared.InviteeBindersController;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.list.RepositoryEntryListController;
@@ -80,7 +80,7 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 	
 	public static class InvitationsOverviewController extends BasicController {
 
-		private final SharedBindersController bindersCtrl;
+		private final InviteeBindersController bindersCtrl;
 		private final BusinessGroupListController businessGroupCtrl;
 		private final RepositoryEntryListController repositoryEntryListCtrl;
 		
@@ -108,7 +108,7 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 			businessGroupCtrl.selectFilterTab(ureq, businessGroupCtrl.getMyGroupsTab());
 			
 			// Portfolio
-			bindersCtrl = new SharedBindersController(ureq, getWindowControl(), stackedPanel);
+			bindersCtrl = new InviteeBindersController(ureq, getWindowControl(), stackedPanel);
 			listenTo(bindersCtrl);
 			mainVC.put("portfolio", bindersCtrl.getInitialComponent());
 			

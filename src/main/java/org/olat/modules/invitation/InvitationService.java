@@ -56,7 +56,8 @@ public interface InvitationService {
 	public Invitation findInvitation(String token);
 
 	public Invitation findInvitation(Binder binder, IdentityRef identity);
-	
+
+	public List<Invitation> findInvitations(Identity identity);
 
 	public List<Invitation> findInvitations(RepositoryEntryRef entry);
 	

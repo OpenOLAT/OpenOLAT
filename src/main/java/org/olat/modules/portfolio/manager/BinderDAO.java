@@ -710,10 +710,10 @@ public class BinderDAO {
 	}
 	
 	public Binder loadByGroup(Group group) {
-		StringBuilder sb = new StringBuilder(128);
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
-		  .append(" inner join fetch binder.olatResource as olatResource")
+		  .append(" left join fetch binder.olatResource as olatResource")
 		  .append(" where baseGroup.key=:groupKey");
 		
 		List<Binder> binders = dbInstance.getCurrentEntityManager()

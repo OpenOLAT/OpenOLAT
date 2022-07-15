@@ -162,12 +162,11 @@ public class SharedBindersController extends FormBasicController implements Acti
 				FlexiColumnModel.ALIGNMENT_LEFT, leaveRenderer));
 		
 		model = new SharedBindersDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_binder_shared_items_listing");
 		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
-		tableEl.setPageSize(24);
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items-v2");
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();

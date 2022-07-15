@@ -164,6 +164,11 @@ public class InvitationServiceImpl implements InvitationService {
 	}
 
 	@Override
+	public List<Invitation> findInvitations(Identity identity) {
+		return invitationDao.findInvitations(identity);
+	}
+
+	@Override
 	public List<Invitation> findInvitations(RepositoryEntryRef entry) {
 		return invitationDao.findInvitation(entry);
 	}
@@ -244,6 +249,8 @@ public class InvitationServiceImpl implements InvitationService {
 	
 	@Override
 	public String toUrl(Invitation invitation) {
+		if(invitation == null || invitation.getType() == null) return null;
+		
 		switch(invitation.getType()) {
 			case repositoryEntry: 
 				List<RepositoryEntry> repositoryEntries = repositoryEntryDao.loadByResourceGroup(invitation.getBaseGroup());

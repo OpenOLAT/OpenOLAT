@@ -19,14 +19,17 @@
  */
 package org.olat.course.assessment;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -52,6 +55,8 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private MultipleSelectionElement disclaimerEnabledEl;
 	
 	private SingleSelection courseDefaultTypeEl;
+	
+	private FormLink inviteeLink;
 
 	@Autowired
 	private CourseModule courseModule;
@@ -74,15 +79,15 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		courseSettings.setRootForm(mainForm);
 		
 		SelectionValues nodeAccessKV = new SelectionValues();
-		String helpText = "";
+		StringBuilder helpText = new StringBuilder(1024);
 		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
 			String title = identifier.getDisplayName(getLocale());
 			nodeAccessKV.add(SelectionValues.entry(identifier.getType(), title));
-			helpText += "<strong>" + title + "</strong><br />" + identifier.getToolTipHelpText(getLocale()) + "<br /><br />";
+			helpText.append("<strong>").append(title).append("</strong><br>").append(identifier.getToolTipHelpText(getLocale())).append("<br><br>");
 		}
 		
 		courseDefaultTypeEl = uifactory.addRadiosVertical("course.default.type", courseSettings, nodeAccessKV.keys(), nodeAccessKV.values());
-		courseDefaultTypeEl.setHelpText(helpText);
+		courseDefaultTypeEl.setHelpText(helpText.toString());
 		courseDefaultTypeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String defaultCourseType = courseModule.getCourseTypeDefault();
@@ -117,6 +122,12 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		}
 		
 		formLayout.add(assessableCourseNodeSettings);
+		
+		// Links to other settings
+		FormLayoutContainer otherSettings = FormLayoutContainer.createDefaultFormLayout("otherSettings", getTranslator());
+		otherSettings.setFormTitle(translate("admin.assessable.other.settings"));
+		formLayout.add(otherSettings);
+		inviteeLink = uifactory.addFormLink("course.login", "course.login.invitee", "course.login", otherSettings, Link.LINK);
 	}
 	
 	@Override
@@ -129,6 +140,9 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			courseModule.setDisclaimerEnabled(disclaimerEnabledEl.isSelected(0));
 		} else if (source == courseDefaultTypeEl) {
 			courseModule.setCourseTypeDefault(courseDefaultTypeEl.getSelectedKey());
+		} else if(inviteeLink == source) {
+			String invitationSettingsPath = "[AdminSite:0][loginadmin:0][Invitation:0]";
+			NewControllerFactory.getInstance().launch(invitationSettingsPath, ureq, getWindowControl());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
