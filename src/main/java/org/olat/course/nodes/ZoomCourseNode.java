@@ -19,21 +19,26 @@
  */
 package org.olat.course.nodes;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.zoom.ZoomEditController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.repository.RepositoryEntry;
@@ -45,6 +50,8 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public class ZoomCourseNode extends AbstractAccessableCourseNode {
+
+    private static final Logger log = Tracing.createLoggerFor(ZoomCourseNode.class);
 
     private static final long serialVersionUID = 257132040249310222L;
 	public static final String TYPE = "zoom";
@@ -103,7 +110,34 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
         super.cleanupOnDelete(course);
 
         ZoomManager zoomManager = CoreSpringFactory.getImpl(ZoomManager.class);
+        if (zoomManager == null) {
+            log.warn("zoomManager is not available");
+            return;
+        }
+
         RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
         zoomManager.deleteConfig(entry, getIdent(), null);
+    }
+
+    @Override
+    public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+        super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+
+        ZoomManager zoomManager = CoreSpringFactory.getImpl(ZoomManager.class);
+        if (zoomManager == null) {
+            log.warn("zoomManager is not available");
+            return;
+        }
+
+        ZoomConfig sourceConfig = zoomManager.getConfig(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), sourceCourseNode.getIdent(), null);
+        if (sourceConfig != null) {
+            RepositoryEntry targetEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+            String targetSubIdent = getIdent();
+            zoomManager.initializeConfig(targetEntry, targetSubIdent, null, ZoomManager.ApplicationType.courseElement, envMapper.getAuthor().getUser());
+            ZoomConfig targetConfig = zoomManager.getConfig(targetEntry, targetSubIdent, null);
+            if (sourceConfig.getProfile() != targetConfig.getProfile()) {
+                zoomManager.recreateConfig(targetConfig, targetEntry, targetSubIdent, null, sourceConfig.getProfile());
+            }
+        }
     }
 }

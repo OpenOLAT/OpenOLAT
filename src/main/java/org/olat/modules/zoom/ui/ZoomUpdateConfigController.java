@@ -124,7 +124,9 @@ public class ZoomUpdateConfigController extends FormBasicController {
             } else {
                 profileEl.setExampleKey(null, null);
             }
-            zoomManager.recreateConfig(zoomConfig, courseEntry, subIdent, businessGroup, zoomProfile);
+            if (zoomConfig.getProfile() != zoomProfile) {
+                zoomManager.recreateConfig(zoomConfig, courseEntry, subIdent, businessGroup, zoomProfile);
+            }
         }
         fireEvent(ureq, Event.DONE_EVENT);
     }
