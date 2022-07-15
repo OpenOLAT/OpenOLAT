@@ -184,7 +184,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage openSolutions() {
-		By solutionLinkBy = By.cssSelector("#o_step_solution_content ul>li>a");
+		By solutionLinkBy = By.cssSelector("#o_step_solution_content li.o_gta_document h5>a");
 		List<WebElement> buttons = browser.findElements(solutionLinkBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
@@ -196,7 +196,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage assertSolution(String solution) {
-		By solutionLinkBy = By.xpath("//div[@id='o_step_solution_content']//ul/li/a/span[contains(text(),'" + solution + "')]");
+		By solutionLinkBy = By.xpath("//div[@id='o_step_solution_content']//li[contains(@class,'o_gta_document')]//h5/a/span[contains(text(),'" + solution + "')]");
 		OOGraphene.waitElement(solutionLinkBy, browser);
 		return this;
 	}
