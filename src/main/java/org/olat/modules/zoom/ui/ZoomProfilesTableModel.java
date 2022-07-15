@@ -42,6 +42,7 @@ public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfi
         mailDomain("table.header.profile.mailDomains"),
         studentsCanHost("table.header.profile.studentsCanHost"),
         clientId("table.header.profile.clientId"),
+        applications("table.header.profile.applications"),
         tools("table.header.actions");
 
         private final String i18nHeaderKey;
@@ -86,6 +87,7 @@ public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfi
             case mailDomain: return row.getMailDomains();
             case studentsCanHost: return row.isStudentsCanHost();
             case clientId: return row.getClientId();
+            case applications: return row.getNumberOfApplications();
             case tools: return row.getToolLink();
             default:
                 return "ERROR";

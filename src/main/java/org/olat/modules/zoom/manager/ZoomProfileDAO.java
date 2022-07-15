@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.olat.modules.zoom.ZoomProfile.ZoomProfileStatus.active;
 
@@ -66,6 +67,16 @@ public class ZoomProfileDAO {
         return dbInstance.getCurrentEntityManager().createQuery(q, ZoomProfile.class).getResultList();
     }
 
+    public List<ZoomProfileWithConfigCount> getProfilesWithConfigCounts() {
+        String q = "select profile, count(profile) from zoomconfig config join config.profile as profile group by profile";
+        return (List<ZoomProfileWithConfigCount>) dbInstance
+                .getCurrentEntityManager()
+                .createQuery(q)
+                .getResultList()
+                .stream()
+                .map(ZoomProfileWithConfigCount::new).collect(Collectors.toList());
+    }
+
     public ZoomProfile updateProfile(ZoomProfile zoomProfile) {
         zoomProfile.setLastModified(new Date());
         return dbInstance.getCurrentEntityManager().merge(zoomProfile);
@@ -82,5 +93,24 @@ public class ZoomProfileDAO {
                 .setParameter("zoomProfile", zoomProfile)
                 .getResultList()
                 .isEmpty();
+    }
+
+    public static class ZoomProfileWithConfigCount {
+        private final ZoomProfile zoomProfile;
+        private final Long configCount;
+
+        public ZoomProfileWithConfigCount(Object object) {
+            Object[] objectArray = (Object[]) object;
+            this.zoomProfile = (ZoomProfile) objectArray[0];
+            this.configCount = (Long) objectArray[1];
+        }
+
+        public ZoomProfile getZoomProfile() {
+            return zoomProfile;
+        }
+
+        public Long getConfigCount() {
+            return configCount;
+        }
     }
 }

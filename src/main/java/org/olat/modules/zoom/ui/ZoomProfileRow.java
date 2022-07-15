@@ -31,14 +31,14 @@ import org.olat.modules.zoom.ZoomProfile.ZoomProfileStatus;
  */
 public class ZoomProfileRow {
     private FormLink toolLink;
+    private final ZoomProfile zoomProfile;
+    private final String clientId;
+    private final Long numberOfApplications;
 
-    private ZoomProfile zoomProfile;
-
-    private String clientId;
-
-    public ZoomProfileRow(ZoomProfile zoomProfile) {
+    public ZoomProfileRow(ZoomProfile zoomProfile, Long numberOfApplications) {
         this.zoomProfile = zoomProfile;
         this.clientId = zoomProfile.getLtiTool().getClientId();
+        this.numberOfApplications = numberOfApplications;
     }
 
     public ZoomProfile getZoomProfile() {
@@ -75,5 +75,9 @@ public class ZoomProfileRow {
 
     public String getClientId() {
         return clientId;
+    }
+
+    public Long getNumberOfApplications() {
+        return numberOfApplications;
     }
 }

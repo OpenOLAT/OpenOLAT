@@ -131,6 +131,10 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         return zoomProfileDao.getProfiles();
     }
 
+    public List<ZoomProfileDAO.ZoomProfileWithConfigCount> getProfilesWithConfigCount() {
+        return zoomProfileDao.getProfilesWithConfigCounts();
+    }
+
     @Override
     public KeysAndValues getProfilesAsKeysAndValues() {
         KeysAndValues keysAndValues = new KeysAndValues();

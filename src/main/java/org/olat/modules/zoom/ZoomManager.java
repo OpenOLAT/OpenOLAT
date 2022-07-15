@@ -23,6 +23,7 @@ import org.olat.core.id.User;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.modules.zoom.manager.ZoomProfileDAO;
 import org.olat.repository.RepositoryEntry;
 
 import java.util.List;
@@ -61,6 +62,8 @@ public interface ZoomManager {
     ZoomProfile getProfile(String key);
 
     List<ZoomProfile> getProfiles();
+
+    List<ZoomProfileDAO.ZoomProfileWithConfigCount> getProfilesWithConfigCount();
 
     KeysAndValues getProfilesAsKeysAndValues();
 

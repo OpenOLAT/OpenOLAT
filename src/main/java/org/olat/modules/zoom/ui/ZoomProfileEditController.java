@@ -105,18 +105,20 @@ public class ZoomProfileEditController extends FormBasicController {
         studentsCanHostEl = uifactory.addCheckboxesHorizontal("zoom.profile.studentsCanHost",
                 "zoom.profile.studentsCanHost", formLayout, onKeys, checkboxValues);
         studentsCanHostEl.select(onKeys[0], studentsCanHost);
+        studentsCanHostEl.setHelpTextKey("zoom.profile.studentsCanHost.help", null);
 
         clientEl = uifactory.addStaticTextElement("zoom.profile.clientId", clientId, formLayout);
         clientEl.setHelpTextKey("zoom.profile.clientId.help", null);
         clientEl.setElementCssClass("text-muted");
 
         tokenEl = uifactory.addStaticTextElement("zoom.profile.token", token, formLayout);
-        tokenEl.setHelpTextKey("zoom.profile.token.help", new String[0]);
+        tokenEl.setHelpTextKey("zoom.profile.token.help", null);
         tokenEl.setElementCssClass("text-muted");
 
         String toolUrl = zoomProfile == null ? "" : zoomProfile.getLtiTool().getToolUrl();
-        uifactory.addStaticTextElement("zoom.profile.toolUrl", toolUrl, formLayout)
-                .setElementCssClass("text-muted");
+        StaticTextElement toolUrlEl = uifactory.addStaticTextElement("zoom.profile.toolUrl", toolUrl, formLayout);
+        toolUrlEl.setHelpTextKey("zoom.profile.toolUrl.help", null);
+        toolUrlEl.setElementCssClass("text-muted");
 
         FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
         formLayout.add("buttons", buttons);

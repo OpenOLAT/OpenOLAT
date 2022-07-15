@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomModule;
 import org.olat.modules.zoom.ZoomProfile;
+import org.olat.modules.zoom.manager.ZoomProfileDAO;
 import org.olat.modules.zoom.ui.ZoomProfilesTableModel.ZoomProfileCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -118,8 +119,8 @@ public class ZoomConfigurationController extends FormBasicController {
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.name));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.status));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.mailDomain));
-        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.studentsCanHost));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.clientId));
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.applications));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 
         StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ZoomProfileCols.tools.i18nHeaderKey(), ZoomProfileCols.tools.ordinal());
@@ -238,14 +239,14 @@ public class ZoomConfigurationController extends FormBasicController {
     }
     
     private void loadModel() {
-        List<ZoomProfileRow> profileRows = zoomManager.getProfiles().stream().map(this::mapZoomProfileToRow).collect(toList());
+        List<ZoomProfileRow> profileRows = zoomManager.getProfilesWithConfigCount().stream().map(this::mapZoomProfileToRow).collect(toList());
         profilesTableModel.setObjects(profileRows);
         profilesTableEl.reset(true, true, true);
     }
 
-    private ZoomProfileRow mapZoomProfileToRow(ZoomProfile zoomProfile) {
-        ZoomProfileRow row = new ZoomProfileRow(zoomProfile);
-        addToolLink(row, zoomProfile);
+    private ZoomProfileRow mapZoomProfileToRow(ZoomProfileDAO.ZoomProfileWithConfigCount zoomProfileWithConfigCount) {
+        ZoomProfileRow row = new ZoomProfileRow(zoomProfileWithConfigCount.getZoomProfile(), zoomProfileWithConfigCount.getConfigCount());
+        addToolLink(row, zoomProfileWithConfigCount.getZoomProfile());
         return row;
     }
 
