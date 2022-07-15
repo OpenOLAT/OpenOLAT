@@ -20,11 +20,9 @@
 package org.olat.modules.catalog.manager;
 
 import static org.olat.modules.catalog.launcher.TextLauncherHandler.I18N_PREFIX;
-import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
 import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.PREFIX_DESCRIPTION;
 import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.PREFIX_DISPLAY_NAME;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,21 +38,25 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.catalog.CatalogFilter;
+import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogV1MigrationService;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogV1Migration;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.filter.TaxonomyLevelChildrenHandler;
 import org.olat.modules.catalog.launcher.StaticHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.launcher.TextLauncherHandler;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
+import org.olat.modules.catalog.ui.admin.CatalogLauncherTextEditController;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -113,22 +115,14 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		}
 		CatalogEntry rootCatalogEntry = rootCatalogEntries.get(0);
 		
-		// Update the header background image
-		if (!catalogModule.hasHeaderBgImage()) {
-			VFSLeaf rootImage = catalogManager.getImage(rootCatalogEntry);
-			if (rootImage != null) {
-				File targetImage = new File(catalogModule.getHeaderBgDirectory(), rootImage.getName());
-				VFSManager.copyContent(rootImage, new LocalFileImpl(targetImage), true, executor);
-				catalogModule.setHeaderBgImageFilename(rootImage.getName());
-			}
-		}
-		catalogModule.setLauncherTaxonomyLevelStyle(CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE);
+		// Update the taxonomy image style
+		catalogModule.setLauncherTaxonomyLevelStyle(CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE);
 		
 		// Create a new taxonomy...
 		Taxonomy taxonomy = taxonomyService.createTaxonomy(rootCatalogEntry.getShortTitle(),
 				rootCatalogEntry.getName(), rootCatalogEntry.getDescription(), null);
 		
-		// ... and ad it to the repository entry taxonomies
+		// ... and add it to the repository entry taxonomies
 		List<TaxonomyRef> taxonomyRefs = new ArrayList<>(repositoryModule.getTaxonomyRefs());
 		taxonomyRefs.add(taxonomy);
 		repositoryModule.setTaxonomyRefs(taxonomyRefs);
@@ -136,8 +130,9 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		// Create a TaxonomyLevel for each catalog entry
 		migrateCatalogEntry(executor, rootCatalogEntry, taxonomy, null, null);
 		
-		// Create launchers
+		// Create launchers and filters
 		createLaunchers(rootCatalogEntry, taxonomy);
+		createFilter();
 	
 		// Mark as migrated
 		catalogModule.setCatalogV1Migration(CatalogV1Migration.done);
@@ -156,11 +151,11 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 			}
 			
 			Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
-			I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
+			I18nItem displayNameItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
 			i18nManager.saveOrUpdateI18nItem(displayNameItem, catalogEntry.getName());
 			
 			if (StringHelper.containsNonWhitespace(catalogEntry.getDescription())) {
-				I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, PREFIX_DESCRIPTION + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
+				I18nItem descriptionItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, PREFIX_DESCRIPTION + taxonomyLevel.getI18nSuffix(), overlayDefaultLocale);
 				i18nManager.saveOrUpdateI18nItem(descriptionItem, catalogEntry.getDescription());
 			}
 			
@@ -250,7 +245,7 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		if (StringHelper.containsNonWhitespace(rootCatalogEntry.getDescription())) {
 			String i18nSuffix = UUID.randomUUID().toString().replace("-", "");
 			Locale overlayDefaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
-			I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, I18N_PREFIX + i18nSuffix, overlayDefaultLocale);
+			I18nItem descriptionItem = i18nManager.getI18nItem(CatalogLauncherTextEditController.BUNDLE_NAME, I18N_PREFIX + i18nSuffix, overlayDefaultLocale);
 			i18nManager.saveOrUpdateI18nItem(descriptionItem, rootCatalogEntry.getDescription());
 			
 			TextLauncherHandler.Config textLauncherConfig = new TextLauncherHandler.Config();
@@ -280,5 +275,19 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 			currentSortOrder = catalogService.getCatalogLauncher(catalogLauncher).getSortOrder();
 		}
 	}
+	
+	private void createFilter() {
+		boolean filterPresent = catalogService.getCatalogFilters(new CatalogFilterSearchParams()).stream()
+				.anyMatch(filter -> TaxonomyLevelChildrenHandler.TYPE.equals(filter.getType()));
+		if (filterPresent) return;
+		
+		CatalogFilter catalogFilter = catalogService.createCatalogFilter(TaxonomyLevelChildrenHandler.TYPE);
+		catalogFilter.setEnabled(true);
+		catalogFilter.setDefaultVisible(true);
+		catalogFilter.setConfig(TaxonomyLevelChildrenHandler.KEY_HIDE);
+		catalogFilter = catalogService.update(catalogFilter);
+		dbInstance.commit();
+	}
+
 
 }

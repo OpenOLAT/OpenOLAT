@@ -94,7 +94,7 @@ public class TextLauncherHandler implements CatalogLauncherHandler {
 	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
 		Config config = fromXML(catalogLauncher.getConfig());
 		String text = translator.translate(I18N_PREFIX + config.i18nSuffix);
-		return Formatter.truncate(StringHelper.truncateText(StringHelper.xssScan(text)), 50);
+		return Formatter.truncate(StringHelper.unescapeHtml(StringHelper.truncateText(StringHelper.xssScan(text))), 50);
 	}
 
 	@Override

@@ -64,6 +64,7 @@ public class CatalogSettingsController extends FormBasicController {
 	private DialogBoxController migrateDialogCtrl;
 
 	private SingleSelection enabledEl;
+	private FormLayoutContainer migrationCont;
 	private FormLayoutContainer migrationStartCont;
 	private FormLink migrationStartLink;
 	private StaticTextElement migrationRunningEl;
@@ -78,19 +79,23 @@ public class CatalogSettingsController extends FormBasicController {
 	private TaskExecutorManager taskExecutorManager;
 
 	public CatalogSettingsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale()));
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.settings");
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setFormTitle(translate("admin.settings"));
+		generalCont.setRootForm(mainForm);
+		formLayout.add("general", generalCont);
 		
 		SelectionValues enabledSV = new SelectionValues();
 		enabledSV.add(entry(KEY_NONE, translate("admin.enabled.none")));
 		enabledSV.add(entry(KEY_V1, translate("admin.enabled.v1")));
 		enabledSV.add(entry(KEY_V2, translate("admin.enabled.v2")));
-		enabledEl = uifactory.addRadiosVertical("admin.enabled", formLayout, enabledSV.keys(), enabledSV.values());
+		enabledEl = uifactory.addRadiosVertical("admin.enabled", generalCont, enabledSV.keys(), enabledSV.values());
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 		if (catalogV2Module.isEnabled()) {
 			enabledEl.select(KEY_V2, true);
@@ -100,24 +105,33 @@ public class CatalogSettingsController extends FormBasicController {
 			enabledEl.select(KEY_NONE, true);
 		}
 		
-		migrationStartCont = FormLayoutContainer.createButtonLayout("migraton", getTranslator());
+		migrationCont = FormLayoutContainer.createDefaultFormLayout("migrations", getTranslator());
+		migrationCont.setFormTitle(translate("admin.migration"));
+		migrationCont.setFormDescription(translate("admin.migration.desc"));
+		migrationCont.setRootForm(mainForm);
+		formLayout.add("migrations", migrationCont);
+		
+		migrationStartCont = FormLayoutContainer.createButtonLayout("migratonButton", getTranslator());
 		migrationStartCont.setRootForm(mainForm);
-		formLayout.add(migrationStartCont);
-		migrationStartLink = uifactory.addFormLink("admin.migration", migrationStartCont, Link.BUTTON);
+		migrationCont.add(migrationStartCont);
+		migrationStartLink = uifactory.addFormLink("admin.migration.start", migrationStartCont, Link.BUTTON);
 		
 		migrationRunningEl = uifactory.addStaticTextElement("admin.migration.running", null,
-				translate("admin.migration.running"), formLayout);
+				translate("admin.migration.running"), migrationCont);
 		
 		updateMigrationUI();
 	}
 
 	private void updateMigrationUI() {
+		migrationCont.setVisible(false);
 		migrationStartCont.setVisible(false);
 		migrationRunningEl.setVisible(false);
 		if (catalogV2Module.isEnabled()) {
 			if (CatalogV1Migration.pending == catalogV2Module.getCatalogV1Migration()) {
+				migrationCont.setVisible(true);
 				migrationStartCont.setVisible(true);
 			} else if (CatalogV1Migration.running == catalogV2Module.getCatalogV1Migration()) {
+				migrationCont.setVisible(true);
 				migrationRunningEl.setVisible(true);
 			}
 		}

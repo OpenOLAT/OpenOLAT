@@ -69,7 +69,7 @@ public class CatalogV2AdminController  extends BasicController implements Activa
 	
 	private CatalogSettingsController settingsCtrl;
 	private CatalogLauncherListController launchersCtrl;
-	private Controller filtersCtrl;
+	private CatalogFilterListController filtersCtrl;
 	private Controller layoutCtrl;
 	private Controller catalogV1Ctrl;
 	
@@ -156,6 +156,9 @@ public class CatalogV2AdminController  extends BasicController implements Activa
 			} else if (event == CatalogSettingsController.MIGRATED_EVENT) {
 				if (launchersCtrl != null) {
 					launchersCtrl.loadModel();
+				}
+				if (filtersCtrl != null) {
+					filtersCtrl.loadModel();
 				}
 			}
 		}

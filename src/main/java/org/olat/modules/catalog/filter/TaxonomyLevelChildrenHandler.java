@@ -49,7 +49,7 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 	
 	public static final String KEY_SHOW = "show";
 	public static final String KEY_HIDE = "hide";
-	private static final String TYPE = "taxonomy.level.children";
+	public static final String TYPE = "taxonomy.level.children";
 	
 	@Autowired
 	private TaxonomyModule taxonomyModule;

@@ -53,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLauncherTextEditController extends AbstractLauncherEditController {
 	
-	private static final String BUNDLE_NAME = CatalogV2UIFactory.class.getPackageName();
+	public static final String BUNDLE_NAME = CatalogV2UIFactory.class.getPackageName();
 	
 	private TabbedPaneItem tabbedPane;
 	private RichTextElement defaultLocaleTextEl;

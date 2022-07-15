@@ -22,6 +22,7 @@ package org.olat.repository.ui.list;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -60,7 +61,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -118,6 +119,7 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 			boolean isMember, boolean isParticipant, List<PriceMethod> types) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_metadata.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.isMember = isMember;
 		this.isParticipant = isParticipant;
@@ -152,7 +154,11 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				layoutCont.contextPut("categories", categoriesLink);
 			}
 			// taxonomy levels
-			List<TaxonomyLevel> taxonomyLevels = repositoryService.getTaxonomy(entry);
+			List<TaxonomyLevelItem> taxonomyLevels = repositoryService.getTaxonomy(entry).stream()
+					.map(level -> new TaxonomyLevelItem(
+							TaxonomyUIFactory.translateDisplayName(getTranslator(), level),
+							level.getMaterializedPathIdentifiersWithoutSlash()))
+					.collect(Collectors.toList());
 			layoutCont.contextPut("taxonomyLevels", taxonomyLevels);
 			
 			if (!guestOnly) {
@@ -367,6 +373,26 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	protected void doOpenGroup(UserRequest ureq, Long groupKey) {
 		String businessPath = "[BusinessGroup:" + groupKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	public static final class TaxonomyLevelItem {
+		
+		private final String displayName;
+		private final String materializedPathIdentifiersWithoutSlash;
+		
+		public TaxonomyLevelItem(String displayName, String materializedPathIdentifiersWithoutSlash) {
+			this.displayName = displayName;
+			this.materializedPathIdentifiersWithoutSlash = materializedPathIdentifiersWithoutSlash;
+		}
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+		public String getMaterializedPathIdentifiersWithoutSlash() {
+			return materializedPathIdentifiersWithoutSlash;
+		}
+		
 	}
 
 }
