@@ -80,7 +80,7 @@ public class AutoCompletionMultiSelectionImpl extends FormItemImpl implements Au
 		button.setDomReplacementWrapperRequired(false);
 		button.setTranslator(translator);
 		button.setElementCssClass("o_acms_button");
-		button.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
+		button.setIconRightCSS("o_icon o_icon_caret");
 		components.put(id, button);
 		rootFormAvailable(button);
 	}
