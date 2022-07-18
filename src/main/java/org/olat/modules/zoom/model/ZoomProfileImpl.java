@@ -19,13 +19,26 @@
  */
 package org.olat.modules.zoom.model;
 
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
 import org.olat.core.id.Persistable;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.model.LTI13ToolImpl;
 import org.olat.modules.zoom.ZoomProfile;
-
-import javax.persistence.*;
-import java.util.Date;
 
 /**
  *
@@ -158,11 +171,13 @@ public class ZoomProfileImpl implements Persistable, ZoomProfile {
         this.token = token;
     }
 
-    public LTI13Tool getLtiTool() {
+    @Override
+	public LTI13Tool getLtiTool() {
         return ltiTool;
     }
 
-    public void setLtiTool(LTI13Tool ltiTool) {
+    @Override
+	public void setLtiTool(LTI13Tool ltiTool) {
         this.ltiTool = ltiTool;
     }
 

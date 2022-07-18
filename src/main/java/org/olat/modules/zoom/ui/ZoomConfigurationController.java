@@ -19,6 +19,11 @@
  */
 package org.olat.modules.zoom.ui;
 
+import static java.util.stream.Collectors.toList;
+import static org.olat.core.gui.components.link.LinkFactory.createLink;
+
+import java.util.List;
+
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -30,7 +35,11 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -45,11 +54,6 @@ import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.manager.ZoomProfileDAO;
 import org.olat.modules.zoom.ui.ZoomProfilesTableModel.ZoomProfileCols;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-import static org.olat.core.gui.components.link.LinkFactory.createLink;
 
 /**
  *
@@ -142,6 +146,7 @@ public class ZoomConfigurationController extends FormBasicController {
         boolean valid = super.validateFormLogic(ureq);
 
         boolean enabled = moduleEnabledEl.isSelected(0);
+        profilesTableEl.clearError();
         if (enabled) {
             if (profilesTableModel.getRowCount() == 0) {
                 profilesTableEl.setErrorKey("zoom.profiles.mandatory", null);
@@ -302,7 +307,7 @@ public class ZoomConfigurationController extends FormBasicController {
         listenTo(modalCtrl);
     }
 
-    private void doCopy(UserRequest ureq, ZoomProfileRow row) {
+    private void doCopy(ZoomProfileRow row) {
         ZoomProfile zoomProfile = row.getZoomProfile();
         zoomManager.copyProfile(zoomProfile);
         loadModel();
@@ -340,14 +345,14 @@ public class ZoomConfigurationController extends FormBasicController {
         listenTo(modalCtrl);
     }
 
-    private void doDeactivate(UserRequest ureq, ZoomProfileRow row) {
+    private void doDeactivate(ZoomProfileRow row) {
         ZoomProfile zoomProfile = row.getZoomProfile();
         zoomProfile.setStatus(ZoomProfile.ZoomProfileStatus.inactive);
         zoomManager.updateProfile(zoomProfile);
         loadModel();
     }
 
-    private void doActivate(UserRequest ureq, ZoomProfileRow row) {
+    private void doActivate(ZoomProfileRow row) {
         ZoomProfile zoomProfile = row.getZoomProfile();
         zoomProfile.setStatus(ZoomProfile.ZoomProfileStatus.active);
         zoomManager.updateProfile(zoomProfile);
@@ -403,7 +408,7 @@ public class ZoomConfigurationController extends FormBasicController {
             if (editLink == source) {
                 doEdit(ureq, row);
             } else if (copyLink == source) {
-                doCopy(ureq, row);
+                doCopy(row);
             } else if (deleteLink == source) {
                 if (zoomManager.isInUse(row.getZoomProfile())) {
                     doWarnProfileInUse(ureq, row);
@@ -411,9 +416,9 @@ public class ZoomConfigurationController extends FormBasicController {
                     doConfirmDelete(ureq, row);
                 }
             } else if (deactivateLink == source) {
-                doDeactivate(ureq, row);
+                doDeactivate(row);
             } else if (activateLink == source) {
-                doActivate(ureq, row);
+                doActivate(row);
             }
         }
     }

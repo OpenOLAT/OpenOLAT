@@ -19,8 +19,11 @@
  */
 package org.olat.modules.zoom.manager;
 
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -40,7 +43,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
-import org.olat.ims.lti13.*;
+import org.olat.ims.lti13.LTI13Constants;
+import org.olat.ims.lti13.LTI13Key;
+import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
 import org.olat.modules.zoom.ZoomConfig;
@@ -51,8 +60,8 @@ import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.*;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
 
 /**
  *
@@ -131,7 +140,8 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         return zoomProfileDao.getProfiles();
     }
 
-    public List<ZoomProfileDAO.ZoomProfileWithConfigCount> getProfilesWithConfigCount() {
+    @Override
+	public List<ZoomProfileDAO.ZoomProfileWithConfigCount> getProfilesWithConfigCount() {
         return zoomProfileDao.getProfilesWithConfigCounts();
     }
 
@@ -202,7 +212,8 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         return profiles.get(0);
     }
 
-    public boolean configExists(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+    @Override
+	public boolean configExists(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
         return zoomConfigDao.configExists(entry, subIdent, businessGroup);
     }
 
@@ -225,7 +236,8 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         lti13ToolDeploymentDAO.deleteToolDeployment(existingToolDeployment);
     }
 
-    public LTI13ToolDeployment createLtiToolDeployment(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+    @Override
+	public LTI13ToolDeployment createLtiToolDeployment(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
         LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(TARGET_LINK_URL, tool, entry, subIdent, businessGroup);
         toolDeployment.setSendUserAttributesList(List.of("email"));
         toolDeployment.setSendCustomAttributes("");

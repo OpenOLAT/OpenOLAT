@@ -19,10 +19,16 @@
  */
 package org.olat.modules.zoom.ui;
 
+import java.net.URL;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.*;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -35,8 +41,6 @@ import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.net.URL;
 
 /**
  *
@@ -137,6 +141,7 @@ public class ZoomProfileEditController extends FormBasicController {
     }
 
     private boolean validateMailDomains() {
+    	mailDomainsEl.clearError();
         if (StringHelper.containsNonWhitespace(mailDomainsEl.getValue())) {
             String[] mailDomains = mailDomainsEl.getValue().split("\r?\n");
             for (String mailDomain : mailDomains) {
