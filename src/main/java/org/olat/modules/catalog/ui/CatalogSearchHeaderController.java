@@ -64,6 +64,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		searchEl = uifactory.addTextElement("search", 100, null, searchCont);
 		searchEl.setPlaceholderText(translate("search.placeholder"));
 		searchEl.setDomReplacementWrapperRequired(false);
+		searchEl.setFocus(true);
 		
 		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
 		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");

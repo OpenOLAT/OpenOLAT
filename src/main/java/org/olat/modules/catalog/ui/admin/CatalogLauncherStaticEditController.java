@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
@@ -58,6 +60,8 @@ import org.olat.repository.controllers.RepositorySearchController.Can;
  *
  */
 public class CatalogLauncherStaticEditController extends AbstractLauncherEditController {
+	
+	private static final String CMP_OPEN = "open";
 
 	private FormLayoutContainer reCont;
 	private FormLink addResourceLink;
@@ -91,7 +95,8 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StaticLauncherCols.upDown));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StaticLauncherCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StaticLauncherCols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StaticLauncherCols.name, CMP_OPEN));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StaticLauncherCols.delete));
 		
 		dataModel = new StaticLauncherDataModel(columnsModel);
@@ -171,6 +176,15 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == addResourceLink) {
 			doSelectResource(ureq);
+		} else if (source == tableEl) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				StaticLauncherRow row = dataModel.getObject(se.getIndex());
+				if(CMP_OPEN.equals(cmd)) {
+					doOpenResource(ureq, row);
+				} 
+			}
 		} else if (source instanceof FormLink) {
 			if (((FormLink) source).getCmd().equals("delete")) {
 				Object userObject = source.getUserObject();
@@ -182,7 +196,7 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	private void doSelectResource(UserRequest ureq) {
 		guardModalController(selectResouceCtrl);
 		
@@ -202,6 +216,11 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 			Collections.swap(repositoryEntries, index, swapIndex);
 			updateModel();
 		}
+	}
+	
+	private void doOpenResource(UserRequest ureq, StaticLauncherRow row) {
+		String businessPath = "[RepositoryEntry:" + row.getRepositoryEntry().getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	protected void doDeleteResource(StaticLauncherRow row) {
@@ -227,6 +246,7 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 		private Object getValueAt(StaticLauncherRow row, int col) {
 			switch(COLS[col]) {
 				case upDown: return row.getUpDown();
+				case id: return row.getRepositoryEntry().getKey();
 				case name: return row.getRepositoryEntry().getDisplayname();
 				case delete: return row.getDeleteLink();
 				default: return null;
@@ -236,6 +256,7 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 	
 	public enum StaticLauncherCols implements FlexiColumnDef {
 		upDown("table.header.updown"),
+		id("launcher.static.id"),
 		name("launcher.static.display.name"),
 		delete("delete");
 		

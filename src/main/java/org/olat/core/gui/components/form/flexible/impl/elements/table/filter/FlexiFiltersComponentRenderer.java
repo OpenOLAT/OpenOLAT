@@ -75,7 +75,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 				DropdownItem moreMenu = ffE.getMoreMenu();
 				renderFormItem(renderer, sb, moreMenu, "pull-right", args);
 				FormLink resetLink = ffE.getResetFiltersButton();
-				resetLink.setVisible(!ffE.isTabsEnabled());
+				resetLink.setVisible(!ffE.isTabsEnabled() && ffE.hasFilterChanges());
 				renderFormItem(renderer, sb, resetLink, "pull-right", args);
 				sb.append("</ul>");
 			}

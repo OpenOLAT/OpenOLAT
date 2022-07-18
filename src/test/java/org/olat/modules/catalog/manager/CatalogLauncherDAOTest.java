@@ -119,13 +119,35 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadBySortOrder() {
-		CatalogLauncher catalogLauncher = sut.create(random(), miniRandom());
+	public void shouldLoadNext() {
+		String type = random();
+		CatalogLauncher catalogLauncher1 = sut.create(type, miniRandom());
+		catalogLauncher1.setSortOrder(1);
+		catalogLauncher1 = sut.save(catalogLauncher1);
+		CatalogLauncher catalogLauncher3 = sut.create(type, miniRandom());
+		catalogLauncher3.setSortOrder(3);
+		catalogLauncher3 = sut.save(catalogLauncher3);
+		CatalogLauncher catalogLauncher4 = sut.create(type, miniRandom());
+		catalogLauncher4.setSortOrder(4);
+		catalogLauncher4 = sut.save(catalogLauncher4);
+		CatalogLauncher catalogLauncher5 = sut.create(type, miniRandom());
+		catalogLauncher5.setSortOrder(5);
+		catalogLauncher5 = sut.save(catalogLauncher5);
+		CatalogLauncher catalogLauncher7 = sut.create(type, miniRandom());
+		catalogLauncher7.setSortOrder(7);
+		catalogLauncher7 = sut.save(catalogLauncher7);
 		dbInstance.commitAndCloseSession();
 		
-		CatalogLauncher reloaded = sut.loadBySortOrder(catalogLauncher.getSortOrder());
-		
-		assertThat(reloaded).isEqualTo(catalogLauncher);
+		assertThat(sut.loadNext(catalogLauncher1.getSortOrder(), true, type)).isNull();
+		assertThat(sut.loadNext(catalogLauncher3.getSortOrder(), true, type)).isEqualTo(catalogLauncher1);
+		assertThat(sut.loadNext(catalogLauncher4.getSortOrder(), true, type)).isEqualTo(catalogLauncher3);
+		assertThat(sut.loadNext(catalogLauncher5.getSortOrder(), true, type)).isEqualTo(catalogLauncher4);
+		assertThat(sut.loadNext(catalogLauncher7.getSortOrder(), true, type)).isEqualTo(catalogLauncher5);
+		assertThat(sut.loadNext(catalogLauncher1.getSortOrder(), false, type)).isEqualTo(catalogLauncher3);
+		assertThat(sut.loadNext(catalogLauncher3.getSortOrder(), false, type)).isEqualTo(catalogLauncher4);
+		assertThat(sut.loadNext(catalogLauncher4.getSortOrder(), false, type)).isEqualTo(catalogLauncher5);
+		assertThat(sut.loadNext(catalogLauncher5.getSortOrder(), false, type)).isEqualTo(catalogLauncher7);
+		assertThat(sut.loadNext(catalogLauncher7.getSortOrder(), false, type)).isNull();
 	}
 	
 	@Test
@@ -141,6 +163,7 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		catalogLauncher3 = sut.save(catalogLauncher3);
 		dbInstance.commitAndCloseSession();
 		
+		// enabled
 		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
 		searchParams.setEnabled(Boolean.TRUE);
 		List<CatalogLauncher> catalogLaunchers = sut.load(searchParams);
@@ -148,6 +171,21 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		assertThat(catalogLaunchers)
 				.contains(catalogLauncher1, catalogLauncher2)
 				.doesNotContain(catalogLauncher3);
+		
+		// disabled
+		searchParams.setEnabled(Boolean.FALSE);
+		catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(catalogLauncher3)
+				.doesNotContain(catalogLauncher1, catalogLauncher2);
+		
+		// all
+		searchParams.setEnabled(null);
+		catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(catalogLauncher1, catalogLauncher2, catalogLauncher3);
 	}
 
 }

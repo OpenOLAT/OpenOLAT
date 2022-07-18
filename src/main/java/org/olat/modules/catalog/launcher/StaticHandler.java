@@ -102,9 +102,8 @@ public class StaticHandler implements CatalogLauncherHandler {
 
 	@Override
 	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
-		return getRepositoryEntries(catalogLauncher).stream()
-				.map(RepositoryEntry::getDisplayname)
-				.collect(Collectors.joining(", "));
+		List<RepositoryEntry> repositoryEntries = getRepositoryEntries(catalogLauncher);
+		return translator.translate("launcher.static.num.resources", String.valueOf(repositoryEntries.size()));
 	}
 
 	@Override

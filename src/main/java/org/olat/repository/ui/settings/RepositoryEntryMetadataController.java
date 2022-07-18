@@ -224,7 +224,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
 			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
 			
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", "cif.taxonomy.levels", formLayout,
+			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
+			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, formLayout,
 					getWindowControl(), allTaxonomieLevels);
 			taxonomyLevelEl.setSelection(taxonomyLevels);
 			if (catalogModule.isEnabled()) {

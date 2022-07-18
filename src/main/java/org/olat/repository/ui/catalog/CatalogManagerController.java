@@ -26,15 +26,19 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.manager.CatalogManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,19 +51,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogManagerController extends BasicController implements Activateable2 {
 	
-	private final TooledStackedPanel toolbarPanel;
+	private TooledStackedPanel toolbarPanel;
 	private CatalogNodeManagerController catalogCtrl;
+	private MessageController catalogV2Ctrl;
 	
 	@Autowired
 	private CatalogManager catalogManager;
+	@Autowired
+	private CatalogV2Module catalogV2Module;
 	
 	public CatalogManagerController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		VelocityContainer mainVC = createVelocityContainer("admin_main");
 		
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root level
 		toolbarPanel.setShowCloseLink(false, false);
-		putInitialPanel(toolbarPanel);
 
 		List<CatalogEntry> rootNodes = catalogManager.getRootCatalogEntries();
 		if(rootNodes.size() == 1) {
@@ -69,15 +76,29 @@ public class CatalogManagerController extends BasicController implements Activat
 			toolbarPanel.pushController(root.getShortTitle(), catalogCtrl);
 			catalogCtrl.initToolbar();
 		}
+		mainVC.put("catalogV1", toolbarPanel);
+		
+		catalogV2Ctrl = MessageUIFactory.createInfoMessage(ureq, wControl, translate("catalog.v2.enabled.title"), translate("catalog.v2.enabled.text"));
+		listenTo(catalogV2Ctrl);
+		mainVC.put("catalogV2", catalogV2Ctrl.getInitialComponent());
+		
+		putInitialPanel(mainVC);
+		updateUI();
+	}
+	
+	private void updateUI() {
+		toolbarPanel.setVisible(!catalogV2Module.isEnabled());
+		catalogV2Ctrl.getInitialComponent().setVisible(catalogV2Module.isEnabled());
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		updateUI();
 		if(entries == null || entries.isEmpty()) return;
 		
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if("CatalogEntry".equalsIgnoreCase(type)) {
+		if("CatalogEntry".equalsIgnoreCase(type) && toolbarPanel.isVisible()) {
 			Long entryKey = entry.getOLATResourceable().getResourceableId();
 			if(entryKey != null && entryKey.longValue() > 0) {
 				List<ContextEntry> parentLine = new ArrayList<>();

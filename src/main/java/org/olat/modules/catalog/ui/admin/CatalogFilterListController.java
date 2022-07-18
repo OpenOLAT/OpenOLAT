@@ -119,6 +119,7 @@ public class CatalogFilterListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogFilterCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogFilterCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogFilterCols.enabled));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogFilterCols.defaultVisibile, null));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", -1, CMD_EDIT,
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));

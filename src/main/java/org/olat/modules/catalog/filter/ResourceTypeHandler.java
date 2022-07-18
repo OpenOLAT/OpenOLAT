@@ -19,7 +19,6 @@
  */
 package org.olat.modules.catalog.filter;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -37,26 +37,25 @@ import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 2 Jun 2022<br>
+ * Initial date: 15 Jun 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class EducationalTypeHandler implements CatalogFilterHandler {
+public class ResourceTypeHandler implements CatalogFilterHandler {
 	
-	private static final String TYPE = "educationaltype";
+	private static final String TYPE = "resourcetype";
 	
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	@Override
 	public String getType() {
@@ -70,22 +69,22 @@ public class EducationalTypeHandler implements CatalogFilterHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 120;
+		return 110;
 	}
 
 	@Override
 	public String getTypeI18nKey() {
-		return "filter.educational.type.type";
+		return "filter.resource.type.type";
 	}
 
 	@Override
 	public String getAddI18nKey() {
-		return "filter.educational.type.add";
+		return "filter.resource.type.add";
 	}
 
 	@Override
 	public String getEditI18nKey() {
-		return "filter.educational.type.edit";
+		return "filter.resource.type.edit";
 	}
 
 	@Override
@@ -107,41 +106,47 @@ public class EducationalTypeHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		
-		Collection<Long> launcherEducationalTypeKeys = searchParams.getIdentToEducationalTypeKeys().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
+		Collection<String> launcherResourceTypes = searchParams.getIdentToResourceTypes().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
 		
-		// Only one educational type: Filter makes no sense.
-		if (launcherEducationalTypeKeys != null && launcherEducationalTypeKeys.size() == 1) {
+		// Only one resource type: Filter makes no sense.
+		if (launcherResourceTypes != null && launcherResourceTypes.size() == 1) {
 			return null;
 		}
 		
-		SelectionValues educationalTypeKV = new SelectionValues();
-		repositoryManager.getAllEducationalTypes().stream()
-				.filter(educationalType -> filterByLauncherTypes(educationalType, launcherEducationalTypeKeys))
-				.forEach(type -> educationalTypeKV
-				.add(entry(
-						type.getKey().toString(),
-						repositoryTranslator.translate(RepositoyUIFactory.getI18nKey(type)))));
-		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-		FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.educational.type"), TYPE,
-				educationalTypeKV, catalogFilter.isDefaultVisible());
+		SelectionValues resourceTypeKV = new SelectionValues();
+		repositoryHandlerFactory.getOrderRepositoryHandlers().stream()
+				.map(handler -> handler.getHandler().getSupportedType())
+				.filter(resourceType -> filterByLauncherTypes(resourceType, launcherResourceTypes))
+				.forEach(type -> resourceTypeKV
+				.add(new SelectionValue(
+						type,
+						repositoryTranslator.translate(type),
+						null, 
+						"o_icon o_icon-fw ".concat(RepositoyUIFactory.getIconCssClass(type)),
+						null,
+						true)));
+		resourceTypeKV.sort(SelectionValues.VALUE_ASC);
+		FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.type"), TYPE,
+				resourceTypeKV, catalogFilter.isDefaultVisible());
 		filter.setUserObject(catalogFilter.getKey().toString());
 		return filter;
 	}
 
-	private boolean filterByLauncherTypes(RepositoryEntryEducationalType educationalType, Collection<Long> launcherEducationalTypeKeys) {
-		return launcherEducationalTypeKeys == null || launcherEducationalTypeKeys.isEmpty()
+	private boolean filterByLauncherTypes(String resourceType, Collection<String> launcherResourceTypes) {
+		return launcherResourceTypes == null || launcherResourceTypes.isEmpty()
 				? true
-				: launcherEducationalTypeKeys.contains(educationalType.getKey());
+				: launcherResourceTypes.contains(resourceType);
 	}
 
 	@Override
 	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
-		List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getLongValues();
+		List<String> resourceTypes = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
 		String ident = (String)flexiTableFilter.getUserObject();
-		if (educationalTypes != null && !educationalTypes.isEmpty()) {
-			searchParams.getIdentToEducationalTypeKeys().put(ident, educationalTypes);
+		if (resourceTypes != null && !resourceTypes.isEmpty()) {
+			searchParams.getIdentToResourceTypes().put(ident, resourceTypes);
 		} else {
-			searchParams.getIdentToEducationalTypeKeys().remove(ident);
+			searchParams.getIdentToResourceTypes().remove(ident);
 		}
 	}
+	
 }

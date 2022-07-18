@@ -227,11 +227,9 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 		if (catalogLauncher == null) return;
 		
 		int sortOrder = catalogLauncher.getSortOrder();
-		int swapSortOrder = up? sortOrder - 1: sortOrder + 1;
-		if (swapSortOrder <= 0) return;
-		
-		CatalogLauncher swapCatalogLauncher = catalogLauncherDao.loadBySortOrder(swapSortOrder);
+		CatalogLauncher swapCatalogLauncher = catalogLauncherDao.loadNext(sortOrder, up, null);
 		if (swapCatalogLauncher == null) return;
+		int swapSortOrder = swapCatalogLauncher.getSortOrder();
 		
 		catalogLauncher.setSortOrder(swapSortOrder);
 		swapCatalogLauncher.setSortOrder(sortOrder);
@@ -280,11 +278,9 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 		if (catalogFilter == null) return;
 		
 		int sortOrder = catalogFilter.getSortOrder();
-		int swapSortOrder = up? sortOrder - 1: sortOrder + 1;
-		if (swapSortOrder <= 0) return;
-		
-		CatalogFilter swapCatalogFilter = catalogFilterDao.loadBySortOrder(swapSortOrder);
+		CatalogFilter swapCatalogFilter = catalogFilterDao.loadNext(sortOrder, up, null);
 		if (swapCatalogFilter == null) return;
+		int swapSortOrder = swapCatalogFilter.getSortOrder();
 		
 		catalogFilter.setSortOrder(swapSortOrder);
 		swapCatalogFilter.setSortOrder(sortOrder);

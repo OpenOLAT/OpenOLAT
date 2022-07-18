@@ -369,7 +369,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 					int page = index / tableEl.getPageSize();
 					tableEl.setPage(page);
 				}
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row.getKey());
 				if (infosCtrl != null) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
 					infosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -412,12 +412,18 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ("ONCLICK".equals(event.getCommand())) {
-			String key = ureq.getParameter("select_taxonomy");
+			String key = ureq.getParameter("select");
+			if (StringHelper.containsNonWhitespace(key) && StringHelper.isLong(key)) {
+				doOpenDetails(ureq, Long.valueOf(key));
+			}
+			
+			key = ureq.getParameter("select_taxonomy");
 			if (StringHelper.containsNonWhitespace(key)) {
 				fireEvent(ureq, new OpenTaxonomyEvent(
 						Long.valueOf(key),
 						searchParams.getIdentToEducationalTypeKeys().get(KEY_LAUNCHER),
 						searchParams.getIdentToResourceTypes().get(KEY_LAUNCHER)));
+				return;
 			}
 		}
 		super.event(ureq, source, event);
@@ -436,7 +442,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				doBook(ureq, row);
 			} else if ("details".equals(cmd) || "select".equals(cmd)){
 				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row.getKey());
 			} else if ("select_tax".equals(cmd)){
 				Long key = (Long)link.getUserObject();
 				fireEvent(ureq, new OpenTaxonomyEvent(
@@ -462,8 +468,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		}
 	}
 	
-	protected void doOpenDetails(UserRequest ureq, CatalogRepositoryEntryRow row) {
-		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getKey());
+	protected void doOpenDetails(UserRequest ureq, Long repositoryEntryKey) {
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(repositoryEntryKey);
 		doOpenDetails(ureq, entry);
 	}
 
@@ -491,7 +497,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
 				doStart(ureq, row.getKey());
 			} else {
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row.getKey());
 				if (infosCtrl != null) {
 					OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
 					ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);

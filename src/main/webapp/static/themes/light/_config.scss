@@ -387,7 +387,9 @@ $o-coursesite-details-bg		: $btn-success-bg !default;
 $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
-$o-cat2-header-hight			: 240px  !default;
+$o-cat2-header-height			: 240px !default;
+$o-cat2-header-box-bg-color		: rgba(255,255,255,.8) !default;
+$o-cat2-tax-launcher-square-font-size	: 14px !default;
 
 /* Repository */
 $o-repo-preparation-color			: #4a6785;	/* blue */
@@ -1111,4 +1113,4 @@ $o-swiper-button-border						: 1px solid $btn-default-border !default;
 $o-swiper-button-border-radius				: $border-radius-base !default;
 $o-swiper-button-hover-color					: $brand-primary !default;
 $o-swiper-button-hover-box-shadow			: 0px 2px 4px rgba(0, 0, 0, 0.075) !default;
-
+$o-swiper-button-disabled-opacity			: .35 !default;

@@ -43,6 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -83,6 +84,8 @@ public class RepositoryEntryOverviewController extends BasicController {
 	private RepositoryEntryLicenseHandler licenseHandler;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private CatalogV2Module catalogModule;
 	
 	protected RepositoryEntryOverviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -186,11 +189,12 @@ public class RepositoryEntryOverviewController extends BasicController {
 		List<TaxonomyLevel> taxonomyLevels = repositoryService.getTaxonomy(entry);
 		if (taxonomyLevels.isEmpty()) return;
 		
+		String label = catalogModule.isEnabled()? translate("cif.taxonomy.levels.catalog"): translate("cif.taxonomy.levels");
 		String formatedLevels = taxonomyLevels.stream()
 				.map(this::formatTaxonomyLevel)
 				.sorted()
 				.collect(Collectors.joining("<br>"));
-		figures.add(new Figure(translate("cif.taxonomy.levels"), formatedLevels));
+		figures.add(new Figure(label, formatedLevels));
 	}
 
 	private String formatTaxonomyLevel(TaxonomyLevel level) {

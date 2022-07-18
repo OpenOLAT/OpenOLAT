@@ -29,6 +29,7 @@ public class QueryBuilder implements Appendable {
 
 	private boolean and = false;
 	private boolean groupBy = false;
+	private boolean orderBy = false;
 	private final StringBuilder sb;
 	private final DB dbInstance;
 
@@ -165,6 +166,17 @@ public class QueryBuilder implements Appendable {
 		}
 		return this;
 	}
+	
+	public QueryBuilder orderBy() {
+		if(orderBy) {
+			sb.append(" , ");
+		} else {
+			orderBy = true;
+			sb.append(" order by ");
+		}
+		return this;
+	}
+	
 	
 	public QueryBuilder in(Object... objects) {
 		if(objects != null && objects.length > 0) {

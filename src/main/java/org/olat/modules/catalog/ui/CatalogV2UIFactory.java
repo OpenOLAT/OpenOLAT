@@ -39,10 +39,11 @@ public class CatalogV2UIFactory {
 		return Comparator
 			.comparing(
 					TaxonomyLevel::getSortOrder,
-					Comparator.nullsLast(Comparator.reverseOrder()))
+					Comparator.nullsLast(null))
 			.thenComparing(Comparator.comparing(
 					level -> TaxonomyUIFactory.translateDisplayName(translator, level),
-					Comparator.nullsLast(Comparator.reverseOrder())));
+					Comparator.nullsLast(String::compareTo)));
+		
 	}
 
 	public static String translateLauncherName(Translator translator, CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {

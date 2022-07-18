@@ -222,6 +222,9 @@
 			color: $o-swiper-button-hover-color;
 			box-shadow: $o-swiper-button-hover-box-shadow;
 		}
+		&.o_swiper_button_disabled {
+			opacity: $o-swiper-button-disabled-opacity;
+		}
 	}
  }
 

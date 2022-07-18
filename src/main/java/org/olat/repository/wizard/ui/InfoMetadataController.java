@@ -149,8 +149,9 @@ public class InfoMetadataController extends StepFormBasicController {
 		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
 			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
-			
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", "cif.taxonomy.levels", formLayout,
+		
+			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
+			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, formLayout,
 					getWindowControl(), allTaxonomieLevels);
 			taxonomyLevelEl.setSelection(context.getTaxonomyLevelRefs());
 			if (catalogModule.isEnabled()) {

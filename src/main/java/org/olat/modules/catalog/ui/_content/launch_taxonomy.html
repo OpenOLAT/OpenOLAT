@@ -9,12 +9,10 @@
 	#end
 	<div class="o_taxonomy_launchers #if($square)o_launchers_square#end">
 		#foreach($row in $items)
-			<div class="o_taxonomy_launcher o_card_hover">
-				<a $r.hrefAndOnclick("select",false,true,"key","$row.key")>
-					<div class="o_visual">
-						<span class="o_visual_not_available #if($row.thumbnailRelPath)o_visual_available#end" #if($row.thumbnailRelPath) style="background-image:url('$row.thumbnailRelPath');" #end></span>
-					</div>
-				</a>
+			<div class="o_taxonomy_launcher o_card_hover" onClick="$r.javaScriptCommand("select", false, true, "key","$row.key", "", "");" role="link">
+				<div class="o_visual">
+					<span class="o_visual_not_available #if($row.thumbnailRelPath)o_visual_available#end" #if($row.thumbnailRelPath) style="background-image:url('$row.thumbnailRelPath');" #end></span>
+				</div>
 				<div class="o_meta">
 					<h4 class="o_title">$r.render($row.selectLinkName)</h4>
 				</div>

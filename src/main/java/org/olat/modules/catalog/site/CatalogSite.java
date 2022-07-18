@@ -69,16 +69,9 @@ public class CatalogSite extends AbstractSiteInstance {
 
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		// for existing controller which are part of the main olat -> use the controllerfactory
-		
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(catalogOres));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, catalogOres, new StateSite(this), wControl, true);
 		return new CatalogSiteMainController(ureq, bwControl);
-	}
-
-	@Override
-	public boolean isKeepState() {
-		return true;
 	}
 
 	@Override

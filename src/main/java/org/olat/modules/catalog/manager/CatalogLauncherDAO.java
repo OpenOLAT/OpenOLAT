@@ -22,8 +22,11 @@ package org.olat.modules.catalog.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherRef;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
@@ -93,14 +96,25 @@ public class CatalogLauncherDAO {
 		return catalogLaunchers.isEmpty()? null: catalogLaunchers.get(0);
 	}
 
-	public CatalogLauncher loadBySortOrder(int sortOrder) {
-		String query = "select launcher from cataloglauncher launcher where launcher.sortOrder = :sortOrder";
+	public CatalogLauncher loadNext(int sortOrder, boolean up, String type) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select launcher");
+		sb.append("  from cataloglauncher launcher");
+		sb.and().append("launcher.sortOrder ").append("<", ">", up).append(" :sortOrder");
+		if (StringHelper.containsNonWhitespace(type)) {
+			sb.and().append("launcher.type = :type");
+		}
+		sb.orderBy().append("launcher.sortOrder").appendAsc(!up);
 		
-		List<CatalogLauncher> catalogLaunchers = dbInstance.getCurrentEntityManager()
-				.createQuery(query, CatalogLauncher.class)
-				.setParameter("sortOrder", sortOrder)
-				.getResultList();
+		TypedQuery<CatalogLauncher> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogLauncher.class)
+				.setParameter("sortOrder", sortOrder);
+		if (StringHelper.containsNonWhitespace(type)) {
+			query.setParameter("type", type);
+		}
+		query.setMaxResults(1);
 		
+		List<CatalogLauncher> catalogLaunchers = query.getResultList();
 		return catalogLaunchers.isEmpty()? null: catalogLaunchers.get(0);
 	}
 

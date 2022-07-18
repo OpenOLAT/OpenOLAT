@@ -1,6 +1,6 @@
 <div class="o_repo_entry_list_item #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
 	<div class="o_visual">
-		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
+		<a href="javascript:${f.ffXHREvent("select","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())
 			<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 		#else

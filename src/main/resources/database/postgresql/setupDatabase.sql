@@ -1055,7 +1055,7 @@ create table o_ca_launcher (
    c_identifier varchar(32),
    c_sort_order int8,
    c_enabled bool not null default true,
-   c_config varchar(1024),
+   c_config varchar(4000),
    primary key (id)
 );
 create table o_ca_filter (
@@ -1066,7 +1066,7 @@ create table o_ca_filter (
    c_sort_order int8,
    c_enabled bool not null default true,
    c_default_visible bool not null default true,
-   c_config varchar(1024),
+   c_config varchar(4000),
    primary key (id)
 );
 

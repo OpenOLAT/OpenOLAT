@@ -17,8 +17,8 @@
 		<div class="swiper-wrapper">
 			#foreach($row in $items)
 				<div class="swiper-slide">
-					<div class="o_repo_entry_card o_card_hover #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
-						<div class="o_visual" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
+					<div class="o_repo_entry_card o_card_hover #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
+						<div class="o_visual">
 							#if($row.isThumbnailAvailable())
 								<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 							#else
@@ -91,11 +91,13 @@ new Swiper('.swiper', {
 	breakpoints: bp,
 	navigation: {
 		prevEl: '.swiper-button-prev',
-		nextEl: '.swiper-button-next'
+		nextEl: '.swiper-button-next',
+		disabledClass: 'o_swiper_button_disabled'
 	},
 	pagination: {
 		el: ".swiper-pagination",
-		dynamicBullets: true
+		dynamicBullets: true,
+		clickable: true
 	}
 });
 </script>

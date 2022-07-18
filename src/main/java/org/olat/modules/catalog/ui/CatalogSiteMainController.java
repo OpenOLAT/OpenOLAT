@@ -62,6 +62,7 @@ public class CatalogSiteMainController extends BasicController implements Activa
 		if (catalogV2Module.isEnabled()) {
 			catalogMainCtrl = new CatalogMainController(ureq, getWindowControl());
 			listenTo(catalogMainCtrl);
+			addToHistory(ureq, catalogMainCtrl);
 			putInitialPanel(catalogMainCtrl.getInitialComponent());
 		} else if (repositoryModule.isCatalogEnabled()) {
 			stackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
@@ -86,19 +87,23 @@ public class CatalogSiteMainController extends BasicController implements Activa
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			return;
-		}
-		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Catalog".equalsIgnoreCase(type)) {
-			entries = entries.subList(1, entries.size());
-		}
-		
-		if (catalogMainCtrl != null) {
-			catalogMainCtrl.activate(ureq, entries, state);
-		} else if (catalogNodeCtrl != null) {
-			stackPanel.popUpToRootController(ureq);
-			catalogNodeCtrl.activate(ureq, entries, state);
+			if (catalogMainCtrl != null) {
+				catalogMainCtrl.activate(ureq, entries, state);
+				addToHistory(ureq, catalogMainCtrl);
+			}
+		} else {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Catalog".equalsIgnoreCase(type)) {
+				entries = entries.subList(1, entries.size());
+			}
+			
+			if (catalogMainCtrl != null) {
+				catalogMainCtrl.activate(ureq, entries, state);
+				addToHistory(ureq, catalogMainCtrl);
+			} else if (catalogNodeCtrl != null) {
+				stackPanel.popUpToRootController(ureq);
+				catalogNodeCtrl.activate(ureq, entries, state);
+			}
 		}
 	}
 }

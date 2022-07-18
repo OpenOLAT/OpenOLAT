@@ -50,6 +50,7 @@ public class CatalogFilterDataModel extends DefaultFlexiTableDataModel<CatalogFi
 			case type: return row.getTranslatedType();
 			case details: return row.getDetails();
 			case enabled: return Boolean.valueOf(row.getCatalogFilter().isEnabled());
+			case defaultVisibile: return Boolean.valueOf(row.getCatalogFilter().isDefaultVisible());
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -60,6 +61,7 @@ public class CatalogFilterDataModel extends DefaultFlexiTableDataModel<CatalogFi
 		type("admin.filter.type"),
 		details("admin.filter.details"),
 		enabled("admin.filter.enabled"),
+		defaultVisibile("admin.filter.default.visible"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

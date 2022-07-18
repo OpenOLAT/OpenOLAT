@@ -95,7 +95,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		stackPanel.setInvisibleCrumb(0);
 		mainVC.put("stack", stackPanel);
 		
-		launchersCtrl = new CatalogLaunchersController(ureq, wControl, defaultSearchParams.copy());
+		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), defaultSearchParams.copy());
 		listenTo(launchersCtrl);
 		stackPanel.pushController(translate("overview"), launchersCtrl);
 		
@@ -112,17 +112,20 @@ public class CatalogMainController extends BasicController implements Activateab
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (entries == null || entries.isEmpty()) return;
-		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if (ORES_TYPE_SEARCH.equalsIgnoreCase(type)) {
-			headerSearchCtrl.setSearchString(null);
-			doSearch(ureq, null, true);
-			entries = entries.subList(1, entries.size());
-			catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
-		} else if (ORES_TYPE_TAXONOMY.equalsIgnoreCase(type)) {
-			Long key = entries.get(0).getOLATResourceable().getResourceableId();
-			doActivateTaxonomy(ureq, key);
+		if (entries == null || entries.isEmpty()) {
+			stackPanel.popUpToRootController(ureq);
+			doOpenSearchHeader();
+		} else {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if (ORES_TYPE_SEARCH.equalsIgnoreCase(type)) {
+				headerSearchCtrl.setSearchString(null);
+				doSearch(ureq, null, true);
+				entries = entries.subList(1, entries.size());
+				catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
+			} else if (ORES_TYPE_TAXONOMY.equalsIgnoreCase(type)) {
+				Long key = entries.get(0).getOLATResourceable().getResourceableId();
+				doActivateTaxonomy(ureq, key);
+			}
 		}
 	}
 
@@ -161,9 +164,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			if (event instanceof PopEvent) {
 				if (stackPanel.getLastController() == stackPanel.getRootController()) {
 					// Clicked on root breadcrumb
-					removeAsListenerAndDispose(headerTaxonomyCtrl);
-					headerTaxonomyCtrl = null;
-					mainVC.put("header", headerSearchCtrl.getInitialComponent());
+					doOpenSearchHeader();
 				} else if (stackPanel.getLastController() instanceof CatalogRepositoryEntryListController) {
 					// Clicked on taxonomy level in breadcrumb
 					TaxonomyLevel taxonomyLevel = ((CatalogRepositoryEntryListController)stackPanel.getLastController()).getTaxonomyLevel();
@@ -183,6 +184,12 @@ public class CatalogMainController extends BasicController implements Activateab
 		super.doDispose();
 	}
 
+	private void doOpenSearchHeader() {
+		removeAsListenerAndDispose(headerTaxonomyCtrl);
+		headerTaxonomyCtrl = null;
+		mainVC.put("header", headerSearchCtrl.getInitialComponent());
+	}
+
 	private void doSearch(UserRequest ureq, String searchString, boolean reset) {
 		if (stackPanel.getLastController() != catalogRepositoryEntryListCtrl) {
 			if (stackPanel.hasController(catalogRepositoryEntryListCtrl)) {
@@ -198,7 +205,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
 				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, false);
 				listenTo(catalogRepositoryEntryListCtrl);
-				stackPanel.pushController(translate("search"), catalogRepositoryEntryListCtrl);
+				stackPanel.pushController(translate("search.results"), catalogRepositoryEntryListCtrl);
 			}
 		}
 		catalogRepositoryEntryListCtrl.search(ureq, searchString, reset);

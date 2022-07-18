@@ -79,6 +79,7 @@ public class NewItemOptionsController extends FormBasicController {
 			QPoolSecurityCallback qPoolSecurityCallback, TaxonomyLevel selectedTaxonomyLevel,
 			boolean ignoreCompetences) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.qPoolSecurityCallback = qPoolSecurityCallback;
 		this.selectedTaxonomyLevel = selectedTaxonomyLevel;
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), true, ignoreCompetences);

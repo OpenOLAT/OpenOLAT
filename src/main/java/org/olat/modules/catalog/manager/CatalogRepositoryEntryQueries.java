@@ -408,6 +408,12 @@ public class CatalogRepositoryEntryQueries {
 					}
 					break;
 			}
+		} else {
+			if(asc) {
+				sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last, v.key asc");
+			} else {
+				sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last, v.key asc");
+			}
 		}
 	}
 	

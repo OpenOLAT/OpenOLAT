@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.updown.UpDown;
@@ -118,8 +120,7 @@ public class CatalogLauncherListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.upDown));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.details
-				));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.details, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.enabled));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", -1, CMD_EDIT,

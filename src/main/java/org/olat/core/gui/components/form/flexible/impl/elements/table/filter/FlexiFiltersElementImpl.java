@@ -109,6 +109,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		resetFiltersButton = new FormLinkImpl(dispatchId.concat("_resetFiltersButton"), "rResetFiltersButton", "reset.filters", Link.BUTTON);
 		resetFiltersButton.setDomReplacementWrapperRequired(false);
 		resetFiltersButton.setTranslator(translator);
+		resetFiltersButton.setGhost(true);
 		components.put("rResetFiltersDropDown", resetFiltersButton);
 		
 		collpaseFiltersButton = new FormLinkImpl(dispatchId.concat("_collapseFiltersButton"), "rCollapseFiltersButton", "collpase.filters", Link.BUTTON);
@@ -258,6 +259,21 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			selectedFilters.add((FlexiTableFilter)filterButton.getFilter());
 		}
 		return selectedFilters;
+	}
+	
+	protected boolean hasFilterChanges() {
+		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
+		if(filtersEl == null) {
+			return false;
+		}
+		
+		List<FlexiFilterButton> filterButtons = filtersEl.getFiltersButtons();
+		for(FlexiFilterButton filterButton:filterButtons) {
+			if(!filterButton.isImplicit() && filterButton.isChanged()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

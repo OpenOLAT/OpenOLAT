@@ -22,8 +22,11 @@ package org.olat.modules.catalog.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterRef;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
@@ -93,14 +96,25 @@ public class CatalogFilterDAO {
 		return catalogFilters.isEmpty()? null: catalogFilters.get(0);
 	}
 
-	public CatalogFilter loadBySortOrder(int sortOrder) {
-		String query = "select filter from catalogfilter filter where filter.sortOrder = :sortOrder";
+	public CatalogFilter loadNext(int sortOrder, boolean up, String type) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select filter");
+		sb.append("  from catalogfilter filter");
+		sb.and().append("filter.sortOrder ").append("<", ">", up).append(" :sortOrder");
+		if (StringHelper.containsNonWhitespace(type)) {
+			sb.and().append("filter.type = :type");
+		}
+		sb.orderBy().append("filter.sortOrder").appendAsc(!up);
 		
-		List<CatalogFilter> catalogFilters = dbInstance.getCurrentEntityManager()
-				.createQuery(query, CatalogFilter.class)
-				.setParameter("sortOrder", sortOrder)
-				.getResultList();
+		TypedQuery<CatalogFilter> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogFilter.class)
+				.setParameter("sortOrder", sortOrder);
+		if (StringHelper.containsNonWhitespace(type)) {
+			query.setParameter("type", type);
+		}
+		query.setMaxResults(1);
 		
+		List<CatalogFilter> catalogFilters = query.getResultList();
 		return catalogFilters.isEmpty()? null: catalogFilters.get(0);
 	}
 

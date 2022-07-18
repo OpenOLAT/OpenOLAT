@@ -119,13 +119,35 @@ public class CatalogFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadBySortOrder() {
-		CatalogFilter catalogFilter = sut.create(random());
+	public void shouldLoadNext() {
+		String type = random();
+		CatalogFilter catalogFilter1 = sut.create(type);
+		catalogFilter1.setSortOrder(1);
+		catalogFilter1 = sut.save(catalogFilter1);
+		CatalogFilter catalogFilter3 = sut.create(type);
+		catalogFilter3.setSortOrder(3);
+		catalogFilter3 = sut.save(catalogFilter3);
+		CatalogFilter catalogFilter4 = sut.create(type);
+		catalogFilter4.setSortOrder(4);
+		catalogFilter4 = sut.save(catalogFilter4);
+		CatalogFilter catalogFilter5 = sut.create(type);
+		catalogFilter5.setSortOrder(5);
+		catalogFilter5 = sut.save(catalogFilter5);
+		CatalogFilter catalogFilter7 = sut.create(type);
+		catalogFilter7.setSortOrder(7);
+		catalogFilter7 = sut.save(catalogFilter7);
 		dbInstance.commitAndCloseSession();
 		
-		CatalogFilter reloaded = sut.loadBySortOrder(catalogFilter.getSortOrder());
-		
-		assertThat(reloaded).isEqualTo(catalogFilter);
+		assertThat(sut.loadNext(catalogFilter1.getSortOrder(), true, type)).isNull();
+		assertThat(sut.loadNext(catalogFilter3.getSortOrder(), true, type)).isEqualTo(catalogFilter1);
+		assertThat(sut.loadNext(catalogFilter4.getSortOrder(), true, type)).isEqualTo(catalogFilter3);
+		assertThat(sut.loadNext(catalogFilter5.getSortOrder(), true, type)).isEqualTo(catalogFilter4);
+		assertThat(sut.loadNext(catalogFilter7.getSortOrder(), true, type)).isEqualTo(catalogFilter5);
+		assertThat(sut.loadNext(catalogFilter1.getSortOrder(), false, type)).isEqualTo(catalogFilter3);
+		assertThat(sut.loadNext(catalogFilter3.getSortOrder(), false, type)).isEqualTo(catalogFilter4);
+		assertThat(sut.loadNext(catalogFilter4.getSortOrder(), false, type)).isEqualTo(catalogFilter5);
+		assertThat(sut.loadNext(catalogFilter5.getSortOrder(), false, type)).isEqualTo(catalogFilter7);
+		assertThat(sut.loadNext(catalogFilter7.getSortOrder(), false, type)).isNull();
 	}
 	
 	@Test

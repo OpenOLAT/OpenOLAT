@@ -354,6 +354,7 @@
 		border-radius: $o-coursesite-rowelem-border-radius;
 		background: $o-coursesite-rowelem-bg;
 		padding: 5px;
+		cursor: pointer;
 		display: flex;
 		flex-direction: column;
 		
@@ -361,7 +362,6 @@
 			box-sizing: content-box;
 			border-radius: $o-coursesite-rowelem-border-radius - 1px;
 			margin-bottom: 10px;
-			cursor: pointer;
 			display: flex;
 			align-items: center;
 			
@@ -414,7 +414,7 @@
 		}
 	}
 	
-	// All cards have the same hight
+	// All cards have the same height
 	&.swiper {
 		.swiper-wrapper {
 			align-items: stretch;
@@ -679,8 +679,8 @@
 		margin-bottom: -20px;
 		.o_catalog_header_item {
 			padding: 20px 20px 40px 20px;
-			height: $o-cat2-header-hight;
-			max-height: $o-cat2-header-hight;
+			height: $o-cat2-header-height;
+			max-height: $o-cat2-header-height;
 		}
 		.o_catalog_header_item:not(.o_header_bg_image) {
 			background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba($brand-primary,1) 100%);
@@ -700,7 +700,7 @@
 			padding: 1px 20px 20px 20px;
 		}
 		.o_search_box:is(.o_header_bg_image *) {
-			background-color: rgba(255,255,255,.95);
+			background-color: $o-cat2-header-box-bg-color;
 		}
 	}
 	.o_catalog_taxonomy_header {
@@ -712,7 +712,7 @@
 			}
 			.o_taxonomy:is(.o_header_bg_image *) {
 				padding: 20px;
-				background-color: rgba(255,255,255,.95);
+				background-color: $o-cat2-header-box-bg-color
 			}
 		}
 	}
@@ -748,6 +748,11 @@
 				width: 122px;
 				max-width: 122px;
 				height: 122px;
+				.o_meta {
+					.o_title {
+						font-size: $o-cat2-tax-launcher-square-font-size;
+					}
+				}
 			}
 			.o_visual {
 				box-sizing: content-box;
@@ -774,7 +779,8 @@
 				left: 0;
 				bottom: 0;
 				width: 100%;
-				border-radius: $o-coursesite-rowelem-border-radius;
+				border-bottom-left-radius: $o-coursesite-rowelem-border-radius;
+				border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
 				background-color: rgba(255,255,255,.8);
 				
 				.o_title {
@@ -804,7 +810,7 @@
 				width: 152px;
 				max-width: 152px;
 				.o_visual {
-						width: 150px;
+					width: 150px;
 					max-width: 150px;
 				}
 			}

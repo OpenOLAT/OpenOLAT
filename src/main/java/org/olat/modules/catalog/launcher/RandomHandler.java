@@ -23,12 +23,14 @@ import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesContro
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
@@ -39,6 +41,10 @@ import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherRandomEditController;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +71,10 @@ public class RandomHandler implements CatalogLauncherHandler {
 	
 	@Autowired
 	private CatalogV2Service catalogService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	@Override
 	public String getType() {
@@ -103,7 +113,37 @@ public class RandomHandler implements CatalogLauncherHandler {
 
 	@Override
 	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
-		return null;
+		Translator repositoyTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
+		StringBuilder sb = new StringBuilder();
+		boolean lineBrake = false;
+		
+		Config config = fromXML(catalogLauncher.getConfig());
+		if (config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
+			String educationalTypes = repositoryManager.getAllEducationalTypes().stream()
+					.filter(type -> config.getEducationalTypeKeys().contains(type.getKey()))
+					.map(type -> repositoyTranslator.translate(RepositoyUIFactory.getI18nKey(type)))
+					.sorted()
+					.collect(Collectors.joining(", "));
+			if (StringHelper.containsNonWhitespace(educationalTypes)) {
+				sb.append(translator.translate("admin.educational.types.list", educationalTypes));
+				lineBrake = true;
+			}
+		}
+		
+		if (config.getResourceTypes() != null && !config.getResourceTypes().isEmpty()) {
+			String types = repositoryHandlerFactory.getOrderRepositoryHandlers().stream()
+					.map(handler -> handler.getHandler().getSupportedType())
+					.filter(type -> config.getResourceTypes().contains(type))
+					.sorted((t1, t2) -> repositoyTranslator.translate(t1).compareTo(repositoyTranslator.translate(t2)))
+					.map(type -> "<i class=\"" + "o_icon o_icon-fw ".concat(RepositoyUIFactory.getIconCssClass(type)) + "\"> </i>" + repositoyTranslator.translate(type))
+					.collect(Collectors.joining(", "));
+			if (StringHelper.containsNonWhitespace(types)) {
+				if (lineBrake) sb.append("<br>");
+				sb.append(translator.translate("admin.resource.types.list", types));
+			}
+		}
+		
+		return sb.toString();
 	}
 
 	@Override
