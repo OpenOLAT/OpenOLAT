@@ -30,8 +30,10 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
@@ -75,6 +77,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService {
 	
+	private static final Logger log = Tracing.createLoggerFor(CatalogV1MigrationServiceImpl.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -105,6 +109,8 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		if (CatalogV1Migration.pending != catalogModule.getCatalogV1Migration()) {
 			return;
 		}
+		
+		log.info(Tracing.M_AUDIT, "Catalog migration V1 to V2 started by {}", executor);
 		
 		catalogModule.setCatalogV1Migration(CatalogV1Migration.running);
 		
