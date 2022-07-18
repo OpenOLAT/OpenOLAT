@@ -418,12 +418,12 @@ public class ListRenderer {
 			String openIcon = getOpenIconCss(child, metadata, canWrite, identity, roles);
 			if (openIcon != null) {
 				sb.append("<a ");
+				Translator labelTranslator = Util.createPackageTranslator(DocEditorController.class, translator.getLocale());
+				String buttonLabel = getOpenButtonLabel(child, metadata, canWrite, identity, roles, labelTranslator);
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
 						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
-				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
+				sb.append(" title=\"").append(StringHelper.escapeHtml(buttonLabel));
 				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");	
-				   Translator labelTranslator = Util.createPackageTranslator(DocEditorController.class, translator.getLocale());
-				   String buttonLabel = getOpenButtonLabel(child, metadata, canWrite, identity, roles, labelTranslator);
 				   sb.append(StringHelper.escapeHtml(buttonLabel));
 				   sb.append("</span></a>");
 			}
