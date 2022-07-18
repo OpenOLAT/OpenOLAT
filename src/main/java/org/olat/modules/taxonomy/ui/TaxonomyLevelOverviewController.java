@@ -88,9 +88,12 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		tabPane.setElementCssClass("o_sel_taxonomy_level_tabs");
 		tabPane.addListener(this);
 		
-		metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
-		listenTo(metadataCtrl);
-		tabPane.addTab(translate("taxonomy.metadata"), metadataCtrl);
+		tabPane.addTab(ureq, translate("taxonomy.metadata"), uureq -> {
+			removeAsListenerAndDispose(metadataCtrl);
+			metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
+			listenTo(metadataCtrl);
+			return metadataCtrl.getInitialComponent();
+		}, true);
 		initTabPane(ureq);
 		
 		mainVC.put("tabs", tabPane);
@@ -101,16 +104,18 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	
 	private void initTabPane(UserRequest ureq) {
 		tabPane.addTab(ureq, translate("taxonomy.level.competences"), uureq -> {
+			removeAsListenerAndDispose(competencesCtrl);
 			competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
 			listenTo(competencesCtrl);
 			return competencesCtrl.getInitialComponent();
-		});
+		}, true);
 		
 		tabPane.addTab(ureq, translate("taxonomy.level.relations"), uureq -> {
+			removeAsListenerAndDispose(relationsCtrl);
 			relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl(), taxonomyLevel);
 			listenTo(relationsCtrl);
 			return relationsCtrl.getInitialComponent();
-		});
+		}, true);
 	}
 	
 	private void updateProperties() {

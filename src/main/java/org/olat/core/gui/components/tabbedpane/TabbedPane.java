@@ -140,6 +140,10 @@ public class TabbedPane extends Container implements Activateable2 {
 		TabPane oldSelectedTab = getTabPaneAt(selectedPane);
 		if(oldSelectedTab.getComponent() != null) {
 			remove(oldSelectedTab.getComponent());
+			if(oldSelectedTab.hasTabCreator() && oldSelectedTab.isReload()) {
+				oldSelectedTab.setComponent(null);
+				oldSelectedTab.setComponentItem(null);
+			}
 		}
 		
 		// activate new
@@ -206,8 +210,21 @@ public class TabbedPane extends Container implements Activateable2 {
 		return tabPanes.size() - 1;
 	}
 	
+
 	public int addTab(UserRequest ureq, String displayName, TabComponentCreator creator) {
-		TabPane tab = new TabPane(displayName, null, creator);
+		return addTab(ureq, displayName, creator, false);
+	}
+	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param displayName The name of the tab
+	 * @param creator The creator of the component
+	 * @param reload If true, the component is discarded after being unselected. If false, the component is created only once.
+	 * @return The index of the tab
+	 */
+	public int addTab(UserRequest ureq, String displayName, TabComponentCreator creator, boolean reload) {
+		TabPane tab = new TabPane(displayName, null, creator, reload);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
@@ -220,7 +237,19 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 	
 	public int addTabControllerCreator(UserRequest ureq, String displayName, TabControllerCreator creator) {
-		TabPane tab = new TabPane(displayName, null, creator);
+		return addTabControllerCreator(ureq, displayName, creator, false);
+	}
+	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param displayName The name of the tab
+	 * @param creator The creator of the component
+	 * @param reload If true, the component is discarded after being unselected. If false, the component is created only once.
+	 * @return The index of the tab
+	 */
+	public int addTabControllerCreator(UserRequest ureq, String displayName, TabControllerCreator creator, boolean reload) {
+		TabPane tab = new TabPane(displayName, null, creator, reload);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
@@ -460,6 +489,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	protected static class TabPane {
 		
 		private boolean enabled = true;
+		private final boolean reload;
 		private final String displayName;
 		private final String elementCssClass;
 		private Component component;
@@ -473,6 +503,7 @@ public class TabbedPane extends Container implements Activateable2 {
 			this.elementCssClass = elementCssClass;
 			this.component = component;
 			this.enabled = true;
+			this.reload = false;
 		}
 		
 		public TabPane(String displayName, String elementCssClass, FormItem item) {
@@ -481,6 +512,7 @@ public class TabbedPane extends Container implements Activateable2 {
 			this.componentItem = item;
 			this.component = item.getComponent();
 			this.enabled = true;
+			this.reload = false;
 		}
 		
 		public TabPane(String displayName, String elementCssClass, Controller controller) {
@@ -489,20 +521,23 @@ public class TabbedPane extends Container implements Activateable2 {
 			this.controller = controller;
 			this.component = controller.getInitialComponent();
 			this.enabled = true;
+			this.reload = false;
 		}
 		
-		public TabPane(String displayName, String elementCssClass, TabComponentCreator componentCreator) {
+		public TabPane(String displayName, String elementCssClass, TabComponentCreator componentCreator, boolean reload) {
 			this.displayName = displayName;
 			this.elementCssClass = elementCssClass;
 			this.componentCreator = componentCreator;
 			this.enabled = true;
+			this.reload = reload;
 		}
 		
-		public TabPane(String displayName, String elementCssClass, TabControllerCreator controllerCreator) {
+		public TabPane(String displayName, String elementCssClass, TabControllerCreator controllerCreator, boolean reload) {
 			this.displayName = displayName;
 			this.elementCssClass = elementCssClass;
 			this.controllerCreator = controllerCreator;
 			this.enabled = true;
+			this.reload = reload;
 		}
 		
 		public boolean isEnabled() {
@@ -519,6 +554,13 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		public String getElementCssClass() {
 			return elementCssClass;
+		}
+		
+		/**
+		 * @return true, discard and create component after every select
+		 */
+		public boolean isReload() {
+			return reload;
 		}
 		
 		public boolean hasTabCreator() {
