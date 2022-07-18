@@ -21,6 +21,7 @@ package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -473,7 +474,7 @@ public class CopyCourseWizardController extends BasicController {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
-		params.setOrigin(Origin.repositoryEntry);
+		params.setOrigins(EnumSet.of(Origin.repositoryEntry));
 		
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
 
@@ -484,7 +485,7 @@ public class CopyCourseWizardController extends BasicController {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
-		params.setOrigin(Origin.repositoryEntry);
+		params.setOrigins(EnumSet.of(Origin.repositoryEntry));
 		
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
 		List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());

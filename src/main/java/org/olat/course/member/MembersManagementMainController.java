@@ -249,6 +249,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				if(membersOverviewCtrl == null) {
 					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, canInvite);
 					listenTo(membersOverviewCtrl);
+					membersOverviewCtrl.switchToAllMembers(ureq);
 				} else if(membersDirty) {
 					membersOverviewCtrl.reloadMembers();
 				}

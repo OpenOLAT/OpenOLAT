@@ -48,6 +48,7 @@ import org.olat.group.model.MemberView;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
+import org.olat.group.ui.main.SearchMembersParams.UserType;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
@@ -112,6 +113,7 @@ public class MemberViewQueries {
 		List<MemberView> members = new ArrayList<>(views.values());
 		filterByRoles(members, params);
 		filterByOrigin(members, params);
+		filterByUserTypes(members, params);
 		return members;
 	}
 	
@@ -171,6 +173,7 @@ public class MemberViewQueries {
 		List<MemberView> members = new ArrayList<>(views.values());
 		filterByRoles(members, params);
 		filterByOrigin(members, params);
+		filterByUserTypes(members, params);
 		return members;
 	}
 	
@@ -383,27 +386,28 @@ public class MemberViewQueries {
 		}
 	}
 	
+	private void filterByUserTypes(List<MemberView> memberList, SearchMembersParams params) {
+		for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+			MemberView m = it.next();
+			if((m.getMemberShip().isExternalUser() && params.hasUserType(UserType.invitee))
+					|| (!m.getMemberShip().isExternalUser() && params.hasUserType(UserType.user))) {
+				continue;
+			}
+
+			it.remove();
+		}
+	}
+	
 	private void filterByOrigin(List<MemberView> memberList, SearchMembersParams params) {
-		if(params.getOrigin() == Origin.businessGroup) {
-			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
-				MemberView m = it.next();
-				if(m.getGroups() == null || m.getGroups().isEmpty()) {
-					it.remove();
-				}
+		for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+			MemberView m = it.next();
+			if((m.getGroups() != null && !m.getGroups().isEmpty() && params.hasOrigin(Origin.businessGroup))
+					|| (m.getCurriculumElements() != null && !m.getCurriculumElements().isEmpty() && params.hasOrigin(Origin.curriculum))
+					|| (StringHelper.containsNonWhitespace(m.getRepositoryEntryDisplayName()) && params.hasOrigin(Origin.repositoryEntry))) {
+				continue;
 			}
-		} else if(params.getOrigin() == Origin.curriculum) {
-			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
-				MemberView m = it.next();
-				if(m.getCurriculumElements() == null || m.getCurriculumElements().isEmpty()) {
-					it.remove();
-				}
-			}
-		} else if(params.getOrigin() == Origin.repositoryEntry) {
-			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
-				if(!StringHelper.containsNonWhitespace(it.next().getRepositoryEntryDisplayName())) {
-					it.remove();
-				}
-			}
+
+			it.remove();
 		}
 	}
 	

@@ -41,7 +41,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.course.member.MemberSearchForm;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
@@ -58,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumMemberSearchForm extends FormBasicController implements ExtendedFlexiTableSearchController {
 	
-	public static final String PROPS_IDENTIFIER = MemberSearchForm.PROPS_IDENTIFIER;
+	public static final String PROPS_IDENTIFIER = "org.olat.course.member.MemberSearchForm";
 	
 	private TextElement login;
 	private MultipleSelectionElement rolesEl;

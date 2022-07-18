@@ -20,12 +20,10 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
@@ -38,46 +36,22 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberSearchController extends AbstractMemberListController {
+public class CourseMemberListController extends AbstractMemberListController {
 	
-	private final UserCourseEnvironment coachCourseEnv;
-	private SearchMembersParams searchParams = new SearchMembersParams();
-	
-	private MemberSearchForm searchForm;
 	private AssessmentIdentityCourseController identityAssessmentController;
 	
-	public MemberSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback) {
-		super(ureq, wControl, repoEntry, "all_member_list", secCallback, toolbarPanel);
+	private final SearchMembersParams searchParams;
+	private final UserCourseEnvironment coachCourseEnv;
+	
+	public CourseMemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback, SearchMembersParams searchParams, String infos) {
+		super(ureq, wControl, repoEntry, "member_list_origin_filter", secCallback, toolbarPanel);
+		this.searchParams = searchParams;
 		this.coachCourseEnv = coachCourseEnv;
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		super.initForm(formLayout, listener, ureq);
 		
-		searchForm = new MemberSearchForm(ureq, getWindowControl(), mainForm);
-		searchForm.setEnabled(true);
-		listenTo(searchForm);
-		membersTable.setSearchEnabled(true);
-		membersTable.setExtendedSearch(searchForm);
-		membersTable.expandExtendedSearch(ureq);
-	}
-
-	@Override
-	public SearchMembersParams getSearchParams() {
-		return searchParams;
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == searchForm) {
-			if(event instanceof SearchMembersParams) {
-				searchParams = (SearchMembersParams)event;
-				reloadModel();
-			}
+		if(StringHelper.containsNonWhitespace(infos)) {
+			flc.contextPut("infos", infos);
 		}
-		super.event(ureq, source, event);
 	}
 	
 	@Override
@@ -91,5 +65,10 @@ public class MemberSearchController extends AbstractMemberListController {
 		
 		String displayName = userManager.getUserDisplayName(assessedIdentity);
 		toolbarPanel.pushController(displayName, identityAssessmentController);
+	}
+
+	@Override
+	public SearchMembersParams getSearchParams() {
+		return searchParams;
 	}
 }

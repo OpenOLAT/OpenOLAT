@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.control.Event;
@@ -34,7 +35,8 @@ public class SearchMembersParams extends Event {
 	private GroupRoles[] roles;
 	private boolean pending;
 	
-	private Origin origin;
+	private Set<Origin> origins;
+	private Set<UserType> userTypes;
 	
 	private String login;
 	private Map<String, String> userPropertiesSearch;
@@ -83,13 +85,23 @@ public class SearchMembersParams extends Event {
 	public void setPending(boolean pending) {
 		this.pending = pending;
 	}
-
-	public Origin getOrigin() {
-		return origin == null ? Origin.all : origin;
+	
+	public boolean hasOrigin(Origin origin) {
+		if(origins == null) return true;
+		return origins.contains(origin);
 	}
 
-	public void setOrigin(Origin origin) {
-		this.origin = origin;
+	public void setOrigins(Set<Origin> origins) {
+		this.origins = origins;
+	}
+	
+	public boolean hasUserType(UserType type) {
+		if(userTypes == null) return true;
+		return userTypes.contains(type);
+	}
+	
+	public void setUserTypes(Set<UserType> types) {
+		this.userTypes = types;
 	}
 
 	public String getLogin() {
@@ -109,9 +121,13 @@ public class SearchMembersParams extends Event {
 	}
 	
 	public enum Origin {
-		all,
 		repositoryEntry,
 		businessGroup,
 		curriculum
+	}
+	
+	public enum UserType {
+		invitee,
+		user
 	}
 }

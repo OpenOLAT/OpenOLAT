@@ -124,8 +124,7 @@ public class BusinessGroupMembersController extends BasicController {
 		MemberListSecurityCallback secCallback = MemberListSecurityCallbackFactory.getSecurityCallback(readOnly, !managed && !readOnly);
 		membersController = new MemberListController(ureq, getWindowControl(), toolbarPanel, businessGroup, searchParams, secCallback);
 		listenTo(membersController);
-		
-		membersController.reloadModel();
+		membersController.switchToAllMembers(ureq);
 
 		mainVC.put("members", membersController.getInitialComponent());
 		

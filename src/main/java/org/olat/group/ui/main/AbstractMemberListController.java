@@ -22,12 +22,14 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -40,6 +42,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -54,9 +59,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -96,6 +108,8 @@ import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
+import org.olat.group.ui.main.SearchMembersParams.Origin;
+import org.olat.group.ui.main.SearchMembersParams.UserType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -127,6 +141,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	
+	public static final String ALL_TAB_ID = "All";
+	
+	public static final String FILTER_ROLE = "filter.role";
+	public static final String FILTER_ORIGIN = "filter.origin";
+	public static final String FILTER_TYPE = "filter.type";
+	
 	public static final String TABLE_ACTION_EDIT = "tbl_edit";
 	public static final String TABLE_ACTION_MAIL = "tbl_mail";
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
@@ -154,6 +174,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditSingleMembershipController editSingleMemberCtrl;
 	private StepsMainRunController editMemberShipStepsController;
+	
+	private FlexiFiltersTab allTab;
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AtomicInteger counter = new AtomicInteger();
@@ -262,6 +284,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			options.setDefaultOrderBy(defaultSortKey);
 			membersTable.setSortSettings(options);
 		}
+		
+		boolean withOwners = repoEntry != null;
+		boolean withWaitingList = businessGroup != null
+				|| "CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName());
+		
+		initFilters(withOwners, withWaitingList);
+		initFiltersPresets(withOwners, withWaitingList);
 
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
 		membersTable.addBatchButton(editButton);
@@ -271,6 +300,98 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
 		removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
 		membersTable.addBatchButton(removeButton);
+	}
+	
+	protected final void initFiltersPresets(boolean withOwners, boolean withWaitingList) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.reloadData, List.of());
+		allTab.setElementCssClass("o_sel_members_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		if(withOwners) {
+			// Owners
+			FlexiFiltersTab ownerTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Owners", translate("role.repo.owner"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.owner.name())));
+			ownerTab.setElementCssClass("o_sel_members_owner");
+			ownerTab.setFiltersExpanded(true);
+			tabs.add(ownerTab);
+		}
+		
+		// Coaches + participants
+		FlexiFiltersTab coachTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Coaches", translate("role.repo.tutor"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.coach.name())));
+		coachTab.setElementCssClass("o_sel_members_coach");
+		coachTab.setFiltersExpanded(true);
+		tabs.add(coachTab);
+		
+		FlexiFiltersTab participantTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Participants", translate("role.repo.participant"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.participant.name())));
+		participantTab.setElementCssClass("o_sel_members_participant");
+		participantTab.setFiltersExpanded(true);
+		tabs.add(participantTab);
+		
+		if(withWaitingList) {
+			// If groups or course: waiting list
+			FlexiFiltersTab waitingTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Waiting", translate("role.group.waiting"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.waiting.name())));
+			waitingTab.setElementCssClass("o_sel_members_waiting");
+			waitingTab.setFiltersExpanded(true);
+			tabs.add(waitingTab);
+		}
+		
+		
+		// Search
+		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Search", translate("filter.search"),
+				TabSelectionBehavior.clear, List.of());
+		searchTab.setElementCssClass("o_sel_members_search");
+		searchTab.setPosition(FlexiFilterTabPosition.right);
+		searchTab.setLargeSearch(true);
+		searchTab.setFiltersExpanded(true);
+		tabs.add(searchTab);
+
+		membersTable.setFilterTabs(true, tabs);
+	}
+	
+	protected void initFilters(boolean withOwners, boolean withWaitingList) {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// Course / group roles
+		SelectionValues rolesValues = new SelectionValues();
+		if(withOwners) {
+			rolesValues.add(SelectionValues.entry(GroupRoles.owner.name(), translate("role.repo.owner")));
+		}
+		rolesValues.add(SelectionValues.entry(GroupRoles.coach.name(), translate("role.repo.tutor")));
+		rolesValues.add(SelectionValues.entry(GroupRoles.participant.name(), translate("role.repo.participant")));
+		if(withWaitingList) {
+			rolesValues.add(SelectionValues.entry(GroupRoles.waiting.name(), translate("role.group.waiting")));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.role"),
+				FILTER_ROLE, rolesValues, true));
+		
+		// User origins
+		SelectionValues originValues = new SelectionValues();
+		originValues.add(SelectionValues.entry(Origin.repositoryEntry.name(), translate("filter.origin.repo")));
+		originValues.add(SelectionValues.entry(Origin.businessGroup.name(), translate("filter.origin.group")));
+		originValues.add(SelectionValues.entry(Origin.curriculum.name(), translate("filter.origin.curriculum")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.origin"),
+				FILTER_ORIGIN, originValues, withOwners));
+
+		// User types
+		SelectionValues typeValues = new SelectionValues();
+		typeValues.add(SelectionValues.entry(UserType.user.name(), translate("filter.user.type.registered")));
+		typeValues.add(SelectionValues.entry(UserType.invitee.name(), translate("filter.user.type.invitee")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.user.type"),
+				FILTER_TYPE, typeValues, true));
+
+		membersTable.setFilters(true, filters, false, false);
+	}
+	
+	public void switchToAllMembers(UserRequest ureq) {
+		membersTable.setSelectedFilterTab(ureq, allTab);
+		reloadModel();
 	}
 	
 	private boolean calcGloballyManaged() {
@@ -351,7 +472,21 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) {
+			switchToAllMembers(ureq);
+		} else {
+			String tabName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if(membersTable.getSelectedFilterTab() == null || !membersTable.getSelectedFilterTab().getId().equals(tabName)) {
+				FlexiFiltersTab tab = membersTable.getFilterTabById(tabName);
+				if(tab != null) {
+					selectFilterTab(ureq, tab);
+				} else {
+					selectFilterTab(ureq, allTab);
+				}
+			} else {
+				membersTable.addToHistory(ureq);
+			}
+		}
 	}
 
 	@Override
@@ -373,13 +508,17 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				String cmd = event.getCommand();
-				if(FlexiTableReduceEvent.SEARCH.equals(event.getCommand()) || FlexiTableReduceEvent.QUICK_SEARCH.equals(event.getCommand())) {
+				if(FlexiTableReduceEvent.SEARCH.equals(cmd) || FlexiTableReduceEvent.QUICK_SEARCH.equals(cmd)) {
 					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 					String search = se.getSearch();
 					doSearch(search);
 				} else if(FormEvent.RESET.getCommand().equals(cmd)) {
 					doResetSearch();
+				} else if(FlexiTableReduceEvent.FILTER.equals(cmd)) {
+					reloadModel();
 				}
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				reloadModel();
 			}
 		} else if(editButton == source) {
 			List<MemberRow> selectedItems = getMultiSelectedRows();
@@ -829,11 +968,62 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 	protected abstract SearchMembersParams getSearchParams();
 	
-	public void reloadModel() {
-		updateTableModel(getSearchParams());
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		if(tab == null) return;
+		membersTable.setSelectedFilterTab(ureq, tab);
 	}
+	
+	protected final GroupRoles[] getFilterRoles() {
+		List<FlexiTableFilter> filters = membersTable.getFilters();
+		FlexiTableFilter rolesFilter = FlexiTableFilter.getFilter(filters, FILTER_ROLE);
+		if (rolesFilter != null) {
+			List<String> rolesValues = ((FlexiTableExtendedFilter)rolesFilter).getValues();
+			if(rolesValues != null && !rolesValues.isEmpty()) {
+				List<GroupRoles> roles = rolesValues.stream()
+						.map(GroupRoles::valueOf)
+						.collect(Collectors.toList());
+				return roles.toArray(new GroupRoles[roles.size()]);	
+			}
+		}
+		return GroupRoles.values();
+	}
+	
+	protected final Set<Origin> getOrigins() {
+		List<FlexiTableFilter> filters = membersTable.getFilters();
+		FlexiTableFilter originFilter = FlexiTableFilter.getFilter(filters, FILTER_ORIGIN);
+		if (originFilter != null) {
+			List<String> originValues = ((FlexiTableExtendedFilter)originFilter).getValues();
+			if(originValues != null && !originValues.isEmpty()) {
+				List<Origin> roles = originValues.stream()
+						.map(Origin::valueOf)
+						.collect(Collectors.toList());
+				return EnumSet.copyOf(roles);
+			}
+		}
+		return EnumSet.allOf(Origin.class);
+	}
+	
+	protected final Set<UserType> getUserTypes() {
+		List<FlexiTableFilter> filters = membersTable.getFilters();
+		FlexiTableFilter userTypeFilter = FlexiTableFilter.getFilter(filters, FILTER_TYPE);
+		if (userTypeFilter != null) {
+			List<String> userTypesValues = ((FlexiTableExtendedFilter)userTypeFilter).getValues();
+			if(userTypesValues != null && !userTypesValues.isEmpty()) {
+				List<UserType> roles = userTypesValues.stream()
+						.map(UserType::valueOf)
+						.collect(Collectors.toList());
+				return EnumSet.copyOf(roles);
+			}
+		}
+		return EnumSet.allOf(UserType.class);
+	}
+	
+	public void reloadModel() {
+		SearchMembersParams params = getSearchParams();
+		params.setRoles(getFilterRoles());
+		params.setOrigins(getOrigins());
+		params.setUserTypes(getUserTypes());
 
-	protected List<MemberRow> updateTableModel(SearchMembersParams params) {
 		List<MemberView> memberViews;
 		if(repoEntry != null) {
 			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, userPropertyHandlers, getLocale());
@@ -890,7 +1080,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 		memberListModel.setObjects(memberList);
 		membersTable.reset(true, true, true);
-		return memberList;
 	}
 	
 	protected void forgeLinks(MemberRow row) {
