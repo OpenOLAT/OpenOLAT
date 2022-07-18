@@ -705,7 +705,9 @@ function o_ainvoke(r) {
 	}
 	
 	// Scroll or focus, but not both to prevent jumping up and down
-	if(scrollTop) {
+	if(scrollTop && focus.formName != null) {
+		o_scrollTopAndFocus(focus.formName, focus.formItemId);
+	} else if(scrollTop) {
 		o_scrollTop();
 	} else if(focus.formName != null) {
  		o_ffSetFocus(focus.formName, focus.formItemId);
@@ -1128,6 +1130,16 @@ function o_scrollToElement(elem) {
 function o_scrollTop() {
 	try {
 		jQuery('html, body').animate({ scrollTop : 0 }, 300);
+	} catch (e) {
+		//console.log(e);
+	}
+}
+
+function o_scrollTopAndFocus(formName, formItemId) {
+	try {
+		jQuery('html, body').animate({ scrollTop : 0 }, 300, "swing", function() {
+			o_ffSetFocus(formName, formItemId);
+		});
 	} catch (e) {
 		//console.log(e);
 	}
@@ -2027,10 +2039,27 @@ function o_ffRegisterSubmit(formId, submElmId){
 
 // Set the focus in a flexi form to a specific form item, the first error 
 // in the form or the last element focused by a user action 
-function o_ffSetFocus(formId, formItemId){
+function o_ffSetFocus(formId, formItemId) {
+	
+	var applyFocus = function(el) {
+		var jLastEl = jQuery(el);
+		var tagName = el.tagName;
+		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
+			if(jLastEl.hasClass('hasDatepicker')) {
+				jLastEl.datepicker('option', 'showOn', '');
+				jLastEl.focus();
+				jLastEl.datepicker('option', 'showOn', 'focus');
+			} else {
+				jLastEl.focus();
+			}
+		} else {
+			o_info.lastFormFocusEl = 0;
+		}
+	}
+	
 	// 1) Focus on element stored in 
 	// o_info.lastFormFocusEl
-	
+
 	// 2) Override focus on specific form item if provided
 	if (formItemId) {
 		o_info.lastFormFocusEl = formItemId;
@@ -2044,23 +2073,17 @@ function o_ffSetFocus(formId, formItemId){
 	if (o_info.lastFormFocusEl) {
 		var lastEl = jQuery('#' + o_info.lastFormFocusEl);
 		if (lastEl.length > 0) {
-			var jLastEl = jQuery(lastEl[0]);
-			var tagName = lastEl[0].tagName;
-			if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
-				if(jLastEl.hasClass('hasDatepicker')) {
-					jLastEl.datepicker('option', 'showOn', '');
-					jLastEl.focus();
-					jLastEl.datepicker('option', 'showOn', 'focus');
-				} else {
-					jLastEl.focus();
-				}
-			} else {
-				o_info.lastFormFocusEl = 0;
-			}
+			applyFocus(lastEl[0]);
 		} else {
 			o_info.lastFormFocusEl = 0;
 		}
-	} 
+	} else if(formId) {
+		var inputEl = jQuery('#' + formId + " input[autofocus]");
+		if (inputEl.length > 0) {
+			applyFocus(inputEl[0]);
+			o_info.lastFormFocusEl = inputEl[0].getAttribute('id');
+		}
+	}
 }
 
 
