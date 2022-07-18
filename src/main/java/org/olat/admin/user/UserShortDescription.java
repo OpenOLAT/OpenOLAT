@@ -27,6 +27,7 @@ package org.olat.admin.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -72,7 +73,7 @@ public class UserShortDescription extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 
-		initProperties(usageIdentifyer, identity, isAdministrativeUser,true, additionalRows);
+		initProperties(usageIdentifyer, identity, isAdministrativeUser, true, additionalRows);
 	}
 	
 	// Pass a custom usage identifier to define which user properties should be shown
@@ -100,6 +101,9 @@ public class UserShortDescription extends BasicController {
 
 		boolean alreadyDefinedUsername = false;
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(identifier, isAdministrativeUser);
+		userPropertyHandlers = userPropertyHandlers.stream()
+				.filter(handler -> !UserConstants.FIRSTNAME.equals(handler.getName()) && !UserConstants.LASTNAME.equals(handler.getName()))
+				.collect(Collectors.toList());
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			if(UserConstants.NICKNAME.equals(userPropertyHandler.getName())) {
 				alreadyDefinedUsername = true;
@@ -108,6 +112,7 @@ public class UserShortDescription extends BasicController {
 
 		// Show all defined user properties
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		mainVC.contextPut("userFullname", userManager.getUserDisplayName(identity));
 		mainVC.contextPut("user", identity.getUser());
 		mainVC.contextPut("locale", getLocale());
 

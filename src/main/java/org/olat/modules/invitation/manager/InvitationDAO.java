@@ -127,7 +127,7 @@ public class InvitationDAO {
 	/**
 	 * 
 	 * Warning! The E-mail is used in this case as a foreign key to match
-	 * the identity and the invitation on a base group which ca have several
+	 * the identity and the invitation on a base group which can have several
 	 * identities.
 	 * 
 	 * @param group
@@ -177,7 +177,7 @@ public class InvitationDAO {
 		return invitations;
 	}
 	
-	public List<Invitation> findInvitation(RepositoryEntryRef entry) {
+	public List<Invitation> findInvitations(RepositoryEntryRef entry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select invitation from binvitation as invitation ")
 		  .append(" inner join fetch invitation.baseGroup bGroup")
@@ -192,7 +192,7 @@ public class InvitationDAO {
 				  .getResultList();
 	}
 	
-	public List<Invitation> findInvitation(BusinessGroupRef businessGroup) {
+	public List<Invitation> findInvitations(BusinessGroupRef businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select invitation from binvitation as invitation ")
 		  .append(" inner join fetch invitation.baseGroup bGroup")

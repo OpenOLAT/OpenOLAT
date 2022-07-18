@@ -831,6 +831,7 @@ create table o_bs_invitation (
    i_url varchar(512),
    i_roles varchar(255),
    i_registration number default 0 not null,
+   i_additional_infos CLOB,
    fk_group_id number(20),
    fk_identity_id number(20),
    primary key (id)

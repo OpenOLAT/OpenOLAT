@@ -168,6 +168,7 @@ alter table o_bs_invitation add i_type varchar(32) default 'binder' not null;
 alter table o_bs_invitation add i_url varchar(512) default null;
 alter table o_bs_invitation add i_roles varchar(255) default null;
 alter table o_bs_invitation add i_registration number default 0 not null;
+alter table o_bs_invitation add i_additional_infos CLOB default null;
 
 
 

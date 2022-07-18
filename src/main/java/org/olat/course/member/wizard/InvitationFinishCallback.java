@@ -197,6 +197,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		invitation.setFirstName(context.getFirstName());
 		invitation.setLastName(context.getLastName());
 		invitation.setMail(context.getEmail());
+		invitation.setAdditionalInfos(context.getAdditionalInfos());
 		invitation.setRegistration(true);
 		invitation.setRoleList(roles);
 		

@@ -117,6 +117,8 @@ public class InvitationUserInfosController extends StepFormBasicController {
 				context.setFirstName(uiValue);
 			} else if(UserConstants.LASTNAME.equals(propName)) {
 				context.setLastName(uiValue);
+			} else if(!UserConstants.EMAIL.equals(propName)) {
+				context.getAdditionalInfos().getUserAttributes().put(propName, uiValue);
 			}
 		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);

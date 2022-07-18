@@ -168,5 +168,6 @@ alter table o_bs_invitation add column i_type varchar(32) default 'binder' not n
 alter table o_bs_invitation add column i_url varchar(512) default null;
 alter table o_bs_invitation add column i_roles varchar(255) default null;
 alter table o_bs_invitation add column i_registration bool default false not null;
+alter table o_bs_invitation add column i_additional_infos text default null;
 
 

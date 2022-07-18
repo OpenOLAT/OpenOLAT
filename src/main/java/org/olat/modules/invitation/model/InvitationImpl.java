@@ -47,7 +47,9 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.invitation.InvitationAdditionalInfos;
 import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.invitation.manager.InvitationAdditionalInfosXStream;
 
 /**
  * 
@@ -88,6 +90,8 @@ public class InvitationImpl implements Persistable, Invitation {
 	private String lastName;
 	@Column(name="mail", nullable=true, unique=true, insertable=true, updatable=true)
 	private String mail;
+	@Column(name="i_additional_infos", nullable=true, unique=false, insertable=true, updatable=true)
+	private String additionalInfosString;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name="i_type", nullable=false, unique=false, insertable=true, updatable=false)
@@ -217,6 +221,24 @@ public class InvitationImpl implements Persistable, Invitation {
 	@Override
 	public void setRegistration(boolean registration) {
 		this.registration = registration;
+	}
+
+	public String getAdditionalInfosString() {
+		return additionalInfosString;
+	}
+
+	public void setAdditionalInfosString(String additionalInfos) {
+		this.additionalInfosString = additionalInfos;
+	}
+	
+	@Override
+	public InvitationAdditionalInfos getAdditionalInfos() {
+		return InvitationAdditionalInfosXStream.fromXml(additionalInfosString);
+	}
+
+	@Override
+	public void setAdditionalInfos(InvitationAdditionalInfos infos) {
+		setAdditionalInfosString(InvitationAdditionalInfosXStream.toXml(infos));
 	}
 
 	@Override

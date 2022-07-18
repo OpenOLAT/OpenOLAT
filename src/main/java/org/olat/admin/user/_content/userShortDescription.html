@@ -15,11 +15,15 @@
 			<td>$username</td>
 		</tr>
 		#end
-	<tr class="o_prop o_id">
-		<th scope="row">Identity</th>
-		<td>$identityKey</td>
-	</tr>
+		<tr class="o_prop o_id">
+			<th scope="row">Identity</th>
+			<td>$identityKey</td>
+		</tr>
 	#end
+	<tr class="o_prop o_user">
+		<th scope="row">$r.translate("user")</th>
+		<td>$r.escapeHtml($userFullname)</td>
+	</tr>
 	#foreach( $propertyHandler in $userPropertyHandlers )
 	    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
 		<tr class="o_prop o_${propertyHandler.name}">
@@ -35,10 +39,10 @@
 			<td>$username</td>
 		</tr>
 		#end
-	<tr class="o_prop o_id">
-		<th scope="row">Identity</th>
-		<td>$identityKey</td>
-	</tr>
+		<tr class="o_prop o_id">
+			<th scope="row">Identity</th>
+			<td>$identityKey</td>
+		</tr>
 	#end
 	#foreach($row in $additionalRows.getRows())
 		#if($r.isFalse($row.before))

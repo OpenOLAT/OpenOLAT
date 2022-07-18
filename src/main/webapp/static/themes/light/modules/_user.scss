@@ -33,6 +33,34 @@
 	}
 }
 
+.o_user_status_badge {
+	float: right;
+	display: inline-block;
+	padding: 1px 25px;
+	border-radius: $border-radius-small;
+	
+	&.o_user_status_active {
+	    background-color: 	$o-repo-published-color;
+	    color: 				#fff;
+	}
+	&.o_user_status_inactive {
+	    background-color: 	$o-repo-closed-color;
+	    color: 				#fff;
+	}
+	&.o_user_status_login_denied {
+	    background-color: 	$o-repo-trash-color;
+	    color: 				#fff;
+	}
+	&.o_user_status_pending {
+	    background-color: 	$o-repo-review-color;
+	    color: 				#fff;
+	}
+	&.o_user_status_deleted {
+	    background-color: 	$o-repo-deleted-color;
+	    color: 				#fff;
+	}
+}
+
 div.o_skype_button {
 	display:inline-block;
 	p {

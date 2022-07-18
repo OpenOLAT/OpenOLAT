@@ -19,6 +19,8 @@
  */
 package org.olat.course.member.wizard;
 
+import java.util.Objects;
+
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -86,14 +88,22 @@ public class InvitationMailValidationController extends StepFormBasicController 
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		context.setEmail(emailEl.getValue());
-		Identity invitee = userManager.findUniqueIdentityByEmail(emailEl.getValue());
-		if(invitee != null) {
-			boolean inviteeOnly = securityManager.getRoles(invitee).isInviteeOnly();
-			context.setIdentity(invitee, inviteeOnly);
+	protected void formNext(UserRequest ureq) {
+		if(validateFormLogic(ureq) && !Objects.equals(context.getEmail(), emailEl.getValue())) {
+			context.setEmail(emailEl.getValue());
+			Identity invitee = userManager.findUniqueIdentityByEmail(emailEl.getValue());
+			if(invitee != null) {
+				boolean inviteeOnly = securityManager.getRoles(invitee).isInviteeOnly();
+				context.setIdentity(invitee, inviteeOnly);
+			} else {
+				context.setIdentity(null, true);
+			}
 		}
-		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
 }

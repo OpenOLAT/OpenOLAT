@@ -28,6 +28,8 @@ package org.olat.admin.user;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.admin.user.UserShortDescription.Builder;
+import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurity;
@@ -59,6 +61,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
@@ -204,6 +207,7 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	public UserAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity identity) {
 		super(ureq, wControl);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
 		managerRoles = ureq.getUserSession().getRoles();
 		editedIdentity = identity;
@@ -222,7 +226,7 @@ public class UserAdminController extends BasicController implements Activateable
 			setShowTitle(true);
 			initTabbedPane(editedIdentity, ureq);
 			// Exposer portrait and short description
-			exposeUserDataToVC(ureq, editedIdentity);
+			exposeUserDataToVC(ureq, editedIdentity, editedRoles);
 			putInitialPanel(myContent);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
@@ -318,7 +322,7 @@ public class UserAdminController extends BasicController implements Activateable
 			if (event == Event.DONE_EVENT) {
 				//reload profile data on top
 				editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
-				exposeUserDataToVC(ureq, editedIdentity);
+				exposeUserDataToVC(ureq, editedIdentity, editedRoles);
 				userProfileCtr.resetForm(ureq, editedIdentity);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -649,12 +653,43 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param ureq
 	 * @param identity
 	 */
-	private void exposeUserDataToVC(UserRequest ureq, Identity identity) {
+	private void exposeUserDataToVC(UserRequest ureq, Identity identity, Roles roles) {
 		removeAsListenerAndDispose(portraitCtr);
 		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, true, true);
 		myContent.put("portrait", portraitCtr.getInitialComponent());
 		removeAsListenerAndDispose(userShortDescrCtr);
-		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), identity);
+		
+		Builder rowsBuilder = Rows.builder();
+		if(identity.getExpirationDate() != null) {
+			String inactivationDate = Formatter.getInstance(getLocale()).formatDate(identity.getExpirationDate());
+			rowsBuilder.addRow(translate("user.expiration.date"), inactivationDate);
+		}
+		if(roles.isInvitee()) {
+			rowsBuilder.addRow(translate("user.type"), translate("user.type.invitee"));
+		} else if(roles.isGuestOnly()) {
+			rowsBuilder.addRow(translate("user.type"), translate("user.type.guest"));
+		} else {
+			rowsBuilder.addRow(translate("user.type"), translate("user.type.user"));
+		}
+		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), identity, rowsBuilder.build());
 		myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
+		
+		int status = identity.getStatus().intValue();
+		if(status <= Identity.STATUS_ACTIV) {
+			exposeUserStatus("rightsForm.status.activ", "o_user_status_active");
+		} else if(status == Identity.STATUS_INACTIVE) {
+			exposeUserStatus("rightsForm.status.inactive", "o_user_status_inactive");
+		} else if(status == Identity.STATUS_LOGIN_DENIED) {
+			exposeUserStatus("rightsForm.status.login_denied", "o_user_status_login_denied");
+		} else if(status == Identity.STATUS_PENDING) {
+			exposeUserStatus("rightsForm.status.pending", "o_user_status_pending");
+		} else if(status == Identity.STATUS_DELETED) {
+			exposeUserStatus("rightsForm.status.deleted", "o_user_status_deleted");
+		}
+	}
+	
+	private void exposeUserStatus(String i18nStatus, String cssClass) {
+		myContent.contextPut("userStatusCssClass", cssClass);
+		myContent.contextPut("userStatus", translate(i18nStatus));
 	}
 }

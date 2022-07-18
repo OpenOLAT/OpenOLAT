@@ -874,6 +874,7 @@ create table if not exists o_bs_invitation (
    i_url varchar(512),
    i_roles varchar(255),
    i_registration bool default false not null,
+   i_additional_infos mediumtext,
    fk_group_id bigint,
    fk_identity_id bigint,
    primary key (id)

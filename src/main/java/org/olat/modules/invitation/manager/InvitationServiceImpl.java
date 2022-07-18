@@ -22,6 +22,7 @@ package org.olat.modules.invitation.manager;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
@@ -50,6 +51,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.modules.invitation.InvitationAdditionalInfos;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
@@ -137,6 +139,12 @@ public class InvitationServiceImpl implements InvitationService {
 			invitee = userManager.findUniqueIdentityByEmail(invitation.getMail());
 			if (invitee == null) {
 				User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
+				InvitationAdditionalInfos additionInfos =  invitation.getAdditionalInfos();
+				if(additionInfos != null) {
+					for(Map.Entry<String,String> infosPair:additionInfos.getUserAttributes().entrySet()) {
+						user.setProperty(infosPair.getKey(), infosPair.getValue());
+					}
+				}
 				user.getPreferences().setLanguage(locale.toString());
 				invitee = securityManager.createAndPersistIdentityAndUser(null, invitation.getMail(), null, user, null, null, null, null, expirationDate);
 			} else if(invitee.getExpirationDate() != null && invitee.getExpirationDate().before(expirationDate)) {
@@ -187,12 +195,12 @@ public class InvitationServiceImpl implements InvitationService {
 
 	@Override
 	public List<Invitation> findInvitations(RepositoryEntryRef entry) {
-		return invitationDao.findInvitation(entry);
+		return invitationDao.findInvitations(entry);
 	}
 
 	@Override
 	public List<Invitation> findInvitations(BusinessGroupRef businessGroup) {
-		return invitationDao.findInvitation(businessGroup);
+		return invitationDao.findInvitations(businessGroup);
 	}
 
 	@Override

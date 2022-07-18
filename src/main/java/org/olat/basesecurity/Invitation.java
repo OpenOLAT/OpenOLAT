@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.modules.invitation.InvitationAdditionalInfos;
 import org.olat.modules.invitation.InvitationTypeEnum;
 
 /**
@@ -51,6 +52,10 @@ public interface Invitation extends CreateInfo {
 	public String getMail();
 	
 	public void setMail(String mail);
+	
+	public InvitationAdditionalInfos getAdditionalInfos();
+	
+	public void setAdditionalInfos(InvitationAdditionalInfos infos);
 	
 	public List<String> getRoleList();
 	

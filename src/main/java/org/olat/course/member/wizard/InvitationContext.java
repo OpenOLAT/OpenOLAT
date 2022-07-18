@@ -24,6 +24,8 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.modules.invitation.InvitationAdditionalInfos;
+import org.olat.modules.invitation.model.InvitationAdditionalInfosImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -43,6 +45,8 @@ public class InvitationContext {
 	private String email;
 	private String firstName;
 	private String lastName;
+	private final InvitationAdditionalInfos additionalInfos;
+	
 	private MailTemplate mailTemplate;
 	
 	private Identity identity;
@@ -54,6 +58,7 @@ public class InvitationContext {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.overrideManaged = overrideManaged;
+		additionalInfos = new InvitationAdditionalInfosImpl();
 	}
 	
 	public static InvitationContext valueOf(BusinessGroup businessGroup) {
@@ -98,6 +103,10 @@ public class InvitationContext {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public InvitationAdditionalInfos getAdditionalInfos() {
+		return additionalInfos;
 	}
 
 	public Identity getIdentity() {

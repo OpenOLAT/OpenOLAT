@@ -1,9 +1,12 @@
 #if($r.isTrue($showButton))
 	$r.render("backLink")
 #end
+<div class="o_user_ifons_title">
 #if($r.isTrue($showTitle))
+	<span class="o_user_status_badge $userStatusCssClass">$userStatus</span>
 	<h4>$r.translate("content.usermgmt.userfound")</h4>
 #end
+</div>
 <div class="o_user_infos row">
 	<div class="o_user_portrait">$r.render("portrait")</div>
 	<div class="o_user_infos_inner">

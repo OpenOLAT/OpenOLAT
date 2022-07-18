@@ -19,19 +19,28 @@
  */
 package org.olat.modules.invitation.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +61,10 @@ public class InvitationDAOTest extends OlatTestCase {
 	private InvitationDAO invitationDao;
 	@Autowired
 	private InvitationService invitationService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Test
 	public void createAndPersistInvitation() {
@@ -77,6 +90,109 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedInvitation.getBaseGroup());
 		Assert.assertEquals(invitation, reloadedInvitation);
 		Assert.assertEquals(invitation.getToken(), reloadedInvitation.getToken());
+	}
+	
+	@Test
+	public void findInvitation_group() {
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-1");
+		Invitation invitation = createDummyInvitation();
+		// Need the email to match user <-> invitation
+		((InvitationImpl)invitation).setMail(invitee.getUser().getEmail());
+		invitation = invitationDao.update(invitation);
+		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		Invitation foundInvitation = invitationDao.findInvitation(invitation.getBaseGroup(), invitee);
+		Assert.assertNotNull(foundInvitation);
+		Assert.assertEquals(invitation, foundInvitation);
+	}
+	
+	/**
+	 * By invitation foreign key to identity
+	 */
+	@Test
+	public void findInvitations_identity() {
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-2");
+		Invitation invitation = createDummyInvitation();
+		((InvitationImpl)invitation).setIdentity(invitee);
+		invitation = invitationDao.update(invitation);
+		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		List<InvitationEntry> foundInvitations = invitationDao.findInvitations(invitee);
+		assertThat(foundInvitations)
+			.isNotNull()
+			.map(InvitationEntry::getInvitation)
+			.containsExactlyInAnyOrder(invitation);
+	}
+	
+	/**
+	 * By email
+	 */
+	@Test
+	public void findInvitations_identityEmail() {
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-3");
+		Invitation invitation = createDummyInvitation();
+		((InvitationImpl)invitation).setMail(invitee.getUser().getEmail());
+		invitation = invitationDao.update(invitation);
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		List<InvitationEntry> foundInvitations = invitationDao.findInvitations(invitee);
+		assertThat(foundInvitations)
+			.isNotNull()
+			.map(InvitationEntry::getInvitation)
+			.containsExactlyInAnyOrder(invitation);
+	}
+	
+	@Test
+	public void findInvitations_businessGroup() {
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "Invitations", "Group for invitations",
+				BusinessGroup.BUSINESS_TYPE, null, null, 0, 10, false, false, null);
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-4");
+		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.businessGroup);
+		((InvitationImpl)invitation).setIdentity(invitee);
+		((InvitationImpl)invitation).setBaseGroup(businessGroup.getBaseGroup());
+		invitation = invitationDao.update(invitation);
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		List<Invitation> foundInvitations = invitationDao.findInvitations(businessGroup);
+		assertThat(foundInvitations)
+			.isNotNull()
+			.containsExactlyInAnyOrder(invitation);
+	}
+	
+	@Test
+	public void findInvitations_course() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-auth-1");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-5");
+		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.repositoryEntry);
+		((InvitationImpl)invitation).setIdentity(invitee);
+		((InvitationImpl)invitation).setBaseGroup(defGroup);
+		invitation = invitationDao.update(invitation);
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		List<Invitation> foundInvitations = invitationDao.findInvitations(entry);
+		assertThat(foundInvitations)
+			.isNotNull()
+			.containsExactlyInAnyOrder(invitation);
+	}
+	
+	@Test
+	public void loadByKey() {
+		Invitation invitation = createDummyInvitation();
+		Assert.assertNotNull(invitation);
+		dbInstance.commitAndCloseSession();
+		
+		Invitation reloadedInvitation = invitationDao.loadByKey(invitation.getKey());
+		Assert.assertNotNull(reloadedInvitation);
+		Assert.assertEquals(invitation, reloadedInvitation);
 	}
 	
 	@Test
