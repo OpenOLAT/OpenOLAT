@@ -149,6 +149,11 @@ public interface BusinessGroup extends BusinessGroupShort, BusinessGroupLifecycl
 	
 	public void setInvitationByCoachWithAuthorRightsEnabled(boolean enabled);
 	
+	public boolean isLTI13DeploymentByCoachWithAuthorRightsEnabled();
+	
+	public void setLTI13DeploymentByCoachWithAuthorRightsEnabled(boolean enabled);
+	
+	
 	public boolean isAllowToLeave();
 	
 	public void setAllowToLeave(boolean allow);

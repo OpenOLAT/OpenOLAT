@@ -21,7 +21,6 @@ package org.olat.ims.lti13.ui;
 
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,7 +46,6 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13Module;
-import org.olat.ims.lti13.LTI13Roles;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.ui.LTI13SharedToolDeploymentsTableModel.SharedToolsCols;
@@ -91,7 +89,9 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
-		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForRepositoryEntries());
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		allowedToAddDeployment = lti13Module.isAllowedToDeploy(roles, entry);
 
 		initForm(ureq);
 		loadModel();
@@ -102,25 +102,11 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.businessGroup = businessGroup;
 		this.readOnly = false;
-		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForBusinessGroups());
+		Roles roles = ureq.getUserSession().getRoles();
+		allowedToAddDeployment = lti13Module.isAllowedToDeploy(roles, businessGroup);
 
 		initForm(ureq);
 		loadModel();
-	}
-	
-	private boolean allowedToAddDeployments(UserRequest ureq, List<LTI13Roles> rolesAllowedTo) {
-		Roles roles = ureq.getUserSession().getRoles();
-		for(LTI13Roles role:rolesAllowedTo) {
-			if(OrganisationRoles.isValue(role.name()) && roles.hasRole(OrganisationRoles.valueOf(role.name()))) {
-				return true;
-			}
-			if(LTI13Roles.groupCoach == role) {
-				return businessGroup != null;
-			} else if(LTI13Roles.groupCoachAndAuthor == role) {
-				return businessGroup != null && roles.hasRole(OrganisationRoles.author);
-			}
-		}
-		return false;
 	}
 	
 	@Override
@@ -290,7 +276,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 			viewDeploymentCtrl = new LTI13SharedToolDeploymentController(ureq, getWindowControl(), deployment);
 			listenTo(viewDeploymentCtrl);
 			
-			String title = translate("view.deployment.tool", new String[] { deployment.getPlatform().getIssuer() });
+			String title = translate("view.deployment.tool", deployment.getPlatform().getIssuer());
 			cmc = new CloseableModalController(getWindowControl(), "close", viewDeploymentCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);

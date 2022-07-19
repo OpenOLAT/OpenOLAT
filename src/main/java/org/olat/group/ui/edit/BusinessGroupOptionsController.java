@@ -29,6 +29,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.ims.lti13.DeploymentConfigurationPermission;
+import org.olat.ims.lti13.LTI13Module;
+import org.olat.modules.invitation.InvitationConfigurationPermission;
+import org.olat.modules.invitation.InvitationModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,11 +44,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BusinessGroupOptionsController extends FormBasicController {
 
 	private MultipleSelectionElement invitationEnableEl;
+	private MultipleSelectionElement lti13DeploymentEnableEl;
 	
 	private BusinessGroup businessGroup;
 	
 	private final boolean readOnly;
-	
+
+	@Autowired
+	private LTI13Module lti13Module;
+	@Autowired
+	private InvitationModule invitationModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -52,7 +61,6 @@ public class BusinessGroupOptionsController extends FormBasicController {
 		super(ureq, wControl);
 		this.readOnly = readOnly;
 		this.businessGroup = businessGroup;
-		
 		initForm(ureq);
 	}
 	
@@ -67,14 +75,25 @@ public class BusinessGroupOptionsController extends FormBasicController {
 		
 		SelectionValues onKeyValues = new SelectionValues();
 		onKeyValues.add(SelectionValues.entry("on", translate("on")));
-		
+
 		invitationEnableEl = uifactory.addCheckboxesHorizontal("business.group.invitation.enable", "business.group.invitation.enable", formLayout,
 				onKeyValues.keys(), onKeyValues.values());
 		invitationEnableEl.setEnabled(!readOnly);
+		invitationEnableEl.setVisible(invitationModule.isBusinessGroupInvitationEnabled()
+				&& invitationModule.getBusinessGroupCoachPermission() == InvitationConfigurationPermission.perResource);
 		if(businessGroup.isInvitationByCoachWithAuthorRightsEnabled()) {
 			invitationEnableEl.select("on", true);
 		}
 		
+		lti13DeploymentEnableEl = uifactory.addCheckboxesHorizontal("business.group.lti.13.deployment.enable", "business.group.lti.13.deployment.enable", formLayout,
+				onKeyValues.keys(), onKeyValues.values());
+		lti13DeploymentEnableEl.setEnabled(!readOnly);
+		lti13DeploymentEnableEl.setVisible(lti13Module.isEnabled()
+				&& lti13Module.getDeploymentBusinessGroupCoachPermission() == DeploymentConfigurationPermission.perResource);
+		if(businessGroup.isLTI13DeploymentByCoachWithAuthorRightsEnabled()) {
+			lti13DeploymentEnableEl.select("on", true);
+		}
+	
 		if(!readOnly) {
 			uifactory.addFormSubmitButton("save", formLayout);
 		}
@@ -82,7 +101,8 @@ public class BusinessGroupOptionsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		businessGroup = businessGroupService.updateOptions(businessGroup, invitationEnableEl.isAtLeastSelected(1));
+		businessGroup = businessGroupService.updateOptions(businessGroup,
+				invitationEnableEl.isAtLeastSelected(1), lti13DeploymentEnableEl.isAtLeastSelected(1));
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

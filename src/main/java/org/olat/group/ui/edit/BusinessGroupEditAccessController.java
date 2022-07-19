@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.ims.lti13.LTI13Module;
@@ -66,7 +67,8 @@ public class BusinessGroupEditAccessController extends BasicController {
 			mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());
 		}
 		
-		if(lti13Module.isEnabled()) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if(lti13Module.isAllowedToDeploy(roles, businessGroup)) {
 			lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), businessGroup);
 			listenTo(lti13AccessCtrl);
 			mainVC.put("lti13Access", lti13AccessCtrl.getInitialComponent());

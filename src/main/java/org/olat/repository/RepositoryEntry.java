@@ -195,6 +195,11 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean canDownload;
 	@Column(name="allowToLeave", nullable=true, insertable=true, updatable=true)
 	private String allowToLeave;
+	
+	@Column(name="invitations_owner_enabled", nullable=true, insertable=true, updatable=true)
+	private boolean invitationByOwnerWithAuthorRightsEnabled;
+	@Column(name="lti_deployment_owner_enabled", nullable=true, insertable=true, updatable=true)
+	private boolean lti13DeploymentByOwnerWithAuthorRightsEnabled;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="deletiondate", nullable=true, insertable=true, updatable=true)
@@ -442,6 +447,22 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 */
 	public void setCanDownload(boolean b) {
 		canDownload = b;
+	}
+	
+	public boolean isInvitationByOwnerWithAuthorRightsEnabled() {
+		return invitationByOwnerWithAuthorRightsEnabled;
+	}
+
+	public void setInvitationByOwnerWithAuthorRightsEnabled(boolean enabled) {
+		invitationByOwnerWithAuthorRightsEnabled = enabled;
+	}
+	
+	public boolean isLTI13DeploymentByOwnerWithAuthorRightsEnabled() {
+		return lti13DeploymentByOwnerWithAuthorRightsEnabled;
+	}
+
+	public void setLTI13DeploymentByOwnerWithAuthorRightsEnabled(boolean enabled) {
+		lti13DeploymentByOwnerWithAuthorRightsEnabled = enabled;
 	}
 
 	public String getStatus() {

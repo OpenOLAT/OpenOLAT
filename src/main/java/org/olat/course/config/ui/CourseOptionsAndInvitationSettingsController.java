@@ -19,9 +19,6 @@
  */
 package org.olat.course.config.ui;
 
-import java.util.List;
-
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -32,10 +29,13 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.ims.lti13.DeploymentConfigurationPermission;
+import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,10 +48,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseOptionsAndInvitationSettingsController extends BasicController {
 	
 	private final CourseOptionsController courseOptionsCtrl;
-	private CourseInvitationsSettingsController invitationSettingsCtrl;
+	private CourseInvitationsAndDeploymentsSettingsController invitationSettingsCtrl;
 	
 	private LockResult lockEntry;
 	
+	@Autowired
+	private LTI13Module lti13Module;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -71,10 +73,10 @@ public class CourseOptionsAndInvitationSettingsController extends BasicControlle
 		listenTo(courseOptionsCtrl);
 		mainVC.put("options", courseOptionsCtrl.getInitialComponent());
 		
-		if(invitationModule.isCourseInvitationEnabled()
-				&& invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.perResource
-				&& hasPermissions(reSecurity)) {
-			invitationSettingsCtrl = new CourseInvitationsSettingsController(ureq, getWindowControl(), entry, course, editable);
+		if(((invitationModule.isCourseInvitationEnabled() && invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.perResource)
+				|| (lti13Module.isEnabled() && lti13Module.getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.perResource))
+				&& (reSecurity.isAdministrator() || reSecurity.isPrincipal() || reSecurity.isLearnResourceManager())) {
+			invitationSettingsCtrl = new CourseInvitationsAndDeploymentsSettingsController(ureq, getWindowControl(), entry, editable);
 			listenTo(invitationSettingsCtrl);
 			mainVC.put("invitations", invitationSettingsCtrl.getInitialComponent());
 		}
@@ -94,12 +96,6 @@ public class CourseOptionsAndInvitationSettingsController extends BasicControlle
 		}
 	}
 	
-	private boolean hasPermissions(RepositoryEntrySecurity reSecurity) {
-		List<String> rolesAllowedTo = invitationModule.getCourseRolesConfigurationList();
-		return (rolesAllowedTo.contains(OrganisationRoles.administrator.name()) && reSecurity.isAdministrator())
-				|| (rolesAllowedTo.contains(OrganisationRoles.learnresourcemanager.name()) && reSecurity.isLearnResourceManager());	
-	}
-	
 	@Override
 	protected void doDispose() {
 		if (lockEntry != null && lockEntry.isSuccess()) {
@@ -112,7 +108,8 @@ public class CourseOptionsAndInvitationSettingsController extends BasicControlle
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(courseOptionsCtrl == source || invitationSettingsCtrl == source) {
-			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT
+					|| event instanceof ReloadSettingsEvent) {
 				fireEvent(ureq, event);
 			}
 		}

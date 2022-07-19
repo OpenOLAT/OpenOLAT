@@ -78,7 +78,6 @@ public class AuthoringEditAccessController extends BasicController {
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
 	
-	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.entry = entry;

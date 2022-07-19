@@ -61,6 +61,8 @@ import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.lifecycle.BusinessGroupStatusController;
+import org.olat.ims.lti13.DeploymentConfigurationPermission;
+import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -101,6 +103,8 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	private int membersTab;
 	private final String type;
 
+	@Autowired
+	private LTI13Module lti13Module;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
@@ -273,9 +277,9 @@ public class BusinessGroupEditController extends BasicController implements Gene
 			});
 		}
 		
-		if(invitationModule.isBusinessGroupInvitationEnabled()
-				&& invitationModule.getBusinessGroupCoachPermission() == InvitationConfigurationPermission.perResource
-				&& (roles.isAdministrator() || roles.isPrincipal() || roles.isGroupManager() || isInvitee)) {
+		if(((invitationModule.isBusinessGroupInvitationEnabled() && invitationModule.getBusinessGroupCoachPermission() == InvitationConfigurationPermission.perResource)
+				|| (lti13Module.isEnabled() && lti13Module.getDeploymentBusinessGroupCoachPermission() == DeploymentConfigurationPermission.perResource))
+				&& (roles.isAdministrator() || roles.isPrincipal() || roles.isGroupManager())) {
 			tabbedPane.addTab(ureq, translate("group.edit.tab.options"), uureq -> {
 				removeControllerListener(optionsCtrl);
 				// always a new up-to-date one

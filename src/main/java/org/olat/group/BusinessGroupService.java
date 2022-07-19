@@ -125,7 +125,8 @@ public interface BusinessGroupService {
 			boolean download);
 	
 	public BusinessGroup updateOptions(BusinessGroup group,
-			boolean invitationByCoachWithAuthorsRightsEnabled);
+			boolean invitationByCoachWithAuthorsRightsEnabled,
+			boolean lti13DeploymentByCoachWithAuthorsRightsEnabled);
 	
 	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allowLeaving);
 	

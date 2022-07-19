@@ -140,6 +140,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		if(optionsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				doOpenOptions(ureq);
+			} else {
+				fireEvent(ureq, event);
 			}
 		} else if(toolbarCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {

@@ -25,35 +25,45 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.OLATResourceable;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.config.CourseConfig;
+import org.olat.ims.lti13.DeploymentConfigurationPermission;
+import org.olat.ims.lti13.LTI13Module;
+import org.olat.modules.invitation.InvitationConfigurationPermission;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
+ * The controller is about who has permissions to add deployments and invites
+ * someone in course.
  * 
  * Initial date: 11 juil. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseInvitationsSettingsController extends FormBasicController {
+public class CourseInvitationsAndDeploymentsSettingsController extends FormBasicController {
 	
 	private MultipleSelectionElement invitationEnableEl;
+	private MultipleSelectionElement lti13DeploymentEnableEl;
 	
 	private final boolean editable;
 	private RepositoryEntry entry;
-	private CourseConfig courseConfig;
 	
-	CourseInvitationsSettingsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, ICourse course, boolean editable) {
+	@Autowired
+	private LTI13Module lti13Module;
+	@Autowired
+	private InvitationModule invitationModule;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
+	CourseInvitationsAndDeploymentsSettingsController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, boolean editable) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.editable = editable;
-		courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 
 		initForm(ureq);
 	}
@@ -70,8 +80,19 @@ public class CourseInvitationsSettingsController extends FormBasicController {
 		invitationEnableEl = uifactory.addCheckboxesHorizontal("course.invitation.enable", "course.invitation.enable", formLayout,
 				onKeyValues.keys(), onKeyValues.values());
 		invitationEnableEl.setEnabled(editable);
-		if(courseConfig.isInvitationByOwnersWithAuthorRightsEnabled()) {
+		invitationEnableEl.setVisible(invitationModule.isCourseInvitationEnabled()
+				&& invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.perResource);
+		if(entry.isInvitationByOwnerWithAuthorRightsEnabled()) {
 			invitationEnableEl.select("on", true);
+		}
+		
+		lti13DeploymentEnableEl = uifactory.addCheckboxesHorizontal("course.lti.13.deployment.enable", "course.lti.13.deployment.enable", formLayout,
+				onKeyValues.keys(), onKeyValues.values());
+		lti13DeploymentEnableEl.setEnabled(editable);
+		lti13DeploymentEnableEl.setVisible(lti13Module.isEnabled()
+				&& lti13Module.getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.perResource);
+		if(entry.isLTI13DeploymentByOwnerWithAuthorRightsEnabled()) {
+			lti13DeploymentEnableEl.select("on", true);
 		}
 		
 		uifactory.addFormSubmitButton("save", formLayout);
@@ -79,20 +100,7 @@ public class CourseInvitationsSettingsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		OLATResourceable courseOres = entry.getOlatResource();
-		if(CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
-			showWarning("error.editoralreadylocked", new String[] { "???" });
-			return;
-		}
-		
-		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
-		courseConfig = course.getCourseEnvironment().getCourseConfig();
-		courseConfig.setInvitationByOwnersWithAuthorRightsEnabled(invitationEnableEl.isAtLeastSelected(1));
-		
-		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		entry = repositoryManager.setOptions(entry, invitationEnableEl.isAtLeastSelected(1), lti13DeploymentEnableEl.isAtLeastSelected(1));
+		fireEvent(ureq, new ReloadSettingsEvent(false, false, false, false));
 	}
-	
 }

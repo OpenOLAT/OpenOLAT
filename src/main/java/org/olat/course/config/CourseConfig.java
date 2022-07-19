@@ -149,9 +149,6 @@ public class CourseConfig implements Serializable, Cloneable {
 	
 	private static final transient String COACH_FOLDER_ENABLED = "COACH_FOLDER_ENABLED";
 	private static final transient String COACH_FOLDER_PATH = "COACH_FOLDER_PATH";
-	
-	private static final transient String INVITATION_OWNER_AUTHOR_ENABLED = "INVITATION_OWNER_AUTHOR_ENABLED";
-
 
 	/**
 	 * config file version from file
@@ -1089,15 +1086,6 @@ public class CourseConfig implements Serializable, Cloneable {
 			configuration.remove(COACH_FOLDER_PATH);
 		}
 	}
-	
-	public boolean isInvitationByOwnersWithAuthorRightsEnabled() {
-		Boolean bool = (Boolean) configuration.get(INVITATION_OWNER_AUTHOR_ENABLED);
-		return bool != null && bool.booleanValue();
-	}
-	
-	public void setInvitationByOwnersWithAuthorRightsEnabled(boolean enabled) {
-		configuration.put(INVITATION_OWNER_AUTHOR_ENABLED, Boolean.valueOf(enabled));
-	}
 
 	@Override
 	public CourseConfig clone() {
@@ -1153,7 +1141,6 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setDisclaimerLabel(2, 2, getDisclaimerLabel(2, 2));
 		clone.setCoachFolderEnabled(isCoachFolderEnabled());
 		clone.setCoachFolderPath(getCoachFolderPath());
-		clone.setInvitationByOwnersWithAuthorRightsEnabled(isInvitationByOwnersWithAuthorRightsEnabled());
 		ImageSource teaserImageSource = getTeaserImageSource();
 		if (teaserImageSource != null) {
 			ImageSource clonedTeaserImageSource = (ImageSource)XStreamHelper.xstreamClone(teaserImageSource);

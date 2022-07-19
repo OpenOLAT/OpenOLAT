@@ -1473,5 +1473,15 @@ public class NodeRightServiceImplTest {
 		public void setInvitationByCoachWithAuthorRightsEnabled(boolean enabled) {
 			//
 		}
+
+		@Override
+		public boolean isLTI13DeploymentByCoachWithAuthorRightsEnabled() {
+			return false;
+		}
+
+		@Override
+		public void setLTI13DeploymentByCoachWithAuthorRightsEnabled(boolean enabled) {
+			//
+		}
 	}
 }

@@ -688,6 +688,27 @@ public class RepositoryManager {
 				isAuthor, isAdministrator, isLearnRessourceManager, isPrincipal, canLaunch, readOnly);
 	}
 	
+	public RepositoryEntry setOptions(final RepositoryEntry re,
+			boolean invitationByOwnerWithAuthorRightsEnabled,
+			boolean lti13DeploymentByOwnerWithAuthorRightsEnabled) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		
+		reloadedRe.setInvitationByOwnerWithAuthorRightsEnabled(invitationByOwnerWithAuthorRightsEnabled);
+		reloadedRe.setLTI13DeploymentByOwnerWithAuthorRightsEnabled(lti13DeploymentByOwnerWithAuthorRightsEnabled);
+		
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
+		dbInstance.commit();
+		return updatedRe;
+	}
+	
 	public RepositoryEntry setAccess(final RepositoryEntry re, boolean publicVisible,
 			RepositoryEntryAllowToLeaveOptions leaveSetting, boolean canCopy, boolean canReference, boolean canDownload,
 			List<Organisation> organisations) {

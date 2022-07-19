@@ -1887,15 +1887,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			return false;
 		}
 		
-		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-		CourseConfig cc = course.getCourseConfig(); // do not cache cc, not save
-		RepositoryEntrySecurity wreSecurity = reSecurity.getWrappedSecurity();
+		final RepositoryEntry entry = getRepositoryEntry();
+		final RepositoryEntrySecurity wreSecurity = reSecurity.getWrappedSecurity();
 		return wreSecurity.isAdministrator() || wreSecurity.isLearnResourceManager()
 				|| (wreSecurity.isAuthor() && wreSecurity.isEntryAdmin()
 						&& invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.allResources)
 				|| (wreSecurity.isAuthor() && wreSecurity.isEntryAdmin()
 						&& invitationModule.getCourseOwnerPermission() == InvitationConfigurationPermission.perResource
-						&& cc.isInvitationByOwnersWithAuthorRightsEnabled());
+						&& entry.isInvitationByOwnerWithAuthorRightsEnabled());
 	}
 	
 	private void doConfirmLeave(UserRequest ureq) {

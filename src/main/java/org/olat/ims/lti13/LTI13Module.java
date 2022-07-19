@@ -19,14 +19,18 @@
  */
 package org.olat.ims.lti13;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,8 +48,11 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_PLATFORM_ISS = "lti13.platform.iss";
 	private static final String PROP_MATCHING_BY_EMAIL = "lti13.platform.matching.by.email";
 	private static final String PROP_DEFAULT_ORGANISATION = "lti13.default.organisation";
-	private static final String PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY = "lti13.deployment.roles.repositoryentry";
-	private static final String PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP = "lti13.deployment.roles.businessgroup";
+	
+	private static final String PROP_DEPLOYMENT_REPOSITORY_ENTRY_ROLE = "lti13.deployment.repository.entry.role";
+	private static final String PROP_DEPLOYMENT_REPOSITORY_ENTRY_OWNER_PERMISSION = "lti13.deployment.repository.entry.owner.permission";
+	private static final String PROP_DEPLOYMENT_BUSINESS_GROUP_ROLE = "lti13.deployment.business.group.role";
+	private static final String PROP_DEPLOYMENT_BUSINESS_GROUP_COACH_PERMISSION = "lti13.deployment.business.group.owner.permission";
 	
 	
 	@Value("${lti13.enabled}")
@@ -60,10 +67,15 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${lti13.default.organisation}")
 	private String defaultOrganisationKey;
 	
-	@Value("${lti13.deployment.roles.repositoryentry:user,author,learnresourcemanager,administrator}")
-	private String deploymentRolesForRepositoryEntries;
-	@Value("${lti13.deployment.roles.businessgroup:user,author,groupmanager,administrator}")
-	private String deploymentRolesForBusinessGroups;
+	@Value("${lti13.deployment.repository.entry.role:administrator}")
+	private String deploymentRepositoryEntryRolesConfiguration;
+	@Value("${lti13.deployment.repository.entry.owner.permission:perResource}")
+	private String deploymentRepositoryEntryOwnerPermission;
+	
+	@Value("${lti13.deployment.business.group.role:administrator}")
+	private String deploymentBusinessGroupRolesConfiguration;
+	@Value("${lti13.deployment.business.group.owner.permission:perResource}")
+	private String deploymentBusinessGroupCoachPermission;
 	
 	@Autowired
 	public LTI13Module(CoordinatorManager coordinatorManager) {
@@ -79,8 +91,11 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		
 		matchingByEmail = getStringPropertyValue(PROP_MATCHING_BY_EMAIL, matchingByEmail);
 		defaultOrganisationKey = getStringPropertyValue(PROP_DEFAULT_ORGANISATION, defaultOrganisationKey);
-		deploymentRolesForRepositoryEntries = getStringPropertyValue(PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY, deploymentRolesForRepositoryEntries);
-		deploymentRolesForBusinessGroups = getStringPropertyValue(PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP, deploymentRolesForBusinessGroups);
+		
+		deploymentRepositoryEntryRolesConfiguration = getStringPropertyValue(PROP_DEPLOYMENT_REPOSITORY_ENTRY_ROLE, deploymentRepositoryEntryRolesConfiguration);
+		deploymentRepositoryEntryOwnerPermission = getStringPropertyValue(PROP_DEPLOYMENT_REPOSITORY_ENTRY_OWNER_PERMISSION, deploymentRepositoryEntryOwnerPermission);
+		deploymentBusinessGroupRolesConfiguration = getStringPropertyValue(PROP_DEPLOYMENT_BUSINESS_GROUP_ROLE, deploymentBusinessGroupRolesConfiguration);
+		deploymentBusinessGroupCoachPermission = getStringPropertyValue(PROP_DEPLOYMENT_BUSINESS_GROUP_COACH_PERMISSION, deploymentBusinessGroupCoachPermission);
 	}
 
 	@Override
@@ -124,44 +139,82 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		this.matchingByEmail = enabled;
 		setStringProperty(PROP_MATCHING_BY_EMAIL, enabled, true);
 	}
-
-	public String getDeploymentRolesForRepositoryEntries() {
-		return deploymentRolesForRepositoryEntries;
-	}
-
-	public void setDeploymentRolesForRepositoryEntries(String deploymentRoles) {
-		this.deploymentRolesForRepositoryEntries = deploymentRoles;
-		setStringProperty(PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY, deploymentRoles, true);
-	}
 	
-	public List<LTI13Roles> getDeploymentRolesListForRepositoryEntries() {
-		return toRoles(getDeploymentRolesForRepositoryEntries());
-	}
-
-	public String getDeploymentRolesForBusinessGroups() {
-		return deploymentRolesForBusinessGroups;
-	}
-
-	public void setDeploymentRolesForBusinessGroups(String deploymentRoles) {
-		this.deploymentRolesForBusinessGroups = deploymentRoles;
-		setStringProperty(PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP, deploymentRoles, true);
-	}
-	
-	public List<LTI13Roles> getDeploymentRolesListForBusinessGroups() {
-		return toRoles(getDeploymentRolesForBusinessGroups());
-	}
-	
-	private List<LTI13Roles> toRoles(String roles) {
-		List<LTI13Roles> roleList = new ArrayList<>(5);
-		if(StringHelper.containsNonWhitespace(roles)) {
-			String[] values = roles.split("[,]");
-			for(String value:values) {
-				if(LTI13Roles.valid(value)) {
-					roleList.add(LTI13Roles.valueOf(value));
-				}
-			}
+	public List<String> getDeploymentRepositoryEntryRolesConfigurationList() {
+		if(StringHelper.containsNonWhitespace(deploymentRepositoryEntryRolesConfiguration)) {
+			String[] roles = deploymentRepositoryEntryRolesConfiguration.split("[,]");
+			return List.of(roles);
 		}
-		return roleList;
+		return List.of();
+	}
+
+	public void setDeploymentRepositoryEntryRolesConfigurationList(Collection<String> roles) {
+		String rolesString = String.join(",", roles);
+		deploymentRepositoryEntryRolesConfiguration = rolesString;
+		setStringProperty(PROP_DEPLOYMENT_REPOSITORY_ENTRY_ROLE, rolesString, true);
+	}
+
+	public DeploymentConfigurationPermission getDeploymentRepositoryEntryOwnerPermission() {
+		return DeploymentConfigurationPermission.valueOfSecure(deploymentRepositoryEntryOwnerPermission);
+	}
+
+	public void setDeploymentRepositoryEntryOwnerPermission(String permission) {
+		this.deploymentRepositoryEntryOwnerPermission = permission;
+		setStringProperty(PROP_DEPLOYMENT_REPOSITORY_ENTRY_OWNER_PERMISSION, permission, true);
+	}
+	
+	public List<String> getDeploymentBusinessGroupRolesConfigurationList() {
+		if(StringHelper.containsNonWhitespace(deploymentBusinessGroupRolesConfiguration)) {
+			String[] roles = deploymentBusinessGroupRolesConfiguration.split("[,]");
+			return List.of(roles);
+		}
+		return List.of();
+	}
+
+	public void setDeploymentBusinessGroupRolesConfigurationList(Collection<String> roles) {
+		String rolesString = String.join(",", roles);
+		deploymentBusinessGroupRolesConfiguration = rolesString;
+		setStringProperty(PROP_DEPLOYMENT_BUSINESS_GROUP_ROLE, rolesString, true);
+	}
+
+	public DeploymentConfigurationPermission getDeploymentBusinessGroupCoachPermission() {
+		return DeploymentConfigurationPermission.valueOfSecure(deploymentBusinessGroupCoachPermission);
+	}
+
+	public void setDeploymentBusinessGroupCoachPermission(String permission) {
+		this.deploymentBusinessGroupCoachPermission = permission;
+		setStringProperty(PROP_DEPLOYMENT_BUSINESS_GROUP_COACH_PERMISSION, permission, true);
+	}
+	
+	public boolean isAllowedToDeploy(Roles roles, BusinessGroup businessGroup) {
+		if(!isEnabled()) {
+			return false;
+		}
+		
+		List<String> allowedRoles = getDeploymentBusinessGroupRolesConfigurationList();
+		if((roles.isAdministrator() && allowedRoles.contains(OrganisationRoles.administrator.name()))
+				|| (roles.isGroupManager() && allowedRoles.contains(OrganisationRoles.groupmanager.name()))) {
+			return true;
+		}
+		return roles.isAuthor() && (getDeploymentBusinessGroupCoachPermission() == DeploymentConfigurationPermission.allResources
+				|| (getDeploymentBusinessGroupCoachPermission() == DeploymentConfigurationPermission.perResource
+						&& businessGroup.isLTI13DeploymentByCoachWithAuthorRightsEnabled()));
+	}
+	
+	public boolean isAllowedToDeploy(Roles roles, RepositoryEntry entry) {
+		if(!isEnabled()) {
+			return false;
+		}
+		
+		List<String> allowedRoles = getDeploymentRepositoryEntryRolesConfigurationList();
+		if((roles.isAdministrator() && allowedRoles.contains(OrganisationRoles.administrator.name()))
+				|| (roles.isGroupManager() && allowedRoles.contains(OrganisationRoles.groupmanager.name()))) {
+			return true;
+		}
+		return roles.isAuthor() && (getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.allResources
+				|| (getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.perResource
+						&& entry.isLTI13DeploymentByOwnerWithAuthorRightsEnabled()));
+		
 	}
 
 	public String getPlatformJwkSetUri() {
@@ -183,6 +236,4 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	public String getToolLoginRedirectUri() {
 		return Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_LOGIN_REDIRECT_PATH;
 	}
-
-	
 }
