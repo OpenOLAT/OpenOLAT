@@ -41,7 +41,6 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -128,6 +127,7 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
@@ -1734,12 +1734,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competences) {
+	public void linkCompetences(Page page, Identity identity, Set<? extends TaxonomyLevelRef> taxonomyLevels) {
 		List<TaxonomyCompetence> relatedCompetences = getRelatedCompetences(page, true);
 		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(TaxonomyCompetence::getTaxonomyLevel).collect(Collectors.toList());
 		
-		List<Long> newTaxonomyLevelKeys = competences.stream()
-				.map(textBoxItem -> Long.valueOf(textBoxItem.getValue()))
+		List<Long> newTaxonomyLevelKeys = taxonomyLevels.stream()
+				.map(TaxonomyLevelRef::getKey)
 				.collect(Collectors.toList());
 		
 		List<TaxonomyLevel> newTaxonomyLevels = taxonomyLevelDAO.loadLevelsByKeys(newTaxonomyLevelKeys);

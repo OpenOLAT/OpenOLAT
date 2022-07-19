@@ -349,10 +349,10 @@ public class FormUIFactory {
 	
 	public TaxonomyLevelSelection addTaxonomyLevelSelection(String name, String i18nLabel, FormItemContainer formLayout,
 			WindowControl wControl, Set<TaxonomyLevel> allTaxonomyLevels) {
-		TaxonomyLevelSelectionImpl acms = new TaxonomyLevelSelectionImpl(wControl, name, allTaxonomyLevels);
-		setLabelIfNotNull(i18nLabel, acms);
-		formLayout.add(acms);
-		return acms;
+		TaxonomyLevelSelectionImpl tlsi = new TaxonomyLevelSelectionImpl(wControl, name, allTaxonomyLevels);
+		setLabelIfNotNull(i18nLabel, tlsi);
+		formLayout.add(tlsi);
+		return tlsi;
 	}
 
 	/**

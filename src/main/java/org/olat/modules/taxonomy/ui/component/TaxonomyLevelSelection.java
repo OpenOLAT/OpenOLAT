@@ -33,6 +33,8 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
  */
 public interface TaxonomyLevelSelection extends FormItem {
 	
+	public void setDisplayNameHeader(String displayNameHeader);
+	
 	public Set<TaxonomyLevelRef> getSelection();
 	
 	public void setSelection(Collection<? extends TaxonomyLevelRef> taxonomyLevels);

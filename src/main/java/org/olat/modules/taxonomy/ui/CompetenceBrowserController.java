@@ -71,14 +71,16 @@ public class CompetenceBrowserController extends FormBasicController {
 	private final List<Taxonomy> taxonomies;
 	private final Map<Taxonomy, List<TaxonomyLevel>> taxonomyToLevels;
 	private final boolean withSelection;
+	private final String displayNameHeader;
 
 
 	public CompetenceBrowserController(UserRequest ureq, WindowControl wControl, List<Taxonomy> taxonomies,
-			Collection<TaxonomyLevel> taxonomyLevels, boolean withSelection) {
+			Collection<TaxonomyLevel> taxonomyLevels, boolean withSelection, String displayNameHeader) {
 		super(ureq, wControl, "competence_browse");
 		this.taxonomies = taxonomies;
 		this.taxonomyToLevels = taxonomyLevels.stream().collect(Collectors.groupingBy(TaxonomyLevel::getTaxonomy));
 		this.withSelection = withSelection;
+		this.displayNameHeader = displayNameHeader;
 		
 		initForm(ureq);
 		loadModel();
@@ -89,7 +91,11 @@ public class CompetenceBrowserController extends FormBasicController {
 		// Create columns model
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceBrowserCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.competences, new TreeNodeFlexiCellRenderer()));
+		DefaultFlexiColumnModel displayNameModel = new DefaultFlexiColumnModel(CompetenceBrowserCols.competences, new TreeNodeFlexiCellRenderer());
+		if (StringHelper.containsNonWhitespace(displayNameHeader)) {
+			displayNameModel.setHeaderLabel(displayNameHeader);
+		}
+		columnsModel.addFlexiColumnModel(displayNameModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceBrowserCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.details));
@@ -108,7 +114,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		}
 		
 		// Create a fake root crumb
-		rootCrumb = new CompetenceBrowserTableRow(getTranslator());
+		rootCrumb = new CompetenceBrowserTableRow(displayNameHeader);
 	}
 	
 	private void loadModel() {

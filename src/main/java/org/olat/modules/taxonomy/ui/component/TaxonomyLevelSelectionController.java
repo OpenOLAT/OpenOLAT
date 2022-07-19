@@ -119,7 +119,10 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		selectionEl.setHorizontallyAlignedCheckboxes(true);
 		selectionEl.setEscapeHtml(false);
 		selectionKeys = new HashSet<>(selectionEl.getKeys());
-		selectionKeys.forEach(key -> selectionEl.select(key, true));
+		selectionEl.setVisible(!selectionEl.getKeys().isEmpty());
+		if (selectionEl.isVisible()) {
+			selectionKeys.forEach(key -> selectionEl.select(key, true));
+		}
 
 		selectionNoneEl = uifactory.addStaticTextElement("taxonomy.level.selection.selection.none",
 				"taxonomy.level.selection.selection", translate("taxonomy.level.selection.selection.none"), formLayout);
@@ -290,7 +293,8 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 	private void doSelect(UserRequest ureq) {
 		Set<Long> keys = new HashSet<>();
 		
-		for (String key : selectionEl.getSelectedKeys()) {
+		Collection<String> selectedKeys = expand.booleanValue()? selectionEl.getSelectedKeys(): selectionKeys;
+		for (String key : selectedKeys) {
 			keys.add(Long.valueOf(key));
 		}
 		

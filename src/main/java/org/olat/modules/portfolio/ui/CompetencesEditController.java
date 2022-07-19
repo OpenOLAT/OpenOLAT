@@ -19,36 +19,31 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkPopupSettings;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
-import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,15 +58,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CompetencesEditController extends FormBasicController {
 	
-	private TextBoxListElement competencesEl;
+	private TaxonomyLevelSelection competencesEl;
 	private FormLink editLink;
 	private FormSubmit saveButton;
+	
+	private final Page page;
 
-	private List<TextBoxItem> existingCompetences;
-	private List<TextBoxItem> availableTaxonomyLevels;
-	
-	private FormLink openBrowserLink;
-	
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
@@ -79,38 +71,10 @@ public class CompetencesEditController extends FormBasicController {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Page portfolioPage) {
+	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Page page) {
 		super(ureq, wControl, "competences_edit");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
-		
-		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(portfolioPage, true);
-		existingCompetences = new ArrayList<>();
-		for (TaxonomyCompetence competence : competences) {
-			TaxonomyLevel taxonomyLevel = competence.getTaxonomyLevel();
-			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyLevel.getKey().toString());
-			competenceTextBoxItem.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
-			competenceTextBoxItem.setCustomCSS("o_competence");
-			existingCompetences.add(competenceTextBoxItem);
-		}
-		
-		availableTaxonomyLevels = new ArrayList<>();
-		if (portfolioModule.isTaxonomyLinkingReady()) {
-			for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
-				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					if (taxonomyLevel.getType() != null) {
-						if(taxonomyLevel.getType().isAllowedAsCompetence() == false) {
-							// Do not list items, which are not marked as available for competences
-							continue;
-						}
-					}
-					
-					TextBoxItem item = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyLevel.getKey().toString());
-					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
-					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
-					availableTaxonomyLevels.add(item);
-				}
-			}
-		}
+		this.page = page;
 		
 		initForm(ureq);
 		/* we add domID to competences_edit.html to reduce DIV count */
@@ -121,32 +85,28 @@ public class CompetencesEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_tags_form");
 		
-		competencesEl = uifactory.addTextBoxListElement("competences", "competences", "competences.hint", existingCompetences, formLayout, getTranslator());
-		competencesEl.setHelpText(translate("competences.hint"));
-		competencesEl.setAllowDuplicates(false);
-		competencesEl.setAllowNewValues(false);
-		competencesEl.setElementCssClass("o_block_inline");
-		competencesEl.getComponent().setSpanAsDomReplaceable(false);
-		competencesEl.setIcon("o_icon_competences");
-		competencesEl.setAutoCompleteContent(availableTaxonomyLevels);
-		competencesEl.setCustomCSSForItems("o_competence");
-		competencesEl.setShowSaveButton(true);
-		competencesEl.setShowInlineLabel(true);
-		competencesEl.setIconTitleKey("competences");
+		Set<TaxonomyLevel>  existingCompetences = page != null
+				? portfolioService.getRelatedCompetences(page, true)
+						.stream()
+						.map(TaxonomyCompetence::getTaxonomyLevel)
+						.collect(Collectors.toSet())
+				: Collections.emptySet();
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevels(portfolioModule.getLinkedTaxonomies())
+				.stream()
+				.filter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence())
+				.collect(Collectors.toSet());
 		
-		
-		
+		competencesEl = uifactory.addTaxonomyLevelSelection("competences", "competences", formLayout,
+				getWindowControl(), availableTaxonomyLevels);
+		competencesEl.setDisplayNameHeader(translate("table.header.competence"));
+		competencesEl.setSelection(existingCompetences);
+
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
-		editLink.setCustomEnabledLinkCSS("o_button_textstyle");
+		editLink.setCustomEnabledLinkCSS("o_competences_edit o_button_textstyle");
 		
 		saveButton = uifactory.addFormSubmitButton("save", formLayout);
+		saveButton.setElementCssClass("o_competences_save");
 		saveButton.setVisible(false);
-		saveButton.setElementCssClass("btn-xs");
-		
-		openBrowserLink = uifactory.addFormLink("open.browser", formLayout, Link.LINK);
-		openBrowserLink.setCustomEnabledLinkCSS("o_button_textstyle");
-		openBrowserLink.setPopup(new LinkPopupSettings(800, 600, "Open"));
-		
 		
 		// on init set to read-only
 		initFormEditableState(false);
@@ -163,7 +123,7 @@ public class CompetencesEditController extends FormBasicController {
 		editLink.setVisible(!editable);
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (competencesEl.getValueList().isEmpty()) {
+		if (competencesEl.getSelection().isEmpty()) {
 			editLink.setI18nKey("add");			
 		} else {
 			editLink.setI18nKey("edit");
@@ -178,13 +138,6 @@ public class CompetencesEditController extends FormBasicController {
 		} else if(source == competencesEl) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			initFormEditableState(false);
-		} else if(source == openBrowserLink) {
-			List<Taxonomy> linkedTaxonomies = portfolioModule.getLinkedTaxonomies();
-			List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(linkedTaxonomies);
-			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> new CompetenceBrowserController(lureq,
-					lwControl, linkedTaxonomies, taxonomyLevels, false);
-			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
-			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		}
 	}
 	
@@ -197,7 +150,7 @@ public class CompetencesEditController extends FormBasicController {
 	/**
 	 * @return The list of competences as visually configured in the box
 	 */
-	public List<TextBoxItem> getUpdatedCompetences() {
-		return competencesEl.getValueItems();
+	public Set<TaxonomyLevelRef> getUpdatedCompetences() {
+		return competencesEl.getSelection();
 	}
 }

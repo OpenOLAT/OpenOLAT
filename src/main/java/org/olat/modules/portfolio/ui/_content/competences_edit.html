@@ -1,8 +1,12 @@
-
 <div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_portfolio_competences_edit o_block_inline">
 	<div class="o_portfolio_competences">
-		$r.render("competences")
+		<div>
+			<span class="o_textbox_disabled o_tags_with_icon"><i class="o_icon o_icon_fw o_icon_competences" title="$r.translate("competences")"> </i>&nbsp;$r.translate("competences")&nbsp;</span>
+		</div>
+		<div class="o_competences_selection">
+			$r.render("competences")
+			$r.render("save")
+			$r.render("edit")
+		</div>
 	</div> 
-	$r.render("edit") 
-	$r.render("open.browser")
 </div>

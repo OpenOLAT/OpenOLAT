@@ -25,9 +25,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -49,6 +49,7 @@ import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.model.export.BinderXML;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -765,12 +766,12 @@ public interface PortfolioService {
 	public void linkCompetence(Page page, TaxonomyCompetence competence);
 	
 	/**
-	 * Link a list of competences coming from a text box
+	 * Link a list of competences
 	 * 
 	 * @param page
 	 * @param competences
 	 */
-	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competences);
+	public void linkCompetences(Page page, Identity identity, Set<? extends TaxonomyLevelRef> set);
 	
 	/**
 	 * Unlink a taxonomy competence from a portfolio page

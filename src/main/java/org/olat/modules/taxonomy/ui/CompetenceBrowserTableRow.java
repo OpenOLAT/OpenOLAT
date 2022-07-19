@@ -21,7 +21,7 @@ package org.olat.modules.taxonomy.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -35,14 +35,13 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	private CompetenceBrowserTableRow parent;
 	private boolean hasChildren;
 	
+	private String rootCrumb;
 	private Taxonomy taxonomy;
 	private TaxonomyLevel taxonomyLevel;
 	private String displayName;
 	private String description;
 	
 	private FormLink detailsLink;
-	
-	private Translator translator;
 	
 	public CompetenceBrowserTableRow(Taxonomy taxonomy) {
 		this.taxonomy = taxonomy;
@@ -55,8 +54,8 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 		this.description = description;
 	}
 	
-	public CompetenceBrowserTableRow(Translator translator) {
-		this.translator = translator;
+	public CompetenceBrowserTableRow(String rootCrumb) {
+		this.rootCrumb = rootCrumb;
 	}
 	
 	public String getTaxonomyOrLevel() {
@@ -118,8 +117,8 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 			return taxonomyLevel.getIdentifier();
 		} else if (taxonomy!= null) {
 			return taxonomy.getIdentifier();
-		} else if (translator != null) {
-			return translator.translate("competences");
+		} else if (StringHelper.containsNonWhitespace(rootCrumb)) {
+			return rootCrumb;
 		}
 		
 		return null;

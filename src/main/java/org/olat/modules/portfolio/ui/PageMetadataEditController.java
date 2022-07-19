@@ -23,13 +23,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,13 +47,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -77,12 +76,11 @@ import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
-import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -116,13 +114,12 @@ public class PageMetadataEditController extends FormBasicController {
 	private SingleSelection evaluationFormEl;
 	private SingleSelection assignmentsTemplatesEl;
 	private TextBoxListElement categoriesEl;
-	private TextBoxListElement competencesEl;
+	private TaxonomyLevelSelection competencesEl;
 	private DownloadLink downloadAssignmentDocEl;
 	private FileElement assignmentDocUploadEl;
 	private FormLayoutContainer assignmentDocsContainer;
 	private MultipleSelectionElement reviewerSeeAutoEvaEl;
 	private MultipleSelectionElement updateGlobalEntriesEl;
-	private FormLink openCompetenceBrowserLink;
 	
 	private FileElement imageUpload;
 	private SingleSelection imageAlignEl;
@@ -145,8 +142,6 @@ public class PageMetadataEditController extends FormBasicController {
 	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
-	List<TextBoxItem> existingCompetences;
-	List<TextBoxItem> availableTaxonomyLevels;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -171,7 +166,6 @@ public class PageMetadataEditController extends FormBasicController {
 		editTitleAndSummary = true;
 		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		
-		initTaxonomyCompetences();
 		initForm(ureq);
 		
 		if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.getKeys().length > 0) {
@@ -205,7 +199,6 @@ public class PageMetadataEditController extends FormBasicController {
 		editTitleAndSummary = true;
 		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		
-		initTaxonomyCompetences();
 		initForm(ureq);
 		
 		assignmentsTemplatesEl.select(assignmentTemplate.getKey().toString(), true);
@@ -236,7 +229,6 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
-		initTaxonomyCompetences();
 		initForm(ureq);
 	}
 	
@@ -357,19 +349,22 @@ public class PageMetadataEditController extends FormBasicController {
 		categoriesEl.setAllowDuplicates(false);
 		
 		if (taxonomyLinkingEnabled) {
-			competencesEl = uifactory.addTextBoxListElement("competences", "competences", "competences.hint", existingCompetences, formLayout, getTranslator());
-			competencesEl.setHelpText(translate("competences.hint"));
-			competencesEl.setElementCssClass("o_sel_ep_tagsinput");
-			competencesEl.setAllowDuplicates(false);
-			competencesEl.setAllowNewValues(false);
-			competencesEl.setAutoCompleteContent(availableTaxonomyLevels);
-			competencesEl.setCustomCSSForItems("o_competence");
+			Set<TaxonomyLevel>  existingCompetences = page != null
+					? portfolioService.getRelatedCompetences(page, true)
+							.stream()
+							.map(TaxonomyCompetence::getTaxonomyLevel)
+							.collect(Collectors.toSet())
+					: Collections.emptySet();
+			Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevels(portfolioV2Module.getLinkedTaxonomies())
+					.stream()
+					.filter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence())
+					.collect(Collectors.toSet());
+			
+			competencesEl = uifactory.addTaxonomyLevelSelection("competences", "competences", formLayout,
+					getWindowControl(), availableTaxonomyLevels);
+			competencesEl.setDisplayNameHeader(translate("table.header.competence"));
+			competencesEl.setSelection(existingCompetences);
 		}
-		
-		openCompetenceBrowserLink = uifactory.addFormLink("open.browser.link", formLayout, Link.BUTTON_XSMALL);
-		openCompetenceBrowserLink.setLabel("no.label", null);
-		openCompetenceBrowserLink.setPopup(new LinkPopupSettings(800, 600, "Open"));
-		openCompetenceBrowserLink.setVisible(taxonomyLinkingEnabled);
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
 		
@@ -712,7 +707,7 @@ public class PageMetadataEditController extends FormBasicController {
 		portfolioService.updateCategories(page, updatedCategories);
 		
 		if (taxonomyLinkingEnabled) {
-			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getValueItems());
+			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getSelection());
 		}
 		
 		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[1])) {
@@ -726,7 +721,7 @@ public class PageMetadataEditController extends FormBasicController {
 					portfolioService.updatePage(sharing, null);
 					portfolioService.updateCategories(sharing, updatedCategories);
 					if (taxonomyLinkingEnabled) {
-						portfolioService.linkCompetences(sharing, getIdentity(), competencesEl.getValueItems());
+						portfolioService.linkCompetences(sharing, getIdentity(), competencesEl.getSelection());
 					}
 				}
 			}
@@ -829,49 +824,11 @@ public class PageMetadataEditController extends FormBasicController {
 			updateGlobalEntriesEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[1]));
 			sectionsEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
 			bindersEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
-		} else if (openCompetenceBrowserLink == source) {
-			List<Taxonomy> linkedTaxonomies = portfolioV2Module.getLinkedTaxonomies();
-			List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(linkedTaxonomies);
-			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> new CompetenceBrowserController(lureq,
-					lwControl, linkedTaxonomies, taxonomyLevels, false);
-			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
-			openInNewBrowserWindow(ureq, layoutCtrlr, false);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof File) {
 				doDeleteTempFile((File)link.getUserObject());
 			}
-		}
-	}
-	
-	private void initTaxonomyCompetences() {
-		if (taxonomyLinkingEnabled && page != null) {
-			List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
-			existingCompetences = new ArrayList<>();
-			for (TaxonomyCompetence competence : competences) {
-				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), competence.getTaxonomyLevel()), competence.getTaxonomyLevel().getKey().toString());
-				competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
-				existingCompetences.add(competenceTextBoxItem);
-			}
-		}
-		
-		if (taxonomyLinkingEnabled) {
-			availableTaxonomyLevels = new ArrayList<>();
-			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
-				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					if (taxonomyLevel.getType() != null) {
-						if(!taxonomyLevel.getType().isAllowedAsCompetence()) {
-							// Do not list items, which are not marked as available for competences
-							continue;
-						}
-					}
-					TextBoxItem item = new TextBoxItemImpl(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyLevel.getKey().toString());
-					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
-					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
-					availableTaxonomyLevels.add(item);
-				}
-			}
-
 		}
 	}
 	

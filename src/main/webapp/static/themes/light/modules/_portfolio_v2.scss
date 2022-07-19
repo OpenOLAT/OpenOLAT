@@ -313,7 +313,7 @@
 	}
 }
 
-.o_portfolio_competences, .o_portfolio_categories {
+.o_portfolio_categories {
 	/* the categories edit form */
 	div, form {
 		display: inline-block;
@@ -324,7 +324,35 @@
 	}
 }
 
-.o_portfolio_competences_edit .o_portfolio_competences .tagify__input,
+.o_portfolio_competences_edit {
+	display: flex;
+	.o_portfolio_competences {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		.o_competences_selection {
+			display: flex;
+			align-items: stretch;
+			.o_tax_ls_button {
+				border-top-right-radius: 0;
+				border-bottom-right-radius: 0;
+				&.btn {
+					min-width: 180px;
+					min-height: $input-height-base;
+				}
+			}
+			.o_competences_save {
+				border-top-left-radius: 0;
+				border-bottom-left-radius: 0;
+			}
+			.o_competences_edit {
+				margin-left: 5px;
+				margin-top: auto;
+				margin-bottom: auto;
+			}
+		}
+	}
+}
 .o_portfolio_categories_edit .o_portfolio_categories .tagify__input {
 	min-width: 180px;
 }

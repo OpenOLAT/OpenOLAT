@@ -76,9 +76,7 @@
 
 /** Taxonomy level selection element **/
 .o_tax_ls_button {
-	width: 100%;
-	max-width: 100%;
-	min-height: $input-height-base;
+	font-size: 12px;
 	white-space: initial;
 	display: flex;
 	.o_icon {
@@ -87,13 +85,20 @@
 	.o_tax_ls_tags {
 		display: flex;
 		flex-wrap: wrap;
+		gap: 2px;
 		.o_tag {
 			white-space: initial;
 			background-color: #ffffff;
 			color: $o-competences-font-color;
 			border-color: $o-competences-color; 
 			border-radius: 0.5em;
+			margin: 0;
 		}
+	}
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-height: $input-height-base;
 	}
 }
 .o_tax_ls_selections {

@@ -44,6 +44,12 @@ public class TaxonomyLevelSelectionRenderer extends DefaultComponentRenderer {
 		TaxonomyLevelSelectionImpl el = cmp.getTaxonomyLevelSelection();
 		FormLink button = el.getButton();
 		
-		renderer.render(button.getComponent(), target, null);
+		if (el.isEnabled()) {
+			renderer.render(button.getComponent(), target, null);
+		} else {
+			target.append("<span class=\"o_tax_ls_button\">");
+			target.append(button.getI18nKey());
+			target.append("</span>");
+		}
 	}
 }

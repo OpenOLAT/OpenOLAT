@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.Callout
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -84,6 +85,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 	
 	private final Set<TaxonomyLevel> allTaxonomyLevels;
 	private final List<Taxonomy> allTaxonomies;
+	private String displayNameHeader;
 	private Set<Long> selectedKeys = new HashSet<>(3);
 
 	public TaxonomyLevelSelectionImpl(WindowControl wControl, String name, Set<TaxonomyLevel> allTaxonomyLevels) {
@@ -102,6 +104,11 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 		button.setIconRightCSS("o_icon o_icon_caret");
 		components.put(id, button);
 		rootFormAvailable(button);
+	}
+
+	@Override
+	public void setDisplayNameHeader(String displayNameHeader) {
+		this.displayNameHeader = displayNameHeader;
 	}
 
 	@Override
@@ -225,6 +232,9 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 				.sorted(Collator.getInstance(getTranslator().getLocale()))
 				.map(this::toLabel)
 				.collect(Collectors.joining());
+		if (!StringHelper.containsNonWhitespace(linkTitle)) {
+			linkTitle = "&nbsp;";
+		}
 		linkTitle = "<div class=\"o_tax_ls_tags\">" + linkTitle + "</div>";
 		button.setI18nKey(linkTitle);
 	}
@@ -249,7 +259,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 	}
 	
 	private void doOpenBrowser(UserRequest ureq) {
-		browseCtrl = new CompetenceBrowserController(ureq, wControl, allTaxonomies, allTaxonomyLevels, true);
+		browseCtrl = new CompetenceBrowserController(ureq, wControl, allTaxonomies, allTaxonomyLevels, true, displayNameHeader);
 		browseCtrl.addControllerListener(this);
 		
 		String title = taxonomyTranslator.translate("taxonomy.level.selection.browse");
