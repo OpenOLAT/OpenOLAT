@@ -39,6 +39,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.DateUtils;
+import org.olat.course.statistic.daily.DailyStat;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataModel;
@@ -952,6 +953,39 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 				repositoryEntryLastPublished,
 				repositoryEntrySecondPublished,
 				repositoryEntryFirstPublished);
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_orderBy_PopularCourse() {
+		TestCatalogItem catalogItem = createCatalogItem(3);
+		RepositoryEntry repositoryEntryVeryPopular = catalogItem.getRepositoryEntry(0);
+		RepositoryEntry repositoryEntryNotPopular = catalogItem.getRepositoryEntry(1);
+		RepositoryEntry repositoryEntryPopular= catalogItem.getRepositoryEntry(2);
+		addDailyStat(repositoryEntryVeryPopular, DateUtils.addDays(new Date(), -2), 10);
+		addDailyStat(repositoryEntryVeryPopular, DateUtils.addDays(new Date(), -3), 10);
+		addDailyStat(repositoryEntryVeryPopular, DateUtils.addDays(new Date(), -10), 10);
+		addDailyStat(repositoryEntryNotPopular, DateUtils.addDays(new Date(), -4), 5);
+		addDailyStat(repositoryEntryPopular, DateUtils.addDays(new Date(), -4), 20);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setOrderBy(OrderBy.popularCourses);
+		searchParams.setOrderByAsc(false);
+		List<RepositoryEntry> repositoryEntries = sut.loadRepositoryEntries(searchParams, 0, -1);
+		
+		assertThat(repositoryEntries).containsExactly(
+				repositoryEntryVeryPopular,
+				repositoryEntryPopular,
+				repositoryEntryNotPopular);
+	}
+	
+	private void addDailyStat(RepositoryEntry entry, Date day, int value) {
+		DailyStat dailyStat = new DailyStat();
+		dailyStat.setResId(entry.getKey());
+		dailyStat.setBusinessPath(random());
+		dailyStat.setDay(day);
+		dailyStat.setValue(value);
+		dbInstance.getCurrentEntityManager().persist(dailyStat);
 	}
 	
 	@Test

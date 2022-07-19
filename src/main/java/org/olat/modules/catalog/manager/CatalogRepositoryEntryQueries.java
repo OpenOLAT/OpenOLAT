@@ -36,6 +36,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
@@ -72,14 +73,16 @@ public class CatalogRepositoryEntryQueries {
 	}
 
 	public List<RepositoryEntry> loadRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults) {
-		TypedQuery<RepositoryEntry> query = createMyViewQuery(searchParams, RepositoryEntry.class);
+		TypedQuery<Object[]> query = createMyViewQuery(searchParams, Object[].class);
 		query.setFlushMode(FlushModeType.COMMIT)
 			.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
 		
-		return query.getResultList();
+		return query.getResultList().stream()
+				.map(result -> (RepositoryEntry)result[0])
+				.collect(Collectors.toList());
 	}
 
 	protected <T> TypedQuery<T> createMyViewQuery(CatalogRepositoryEntrySearchParams searchParams, Class<T> type) {
@@ -93,6 +96,14 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(" left join v.lifecycle as lifecycle");
 		} else {
 			sb.append("select v");
+			if (OrderBy.popularCourses == searchParams.getOrderBy()) {
+				sb.append(", (select sum(stat.value) ");
+				sb.append("     from dailystat as stat ");
+				sb.append("    where stat.resId = v.key and stat.day > :statDay");
+				sb.append("  ) as popularCourses");
+			} else {
+				sb.append(", 0 as popularCourses");
+			}
 			sb.append(" from repositoryentry as v");
 			sb.append(" inner join fetch v.olatResource as res");
 			sb.append(" left join fetch v.lifecycle as lifecycle");
@@ -253,6 +264,9 @@ public class CatalogRepositoryEntryQueries {
 		if (serachTaxonomyLevelI18nSuffix != null) {
 			dbQuery.setParameter("serachTaxonomyLevelI18nSuffix", serachTaxonomyLevelI18nSuffix);
 		}
+		if (!count && OrderBy.popularCourses == searchParams.getOrderBy()) {
+			dbQuery.setParameter("statDay", DateUtils.addDays(new Date(), -28));
+		}
 		return dbQuery;
 	}
 	
@@ -395,6 +409,10 @@ public class CatalogRepositoryEntryQueries {
 					break;
 				case publishedDate:
 					sb.append(" order by v.statusPublishedDate ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
+					break;
+				case popularCourses:
+					sb.append(" order by popularCourses ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case random:

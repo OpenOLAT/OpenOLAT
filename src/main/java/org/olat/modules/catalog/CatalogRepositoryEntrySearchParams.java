@@ -56,6 +56,7 @@ public class CatalogRepositoryEntrySearchParams {
 		lifecycleEnd,
 		location,
 		publishedDate,
+		popularCourses,
 		random;
 		
 		public static final OrderBy secureValueOf(String val) {
