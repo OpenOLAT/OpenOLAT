@@ -280,6 +280,7 @@ public class GroupPage {
 	
 	public MembersWizardPage addMember() {
 		By buttonsBy = By.cssSelector("fieldset.o_sel_group_members_mgmt div.o_sel_group_members_buttons");
+		OOGraphene.waitElement(buttonsBy, browser);
 		OOGraphene.moveTo(buttonsBy, browser);
 
 		By addMemberBy = By.cssSelector("fieldset.o_sel_group_members_mgmt a.o_sel_group_add_member");

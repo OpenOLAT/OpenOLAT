@@ -607,10 +607,15 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static final void selectNextMonthInDatePicker(WebDriver browser) {
-		By nextBy = By.cssSelector("#ui-datepicker-div div.ui-datepicker-header a.ui-datepicker-next");
-		waitElement(nextBy, browser);
-		browser.findElement(nextBy).click();
-		waitElement(nextBy, browser);
+		try {
+			By nextBy = By.cssSelector("#ui-datepicker-div div.ui-datepicker-header a.ui-datepicker-next");
+			waitElement(nextBy, browser);
+			browser.findElement(nextBy).click();
+			waitElement(nextBy, browser);
+		} catch (Exception e) {
+			takeScreenshot("Select next month", browser);
+			throw e;
+		}
 	}
 	
 	/**

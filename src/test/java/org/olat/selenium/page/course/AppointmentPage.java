@@ -83,8 +83,10 @@ public class AppointmentPage {
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_app_topic_recurring_day"), browser);
 		
 		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon i");
+		OOGraphene.waitElement(firstBy, browser);
 		browser.findElement(firstBy).click();
-		OOGraphene.waitingALittleLonger();
+		By datePickerBy = By.id("ui-datepicker-div");
+		OOGraphene.waitElement(datePickerBy, browser);
 		OOGraphene.selectNextMonthInDatePicker(browser);
 		OOGraphene.selectDayInDatePicker(firstDay, browser);
 		
@@ -104,7 +106,7 @@ public class AppointmentPage {
 		
 		By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon i");
 		browser.findElement(lastBy).click();
-		OOGraphene.waitingALittleLonger();
+		OOGraphene.waitElement(datePickerBy, browser);
 		OOGraphene.selectNextMonthInDatePicker(browser);
 		OOGraphene.selectDayInDatePicker(lastDay, browser);
 		
