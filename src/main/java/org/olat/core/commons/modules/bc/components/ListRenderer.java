@@ -552,9 +552,9 @@ public class ListRenderer {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
 			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
-				return docEditorService.getModeIcon(Mode.EDIT, vfsLeaf.getMetaInfo().getFilename());
+				return docEditorService.getModeIcon(Mode.EDIT, getFilename(vfsLeaf));
 			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
-				return docEditorService.getModeIcon(Mode.VIEW, vfsLeaf.getMetaInfo().getFilename());
+				return docEditorService.getModeIcon(Mode.VIEW, getFilename(vfsLeaf));
 			}
 		}
 		return null;
@@ -564,12 +564,17 @@ public class ListRenderer {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
 			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
-				return docEditorService.getModeButtonLabel(Mode.EDIT, vfsLeaf.getMetaInfo().getFilename(), labelTranslator);
+				return docEditorService.getModeButtonLabel(Mode.EDIT, getFilename(vfsLeaf), labelTranslator);
 			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
-				return docEditorService.getModeButtonLabel(Mode.VIEW, vfsLeaf.getMetaInfo().getFilename(), labelTranslator);
+				return docEditorService.getModeButtonLabel(Mode.VIEW, getFilename(vfsLeaf), labelTranslator);
 			}
 		}
 		return null;
+	}
+	
+	private String getFilename(VFSLeaf vfsLeaf) {
+		VFSMetadata metadata = vfsLeaf.getMetaInfo();
+		return metadata == null ? vfsLeaf.getName() : metadata.getFilename();
 	}
 	
 	private boolean canMetaInfo(VFSItem item) {
