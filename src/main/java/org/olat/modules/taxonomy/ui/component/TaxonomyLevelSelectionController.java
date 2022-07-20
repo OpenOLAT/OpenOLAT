@@ -222,6 +222,10 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		selectionKeys.addAll(keys.stream().map(String::valueOf).collect(Collectors.toSet()));
 		selectionKeys.forEach(key -> selectionEl.select(key, true));
 		updateSelectionNumUI();
+		if (selectionNoneEl.isVisible() && !selectionEl.getSelectedKeys().isEmpty()) {
+			selectionNoneEl.setVisible(false);
+			selectionEl.setVisible(true);
+		}
 	}
 
 	private void updateSelectionUI() {
