@@ -184,8 +184,9 @@ public class AuthoringEditAccessController extends BasicController {
 			boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 			Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
 			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(),
-					true, true, guestSupported, true, defaultOfferOrganisations, true, readOnly, managedBookings, null);
+			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(),
+					entry.getDisplayname(), true, true, guestSupported, true, defaultOfferOrganisations, true, readOnly,
+					managedBookings, "manual_user/course_create/Access_configuration#offer");
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
 			mainVC.put("offers", accessOffersCtrl.getInitialComponent());

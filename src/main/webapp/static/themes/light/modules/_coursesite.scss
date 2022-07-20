@@ -683,7 +683,8 @@
 			max-height: $o-cat2-header-height;
 		}
 		.o_catalog_header_item:not(.o_header_bg_image) {
-			background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba($brand-primary,1) 100%);
+			background: $o-cat2-header-noimage-bg;
+			background-blend-mode: $o-cat2-header-noimage-bg-blend-mode;
 		}
 		.o_header_bg_image {
 			background-repeat: no-repeat;
@@ -696,6 +697,7 @@
 		align-items: center;
 		
 		.o_search_box {
+			border-radius: $o-coursesite-rowelem-border-radius;
 			background-color: $input-bg;
 			padding: 1px 20px 20px 20px;
 		}
@@ -711,8 +713,9 @@
 				margin: 0px;
 			}
 			.o_taxonomy:is(.o_header_bg_image *) {
+				border-radius: $o-coursesite-rowelem-border-radius;
+				background-color: $o-cat2-header-box-bg-color;
 				padding: 20px;
-				background-color: $o-cat2-header-box-bg-color
 			}
 		}
 	}
@@ -732,22 +735,17 @@
 	}
 	
 	.o_taxonomy_launchers {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
+		display: grid;
+		gap: 10px;
 		.o_taxonomy_launcher {
 			border: 1px solid $o-coursesite-rowelem-border;
 			border-radius: $o-coursesite-rowelem-border-radius;
 			background: $o-coursesite-rowelem-bg;
 			cursor: pointer;
 			position: relative;
-			width: 242px;
-			max-width: 242px;
 			aspect-ratio: 2.4;
 			&:is(.o_launchers_square *) {
-				width: 122px;
-				max-width: 122px;
-				height: 122px;
+				aspect-ratio: 1;
 				.o_meta {
 					.o_title {
 						font-size: $o-cat2-tax-launcher-square-font-size;
@@ -757,20 +755,17 @@
 			.o_visual {
 				box-sizing: content-box;
 				border-radius: $o-coursesite-rowelem-border-radius;
-				width: 240px;
-				max-width: 240px;
+				height: auto;
+				width: auto;
 				aspect-ratio: 2.4;
 				&:is(.o_launchers_square *) {
-					width: 120px;
-					max-width: 120px;
-					height: 120px;
+					aspect-ratio: 1;
 				}
 				.o_visual_not_available {
 					display: block;
 				}
 				.o_visual_available {
-					background-position: left;
-					background-size: cover;
+					background-size: contain;
 				}
 			}
 			
@@ -804,32 +799,37 @@
 			}
 		}
 		
-		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
-			gap: 6px; 
-			.o_taxonomy_launcher {
-				width: 152px;
-				max-width: 152px;
-				.o_visual {
-					width: 150px;
-					max-width: 150px;
-				}
-			}
-			.o_title {
-				font-size: 90%;
-			}
+		// Breakpoints synched with swiper breakpoints in launch_repository_entry.html
+		@media (min-width: 1211px) {
+			grid-template-columns: repeat(5, auto);
 		}
-		@media (max-width: $screen-xs-max) {
-			gap: 6px; 
-			.o_taxonomy_launcher {
-				width: 122px;
-				max-width: 122px;
-				.o_visual {
-					width: 120px;
-					max-width: 120px;
-				}
+		@media (min-width: 913px) and (max-width: 1211px) {
+			grid-template-columns: repeat(4, auto);
+		}
+		@media (min-width: 605px) and (max-width: 913px) {
+			grid-template-columns: repeat(3, auto);
+		}
+		@media (max-width: 605px) {
+			grid-template-columns: repeat(2, auto);
+		}
+		&.o_launchers_square {
+			@media (min-width: 1211px) {
+				grid-template-columns: repeat(7, auto);
 			}
-			.o_title {
-				font-size: 90%;
+			@media (min-width: 1008px) and (max-width: 1211px) {
+				grid-template-columns: repeat(6, auto);
+			}
+			@media (min-width: 807px) and (max-width: 1008px) {
+				grid-template-columns: repeat(5, auto);
+			}
+			@media (min-width: 605px) and (max-width: 807px) {
+				grid-template-columns: repeat(4, auto);
+			}
+			@media (min-width: 409px) and (max-width: 605px) {
+				grid-template-columns: repeat(3, auto);
+			}
+			@media (max-width: 409px) {
+				grid-template-columns: repeat(2, auto);
 			}
 		}
 	}
@@ -837,7 +837,6 @@
 	.o_card_hover {
 		&:hover {
 			border: 1px solid $brand-primary;
-			box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
 			border-radius: 3px;
 		}
 	}

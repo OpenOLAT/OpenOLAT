@@ -22,7 +22,6 @@ package org.olat.modules.taxonomy.ui;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -45,8 +44,6 @@ public class TaxonomyLevelTeaserImageMapper implements Mapper {
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 	
 	public TaxonomyLevelTeaserImageMapper() {
 		CoreSpringFactory.autowireObject(this);
@@ -69,13 +66,7 @@ public class TaxonomyLevelTeaserImageMapper implements Mapper {
 			TaxonomyLevel level = taxonomyService.getTaxonomyLevel(ref);
 			VFSItem image = taxonomyService.getTeaserImage(level);
 			if (image instanceof VFSLeaf) {
-				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 240, 100, true);
-				if (thumbnail != null) {
-					resource = new VFSMediaResource(thumbnail);
-				}
-				if(resource == null) {
-					resource = new VFSMediaResource((VFSLeaf)image);
-				}
+				resource = new VFSMediaResource((VFSLeaf)image);
 			} else {
 				resource = new NotFoundMediaResource();
 			}

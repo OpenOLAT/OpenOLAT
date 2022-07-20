@@ -388,7 +388,9 @@ $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
 $o-cat2-header-height			: 240px !default;
-$o-cat2-header-box-bg-color		: rgba(255,255,255,.8) !default;
+$o-cat2-header-noimage-bg				: linear-gradient(209deg, lighten($brand-primary, 40%) 0%, #ffffff30 45%), linear-gradient(180deg, #c4e5df 0%, adjust-hue($brand-primary, 20deg)100%), linear-gradient(40deg, $brand-primary 0%, #ffffff 33%, adjust-hue($brand-primary, -15deg) calc(33% + 1px), lighten($brand-primary , 40%) 56%, #fcfcfc calc(62% + 1px), darken($brand-primary , 20%) 100%) !default;
+$o-cat2-header-noimage-bg-blend-mode		: screen, overlay, normal !default;
+$o-cat2-header-box-bg-color				: rgba(255,255,255,.7) !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;
 
 /* Repository */

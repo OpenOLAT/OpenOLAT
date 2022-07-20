@@ -78,7 +78,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
 				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,
-				defaultOfferOrganisations, true, false, managedBookings, null);
+				defaultOfferOrganisations, true, false, managedBookings, "manual_user/course_create/Access_configuration#offer");
 		accessOffersCtrl.setReStatus(RepositoryEntryStatusEnum.preparation);
 		listenTo(accessOffersCtrl);
 		
