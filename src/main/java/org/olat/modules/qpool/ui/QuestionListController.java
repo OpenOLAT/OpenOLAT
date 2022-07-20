@@ -941,13 +941,12 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	protected void doList(UserRequest ureq) {
-		String title = translate("filter.view");
 		removeAsListenerAndDispose(listTargetCtrl);
 		listTargetCtrl = new CollectionTargetController(ureq, getWindowControl(), itemCollection != null);
 		listenTo(listTargetCtrl);
 		
 		removeAsListenerAndDispose(calloutCtrl);
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), listTargetCtrl.getInitialComponent(), list, title, true, null);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), listTargetCtrl.getInitialComponent(), list, null, true, null);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();	
 	}
@@ -1118,13 +1117,12 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	protected void doShare(UserRequest ureq) {
-		String title = translate("filter.view");
 		removeAsListenerAndDispose(shareTargetCtrl);
 		shareTargetCtrl = new ShareTargetController(ureq, getWindowControl(), getSecurityCallback());
 		listenTo(shareTargetCtrl);
 		
 		removeAsListenerAndDispose(calloutCtrl);
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), shareTargetCtrl.getInitialComponent(), shareItem, title, true, null);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), shareTargetCtrl.getInitialComponent(), shareItem, null, true, null);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();	
 	}
