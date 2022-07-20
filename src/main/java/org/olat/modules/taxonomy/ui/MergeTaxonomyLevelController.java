@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -151,11 +153,16 @@ public class MergeTaxonomyLevelController extends FormBasicController {
 
 		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		StringBuilder sb = new StringBuilder();
+		
+		Map<Long, String> keyToDisplayName = levels.stream()
+				.collect(Collectors.toMap(
+						TaxonomyLevel::getKey,
+						taxonomyLevel -> StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel))));
 		for(TaxonomyLevel level:levels) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 			if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel, mergeTo)) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel)));
+				sb.append(keyToDisplayName.get(level.getKey()));
 			}
 		}
 		

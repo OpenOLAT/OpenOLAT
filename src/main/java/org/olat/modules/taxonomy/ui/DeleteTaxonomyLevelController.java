@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -203,14 +205,18 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 			mergeTo = (TaxonomyLevel)selectedNode.getUserObject();
 		}
 
+		Map<Long, String> keyToDisplayName = levels.stream()
+				.collect(Collectors.toMap(
+						TaxonomyLevel::getKey,
+						taxonomyLevel -> StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel))));
 		for(TaxonomyLevel level:levels) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 			if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel, mergeTo)) {
 				if(deletedLevels.length() > 0) deletedLevels.append(", ");
-				deletedLevels.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)));
+				deletedLevels.append(keyToDisplayName.get(level.getKey()));
 			} else {
 				if(notDeletedLevels.length() > 0) notDeletedLevels.append(", ");
-				notDeletedLevels.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)));
+				notDeletedLevels.append(keyToDisplayName.get(level.getKey()));
 			}
 		}
 		dbInstance.commit();//commit before sending event
