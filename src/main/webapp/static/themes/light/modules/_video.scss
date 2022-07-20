@@ -360,7 +360,7 @@
 /* make subtitles better readable, relative to screen size but not too small or too large */
 .mejs__captions-layer {
 	font-size: clamp(1.5rem, 2.5vw, 3rem); 
-	line-height: clamp(1.5rem, 2.5vw, 3rem); 	
+	line-height: clamp(2rem, 3vw, 3.5rem); 	
 	
 	/* position captions nicely at the bottom in the center, don't use full width for better readibility */
 	.mejs__captions-position {
@@ -377,26 +377,36 @@
 	}
 }
 
-/* different breakpoints for various typical video resolutions 
-   2% font size relative to video width  
+/* different breakpoints for various typical video resolutions in full-screen mode
+   2% font size relative to video width, overriding fancy (wrong) calculated size from mediaelement
  */
 @mixin videSubtitleSize($videoWidth) {
 	@media (max-width: $videoWidth) { 
-		font-size: floor($videoWidth * 0.02); 
-		line-height: floor($videoWidth * 0.02);
+		font-size: floor($videoWidth * 0.025) !important; 
+		line-height: floor($videoWidth * 0.03) !important;
 	}
 }
 .mejs__fullscreen .mejs__captions-layer {
-	@include videSubtitleSize(3840px);
-	@include videSubtitleSize(2560px);
-	@include videSubtitleSize(1920px);
-	@include videSubtitleSize(1440px);
-	@include videSubtitleSize(1280px);
-	@include videSubtitleSize(1024px);
-	@include videSubtitleSize(768px);
-	@include videSubtitleSize(640px);
-	@include videSubtitleSize(480px);
-	@include videSubtitleSize(320px);
+	.mejs__captions-position {
+		bottom: 6rem !important;
+		/* make space for control bar */
+		&.mejs__captions-position-hover {
+			bottom: 8rem !important;
+		}
+	}
+	/* subtitles sizes */
+	.mejs__captions-text {
+		@include videSubtitleSize(3840px);
+		@include videSubtitleSize(2560px);
+		@include videSubtitleSize(1920px);
+		@include videSubtitleSize(1440px);
+		@include videSubtitleSize(1280px);
+		@include videSubtitleSize(1024px);
+		@include videSubtitleSize(768px);
+		@include videSubtitleSize(640px);
+		@include videSubtitleSize(480px);
+		@include videSubtitleSize(320px);
+	}
 }
 
 
