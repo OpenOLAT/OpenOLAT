@@ -217,7 +217,7 @@ public class UserAccountController extends FormBasicController {
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String lastLogin = formatter.formatDateAndTime(editedIdentity.getLastLogin());
-		lastLoginEl.setValue(lastLogin);
+		lastLoginEl.setValue(lastLogin == null ? "" : lastLogin);
 		String creationDate = formatter.formatDateAndTime(editedIdentity.getCreationDate());
 		creationDateEl.setValue(creationDate);
 		
@@ -300,6 +300,7 @@ public class UserAccountController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		saveFormData();
 		update();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	/**

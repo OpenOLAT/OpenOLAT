@@ -321,15 +321,13 @@ public class UserAdminController extends BasicController implements Activateable
 		} else if (userProfileCtr == source || authenticationsCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				//reload profile data on top
-				editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
-				exposeUserDataToVC(ureq, editedIdentity, editedRoles);
-				userProfileCtr.resetForm(ureq, editedIdentity);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				reloadEditedIdentity(ureq);
 			}
 		} else if(accountCtrl == source) {
 			if(event instanceof ReloadIdentityEvent) {
 				fireEvent(ureq, event);
 			} else if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reloadEditedIdentity(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(source == exportDataCtrl) {
@@ -353,6 +351,13 @@ public class UserAdminController extends BasicController implements Activateable
 		confirmDeleteUserCtlr = null;
 		exportDataCtrl = null;
 		cmc = null;
+	}
+	
+	private void reloadEditedIdentity(UserRequest ureq) {
+		editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
+		exposeUserDataToVC(ureq, editedIdentity, editedRoles);
+		userProfileCtr.resetForm(ureq, editedIdentity);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doExportData(UserRequest ureq) {
