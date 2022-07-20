@@ -22,7 +22,6 @@ package org.olat.repository.ui.list;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -61,6 +60,8 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.LeavingStatusList;
@@ -97,23 +98,25 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	private final List<PriceMethod> types;
 	
 	@Autowired
-	protected RepositoryModule repositoryModule;
+	private RepositoryModule repositoryModule;
 	@Autowired
-	protected RepositoryManager repositoryManager;
+	private RepositoryManager repositoryManager;
 	@Autowired
-	protected RepositoryService repositoryService;
+	private RepositoryService repositoryService;
 	@Autowired
-	protected CatalogManager catalogManager;
+	private CatalogV2Module catalogModule;
 	@Autowired
-	protected BusinessGroupService businessGroupService;
+	private CatalogManager catalogManager;
 	@Autowired
-	protected EfficiencyStatementManager effManager;
+	private BusinessGroupService businessGroupService;
 	@Autowired
-	protected UserCourseInformationsManager userCourseInfosManager;
+	private EfficiencyStatementManager effManager;
 	@Autowired
-	protected UserRatingsDAO userRatingsDao;
+	private UserCourseInformationsManager userCourseInfosManager;
 	@Autowired
-	protected MarkManager markManager;
+	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private MarkManager markManager;
 
 	public RepositoryEntryDetailsMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			boolean isMember, boolean isParticipant, List<PriceMethod> types) {
@@ -154,11 +157,9 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				layoutCont.contextPut("categories", categoriesLink);
 			}
 			// taxonomy levels
-			List<TaxonomyLevelItem> taxonomyLevels = repositoryService.getTaxonomy(entry).stream()
-					.map(level -> new TaxonomyLevelItem(
-							TaxonomyUIFactory.translateDisplayName(getTranslator(), level),
-							level.getMaterializedPathIdentifiersWithoutSlash()))
-					.collect(Collectors.toList());
+			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
+			layoutCont.contextPut("taxonomyLevelsLabel", translate(labelI18nKey));
+			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), repositoryService.getTaxonomy(entry));
 			layoutCont.contextPut("taxonomyLevels", taxonomyLevels);
 			
 			if (!guestOnly) {
@@ -373,26 +374,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	protected void doOpenGroup(UserRequest ureq, Long groupKey) {
 		String businessPath = "[BusinessGroup:" + groupKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	public static final class TaxonomyLevelItem {
-		
-		private final String displayName;
-		private final String materializedPathIdentifiersWithoutSlash;
-		
-		public TaxonomyLevelItem(String displayName, String materializedPathIdentifiersWithoutSlash) {
-			this.displayName = displayName;
-			this.materializedPathIdentifiersWithoutSlash = materializedPathIdentifiersWithoutSlash;
-		}
-
-		public String getDisplayName() {
-			return displayName;
-		}
-
-		public String getMaterializedPathIdentifiersWithoutSlash() {
-			return materializedPathIdentifiersWithoutSlash;
-		}
-		
 	}
 
 }

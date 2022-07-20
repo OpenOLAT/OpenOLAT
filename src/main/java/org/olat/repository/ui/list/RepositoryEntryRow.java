@@ -21,7 +21,6 @@ package org.olat.repository.ui.list;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -30,7 +29,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -82,7 +81,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Date lifecycleEnd;
 	
 	private List<PriceMethod> accessTypes;
-	private Set<TaxonomyLevel> taxonomyLevels;
+	private List<TaxonomyLevelNamePath> taxonomyLevels;
 	
 	private FormLink markLink;
 	private FormLink selectLink;
@@ -108,7 +107,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		launchCounter = entry.getLaunchCounter();
 		status = entry.getEntryStatus();
 		publicVisible = entry.isPublicVisible();
-		taxonomyLevels = entry.getTaxonomyLevels();
 		
 		//bookmark
 		setMarked(entry.isMarked());
@@ -387,10 +385,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return thumbnailRelPath;
 	}
 	
-	public Set<TaxonomyLevel> getTaxonomyLevels() {
+	public List<TaxonomyLevelNamePath> getTaxonomyLevels() {
 		return taxonomyLevels;
 	}
 	
+	public void setTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
+	}
+
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailRelPath);
 	}

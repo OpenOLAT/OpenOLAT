@@ -19,11 +19,15 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 
 /**
  * 
@@ -71,6 +75,18 @@ public class TaxonomyUIFactory {
 			translation = null;
 		}
 		return translation;
+	}
+	
+	public static TaxonomyLevelNamePath getNamePath(Translator translator, TaxonomyLevel level) {
+		return new TaxonomyLevelNamePath(
+				translateDisplayName(translator, level),
+				level.getMaterializedPathIdentifiersWithoutSlash());
+	}
+	
+	public static List<TaxonomyLevelNamePath> getNamePaths(Translator translator, Collection<TaxonomyLevel> levels) {
+		return levels.stream()
+				.map(level -> getNamePath(translator, level))
+				.collect(Collectors.toList());
 	}
 
 }

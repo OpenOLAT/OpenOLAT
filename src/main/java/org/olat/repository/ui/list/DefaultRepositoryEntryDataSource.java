@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -216,12 +218,14 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<RepositoryEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
-
+			
 			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if(image != null) {
 				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
 			}
-
+			
+			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(uifactory.getTranslator(), entry.getTaxonomyLevels());
+			row.setTaxonomyLevels(taxonomyLevels);
 			
 			List<PriceMethod> types = new ArrayList<>(3);
 			if(entry.isPublicVisible()) {
