@@ -364,21 +364,39 @@
 	
 	/* position captions nicely at the bottom in the center, don't use full width for better readibility */
 	.mejs__captions-position {
-		bottom: 2rem !important;
+		bottom: 3rem !important;
 		transition: bottom 0.5s;
 		width: 80%;
 		left: 50%;
 		margin-left: -40%;
 		
-		/* make space for controll bar */
+		/* make space for control bar */
 		&.mejs__captions-position-hover {
-			bottom: 4rem !important;
+			bottom: 5rem !important;
 		}
 	}
 }
+
+/* different breakpoints for various typical video resolutions 
+   2% font size relative to video width  
+ */
+@mixin videSubtitleSize($videoWidth) {
+	@media (max-width: $videoWidth) { 
+		font-size: floor($videoWidth * 0.02); 
+		line-height: floor($videoWidth * 0.02);
+	}
+}
 .mejs__fullscreen .mejs__captions-layer {
-	font-size: clamp(1rem, 2.5vw, 1.5rem); 
-	line-height: clamp(1rem, 2.5vw, 1.5rem); 		
+	@include videSubtitleSize(3840px);
+	@include videSubtitleSize(2560px);
+	@include videSubtitleSize(1920px);
+	@include videSubtitleSize(1440px);
+	@include videSubtitleSize(1280px);
+	@include videSubtitleSize(1024px);
+	@include videSubtitleSize(768px);
+	@include videSubtitleSize(640px);
+	@include videSubtitleSize(480px);
+	@include videSubtitleSize(320px);
 }
 
 
