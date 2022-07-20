@@ -21,12 +21,8 @@ package org.olat.course.assessment.manager;
 
 import java.io.File;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -49,7 +45,6 @@ import org.olat.course.assessment.ScoreAccountingTriggerData;
 import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
-import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeStatsController;
@@ -101,10 +96,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentServiceImpl.class);
 
-	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
-
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private AssessmentHandlerRegistry assessmentHandlerRegistry;
 	@Autowired
 	private ScoreAccountingTriggerDAO scoreAccountingTriggerDAO;
 	@Autowired
@@ -116,31 +111,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Autowired
 	private TaskExecutorManager taskExecutorManager;
 
-	@Autowired
-	private List<AssessmentHandler> loadedAssessmentHandlers;
-	private Map<String, AssessmentHandler> assessmentHandlers = new HashMap<>();
-	private AssessmentHandler nonAssessmentHandler;
-
-	@PostConstruct
-	void initProviders() {
-		for (AssessmentHandler handler : loadedAssessmentHandlers) {
-			if (NON_ASSESSMENT_TYPE.equals(handler.acceptCourseNodeType())) {
-				nonAssessmentHandler = handler;
-			} else {
-				assessmentHandlers.put(handler.acceptCourseNodeType(), handler);
-			}
-		}
-	}
-
 	private AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
-		AssessmentHandler handler = null;
-		if (courseNode != null) {
-			handler = assessmentHandlers.get(courseNode.getType());
-		}
-		if (handler == null) {
-			handler = nonAssessmentHandler;
-		}
-		return handler;
+		return assessmentHandlerRegistry.getAssessmentHandler(courseNode);
 	}
 
 	@Override

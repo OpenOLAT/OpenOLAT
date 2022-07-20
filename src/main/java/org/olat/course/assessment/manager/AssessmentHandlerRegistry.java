@@ -26,7 +26,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.olat.course.assessment.handler.AssessmentHandler;
-import org.olat.course.assessment.handler.NonAssessmentHandler;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
 import org.olat.course.nodes.CourseNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,18 +40,18 @@ import org.springframework.stereotype.Service;
 @Service
 class AssessmentHandlerRegistry {
 
-	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;	
+	private static final String DEFAULT_ASSESSMENT_TYPE = LearningPathOnlyAssessmentHandler.TYPE;
 	
 	@Autowired
 	private List<AssessmentHandler> loadedAssessmentHandlers;
 	private Map<String, AssessmentHandler> assessmentHandlers = new HashMap<>();
-	private AssessmentHandler nonAssessmentHandler;
+	private AssessmentHandler defaultAssessmentHandler;
 	
 	@PostConstruct
 	void initProviders() {
 		for (AssessmentHandler handler: loadedAssessmentHandlers) {
-			if (NON_ASSESSMENT_TYPE.equals(handler.acceptCourseNodeType())) {
-				nonAssessmentHandler = handler;
+			if (DEFAULT_ASSESSMENT_TYPE.equals(handler.acceptCourseNodeType())) {
+				defaultAssessmentHandler = handler;
 			} else {
 				assessmentHandlers.put(handler.acceptCourseNodeType(), handler);
 			}
@@ -64,7 +64,7 @@ class AssessmentHandlerRegistry {
 			handler = assessmentHandlers.get(courseNode.getType());
 		}
 		if (handler == null) {
-			handler = nonAssessmentHandler;
+			handler = defaultAssessmentHandler;
 		}
 		return handler;
 	}

@@ -42,6 +42,7 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -49,9 +50,16 @@ import org.olat.repository.RepositoryEntryRef;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class LearningPathOnlyAssessmentHandler implements AssessmentHandler {
+@Service
+public class LearningPathOnlyAssessmentHandler implements AssessmentHandler {
 
+	public static final String TYPE = "LearningPathOnly";
 	private static final LearningPathOnlyAssessmentConfig LEARNING_PATH_ONLY_ASSESSMENT_CONFIG = new LearningPathOnlyAssessmentConfig();
+	
+	@Override
+	public String acceptCourseNodeType() {
+		return TYPE;
+	}
 
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
