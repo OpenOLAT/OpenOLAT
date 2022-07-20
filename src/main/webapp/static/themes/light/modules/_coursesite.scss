@@ -737,6 +737,14 @@
 	.o_taxonomy_launchers {
 		display: grid;
 		gap: 10px;
+		grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
+		&.o_launchers_square {
+			grid-template-columns: repeat(auto-fill, minmax(153px, 1fr));
+		}
+		@media (max-width: 605px) {
+			// Always display at least two cards side by side like defined in swiper (launch_repository_entry.html)
+			grid-template-columns: repeat(2, auto);
+		}
 		.o_taxonomy_launcher {
 			border: 1px solid $o-coursesite-rowelem-border;
 			border-radius: $o-coursesite-rowelem-border-radius;
@@ -796,40 +804,6 @@
 						}
 					}
 				}
-			}
-		}
-		
-		// Breakpoints synched with swiper breakpoints in launch_repository_entry.html
-		@media (min-width: 1211px) {
-			grid-template-columns: repeat(5, auto);
-		}
-		@media (min-width: 913px) and (max-width: 1211px) {
-			grid-template-columns: repeat(4, auto);
-		}
-		@media (min-width: 605px) and (max-width: 913px) {
-			grid-template-columns: repeat(3, auto);
-		}
-		@media (max-width: 605px) {
-			grid-template-columns: repeat(2, auto);
-		}
-		&.o_launchers_square {
-			@media (min-width: 1211px) {
-				grid-template-columns: repeat(7, auto);
-			}
-			@media (min-width: 1008px) and (max-width: 1211px) {
-				grid-template-columns: repeat(6, auto);
-			}
-			@media (min-width: 807px) and (max-width: 1008px) {
-				grid-template-columns: repeat(5, auto);
-			}
-			@media (min-width: 605px) and (max-width: 807px) {
-				grid-template-columns: repeat(4, auto);
-			}
-			@media (min-width: 409px) and (max-width: 605px) {
-				grid-template-columns: repeat(3, auto);
-			}
-			@media (max-width: 409px) {
-				grid-template-columns: repeat(2, auto);
 			}
 		}
 	}
