@@ -27,11 +27,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinitions;
+import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.gui.control.navigation.callback.RegistredUserOrGuestSecurityCallback;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -52,6 +58,7 @@ import org.olat.modules.catalog.filter.TaxonomyLevelChildrenHandler;
 import org.olat.modules.catalog.launcher.StaticHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.launcher.TextLauncherHandler;
+import org.olat.modules.catalog.site.CatalogSiteDef;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherTextEditController;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -103,6 +110,8 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private SiteDefinitions sitesModule;
 
 	@Override
 	public void migrate(Identity executor) {
@@ -139,6 +148,8 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		// Create launchers and filters
 		createLaunchers(rootCatalogEntry, taxonomy);
 		createFilter();
+		
+		enableCatalogSite();
 	
 		// Mark as migrated
 		catalogModule.setCatalogV1Migration(CatalogV1Migration.done);
@@ -295,5 +306,22 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		dbInstance.commit();
 	}
 
+	private void enableCatalogSite() {
+		if (!sitesModule.isSiteEnabled(CatalogSiteDef.class)) {
+			List<SiteConfiguration> sitesConfiguration = sitesModule.getSitesConfiguration();
+			for (SiteConfiguration siteConfiguration : sitesConfiguration) {
+				if ("olatsites_catalog".equals(siteConfiguration.getId())) {
+					siteConfiguration.setEnabled(true);
+					Map<String, SiteSecurityCallback> securityCallbacks = CoreSpringFactory.getBeansOfType(SiteSecurityCallback.class);
+					for (Map.Entry<String, SiteSecurityCallback> secEntry  :securityCallbacks.entrySet()) {
+						if (secEntry.getValue() instanceof RegistredUserOrGuestSecurityCallback) {
+							siteConfiguration.setSecurityCallbackBeanId(secEntry.getKey());
+						}
+					}
+				}
+			}
+			sitesModule.setSitesConfiguration(sitesConfiguration);
+		}
+	}
 
 }
