@@ -59,7 +59,7 @@ public class InvitationMailController extends StepFormBasicController {
 		if(context.getRepoEntry() != null) {
 			mailTemplate = RepositoryMailing.getInvitationTemplate(context.getRepoEntry(), getIdentity());
 		} else if(context.getBusinessGroup() != null) {
-			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, null, getIdentity());
+			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, context.getBusinessGroup(), getIdentity());
 		}
 		
 		boolean mandatoryEmail = context.getIdentity() == null

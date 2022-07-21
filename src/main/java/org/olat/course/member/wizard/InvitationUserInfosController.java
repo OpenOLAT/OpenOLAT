@@ -106,6 +106,23 @@ public class InvitationUserInfosController extends StepFormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+	
+		// validate special rules for each user property
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			//we assume here that there are only textElements for the user properties
+			FormItem formItem = flc.getFormComponent(userPropertyHandler.getName());
+			formItem.clearError();
+			if(!userPropertyHandler.isValid(null, formItem, null) || formItem.hasError()) {
+				allOk &= false;
+			}
+		}
+
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;

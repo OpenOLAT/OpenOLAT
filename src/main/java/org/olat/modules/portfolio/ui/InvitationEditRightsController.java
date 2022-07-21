@@ -388,7 +388,7 @@ public class InvitationEditRightsController extends FormBasicController {
 
 	private void sendInvitation() {
 		String inviteeEmail = invitee.getUser().getProperty(UserConstants.EMAIL, getLocale());
-		ContactList contactList = new ContactList(inviteeEmail);
+		ContactList contactList = new ContactList(translate("invitation.extern.mail.to"));
 		contactList.add(inviteeEmail);
 
 		boolean success = false;
