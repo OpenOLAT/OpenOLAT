@@ -63,6 +63,7 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		public void forgeStartLink(CatalogRepositoryEntryRow row);
 		public void forgeDetailsLink(CatalogRepositoryEntryRow row);
 		public void forgeThumbnail(CatalogRepositoryEntryRow row);
+		public void forgeTaxonomyLevels(CatalogRepositoryEntryRow row);
 	}
 
 	private Integer count;
@@ -176,6 +177,7 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		rowItemCreator.forgeStartLink(row);
 		rowItemCreator.forgeDetailsLink(row);
 		rowItemCreator.forgeThumbnail(row);
+		rowItemCreator.forgeTaxonomyLevels(row);
 		
 		return row;
 	}

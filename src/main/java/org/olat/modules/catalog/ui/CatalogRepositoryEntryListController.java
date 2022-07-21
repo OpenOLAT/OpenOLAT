@@ -78,6 +78,7 @@ import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataSource.CatalogRepos
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -169,11 +170,13 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(getTranslator()));
 			List<TaxonomyItem> items = new ArrayList<>(taxonomyLevels.size());
 			for (TaxonomyLevel child : taxonomyLevels) {
+				String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), child);
+				
 				String selectLinkName = "o_tl_" + child.getKey();
-				FormLink selectLink = uifactory.addFormLink(selectLinkName, "select_tax", TaxonomyUIFactory.translateDisplayName(getTranslator(), child), null, formLayout, Link.NONTRANSLATED);
+				FormLink selectLink = uifactory.addFormLink(selectLinkName, "select_tax", displayName, null, formLayout, Link.NONTRANSLATED);
 				selectLink.setUserObject(child.getKey());
 				
-				TaxonomyItem item = new TaxonomyItem(child.getKey(), selectLinkName);
+				TaxonomyItem item = new TaxonomyItem(child.getKey(), displayName, selectLinkName);
 				
 				VFSItem image = taxonomyService.getTeaserImage(child);
 				if (image != null) {
@@ -325,6 +328,12 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		if (image != null) {
 			row.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
 		}
+	}
+	
+	@Override
+	public void forgeTaxonomyLevels(CatalogRepositoryEntryRow row) {
+		List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), row.getTaxonomyLevels());
+		row.setTaxonomyLevelNamePaths(taxonomyLevels);
 	}
 
 	@Override
@@ -523,16 +532,22 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	public static final class TaxonomyItem {
 		
 		private final Long key;
+		private final String displayName;
 		private final String selectLinkName;
 		private String thumbnailRelPath;
 		
-		public TaxonomyItem(Long key, String selectLinkName) {
+		public TaxonomyItem(Long key, String displayName, String selectLinkName) {
 			this.key = key;
+			this.displayName = displayName;
 			this.selectLinkName = selectLinkName;
 		}
 
 		public Long getKey() {
 			return key;
+		}
+
+		public String getDisplayName() {
+			return displayName;
 		}
 
 		public String getSelectLinkName() {

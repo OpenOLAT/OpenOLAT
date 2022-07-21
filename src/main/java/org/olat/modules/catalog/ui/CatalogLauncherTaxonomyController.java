@@ -82,12 +82,14 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 		
 		List<LauncherItem> items = new ArrayList<>(taxonomyLevels.size());
 		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
+			
 			String selectLinkName = "o_tl_" + taxonomyLevel.getKey();
 			Link selectLink = LinkFactory.createCustomLink(selectLinkName, "select_tax", selectLinkName, Link.LINK + Link.NONTRANSLATED, mainVC, this);
-			selectLink.setCustomDisplayText(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
+			selectLink.setCustomDisplayText(displayName);
 			selectLink.setUserObject(taxonomyLevel.getKey());
 			
-			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), selectLinkName);
+			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), displayName, selectLinkName);
 			
 			VFSItem image = taxonomyService.getTeaserImage(taxonomyLevel);
 			if (image != null) {
@@ -120,16 +122,22 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 	public static final class LauncherItem {
 		
 		private final Long key;
+		private final String displayName;
 		private final String selectLinkName;
 		private String thumbnailRelPath;
 		
-		public LauncherItem(Long key, String selectLinkName) {
+		public LauncherItem(Long key, String displayName, String selectLinkName) {
 			this.key = key;
+			this.displayName = displayName;
 			this.selectLinkName = selectLinkName;
 		}
 
 		public Long getKey() {
 			return key;
+		}
+
+		public String getDisplayName() {
+			return displayName;
 		}
 
 		public String getSelectLinkName() {

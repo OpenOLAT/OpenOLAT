@@ -132,6 +132,15 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 		}
 		
 		List<TaxonomyLevel> descendants = taxonomyLevelDao.getDescendants(taxonomyLevel, taxonomyLevel.getTaxonomy());
+		List<TaxonomyLevel> launcherTaxonomyLevels = searchParams.getIdentToTaxonomyLevels().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
+		if (launcherTaxonomyLevels != null && launcherTaxonomyLevels.size() == 1) {
+			Long launcherTaxonomyLevelKey = launcherTaxonomyLevels.get(0).getKey();
+			descendants.removeIf(level -> launcherTaxonomyLevelKey.equals(level.getKey()));
+		}
+		if (descendants.isEmpty()) {
+			return null;
+		}
+		
 		TaxonomyLevelUserObject taxonomyLevelUserObject = new TaxonomyLevelUserObject(catalogFilter.getKey().toString(), descendants);
 		
 		SelectionValues taxonomyValues = getTaxonomyLevelsSV(translator, taxonomyLevel, descendants);

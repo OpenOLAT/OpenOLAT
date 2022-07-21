@@ -29,6 +29,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -63,6 +64,7 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	
 	private final OLATResourceable olatResource;
 	private final Set<TaxonomyLevel> taxonomyLevels;
+	private List<TaxonomyLevelNamePath> taxonomyLevelNamePaths;
 	private final boolean member;
 	private final boolean openAccess;
 	private List<PriceMethod> accessTypes;
@@ -227,6 +229,14 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 		return taxonomyLevels;
 	}
 	
+	public List<TaxonomyLevelNamePath> getTaxonomyLevelNamePaths() {
+		return taxonomyLevelNamePaths;
+	}
+
+	public void setTaxonomyLevelNamePaths(List<TaxonomyLevelNamePath> taxonomyLevelNamePaths) {
+		this.taxonomyLevelNamePaths = taxonomyLevelNamePaths;
+	}
+
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailRelPath);
 	}

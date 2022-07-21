@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.ui;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class TaxonomyUIFactory {
 		String i18nKey = getDisplayNameI18nKey(level);
 		// Always fallback to default, even in debug modus
 		String translation = translator.translate(i18nKey, null, 0, true);
-		if (translation == null || i18nKey.equals(translation) || translation.length() > 256) {
+		if (translation == null || i18nKey.equals(translation) || translation.indexOf("OLATRuntimeException: transl dummy") > 0) {
 			translation = notFound.get();
 		}
 		return translation;
@@ -71,7 +72,7 @@ public class TaxonomyUIFactory {
 		String i18nKey = getDescriptionI18nKey(level);
 		// Always fallback to default, even in debug modus
 		String translation = translator.translate(i18nKey, null, 0, true);
-		if (translation == null || i18nKey.equals(translation) || translation.length() > 256) {
+		if (translation == null || i18nKey.equals(translation) || translation.indexOf("OLATRuntimeException: transl dummy") > 0) {
 			translation = null;
 		}
 		return translation;
@@ -84,6 +85,8 @@ public class TaxonomyUIFactory {
 	}
 	
 	public static List<TaxonomyLevelNamePath> getNamePaths(Translator translator, Collection<TaxonomyLevel> levels) {
+		if (levels == null || levels.isEmpty()) return Collections.emptyList();
+		
 		return levels.stream()
 				.map(level -> getNamePath(translator, level))
 				.collect(Collectors.toList());

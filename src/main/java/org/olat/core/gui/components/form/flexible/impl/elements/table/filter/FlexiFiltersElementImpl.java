@@ -627,8 +627,12 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		for(FlexiFilterButton filterButton:filterButtons) {
 			FlexiTableExtendedFilter filter = filterButton.getFilter();
 			filter.reset();
+			String label = filter.getLabel();
+			filterButton.getButton().setI18nKey(label);
+			filterButton.getButton().setTitle(label);
 			filterButton.setEnabled(filter.isDefaultVisible());
 			filterButton.getButton().setVisible(filterButton.isEnabled());
+			filterButton.setChanged(false);
 		}
 		component.setDirty(true);
 	}

@@ -32,11 +32,14 @@
 								</div>
 							#end
 							<h4 class="o_title">#if($row.closed)#end$r.xssScan($row.displayName)</h4>
-							#if($row.getEducationalType())
-								<div class="o_edu_type o_flex_block_one_line_left">
-								<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
-									<span>$r.translate($row.getEducationalTypei18nKey())</span>
-								</span>
+							#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
+								<div class="o_taxonomy_levels">	
+									<i class="o_icon o_icon-fw o_icon_tags"> </i>
+									#foreach($taxonomy in $row.taxonomyLevels)
+									<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.materializedPathIdentifiersWithoutSlash)">
+										$taxonomy.displayName
+									</span>
+									#end
 								</div>
 							#end
 							#if($r.isNotEmpty($row.teaser))

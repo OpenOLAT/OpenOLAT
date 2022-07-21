@@ -41,12 +41,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
-import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,6 +75,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			List<CatalogRepositoryEntry> entries, String title, boolean showMore, CatalogRepositoryEntryState state) {
 		super(ureq, wControl);
 		this.state = state;
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		
@@ -97,6 +98,9 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			if (image != null) {
 				item.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
 			}
+			
+			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), entry.getTaxonomyLevels());
+			item.setTaxonomyLevels(taxonomyLevels);
 			
 			Link learnMoreLink = LinkFactory.createLink("launcher.learn.more", mainVC, this);
 			learnMoreLink.setIconRightCSS("o_icon o_icon_start");
@@ -140,8 +144,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		private final String displayName;
 		private final String teaser;
 		private final RepositoryEntryStatusEnum status;
-		private final RepositoryEntryEducationalType educationalType;
 		private String thumbnailRelPath;
+		private List<TaxonomyLevelNamePath> taxonomyLevels;
 		private Link learnMoreLink;
 		
 		public LauncherItem(CatalogRepositoryEntry entry) {
@@ -150,7 +154,6 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			this.displayName = entry.getDisplayname();
 			this.teaser = Formatter.truncate(entry.getTeaser(), 250);
 			this.status = entry.getStatus();
-			this.educationalType = entry.getEducationalType();
 		}
 
 		public Long getKey() {
@@ -172,14 +175,6 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		public boolean isClosed() {
 			return status.decommissioned();
 		}
-		
-		public RepositoryEntryEducationalType getEducationalType() {
-			return educationalType;
-		}
-		
-		public String getEducationalTypei18nKey() {
-			return RepositoyUIFactory.getI18nKey(educationalType);
-		}
 
 		public String getThumbnailRelPath() {
 			return thumbnailRelPath;
@@ -191,6 +186,14 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		
 		public boolean isThumbnailAvailable() {
 			return StringHelper.containsNonWhitespace(thumbnailRelPath);
+		}
+
+		public List<TaxonomyLevelNamePath> getTaxonomyLevels() {
+			return taxonomyLevels;
+		}
+
+		public void setTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
+			this.taxonomyLevels = taxonomyLevels;
 		}
 
 		public Link getLearnMoreLink() {

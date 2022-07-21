@@ -388,8 +388,20 @@
 				@include text-overflow();
 				display: block;
 			}
-			.o_edu_type {
+			.o_taxonomy_levels {
 				margin-top: 0.5em;
+				color: $text-muted;
+				font-size: 85%;
+				vertical-align: text-bottom;
+
+				@include text-overflow();
+				width: 98%;
+				
+				.o_taxonomy {
+					font-size: 82%;
+					display: inline-block;
+					margin-bottom: 0;
+				}
 			}
 			.o_teaser {
 				margin-top: 0.5em;
