@@ -71,6 +71,11 @@ public class CatalogRepositoryEntryQueries {
 				.getSingleResult();
 		return Integer.valueOf(count.intValue());
 	}
+	
+	public List<String> loadTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
+		TypedQuery<String> query = createMyViewQuery(searchParams, String.class);
+		return query.getResultList();
+	}
 
 	public List<RepositoryEntry> loadRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults) {
 		TypedQuery<Object[]> query = createMyViewQuery(searchParams, Object[].class);
@@ -87,6 +92,8 @@ public class CatalogRepositoryEntryQueries {
 
 	protected <T> TypedQuery<T> createMyViewQuery(CatalogRepositoryEntrySearchParams searchParams, Class<T> type) {
 		boolean count = Number.class.equals(type);
+		boolean countTaxonomyLevels= String.class.equals(type);
+		boolean selectRepositoryEntries = !count && !countTaxonomyLevels;
 		QueryBuilder sb = new QueryBuilder(2048);
 		
 		if(count) {
@@ -94,6 +101,14 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(" from repositoryentry as v");
 			sb.append(" inner join v.olatResource as res");
 			sb.append(" left join v.lifecycle as lifecycle");
+		} else if (countTaxonomyLevels) {
+			sb.append("select reToTax.taxonomyLevel.materializedPathKeys");
+			sb.append(" from repositoryentry as v");
+			sb.append(" inner join repositoryentrytotaxonomylevel as reToTax");
+			sb.append("         on reToTax.entry.key = v.key");
+			sb.append(" inner join v.olatResource as res");
+			sb.append(" left join v.lifecycle as lifecycle");
+			sb.append(" left join v.educationalType as educationalType");
 		} else {
 			sb.append("select v");
 			if (OrderBy.popularCourses == searchParams.getOrderBy()) {
@@ -213,7 +228,11 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(")");
 		}
 		
-		if(!count) {
+		if(countTaxonomyLevels) {
+			sb.append(" group by reToTax.taxonomyLevel.materializedPathKeys");
+			sb.append(" having count(*) > 0");
+		}
+		if(selectRepositoryEntries) {
 			appendOrderBy(searchParams, sb);
 		}
 		
@@ -264,7 +283,7 @@ public class CatalogRepositoryEntryQueries {
 		if (serachTaxonomyLevelI18nSuffix != null) {
 			dbQuery.setParameter("serachTaxonomyLevelI18nSuffix", serachTaxonomyLevelI18nSuffix);
 		}
-		if (!count && OrderBy.popularCourses == searchParams.getOrderBy()) {
+		if (selectRepositoryEntries && OrderBy.popularCourses == searchParams.getOrderBy()) {
 			dbQuery.setParameter("statDay", DateUtils.addDays(new Date(), -28));
 		}
 		return dbQuery;

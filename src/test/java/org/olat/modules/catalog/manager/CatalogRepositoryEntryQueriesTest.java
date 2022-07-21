@@ -100,6 +100,36 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadTaxonomyLevelKeysWithOffers() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		Taxonomy taxonomy = taxonomyService.getTaxonomyList().get(0);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel4 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel3), null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel2), null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<String> taxonomyLevelKeysWithOffers = sut.loadTaxonomyLevelPathKeysWithOffers(searchParams);
+		
+		assertThat(taxonomyLevelKeysWithOffers)
+				.containsExactlyInAnyOrder(
+						taxonomyLevel1.getMaterializedPathKeys(),
+						taxonomyLevel2.getMaterializedPathKeys(),
+						taxonomyLevel3.getMaterializedPathKeys()
+						)
+				.doesNotContain(
+						taxonomyLevel4.getMaterializedPathKeys()
+						);
+	}
+	
+	@Test
 	public void shouldLoadRepositoryEntries() {
 		TestCatalogItem catalogItem = createCatalogItem();
 		

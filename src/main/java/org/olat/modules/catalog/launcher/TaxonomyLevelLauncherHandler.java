@@ -36,6 +36,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogLauncherTaxonomyController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherTaxonomyEditController;
@@ -75,6 +76,8 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		configXstream.alias("config", Config.class);
 	}
 	
+	@Autowired
+	private CatalogV2Service catalogService;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
@@ -181,6 +184,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		Config config = fromXML(catalogLauncher.getConfig());
 		
 		List<TaxonomyLevel> taxonomyLevels = getChildren(config);
+		excludeLevelsWithoutOffers(taxonomyLevels, defaultSearchParams);
 		if (taxonomyLevels == null) return null;
 		
 		taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(translator));
@@ -208,7 +212,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 	 * @return the list of TaxonomyLevel from the second to most level to the TaxonomyLevel of the key (if found)
 	 *         and the belonging restrictions.
 	 */
-	public Levels getTaxonomyLevels(CatalogLauncher catalogLauncher, Long key) {
+	public Levels getTaxonomyLevels(CatalogLauncher catalogLauncher, Long key, CatalogRepositoryEntrySearchParams searchParams) {
 		Config config = fromXML(catalogLauncher.getConfig());
 		TaxonomyLevel configTaxonomyLevel = null;
 		List<TaxonomyLevel> descendants = null;
@@ -221,6 +225,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 				descendants =  taxonomyLevelDao.getDescendants(configTaxonomyLevel, null);
 			}
 		}
+		excludeLevelsWithoutOffers(descendants, searchParams);
 		if (descendants == null) return null;
 		
 		Optional<TaxonomyLevel> taxonomyLevel = descendants.stream()
@@ -256,6 +261,23 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		return null;
 	}
 	
+	private void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams) {
+		if (taxonomyLevels == null) return;
+		
+		List<String> taxonomyLevelKeyPathsWithOffers = catalogService.getTaxonomyLevelPathKeysWithOffers(searchParams);
+		taxonomyLevels.removeIf(taxonomyLevel ->  hasNoOffer(taxonomyLevelKeyPathsWithOffers, taxonomyLevel));
+	}
+	
+	private boolean hasNoOffer(List<String> taxonomyLevelKeyPathsWithOffers, TaxonomyLevel taxonomyLevel) {
+		String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys();
+		for (String keyPath : taxonomyLevelKeyPathsWithOffers) {
+			if (keyPath.indexOf(materializedPathKeys) > -1 ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public Config fromXML(String xml) {
 		try {
 			return (Config)configXstream.fromXML(xml);

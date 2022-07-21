@@ -30,6 +30,8 @@ import java.util.List;
 public interface CatalogV2Service {
 
 	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams);
+	
+	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams);
 
 	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults);
 	

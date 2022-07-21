@@ -103,6 +103,11 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams) {
 		return queries.countRepositoryEntries(searchParams);
 	}
+	
+	@Override
+	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadTaxonomyLevelPathKeysWithOffers(searchParams);
+	}
 
 	@Override
 	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults) {
