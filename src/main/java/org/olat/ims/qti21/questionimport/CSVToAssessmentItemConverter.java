@@ -686,7 +686,8 @@ public class CSVToAssessmentItemConverter {
 				|| itemBuilder instanceof FIBAssessmentItemBuilder
 				|| itemBuilder instanceof KPrimAssessmentItemBuilder
 				|| itemBuilder instanceof MatchAssessmentItemBuilder
-				|| itemBuilder instanceof LobAssessmentItemBuilder) {
+				|| itemBuilder instanceof LobAssessmentItemBuilder
+				|| itemBuilder instanceof InlineChoiceAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
 		}

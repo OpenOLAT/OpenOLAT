@@ -1,7 +1,7 @@
 Type	Inlinechoice	
 Title	Hansel und Gretel	
 Description	Eine lange Geschichte	
-Points	1	
+Points	4	
 Text	Vor einem grossen Walde wohnte ein armer 
 1	|.|;|!		|
 Text	Holzhacker mit seiner Frau und seinen zwei Kindern	

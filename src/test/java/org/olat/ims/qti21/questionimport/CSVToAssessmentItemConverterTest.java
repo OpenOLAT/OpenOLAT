@@ -32,6 +32,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
 import org.olat.test.JunitTestHelper;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
@@ -157,7 +158,8 @@ public class CSVToAssessmentItemConverterTest {
 		// first item
 		AssessmentItemAndMetadata item = itemsAndData.get(0);
 		AssessmentItemBuilder itemBuilder = item.getItemBuilder();
-		Assert.assertEquals(1.0d, itemBuilder.getMaxScoreBuilder().getScore().doubleValue(), 0.00001);
+		Double maxScore = itemBuilder.getMaxScoreBuilder().getScore();
+		Assert.assertEquals(4.0d, maxScore.doubleValue(), 0.0001);
 		
 		List<Interaction> interactions = itemBuilder.getAssessmentItem().getItemBody().findInteractions();
 		Assert.assertEquals(4, interactions.size());
@@ -168,5 +170,13 @@ public class CSVToAssessmentItemConverterTest {
 		Assert.assertEquals(".", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(1)));
 		Assert.assertEquals(";", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(2)));
 		Assert.assertEquals("!", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(3)));
+		
+		Assert.assertTrue(itemBuilder instanceof InlineChoiceAssessmentItemBuilder);
+		InlineChoiceAssessmentItemBuilder inlineChoiceBuilder = (InlineChoiceAssessmentItemBuilder)itemBuilder;
+		
+		InlineChoiceInteractionEntry inlineChoiceInteractionEntry = inlineChoiceBuilder
+				.getInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
+		Assert.assertEquals(inlineChoices.get(0).getIdentifier(), inlineChoiceInteractionEntry.getCorrectResponseId());
+		Assert.assertEquals(1.0d, inlineChoiceInteractionEntry.getScore(inlineChoices.get(0).getIdentifier()).doubleValue(), 0.0001);
 	}
 }

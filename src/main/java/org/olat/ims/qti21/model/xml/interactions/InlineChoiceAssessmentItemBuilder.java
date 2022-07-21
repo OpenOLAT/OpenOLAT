@@ -741,6 +741,11 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 						if(correctResponse != null && correctResponse.equals(identifier)) {
 							interaction.setCorrectResponseId(newIdentifier);
 						}
+						Double score = interaction.getScore(inlineChoice.getIdentifier());
+						if(score != null) {
+							interaction.putScore(inlineChoice.getIdentifier(), null);
+							interaction.putScore(newIdentifier, score);
+						}
 						inlineChoice.setIdentifier(newIdentifier);
 					}
 				}
