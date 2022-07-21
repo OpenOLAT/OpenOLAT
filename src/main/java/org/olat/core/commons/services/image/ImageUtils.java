@@ -97,15 +97,17 @@ public class ImageUtils {
 		
 		boolean alphaChanel = false;
 		try {
-			Image image = new ImageIcon(file.toURI().toURL()).getImage();
-			if (image instanceof BufferedImage) {
-				BufferedImage bufferedimage = (BufferedImage) image;
-				alphaChanel = hasAlphaChannel(bufferedimage);
-			} else {
-				PixelGrabber pg = new PixelGrabber(image, 0, 0, 1, 1, false);
-				pg.grabPixels();
-				ColorModel cm = pg.getColorModel();
-				alphaChanel = cm.hasAlpha();
+			if (!file.getName().endsWith("jpg") && !file.getName().endsWith("jpeg")) {
+				Image image = new ImageIcon(file.toURI().toURL()).getImage();
+				if (image instanceof BufferedImage) {
+					BufferedImage bufferedimage = (BufferedImage) image;
+					alphaChanel = hasAlphaChannel(bufferedimage);
+				} else {
+					PixelGrabber pg = new PixelGrabber(image, 0, 0, 1, 1, false);
+					pg.grabPixels();
+					ColorModel cm = pg.getColorModel();
+					alphaChanel = cm.hasAlpha();
+				}
 			}
 		} catch (Exception e) {
 			log.warn("Could not load image: " + file.getAbsolutePath(), e);
