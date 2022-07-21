@@ -388,7 +388,7 @@ $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
 $o-cat2-header-height			: 240px !default;
-$o-cat2-header-noimage-bg				: linear-gradient(200deg, lighten($brand-primary , 70%) 0%, $brand-primary 35%), linear-gradient(40deg, lighten($brand-primary , 30%) 0%, adjust-hue($brand-primary, 10deg)100%) !default;
+$o-cat2-header-noimage-bg				: linear-gradient(190deg, lighten($brand-primary, 80%) 10%, $brand-primary 100%), linear-gradient(40deg, lighten($brand-primary, 55%) 0%, adjust-hue($brand-primary, 5deg)60%) !default;
 $o-cat2-header-noimage-bg-blend-mode		: screen, normal !default;
 $o-cat2-header-box-bg-color				: rgba(255,255,255,.7) !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;
