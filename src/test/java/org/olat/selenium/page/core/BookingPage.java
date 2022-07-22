@@ -206,7 +206,6 @@ public class BookingPage {
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_free_form button.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
-		OOGraphene.takeScreenshot("Configure free", browser);
 		return this;
 	}
 	
