@@ -245,7 +245,9 @@ public class RepositoryEntryMyCourseQueries {
 		}
 
 		sb.append(" where ");
-		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory(), params.getOfferValidAt(),  params.getOfferOrganisations());
+		boolean membershipMandatory = params.isMembershipMandatory() || params.isMembershipOnly();
+		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(),
+				membershipMandatory, params.getOfferValidAt(),  params.getOfferOrganisations());
 		needIdentityKey |= addParams.isIdentity();
 
 		if(params.getEntryStatus() != null) {

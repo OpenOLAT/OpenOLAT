@@ -91,6 +91,7 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 			
 			Roles roles = ureq.getUserSession().getRoles();
 			SearchMyRepositoryEntryViewParams searchParams = new SearchMyRepositoryEntryViewParams(getIdentity(), roles);
+			searchParams.setMembershipOnly(true);
 			searchParams.setMembershipMandatory(true);
 			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 			

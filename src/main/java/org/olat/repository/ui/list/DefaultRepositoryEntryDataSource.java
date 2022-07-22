@@ -61,6 +61,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
+	private final RepositoryEntryStatusEnum[] baseEntryStatus;
 	
 	private final ACService acService;
 	private final AccessControlModule acModule;
@@ -73,6 +74,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			RepositoryEntryDataSourceUIFactory uifactory) {
 		this.uifactory = uifactory;
 		this.searchParams = searchParams;
+		baseEntryStatus = searchParams.getEntryStatus();
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
@@ -157,7 +159,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				break;
 			case OWNED:
 				String ownedValue = ((FlexiTableExtendedFilter)filter).getValue();
-				searchParams.setMembershipMandatory(StringHelper.containsNonWhitespace(ownedValue));
+				searchParams.setMembershipMandatory(StringHelper.containsNonWhitespace(ownedValue) || searchParams.isMembershipOnly());
 				break;
 			case STATUS:
 				String value = ((FlexiTableExtendedFilter)filter).getValue();
@@ -167,6 +169,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.published });
 				} else if("preparation".equals(value)) {
 					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToCoachPublished());
+				} else {
+					searchParams.setEntryStatus(baseEntryStatus);
 				}
 				break;
 			case DATES:

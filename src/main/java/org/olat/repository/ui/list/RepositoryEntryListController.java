@@ -302,7 +302,7 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableFilter(translate("filter.booked.participant"), Filter.asParticipant.name()));
 		filters.add(new FlexiTableFilter(translate("filter.booked.coach"), Filter.asCoach.name()));
 		filters.add(new FlexiTableFilter(translate("filter.booked.author"), Filter.asAuthor.name()));
-		if(!searchParams.isMembershipMandatory()) {
+		if(!searchParams.isMembershipMandatory() && !searchParams.isMembershipOnly()) {
 			filters.add(new FlexiTableFilter(translate("filter.not.booked"), Filter.notBooked.name()));
 		}
 		filters.add(FlexiTableFilter.SPACER);
@@ -392,7 +392,7 @@ public class RepositoryEntryListController extends FormBasicController
 		bookingValues.add(SelectionValues.entry(Filter.asParticipant.name(), translate("filter.booked.participant")));
 		bookingValues.add(SelectionValues.entry(Filter.asCoach.name(), translate("filter.booked.coach")));
 		bookingValues.add(SelectionValues.entry(Filter.asAuthor.name(), translate("filter.booked.author")));
-		if(!searchParams.isMembershipMandatory()) {
+		if(!searchParams.isMembershipMandatory() && !searchParams.isMembershipOnly()) {
 			bookingValues.add(SelectionValues.entry(Filter.notBooked.name(), translate("filter.not.booked")));
 		}
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.membership"),
@@ -677,7 +677,7 @@ public class RepositoryEntryListController extends FormBasicController
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
-		searchParams.setMembershipMandatory(se.isMembershipMandatory());
+		searchParams.setMembershipMandatory(se.isMembershipMandatory() || searchParams.isMembershipOnly());
 		if(se.getClosed() != null) {
 			if(se.getClosed().booleanValue()) {
 				searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.closed });

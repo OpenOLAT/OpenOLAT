@@ -42,6 +42,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private Roles roles;
 	
 	private Boolean marked;
+	private boolean membershipOnly = false;
 	private boolean membershipMandatory = false;
 	private RepositoryEntryStatusEnum[] entryStatus;
 	
@@ -72,6 +73,19 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setParentEntry(CatalogEntry parentEntry) {
 		this.parentEntry = parentEntry;
+	}
+
+	public boolean isMembershipOnly() {
+		return membershipOnly;
+	}
+
+	/**
+	 * This option override always setMembershipMandatory()
+	 * 
+	 * @param membershipOnly true to search always within owner/coach/participant... memberships
+	 */
+	public void setMembershipOnly(boolean membershipOnly) {
+		this.membershipOnly = membershipOnly;
 	}
 
 	public boolean isMembershipMandatory() {
