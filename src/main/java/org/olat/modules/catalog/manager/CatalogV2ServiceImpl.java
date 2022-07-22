@@ -108,6 +108,24 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
 		return queries.loadTaxonomyLevelPathKeysWithOffers(searchParams);
 	}
+	
+	@Override
+	public void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams) {
+		if (taxonomyLevels == null) return;
+		
+		List<String> taxonomyLevelKeyPathsWithOffers = getTaxonomyLevelPathKeysWithOffers(searchParams);
+		taxonomyLevels.removeIf(taxonomyLevel ->  hasNoOffer(taxonomyLevelKeyPathsWithOffers, taxonomyLevel));
+	}
+	
+	private boolean hasNoOffer(List<String> taxonomyLevelKeyPathsWithOffers, TaxonomyLevel taxonomyLevel) {
+		String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys();
+		for (String keyPath : taxonomyLevelKeyPathsWithOffers) {
+			if (keyPath.indexOf(materializedPathKeys) > -1 ) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults) {

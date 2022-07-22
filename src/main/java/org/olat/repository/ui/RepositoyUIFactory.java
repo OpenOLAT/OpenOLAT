@@ -141,7 +141,7 @@ public class RepositoyUIFactory {
 			Collections.reverse(names);
 			String value = String.join(" / ", names);
 			if (multiTaxonomy) {
-				value += level.getTaxonomy().getDisplayName() + ": ";
+				value = level.getTaxonomy().getDisplayName() + ": " + value;
 			}
 			keyValues.add(entry(key, value));
 		}

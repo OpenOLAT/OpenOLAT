@@ -167,6 +167,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			flc.contextPut("description", TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel));
 			
 			List<TaxonomyLevel> taxonomyLevels = taxonomyLevelDao.getChildren(taxonomyLevel);
+			catalogService.excludeLevelsWithoutOffers(taxonomyLevels, searchParams);
 			taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(getTranslator()));
 			List<TaxonomyItem> items = new ArrayList<>(taxonomyLevels.size());
 			for (TaxonomyLevel child : taxonomyLevels) {

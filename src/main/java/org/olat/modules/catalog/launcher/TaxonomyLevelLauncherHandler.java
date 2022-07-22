@@ -184,7 +184,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		Config config = fromXML(catalogLauncher.getConfig());
 		
 		List<TaxonomyLevel> taxonomyLevels = getChildren(config);
-		excludeLevelsWithoutOffers(taxonomyLevels, defaultSearchParams);
+		catalogService.excludeLevelsWithoutOffers(taxonomyLevels, defaultSearchParams);
 		if (taxonomyLevels == null) return null;
 		
 		taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(translator));
@@ -225,7 +225,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 				descendants =  taxonomyLevelDao.getDescendants(configTaxonomyLevel, null);
 			}
 		}
-		excludeLevelsWithoutOffers(descendants, searchParams);
+		catalogService.excludeLevelsWithoutOffers(descendants, searchParams);
 		if (descendants == null) return null;
 		
 		Optional<TaxonomyLevel> taxonomyLevel = descendants.stream()
@@ -259,23 +259,6 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 			return taxonomyService.getTaxonomyLevel(() -> config.getTaxonomyLevelKey());
 		}
 		return null;
-	}
-	
-	private void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams) {
-		if (taxonomyLevels == null) return;
-		
-		List<String> taxonomyLevelKeyPathsWithOffers = catalogService.getTaxonomyLevelPathKeysWithOffers(searchParams);
-		taxonomyLevels.removeIf(taxonomyLevel ->  hasNoOffer(taxonomyLevelKeyPathsWithOffers, taxonomyLevel));
-	}
-	
-	private boolean hasNoOffer(List<String> taxonomyLevelKeyPathsWithOffers, TaxonomyLevel taxonomyLevel) {
-		String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys();
-		for (String keyPath : taxonomyLevelKeyPathsWithOffers) {
-			if (keyPath.indexOf(materializedPathKeys) > -1 ) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public Config fromXML(String xml) {
