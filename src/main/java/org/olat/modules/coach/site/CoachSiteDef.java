@@ -48,7 +48,7 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		UserSession usess = ureq.getUserSession();
-		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly() || usess.getRoles().isInvitee()) {
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly()) {
 			return null;
 		}
 

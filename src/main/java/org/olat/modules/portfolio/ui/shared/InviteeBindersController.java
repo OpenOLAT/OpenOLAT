@@ -149,7 +149,7 @@ public class InviteeBindersController extends FormBasicController {
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
-			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForInvitation(rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
 			binderCtrl = new BinderController(ureq, swControl, stackedPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
