@@ -234,7 +234,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		repoLinkCont.setLabel("cif.repo.link", null);
 		repoLinkCont.setRootForm(mainForm);
 		formLayout.add("repoLink", repoLinkCont);
-		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/0/" + entry.getKey();
+		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
 		
 		catalogLinksCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/catalog_links.html");
