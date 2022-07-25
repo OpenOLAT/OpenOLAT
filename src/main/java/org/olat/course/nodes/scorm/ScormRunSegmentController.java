@@ -43,6 +43,8 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentEventToState;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -67,8 +69,9 @@ public class ScormRunSegmentController extends BasicController implements Activa
 	private Link participantsLink;
 	private Link remindersLink;
 	
-	private VelocityContainer mainVC;
-	private SegmentViewComponent segmentView;
+	private final VelocityContainer mainVC;
+	private final CourseNodeSegmentPrefs segmentPrefs;
+	private final SegmentViewComponent segmentView;
 
 	private Controller contentCtrl;
 	private AssessmentCourseNodeOverviewController overviewCtrl;
@@ -90,6 +93,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		this.courseNode = courseNode;
 		
 		mainVC = createVelocityContainer("segments");
+		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
@@ -136,7 +140,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 			}
 		}
 		
-		doOpenContent(ureq);
+		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
 	}
@@ -149,7 +153,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		if(ORES_TYPE_CONTENT.equalsIgnoreCase(type)) {
 			doOpenContent(ureq);
 		} else if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
-			doOpenOverview();
+			doOpenOverview(ureq);
 		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type) && participantsLink != null) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenParticipants(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -168,13 +172,28 @@ public class ScormRunSegmentController extends BasicController implements Activa
 				if (clickedLink == contentLink) {
 					doOpenContent(ureq);
 				} else if (clickedLink == overviewLink) {
-					doOpenOverview();
+					doOpenOverview(ureq);
 				} else if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq);
 				}
 			}
+		}
+	}
+	
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (userCourseEnv.isParticipant()) {
+			doOpenContent(ureq);
+		} else if (CourseNodeSegment.overview == segment && overviewLink != null) {
+			doOpenOverview(ureq);
+		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
+			doOpenParticipants(ureq);
+		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
+			doOpenReminders(ureq);
+		} else {
+			doOpenContent(ureq);
 		}
 	}
 	
@@ -200,12 +219,13 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		}
 	}
 	
-	private void doOpenOverview() {
+	private void doOpenOverview(UserRequest ureq) {
 		mainVC.contextRemove("cssClass");
 		if (overviewLink != null) {
 			overviewCtrl.reload();
 			mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 			segmentView.select(overviewLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
 		}
 	}
 	
@@ -216,6 +236,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", participantsPanel);
 			segmentView.select(participantsLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.participants);
 		}
 		return participantsCtrl;
 	}
@@ -226,6 +247,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders);
 		}
 	}
 

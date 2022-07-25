@@ -40,6 +40,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Membership;
@@ -71,6 +73,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private Link manageLink;
 	private Link remindersLink;
 	private VelocityContainer mainVC;
+	private CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
 	
 	private final GTACourseNode gtaNode;
@@ -92,7 +95,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 		Membership membership = gtaManager.getMembership(getIdentity(), entry, gtaNode);
 		if((membership.isCoach() && userCourseEnv.isCoach()) || userCourseEnv.isAdmin()) {
 			mainVC = createVelocityContainer("run_segments");
-
+			
+			segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 			overviewLink = LinkFactory.createLink("run.overview", mainVC, this);
 			overviewLink.setElementCssClass("o_sel_course_gta_overview");
@@ -123,7 +127,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 				}
 			}
 			
-			doOpenOverview();
+			doOpenPreferredSegment(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isParticipant() && userCourseEnv.isParticipant()) {
@@ -151,7 +155,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("overview".equalsIgnoreCase(type)) {
 			if(overviewLink != null || overviewCtrl != null) {
-				doOpenOverview();
+				doOpenOverview(ureq);
 				if(segmentView != null) {
 					segmentView.select(overviewLink);
 				}
@@ -227,7 +231,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 				if (clickedLink == runLink) {
 					doOpenRun(ureq);
 				} else if (clickedLink == overviewLink) {
-					doOpenOverview();
+					doOpenOverview(ureq);
 				} else if (clickedLink == coachLink) {
 					doOpenCoach(ureq);
 				} else if (clickedLink == markedLink) {
@@ -238,6 +242,25 @@ public class GTARunController extends BasicController implements Activateable2 {
 					doOpenReminders(ureq);
 				}
 			}
+		}
+	}
+	
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (CourseNodeSegment.overview == segment && overviewLink != null) {
+			doOpenOverview(ureq);
+		} else if (CourseNodeSegment.participants == segment && coachLink != null) {
+			doOpenCoach(ureq);
+		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
+			doOpenReminders(ureq);
+		} else {
+			doOpenOverview(ureq);
+		}
+	}
+
+	private void setPreferredSegment(UserRequest ureq, CourseNodeSegment segment) {
+		if (segmentPrefs != null) {
+			segmentPrefs.setSegment(ureq, segment);
 		}
 	}
 	
@@ -252,10 +275,11 @@ public class GTARunController extends BasicController implements Activateable2 {
 		return runCtrl;
 	}
 	
-	private void doOpenOverview() {
+	private void doOpenOverview(UserRequest ureq) {
 		overviewCtrl.reload();
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
+		setPreferredSegment(ureq, CourseNodeSegment.overview);
 	}
 
 	private Activateable2 doOpenMarked(UserRequest ureq) {
@@ -281,6 +305,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", coachCtrl.getInitialComponent());
 		}
+		setPreferredSegment(ureq, CourseNodeSegment.participants);
 		return coachCtrl;
 	}
 	
@@ -334,6 +359,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+			setPreferredSegment(ureq, CourseNodeSegment.reminders);
 		}
 	}
 }

@@ -45,6 +45,8 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController
 import org.olat.course.assessment.ui.tool.AssessmentEventToState;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListController;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -72,8 +74,9 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private Link communicationLink;
 	private Link previewLink;
 	private Link remindersLink;
-	private VelocityContainer mainVC;
-	private SegmentViewComponent segmentView;
+	private final VelocityContainer mainVC;
+	private final CourseNodeSegmentPrefs segmentPrefs;
+	private final SegmentViewComponent segmentView;
 
 	private AssessmentCourseNodeOverviewController overviewCtrl;
 	private AssessmentEventToState assessmentEventToState;	
@@ -99,6 +102,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		mainVC = createVelocityContainer("segments");
+		segmentPrefs = new CourseNodeSegmentPrefs(courseEntry);
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
@@ -155,7 +159,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			}
 		}
 		
-		doOpenOverview();
+		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
 	}
@@ -166,7 +170,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
-			doOpenOverview();
+			doOpenOverview(ureq);
 		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenParticipants(ureq).activate(ureq, subEntries, state);
@@ -203,7 +207,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == overviewLink) {
-					doOpenOverview();
+					doOpenOverview(ureq);
 				} else if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == assessmentModeLink) {
@@ -218,11 +222,27 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			}
 		}
 	}
+	
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (CourseNodeSegment.overview == segment && overviewLink != null) {
+			doOpenOverview(ureq);
+		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
+			doOpenParticipants(ureq);
+		} else if (CourseNodeSegment.preview == segment && previewLink != null) {
+			doOpenPreview(ureq);
+		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
+			doOpenReminders(ureq);
+		} else {
+			doOpenOverview(ureq);
+		}
+	}
 
-	private void doOpenOverview() {
+	private void doOpenOverview(UserRequest ureq) {
 		overviewCtrl.reload();
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
 	}
 	
 	private Activateable2 doOpenParticipants(UserRequest ureq) {
@@ -230,6 +250,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		addToHistory(ureq, participantsCtrl);
 		mainVC.put("segmentCmp", participantsPanel);
 		segmentView.select(participantsLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.participants);
 		return participantsCtrl;
 	}
 	
@@ -266,6 +287,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		listenTo(previewCtrl);
 		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
 		segmentView.select(previewLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview);
 		addToHistory(ureq, previewCtrl);
 	}
 	
@@ -274,6 +296,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders);
 		}
 	}
 	

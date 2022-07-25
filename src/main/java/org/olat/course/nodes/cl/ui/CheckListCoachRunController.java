@@ -41,6 +41,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
@@ -65,6 +67,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	private Link remindersLink;
 	
 	private final VelocityContainer mainVC;
+	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
 	
 	private Controller participantsCtrl;
@@ -87,6 +90,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		this.courseNode = courseNode;
 
 		mainVC = createVelocityContainer("segments");
+		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
@@ -118,7 +122,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			}
 		}
 		
-		doOpenOverview();
+		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
 	}
@@ -129,7 +133,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
-			doOpenOverview();
+			doOpenOverview(ureq);
 		} if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
 			doOpenParticipants(ureq);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
@@ -147,7 +151,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == overviewLink) {
-					doOpenOverview();
+					doOpenOverview(ureq);
 				} else if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == remindersLink) {
@@ -158,11 +162,27 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			}
 		}
 	}
+	
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (CourseNodeSegment.overview == segment && overviewLink != null) {
+			doOpenOverview(ureq);
+		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
+			doOpenParticipants(ureq);
+		} else if (CourseNodeSegment.preview == segment && previewLink != null) {
+			doOpenPreview(ureq);
+		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
+			doOpenReminders(ureq);
+		} else {
+			doOpenOverview(ureq);
+		}
+	}
 
-	private void doOpenOverview() {
+	private void doOpenOverview(UserRequest ureq) {
 		overviewCtrl.reload();
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
 	}
 
 	private void doOpenParticipants(UserRequest ureq) {
@@ -173,6 +193,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		listenTo(participantsCtrl);
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 		segmentView.select(participantsLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.participants);
 	}
 	
 	private void doOpenPreview(UserRequest ureq) {
@@ -183,6 +204,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		listenTo(previewCtrl);
 		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
 		segmentView.select(previewLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview);
 	}
 	
 	private void doOpenReminders(UserRequest ureq) {
@@ -190,6 +212,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders);
 		}
 	}
 }

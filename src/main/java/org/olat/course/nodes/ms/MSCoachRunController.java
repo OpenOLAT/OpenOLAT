@@ -42,6 +42,8 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentEventToState;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -64,8 +66,9 @@ public class MSCoachRunController extends BasicController implements Activateabl
 	private Link participantsLink;
 	private Link remindersLink;
 	
-	private VelocityContainer mainVC;
-	private SegmentViewComponent segmentView;
+	private final VelocityContainer mainVC;
+	private final CourseNodeSegmentPrefs segmentPrefs;
+	private final SegmentViewComponent segmentView;
 
 	private final AssessmentCourseNodeOverviewController overviewCtrl;
 	private final AssessmentEventToState assessmentEventToState;
@@ -82,6 +85,7 @@ public class MSCoachRunController extends BasicController implements Activateabl
 		
 		mainVC = createVelocityContainer("segments");
 		
+		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
@@ -121,11 +125,11 @@ public class MSCoachRunController extends BasicController implements Activateabl
 			}
 		}
 		
-		doOpenOverview();
+		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
 	}
-	
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		participantsCtrl.activate(ureq, entries, state);
@@ -133,7 +137,7 @@ public class MSCoachRunController extends BasicController implements Activateabl
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
-			doOpenOverview();
+			doOpenOverview(ureq);
 		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenParticipants(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -150,7 +154,7 @@ public class MSCoachRunController extends BasicController implements Activateabl
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == overviewLink) {
-					doOpenOverview();
+					doOpenOverview(ureq);
 				} else if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == remindersLink) {
@@ -167,11 +171,25 @@ public class MSCoachRunController extends BasicController implements Activateabl
 		}
 		super.event(ureq, source, event);
 	}
+	
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (CourseNodeSegment.overview == segment && overviewLink != null) {
+			doOpenOverview(ureq);
+		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
+			doOpenParticipants(ureq);
+		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
+			doOpenReminders(ureq);
+		} else {
+			doOpenOverview(ureq);
+		}
+	}
 
-	private void doOpenOverview() {
+	private void doOpenOverview(UserRequest ureq) {
 		overviewCtrl.reload();
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
 	}
 	
 	private Activateable2 doOpenParticipants(UserRequest ureq) {
@@ -180,6 +198,7 @@ public class MSCoachRunController extends BasicController implements Activateabl
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", participantsPanel);
 			segmentView.select(participantsLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.participants);
 		}
 		return participantsCtrl;
 	}
@@ -189,6 +208,7 @@ public class MSCoachRunController extends BasicController implements Activateabl
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders);
 		}
 	}
 
