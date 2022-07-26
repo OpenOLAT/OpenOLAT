@@ -442,4 +442,16 @@ public class BigBlueButtonMeetingDAO {
 		return query.getResultList();
 	}
 
+	public List<BigBlueButtonMeeting> getAutoDeleteMeetings(Date endBefore) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting");
+		sb.and().append("meeting.permanent = false");
+		sb.and().append("meeting.endDate < :endBefore");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
+				.setParameter("endBefore", endBefore)
+				.getResultList();
+	}
+
 }

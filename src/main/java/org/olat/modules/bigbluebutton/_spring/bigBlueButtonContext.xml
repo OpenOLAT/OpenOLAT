@@ -59,4 +59,21 @@
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
+	
+	<!-- Meeting deletion job -->
+	<bean id="meetingDeletionTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="meetingDeletionJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="20 40 1 * * ?" />
+		<property name="startDelay" value="20000" />
+	</bean>
+
+	<bean id="meetingDeletionJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingsDeleteJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="meetingDeletionJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
 </beans>

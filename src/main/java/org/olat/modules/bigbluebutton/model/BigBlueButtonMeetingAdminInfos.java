@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton.model;
 
+import java.util.Date;
+
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 
 /**
@@ -31,6 +33,7 @@ public class BigBlueButtonMeetingAdminInfos {
 	
 	private final BigBlueButtonMeeting meeting;
 	private final long numOfRecordings;
+	private Date autoDeleteDate;
 	
 	public BigBlueButtonMeetingAdminInfos(BigBlueButtonMeeting meeting, long numOfRecordings) {
 		this.meeting = meeting;
@@ -45,4 +48,12 @@ public class BigBlueButtonMeetingAdminInfos {
 		return numOfRecordings;
 	}
 
+	public Date getAutoDeleteDate() {
+		return autoDeleteDate;
+	}
+
+	public void setAutoDeleteDate(Date autoDeleteDate) {
+		this.autoDeleteDate = autoDeleteDate;
+	}
+	
 }

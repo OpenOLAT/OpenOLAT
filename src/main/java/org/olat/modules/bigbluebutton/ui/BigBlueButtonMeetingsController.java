@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -93,6 +94,9 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		if (bigBlueButtonModule.getMeetingDeletionDays() != null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.autoDelete, new DateFlexiCellRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 
@@ -113,6 +117,9 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		}
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		if (bigBlueButtonModule.getMeetingDeletionDays() != null) {
+			pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.autoDelete, new DateFlexiCellRenderer(getLocale())));
+		}
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 
@@ -132,11 +139,13 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		List<BigBlueButtonMeetingRow> pastMeetings = new ArrayList<>();
 		List<BigBlueButtonMeetingRow> upcomingMeetings = new ArrayList<>();
 		for(BigBlueButtonMeeting meeting:meetings) {
+			BigBlueButtonMeetingRow row = new BigBlueButtonMeetingRow(meeting);
+			row.setAutoDeleteDate(bigBlueButtonManager.getAutoDeletionDate(meeting));
 			if(meeting.getStartDate() == null || meeting.getEndDate() == null
 					|| now.compareTo(meeting.getEndDate()) <= 0) {
-				upcomingMeetings.add(new BigBlueButtonMeetingRow(meeting));
+				upcomingMeetings.add(row);
 			} else {
-				pastMeetings.add(new BigBlueButtonMeetingRow(meeting));
+				pastMeetings.add(row);
 			}
 		}
 		

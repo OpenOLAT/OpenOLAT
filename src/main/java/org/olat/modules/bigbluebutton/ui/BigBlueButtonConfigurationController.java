@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -69,6 +71,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private MultipleSelectionElement avatarEl;
 	private SingleSelection recordingsHandlerEl;
 	private MultipleSelectionElement recordingPermanentEl;
+	private FormLayoutContainer meetingDeletionCont;
+	private TextElement meetingDeletionDaysEl;
 	private TextElement slidesUploadLimitEl;
 	
 	private FormLink addServerButton;
@@ -158,6 +162,18 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			recordingPermanentEl.select(ENABLED_KEY[0], true);
 		}
 		
+		meetingDeletionCont = FormLayoutContainer.createButtonLayout("auto.delete", getTranslator());
+		meetingDeletionCont.setLabel("meeting.deletion.auto", null);
+		meetingDeletionCont.setElementCssClass("o_inline_cont");
+		meetingDeletionCont.setRootForm(mainForm);
+		formLayout.add(meetingDeletionCont);
+		String meetingDeletionDays = bigBlueButtonModule.getMeetingDeletionDays() != null? bigBlueButtonModule.getMeetingDeletionDays().toString(): null;
+		meetingDeletionDaysEl = uifactory.addTextElement("meeting.deletion.auto", null, 5, meetingDeletionDays, meetingDeletionCont);
+		meetingDeletionDaysEl.setDisplaySize(5);
+		
+		StaticTextElement autoDeletionDaysEl = uifactory.addStaticTextElement("meeting.deletion.days", null, translate("meeting.deletion.days"),meetingDeletionCont);
+		autoDeletionDaysEl.setDomWrapperElement(DomWrapperElement.span);
+		
 		Integer maxSize = bigBlueButtonModule.getMaxUploadSize();
 		String maxSizeStr = maxSize == null ? null : maxSize.toString();
 		slidesUploadLimitEl = uifactory.addTextElement("slides.upload.limit", 8, maxSizeStr, formLayout);
@@ -208,6 +224,20 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			
 			if(!recordingsHandlerEl.isOneSelected()) {
 				recordingsHandlerEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		meetingDeletionCont.clearError();
+		if(StringHelper.containsNonWhitespace(meetingDeletionDaysEl.getValue())) {
+			try {
+				int meetingDeletionDays = Integer.parseInt(meetingDeletionDaysEl.getValue());
+				if (meetingDeletionDays < 0) {
+					meetingDeletionCont.setErrorKey("form.error.positive.integer", null);
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				meetingDeletionCont.setErrorKey("form.error.positive.integer", null);
 				allOk &= false;
 			}
 		}
@@ -283,6 +313,10 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			bigBlueButtonModule.setChatExamsEnabled(enabledForEl.isSelected(3));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
+			Integer meetingDeletionDays = StringHelper.containsNonWhitespace(meetingDeletionDaysEl.getValue())
+					? Integer.valueOf(meetingDeletionDaysEl.getValue())
+					: null;
+			bigBlueButtonModule.setMeetingDeletionDays(meetingDeletionDays);
 			bigBlueButtonModule.setMaxUploadSize(Integer.valueOf(slidesUploadLimitEl.getValue()));
 			bigBlueButtonModule.setRecordingsPermanent(recordingPermanentEl.isVisible() && recordingPermanentEl.isAtLeastSelected(1));
 		}

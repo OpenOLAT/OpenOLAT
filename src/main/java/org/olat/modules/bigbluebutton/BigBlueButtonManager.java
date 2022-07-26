@@ -135,6 +135,11 @@ public interface BigBlueButtonManager {
 	
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
+	public Date getAutoDeletionDate(BigBlueButtonMeeting meeting);
+	
+	public void deleteMeetings(Integer meetingDeletionDays);
+
+	
 	/**
 	 * Delete the slides, can be useful to delete slides of transient meetings.
 	 * 

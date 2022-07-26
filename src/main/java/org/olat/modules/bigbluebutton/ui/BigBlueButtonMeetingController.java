@@ -200,6 +200,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				String end = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getEndDate());
 				layoutCont.contextPut("end", end);
 			}
+			Date deletionDate = bigBlueButtonManager.getAutoDeletionDate(meeting);
+			if(deletionDate != null) {
+				String deletion = Formatter.getInstance(getLocale()).formatDate(deletionDate);
+				layoutCont.contextPut("deletion", deletion);
+			}
 			
 			if((administrator || moderator) && StringHelper.containsNonWhitespace(meeting.getReadableIdentifier())) {
 				String url = BigBlueButtonDispatcher.getMeetingUrl(meeting.getReadableIdentifier());

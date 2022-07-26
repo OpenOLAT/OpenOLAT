@@ -60,6 +60,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_RECORDING_HANDLER_ID = "vc.bigbluebutton.recording.handler.id";
 	private static final String PROP_MAX_UPLOAD_SIZE = "vc.bigbluebutton.max.upload.size";
 	private static final String PROP_RECORDINGS_DEF_PERMANENT = "vc.bigbluebutton.recordings.permanent";
+	private static final String PROP_MEETING_DELETION_DAYS = "vc.bigbluebutton.meeting.deletion.days";
 	
 	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/jpg", "image/jpeg", "image/png", "application/pdf",
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -114,6 +115,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String recordingHandlerId;
 	@Value("${vc.bigbluebutton.recordings.permanent:false}")
 	private String recordingsPermanent;
+	@Value("${vc.bigbluebutton.meeting.deletion.days}")
+	private Integer meetingDeletionDays;
 	
 	@Autowired
 	public BigBlueButtonModule(CoordinatorManager coordinatorManager) {
@@ -157,6 +160,11 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 
 		recordingHandlerId = getStringPropertyValue(PROP_RECORDING_HANDLER_ID, recordingHandlerId);
 		recordingsPermanent = getStringPropertyValue(PROP_RECORDINGS_DEF_PERMANENT, recordingsPermanent);
+		
+		String meetingDeletionDaysObj = getStringPropertyValue(PROP_MEETING_DELETION_DAYS, maxUploadSize.toString());
+		if(StringHelper.containsNonWhitespace(meetingDeletionDaysObj)) {
+			meetingDeletionDays = Integer.valueOf(meetingDeletionDaysObj);
+		}
 	}
 	
 	@Override
@@ -391,6 +399,16 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setRecordingsPermanent(boolean permanent) {
 		recordingsPermanent = permanent ? "true" : "false";
 		setStringProperty(PROP_RECORDINGS_DEF_PERMANENT, recordingsPermanent, true);
+	}
+
+	public Integer getMeetingDeletionDays() {
+		return meetingDeletionDays;
+	}
+
+	public void setMeetingDeletionDays(Integer meetingDeletionDays) {
+		this.meetingDeletionDays = meetingDeletionDays;
+		String value = meetingDeletionDays != null? meetingDeletionDays.toString(): null;
+		setStringProperty(PROP_MEETING_DELETION_DAYS, value, true);
 	}
 
 	public int getHttpConnectTimeout() {

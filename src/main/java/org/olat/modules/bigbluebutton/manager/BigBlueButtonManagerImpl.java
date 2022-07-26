@@ -583,15 +583,26 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	@Override
 	public List<BigBlueButtonMeetingAdminInfos> searchMeetings(BigBlueButtonMeetingsSearchParameters params,
 			int firstResult, int maxResults) {
-		return bigBlueButtonMeetingQueries.search(params, firstResult, maxResults);
+		List<BigBlueButtonMeetingAdminInfos> infos = bigBlueButtonMeetingQueries.search(params, firstResult, maxResults);
+		for (BigBlueButtonMeetingAdminInfos info : infos) {
+			Date autoDeleteDate = getAutoDeletionDate(info.getMeeting());
+			info.setAutoDeleteDate(autoDeleteDate);
+		}
+		return infos;
 	}
 
 	@Override
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
+		return deleteMeeting(meeting, errors, true);
+	}
+	
+	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors, boolean deleteCalendarEvents) {
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
 		if(reloadedMeeting != null) {
 			bigBlueButtonMeetingDeletionHandlers.forEach(h -> h.onBeforeDelete(reloadedMeeting));
-			removeCalendarEvent(reloadedMeeting);
+			if (deleteCalendarEvents) {
+				removeCalendarEvent(reloadedMeeting);
+			}
 			deleteRecordings(reloadedMeeting, errors);
 			deleteSlides(reloadedMeeting);
 			// slides VFS operations can close the session -> reload
@@ -602,6 +613,36 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public Date getAutoDeletionDate(BigBlueButtonMeeting meeting) {
+		if (bigBlueButtonModule.getMeetingDeletionDays() != null && meeting != null && !meeting.isPermanent() && meeting.getEndDate() != null) {
+			// Start of the day after the day with the exactly calculated date.
+			return DateUtils.setTime(DateUtils.addDays(meeting.getEndDate(), bigBlueButtonModule.getMeetingDeletionDays() + 1), 0, 0, 1);
+		}
+		return null;
+	}
+
+	
+	@Override
+	public void deleteMeetings(Integer meetingDeletionDays) {
+		Date now = new Date();
+		Date endBefore = DateUtils.addDays(now, 1 - meetingDeletionDays);
+		// Approximate selection
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAutoDeleteMeetings(endBefore);
+		
+		int counter = 0;
+		for (BigBlueButtonMeeting meeting : meetings) {
+			// Exact check
+			if (now.after(getAutoDeletionDate(meeting))) {
+				deleteMeeting(meeting, new BigBlueButtonErrors(), false);
+				unlinkCalendarEvent(meeting);
+				dbInstance.commit();
+				counter++;
+			}
+		}
+		log.info("{} BigBlueButton meetings automatically deleted.", counter);
 	}
 	
 	@Override
@@ -787,6 +828,20 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		for(KalendarEvent event:events) {
 			if(externalId.equals(event.getExternalId())) {
 				calendarManager.removeEventFrom(calendar, event);
+			}
+		}
+	}
+	
+	private void unlinkCalendarEvent(BigBlueButtonMeeting meeting) {
+		Kalendar calendar = getCalendar(meeting);
+		if(calendar == null) return;
+		
+		String externalId = generateEventExternalId(meeting);
+		List<KalendarEvent> events = calendar.getEvents();
+		for(KalendarEvent event:events) {
+			if(externalId.equals(event.getExternalId())) {
+				event.setKalendarEventLinks(null);
+				calendarManager.updateEventFrom(calendar, event);
 			}
 		}
 	}

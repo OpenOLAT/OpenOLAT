@@ -37,6 +37,7 @@ import org.olat.repository.RepositoryEntry;
 public class BigBlueButtonMeetingRow {
 	
 	private final BigBlueButtonMeeting meeting;
+	private Date autoDeleteDate;
 	private FormLink toolsLink;
 	
 	public BigBlueButtonMeetingRow(BigBlueButtonMeeting meeting) {
@@ -59,6 +60,14 @@ public class BigBlueButtonMeetingRow {
 		return meeting.getEndDate();
 	}
 	
+	public Date getAutoDeleteDate() {
+		return autoDeleteDate;
+	}
+
+	public void setAutoDeleteDate(Date autoDeleteDate) {
+		this.autoDeleteDate = autoDeleteDate;
+	}
+
 	public boolean isPermanent() {
 		return meeting.isPermanent();
 	}

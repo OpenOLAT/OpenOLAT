@@ -58,6 +58,7 @@ public class BigBlueButtonMeetingDataModel extends DefaultFlexiTableDataSourceMo
 			case permanent: return Boolean.valueOf(meeting.isPermanent());
 			case startDate: return meeting.getStartDate();
 			case endDate: return meeting.getEndDate();
+			case autoDelete: return meetingInfos.getAutoDeleteDate();
 			case server: return getServer(meeting);
 			case template: return getTemplate(meeting);
 			case resource: return getContext(meeting);
@@ -101,6 +102,7 @@ public class BigBlueButtonMeetingDataModel extends DefaultFlexiTableDataSourceMo
 		permanent("table.header.permanent"),
 		startDate("meeting.start"),
 		endDate("meeting.end"),
+		autoDelete("table.header.auto.delete"),
 		template("table.header.template"),
 		server("table.header.server"),
 		resource("meeting.resource"),

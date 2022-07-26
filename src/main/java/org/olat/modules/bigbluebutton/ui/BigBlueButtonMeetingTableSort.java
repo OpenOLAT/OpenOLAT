@@ -21,8 +21,10 @@ package org.olat.modules.bigbluebutton.ui;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -46,59 +48,36 @@ public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelega
 		int columnIndex = getColumnIndex();
 		BMeetingsCols column = BMeetingsCols.values()[columnIndex];
 		switch(column) {
-			case start: Collections.sort(rows, new StartDateComparator(isAsc())); break;
-			case end: Collections.sort(rows, new EndDateComparator(isAsc())); break;
+			case start: Collections.sort(rows, new RowDateComparator(isAsc(), BigBlueButtonMeetingRow::getStartDate)); break;
+			case end: Collections.sort(rows, new RowDateComparator(isAsc(), BigBlueButtonMeetingRow::getEndDate)); break;
+			case autoDelete: Collections.sort(rows, new RowDateComparator(isAsc(), BigBlueButtonMeetingRow::getAutoDeleteDate)); break;
 			default: super.sort(rows); break;
 		}
 	}
 	
-	private class StartDateComparator implements Comparator<BigBlueButtonMeetingRow> {
+	private class RowDateComparator implements Comparator<BigBlueButtonMeetingRow> {
 		
 		private final boolean ascending;
+		private final Function<BigBlueButtonMeetingRow, Date> dateFunction;
 		
-		public StartDateComparator(boolean ascending) {
+		public RowDateComparator(boolean ascending, Function<BigBlueButtonMeetingRow, Date> dateFunction) {
 			this.ascending = ascending;
+			this.dateFunction = dateFunction;
 		}
 		
 		@Override
 		public int compare(BigBlueButtonMeetingRow m1, BigBlueButtonMeetingRow m2) {
 			int c = 0;
-			if(m1.getStartDate() == null && m2.getStartDate() == null) {
+			Date date1 = dateFunction.apply(m1);
+			Date date2 = dateFunction.apply(m2);
+			if(date1 == null && date2 == null) {
 				c = 0;
-			} else if(m1.getStartDate() == null) {
+			} else if(date1 == null) {
 				c = ascending ? -1 : 1;
-			} else if(m2.getStartDate() == null) {
+			} else if(date2 == null) {
 				c = ascending ? 1 : -1;
 			} else {
-				c = m1.getStartDate().compareTo(m2.getStartDate());
-			}
-			
-			if(c == 0) {
-				c = compareString(m1.getName(), m2.getName());
-			}
-			return c;
-		}
-	}
-	
-	private class EndDateComparator implements Comparator<BigBlueButtonMeetingRow> {
-
-		private final boolean ascending;
-		
-		public EndDateComparator(boolean ascending) {
-			this.ascending = ascending;
-		}
-		
-		@Override
-		public int compare(BigBlueButtonMeetingRow m1, BigBlueButtonMeetingRow m2) {
-			int c = 0;
-			if(m1.getEndDate() == null && m2.getEndDate() == null) {
-				c = 0;
-			} else if(m1.getEndDate() == null) {
-				c = ascending ? -1 : 1;
-			} else if(m2.getEndDate() == null) {
-				c = ascending ? 1 : -1;
-			} else {
-				c = m1.getEndDate().compareTo(m2.getEndDate());
+				c = date1.compareTo(date2);
 			}
 			
 			if(c == 0) {

@@ -4,10 +4,13 @@
 	<div class="o_error">$errorMessage</div>
 #end
 #if($r.isNotNull($start) || $r.isNotNull($end))
-<div><i class="o_icon o_icon_lifecycle_date"> </i> #if($r.isNotNull($start))$start#end - #if($r.isNotNull($end))$end#end</div>
+<div><i class="o_icon o_icon_fw o_icon_lifecycle_date"> </i> #if($r.isNotNull($start))$start#end - #if($r.isNotNull($end))$end#end</div>
+#end
+#if($r.isNotNull($deletion))
+<div><i class="o_icon o_icon_fw"> </i> $r.translate("meeting.deletion.at", $deletion)</div>
 #end
 #if($r.isNotEmpty($mainPresenter))
-<div><i class="o_icon o_icon_user"> </i> $r.escapeHtml($mainPresenter)</div>
+<div><i class="o_icon o_icon_fw o_icon_user"> </i> $r.escapeHtml($mainPresenter)</div>
 #end
 #if($r.isNotEmpty($description))
 	<div class="o_block_large o_info">$r.xssScan($description)</div>

@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -159,6 +160,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		if (bigBlueButtonModule.getMeetingDeletionDays() != null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.autoDelete, new DateFlexiCellRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		if(!readOnly) {
@@ -203,6 +207,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	
 	private BigBlueButtonMeetingRow forgeRow(BigBlueButtonMeeting meeting) {
 		BigBlueButtonMeetingRow row = new BigBlueButtonMeetingRow(meeting);
+		row.setAutoDeleteDate(bigBlueButtonManager.getAutoDeletionDate(meeting));
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + count++, "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");

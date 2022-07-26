@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -358,6 +359,30 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		
 		List<Long> concurrentOverlapBefore = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 7), date(1, 10));
 		Assert.assertTrue(concurrentOverlapBefore.isEmpty());
+	}
+	
+	@Test
+	public void getAutoDeleteMeetings() {
+		String externalId = UUID.randomUUID().toString();
+		BigBlueButtonMeetingTemplate template = bigBlueButtonMeetingTemplateDao.createTemplate("A new template", externalId, false);
+		template = bigBlueButtonMeetingTemplateDao.updateTemplate(template);
+		dbInstance.commit();
+		
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB group", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting1 = createMeeting(random(), date(1, 12), 15, date(1, 14), 15, template, group);
+		BigBlueButtonMeeting meeting2 = createMeeting(random(), date(2, 12), 15, date(2, 14), 15, template, group);
+		BigBlueButtonMeeting meeting3 = createMeeting(random(), date(22, 10), 120, date(22, 18), 120, template, group);
+		BigBlueButtonMeeting meeting4 = createMeeting(random(), date(23, 14), 0, null, 0, template, group);
+		BigBlueButtonMeeting meeting5 = createMeeting(random(), date(4, 12), 15, date(4, 15), 15, template, group);
+		meeting5.setPermanent(true);
+		meeting5 = bigBlueButtonMeetingDao.updateMeeting(meeting5);
+		dbInstance.commit();
+		
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAutoDeleteMeetings(date(20, 1));
+		assertThat(meetings)
+		.contains(meeting1, meeting2)
+				.doesNotContain(meeting3, meeting4, meeting5);
 	}
 	
 	private BigBlueButtonMeeting createMeeting(String name, Date start, int leadTime, Date end, int followupTime,

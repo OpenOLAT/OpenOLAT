@@ -76,6 +76,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
 			case permanent: return Boolean.valueOf(row.isPermanent());
 			case start: return row.getStartDate();
 			case end: return row.getEndDate();
+			case autoDelete: return row.getAutoDeleteDate();
 			case template: return getTemplate(row);
 			case server: return getServer(row);
 			case resource: return getResourceName(row);
@@ -116,6 +117,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
 		permanent("table.header.permanent"),
 		start("meeting.start"),
 		end("meeting.end"),
+		autoDelete("table.header.auto.delete"),
 		template("table.header.template"),
 		server("table.header.server"),
 		resource("meeting.resource"),

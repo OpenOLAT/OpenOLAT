@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -98,6 +99,9 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(bigBlueButtonModule.isPermanentMeetingEnabled(), BMeetingsCols.permanent));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.startDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.endDate));
+		if (bigBlueButtonModule.getMeetingDeletionDays() != null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.autoDelete, new DateFlexiCellRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.template));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.server, new ServerCellRenderer()));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("resource", new TextFlexiCellRenderer());
