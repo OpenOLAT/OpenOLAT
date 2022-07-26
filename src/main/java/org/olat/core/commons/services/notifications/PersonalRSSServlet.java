@@ -25,20 +25,22 @@
 
 package org.olat.core.commons.services.notifications;
 
-import java.io.Writer;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Date;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 
@@ -82,7 +84,9 @@ public class PersonalRSSServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-		try(Writer writer = response.getWriter()) {
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				OutputStreamWriter osw = new OutputStreamWriter(baos, "utf-8");
+				OutputStream ros = response.getOutputStream()) {
 			String pathInfo = request.getPathInfo();
 			if ((pathInfo == null) || (pathInfo.equals(""))) {
 				return; // error
@@ -124,7 +128,12 @@ public class PersonalRSSServlet extends HttpServlet {
 			}
 			
 			SyndFeedOutput output = new SyndFeedOutput();
-			output.output(feed, writer);
+			String feedString = output.outputString(feed);
+			osw.write(feedString);
+			osw.close();
+			
+			response.setContentLength(baos.size());
+			ros.write(baos.toByteArray());
 		} catch (FeedException e) {
 			// throw olat exception for nice logging
 			log.warn("Error when generating RSS stream for path::" + request.getPathInfo(), e);
