@@ -30,6 +30,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -56,6 +57,9 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		 		
 		sb.append("<div id=\"o_c").append(tb.getDispatchID()).append("\" class='o_tabbed_pane'>");
+		if (tbi != null &&  TabIndentation.defaultFormLayout == tbi.getTabIndentation()) {
+			sb.append("<div class='col-sm-offset-3'>");
+		}
 		sb.append("<ul class='nav nav-tabs");
 		String css = tb.getElementCssClass();
 		if (StringHelper.containsNonWhitespace(css)) {
@@ -98,6 +102,9 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 			sb.append(tabName).append("</a></li>");
 		}
 		sb.append("</ul>");
+		if (tbi != null &&  TabIndentation.defaultFormLayout == tbi.getTabIndentation()) {
+			sb.append("</div>");
+		}
 
 		// now let the selected component render itself
 		Component paneToRender = tb.getTabAt(selPane);

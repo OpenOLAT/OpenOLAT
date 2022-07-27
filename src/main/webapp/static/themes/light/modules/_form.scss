@@ -389,12 +389,17 @@
 .o_filemeta {
   	padding-top: ($padding-base-vertical + 1);
   	padding-bottom: ($padding-base-vertical + 1);
-}
-.o_filesize {
-	margin-left: 0.5em;
-}
-.o_filedelete {
-	margin-left: 2em;
+	.o_filesize {
+		margin-left: 0.5em;
+		margin-right: 1em;
+	}
+	.o_fileinput {
+		display: inline-block;
+		margin-left: 1em;
+	}
+	.o_filedelete {
+		margin-left: 1em;
+	}
 }
 .o_fileinput {
 	position: relative;

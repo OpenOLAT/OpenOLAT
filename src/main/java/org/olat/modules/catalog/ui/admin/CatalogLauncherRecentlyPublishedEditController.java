@@ -70,6 +70,11 @@ public class CatalogLauncherRecentlyPublishedEditController extends AbstractLaun
 	}
 
 	@Override
+	protected String getDescription() {
+		return translate("launcher.recently.published.desc");
+	}
+
+	@Override
 	protected void initForm(FormItemContainer generalCont) {
 		Config config = null;
 		if (getCatalogLauncher() != null) {

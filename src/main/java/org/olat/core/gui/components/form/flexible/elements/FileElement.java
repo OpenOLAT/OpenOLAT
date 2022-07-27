@@ -126,6 +126,8 @@ public interface FileElement extends FormMultipartItem {
 	
 	public void setDeleteEnabled(boolean enable);
 	
+	public void setReplaceButton(boolean replaceButton);
+	
 	public boolean isArea();
 	
 	public void setArea(boolean area);

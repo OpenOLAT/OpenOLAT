@@ -44,7 +44,7 @@ public class TaxonomyLevelPage {
 	}
 	
 	public TaxonomyLevelPage assertOnTaxonomyLevel() {
-		By overviewBy = By.cssSelector("div.o_sel_taxonomy_level_overview");
+		By overviewBy = By.cssSelector("div.o_taxonomy_level_overview");
 		OOGraphene.waitElement(overviewBy, browser);
 		return this;
 	}

@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.catalog.CatalogLauncher;
@@ -71,6 +72,10 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		this.catalogLauncher = catalogLauncher;
 		this.identifier = catalogLauncher!= null? catalogLauncher.getIdentifier(): catalogService.createLauncherIdentifier();
 	}
+	
+	protected String getDescription() {
+		return null;
+	}
 
 	protected abstract void initForm(FormItemContainer generalCont);
 	
@@ -95,6 +100,10 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
+		String description = getDescription();
+		if (StringHelper.containsNonWhitespace(description)) {
+			generalCont.setFormInfo(description);
+		}
 		
 		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
 		nameCont.setLabel("admin.launcher.name", null);

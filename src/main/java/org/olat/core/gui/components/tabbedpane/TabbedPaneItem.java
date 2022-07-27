@@ -39,7 +39,10 @@ import org.olat.core.util.StringHelper;
  */
 public class TabbedPaneItem extends FormItemImpl implements FormItemCollection {
 	
+	public enum TabIndentation { none, defaultFormLayout }
+	
 	private final TabbedPane component;
+	private TabIndentation tabIndentation = TabIndentation.none;
 	
 	public TabbedPaneItem(String name, Locale locale) {
 		super(name);
@@ -113,5 +116,13 @@ public class TabbedPaneItem extends FormItemImpl implements FormItemCollection {
 	@Override
 	public void reset() {
 		//
+	}
+
+	public TabIndentation getTabIndentation() {
+		return tabIndentation;
+	}
+
+	public void setTabIndentation(TabIndentation tabIndentation) {
+		this.tabIndentation = tabIndentation;
 	}
 }

@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nItem;
@@ -88,6 +89,7 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 		super.addFormPart(formLayout, ureq);
 		
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabIndentation.defaultFormLayout);
 		
 		List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
 				.map(key -> i18nManager.getLocaleOrNull(key))

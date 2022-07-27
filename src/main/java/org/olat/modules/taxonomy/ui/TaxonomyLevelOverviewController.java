@@ -90,7 +90,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		
 		tabPane.addTab(ureq, translate("taxonomy.metadata"), uureq -> {
 			removeAsListenerAndDispose(metadataCtrl);
-			metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
+			metadataCtrl = new EditTaxonomyLevelController(uureq, getWindowControl(), taxonomyLevel);
 			listenTo(metadataCtrl);
 			return metadataCtrl.getInitialComponent();
 		}, true);
@@ -119,6 +119,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 	
 	private void updateProperties() {
+		mainVC.contextPut("title", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 		mainVC.contextPut("id", taxonomyLevel.getKey());
 		mainVC.contextPut("externalId", taxonomyLevel.getExternalId());
 		mainVC.contextPut("path", taxonomyLevel.getMaterializedPathIdentifiers());

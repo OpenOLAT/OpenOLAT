@@ -113,9 +113,9 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 
 	@Override
 	public void setSelection(Collection<? extends TaxonomyLevelRef> taxonomyLevels) {
-		selectedKeys = taxonomyLevels.stream()
-				.map(TaxonomyLevelRef::getKey)
-				.collect(Collectors.toSet());
+		selectedKeys = taxonomyLevels == null 
+				? selectedKeys = new HashSet<>(3)
+				: taxonomyLevels.stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toSet());
 		updateButtonUI();
 	}
 

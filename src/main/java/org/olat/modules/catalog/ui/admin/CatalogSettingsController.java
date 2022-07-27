@@ -63,6 +63,7 @@ public class CatalogSettingsController extends FormBasicController {
 	
 	private DialogBoxController migrateDialogCtrl;
 
+	private FormLayoutContainer generalCont;
 	private SingleSelection enabledEl;
 	private FormLayoutContainer migrationCont;
 	private FormLayoutContainer migrationStartCont;
@@ -86,10 +87,11 @@ public class CatalogSettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("admin.settings"));
 		generalCont.setRootForm(mainForm);
 		formLayout.add("general", generalCont);
+		updateContextHelpUI();
 		
 		SelectionValues enabledSV = new SelectionValues();
 		enabledSV.add(entry(KEY_NONE, translate("admin.enabled.none")));
@@ -120,6 +122,12 @@ public class CatalogSettingsController extends FormBasicController {
 				translate("admin.migration.running"), migrationCont);
 		
 		updateMigrationUI();
+	}
+
+	private void updateContextHelpUI() {
+		if (catalogV2Module.isEnabled()) {
+			generalCont.setFormContextHelp("manual_user/catalog/catalog2.0#angebot-erstellen");
+		}
 	}
 
 	private void updateMigrationUI() {
@@ -182,6 +190,7 @@ public class CatalogSettingsController extends FormBasicController {
 			catalogV2Module.setEnabled(false);
 			repositoryModule.setCatalogEnabled(false);
 		}
+		updateContextHelpUI();
 	}
 
 	private void doConfirmMigraion(UserRequest ureq) {

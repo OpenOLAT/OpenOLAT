@@ -86,6 +86,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
@@ -117,6 +118,7 @@ import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.model.JmsCertificateWork;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateController;
+import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -1039,7 +1041,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			//not the first certification, reset the last of the others certificates
 			removeLastFlag(identity, resource.getKey());
 		}
-		MailerResult result = sendCertificate(identity, entry, certificateFile, workUnit.getConfig());
+		MailerResult result = sendCertificate(identity, entry, certificate, certificateFile, workUnit.getConfig());
 		if(result.isSuccessful()) {
 			certificate.setEmailStatus(EmailStatus.ok);
 		} else {
@@ -1052,41 +1054,61 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, ORES_CERTIFICATE_EVENT);
 	}
 	
-	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile, CertificateConfig config) {
-		MailerResult mailerResult = sendCertificate(to, entry, certificateFile);
-		sendCertificateCopies(to, entry, certificateFile, config);
+	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, CertificateImpl certificate, File certificateFile, CertificateConfig config) {
+		String userLanguage = to.getUser().getPreferences().getLanguage();
+		Locale locale = i18nManager.getLocaleOrDefault(userLanguage);
+		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
+		String[] args = createMailArgs(to, entry, certificate, translator);
+		
+		MailerResult mailerResult = sendCertificate(to, certificateFile, translator, args);
+		sendCertificateCopies(to, entry, certificate, certificateFile, config, translator, args);
 		return mailerResult;
 	}
 
-	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile) {
+	private String[] createMailArgs(Identity certificateIdentity, RepositoryEntry entry, CertificateImpl certificate,
+			Translator translator) {
+		String displayName = translator.translate("certification.email.displayname", entry.getDisplayname());
+		String externalRef = StringHelper.containsNonWhitespace(entry.getExternalRef())
+				? translator.translate("certification.email.external.ref", entry.getExternalRef())
+				: "";
+		String descriptionFiltered = FilterFactory.getHtmlTagAndDescapingFilter().filter(entry.getDescription());
+		String description = StringHelper.containsNonWhitespace(descriptionFiltered)
+				? translator.translate("certification.email.description", descriptionFiltered)
+				: "";
+		String entryUrlStr = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String entryUrl = translator.translate("certification.email.entry.url", entryUrlStr);
+		String certificateUrl = DownloadCertificateCellRenderer.getUrl(certificate);
+		String downloadButton = translator.translate("certification.email.download.button", certificateUrl);
+		
+		return new String[] {
+			entry.getDisplayname(),                              // pos0: Maybe used in custom translations
+			userManager.getUserDisplayName(certificateIdentity), // pos1: Maybe used in custom translations
+			displayName,
+			externalRef,
+			description,
+			entryUrl,
+			downloadButton
+		};
+	}
+
+	private MailerResult sendCertificate(Identity to, File certificateFile, Translator translator, String[] args) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(to);
 		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
 		
-		String[] args = new String[] {
-			entry.getDisplayname(),
-			userManager.getUserDisplayName(to)
-		};
-		
-		String userLanguage = to.getUser().getPreferences().getLanguage();
-		Locale locale = i18nManager.getLocaleOrDefault(userLanguage);
-		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
 		String subject = translator.translate("certification.email.subject", args);
 		String body = translator.translate("certification.email.body", args);
 		bundle.setContent(subject, body, certificateFile);
 		return mailManager.sendMessage(bundle);
 	}
 	
-	private void sendCertificateCopies(Identity to, RepositoryEntry entry, File certificateFile, CertificateConfig config) {
-		String entryDisplayName = entry.getDisplayname();
-		String toDisplayName = userManager.getUserDisplayName(to);
-		String toUserLanguage = to.getUser().getPreferences().getLanguage();
-
+	private void sendCertificateCopies(Identity to, RepositoryEntry entry, CertificateImpl certificate,
+			File certificateFile, CertificateConfig config, Translator translator, String[] args) {
 		List<MailBundle> mailBundles = new ArrayList<>();
 		List<String> bccs = certificatesModule.getCertificatesBccEmails();
 		if(config.isSendEmailBcc()) {
 			for (String bcc : bccs) {
-				MailBundle bundle = createCopyMailBundle(certificateFile, toUserLanguage, entryDisplayName, toDisplayName);
+				MailBundle bundle = createCopyMailBundle(certificateFile, translator, args);
 				bundle.setTo(bcc);
 				mailBundles.add(bundle);
 			}
@@ -1106,8 +1128,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		
 		for (Identity copyTo : copiesTo) {
-			String language = copyTo.getUser().getPreferences().getLanguage();
-			MailBundle bundle = createCopyMailBundle(certificateFile, language, entryDisplayName, toDisplayName);
+			String copyToLanguage = copyTo.getUser().getPreferences().getLanguage();
+			Locale copyToLocale = i18nManager.getLocaleOrDefault(copyToLanguage);
+			Translator copyToTranslator = Util.createPackageTranslator(CertificateController.class, copyToLocale);
+			String[] copyToArgs = createMailArgs(to, entry, certificate, copyToTranslator);
+			MailBundle bundle = createCopyMailBundle(certificateFile, copyToTranslator, copyToArgs);
 			bundle.setToId(copyTo);
 			mailBundles.add(bundle);
 		}
@@ -1117,15 +1142,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 	}
 
-	private MailBundle createCopyMailBundle(File certificateFile, String language, String entryDisplayName, String toDisplayName) {
-		String[] args = new String[] {
-				entryDisplayName,
-				toDisplayName
-		};
+	private MailBundle createCopyMailBundle(File certificateFile, Translator translator, String[] args) {
 		MailBundle bundle = new MailBundle();
 		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
-		Locale locale = i18nManager.getLocaleOrDefault(language);
-		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
 		String subject = translator.translate("certification.email.copy.subject", args);
 		String body = translator.translate("certification.email.copy.body", args);
 		bundle.setContent(subject, body, certificateFile);
