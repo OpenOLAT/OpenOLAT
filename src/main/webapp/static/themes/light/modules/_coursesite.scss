@@ -353,15 +353,13 @@
 		border: 1px solid $o-coursesite-rowelem-border;
 		border-radius: $o-coursesite-rowelem-border-radius;
 		background: $o-coursesite-rowelem-bg;
-		padding: 5px;
 		cursor: pointer;
 		display: flex;
 		flex-direction: column;
 		
 		.o_visual {
 			box-sizing: content-box;
-			border-radius: $o-coursesite-rowelem-border-radius - 1px;
-			margin-bottom: 10px;
+			border-radius: ($o-coursesite-rowelem-border-radius - 1px) ($o-coursesite-rowelem-border-radius - 1px) 0px 0px;
 			display: flex;
 			align-items: center;
 			
@@ -380,6 +378,10 @@
 		}
 		
 		.o_meta {
+			display: flex;
+			flex-direction: column;
+			padding: 5px;
+			gap: 5px;
 			.o_ext_ref {
 				color: $text-muted;
 				font-size: 10px;
@@ -702,6 +704,9 @@
 			background-repeat: no-repeat;
 			background-position: center left;
 			background-size: cover;
+		}
+		&.o_preview {
+			margin: 0;
 		}
 	}
 	.o_catalog_search_header {

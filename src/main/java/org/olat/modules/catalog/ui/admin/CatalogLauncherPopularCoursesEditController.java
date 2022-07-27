@@ -62,6 +62,11 @@ public class CatalogLauncherPopularCoursesEditController extends AbstractLaunche
 	}
 
 	@Override
+	protected String getDescription() {
+		return translate("launcher.popular.courses.desc");
+	}
+
+	@Override
 	protected void initForm(FormItemContainer generalCont) {
 		Config config = null;
 		if (getCatalogLauncher() != null) {

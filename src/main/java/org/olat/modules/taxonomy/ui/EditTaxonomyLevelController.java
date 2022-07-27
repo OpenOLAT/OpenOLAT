@@ -21,6 +21,7 @@ package org.olat.modules.taxonomy.ui;
 
 import static org.olat.modules.taxonomy.ui.TaxonomyUIFactory.BUNDLE_NAME;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,6 +54,8 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
@@ -81,8 +85,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	private TextElement identifierEl;
 	private SingleSelection pathEl;
 	private SingleSelection taxonomyLevelTypeEl;
-	private FileElement backgroundImageEl;
+	private FormLayoutContainer teaserImageCont;
 	private FileElement teaserImageEl;
+	private FormLayoutContainer backgroundImageCont;
+	private FileElement backgroundImageEl;
 	
 	private final String i18nSuffix;
 	private TaxonomyLevel level;
@@ -106,7 +112,9 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
-	
+	@Autowired
+	private CatalogV2Module catalogV2Module;
+
 	public EditTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomyLevel level) {
 		super(ureq, wControl, "admin_metadata");
 		this.level = level;
@@ -232,31 +240,45 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		sortOrderEl = uifactory.addTextElement("level.sort.order", "level.sort.order", 255, sortOrder, generalCont);
 		sortOrderEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
 		
+		teaserImageCont = FormLayoutContainer.createCustomFormLayout("teaserPreview", getTranslator(), velocity_root + "/teaser_preview.html");
+		teaserImageCont.setLabel("level.image.teaser", null);
+		teaserImageCont.setRootForm(mainForm);
+		generalCont.add(teaserImageCont);
+		teaserImageCont.contextPut("square", catalogV2Module.isEnabled() && CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogV2Module.getLauncherTaxonomyLevelStyle()));
+		
 		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.teaser", generalCont);
 		teaserImageEl.setMaxUploadSizeKB(2048, null, null);
 		teaserImageEl.setExampleKey("level.image.teaser.example", null);
 		teaserImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
-		teaserImageEl.setPreview(ureq.getUserSession(), true);
+		teaserImageEl.setReplaceButton(true);
 		teaserImageEl.setDeleteEnabled(true);
 		teaserImageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf teaserImage = taxonomyService.getTeaserImage(level);
 		if (teaserImage instanceof LocalFileImpl) {
 			teaserImageEl.setInitialFile(((LocalFileImpl)teaserImage).getBasefile());
 		}
+		updateTeaserImagePreview(ureq);
+
+		backgroundImageCont = FormLayoutContainer.createCustomFormLayout("backgroundPreview", getTranslator(), velocity_root + "/background_preview.html");
+		backgroundImageCont.setLabel("level.image.background", null);
+		backgroundImageCont.setRootForm(mainForm);
+		generalCont.add(backgroundImageCont);
 		
 		backgroundImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.background", generalCont);
 		backgroundImageEl.setMaxUploadSizeKB(5024, null, null);
 		backgroundImageEl.setExampleKey("level.image.background.example", null);
 		backgroundImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
-		backgroundImageEl.setPreview(ureq.getUserSession(), true);
+		backgroundImageEl.setReplaceButton(true);
 		backgroundImageEl.setDeleteEnabled(true);
 		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf backgroundImage = taxonomyService.getBackgroundImage(level);
 		if (backgroundImage instanceof LocalFileImpl) {
 			backgroundImageEl.setInitialFile(((LocalFileImpl)backgroundImage).getBasefile());
 		}
+		updateBackgroundImagePreview(ureq);
 		
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabIndentation.defaultFormLayout);
 
 		List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
 				.map(key -> i18nManager.getLocaleOrNull(key))
@@ -321,6 +343,50 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		displayNameEl.setUserObject(translationItem);
 	}
 	
+	private void updateTeaserImagePreview(UserRequest ureq) {
+		File teaserImage = teaserImageEl.getUploadFile();
+		if (teaserImage == null) {
+			teaserImage = teaserImageEl.getInitialFile();
+		}
+		
+		if (teaserImage != null) {
+			String teaserImageUrl = registerMapper(ureq, new VFSMediaMapper(teaserImage));
+			teaserImageCont.contextPut("imageUrl", teaserImageUrl);
+			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, () -> translate("level.image.teaser.sample"));
+			teaserImageCont.contextPut("displayName", displayName);
+			teaserImageCont.setVisible(true);
+			teaserImageEl.setLabel(null, null);
+		} else {
+			teaserImageCont.setVisible(false);
+			teaserImageEl.setLabel("level.image.teaser", null);
+		}
+	}
+	
+	private void updateBackgroundImagePreview(UserRequest ureq) {
+		File backgroundImage = backgroundImageEl.getUploadFile();
+		if (backgroundImage == null) {
+			backgroundImage = backgroundImageEl.getInitialFile();
+		}
+		
+		if (backgroundImage != null) {
+			String backgroundImageUrl = registerMapper(ureq, new VFSMediaMapper(backgroundImage));
+			backgroundImageCont.contextPut("bgImageUrl", backgroundImageUrl);
+			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, () -> translate("level.image.teaser.sample"));
+			backgroundImageCont.contextPut("displayName", displayName);
+			backgroundImageCont.setVisible(true);
+			backgroundImageEl.setLabel(null, null);
+		} else {
+			backgroundImageCont.setVisible(false);
+			backgroundImageEl.setLabel("level.image.background", null);
+		}
+		
+		if (level != null && level.getType() != null) {
+			backgroundImageCont.contextPut("typeDisplayName", level.getType().getDisplayName());
+		} else {
+			backgroundImageCont.contextRemove("typeDisplayName");
+		}
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == teaserImageEl) {
@@ -330,9 +396,11 @@ public class EditTaxonomyLevelController extends FormBasicController {
 					teaserImageEl.reset();
 				}
 				teaserImageEl.clearError();
+				updateTeaserImagePreview(ureq);
 				markDirty();
 			} else if (teaserImageEl.isUploadSuccess()) {
 				teaserImageEl.clearError();
+				updateTeaserImagePreview(ureq);
 				markDirty();
 			}
 		} else if (source == backgroundImageEl) {
@@ -342,9 +410,11 @@ public class EditTaxonomyLevelController extends FormBasicController {
 					backgroundImageEl.reset();
 				}
 				backgroundImageEl.clearError();
+				updateBackgroundImagePreview(ureq);
 				markDirty();
 			} else if (backgroundImageEl.isUploadSuccess()) {
 				backgroundImageEl.clearError();
+				updateBackgroundImagePreview(ureq);
 				markDirty();
 			}
 		}
@@ -456,6 +526,8 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		} else if (backgroundImageEl.getInitialFile() == null) {
 			taxonomyService.deleteBackgroundImage(level);
 		}
+		updateTeaserImagePreview(ureq);
+		updateBackgroundImagePreview(ureq);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

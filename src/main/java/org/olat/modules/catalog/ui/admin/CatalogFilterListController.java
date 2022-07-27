@@ -104,6 +104,11 @@ public class CatalogFilterListController extends FormBasicController {
 		dummyCont = FormLayoutContainer.createBareBoneFormLayout("dummy", getTranslator());
 		dummyCont.setRootForm(mainForm);
 		
+		FormLayoutContainer titleCont = FormLayoutContainer.createDefaultFormLayout("title", getTranslator());
+		titleCont.setFormTitle(translate("admin.filters"));
+		titleCont.setRootForm(mainForm);
+		formLayout.add(titleCont);
+		
 		FormLayoutContainer buttonsTopCont = FormLayoutContainer.createButtonLayout("buttons.top", getTranslator());
 		buttonsTopCont.setElementCssClass("o_button_group o_button_group_right");
 		buttonsTopCont.setRootForm(mainForm);

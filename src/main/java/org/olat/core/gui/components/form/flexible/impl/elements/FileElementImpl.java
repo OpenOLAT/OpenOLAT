@@ -98,6 +98,7 @@ public class FileElementImpl extends FormItemImpl
 	private String uploadMimeType;
 
 	private boolean buttonsEnabled = true;
+	private boolean replaceButton;
 	private boolean deleteEnabled;
 	private boolean confirmDelete;
 
@@ -456,6 +457,15 @@ public class FileElementImpl extends FormItemImpl
 	@Override
 	public void setDeleteEnabled(boolean deleteEnabled) {
 		this.deleteEnabled = deleteEnabled;
+	}
+
+	public boolean isReplaceButton() {
+		return replaceButton;
+	}
+
+	@Override
+	public void setReplaceButton(final boolean replaceButton) {
+		this.replaceButton = replaceButton;
 	}
 
 	public boolean isConfirmDelete() {

@@ -2,6 +2,14 @@
 	margin-top: 0px;
 }
 
+.o_taxonomy_level_overview {
+	margin-bottom: 20px;
+	.control-label,
+	.form-control-static {
+		padding-top: 0;
+	}
+}
+
 .o_taxonomy_listing.o_rendertype_custom {
 	
 	.o_table_body.container-fluid {

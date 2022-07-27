@@ -1,28 +1,29 @@
+<div class="o_flex_first_grow">
+<div>
+#if($title)
+<h3>$title</h3>
+#end
+</div>
 #if($r.available("actions"))
 <div class="o_button_group o_button_group_right">
 	$r.render("actions")
 </div>
 #end
-<div class="o_form form-horizontal o_sel_taxonomy_level_overview clearfix">
-	<div class="form-group clearfix">
-		<div>
-			<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.key")</label>
-		</div>
-		<div class='col-sm-9'><p class='form-control-static'>$id</p></div>
+</div>
+<div class="o_form form-horizontal o_taxonomy_level_overview clearfix">
+	<div>
+		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.key")</label>
 	</div>
+	<div class='col-sm-9'><p class='form-control-static'>$id</p></div>
 	#if($r.isNotEmpty($externalId))
-	<div class="form-group clearfix">
-		<div>
-			<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.external.id")</label>
-		</div>
-		<div class='col-sm-9'><p class='form-control-static'>$externalId</p></div>
+	<div>
+		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.external.id")</label>
 	</div>
+	<div class='col-sm-9'><p class='form-control-static'>$externalId</p></div>
 	#end
-	<div class="form-group clearfix">
-		<div>
-			<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.path")</label>
-		</div>
-		<div class='col-sm-9'><p class='form-control-static'>$path</p></div>
+	<div>
+		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.path")</label>
 	</div>
+	<div class='col-sm-9'><p class='form-control-static'>$path</p></div>
 </div>
 <div class="clearfix">$r.render("tabs")</div>

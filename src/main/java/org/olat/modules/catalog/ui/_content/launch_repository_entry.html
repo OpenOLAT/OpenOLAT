@@ -26,15 +26,14 @@
 							#end
 						</div>
 						<div class="o_meta">
-							#if ($row.getExternalRef())
-								<div class="o_ext_ref">
+							<div class="o_ext_ref">
+								#if ($row.getExternalRef())
 									$r.escapeHtml($r.xssScan($row.getExternalRef()))
-								</div>
-							#end
+								#end
+							</div>
 							<h4 class="o_title">#if($row.closed)#end$r.xssScan($row.displayName)</h4>
 							#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
 								<div class="o_taxonomy_levels">	
-									<i class="o_icon o_icon-fw o_icon_tags"> </i>
 									#foreach($taxonomy in $row.taxonomyLevels)
 									<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.materializedPathIdentifiersWithoutSlash)">
 										$taxonomy.displayName
