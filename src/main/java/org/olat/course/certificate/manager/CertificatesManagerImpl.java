@@ -1077,7 +1077,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				: "";
 		String entryUrlStr = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		String entryUrl = translator.translate("certification.email.entry.url", entryUrlStr);
-		String certificateUrl = DownloadCertificateCellRenderer.getUrl(certificate);
+		String certificateUrl = Settings.createServerURI() + DownloadCertificateCellRenderer.getUrl(certificate);
 		String downloadButton = translator.translate("certification.email.download.button", certificateUrl);
 		
 		return new String[] {
