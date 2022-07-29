@@ -98,9 +98,12 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			boolean showReplaceButton = hasFile && fileElem.isReplaceButton() && (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
 			if (hasFile) {
 				sb.append("<div class='o_filemeta'>").append(CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(fileName)));
+				sb.append("<div>");
 				sb.appendHtmlEscaped(fileName);
 				sb.append("<span class='o_filesize text-muted'>(").append(Formatter.formatBytes(fileElem.getUploadSize())).append(")</span>");
+				sb.append("</div>");
 				
+				sb.append("<div>");
 				if (showReplaceButton) {
 					renderFileInput(sb, trans, fileElem, id, fileName, showReplaceButton);
 				}
@@ -112,6 +115,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 					.append(";\" onclick=\"\" ")
 					.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete_item'> </i> ").append(trans.translate("delete")).append("</a>");
 				}
+				sb.append("</div>");
 				sb.append("</div>");
 			}
 			
@@ -157,6 +161,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='o_fileinput")
 		  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
 		  .append(" o_area panel-placeholder", fileElem.isArea() && !showReplaceButton)
+		  .append(" o_replace", showReplaceButton)
 		  .append(" o_preview", !fileElem.isButtonsEnabled())
 		  .append("'");
 		if(fileElem.isArea()) {
@@ -196,8 +201,10 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		}
 		
 		if(showReplaceButton) {
-			sb.append("<div class='o_file_replace btn btn-xs btn-default ' aria-hidden='true'>");
+			sb.append("<div class='o_dnd' aria-hidden='true'>");
+			sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
 			sb.append("<i class='o_icon o_icon_upload'> </i> ").append(trans.translate("replace"));
+			sb.append("</span></button></div>");
 			sb.append("</div>");
 		} else if(fileElem.isArea()) {
 			sb.append("<div class='o_dnd' aria-hidden='true'>");

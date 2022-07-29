@@ -360,6 +360,7 @@
 		.o_visual {
 			box-sizing: content-box;
 			border-radius: ($o-coursesite-rowelem-border-radius - 1px) ($o-coursesite-rowelem-border-radius - 1px) 0px 0px;
+			border-bottom: 1px solid $o-coursesite-rowelem-border;
 			display: flex;
 			align-items: center;
 			
@@ -768,6 +769,9 @@
 			border-radius: $o-coursesite-rowelem-border-radius;
 			background: $o-coursesite-rowelem-bg;
 			cursor: pointer;
+			&.o_tax_teaser_preview {
+				cursor: auto;
+			}
 			position: relative;
 			aspect-ratio: 2.4;
 			&:is(.o_launchers_square *) {
@@ -810,13 +814,13 @@
 					line-height: 2em;
 					height: 2em;
 					width: 100%;
-					a {
+					a, &:is(.o_tax_teaser_preview *) {
 						display: block;
 						white-space: nowrap;
 						overflow: hidden;
 						text-overflow: ellipsis;
-						@extend %o_undecorated;
 						color: $o-coursesite-meta-title-color;
+						@extend %o_undecorated;
 						&:hover {
 							color: darken($o-coursesite-meta-title-color, 10%);
 						}

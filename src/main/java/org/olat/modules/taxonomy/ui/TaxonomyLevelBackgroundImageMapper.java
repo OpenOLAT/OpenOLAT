@@ -29,16 +29,16 @@ import org.olat.modules.taxonomy.TaxonomyService;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelTeaserImageMapper extends TaxonomyLevelImageMapper {
+public class TaxonomyLevelBackgroundImageMapper extends TaxonomyLevelImageMapper {
 
 	@Override
 	protected String getUrlPart() {
-		return "teaser";
+		return "background";
 	}
 
 	@Override
 	protected VFSLeaf getImage(TaxonomyService taxonomyService, TaxonomyLevel level) {
-		return taxonomyService.getTeaserImage(level);
+		return taxonomyService.getBackgroundImage(level);
 	}
 
 }
