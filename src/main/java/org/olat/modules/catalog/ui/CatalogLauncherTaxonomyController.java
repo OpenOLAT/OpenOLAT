@@ -35,11 +35,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,12 +53,9 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 	
 	private final Collection<Long> educationalTypeKeys;
 	private final Collection<String> resourceTypes;
-	private final MapperKey mapperThumbnailKey;
 	
 	@Autowired
 	private CatalogV2Module catalogModule;
-	@Autowired
-	private TaxonomyService taxonomyService;
 	@Autowired
 	private MapperService mapperService;
 
@@ -69,7 +65,6 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.educationalTypeKeys = educationalTypeKeys;
 		this.resourceTypes = resourceTypes;
-		this.mapperThumbnailKey = mapperService.register(null, "taxonomyLevelTeaserImage", new TaxonomyLevelTeaserImageMapper());
 		
 		VelocityContainer mainVC = createVelocityContainer("launch_taxonomy");
 		
@@ -80,6 +75,8 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 		
 		mainVC.contextPut("square", CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogModule.getLauncherTaxonomyLevelStyle()));
 		
+		TaxonomyLevelTeaserImageMapper teaserImageMapper = new TaxonomyLevelTeaserImageMapper();
+		MapperKey teaserImageMapperKey = mapperService.register(null, "taxonomyLevelTeaserImage", teaserImageMapper);
 		List<LauncherItem> items = new ArrayList<>(taxonomyLevels.size());
 		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
@@ -91,9 +88,9 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 			
 			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), displayName, selectLinkName);
 			
-			VFSItem image = taxonomyService.getTeaserImage(taxonomyLevel);
-			if (image != null) {
-				item.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + taxonomyLevel.getKey());
+			String imageUrl = teaserImageMapper.getImageUrl(taxonomyLevel);
+			if (StringHelper.containsNonWhitespace(imageUrl)) {
+				item.setThumbnailRelPath(teaserImageMapperKey.getUrl() + "/" + imageUrl);
 			}
 			
 			items.add(item);

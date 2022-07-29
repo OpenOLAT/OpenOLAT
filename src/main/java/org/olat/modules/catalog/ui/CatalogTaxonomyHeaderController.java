@@ -19,17 +19,18 @@
  */
 package org.olat.modules.catalog.ui;
 
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyLevelBackgroundImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogTaxonomyHeaderController extends BasicController {
 	
 	@Autowired
-	private TaxonomyService taxonomyService;
+	private MapperService mapperService;
 
 	public CatalogTaxonomyHeaderController(UserRequest ureq, WindowControl wControl, TaxonomyLevel taxonomyLevel) {
 		super(ureq, wControl);
@@ -57,10 +58,11 @@ public class CatalogTaxonomyHeaderController extends BasicController {
 			mainVC.contextPut("cssClass", taxonomyLevel.getType().getCssClass());
 		}
 		
-		VFSLeaf image = taxonomyService.getBackgroundImage(taxonomyLevel);
-		if (image != null) {
-			String mapperUri = registerMapper(ureq, new VFSMediaMapper(image));
-			mainVC.contextPut("bgImageUrl", mapperUri);
+		TaxonomyLevelBackgroundImageMapper backgroundImageMapper = new TaxonomyLevelBackgroundImageMapper();
+		MapperKey backgroundImageMapperKey = mapperService.register(null, "taxonomyLevelBackgroundImage", backgroundImageMapper);
+		String imageUrl = backgroundImageMapper.getImageUrl(taxonomyLevel);
+		if (StringHelper.containsNonWhitespace(imageUrl)) {
+			mainVC.contextPut("bgImageUrl", backgroundImageMapperKey.getUrl() + "/" + imageUrl);
 		}
 		
 		putInitialPanel(mainVC);

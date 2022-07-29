@@ -64,7 +64,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.CatalogFilter;
@@ -76,7 +75,6 @@ import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataModel.CatalogRepositoryEntryCols;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataSource.CatalogRepositoryEntryRowItemCreator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
@@ -113,7 +111,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	
 	private final boolean withSearch;
 	private final MapperKey mapperThumbnailKey;
-	private final MapperKey mapperTaxonomyLevelTeaserKey;
+	private final TaxonomyLevelTeaserImageMapper teaserImageMapper;
+	private final MapperKey teaserImageMapperKey;
+
 	private final TaxonomyLevel taxonomyLevel;
 	
 	@Autowired
@@ -126,8 +126,6 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private ACService acService;
-	@Autowired
-	private TaxonomyService taxonomyService;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
@@ -150,7 +148,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				: null;
 		this.dataSource = new CatalogRepositoryEntryDataSource(searchParams, withSearch, this, getLocale());
 		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
-		this.mapperTaxonomyLevelTeaserKey = mapperService.register(null, "taxonomyLevelTeaserImage", new TaxonomyLevelTeaserImageMapper());
+		this.teaserImageMapper = new TaxonomyLevelTeaserImageMapper();
+		this.teaserImageMapperKey = mapperService.register(null, "taxonomyLevelTeaserImage", teaserImageMapper);
 		
 		initForm(ureq);
 		tableEl.reloadData();
@@ -179,9 +178,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				
 				TaxonomyItem item = new TaxonomyItem(child.getKey(), displayName, selectLinkName);
 				
-				VFSItem image = taxonomyService.getTeaserImage(child);
-				if (image != null) {
-					item.setThumbnailRelPath(mapperTaxonomyLevelTeaserKey.getUrl() + "/" + child.getKey());
+				String imageUrl = teaserImageMapper.getImageUrl(child);
+				if (StringHelper.containsNonWhitespace(imageUrl)) {
+					item.setThumbnailRelPath(teaserImageMapperKey.getUrl() + "/" + imageUrl);
 				}
 				
 				items.add(item);
