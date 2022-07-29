@@ -70,6 +70,7 @@ public class BigBlueButtonMeetingsSearchParameters {
 		permanent,
 		startDate,
 		endDate,
+		autoDelete,
 		template,
 		server,
 		resource,

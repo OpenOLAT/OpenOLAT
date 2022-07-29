@@ -146,6 +146,9 @@ public class BigBlueButtonMeetingQueries {
 			case endDate:
 				sb.append(" order by meeting.endDate ").append("asc", "desc", asc).append(" nulls last");
 				break;
+			case autoDelete:
+				sb.append(" order by meeting.permanent ").append("asc", "desc", asc).append(",  meeting.endDate ").append("asc", "desc", asc).append(" nulls last");
+				break;
 			case server:
 				sb.append(" order by server.url ").append("asc", "desc", asc).append(" nulls last");
 				break;
