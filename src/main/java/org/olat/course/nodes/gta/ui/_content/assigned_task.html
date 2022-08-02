@@ -17,7 +17,7 @@
 	<div class="o_flex_item_max">
 		<h5>$r.render("download.link")</h5>
 		<div class="text-muted small">
-			$type | $r.formatBytes($size)
+			$type #if($r.isNotNull($size)) | $r.formatBytes($size) #end
 		</div>
 	</div>
 	<div class="o_flex_item_fix o_gta_document_actions">

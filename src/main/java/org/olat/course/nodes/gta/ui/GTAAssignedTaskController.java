@@ -43,8 +43,8 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -61,7 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAAssignedTaskController extends BasicController {
 
-	private Link downloadButton, downloadLink;
+	private Link downloadButton;
+	private Link downloadLink;
 
 	private CloseableModalController cmc;
 	private SinglePageController viewTaskCtrl;
@@ -140,21 +141,24 @@ public class GTAAssignedTaskController extends BasicController {
 			
 			// Link to preview the file (if possible)
 			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
-			VFSLeaf vfsLeaf = (VFSLeaf)tasksContainer.resolve(taskFile.getName());
-			if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.VIEW, true)) {
-				Link previewLink = LinkFactory.createLink("preview", "preview", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-				previewLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, taskFile.getName(), getTranslator())));
-				previewLink.setIconLeftCSS("o_icon o_icon-fw " + docEditorService.getModeIcon(Mode.VIEW, taskFile.getName()));
-				previewLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
-				previewLink.setAriaRole("button");
-				previewLink.setUserObject(vfsLeaf);			
-				previewLink.setNewWindow(true, true);
+			VFSItem vfsItem = tasksContainer.resolve(taskFile.getName());
+			if (vfsItem instanceof VFSLeaf) {
+				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
+				if(docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.VIEW, true)) {
+					Link previewLink = LinkFactory.createLink("preview", "preview", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+					previewLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, taskFile.getName(), getTranslator())));
+					previewLink.setIconLeftCSS("o_icon o_icon-fw " + docEditorService.getModeIcon(Mode.VIEW, taskFile.getName()));
+					previewLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+					previewLink.setAriaRole("button");
+					previewLink.setUserObject(vfsLeaf);			
+					previewLink.setNewWindow(true, true);
+				}
+				
+				mainVC.contextPut("size", vfsLeaf.getSize());
 			}
 			
 			// Meta data
-			
 			mainVC.contextPut("type", taskFile.getName().substring(taskFile.getName().lastIndexOf(".") + 1).toUpperCase());
-			mainVC.contextPut("size", VFSManager.getUsageKB(vfsLeaf));
 		}
 
 		putInitialPanel(mainVC);
