@@ -261,16 +261,16 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		showKeyboardLayoutEl.setEnabled(editable);
 		showKeyboardLayoutEl.select(trueFalseKey(sebConfig.isShowKeyboardLayout()), true);
 		
+		allowWlanEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.wlan", sebConfigCont,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowWlanEl.setEnabled(editable);
+		allowWlanEl.select(trueFalseKey(sebConfig.isAllowWlan()), true);
+		
 		showAudioOptionsEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.audio", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showAudioOptionsEl.addActionListener(FormEvent.ONCHANGE);
 		showAudioOptionsEl.setEnabled(editable);
 		showAudioOptionsEl.select(trueFalseKey(sebConfig.isAudioControlEnabled()), true);
-		
-		allowWlanEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.wlan", sebConfigCont,
-				trueFalseValues.keys(), trueFalseValues.values());
-		allowWlanEl.setEnabled(editable);
-		allowWlanEl.select(trueFalseKey(sebConfig.isAllowWlan()), true);
 		
 		audioMuteEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.audio.mute", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());

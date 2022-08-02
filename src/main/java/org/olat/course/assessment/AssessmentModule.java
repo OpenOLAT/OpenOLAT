@@ -213,6 +213,7 @@ public class AssessmentModule extends AbstractSpringModule {
 		config.setBrowserViewMode(getSafeExamBrowserViewMode());
 		config.setShowTaskBar(isSafeExamBrowserShowTaskBar());
 		config.setBrowserWindowAllowReload(isSafeExamBrowserBrowserWindowAllowReload());
+		config.setShowReloadButton(isSafeExamBrowserShowReloadButton());
 		config.setShowTimeClock(isSafeExamBrowserShowTime());
 		config.setShowKeyboardLayout(isSafeExamBrowserShowInputLanguage());
 		config.setAllowWlan(isSafeExamBrowserAllowWlan());
