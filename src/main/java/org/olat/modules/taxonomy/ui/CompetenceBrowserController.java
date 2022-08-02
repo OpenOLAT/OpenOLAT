@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -66,6 +68,7 @@ public class CompetenceBrowserController extends FormBasicController {
 	private CompetenceBrowserTableRow rootCrumb;
 	private FlexiTableElement tableEl;
 	
+	private DetailsController detailsCtrl;
 	private CloseableCalloutWindowController ccmc;
 	
 	private final List<Taxonomy> taxonomies;
@@ -126,7 +129,7 @@ public class CompetenceBrowserController extends FormBasicController {
 			for (Taxonomy taxonomy : taxonomies) {
 				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(taxonomy);
 				if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
-					FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+					FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 					taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 					taxonomyDetailsLink.setUserObject(taxonomyRow);
 					taxonomyRow.setDetailsLink(taxonomyDetailsLink);
@@ -139,7 +142,7 @@ public class CompetenceBrowserController extends FormBasicController {
 					String description = TaxonomyUIFactory.translateDescription(getTranslator(), level);
 					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(taxonomy, level, displayName, description);
 					if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
-						FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+						FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 						levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 						levelDetailsLink.setUserObject(levelRow);
 						levelRow.setDetailsLink(levelDetailsLink);
@@ -152,14 +155,23 @@ public class CompetenceBrowserController extends FormBasicController {
 		if (!rows.isEmpty()) {
 			// Set parents
 			// Root levels to taxonomy
-			rows.stream().filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() == null)
-						 .forEach(level -> level.setParent(rows.stream().filter(parent -> parent.getTaxonomy() != null && parent.getTaxonomy().getKey().equals(level.getTaxonomy().getKey()))
-								 										.findFirst().orElse(null)));
+			rows.stream()
+				.filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() == null)
+				.forEach(level -> level.setParent(
+					rows.stream()
+						.filter(parent ->
+							parent.getTaxonomy() != null && parent.getTaxonomy().getKey().equals(level.getTaxonomy().getKey()))
+						.findFirst().orElse(null)
+				));
 			
 			// Levels to level
-			rows.stream().filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() != null)
-					 	 .forEach(level -> level.setParent(rows.stream().filter(parent -> parent.getTaxonomyLevel() != null && parent.getTaxonomyLevel().getKey().equals(level.getTaxonomyLevel().getParent().getKey()))
-						 												.findFirst().orElse(null)));	
+			rows.stream()
+				.filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() != null)
+				.forEach(level -> level.setParent(
+						rows.stream().filter(parent ->
+							parent.getTaxonomyLevel() != null && parent.getTaxonomyLevel().getKey().equals(level.getTaxonomyLevel().getParent().getKey()))
+						.findFirst().orElse(null)
+				));	
 			// Sort rows
 			rows.sort(new FlexiTreeNodeComparator());
 		}
@@ -169,7 +181,21 @@ public class CompetenceBrowserController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(ccmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(detailsCtrl);
+		removeAsListenerAndDispose(ccmc);
+		detailsCtrl = null;
+		ccmc = null;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl) {
@@ -187,22 +213,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		} else if (source instanceof FormLink) {
 			FormLink sFl = (FormLink) source;
 			if (sFl.getCmd().equals(OPEN_INFO)) {
-				CompetenceBrowserTableRow row = (CompetenceBrowserTableRow) sFl.getUserObject();
-				
-				String title = row.getDisplayName();
-				String description = row.getDescription();
-				
-				VelocityContainer taxonomyDetails = createVelocityContainer("taxonomy_details");
-				
-				if (StringHelper.containsNonWhitespace(title)) {
-					taxonomyDetails.contextPut("title", title);
-				}
-				if (StringHelper.containsNonWhitespace(description)) {
-					taxonomyDetails.contextPut("description", description);
-				}
-				
-				ccmc = new CloseableCalloutWindowController(ureq, getWindowControl(), taxonomyDetails, sFl, null, true, null);
-				ccmc.activate();
+				doOpen(ureq, sFl, (CompetenceBrowserTableRow) sFl.getUserObject());	
 			}
 		}
 	}
@@ -210,6 +221,15 @@ public class CompetenceBrowserController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// Nothing to save here
+	}
+	
+	private void doOpen(UserRequest ureq, FormLink sFl, CompetenceBrowserTableRow row) {
+		detailsCtrl = new DetailsController(ureq, getWindowControl(), row);
+		listenTo(detailsCtrl);
+		
+		ccmc = new CloseableCalloutWindowController(ureq, getWindowControl(), detailsCtrl.getInitialComponent(), sFl, null, true, null);
+		listenTo(ccmc);
+		ccmc.activate();
 	}
 	
 	private List<TaxonomyLevel> getSelectedTaxonomyLevels() {
@@ -234,7 +254,30 @@ public class CompetenceBrowserController extends FormBasicController {
 		public List<TaxonomyLevel> getTaxonomyLevels() {
 			return taxonomyLevels;
 		}
-		
 	}
 	
+	private static class DetailsController extends BasicController {
+		
+		public DetailsController(UserRequest ureq, WindowControl wControl, CompetenceBrowserTableRow row) {
+			super(ureq, wControl);
+			
+			String title = row.getDisplayName();
+			String description = row.getDescription();
+			
+			VelocityContainer taxonomyDetails = createVelocityContainer("taxonomy_details");
+			
+			if (StringHelper.containsNonWhitespace(title)) {
+				taxonomyDetails.contextPut("title", title);
+			}
+			if (StringHelper.containsNonWhitespace(description)) {
+				taxonomyDetails.contextPut("description", description);
+			}
+			putInitialPanel(taxonomyDetails);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
+		}
+	}
 }

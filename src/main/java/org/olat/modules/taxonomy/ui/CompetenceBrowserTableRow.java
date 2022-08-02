@@ -108,19 +108,22 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public void setParent(CompetenceBrowserTableRow parent) {
 		this.parent = parent;
-		parent.setHasChildren(true);
+		if(parent != null) {
+			parent.setHasChildren(true);
+		}
 	}
 
 	@Override
 	public String getCrump() {
 		if (taxonomyLevel != null) {
 			return taxonomyLevel.getIdentifier();
-		} else if (taxonomy!= null) {
+		}
+		if (taxonomy!= null) {
 			return taxonomy.getIdentifier();
-		} else if (StringHelper.containsNonWhitespace(rootCrumb)) {
+		}
+		if (StringHelper.containsNonWhitespace(rootCrumb)) {
 			return rootCrumb;
 		}
-		
 		return null;
 	}
 	
