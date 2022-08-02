@@ -47,7 +47,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		OOGraphene.uploadFile(inputBy, image, browser);
 		OOGraphene.waitBusy(browser);
 		String name = image.getName().substring(0, image.getName().indexOf('.'));
-		By imageBy = By.xpath("//div[@class='o_filemeta'][text()[contains(.,'" + name + "')]]");
+		By imageBy = By.xpath("//div[@class='o_filemeta']/div[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(imageBy, browser);
 		return this;
 	}
