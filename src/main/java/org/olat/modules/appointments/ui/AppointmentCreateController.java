@@ -194,7 +194,7 @@ public class AppointmentCreateController extends FormBasicController {
 			titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, null, formLayout);
 			titleEl.setElementCssClass("o_sel_app_topic_title");
 			titleEl.setMandatory(true);
-			
+			titleEl.setFocus(true);			
 			descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 3, 72, false,
 					false, null, formLayout);
 			descriptionEl.setElementCssClass("o_sel_app_topic_description");

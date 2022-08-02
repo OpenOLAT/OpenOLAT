@@ -70,7 +70,7 @@ public class TinyPage {
 		By inputBy = By.cssSelector("#o_fc_upload .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, image, browser);
 		OOGraphene.waitBusy(browser);
-		By imageBy = By.xpath("//div[@class='o_filemeta'][text()[contains(.,'" + image.getName() + "')]]");
+		By imageBy = By.xpath("//div[@class='o_filemeta']/div[text()[contains(.,'" + image.getName() + "')]]");
 		OOGraphene.waitElement(imageBy, browser);
 		
 		By saveButtonBy = By.cssSelector("#o_fc_upload div.o_sel_upload_buttons button.btn-primary");

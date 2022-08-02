@@ -75,11 +75,7 @@ public class AssessmentModeEditController extends BasicController {
 		this.create = assessmentMode.getKey() == null;
 		
 		mainVC = createVelocityContainer("edit");
-		if(StringHelper.containsNonWhitespace(assessmentMode.getName())) {
-			mainVC.contextPut("title", translate("form.mode.title", assessmentMode.getName()));
-		} else {
-			mainVC.contextPut("title", translate("form.mode.title.add"));
-		}
+		
 		
 		tabbedPane = new TabbedPane("segments", getLocale());
 		mainVC.put("segments", tabbedPane);
@@ -116,6 +112,15 @@ public class AssessmentModeEditController extends BasicController {
 		
 		putInitialPanel(mainVC);
 		updateSegments();
+		updateTitle();
+	}
+	
+	private void updateTitle() {
+		if(StringHelper.containsNonWhitespace(assessmentMode.getName())) {
+			mainVC.contextPut("title", translate("form.mode.title", assessmentMode.getName()));
+		} else {
+			mainVC.contextPut("title", translate("form.mode.title.add"));
+		}
 	}
 	
 	private void updateSegments() {
@@ -163,6 +168,7 @@ public class AssessmentModeEditController extends BasicController {
 			if(event == Event.CHANGED_EVENT) {
 				assessmentMode = generalCtrl.getAssessmentMode();
 				updateSegments();
+				updateTitle();
 				if (create) {
 					getOrCreateAccessCtrl(ureq).saveRelations(assessmentMode.getTargetAudience());
 					create = false;
