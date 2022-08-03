@@ -168,6 +168,7 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
+import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomModule;
 import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.note.NoteController;
@@ -2501,7 +2502,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 			RepositoryEntry entry = getRepositoryEntry();
 			String subIdent = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
-			zoomCtrl = new ZoomRunController(ureq, swControl, entry, subIdent, null, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+			zoomCtrl = new ZoomRunController(ureq, swControl,
+					ZoomManager.ApplicationType.courseTool, entry, subIdent, null,
+					userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
 			pushController(ureq, translate("command.zoom"), zoomCtrl);
 			setActiveTool(zoomLink);
 			currentToolCtr = zoomCtrl;

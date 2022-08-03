@@ -42,6 +42,7 @@ import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  *
@@ -94,8 +95,9 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
     public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
         RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
         String subIdent = getIdent();
-        ZoomRunController zoomRunController = new ZoomRunController(ureq, wControl, entry, subIdent, null,
-                userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+        ZoomRunController zoomRunController = new ZoomRunController(ureq, wControl,
+                ZoomManager.ApplicationType.courseElement, entry, subIdent, null, userCourseEnv.isAdmin(),
+                userCourseEnv.isCoach(), userCourseEnv.isParticipant());
         Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, zoomRunController, userCourseEnv, this, "o_vc_icon");
         return new NodeRunConstructionResult(ctrl);
     }
@@ -123,16 +125,26 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
     public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
         super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
 
+        updateZoomProfile(envMapper, sourceCourse, course, sourceCourseNode.getIdent(), getIdent());
+    }
+
+    @Override
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+        super.postCopy(envMapper, processType, course, sourceCourse, context);
+
+        updateZoomProfile(envMapper, sourceCourse, course, getIdent(), getIdent());
+    }
+
+    private void updateZoomProfile(CourseEnvironmentMapper envMapper, ICourse sourceCourse, ICourse targetCourse, String sourceSubIdent, String targetSubIdent) {
         ZoomManager zoomManager = CoreSpringFactory.getImpl(ZoomManager.class);
         if (zoomManager == null) {
             log.warn("zoomManager is not available");
             return;
         }
 
-        ZoomConfig sourceConfig = zoomManager.getConfig(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), sourceCourseNode.getIdent(), null);
+        ZoomConfig sourceConfig = zoomManager.getConfig(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), sourceSubIdent, null);
         if (sourceConfig != null) {
-            RepositoryEntry targetEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-            String targetSubIdent = getIdent();
+            RepositoryEntry targetEntry = targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
             zoomManager.initializeConfig(targetEntry, targetSubIdent, null, ZoomManager.ApplicationType.courseElement, envMapper.getAuthor().getUser());
             ZoomConfig targetConfig = zoomManager.getConfig(targetEntry, targetSubIdent, null);
             if (sourceConfig.getProfile() != targetConfig.getProfile()) {
