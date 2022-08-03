@@ -51,6 +51,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -389,7 +390,9 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public String getModeIcon(Mode mode, String fileName) {
 		if (Mode.EDIT.equals(mode)) {
 			return "o_icon_edit";
-		} else if (fileName.endsWith("mp4") || fileName.endsWith("m4v") || fileName.endsWith("mpg")) {
+		}
+		String mime = WebappHelper.getMimeType(fileName);
+		if (mime.startsWith("video") || mime.startsWith("audio")) {
 			return "o_icon_video_play";			
 		}		
 		return "o_icon_preview";
@@ -399,8 +402,11 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public String getModeButtonLabel(Mode mode, String fileName, Translator translator) {
 		if (Mode.EDIT.equals(mode)) {
 			return translator.translate("edit.button");	
-		} else if (fileName.endsWith("mp4") || fileName.endsWith("m4v") || fileName.endsWith("mpg")) {
-			return translator.translate("play.button");	
+		} else {
+			String mime = WebappHelper.getMimeType(fileName);
+			if (mime.startsWith("video") || mime.startsWith("audio")) {
+				return translator.translate("play.button");	
+			}		
 		}		
 		return translator.translate("open.button");	
 	}

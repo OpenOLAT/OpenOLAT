@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 
@@ -44,13 +45,13 @@ import org.olat.core.util.vfs.VFSMediaMapper;
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class VideoViewerController extends BasicController {
-	private VelocityContainer videoViewerVC;
+public class VideoAudioPlayerController extends BasicController {
+	private VelocityContainer videoAudioPlayerVC;
 
-	public VideoViewerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
 		super(ureq, wControl);
-		videoViewerVC = createVelocityContainer("video_viewer");
-		videoViewerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
+		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
+		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		// 1) Load mediaelementjs player and plugins
 		List<String> cssPath = new ArrayList<>();
@@ -70,22 +71,23 @@ public class VideoViewerController extends BasicController {
 		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs",
 				jsCodePath.toArray(new String[jsCodePath.size()]),
 				cssPath.toArray(new String[cssPath.size()]));
-		videoViewerVC.put("mediaelementjs", mediaelementjs);		
+		videoAudioPlayerVC.put("mediaelementjs", mediaelementjs);		
 
 		// 2) Create mapper and URL for video delivery
 		VFSLeaf vfsVideo = configs.getVfsLeaf();
 		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));		
 		VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);		
 		String url = registerCacheableMapper(ureq, mapperId, videoMapper);
-		videoViewerVC.contextPut("videoUrl", url + "/" + vfsVideo.getName());
+		videoAudioPlayerVC.contextPut("videoUrl", url + "/" + vfsVideo.getName());
 
 		// *) Add some metadata
 		VFSMetadata metaData = vfsVideo.getMetaInfo();
 		if (metaData != null) {
-			videoViewerVC.contextPut("videoTitle", metaData.getTitle());			
-		}
+			videoAudioPlayerVC.contextPut("videoTitle", metaData.getTitle());			
+		}		
+		videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsVideo.getName()));			
 		
-		putInitialPanel(videoViewerVC);
+		putInitialPanel(videoAudioPlayerVC);
 	}
 
 	

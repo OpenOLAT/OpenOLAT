@@ -27,7 +27,6 @@ import org.olat.core.commons.services.doceditor.DocEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -40,7 +39,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.helpers.Settings;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalImpl;
@@ -87,19 +85,8 @@ public class WebDocumentRunController extends BasicController {
 				String mediaUrl = registerMapper(ureq, new MediaMapper(document));
 				mainVC.contextPut("image", filename);
 				mainVC.contextPut("mediaUrl", mediaUrl);
-			} else if("mp4".equals(extension) || "m4v".equals(extension) || "mov".equals(extension)) {
-				String mediaUrl = registerMapper(ureq, new MediaMapper(document));
-				mainVC.contextPut("movie", filename);
-				mainVC.contextPut("mediaUrl", Settings.createServerURI() + mediaUrl);
-				Size realSize = movieService.getSize(document, extension);
-				if(realSize != null) {
-					mainVC.contextPut("height", realSize.getHeight());
-					mainVC.contextPut("width", realSize.getWidth());
-				} else {
-					mainVC.contextPut("height", 480);
-					mainVC.contextPut("width", 640);
-				}
 			} else if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, Mode.EMBEDDED, true, false)) {
+				// pdf, doc excel... files, videos and audio
 				DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 						.withMode(Mode.EMBEDDED)
 						.addConfig(new DocEditorConfig("o_web_document"))

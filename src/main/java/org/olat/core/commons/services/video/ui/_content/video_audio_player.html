@@ -2,9 +2,14 @@
 ## src/main/java/org/olat/modules/video/ui/_content/video_run.html
 <div class="o_video_run o_block_large_bottom clearfix" id="$r.getCId()">
 	<div class="olatFlashMovieViewer">
-		<video id="$r.getId("o_vid")" controls autoplay preload="none" oncontextmenu="return false;" class="o_video">			
-	    	<source type="video/mp4" src="$videoUrl" title="$!videoTitle"/>
-		</video>
+		#if($contentType.startsWith("audio"))
+			#set($elem = "audio")
+		#else
+			#set($elem = "video")
+		#end
+		<${elem} id="$r.getId("o_vid")" controls autoplay preload="none" oncontextmenu="return false;" class="o_video">			
+	    	<source type="$contentType" src="$videoUrl" title="$!videoTitle"/>
+		</${elem}>
 		<script>
 		## using jQuery
 		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
@@ -23,8 +28,11 @@
 		        withCredentials: true
 		    },
 			## Enabled features - should be same order as in player.js. 
+		#if($elem == "audio")
+			features: ['playpause','current','volume','progress','duration'],
+		#else
 			features: ['playpause','current','volume','progress','duration','speed','fullscreen'],
-			            	         			
+		#end
 		});
 		</script>
 	</div>

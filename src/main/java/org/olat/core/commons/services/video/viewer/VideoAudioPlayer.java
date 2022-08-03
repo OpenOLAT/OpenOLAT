@@ -25,7 +25,7 @@ import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.video.ui.VideoViewerController;
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -38,7 +38,7 @@ import org.olat.modules.video.ui.VideoRuntimeController;
 import org.springframework.stereotype.Service;
 
 /**
- * The video viewer implements a basic video player using the DocEditor
+ * The video and audio player implements a basic media player using the DocEditor
  * interface. There is no editor support, it is only player. 
  * 
  * Initial date: 12 July 2022<br>
@@ -47,12 +47,18 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VideoViewer implements DocEditor {
+public class VideoAudioPlayer implements DocEditor {
 
-	public static final String TYPE = "video";
+	public static final String TYPE = "mediaelement";
+	// video types
 	public static final String FORMAT_MP4 = "mp4";
 	public static final String FORMAT_M4V = "m4v";
 	public static final String FORMAT_MPG = "mpg";
+	public static final String FORMAT_MOV = "mov";
+	// audio types
+	public static final String FORMAT_MP3 = "mp3";
+	public static final String FORMAT_M4A = "m4a";
+	public static final String FORMAT_WAV = "wav";
 	
 	@Override
 	public boolean isEnable() {
@@ -111,7 +117,11 @@ public class VideoViewer implements DocEditor {
 		if (Mode.EDIT == mode) return false;
 		if (FORMAT_MP4.equalsIgnoreCase(suffix)) return true;
 		if (FORMAT_M4V.equalsIgnoreCase(suffix)) return true;
-		if (FORMAT_MPG.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_MOV.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_MPG.equalsIgnoreCase(suffix)) return true;		
+		if (FORMAT_MP3.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_M4A.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_WAV.equalsIgnoreCase(suffix)) return true;
 		return false;
 	}
 
@@ -133,7 +143,7 @@ public class VideoViewer implements DocEditor {
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity,
 			DocEditorConfigs configs, Access access) {
-		return new VideoViewerController(ureq, wControl, configs, access);
+		return new VideoAudioPlayerController(ureq, wControl, configs, access);
 	}
 
 }
