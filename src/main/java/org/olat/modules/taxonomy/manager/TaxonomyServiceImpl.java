@@ -48,6 +48,7 @@ import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
+import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,11 +77,11 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
 	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
+	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
 	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
-	@Autowired
-	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	
 	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
@@ -208,6 +209,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			//questions
 			taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
 		}
+		
+		repositoryEntryToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
 
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 	}
