@@ -282,11 +282,12 @@ public class OrganisationUserManagementController extends FormBasicController {
 	private void doSearchMember(UserRequest ureq, OrganisationRoles role) {
 		if(guardModalController(userSearchCtrl)) return;
 
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false, true);
+		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false,
+				new OrganisationRoles[] { OrganisationRoles.guest, OrganisationRoles.invitee }, true);
 		userSearchCtrl.setUserObject(role);
 		listenTo(userSearchCtrl);
 		
-		String title = translate("add.member.role", new String[] { translate("role.".concat(role.name())) });
+		String title = translate("add.member.role", translate("role.".concat(role.name())));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

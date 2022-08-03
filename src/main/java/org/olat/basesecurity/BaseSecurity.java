@@ -202,8 +202,8 @@ public interface BaseSecurity {
 	 * @param maxResults The max results or -1
 	 * @return A list of identities (short version)
 	 */
-	public List<IdentityShort> searchIdentityShort(String search,
-			List<? extends OrganisationRef> searchableOrganisations, GroupRoles repositoryEntryRole, int maxResults);
+	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searchableOrganisations,
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, int maxResults);
 
 	public IdentityShort loadIdentityShortByKey(Long identityKey);
 	

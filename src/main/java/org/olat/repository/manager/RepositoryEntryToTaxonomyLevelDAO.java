@@ -151,6 +151,19 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 		}
 	}
 	
+	public void deleteRelation(TaxonomyLevelRef taxonomyLevel) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel from repositoryentrytotaxonomylevel rel")
+		  .append(" where rel.taxonomyLevel.key=:levelKey");
+		List<RepositoryEntryToTaxonomyLevel> relationsToDelete = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryToTaxonomyLevel.class)
+				.setParameter("levelKey", taxonomyLevel.getKey())
+				.getResultList();
+		for(RepositoryEntryToTaxonomyLevel relationToDelete:relationsToDelete) {
+			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+	}
+	
 	public void deleteRelation(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from repositoryentrytotaxonomylevel rel")

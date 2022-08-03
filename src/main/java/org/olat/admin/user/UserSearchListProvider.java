@@ -27,6 +27,7 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
@@ -47,14 +48,16 @@ public class UserSearchListProvider implements ListProvider {
 	private final UserManager userManager;
 	private final List<Organisation> searchableOrganisations;
 	private final GroupRoles repositoryEntryRole;
+	private final OrganisationRoles[] excludedRoles;
 	
 	public UserSearchListProvider(List<Organisation> searchableOrganisations) {
-		this(searchableOrganisations, null);
+		this(searchableOrganisations, null, null);
 	}
 	
-	public UserSearchListProvider(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole) {
+	public UserSearchListProvider(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles) {
 		this.searchableOrganisations = searchableOrganisations;
 		this.repositoryEntryRole = repositoryEntryRole;
+		this.excludedRoles = excludedRoles;
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
@@ -83,7 +86,8 @@ public class UserSearchListProvider implements ListProvider {
 		// Search in all fileds -> non intersection search
 
 		int maxEntries = MAX_ENTRIES;
-		List<IdentityShort> res = securityManager.searchIdentityShort(searchValue, searchableOrganisations, repositoryEntryRole, maxEntries);
+		List<IdentityShort> res = securityManager.searchIdentityShort(searchValue, searchableOrganisations,
+				repositoryEntryRole, excludedRoles, maxEntries);
 
 		boolean hasMore = false;
 		for (Iterator<IdentityShort> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {

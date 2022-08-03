@@ -96,7 +96,6 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 	private SpacerElement rolesSep;
 	private SingleSelection statusEl;
-	private SingleSelection anonymousEl;
 	private DateChooser expirationDateEl;
 	private FormLayoutContainer rolesCont;
 	private FormLink addToOrganisationButton;
@@ -182,17 +181,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		FormLayoutContainer anonymousCont = FormLayoutContainer.createDefaultFormLayout("anonc", getTranslator());
 		formLayout.add(anonymousCont);
 		
-		anonymousEl = uifactory.addRadiosVertical(
-				"anonymous", "rightsForm.guest", anonymousCont, 
-				new String[]{"true", "false"},
-				new String[]{translate("role.guest.true"), translate("role.guest.false")}
-		);
-		uifactory.addSpacerElement("syssep", anonymousCont, false);
-		if (iAmAdmin) {
-			anonymousEl.addActionListener(FormEvent.ONCLICK);
-		} else {
-			anonymousCont.setVisible(false);
-		}
+		String type = editedRoles.isGuestOnly() ? translate("role.guest.true") : translate("role.guest.false");
+		uifactory.addStaticTextElement("anonymous", "rightsForm.guest", type, anonymousCont);
 		
 		// roles
 		rolesCont = FormLayoutContainer.createDefaultFormLayout("rolesc", getTranslator());
@@ -208,7 +198,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		}
 		List<Organisation> upgradeableToOrganisations = new ArrayList<>(manageableOrganisations);
 		upgradeableToOrganisations.removeAll(organisations);
-		if(!upgradeableToOrganisations.isEmpty()) {
+		if(!upgradeableToOrganisations.isEmpty() && !editedRoles.isGuestOnly() && !editedRoles.isInvitee()) {
 			addToOrganisationButton = uifactory.addFormLink("rightsForm.add.to.organisation", rolesCont, Link.BUTTON);
 		}
 
@@ -345,11 +335,6 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 	private void update() {
 		editedRoles = securityManager.getRoles(editedIdentity, false);
-		if(editedRoles.isGuestOnly()) {
-			anonymousEl.select("true", true);
-		} else {
-			anonymousEl.select("false", true);
-		}
 		
 		for(MultipleSelectionElement rolesEl:rolesEls) {
 			RolesElement wrapper = (RolesElement)rolesEl.getUserObject();
@@ -384,8 +369,9 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		}
 
 		setStatus(editedIdentity.getStatus());
-		wrapper.getRolesEl().setVisible(!isAnonymous());
-		rolesSep.setVisible(!isAnonymous());
+		boolean anonymous = editedRoles.isGuestOnly();
+		wrapper.getRolesEl().setVisible(!anonymous || wrapper.getRolesEl().isAtLeastSelected(1));
+		rolesSep.setVisible(!anonymous || wrapper.getRolesEl().isAtLeastSelected(1));
 		
 		expirationDateEl.setDate(editedIdentity.getExpirationDate());
 		expirationDateEl.setVisible(!editedRoles.isSystemAdmin() && !editedRoles.isAdministrator());
@@ -423,10 +409,6 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			}
 		}
 		statusEl.setEnabled(!Identity.STATUS_DELETED.equals(status));
-	}
-	
-	public boolean isAnonymous() {
-		return anonymousEl.getSelectedKey().equals("true");
 	}
 
 	private Integer getStatus() {
@@ -476,8 +458,10 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			}
 			
 			if(numOfRoles == 0) {
-				rolesEls.get(0).setErrorKey("error.roles.atleastone", null);
-				allOk &= false;
+				if(!editedRoles.hasRole(OrganisationRoles.guest)) {
+					rolesEls.get(0).setErrorKey("error.roles.atleastone", null);
+					allOk &= false;
+				}
 			} else if(!allSelectedRoles.contains(OrganisationRoles.invitee.name()) && !allSelectedRoles.contains(OrganisationRoles.user.name())) {
 				Roles currentRoles = securityManager.getRoles(editedIdentity, false);
 				List<OrganisationRef> userOrgs = currentRoles.getOrganisationsWithRole(OrganisationRoles.user)
@@ -559,10 +543,6 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		// 1) general user type - anonymous or user
 		// anonymous users
 		boolean isAnonymous = editedRoles.isGuestOnly();
-		if (admin) {
-			isAnonymous = anonymousEl.getSelectedKey().equals("true");
-		}
-		
 		if(isAnonymous) {
 			saveAnonymousData();
 		} else {
@@ -594,6 +574,20 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		organisationService.setAsGuest(editedIdentity);
 		dbInstance.commit();
 		organisations = organisationService.getOrganisations(editedIdentity, OrganisationRoles.values());
+		for(Organisation organisation:organisations) {
+			RolesByOrganisation roles = editedRoles.getRoles(organisation);
+			List<OrganisationRoles> rolesToRemove = new ArrayList<>();
+			for(OrganisationRoles role:OrganisationRoles.values()) {
+				if(role != OrganisationRoles.guest && roles.hasRole(role)) {
+					rolesToRemove.add(role);
+				}
+				
+			}
+			if(!rolesToRemove.isEmpty()) {
+				roles = RolesByOrganisation.enhance(roles, List.of(OrganisationRoles.guest), rolesToRemove);
+				securityManager.updateRoles(getIdentity(), editedIdentity, roles);
+			}
+		}
 		updateRoles();
 	}
 	
@@ -643,7 +637,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);
 	}
 	
-	private class RolesElement {
+	public static class RolesElement {
 		
 		private final List<String> roleKeys;
 		private final Organisation organisation;

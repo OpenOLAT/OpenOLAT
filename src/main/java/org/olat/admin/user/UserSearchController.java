@@ -121,6 +121,7 @@ public class UserSearchController extends BasicController {
 	private AutoCompleterController autocompleterC;
 	private String actionKeyChoose;
 	private final boolean isAdministrativeUser;
+	private final OrganisationRoles[] excludeRoles;
 	private Link backLink;
 	
 	@Autowired
@@ -147,7 +148,7 @@ public class UserSearchController extends BasicController {
 	}
 
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect, boolean allowReturnKey) {
-		this(ureq, wControl, cancelbutton, userMultiSelect, allowReturnKey, false);
+		this(ureq, wControl, cancelbutton, userMultiSelect, allowReturnKey, null, false);
 	}
 
 	/**
@@ -161,10 +162,11 @@ public class UserSearchController extends BasicController {
 	 * @param wildCardOrgsForSysAdmin
 	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect,
-			boolean allowReturnKey, boolean wildCardOrgsForSysAdmin) {
+			boolean allowReturnKey, OrganisationRoles[] excludeRoles, boolean wildCardOrgsForSysAdmin) {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
+		this.excludeRoles = excludeRoles;
 	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends AddUserSearchController and re-use translations
 		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(Util.createPackageTranslator(UserSearchController.class, ureq.getLocale()) );	
 		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
@@ -195,7 +197,7 @@ public class UserSearchController extends BasicController {
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		if (autoCompleteAllowed) {
 			// insert a autocompleter search
-			ListProvider provider = new UserSearchListProvider(searchableOrganisations);
+			ListProvider provider = new UserSearchListProvider(searchableOrganisations, null, excludeRoles);
 			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, 60, 3, null);
 			listenTo(autocompleterC);
 			myContent.put("autocompletionsearch", autocompleterC.getInitialComponent());
@@ -344,6 +346,9 @@ public class UserSearchController extends BasicController {
 		SearchIdentityParams params = new SearchIdentityParams(login, userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
 				null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
+		if(excludeRoles != null) {
+			params.setExcludedRoles(excludeRoles);
+		}
 		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, maxResults);
 	}
 }

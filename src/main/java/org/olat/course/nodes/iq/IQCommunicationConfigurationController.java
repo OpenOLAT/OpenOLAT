@@ -64,6 +64,7 @@ public class IQCommunicationConfigurationController extends FormBasicController 
 		yesNoValues.add(SelectionValues.entry("false", translate("no")));
 		
 		participantsEl = uifactory.addRadiosHorizontal("im.config.participants", "im.config.participants", formLayout, yesNoValues.keys(), yesNoValues.values());
+		participantsEl.setHelpTextKey("im.config.participants.hint", null);
 		boolean participantCanStart = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_IM_PARTICIPANT_CAN_START, false);
 		if(participantCanStart) {
 			participantsEl.select("true", true);
@@ -76,6 +77,7 @@ public class IQCommunicationConfigurationController extends FormBasicController 
 		rolesValues.add(SelectionValues.entry(GroupRoles.coach.name(), translate("coach")));
 		rolesEl = uifactory.addCheckboxesVertical("im.config.roles", "im.config.roles", formLayout,
 				rolesValues.keys(), rolesValues.values(), 1);
+		rolesEl.setHelpTextKey("im.config.roles.hint", null);
 		String rolesStr = modConfig.getStringValue(IQEditController.CONFIG_KEY_IM_NOTIFICATIONS_ROLES, "coach");
 		if(StringHelper.containsNonWhitespace(rolesStr)) {
 			String[] rolesArr = rolesStr.split("[,]");

@@ -620,7 +620,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 		
-		if(gradingModule.isEnabled() && !isInvitee) {
+		if(gradingModule.isEnabled() && !isInvitee && !isGuest) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GRADER),  uureq -> {
 				graderOverviewCtrl = new GraderUserOverviewController(uureq, getWindowControl(), identity);
 				listenTo(graderOverviewCtrl);
