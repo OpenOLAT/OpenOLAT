@@ -57,7 +57,7 @@ public interface ZoomManager {
 
     ZoomProfile createProfile(String name, String ltiKey, String clientId, String token);
 
-    ZoomProfile copyProfile(ZoomProfile zoomProfile);
+    ZoomProfile copyProfile(ZoomProfile zoomProfile, String copySuffix);
 
     ZoomProfile getProfile(String key);
 

@@ -309,7 +309,7 @@ public class ZoomConfigurationController extends FormBasicController {
 
     private void doCopy(ZoomProfileRow row) {
         ZoomProfile zoomProfile = row.getZoomProfile();
-        zoomManager.copyProfile(zoomProfile);
+        zoomManager.copyProfile(zoomProfile, getTranslator().translate("copy.suffix"));
         loadModel();
     }
 

@@ -104,6 +104,7 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
+import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ui.ZoomRunController;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
@@ -641,7 +642,7 @@ public class CollaborationTools implements Serializable {
 	}
 
 	public ZoomRunController createZoomController(final UserRequest ureq, WindowControl wControl, BusinessGroup group, boolean admin, boolean coach, boolean participant) {
-		return new ZoomRunController(ureq, wControl, null, null, group, admin, coach, participant);
+		return new ZoomRunController(ureq, wControl, ZoomManager.ApplicationType.groupTool, null, null, group, admin, coach, participant);
 	}
 
 	/**

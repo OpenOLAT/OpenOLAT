@@ -22,12 +22,15 @@ package org.olat.modules.zoom.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.BusinessGroup;
@@ -62,13 +65,33 @@ public class ZoomRunController extends BasicController implements Activateable2 
     private LTIDisplayContentController ltiCtrl;
 
     public ZoomRunController(UserRequest ureq, WindowControl wControl,
+                             ZoomManager.ApplicationType zoomApplicationType,
                              RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
                              boolean admin, boolean coach, boolean participant) {
         super(ureq, wControl);
 
         this.zoomConfig = zoomManager.getConfig(entry, subIdent, businessGroup);
 
-        if (zoomConfig.getProfile().getStatus() == ZoomProfile.ZoomProfileStatus.inactive) {
+        if (zoomConfig == null) {
+            String title = translate("zoom.config.missing.error.title");
+            String text;
+            switch (zoomApplicationType) {
+                case courseElement:
+                    text = translate("zoom.config.missing.error.courseElement");
+                    break;
+                case courseTool:
+                    text  = translate("zoom.config.missing.error.courseTool");
+                    break;
+                case groupTool:
+                default:
+                    text = translate("zoom.config.missing.error.groupTool");
+                    break;
+            }
+            Controller ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, title, text);
+            mainPanel = new SimpleStackedPanel("zoomErrorContainer");
+            putInitialPanel(mainPanel);
+            mainPanel.setContent(ctrl.getInitialComponent());
+        } else if (zoomConfig.getProfile().getStatus() == ZoomProfile.ZoomProfileStatus.inactive) {
             container = createVelocityContainer("run");
             container.contextPut("isConfigInactive", true);
             container.contextPut("zoomProfileName", zoomConfig.getProfile().getName());

@@ -162,14 +162,14 @@ public class LTI13PlatformDispatcherDelegate {
 		}
 	}
 	
-	private boolean isRedirectUriAllowed(String redirectUri, LTI13ToolDeployment deployment) {
+	protected boolean isRedirectUriAllowed(String redirectUri, LTI13ToolDeployment deployment) {
 		if(deployment == null || deployment.getTool() == null) return false;
 		
 		LTI13Tool tool = deployment.getTool();
 		if(!StringHelper.containsNonWhitespace(tool.getRedirectUrl())) {
 			return true;
 		}
-		String[] urls = tool.getRedirectUrl().split("[\\r?\\n]");
+		String[] urls = tool.getRedirectUrl().split("[\\r\\n]");
 		for(String url:urls) {
 			if(isRedirectUriAllowed(redirectUri, url)) {
 				return true;
@@ -182,6 +182,14 @@ public class LTI13PlatformDispatcherDelegate {
 	private boolean isRedirectUriAllowed(String redirectUri, String referenceUri) {
 		if(redirectUri.equals(referenceUri)) {
 			return true;
+		}
+		
+		int index = referenceUri.indexOf('?');
+		if(index >= 1) {
+			String referenceUriWithoutParameters = referenceUri.substring(0, index);
+			if(redirectUri.equals(referenceUriWithoutParameters)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -363,7 +371,7 @@ public class LTI13PlatformDispatcherDelegate {
 			RepositoryEntry entry = deployment.getEntry();
 			contextMap.put("label", entry.getDisplayname());
 			contextMap.put("title", entry.getDisplayname());
-			contextMap.put("type", List.of("course"));
+			contextMap.put("type", List.of(LTI13Constants.ContextTypes.COURSE_SECTION));
 		} else if(deployment.getBusinessGroup() != null) {
 			BusinessGroup businessGroup = deployment.getBusinessGroup();
 			contextMap.put("label", businessGroup.getName());

@@ -205,7 +205,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(s);
-		Claims body = (Claims)bundle.getJwt().getBody();
+		Claims body = bundle.getJwt().getBody();
 		Assert.assertEquals("tip", body.get("secret"));
 	}
 	
@@ -257,7 +257,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(s);
-		Claims body = (Claims)bundle.getJwt().getBody();
+		Claims body = bundle.getJwt().getBody();
 		Assert.assertEquals("tip", body.get("secret"));
 	}
 	
@@ -349,7 +349,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(s);
-		Claims body = (Claims)bundle.getJwt().getBody();
+		Claims body = bundle.getJwt().getBody();
 		Assert.assertEquals("tip", body.get("secret"));
 		
 		RSAKey rsa2JWK = new RSAKeyGenerator(2048)
@@ -372,7 +372,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s2 = jws2Object.serialize();
 		
 		JwtToolBundle bundle2 = lti13Service.getAndVerifyClientAssertion(s2);
-		Claims body2 = (Claims)bundle2.getJwt().getBody();
+		Claims body2 = bundle2.getJwt().getBody();
 		Assert.assertEquals("very", body2.get("secret"));
 	}
 }
