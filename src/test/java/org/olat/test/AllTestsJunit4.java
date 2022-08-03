@@ -447,6 +447,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.lti.LTIManagerTest.class,
 	org.olat.ims.lti13.LTI13ServiceTest.class,
 	org.olat.ims.lti13.LTI13JsonUtilTest.class,
+	org.olat.ims.lti13.LTI13PlatformDispatcherDelegateRedirectTest.class,
 	org.olat.ims.lti13.manager.LTI13KeyDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13PlatformDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13RequestUtilTest.class,
