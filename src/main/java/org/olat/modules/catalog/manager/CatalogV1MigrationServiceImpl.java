@@ -161,7 +161,9 @@ public class CatalogV1MigrationServiceImpl implements CatalogV1MigrationService 
 		// The root catalogEntry is migrated to the taxonomy instead of a taxonomy level.
 		if (catalogEntry.getParent() != null) {
 			String i18nSuffix = taxonomyService.createI18nSuffix();
-			taxonomyLevel = taxonomyService.createTaxonomyLevel(catalogEntry.getShortTitle(), i18nSuffix, null, null, parentLevel, taxonomy);
+			String identifier = StringHelper.containsNonWhitespace(catalogEntry.getShortTitle())
+					? catalogEntry.getShortTitle() : catalogEntry.getName();
+			taxonomyLevel = taxonomyService.createTaxonomyLevel(identifier, i18nSuffix, null, null, parentLevel, taxonomy);
 			if (sortOder != null) {
 				taxonomyLevel.setSortOrder(sortOder);
 				taxonomyLevel = taxonomyService.updateTaxonomyLevel(taxonomyLevel);

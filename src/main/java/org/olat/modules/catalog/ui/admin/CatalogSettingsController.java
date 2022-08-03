@@ -153,7 +153,11 @@ public class CatalogSettingsController extends FormBasicController {
 				migrationRunningEl.setVisible(true);
 				flc.setDirty(true);
 				taskExecutorManager.execute(() -> {
-					migrationService.migrate(getIdentity());
+					try {
+						migrationService.migrate(getIdentity());
+					} catch (Exception e) {
+						logError("", e);
+					}
 					updateMigrationUI();
 					fireEvent(ureq, MIGRATED_EVENT);
 				});
