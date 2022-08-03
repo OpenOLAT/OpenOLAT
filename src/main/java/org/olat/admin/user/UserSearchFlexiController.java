@@ -487,7 +487,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private class UserSearchQueries extends UserSearchListProvider implements UserSearchProvider {
 		
 		public UserSearchQueries(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole) {
-			super(searchableOrganisations, repositoryEntryRole);
+			super(searchableOrganisations, repositoryEntryRole, null);
 		}
 		
 		/**

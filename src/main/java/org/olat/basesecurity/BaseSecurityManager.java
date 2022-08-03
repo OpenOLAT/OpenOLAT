@@ -645,12 +645,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public List<IdentityShort> searchIdentityShort(String search, int maxResults) {
-		return searchIdentityShort(search, null, null, maxResults);
+		return searchIdentityShort(search, null, null, null, maxResults);
 	}
 
 	@Override
-	public List<IdentityShort> searchIdentityShort(String search,
-			List<? extends OrganisationRef> searcheableOrgnisations, GroupRoles repositoryEntryRole, int maxResults) {
+	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searcheableOrgnisations,
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, int maxResults) {
 		if(!StringHelper.containsNonWhitespace(search)) return new ArrayList<>();
 		
 		String[] searchArr = search.split(" ");
@@ -696,6 +696,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			  .append("  where rmember.identity.key=ident.key and rmember.role=:repositoryEntryRole)");
 		}
 		
+		if(excludedRoles != null && excludedRoles.length > 0) {
+			sb.append(" and ident.key not in (select membership.identity.key from organisation as orgRole  ")
+			  .append("  inner join bgroupmember membership on (orgRole.group.key=membership.group.key)")
+			  .append("  where membership.role in (:excludedRoles))");
+		}
+		
 		TypedQuery<IdentityShort> searchQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
 		for(int i=searchArrList.size(); i-->0; ) {
@@ -709,6 +715,14 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 		if (repositoryEntryRole != null) {
 			searchQuery.setParameter("repositoryEntryRole", repositoryEntryRole.name());
+		}
+		
+		if(excludedRoles != null && excludedRoles.length > 0) {
+			List<String> roleList = new ArrayList<>(excludedRoles.length);
+			for(OrganisationRoles role:excludedRoles) {
+				roleList.add(role.name());
+			}
+			searchQuery.setParameter("excludedRoles", roleList);
 		}
 
 		return searchQuery
