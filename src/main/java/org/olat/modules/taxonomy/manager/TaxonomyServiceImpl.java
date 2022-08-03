@@ -58,6 +58,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -89,6 +90,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
@@ -241,6 +244,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			i18nManager.saveOrUpdateI18nItem(descriptionItem, null);
 		}
 		
+		repositoryEntryToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
+
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 	}
 
