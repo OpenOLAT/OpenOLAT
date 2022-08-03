@@ -80,6 +80,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
             + "\r\n"
             + "https://applications.zoom.us/lti/advantage/oauth/complete";
     private static final String PUBLIC_JWK_URL = "https://applications.zoom.us/lti/advantage/jwks";
+    private static final String ZOOM_PROFILE_SUFFIX = " (Zoom Profile)";
 
     @Autowired
     private ZoomProfileDAO zoomProfileDao;
@@ -112,7 +113,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     }
 
     LTI13Tool createLtiTool(String name, String ltiKey, String clientId) {
-        String toolName = name + " (Zoom Profile)";
+        String toolName = name + ZOOM_PROFILE_SUFFIX;
         String initiateLoginUrl = LOGIN_INITIATION_URL_PREFIX + ltiKey;
         LTI13Tool ltiTool = lti13Service.createExternalTool(toolName, TARGET_LINK_URL, clientId, initiateLoginUrl, REDIRECTION_URLS, LTI13ToolType.ZOOM);
         ltiTool.setPublicKeyTypeEnum(LTI13Tool.PublicKeyType.URL);
@@ -122,8 +123,20 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     }
 
     @Override
-    public ZoomProfile copyProfile(ZoomProfile zoomProfile) {
-        ZoomProfile copiedZoomProfile = zoomProfileDao.createProfile(zoomProfile.getName(), zoomProfile.getLtiKey(), zoomProfile.getLtiTool(),zoomProfile.getToken());
+    public ZoomProfile copyProfile(ZoomProfile zoomProfile, String copySuffix) {
+        String copiedName = copySuffix != null ? zoomProfile.getName() + " " + copySuffix : zoomProfile.getName();
+        String copiedToolName = copiedName + ZOOM_PROFILE_SUFFIX;
+        LTI13Tool originalTool = zoomProfile.getLtiTool();
+        LTI13Tool copiedTool = lti13Service.createExternalTool(copiedToolName, originalTool.getToolUrl(),
+                originalTool.getClientId(), originalTool.getInitiateLoginUrl(), originalTool.getRedirectUrl(),
+                originalTool.getToolTypeEnum());
+        copiedTool.setPublicKeyTypeEnum(originalTool.getPublicKeyTypeEnum());
+        copiedTool.setPublicKey(originalTool.getPublicKey());
+        copiedTool.setPublicKeyUrl(originalTool.getPublicKeyUrl());
+        LTI13Tool updatedCopiedTool = lti13Service.updateTool(copiedTool);
+
+        ZoomProfile copiedZoomProfile = zoomProfileDao.createProfile(copiedName, zoomProfile.getLtiKey(),
+                updatedCopiedTool, zoomProfile.getToken());
         copiedZoomProfile.setMailDomains(zoomProfile.getMailDomains());
         copiedZoomProfile.setStudentsCanHost(zoomProfile.isStudentsCanHost());
         copiedZoomProfile.setToken(zoomProfile.getToken());
@@ -164,12 +177,21 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
 
     @Override
     public ZoomProfile updateProfile(ZoomProfile zoomProfile) {
+        String toolName = zoomProfile.getName() + ZOOM_PROFILE_SUFFIX;
+        String initiateLoginUrl = LOGIN_INITIATION_URL_PREFIX + zoomProfile.getLtiKey();
+        LTI13Tool ltiTool = zoomProfile.getLtiTool();
+        ltiTool.setToolName(toolName);
+        ltiTool.setInitiateLoginUrl(initiateLoginUrl);
+        lti13ToolDAO.updateTool(ltiTool);
+
         return zoomProfileDao.updateProfile(zoomProfile);
     }
 
     @Override
     public void deleteProfile(ZoomProfile zoomProfile) {
+        LTI13Tool ltiTool = lti13ToolDAO.loadToolByKey(zoomProfile.getLtiTool().getKey());
         zoomProfileDao.deleteProfile(zoomProfile);
+        lti13ToolDAO.deleteTool(ltiTool);
     }
 
     @Override
