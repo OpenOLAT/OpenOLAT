@@ -26,6 +26,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodes.ZoomCourseNode;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ui.ZoomUpdateConfigController;
 import org.olat.repository.RepositoryEntry;
@@ -42,9 +45,11 @@ public class ZoomEditController extends ActivateableTabbableDefaultController {
 
     private final ZoomUpdateConfigController zoomConfig;
 
-    public ZoomEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, String courseNodeIdent) {
-        super(ureq, wControl);
+    private final ModuleConfiguration config;
 
+    public ZoomEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, String courseNodeIdent, ModuleConfiguration config) {
+        super(ureq, wControl);
+        this.config = config;
         zoomConfig = new ZoomUpdateConfigController(ureq, wControl, courseEntry, courseNodeIdent, null, ZoomManager.ApplicationType.courseElement);
         listenTo(zoomConfig);
     }
@@ -69,7 +74,8 @@ public class ZoomEditController extends ActivateableTabbableDefaultController {
             if (event == Event.CANCELLED_EVENT) {
                 //
             } else if (event == Event.DONE_EVENT) {
-                //
+                config.setStringValue(ZoomCourseNode.CLIENT_ID, zoomConfig.getClientId());
+                fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
             }
         }
     }

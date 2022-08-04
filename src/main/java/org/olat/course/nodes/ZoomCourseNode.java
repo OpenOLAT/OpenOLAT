@@ -52,6 +52,8 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
  */
 public class ZoomCourseNode extends AbstractAccessableCourseNode {
 
+    public static final String CLIENT_ID = "clientId";
+
     private static final Logger log = Tracing.createLoggerFor(ZoomCourseNode.class);
 
     private static final long serialVersionUID = 257132040249310222L;
@@ -84,7 +86,7 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
         CourseNode courseNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
         RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
         String subIdent = courseNode.getIdent();
-        ZoomEditController zoomEditController = new ZoomEditController(ureq, wControl, entry, subIdent);
+        ZoomEditController zoomEditController = new ZoomEditController(ureq, wControl, entry, subIdent, getModuleConfiguration());
         NodeEditController nodeEditController = new NodeEditController(ureq, wControl, stackPanel, course, courseNode,
                 userCourseEnv, zoomEditController);
         nodeEditController.addControllerListener(zoomEditController);
@@ -93,11 +95,12 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
 
     @Override
     public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
+        String clientId = getModuleConfiguration().getStringValue(CLIENT_ID);
         RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
         String subIdent = getIdent();
         ZoomRunController zoomRunController = new ZoomRunController(ureq, wControl,
                 ZoomManager.ApplicationType.courseElement, entry, subIdent, null, userCourseEnv.isAdmin(),
-                userCourseEnv.isCoach(), userCourseEnv.isParticipant(), null);
+                userCourseEnv.isCoach(), userCourseEnv.isParticipant(), clientId);
         Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, zoomRunController, userCourseEnv, this, "o_vc_icon");
         return new NodeRunConstructionResult(ctrl);
     }
