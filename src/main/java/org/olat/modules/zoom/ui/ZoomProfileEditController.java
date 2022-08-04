@@ -191,7 +191,7 @@ public class ZoomProfileEditController extends FormBasicController {
     }
 
     private void doCheckConnection() {
-        ZoomManager.ZoomConnectionResponse response = zoomManager.checkConnection(ltiKeyEl.getValue(), idGenerator.newId(), getIdentity().getKey().toString());
+        ZoomManager.ZoomConnectionResponse response = zoomManager.checkConnection(ltiKeyEl.getValue(), clientId, getIdentity().getKey().toString());
         if (response.isOk()) {
             showInfo("zoom.check.connection.ok");
         } else {
