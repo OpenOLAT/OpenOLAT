@@ -201,12 +201,15 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
 
     @Override
     public void initializeConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
-                                 ApplicationType applicationType, User user) throws OLATRuntimeException {
+                                 ApplicationType applicationType, String clientId, User user) throws OLATRuntimeException {
         if (zoomConfigDao.configExists(entry, subIdent, businessGroup)) {
             return;
         }
 
-        ZoomProfile profile = getProfileForUser(user);
+        ZoomProfile profile = zoomProfileDao.getProfile(clientId);
+        if (profile == null) {
+            profile = getProfileForUser(user);
+        }
 
         LTI13ToolDeployment toolDeployment = createLtiToolDeployment(profile.getLtiTool(), entry, subIdent, businessGroup);
         String id = businessGroup != null ? businessGroup.getKey().toString() : entry.getKey().toString() + "-" + subIdent;

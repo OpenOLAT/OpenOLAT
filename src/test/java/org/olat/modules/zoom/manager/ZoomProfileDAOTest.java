@@ -66,4 +66,21 @@ public class ZoomProfileDAOTest extends OlatTestCase {
         Assert.assertTrue(zoomProfile.getLtiTool().getInitiateLoginUrl().contains(ltiKey));
         Assert.assertEquals(clientId, zoomProfile.getLtiTool().getClientId());
     }
+
+    @Test
+    public void testGetProfile() {
+        String ltiKey = UUID.randomUUID().toString();
+        String token = UUID.randomUUID().toString().substring(0, 8);
+        String clientId = UUID.randomUUID().toString();
+        LTI13Tool lti13Tool = createTestLtiTool(ltiKey, clientId);
+        zoomProfileDAO.createProfile("ClientId Test", ltiKey, lti13Tool, token);
+
+        ZoomProfile zoomProfileForClientId = zoomProfileDAO.getProfile(clientId);
+        ZoomProfile zoomProfileForOtherClientId = zoomProfileDAO.getProfile(UUID.randomUUID().toString());
+
+        Assert.assertNotNull(zoomProfileForClientId);
+        Assert.assertEquals("ClientId Test", zoomProfileForClientId.getName());
+        Assert.assertEquals(clientId, zoomProfileForClientId.getLtiTool().getClientId());
+        Assert.assertNull(zoomProfileForOtherClientId);
+    }
 }

@@ -275,6 +275,8 @@ public class CollaborationToolsSettingsController extends BasicController {
 					new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
 		} else if (source == folderForm) {
 			collabTools.saveFolderAccess(Long.valueOf(folderForm.getFolderAccess()));
+		} else if (source == zoomController) {
+			collabTools.saveZoomClientId(zoomController.getClientId());
 		}
 	}
 	

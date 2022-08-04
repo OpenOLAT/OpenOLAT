@@ -126,6 +126,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String BIGBLUEBUTTON_MODERATOR_STARTS_MEETING = "BIGBLUEBUTTON_MODERATOR_STARTS_MEETING";
 
 	public static final transient String ZOOM_ENABLED = "ZOOM_ENABLED";
+	public static final transient String ZOOM_CLIENT_ID = "ZOOM_CLIENT_ID";
 	public static final transient String KEY_GLOSSARY_ENABLED = "KEY_GLOSSARY_ENABLED";
 	public static final transient String KEY_GLOSSARY_SOFTKEY = "KEY_GLOSSARY_SOFTKEY";
 	public static final transient String KEY_CSS_FILEREF = "CSS_FILEREF";
@@ -838,6 +839,19 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(ZOOM_ENABLED, Boolean.valueOf(zoomEnabled));
 	}
 
+	public String getZoomClientId() {
+		Object clientId = configuration.get(ZOOM_CLIENT_ID);
+		return clientId != null ? (String) clientId : null;
+	}
+
+	public void setZoomClientId(String zoomClientId) {
+		if (zoomClientId != null) {
+			configuration.put(ZOOM_CLIENT_ID, zoomClientId);
+		} else {
+			configuration.remove(ZOOM_CLIENT_ID);
+		}
+	}
+
 	public boolean isBlogEnabled() {
 		Boolean bool = (Boolean) configuration.get(BLOG_ENABLED);
 		return bool != null && bool.booleanValue();
@@ -1118,6 +1132,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setEmailEnabled(isEmailEnabled());
 		clone.setTeamsEnabled(isTeamsEnabled());
 		clone.setZoomEnabled(isZoomEnabled());
+		clone.setZoomClientId(getZoomClientId());
 		clone.setBigBlueButtonEnabled(isBigBlueButtonEnabled());
 		clone.setBigBlueButtonModeratorStartsMeeting(isBigBlueButtonModeratorStartsMeeting());
 		clone.setBlogEnabled(isBlogEnabled());

@@ -75,7 +75,7 @@ public class ZoomUpdateConfigController extends FormBasicController {
             setFormTitle("zoom.configure.title");
         }
 
-        zoomManager.initializeConfig(courseEntry, subIdent, businessGroup, applicationType, getIdentity().getUser());
+        zoomManager.initializeConfig(courseEntry, subIdent, businessGroup, applicationType, null, getIdentity().getUser());
 
         ZoomManager.KeysAndValues profiles = zoomManager.getProfilesAsKeysAndValues();
         profileEl = uifactory.addDropdownSingleselect("zoom.profile", formLayout, profiles.keys, profiles.values);
@@ -129,5 +129,13 @@ public class ZoomUpdateConfigController extends FormBasicController {
             }
         }
         fireEvent(ureq, Event.DONE_EVENT);
+    }
+
+    public String getClientId() {
+        if (profileEl.isOneSelected()) {
+            ZoomProfile zoomProfile = zoomManager.getProfile(profileEl.getSelectedKey());
+            return zoomProfile.getLtiTool().getClientId();
+        }
+        return null;
     }
 }

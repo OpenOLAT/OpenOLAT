@@ -2502,9 +2502,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 			RepositoryEntry entry = getRepositoryEntry();
 			String subIdent = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+			CourseConfig cc = course.getCourseConfig();
 			zoomCtrl = new ZoomRunController(ureq, swControl,
 					ZoomManager.ApplicationType.courseTool, entry, subIdent, null,
-					userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+					userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant(), cc.getZoomClientId());
 			pushController(ureq, translate("command.zoom"), zoomCtrl);
 			setActiveTool(zoomLink);
 			currentToolCtr = zoomCtrl;

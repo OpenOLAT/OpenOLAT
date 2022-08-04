@@ -97,7 +97,7 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
         String subIdent = getIdent();
         ZoomRunController zoomRunController = new ZoomRunController(ureq, wControl,
                 ZoomManager.ApplicationType.courseElement, entry, subIdent, null, userCourseEnv.isAdmin(),
-                userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+                userCourseEnv.isCoach(), userCourseEnv.isParticipant(), null);
         Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, zoomRunController, userCourseEnv, this, "o_vc_icon");
         return new NodeRunConstructionResult(ctrl);
     }
@@ -145,7 +145,7 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
         ZoomConfig sourceConfig = zoomManager.getConfig(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), sourceSubIdent, null);
         if (sourceConfig != null) {
             RepositoryEntry targetEntry = targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-            zoomManager.initializeConfig(targetEntry, targetSubIdent, null, ZoomManager.ApplicationType.courseElement, envMapper.getAuthor().getUser());
+            zoomManager.initializeConfig(targetEntry, targetSubIdent, null, ZoomManager.ApplicationType.courseElement, null, envMapper.getAuthor().getUser());
             ZoomConfig targetConfig = zoomManager.getConfig(targetEntry, targetSubIdent, null);
             if (sourceConfig.getProfile() != targetConfig.getProfile()) {
                 zoomManager.recreateConfig(targetConfig, targetEntry, targetSubIdent, null, sourceConfig.getProfile());

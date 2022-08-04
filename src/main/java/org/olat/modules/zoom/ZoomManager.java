@@ -67,7 +67,7 @@ public interface ZoomManager {
 
     KeysAndValues getProfilesAsKeysAndValues();
 
-    void initializeConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, ApplicationType applicationType, User user);
+    void initializeConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, ApplicationType applicationType, String clientId, User user);
 
     ZoomProfile updateProfile(ZoomProfile zoomProfile);
 
