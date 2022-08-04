@@ -132,14 +132,15 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private IdentityPowerSearchQueries identitySearchQueries;
 
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
-		this(ureq, wControl, rootForm, null, true, false);
+		this(ureq, wControl, rootForm, null, null, true, false);
 	}
 	
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles,
+			boolean multiSelection, boolean showSelectButton) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		
-		init(ureq, null, repositoryEntryRole, multiSelection, showSelectButton);
+		init(ureq, null, repositoryEntryRole, excludedRoles, multiSelection, showSelectButton);
 
 		initForm(ureq);
 	}
@@ -147,19 +148,21 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, null, repositoryEntryRole, multiSelection, true);
+		init(ureq, null, repositoryEntryRole, null, multiSelection, true);
 		
 		initForm(ureq);
 	}
 	
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, UserSearchProvider searchProvider, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
-		init(ureq, searchProvider, null, multiSelection, true);
 		
+		init(ureq, searchProvider, null, null, multiSelection, true);
+
 		initForm(ureq);
 	}
 	
-	private void init(UserRequest ureq, UserSearchProvider searchProvider, GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
+	private void init(UserRequest ureq, UserSearchProvider searchProvider, GroupRoles repositoryEntryRole,
+			OrganisationRoles[] excludedRoles, boolean multiSelection, boolean showSelectButton) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
@@ -178,7 +181,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		} else {
 			List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 					OrganisationRoles.valuesWithoutGuestAndInvitee());
-			search = new UserSearchQueries(searchableOrganisations, repositoryEntryRole);
+			search = new UserSearchQueries(searchableOrganisations, repositoryEntryRole, excludedRoles);
 			setListProvider(search);
 		}
 		setAllowNewValues(false);
@@ -486,8 +489,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 	private class UserSearchQueries extends UserSearchListProvider implements UserSearchProvider {
 		
-		public UserSearchQueries(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole) {
-			super(searchableOrganisations, repositoryEntryRole, null);
+		public UserSearchQueries(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole,
+				OrganisationRoles[] excludedRoles) {
+			super(searchableOrganisations, repositoryEntryRole, excludedRoles);
 		}
 		
 		/**
@@ -503,6 +507,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 					null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 			params.setOrganisations(getSearchableOrganisations());
 			params.setRepositoryEntryRole(getRepositoryEntryRole(), false);
+			params.setExcludedRoles(getExcludedRoles());
 			return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
 		}
 	}

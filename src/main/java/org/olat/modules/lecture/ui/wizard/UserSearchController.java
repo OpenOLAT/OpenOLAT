@@ -49,7 +49,7 @@ public class UserSearchController extends StepFormBasicController {
 	public UserSearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "user_search");
 
-		searchController = new UserSearchFlexiController(ureq, wControl, rootForm, null, false, false);
+		searchController = new UserSearchFlexiController(ureq, wControl, rootForm, null, null, false, false);
 		listenTo(searchController);
 		initForm (ureq);
 	}

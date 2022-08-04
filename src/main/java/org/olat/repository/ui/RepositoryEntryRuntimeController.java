@@ -1021,6 +1021,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else {
 			if(security.canLaunch()) {
 				launchContent(ureq);
+			} else if(roles.isInviteeOnly()) {
+				accessRefused(ureq);
 			} else if(re.isPublicVisible()) {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), false);
 				if(acResult.isAccessible()) {

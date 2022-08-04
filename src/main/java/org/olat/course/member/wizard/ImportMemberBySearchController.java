@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -53,7 +54,8 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 		
 		context = (MembersByNameContext)getOrCreateFromRunContext(ImportMemberByUsernamesController.RUN_CONTEXT_KEY, MembersByNameContext::new);
 
-		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
+		searchController = new UserSearchFlexiController(ureq, wControl, rootForm, null,
+				new OrganisationRoles[] { OrganisationRoles.invitee, OrganisationRoles.guest }, true, false);
 		listenTo(searchController);
 		initForm (ureq);
 	}

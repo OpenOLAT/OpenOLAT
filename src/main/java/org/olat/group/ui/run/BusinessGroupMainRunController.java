@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
@@ -408,17 +409,19 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		if(wcard == null) {
 			//check managed
+			Roles roles = ureq.getUserSession().getRoles();
 			AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
 			if(acResult.isAccessible()) {
 				needActivation = false;
-			}  else if (businessGroup != null && !acResult.getAvailableMethods().isEmpty()) {
+			}  else if (businessGroup != null && !acResult.getAvailableMethods().isEmpty()
+					&& !roles.isGuestOnly() && !roles.isInviteeOnly()) {
 				accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
 				listenTo(accessController);
 				mainPanel.setContent(accessController.getInitialComponent());
 				bgTree.setTreeModel(new GenericTreeModel());
 				needActivation = true;
 			} else {
-				mainPanel.setContent(new Panel("empty"));
+				mainPanel.setContent(getNoAccessMessage(ureq, bGroup));
 				bgTree.setTreeModel(new GenericTreeModel());
 				needActivation = true;
 			}

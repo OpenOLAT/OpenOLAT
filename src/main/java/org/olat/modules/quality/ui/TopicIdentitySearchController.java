@@ -46,7 +46,7 @@ public class TopicIdentitySearchController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchController = new UserSearchFlexiController(ureq, getWindowControl(),
-				formLayout.getRootForm(), GroupRoles.coach, false, false);
+				formLayout.getRootForm(), GroupRoles.coach, null, false, false);
 		listenTo(searchController);
 		formLayout.add(searchController.getInitialFormItem());
 	}

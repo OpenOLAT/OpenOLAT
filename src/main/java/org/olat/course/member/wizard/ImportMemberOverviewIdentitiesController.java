@@ -75,6 +75,8 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		this.formTitle = formTitle;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
+		anonymousUsers.addAll(organisationService.getIdentitiesWithRole(OrganisationRoles.invitee));
+
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		membersByNameContext = (MembersByNameContext)getOrCreateFromRunContext(runContextKey, MembersByNameContext::new);
