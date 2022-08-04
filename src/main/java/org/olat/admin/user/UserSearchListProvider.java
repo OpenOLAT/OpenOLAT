@@ -69,6 +69,10 @@ public class UserSearchListProvider implements ListProvider {
 	public GroupRoles getRepositoryEntryRole() {
 		return repositoryEntryRole;
 	}
+	
+	public OrganisationRoles[] getExcludedRoles() {
+		return excludedRoles;
+	}
 
 	@Override
 	public int getMaxEntries() {

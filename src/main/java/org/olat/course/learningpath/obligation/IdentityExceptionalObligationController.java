@@ -51,7 +51,7 @@ public class IdentityExceptionalObligationController extends FormBasicController
 	
 	public IdentityExceptionalObligationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		userSearchCtrl = new UserSearchFlexiController(ureq, getWindowControl(), mainForm, null, true, true);
+		userSearchCtrl = new UserSearchFlexiController(ureq, getWindowControl(), mainForm, null, null, true, true);
 		listenTo(userSearchCtrl);
 		initForm(ureq);
 	}
