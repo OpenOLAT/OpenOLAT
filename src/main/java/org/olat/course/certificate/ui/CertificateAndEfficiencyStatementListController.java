@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -101,12 +102,18 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.ui.CurriculumLecturesInfosController;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -149,6 +156,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private CollectArtefactController collectorCtrl;
+	private CurriculumLecturesInfosController curriculumLecturesCtrl;
 	private DialogBoxController confirmDeleteCtr;
 	private UploadExternalCertificateController uploadCertificateController;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -159,6 +167,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private boolean canUploadExternalCertificate;
 	private final Identity assessedIdentity;
 	
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private EfficiencyStatementManager esm;
 	@Autowired
@@ -220,8 +232,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		flc.contextPut("showHeading", true);
 		
 		initForm(ureq);
-		activateFilter(CMD_ALL_EVIDENCE);
-		loadModel();
+		activateFilterAndLoadModel(CMD_ALL_EVIDENCE, null);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
@@ -277,14 +288,16 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		
 		if(linkToCoachingTool) {
-			flc.contextPut("linkToCoachingTool", true);
+			layoutCont.contextPut("linkToCoachingTool", true);
 			coachingToolButton = uifactory.addFormLink("coaching.tool", formLayout, Link.BUTTON);
 			coachingToolButton.setIconLeftCSS("o_icon o_icon_coach");
 		}
 		
 		if (canUploadExternalCertificate) {
-			flc.contextPut("uploadCertificate", true);
+			layoutCont.contextPut("uploadCertificate", true);
 			uploadCertificateButton = uifactory.addFormLink("upload.certificate", formLayout, Link.BUTTON);
 			uploadCertificateButton.setIconLeftCSS("o_icon o_icon_import");
 		}
@@ -319,9 +332,14 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				showCurriculumFilterButtons = true;
 			}
 			
-			this.flc.contextPut("showCurriculumFilterButtons", showCurriculumFilterButtons);
-			this.flc.contextPut("curriculumFilterButtons", curriculumFilterButtons.stream().map(FormLink::getName).collect(Collectors.toList()));
+			layoutCont.contextPut("showCurriculumFilterButtons", showCurriculumFilterButtons);
+			layoutCont.contextPut("curriculumFilterButtons", curriculumFilterButtons.stream().map(FormLink::getName).collect(Collectors.toList()));
 		}
+		
+		curriculumLecturesCtrl = new CurriculumLecturesInfosController(ureq, getWindowControl(), mainForm);
+		listenTo(curriculumLecturesCtrl);
+		layoutCont.add("lectures", curriculumLecturesCtrl.getInitialFormItem());
+		curriculumLecturesCtrl.getInitialFormItem().setVisible(false);
 		
 		treeRenderer = new CertificateAndEfficiencyStatementRenderer(CMD_SHOW);
 		treeRenderer.setFlatBySearchAndFilter(true);
@@ -332,10 +350,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
-		// This column is hidden as long as no grade can be assigned in the course.
-//		if (gradeModule.isEnabled()) {
-//			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.grade));
-//		}
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
@@ -428,12 +442,16 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 		Map<CurriculumElement, CertificateAndEfficiencyStatementRow> curriculumElToRows = new HashMap<>();
 		Map<CurriculumElement, Map<TaxonomyLevel, CertificateAndEfficiencyStatementRow>> taxonomyLevelToCurriculumElements = new HashMap<>();
+		Set<RepositoryEntryMyView> allEntries = new HashSet<>();
 
 		// Create row for every curriculum element
 		List<CertificateAndEfficiencyStatementRow> tableRows = new ArrayList<>();
 		for(CurriculumElementRepositoryEntryViews element : curriculumElements) {
 			List<TaxonomyLevel> taxonomyLevels = curriculumService.getTaxonomy(element.getCurriculumElement());
 			CurriculumElement parent = element.getCurriculumElement().getParent();
+			if(element.getEntries() != null) {
+				allEntries.addAll(element.getEntries());
+			}
 			
 			// Create row directly, if no taxonomy levels are assigned
 			if (taxonomyLevels.isEmpty()) {
@@ -519,6 +537,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
 		tableRows.forEach(this::forgeToolsLinks);
 		
+		tableModel.setNonFilteredRepositoryEntries(allEntries);
 		tableModel.setObjects(tableRows);
 		tableModel.openAll();
 		tableEl.setSortEnabled(true);
@@ -727,16 +746,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				doOpenTools(ureq, row, source);
 			} else {
 				if (sourceLink.getCmd().equals(CMD_INDIVIDUAL_COURSES)) {
-					activateFilter(CMD_INDIVIDUAL_COURSES);
-					loadModel();
+					activateFilterAndLoadModel(CMD_INDIVIDUAL_COURSES, null);
 				} else if (sourceLink.getCmd().equals(CMD_ALL_EVIDENCE)) {
-					activateFilter(CMD_ALL_EVIDENCE);
-					loadModel();
+					activateFilterAndLoadModel(CMD_ALL_EVIDENCE, null);
 				} else if (sourceLink.getCmd().startsWith(CMD_CURRICULUM)) {
 					Curriculum curriculum = (Curriculum) source.getUserObject();
-					activateFilter(CMD_CURRICULUM + curriculum.getKey().toString());
-					currentCurriculum = curriculum;
-					loadModel();
+					activateFilterAndLoadModel(CMD_CURRICULUM + curriculum.getKey(), curriculum);
 				} 				
 			}
 		}
@@ -800,7 +815,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.findFirst().orElse(null);
 	}
 	
-	private void activateFilter(String name) {
+	private void activateFilterAndLoadModel(String name, Curriculum curriculum) {
 		if(curriculumFilterButtons != null) {
 			curriculumFilterButtons.stream()
 				.forEach(button -> button.setElementCssClass("o_curriculum_filter_button"));
@@ -812,6 +827,28 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 		
 		currentFilter = name;
+		currentCurriculum = curriculum;
+		loadModel();
+		loadStatistics();
+	}
+	
+	private void loadStatistics() {
+		if(currentCurriculum != null && lectureModule.isEnabled() && currentCurriculum.isLecturesEnabled()) {
+			List<RepositoryEntryRef> entriesRef = tableModel.getNonFilteredRepositoryEntries();
+			LectureStatisticsSearchParameters searchParams = new LectureStatisticsSearchParameters();
+			searchParams.setParticipants(List.of(assessedIdentity));
+			searchParams.setEntries(entriesRef);
+			List<LectureBlockIdentityStatistics> rawStatistics = lectureService.getLecturesStatistics(searchParams, List.of(), getIdentity());
+			List<LectureBlockIdentityStatistics> statistics = lectureService.groupByIdentity(rawStatistics);
+			if(statistics.isEmpty()) {
+				curriculumLecturesCtrl.getInitialFormItem().setVisible(false);
+			} else {
+				curriculumLecturesCtrl.setStatistics(statistics.get(0));
+				curriculumLecturesCtrl.getInitialFormItem().setVisible(true);
+			}
+		} else {
+			curriculumLecturesCtrl.getInitialFormItem().setVisible(false);
+		}
 	}
 	
 	private void doShowStatement(UserRequest ureq, CertificateAndEfficiencyStatementRow statement) {

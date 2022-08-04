@@ -1273,13 +1273,13 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollectionOrganisation = sut.updateDataCollection(dataCollectionOrganisation);
 		
 		// Curriculum
-		Curriculum curriculum = curriculumService.createCurriculum("i", "Lions training", "d", organisation);;
+		Curriculum curriculum = curriculumService.createCurriculum("i", "Lions training", "d", false, organisation);;
 		QualityDataCollection dataCollectionCurriculum = qualityTestHelper.createDataCollection(organisation);
 		dataCollectionCurriculum.setTopicCurriculum(curriculum);
 		dataCollectionCurriculum = sut.updateDataCollection(dataCollectionCurriculum);
 		
 		// CurriculumElement
-		Curriculum curriculumCE = curriculumService.createCurriculum("i", "d", "d", organisation);;
+		Curriculum curriculumCE = curriculumService.createCurriculum("i", "d", "d", false, organisation);;
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("ident", "LIONS Physiognomy", CurriculumElementStatus.active, null, null, null,
 				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
 				curriculumCE);

@@ -91,7 +91,7 @@ public class CurriculumElementLecturesController extends BasicController {
 	 * @param secCallback The security callback
 	 */
 	public CurriculumElementLecturesController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel breadcrumbPanel,
-			CurriculumElement element, boolean withDescendants, CurriculumSecurityCallback secCallback) {
+			Curriculum curriculum, CurriculumElement element, boolean withDescendants, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 
 		Roles roles = ureq.getUserSession().getRoles();
@@ -104,8 +104,14 @@ public class CurriculumElementLecturesController extends BasicController {
 				|| (lectureModule.isOwnerCanViewAllCoursesInCurriculum() && secCallback.canEditCurriculumElement(element));
 		
 		Identity checkByIdentity = all ? null : getIdentity();
-		List<RepositoryEntry> entries = curriculumService
-				.getRepositoryEntriesWithLectures(element, checkByIdentity, withDescendants);
+		List<RepositoryEntry> entries;
+		if(element != null) {
+			entries = curriculumService
+					.getRepositoryEntriesWithLectures(element, checkByIdentity, withDescendants);
+		} else {
+			entries = curriculumService
+					.getRepositoryEntriesWithLectures(curriculum, checkByIdentity);
+		}
 		
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
 		params.setEntries(entries);
@@ -116,7 +122,6 @@ public class CurriculumElementLecturesController extends BasicController {
 		
 		List<RepositoryEntryRef> filterByEntry = new ArrayList<>(entries);
 
-		Curriculum curriculum = element.getCurriculum();
 		if(filterByEntry.isEmpty()) {
 			mainVC.contextPut("hasLectures", Boolean.FALSE);
 		} else {
@@ -127,21 +132,26 @@ public class CurriculumElementLecturesController extends BasicController {
 			mainVC.put("lectures", lecturesListCtlr.getInitialComponent());
 		}
 		
-		mainVC.contextPut("elementName", element.getDisplayName());
-		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		Formatter formatter = Formatter.getInstance(getLocale());
-		if(element.getBeginDate() != null) {
-			mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
+		if(curriculum != null) {
+			mainVC.contextPut("curriculumName", curriculum.getDisplayName());
+			mainVC.contextPut("curriculumIdentifier", curriculum.getIdentifier());
 		}
-		if(element.getEndDate() != null) {
-			mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
-		}
-		mainVC.contextPut("curriculumName", curriculum.getDisplayName());
-		mainVC.contextPut("curriculumIdentifier", curriculum.getIdentifier());
 		
-		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
-		parentLine.remove(element);
-		mainVC.contextPut("parentLine", parentLine);
+		if(element != null) {
+			mainVC.contextPut("elementName", element.getDisplayName());
+			mainVC.contextPut("elementIdentifier", element.getIdentifier());
+			Formatter formatter = Formatter.getInstance(getLocale());
+			if(element.getBeginDate() != null) {
+				mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
+			}
+			if(element.getEndDate() != null) {
+				mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
+			}
+			
+			List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
+			parentLine.remove(element);
+			mainVC.contextPut("parentLine", parentLine);
+		}
 
 		putInitialPanel(mainVC);
 	}

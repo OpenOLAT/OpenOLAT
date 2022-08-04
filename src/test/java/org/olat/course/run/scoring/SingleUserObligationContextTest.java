@@ -132,7 +132,7 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 	
 	@Test
 	public void shouldBeCurriculumElementParticipant() {
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), organisationService.getDefaultOrganisation());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, organisationService.getDefaultOrganisation());
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		CurriculumElement curriculumElementOther = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser(random());

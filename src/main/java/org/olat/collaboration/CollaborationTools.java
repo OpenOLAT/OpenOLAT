@@ -233,6 +233,7 @@ public class CollaborationTools implements Serializable {
 	public static final String KEY_FOLDER_ACCESS = "folder";
 	private static final String KEY_BIGBLUEBUTTON_ACCESS = "folder";
 	private static final String KEY_TEAMS_ACCESS = "teams";
+	private static final String KEY_ZOOM_CLIENT_ID = "zoomClientId";
 
 	//o_clusterOK by guido
 	private Hashtable<String, Boolean> cacheToolStates;
@@ -642,7 +643,7 @@ public class CollaborationTools implements Serializable {
 	}
 
 	public ZoomRunController createZoomController(final UserRequest ureq, WindowControl wControl, BusinessGroup group, boolean admin, boolean coach, boolean participant) {
-		return new ZoomRunController(ureq, wControl, ZoomManager.ApplicationType.groupTool, null, null, group, admin, coach, participant);
+		return new ZoomRunController(ureq, wControl, ZoomManager.ApplicationType.groupTool, null, null, group, admin, coach, participant, getZoomClientId());
 	}
 
 	/**
@@ -908,7 +909,27 @@ public class CollaborationTools implements Serializable {
 			npm.updateProperty(property);
 		}
 	}
-	
+
+	public String getZoomClientId() {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_ZOOM_CLIENT_ID);
+		if (property == null) {
+			return null;
+		}
+		return property.getStringValue();
+	}
+
+	public void saveZoomClientId(String clientId) {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_ZOOM_CLIENT_ID);
+		if (property == null) {
+			Property nP = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_ZOOM_CLIENT_ID, null, null, clientId, null);
+			npm.saveProperty(nP);
+		} else {
+			property.setStringValue(clientId);
+			npm.updateProperty(property);
+		}
+	}
 
 	/**
 	 * @return the news; if there is no news yet: return null;

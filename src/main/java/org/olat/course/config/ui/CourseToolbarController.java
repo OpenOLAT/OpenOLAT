@@ -562,7 +562,8 @@ public class CourseToolbarController extends FormBasicController {
 		zoomProfileEl.setVisible(enabled);
 
 		String subIdent = course.getResourceableId().toString();
-		zoomManager.initializeConfig(entry, subIdent, null, ZoomManager.ApplicationType.courseTool, getIdentity().getUser());
+		String clientId = courseConfig.getZoomClientId();
+		zoomManager.initializeConfig(entry, subIdent, null, ZoomManager.ApplicationType.courseTool, clientId, getIdentity().getUser());
 
 		ZoomManager.KeysAndValues profiles = zoomManager.getProfilesAsKeysAndValues();
 		zoomProfileEl.setKeysAndValues(profiles.keys, profiles.values, null);
@@ -583,6 +584,7 @@ public class CourseToolbarController extends FormBasicController {
 			if (zoomConfig.getProfile() != zoomProfile) {
 				zoomManager.recreateConfig(zoomConfig, entry, subIdent, null, zoomProfile);
 			}
+			courseConfig.setZoomClientId(zoomProfile.getLtiTool().getClientId());
 		}
 	}
 

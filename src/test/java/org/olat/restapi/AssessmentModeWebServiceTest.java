@@ -349,7 +349,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-MODE_1", "Curriculum modes", "Curriculum for assessment modes", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-MODE_1", "Curriculum modes", "Curriculum for assessment modes", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

@@ -248,7 +248,7 @@ public class QualityTestHelper {
 	}
 
 	public Curriculum createCurriculum(Organisation organisation) {
-		return curriculumService.createCurriculum("i", "d", "d", organisation);
+		return curriculumService.createCurriculum("i", "d", "d", false, organisation);
 	}
 
 	public CurriculumElement createCurriculumElement() {

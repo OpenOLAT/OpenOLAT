@@ -25,12 +25,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -61,6 +64,18 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.curriculum.restapi.CurriculumVO;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.manager.LectureBlockDAO;
+import org.olat.modules.lecture.manager.LectureBlockRollCallDAO;
+import org.olat.modules.lecture.manager.LectureParticipantSummaryDAO;
+import org.olat.modules.lecture.manager.RepositoryEntryLectureConfigurationDAO;
+import org.olat.modules.lecture.restapi.LectureBlockStatisticsVO;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
@@ -83,16 +98,26 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private LectureBlockDAO lectureBlockDao;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private LectureBlockRollCallDAO lectureBlockRollCallDao;
+	@Autowired
+	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
+	@Autowired
+	private RepositoryEntryLectureConfigurationDAO repositoryEntryLectureConfigurationDao;
 	
 	@Test
 	public void getCurriculums()
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum", "REST Curriculum", "A curriculum accessible by REST API", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum", "REST Curriculum", "A curriculum accessible by REST API", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -118,7 +143,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
-		Curriculum curriculum = curriculumService.createCurriculum("REST-2-Curriculum", "REST 2 Curriculum", "A curriculum accessible by REST API", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-2-Curriculum", "REST 2 Curriculum", "A curriculum accessible by REST API", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -194,7 +219,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 3", "REST-p-3-organisation", "", defOrganisation, null);
-		Curriculum curriculum = curriculumService.createCurriculum("REST-4-Curriculum", "REST 4 Curriculum", "A curriculum accessible by REST API", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-4-Curriculum", "REST 4 Curriculum", "A curriculum accessible by REST API", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -264,7 +289,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 	}
 	
@@ -279,8 +304,8 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//create 2 curriculums
-		Curriculum curriculumA = curriculumService.createCurriculum("REST-A-Curriculum", "REST A Curriculum", "A curriculum accessible by REST API", organisationA);
-		Curriculum curriculumB = curriculumService.createCurriculum("REST-B-Curriculum", "REST B Curriculum", "A curriculum accessible by REST API", organisationB);
+		Curriculum curriculumA = curriculumService.createCurriculum("REST-A-Curriculum", "REST A Curriculum", "A curriculum accessible by REST API", false, organisationA);
+		Curriculum curriculumB = curriculumService.createCurriculum("REST-B-Curriculum", "REST B Curriculum", "A curriculum accessible by REST API", false, organisationB);
 		dbInstance.commitAndCloseSession();
 		
 		
@@ -294,7 +319,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		HttpPost methodA = conn.createPost(requestA, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(methodA, voA);
 		HttpResponse responsea = conn.execute(methodA);
-		Assert.assertEquals(401, responsea.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, responsea.getStatusLine().getStatusCode());
 		EntityUtils.consume(responsea.getEntity());
 		
 		// but it can update a curriculum in organization B
@@ -317,7 +342,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void searchCurriculumElements_externalId()
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", false, organisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Unkown", "Element 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -346,7 +371,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void searchCurriculumElements_identifier()
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, organisation);
 		String identifier = UUID.randomUUID().toString();
 		CurriculumElement element = curriculumService.createCurriculumElement(identifier, "Element 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -372,7 +397,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void searchCurriculumElements_elementKey()
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, organisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("by-key", "Element 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -401,7 +426,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defOrganisation);
 		dbInstance.commit();
 		
 		curriculumService.addMember(curriculum, member, CurriculumRoles.curriculumowner);
@@ -428,7 +453,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-11");
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defOrganisation);
 		dbInstance.commit();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -454,7 +479,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-23");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defOrganisation);
 		dbInstance.commit();
 		
 		curriculumService.addMember(curriculum, owner, CurriculumRoles.curriculumowner);
@@ -473,6 +498,201 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(owners.isEmpty());
 		List<Identity> coaches = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.coach);
 		Assert.assertEquals(1, coaches.size());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void getLecturesStatistics()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// Curriculum with 2 courses
+		Organisation defOrg = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("cur-lect-1", "Curriculum for lectures", "Curriculum", false, defOrg);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-lect-1",
+				"Element for lectures", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-for-lect-2",
+				"Element for lectures", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-2");
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-auth");
+		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		// Configuration with lectures enabled 
+		RepositoryEntryLectureConfiguration lectureConfig1 = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture1);
+		lectureConfig1.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig1);
+		
+		RepositoryEntryLectureConfiguration lectureConfig2 = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture2);
+		lectureConfig2.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig2);
+		dbInstance.commit();
+		
+		entryLecture1.setEntryStatus(RepositoryEntryStatusEnum.published);
+		entryLecture1 = repositoryService.update(entryLecture1);
+		entryLecture2.setEntryStatus(RepositoryEntryStatusEnum.published);
+		entryLecture2 = repositoryService.update(entryLecture2);
+		
+		curriculumService.addRepositoryEntry(element1, entryLecture1, false);
+		curriculumService.addRepositoryEntry(element2, entryLecture2, false);
+		curriculumService.addMember(element1, participant1, CurriculumRoles.participant);
+		curriculumService.addMember(element1, participant2, CurriculumRoles.participant);
+		curriculumService.addMember(element2, participant2, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		lectureParticipantSummaryDao.createSummary(entryLecture1, participant1, DateUtils.addDays(new Date(), -2));
+		lectureParticipantSummaryDao.createSummary(entryLecture1, participant2, DateUtils.addDays(new Date(), -2));
+		lectureParticipantSummaryDao.createSummary(entryLecture2, participant2, DateUtils.addDays(new Date(), -2));
+		
+		LectureBlock lectureBlock1_1 = createLectureBlock(entryLecture1, element1);
+		LectureBlock lectureBlock1_2 = createLectureBlock(entryLecture1, element1);
+		LectureBlock lectureBlock2_1 = createLectureBlock(entryLecture2, element2);
+		LectureBlock lectureBlock2_2 = createLectureBlock(entryLecture2, element2);
+		
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_1, participant1,
+				null, null, null, null, null, List.of(1));
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_1, participant2,
+				null, null, null, null, null, Collections.emptyList());
+		
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_2, participant1,
+				null, null, null, null, null, Collections.emptyList());
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_2, participant2,
+				null, null, null, null, null, List.of(1, 2, 3));
+		
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_1, participant2,
+				null, null, null, null, null, Collections.emptyList());
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_2, participant2,
+				null, null, null, null, null, List.of(1, 2));
+		
+		dbInstance.commitAndCloseSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("lectures").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		List<LectureBlockStatisticsVO> statisticsVoes = parseLectureBlockStatisticsArray(response.getEntity());
+		Assert.assertNotNull(statisticsVoes);
+		Assert.assertEquals(2, statisticsVoes.size());
+		
+		// Check statistics participant 1
+		LectureBlockStatisticsVO stats1 = statisticsVoes.stream()
+				.filter(stats -> participant1.getKey().equals(stats.getIdentityKey()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(stats1);
+		Assert.assertEquals(1l, stats1.getTotalAbsentLectures());
+		Assert.assertEquals(7l, stats1.getTotalAttendedLectures());
+		Assert.assertEquals(8l, stats1.getTotalEffectiveLectures());
+		Assert.assertEquals(8l, stats1.getTotalPersonalPlannedLectures());
+
+		// Check statistics participant 2
+		LectureBlockStatisticsVO stats2 = statisticsVoes.stream()
+				.filter(stats -> participant2.getKey().equals(stats.getIdentityKey()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(stats2);
+		Assert.assertEquals(5l, stats2.getTotalAbsentLectures());
+		Assert.assertEquals(11l, stats2.getTotalAttendedLectures());
+		Assert.assertEquals(16l, stats2.getTotalEffectiveLectures());
+		Assert.assertEquals(16l, stats2.getTotalPersonalPlannedLectures());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void getLecturesOfParticipant()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// curriculum with 2 courses
+		Organisation defOrg = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("cur-lectures-2", "Curriculum for lectures", "Curriculum", false, defOrg);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-lectures",
+				"Element for checked relation", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-part");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-auth");
+		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		// Configuration with lectures enabled 
+		RepositoryEntryLectureConfiguration lectureConfig1 = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture1);
+		lectureConfig1.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig1);
+		
+		RepositoryEntryLectureConfiguration lectureConfig2 = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture2);
+		lectureConfig2.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig2);
+		dbInstance.commit();
+		
+		entryLecture1.setEntryStatus(RepositoryEntryStatusEnum.published);
+		entryLecture1 = repositoryService.update(entryLecture1);
+		entryLecture2.setEntryStatus(RepositoryEntryStatusEnum.published);
+		entryLecture2 = repositoryService.update(entryLecture2);
+		
+		curriculumService.addRepositoryEntry(element, entryLecture1, false);
+		curriculumService.addRepositoryEntry(element, entryLecture2, false);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		lectureParticipantSummaryDao.createSummary(entryLecture1, participant, DateUtils.addDays(new Date(), -2));
+		lectureParticipantSummaryDao.createSummary(entryLecture2, participant, DateUtils.addDays(new Date(), -2));
+		
+		LectureBlock lectureBlock1_1 = createLectureBlock(entryLecture1, element);
+		LectureBlock lectureBlock1_2 = createLectureBlock(entryLecture1, element);
+		LectureBlock lectureBlock2_1 = createLectureBlock(entryLecture2, element);
+		LectureBlock lectureBlock2_2 = createLectureBlock(entryLecture2, element);
+		
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_1, participant,
+				null, null, null, null, null, Collections.emptyList());
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_2, participant,
+				null, null, null, null, null, Collections.emptyList());
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_1, participant,
+				null, null, null, null, null, Collections.emptyList());
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_2, participant,
+				null, null, null, null, null, List.of(1, 2));
+		
+		dbInstance.commitAndCloseSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("lectures").path(participant.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		LectureBlockStatisticsVO statisticsVo = conn.parse(response.getEntity(), LectureBlockStatisticsVO.class);
+		Assert.assertNotNull(statisticsVo);
+		Assert.assertEquals(2l, statisticsVo.getTotalAbsentLectures());
+		Assert.assertEquals(14l, statisticsVo.getTotalAttendedLectures());
+		Assert.assertEquals(16l, statisticsVo.getTotalEffectiveLectures());
+		Assert.assertEquals(16l, statisticsVo.getTotalPersonalPlannedLectures());
+		
+		conn.shutdown();
+	}
+	
+	private LectureBlock createLectureBlock(RepositoryEntry entry, CurriculumElement element) {
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(DateUtils.addHours(lectureBlock.getCreationDate(), -2));
+		lectureBlock.setEndDate(DateUtils.addHours(lectureBlock.getCreationDate(), -1));
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock.setEffectiveLecturesNumber(4);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlock.setStatus(LectureBlockStatus.done);
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureBlockDao.addGroupToLectureBlock(lectureBlock, element.getGroup());
+		return lectureBlock;
 	}
 	
 	protected List<UserVO> parseUserArray(HttpEntity entity) {
@@ -499,6 +719,16 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(in, new TypeReference<List<CurriculumElementVO>>(){/* */});
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	protected List<LectureBlockStatisticsVO> parseLectureBlockStatisticsArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<LectureBlockStatisticsVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

@@ -1715,11 +1715,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public List<LectureCurriculumElementInfos> searchCurriculumElements(LectureCurriculumElementSearchParameters searchParams) {
-		List<LectureCurriculumElementInfos> infos = lectureBlockDao.searchCurriculumElements(searchParams);
-		
-		
-		
-		return infos;
+		return lectureBlockDao.searchCurriculumElements(searchParams);
 	}
 
 	@Override

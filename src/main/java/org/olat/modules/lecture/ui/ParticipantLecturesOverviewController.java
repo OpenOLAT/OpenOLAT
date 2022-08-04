@@ -72,7 +72,9 @@ import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
 import org.olat.modules.lecture.ui.component.PercentCellRenderer;
@@ -82,6 +84,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -113,6 +116,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final List<AggregatedElement> aggregatedElements;
 	
 	private ParticipantLectureBlocksController lectureBlocksCtrl;
+	private CurriculumLecturesInfosController curriculumLecturesStatisticsCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -200,6 +204,11 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			logButton = uifactory.addFormLink("log", formLayout, Link.BUTTON);
 			logButton.setIconLeftCSS("o_icon o_icon_log");
 		}
+		
+		curriculumLecturesStatisticsCtrl = new CurriculumLecturesInfosController(ureq, getWindowControl(), mainForm);
+		listenTo(curriculumLecturesStatisticsCtrl);
+		formLayout.add("curriculumLectures", curriculumLecturesStatisticsCtrl.getInitialFormItem());
+		curriculumLecturesStatisticsCtrl.getInitialFormItem().setVisible(false);
 
 		List<String> containerIds = new ArrayList<>();
 		String page = velocity_root + "/participant_overview_table.html";
@@ -331,17 +340,22 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 
 		Set<Long> excludedKeys = new HashSet<>();
+		Set<Long> lectureStatisticsRepoKeys = new HashSet<>();
 		if(!aggregatedElements.isEmpty()) {
+			
 			for(AggregatedElement aggregatedElement:aggregatedElements) {
 				Set<Long> includedKeys = aggregatedElement.getRepositoryEntryKeys();
+				lectureStatisticsRepoKeys.addAll(includedKeys);
 				excludedKeys.addAll(includedKeys);
 				List<LectureBlockStatistics> subStatistics = statistics.stream()
 						.filter(s -> includedKeys.contains(s.getRepoKey()))
 						.collect(Collectors.toList());
 				AggregatedLectureBlocksStatistics subTotal = lectureService.aggregatedStatistics(subStatistics);
 				aggregatedElement.getTable().setStatistics(subStatistics, subTotal);
-			}
+			}	
 		}
+		
+		loadLectureStatisticsFor(lectureStatisticsRepoKeys);
 		
 		if(!excludedKeys.isEmpty()) {
 			List<LectureBlockStatistics> filteredStatistics = statistics.stream()
@@ -352,6 +366,27 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 
 		AggregatedLectureBlocksStatistics total = lectureService.aggregatedStatistics(statistics);
 		genericTable.setStatistics(statistics, total);
+	}
+	
+	private void loadLectureStatisticsFor(Set<Long> entryKeys) {
+		if(lectureModule.isEnabled()) {
+			List<RepositoryEntryRef> entriesRef = entryKeys.stream()
+					.map(RepositoryEntryRefImpl::new)
+					.collect(Collectors.toList());
+			LectureStatisticsSearchParameters searchParams = new LectureStatisticsSearchParameters();
+			searchParams.setParticipants(List.of(assessedIdentity));
+			searchParams.setEntries(entriesRef);
+			List<LectureBlockIdentityStatistics> rawStatistics = lectureService.getLecturesStatistics(searchParams, List.of(), getIdentity());
+			List<LectureBlockIdentityStatistics> statistics = lectureService.groupByIdentity(rawStatistics);
+			if(statistics.isEmpty()) {
+				curriculumLecturesStatisticsCtrl.getInitialFormItem().setVisible(false);
+			} else {
+				curriculumLecturesStatisticsCtrl.setStatistics(statistics.get(0));
+				curriculumLecturesStatisticsCtrl.getInitialFormItem().setVisible(true);
+			}
+		} else {
+			curriculumLecturesStatisticsCtrl.getInitialFormItem().setVisible(false);
+		}
 	}
 
 	@Override

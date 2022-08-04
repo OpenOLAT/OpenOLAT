@@ -100,6 +100,15 @@ public class ZoomProfileDAO {
                 .isEmpty();
     }
 
+    public ZoomProfile getProfile(String clientId) {
+        String query = "select p from zoomprofile p inner join p.ltiTool as t where t.clientId=:clientId";
+        List<ZoomProfile> profiles = dbInstance.getCurrentEntityManager()
+                .createQuery(query, ZoomProfile.class)
+                .setParameter("clientId", clientId)
+                .getResultList();
+        return profiles == null || profiles.isEmpty() ? null : profiles.get(0);
+    }
+
     public static class ZoomProfileWithConfigCount {
         private final ZoomProfile zoomProfile;
         private final Long configCount;

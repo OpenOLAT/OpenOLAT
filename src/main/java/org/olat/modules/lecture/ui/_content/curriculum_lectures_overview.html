@@ -1,0 +1,49 @@
+#if($r.isNotNull($statistics))
+<div class="o_expand_ctrl o_curriculum_lectures_statistics">
+	#if($r.isTrue($more))
+	<table class="o_expandable_panel table table-condensed">
+		<tbody>
+			<tr><th scope="row">$r.translate("table.header.planned.lectures")</th><td>${statistics.getTotalPersonalPlannedLectures()}</td></tr>
+			<tr><th scope="row">$r.translate("table.header.attended.lectures")</th><td>${statistics.getTotalAttendedLectures()}</td></tr>
+			#if($r.isNotNull($unauthorizedAbsentLectures))
+				<tr><th scope="row">$r.translate("table.header.unauthorized.absence"):</th><td>${unauthorizedAbsentLectures}</td></tr>
+			#end
+			#if($r.isNotNull($authorizedAbsentLectures))
+				<tr><th scope="row">$r.translate("table.header.authorized.absence"):</th><td>${authorizedAbsentLectures}</td></tr>
+			#end
+			#if($r.isNotNull($dispensedLectures))
+				<tr><th scope="row">$r.translate("table.header.dispensation"):</th><td>${dispensedLectures}</td></tr>
+			#end
+			#if($r.isNotNull($absentLectures))
+				<tr><th scope="row">$r.translate("table.header.absent.lectures"):</th><td>${absentLectures}</td></tr>
+			#end
+			<tr><th scope="row">$r.translate("table.header.rate"):</th><td>${rate}%</td></tr>
+			<tr>
+				<th scope="row">$r.translate("table.header.progress"):</th>
+				<td>
+					<div class="o_progress_statistics">$progress</div>
+					#if($r.isNotEmpty($warning))
+						<span>$warning</span>
+					#end
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	#else
+	<div class="o_expandable_panel">
+		<ul class="list-group-horizontal-xl">
+			<li><strong>$r.translate("table.header.planned.lectures"):</strong> <span>${statistics.getTotalPersonalPlannedLectures()}</span></span></li>
+			<li><strong>$r.translate("table.header.attended.lectures"):</strong> <span>${statistics.getTotalAttendedLectures()}</span></li>
+			<li><strong>$r.translate("table.header.rate"):</strong> <span>${rate}%</span></li>
+		</ul>
+	</div>
+	#end
+	<div class="o_expand o_button_group">
+	#if($r.isTrue($more))
+		$r.render("less")
+	#else
+		$r.render("more")
+	#end
+	</div>
+</div>
+#end

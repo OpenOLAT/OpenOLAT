@@ -38,14 +38,23 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof LectureBlockStatistics) {
-			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
-			long total = stats.getTotalPersonalPlannedLectures();
-			long attended = stats.getTotalAttendedLectures();
-			long absent = stats.getTotalAbsentLectures();
-			long authorizedAbsent = stats.getTotalAuthorizedAbsentLectures();
-			long dispensed = stats.getTotalDispensationLectures();
-			render(target, total, attended, absent, authorizedAbsent, dispensed);
+			render(target, (LectureBlockStatistics)cellValue);
 		}
+	}
+	
+	public String render(LectureBlockStatistics stats) {
+		StringOutput target = new StringOutput(2048);
+		render(target, stats);
+		return target.toString();
+	}
+	
+	public void render(StringOutput target, LectureBlockStatistics stats) {
+		long total = stats.getTotalPersonalPlannedLectures();
+		long attended = stats.getTotalAttendedLectures();
+		long absent = stats.getTotalAbsentLectures();
+		long authorizedAbsent = stats.getTotalAuthorizedAbsentLectures();
+		long dispensed = stats.getTotalDispensationLectures();
+		render(target, total, attended, absent, authorizedAbsent, dispensed);
 	}
 	
 	private void render(StringOutput target, long total, long attended, long absent, long authorizedAbsent, long dispensed) {
@@ -64,21 +73,34 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 		//authorized absent
 		target.append("<div class='progress-bar progress-bar-warning' role='progressbar' aria-valuenow='").append(authorizedAbsent)
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-	      .append("' style='width: ").append(authorizedAbsentPercent).append("%;'>")
+	      .append("' style='width: ").append(max100Percent(authorizedAbsentPercent, attendedPercent)).append("%;'>")
 	      .append("<span class='sr-only'>").append(authorizedAbsentPercent).append("%</span></div>");
 		
 		// dispensed
 		target.append("<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='").append(dispensed)
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-	      .append("' style='width: ").append(dispensedPercent).append("%;'>")
+	      .append("' style='width: ").append(max100Percent(dispensedPercent, attendedPercent, authorizedAbsentPercent)).append("%;'>")
 	      .append("<span class='sr-only'>").append(dispensedPercent).append("%</span></div>");
 		
 		//absent
 		target.append("<div class='progress-bar progress-bar-danger' role='progressbar' aria-valuenow='").append(absent)
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-	      .append("' style='width: ").append(absentPercent).append("%;'>")
+	      .append("' style='width: ").append(max100Percent(absentPercent, attendedPercent, authorizedAbsentPercent, dispensedPercent)).append("%;'>")
 	      .append("<span class='sr-only'>").append(absentPercent).append("%</span></div>");
 
 		target.append("</div>");
+	}
+	
+	private long max100Percent(long val, long... precedentVals) {
+		long total = 0l;
+		for(long precedentVal:precedentVals) {
+			total += precedentVal;
+		}
+		
+		long diff = 100 - val - total;
+		if(diff < 0l) {
+			return val + diff;
+		}
+		return val;
 	}
 }

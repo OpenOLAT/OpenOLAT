@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
@@ -126,7 +127,9 @@ public class CurriculumsSearchController extends BasicController {
 			withDescendants = false;
 			curriculumSecCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 		}
-		lecturesCtrl = new CurriculumElementLecturesController(ureq, getWindowControl(), panel, element, withDescendants, curriculumSecCallback);
+
+		Curriculum curriculum = element.getCurriculum();
+		lecturesCtrl = new CurriculumElementLecturesController(ureq, getWindowControl(), panel, curriculum, element, withDescendants, curriculumSecCallback);
 		listenTo(lecturesCtrl);
 		panel.pushController(element.getDisplayName(), lecturesCtrl);
 	}

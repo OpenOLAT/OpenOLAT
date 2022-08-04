@@ -24,8 +24,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.AbsenceNotice;
@@ -36,7 +39,13 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +65,15 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 	@Autowired
 	private AbsenceNoticeDAO absenceNoticeDao;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private LectureBlockRollCallDAO lectureBlockRollCallDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
+	@Autowired
+	private RepositoryEntryLectureConfigurationDAO repositoryEntryLectureConfigurationDao;
 	
 	@Test
 	public void createAndPersistRollCall() {
@@ -470,6 +487,58 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		
 		reloadedRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
 		Assert.assertNull(reloadedRollCall.getAbsenceNotice());
+	}
+	
+	/**
+	 * Very simple example with only one participant and one lecture block.
+	 */
+	@Test
+	public void getStatistics() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-lectures-1");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("author-lectures-1");
+		RepositoryEntry entryLecture = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		entryLecture.setEntryStatus(RepositoryEntryStatusEnum.published);
+		entryLecture = repositoryService.update(entryLecture);
+
+		RepositoryEntryLectureConfiguration lectureConfig = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture);
+		lectureConfig.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig);
+		dbInstance.commitAndCloseSession();
+		
+		repositoryEntryRelationDao.addRole(user, entryLecture, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(author, entryLecture, GroupRoles.owner.name());
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entryLecture);
+		lectureBlock.setStartDate(DateUtils.addHours(new Date(), -2));
+		lectureBlock.setEndDate(DateUtils.addHours(new Date(), -1));
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock.setEffectiveLecturesNumber(4);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlock.setStatus(LectureBlockStatus.done);
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		
+		lectureParticipantSummaryDao.createSummary(entryLecture, user, DateUtils.addDays(new Date(), -2));
+		
+		Group entryGroup = repositoryEntryRelationDao.getDefaultGroup(entryLecture);
+		lectureBlockDao.addGroupToLectureBlock(lectureBlock, entryGroup);
+		
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, user,
+				null, null, null, null, null, Collections.emptyList());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rollCall);
+		
+		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+		params.setEntries(List.of(entryLecture));
+		List<LectureBlockIdentityStatistics> stats = lectureBlockRollCallDao.getStatistics(params, List.of(), author, false, false, false, false, true, 0.8d);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(1, stats.size());
+		
+		LectureBlockIdentityStatistics userStats = stats.get(0);
+		Assert.assertEquals(4l, userStats.getTotalAttendedLectures());
+		Assert.assertEquals(4l, userStats.getTotalEffectiveLectures());
+		Assert.assertEquals(4l, userStats.getTotalPersonalPlannedLectures());
 	}
 
 	private LectureBlock createMinimalLectureBlock(int numOfLectures) {

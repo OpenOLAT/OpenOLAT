@@ -67,10 +67,14 @@ public class ZoomRunController extends BasicController implements Activateable2 
     public ZoomRunController(UserRequest ureq, WindowControl wControl,
                              ZoomManager.ApplicationType zoomApplicationType,
                              RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
-                             boolean admin, boolean coach, boolean participant) {
+                             boolean admin, boolean coach, boolean participant, String clientId) {
         super(ureq, wControl);
 
-        this.zoomConfig = zoomManager.getConfig(entry, subIdent, businessGroup);
+        zoomConfig = zoomManager.getConfig(entry, subIdent, businessGroup);
+        if (zoomConfig == null && clientId != null) {
+            zoomManager.initializeConfig(entry, subIdent, businessGroup, zoomApplicationType, clientId, getIdentity().getUser());
+            zoomConfig = zoomManager.getConfig(entry, subIdent, businessGroup);
+        }
 
         if (zoomConfig == null) {
             String title = translate("zoom.config.missing.error.title");

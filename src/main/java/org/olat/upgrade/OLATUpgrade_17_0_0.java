@@ -508,11 +508,11 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private void migrateQmGeneratorList(QualityGenerator generator) {
 		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 		List<CurriculumElementRef> whiteListRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
-		List<RepositoryEntry> whiteListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(whiteListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
+		List<RepositoryEntry> whiteListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(null, whiteListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
 		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, whiteListEntries);
 		
 		List<CurriculumElementRef> blackListRefs = CurriculumElementBlackListController.getCurriculumElementRefs(configs);
-		List<RepositoryEntry> blackListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(blackListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
+		List<RepositoryEntry> blackListEntries = curriculumRepositoryEntryRelationDAO.getRepositoryEntries(null, blackListRefs, RepositoryEntryStatusEnum.values(), false, null, null);
 		RepositoryEntryBlackListController.setRepositoryEntryRefs(configs, blackListEntries);
 	}
 	

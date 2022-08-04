@@ -521,7 +521,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-group", "Add group REST", "", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("add-group", "Add group REST", "", false, defOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group",
 				"Add element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -559,7 +559,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-groups", "Add groups REST", "", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("add-groups", "Add groups REST", "", false, defOrganisation);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement("add-group-1",
 				"Add element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -617,7 +617,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-groups-but-notall", "Add groups REST", "", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("add-groups-but-notall", "Add groups REST", "", false, defOrganisation);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement("add-group-1",
 				"Add element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -700,7 +700,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-group-serveral", "Add several times group REST", "", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("add-group-serveral", "Add several times group REST", "", false, defOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group",
 				"Add several times element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -742,7 +742,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("rm-group", "Remove group REST", "", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("rm-group", "Remove group REST", "", false, defOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("rm-group",
 				"Remove element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,

@@ -60,10 +60,12 @@ public interface CurriculumService {
 	 * @param identifier The identifier
 	 * @param displayName The name
 	 * @param description The description
+	 * @param lecturesEnabled Enable the calculation of absence quota
 	 * @param organisation The organisation
 	 * @return A persisted curriculum
 	 */
-	public Curriculum createCurriculum(String identifier, String displayName, String description, Organisation organisation);
+	public Curriculum createCurriculum(String identifier, String displayName, String description,
+			boolean lecturesEnabled, Organisation organisation);
 	
 	public Curriculum getCurriculum(CurriculumRef ref);
 	
@@ -455,13 +457,22 @@ public interface CurriculumService {
 	
 	/**
 	 * The all list of repository entries hold by the specified curriculum element and
-	 * its descendants elements, reduced to the
+	 * its descendants elements.
 	 * 
 	 * @param element The curriculum element
 	 * @param identity Specify the identity to check the permissions of the repository entries
 	 * @return A list of repository entries with lectures enabled
 	 */
 	public List<RepositoryEntry> getRepositoryEntriesWithLectures(CurriculumElement element, Identity identity, boolean withDescendants);
+	
+	/**
+	 * The list of repository entries hold by the specified curriculum.
+	 * 
+	 * @param curriculum The curriculum
+	 * @param identity Specify the identity to check the permissions of the repository entries
+	 * @return A list of repository entries with lectures enabled
+	 */
+	public List<RepositoryEntry> getRepositoryEntriesWithLectures(Curriculum curriculum, Identity identity);
 	
 	/**
 	 * Check if the repository entry is already in relation with the specified

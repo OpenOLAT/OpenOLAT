@@ -44,22 +44,30 @@ public class RateWarningCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		
 		if(cellValue instanceof LectureBlockStatistics) {
-			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
-			if(stats.isCalculateRate() && stats.getTotalPersonalPlannedLectures() > 0l &&
-					(stats.getTotalAbsentLectures() > 0l || stats.getTotalAttendedLectures() > 0l
-							|| stats.getTotalAuthorizedAbsentLectures() > 0l || stats.getTotalDispensationLectures() > 0l)) {
-				double attendanceRate = stats.getAttendanceRate();
-				double requiredRate = stats.getRequiredRate();
-				
-				if(requiredRate > attendanceRate) {
-					String title = translator.translate("rate.error.title");
-					target.append("<i class='o_icon o_icon-lg o_icon_error' title='").append(title).append("'> </i>");
-				} else if(attendanceRate - requiredRate < 0.05) {// less than 5%
-					String title = translator.translate("rate.warning.title");
-					target.append("<i class='o_icon o_icon-lg o_icon_warning' title='").append(title).append("'> </i>");	
-				}
+			render(target, (LectureBlockStatistics)cellValue);
+		}
+	}
+
+	public String render(LectureBlockStatistics stats) {
+		StringOutput target = new StringOutput(256);
+		render(target, stats);
+		return target.toString();
+	}
+	
+	public void render(StringOutput target, LectureBlockStatistics stats) {
+		if(stats.isCalculateRate() && stats.getTotalPersonalPlannedLectures() > 0l &&
+				(stats.getTotalAbsentLectures() > 0l || stats.getTotalAttendedLectures() > 0l
+						|| stats.getTotalAuthorizedAbsentLectures() > 0l || stats.getTotalDispensationLectures() > 0l)) {
+			double attendanceRate = stats.getAttendanceRate();
+			double requiredRate = stats.getRequiredRate();
+			
+			if(requiredRate > attendanceRate) {
+				String title = translator.translate("rate.error.title");
+				target.append("<i class='o_icon o_icon-lg o_icon_error' title='").append(title).append("'> </i>");
+			} else if(attendanceRate - requiredRate < 0.05) {// less than 5%
+				String title = translator.translate("rate.warning.title");
+				target.append("<i class='o_icon o_icon-lg o_icon_warning' title='").append(title).append("'> </i>");	
 			}
 		}
 	}

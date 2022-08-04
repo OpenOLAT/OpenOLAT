@@ -781,7 +781,9 @@ public class LectureBlockRollCallDAO {
 		  .append(" where config.lectureEnabled=true and membership.role='").append(GroupRoles.participant.name()).append("'");
 	
 		// check access permission
-		appendCheckAccess(sb);
+		if(!params.isParticipant(identity)) {
+			appendCheckAccess(sb);
+		}
 
 		if(params.getLifecycle() != null) {
 			sb.append(" and re.lifecycle.key=:lifecycleKey");
@@ -839,8 +841,10 @@ public class LectureBlockRollCallDAO {
 		appendUsersStatisticsSearchParams(params, queryParams, userPropertyHandlers, sb);
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey());
+				.createQuery(sb.toString(), Object[].class);
+		if(!params.isParticipant(identity)) {
+			rawQuery.setParameter("identityKey", identity.getKey());
+		}
 		if(curriculumKey != null) {
 			rawQuery.setParameter("curriculumKey", curriculumKey);
 		}
@@ -1001,6 +1005,15 @@ public class LectureBlockRollCallDAO {
 			sb.append("))");
 			
 			queryParams.put("login", login);
+		}
+		
+		if(params.hasParticipants()) {
+			sb.append(" and ident.key in (:participantKeys)");
+			
+			List<Long> participantKeys = params.getParticipants().stream()
+					.map(IdentityRef::getKey)
+					.collect(Collectors.toList());
+			queryParams.put("participantKeys", participantKeys);
 		}
 		
 		if(params.getUserProperties() != null && params.getUserProperties().size() > 0) {

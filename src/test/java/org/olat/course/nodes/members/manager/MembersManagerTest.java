@@ -94,7 +94,7 @@ public class MembersManagerTest extends OlatTestCase {
 		
 	    // add curriculum
 	    Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("Curriculum-elements", "Members Curriculum", "A curriculum for members", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("Curriculum-elements", "Members Curriculum", "A curriculum for members", false, defOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -222,7 +222,7 @@ public class MembersManagerTest extends OlatTestCase {
 		
 	    // add curriculum
 	    Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("Curriculum-elements", "Members Curriculum", "A curriculum for members", defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("Curriculum-elements", "Members Curriculum", "A curriculum for members", false, defOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

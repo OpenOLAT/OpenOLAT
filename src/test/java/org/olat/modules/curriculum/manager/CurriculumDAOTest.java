@@ -71,7 +71,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	@Test
 	public void createCurriculum() {
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-1", "", null, null);
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-1", "Curriculum 1", "Short desc.", organisation);
+		Curriculum curriculum = curriculumDao.createAndPersist("CUR-1", "Curriculum 1", "Short desc.", false, organisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(curriculum);
 		Assert.assertNotNull(curriculum.getKey());
@@ -86,7 +86,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	@Test
 	public void loadByKey() {
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-2", "", null, null);
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-2", "Curriculum 2", "Short desc.", organisation);
+		Curriculum curriculum = curriculumDao.createAndPersist("CUR-2", "Curriculum 2", "Short desc.", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		Curriculum reloadedCurriculum = curriculumDao.loadByKey(curriculum.getKey());
@@ -103,9 +103,9 @@ public class CurriculumDAOTest extends OlatTestCase {
 	@Test
 	public void loadByKeys() {
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-2.1", "", null, null);
-		Curriculum curriculum1 = curriculumDao.createAndPersist("CUR-2.1.1", "Curriculum 2.1.1", "Short desc.", organisation);
-		Curriculum curriculum2 = curriculumDao.createAndPersist("CUR-2.1.2", "Curriculum 2.1.2", "Short desc.", organisation);
-		Curriculum curriculum3 = curriculumDao.createAndPersist("CUR-2.1.3", "Curriculum 2.1.3", "Short desc.", organisation);
+		Curriculum curriculum1 = curriculumDao.createAndPersist("CUR-2.1.1", "Curriculum 2.1.1", "Short desc.", false, organisation);
+		Curriculum curriculum2 = curriculumDao.createAndPersist("CUR-2.1.2", "Curriculum 2.1.2", "Short desc.", false, organisation);
+		Curriculum curriculum3 = curriculumDao.createAndPersist("CUR-2.1.3", "Curriculum 2.1.3", "Short desc.", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		List<Curriculum> curriculums = curriculumDao.loadByKeys(Arrays.asList(curriculum1, curriculum2));
@@ -117,7 +117,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	
 	@Test
 	public void search_all() {
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-3", "Curriculum 3", "Short desc.", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("CUR-3", "Curriculum 3", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
@@ -130,7 +130,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	@Test
 	public void search_org() {
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-4", "", null, null);
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-4", "Curriculum 4", "Short desc.", organisation);
+		Curriculum curriculum = curriculumDao.createAndPersist("CUR-4", "Curriculum 4", "Short desc.", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
@@ -151,7 +151,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void search_searchString() {
 		String identifier = UUID.randomUUID().toString();
 		String displayName = UUID.randomUUID().toString();
-		Curriculum curriculum = curriculumDao.createAndPersist(identifier, displayName, "Short desc.", null);
+		Curriculum curriculum = curriculumDao.createAndPersist(identifier, displayName, "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		
 		// search something which doesn't exists
@@ -181,7 +181,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void search_manager() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-1");
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", false, null);
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
 		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
@@ -205,7 +205,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void searchWithInfos_manager() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-1");
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", false, null);
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
 		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
@@ -229,7 +229,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-1");
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-course-owner-1");
-		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for owners", "Owners", "Short desc.", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for owners", "Owners", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -258,7 +258,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void searchWithInfos_elementOwner() {
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-course-owner-1");
-		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for owners", "Owners", "Short desc.", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for owners", "Owners", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -281,7 +281,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void getMembersIdentity() {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
@@ -302,7 +302,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void getMyCurriculums() {
 		// add a curriculum with a coach in an element
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-MY-1", "My Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-MY-1", "My Curriculum 1", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -322,7 +322,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		// add a curriculum with a coach in an element
 		Identity idWithCurriculum = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-for-fun-1");
 		Identity idWithout = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-for-fun-2");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-FUN-1", "My funny curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-FUN-1", "My funny curriculum 1", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -341,7 +341,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void hasCurriculumRole() {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
@@ -357,7 +357,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void hasOwnerRoleInCurriculum() {
 		// make a curriculum with an element with a course
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -374,7 +374,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	public void hasRoleExpanded() {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
@@ -391,7 +391,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-cur-manager-1");
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		// is curriculum manager

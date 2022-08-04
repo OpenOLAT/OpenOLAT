@@ -97,7 +97,7 @@ public class CurriculumElementHandlerTest extends OlatTestCase {
 	public void shouldMergeCurriculumElemenCurriculumDisplayName() {
 		String value = random();
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum(random(), value, null, organisation);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), value, null, false, organisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -136,7 +136,7 @@ public class CurriculumElementHandlerTest extends OlatTestCase {
 	
 	private CurriculumElement createCurriculumElement() {
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		return curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null,
 				null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled,
 				CurriculumLearningProgress.disabled, curriculum);

@@ -81,6 +81,9 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	@Column(name="c_degree", nullable=true, insertable=true, updatable=true)
 	private String degree;
 	
+	@Column(name="c_lectures", nullable=false, insertable=true, updatable=true)
+	private boolean lecturesEnabled;
+	
 	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
@@ -184,6 +187,16 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+	
+	@Override
+	public boolean isLecturesEnabled() {
+		return lecturesEnabled;
+	}
+
+	@Override
+	public void setLecturesEnabled(boolean lecturesEnabled) {
+		this.lecturesEnabled = lecturesEnabled;
 	}
 
 	public String getManagedFlagsString() {

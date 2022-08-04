@@ -405,6 +405,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}			
 			String oldNews = oldTools.lookupNews();
 			newTools.saveNews(oldNews);
+			newTools.saveZoomClientId(oldTools.getZoomClientId());
 		}
 		// 3. copy member visibility
 		if (copyMemberVisibility) {

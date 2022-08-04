@@ -1077,7 +1077,7 @@ public class RepositoryEntryWebService {
 		return updateMetadata(metadataVo, request);
 	}
 	
-	public Response updateMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+	private Response updateMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}

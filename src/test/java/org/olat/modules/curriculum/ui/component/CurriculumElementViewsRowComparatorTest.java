@@ -67,7 +67,7 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	
 	@Test
 	public void testCurriculumElementActiveInactive() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -109,7 +109,7 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	public void testRepositoryEntryActiveInactive() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
 
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -153,7 +153,7 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	public void testRepositoryEntryClosed_underParent() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
 
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -209,7 +209,7 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	public void testActiveInactiveClosedOrNot() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
 
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

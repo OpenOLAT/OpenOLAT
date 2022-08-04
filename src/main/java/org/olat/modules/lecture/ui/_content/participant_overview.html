@@ -6,6 +6,7 @@
 	<div class="o_button_group o_button_group_right">
 	#if($r.isNotNull($withPrint) && $withPrint)
 <script>
+"use strict";
 function print() {
 	try {
 		var ww = window.open("$r.commandURI("print")", "$winid", "height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
@@ -25,6 +26,9 @@ function print() {
 #end
 #if($r.isNotEmpty($aggregatedElementsTitle))
 	<h3><i class="o_icon o_icon-fw o_icon_curriculum_element"> </i> $aggregatedElementsTitle</h3>
+#end
+#if($r.visible("curriculumLectures"))
+	$r.render("curriculumLectures")
 #end
 #foreach($aggregatedElement in $aggregatedElements)
 	#if($r.visible($aggregatedElement))

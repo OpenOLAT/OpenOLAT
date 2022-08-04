@@ -72,7 +72,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	@Test
 	public void addCurriculumManagers() {
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
@@ -91,7 +91,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void getCurriculumElements() {
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-2", "Curriculum 2", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-2", "Curriculum 2", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -127,7 +127,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void getCurriculumElementsMore() {
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-2b", "Curriculum 2b", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-2b", "Curriculum 2b", "Curriculum", false, null);
 		CurriculumElement rootElement = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -165,7 +165,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void deleteCurriculum() {
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -197,7 +197,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void deleteCurriculumInQuality() {
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -235,7 +235,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void deleteCurriculumInQualityWithSubElement() {
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel-10", "Element for nothing",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

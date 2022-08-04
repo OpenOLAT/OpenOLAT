@@ -43,8 +43,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -57,6 +59,14 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.restapi.LectureBlockStatisticsVO;
+import org.olat.modules.lecture.ui.coach.LecturesSearchFormController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +93,11 @@ public class CurriculumsWebService {
 	private static final String VERSION = "1.0";
 	
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -117,18 +131,18 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculums(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		List<OrganisationRef> organisations = roles.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
 		if(organisations.isEmpty()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		params.setOrganisations(organisations);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
@@ -154,14 +168,14 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculum(CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Curriculum savedCurriculum = saveCurriculum(curriculum, httpRequest);
@@ -183,14 +197,14 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculum(CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Curriculum savedCurriculum = saveCurriculum(curriculum, httpRequest);
@@ -213,13 +227,13 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculum(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		if(!isManager(curriculum, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		CurriculumVO curriculumVo = CurriculumVO.valueOf(curriculum);
 		return Response.ok(curriculumVo).build();
@@ -233,7 +247,7 @@ public class CurriculumsWebService {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 		if(!isManager(curriculum, httpRequest)) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		return new CurriculumElementsWebService(curriculum);
 	}
@@ -257,14 +271,14 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculum(@PathParam("curriculumKey") Long curriculumKey, CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		if(curriculum.getKey() == null) {
@@ -289,11 +303,11 @@ public class CurriculumsWebService {
 
 		if(curriculum.getKey() == null) {
 			curriculumToSave = curriculumService.createCurriculum(curriculum.getIdentifier(), curriculum.getDisplayName(),
-					curriculum.getDescription(), organisation);
+					curriculum.getDescription(), false, organisation);
 		} else {
 			curriculumToSave = curriculumService.getCurriculum(new CurriculumRefImpl(curriculum.getKey()));
 			if(!isManager(curriculumToSave, httpRequest)) {
-				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+				throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 			}
 			
 			curriculumToSave.setDisplayName(curriculum.getDisplayName());
@@ -319,7 +333,7 @@ public class CurriculumsWebService {
 			}
 		}
 
-		throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+		throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 	}
 	
 	@GET
@@ -332,13 +346,13 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class)))
 				} 
 	)
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	public Response searchCurriculumElement(@QueryParam("externalId") String externalId, @QueryParam("identifier") String identifier,
 			@QueryParam("key") Long key, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<CurriculumElement> elements = curriculumService.searchCurriculumElements(externalId, identifier, key);
@@ -365,7 +379,7 @@ public class CurriculumsWebService {
 					@Content(mediaType = "application/json", array  = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 					@Content(mediaType = "application/xml", array  = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	public Response getCurriculumManagers(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
 		return getMembers(curriculumKey, CurriculumRoles.curriculumowner, httpRequest);
@@ -377,7 +391,7 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(curriculum, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Identity> members = curriculumService.getMembersIdentity(curriculum, role);
@@ -400,7 +414,7 @@ public class CurriculumsWebService {
 	@Operation(summary = "Make the specified user a curriculum manager of the curriculum",
 		description = "Make the specified user a curriculum manager of the curriculum")
 	@ApiResponse(responseCode = "200", description = "The membership was added")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
 	public Response putCurriculumOwner(@PathParam("curriculumKey") Long curriculumKey,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
@@ -413,7 +427,7 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(curriculum, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -436,7 +450,7 @@ public class CurriculumsWebService {
 	@Operation(summary = "Remove the curriculum manager membership",
 		description = "Remove the curriculum manager membership of the identity from the specified curriculum")
 	@ApiResponse(responseCode = "200", description = "The membership was removed")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
 	public Response deleteCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
@@ -449,7 +463,7 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(curriculum, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
@@ -459,6 +473,83 @@ public class CurriculumsWebService {
 		
 		curriculumService.removeMember(curriculum, identity, role);
 		return Response.ok().build();
+	}
+	
+	@GET
+	@Operation(summary = "Return statistics about absences of a specific curriculun",
+		description = "Return the statistics about absences of a specific curriculum")
+	@ApiResponse(responseCode = "200", description = "Statistics object",
+		content = {
+				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockIdentityStatistics.class))),
+				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockIdentityStatistics.class)))
+			})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Curriculum or user data not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Path("{curriculumKey}/lectures/")
+	public Response getLecturesStatistics(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(curriculum == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isManager(curriculum, httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		Identity manager = getIdentity(httpRequest);
+		List<LectureBlockIdentityStatistics> statistics = getStatisticsBy(curriculum, manager, null);
+		LectureBlockStatisticsVO[] statisticsVoes = new LectureBlockStatisticsVO[statistics.size()];
+		for(int i=statisticsVoes.length; i-->0; ) {
+			statisticsVoes[i] = LectureBlockStatisticsVO.valueOf(statistics.get(i));
+		}
+		return Response.ok(statisticsVoes).build();
+	}
+	
+	@GET
+	@Operation(summary = "Return statistics about absences of a specific user",
+		description = "Return the statistics about absences of a specific user in a curriculum")
+	@ApiResponse(responseCode = "200", description = "Statistics object",
+		content = {
+				@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockIdentityStatistics.class)),
+				@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockIdentityStatistics.class))
+			})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Curriculum or user data not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Path("{curriculumKey}/lectures/{identityKey}")
+	public Response getParticipantLecturesStatistics(@PathParam("curriculumKey") Long curriculumKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(curriculum == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isManager(curriculum, httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		Identity manager = getIdentity(httpRequest);
+		List<LectureBlockIdentityStatistics> statistics = getStatisticsBy(curriculum, manager, new IdentityRefImpl(identityKey));
+		for(LectureBlockIdentityStatistics stats:statistics) {
+			if(stats.getIdentityKey().equals(identityKey)) {
+				LectureBlockStatisticsVO statsVo = LectureBlockStatisticsVO.valueOf(stats);
+				return Response.ok(statsVo).build();
+			}
+		}
+		return Response.serverError().status(Status.NOT_FOUND).build();
+	}
+	
+	private List<LectureBlockIdentityStatistics> getStatisticsBy(Curriculum curriculum, Identity identity, IdentityRef participantRef) {
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(LecturesSearchFormController.PROPS_IDENTIFIER, false);
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntriesWithLectures(curriculum, null);
+		
+		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+		params.setEntries(entries);
+		if(participantRef != null) {
+			params.setParticipants(List.of(participantRef));
+		}
+		List<LectureBlockIdentityStatistics> rawStatistics = lectureService
+				.getLecturesStatistics(params, userPropertyHandlers, identity);
+		return lectureService.groupByIdentity(rawStatistics);
 	}
 	
 	private boolean isManager(Curriculum curriculum, HttpServletRequest httpRequest) {

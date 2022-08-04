@@ -65,7 +65,7 @@ public class CurriculumDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public Curriculum createAndPersist(String identifier, String displayName, String description, Organisation organisation) {
+	public Curriculum createAndPersist(String identifier, String displayName, String description, boolean lecturesEnabled, Organisation organisation) {
 		CurriculumImpl curriculum = new CurriculumImpl();
 		curriculum.setCreationDate(new Date());
 		curriculum.setLastModified(curriculum.getCreationDate());
@@ -74,6 +74,7 @@ public class CurriculumDAO {
 		curriculum.setDisplayName(displayName);
 		curriculum.setIdentifier(identifier);
 		curriculum.setDescription(description);
+		curriculum.setLecturesEnabled(lecturesEnabled);
 		curriculum.setOrganisation(organisation);
 		dbInstance.getCurrentEntityManager().persist(curriculum);
 		return curriculum;

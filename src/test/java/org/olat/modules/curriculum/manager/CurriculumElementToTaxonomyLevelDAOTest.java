@@ -65,7 +65,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createRelation() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-1", "Curriculum for relation to taxonomy", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-1", "Curriculum for relation to taxonomy", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -79,7 +79,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createAndGetRelation() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-2", "Curriculum for relation to taxonomy", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-2", "Curriculum for relation to taxonomy", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-2", "2. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -100,7 +100,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getTaxonomyLevels() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-3", "Curriculum for relation to taxonomy", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-3", "Curriculum for relation to taxonomy", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-3", "3. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -118,7 +118,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getCurriculumElements() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-4", "Curriculum for relation to taxonomy", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-4", "Curriculum for relation to taxonomy", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-4", "4. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

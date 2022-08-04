@@ -70,9 +70,9 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntries(List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
+	public List<RepositoryEntry> getRepositoryEntries(CurriculumRef curriculum, List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
 			boolean onlyWithLectures, IdentityRef identity, List<String> roles) {
-		if(elements == null || elements.isEmpty()) return new ArrayList<>();
+		if((elements == null || elements.isEmpty()) && curriculum == null) return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select distinct v from repositoryentry as v")
@@ -81,7 +81,14 @@ public class CurriculumRepositoryEntryRelationDAO {
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as rel")
 		  .append(" inner join curriculumelement as el on (el.group.key=rel.group.key)")
-		  .append(" where el.key in (:elementKeys) and v.status ").in(status);
+		  .append(" where v.status ").in(status);
+		if(elements != null && !elements.isEmpty()) {
+			sb.append(" and el.key in (:elementKeys)");
+		}
+		if(curriculum != null) {
+			sb.append(" and el.curriculum.key=:curriculumKey");
+		}
+		
 		if(onlyWithLectures) {
 			sb.append(" and exists (select lectureConfig.key from lectureentryconfig as lectureConfig")
 			  .append("  where lectureConfig.entry.key=v.key and lectureConfig.lectureEnabled=true")
@@ -94,11 +101,16 @@ public class CurriculumRepositoryEntryRelationDAO {
 			  .append(" )");
 		}
 		
-		List<Long> elementKeys = elements
-				.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), RepositoryEntry.class)
-			.setParameter("elementKeys", elementKeys);
+			.createQuery(sb.toString(), RepositoryEntry.class);
+		if(elements != null && !elements.isEmpty()) {
+			List<Long> elementKeys = elements
+					.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
+			query.setParameter("elementKeys", elementKeys);
+		}
+		if(curriculum != null) {
+			query.setParameter("curriculumKey", curriculum.getKey());
+		}
 		if(identity != null && roles != null && !roles.isEmpty()) {
 			query.setParameter("identityKey", identity.getKey());
 			query.setParameter("roles", roles);

@@ -56,6 +56,10 @@ public interface Curriculum extends CreateInfo, ModifiedInfo, CurriculumRef {
 	
 	public void setExternalId(String externalId);
 	
+	public boolean isLecturesEnabled();
+	
+	public void setLecturesEnabled(boolean enabled);
+	
 	public Organisation getOrganisation();
 	
 	public void setOrganisation(Organisation organisation);

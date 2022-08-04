@@ -109,9 +109,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		Organisation curriculumOrganisation2 = organisationService.createOrganisation("Org-31", UUID.randomUUID().toString(), "",
 				curriculumOrganisation2Parent, null);
 		
-		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "",
+		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "", false,
 				curriculumOrganisation1);
-		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 2", "",
+		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 2", "", false,
 				curriculumOrganisation2);
 
 		CurriculumElement curriculumElementParent = curriculumService.createCurriculumElement(
@@ -199,7 +199,7 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
 		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
 		
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
 				organisationExecutorAndCurriculum);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
 				"Element", CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -233,7 +233,7 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
 		Organisation organisationCurriculumOnly = qualityTestHelper.createOrganisation();
 		
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
 				organisationCurriculumOnly);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
 				"Element", CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -268,7 +268,7 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
 		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager);
 		
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
 				organisationExecutorAndCurriculumButManager);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
 				"Element", CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -291,7 +291,7 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 	
 	@Test
 	public void shouldNotDeleteContextOfOtherRoles() {
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", null);
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false, null);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
 				"Curriculum", CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

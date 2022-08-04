@@ -153,7 +153,7 @@ public class ExampleData extends OlatTestCase {
 			return curriculums.get(0);
 		}
 		
-		return curriculumService.createCurriculum(identifier, displayName, null, input.getOrganisation());
+		return curriculumService.createCurriculum(identifier, displayName, null, false, input.getOrganisation());
 	}
 	
 	private CurriculumElement createIfNotExists(String prefix, CurriculumElementInput input) {

@@ -107,6 +107,10 @@ public class CurriculumRow implements CurriculumRef {
 	public boolean isActive() {
 		return active;
 	}
+	
+	public boolean isLecturesEnabled() {
+		return curriculum.isLecturesEnabled();
+	}
 
 	@Override
 	public int hashCode() {
