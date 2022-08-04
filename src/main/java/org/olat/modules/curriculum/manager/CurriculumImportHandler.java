@@ -174,7 +174,7 @@ public class CurriculumImportHandler {
 
 	private void importCurriculumStructure(Curriculum archiveCurriculum, Organisation organisation, Map<Long,CurriculumElement> archiveKeyToCurriculumElements) {
 		Curriculum curriculum = curriculumService
-				.createCurriculum(archiveCurriculum.getIdentifier(), archiveCurriculum.getDisplayName(), archiveCurriculum.getDescription(), organisation);
+				.createCurriculum(archiveCurriculum.getIdentifier(), archiveCurriculum.getDisplayName(), archiveCurriculum.getDescription(), false, organisation);
 		curriculum.setDegree(archiveCurriculum.getDegree());
 		curriculum.setStatus(archiveCurriculum.getStatus());
 		curriculum = curriculumService.updateCurriculum(curriculum);

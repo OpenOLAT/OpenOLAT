@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -45,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.lecture.LectureModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,10 +61,13 @@ public class EditCurriculumController extends FormBasicController {
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
 	private SingleSelection organisationEl;
+	private SingleSelection lecturesEnabledEl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -114,6 +119,18 @@ public class EditCurriculumController extends FormBasicController {
 		displayNameEl.setMandatory(true);
 		
 		initFormOrganisations(formLayout, ureq.getUserSession());
+		
+		SelectionValues enabledKeysValues = new SelectionValues();
+		enabledKeysValues.add(SelectionValues.entry("on", translate("type.lectures.enabled.enabled")));
+		enabledKeysValues.add(SelectionValues.entry("off", translate("type.lectures.enabled.disabled")));
+		lecturesEnabledEl = uifactory.addRadiosHorizontal("type.lectures.enabled", formLayout, enabledKeysValues.keys(), enabledKeysValues.values());
+		lecturesEnabledEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.lectures) && secCallback.canEditCurriculum());
+		lecturesEnabledEl.setVisible(lectureModule.isEnabled());
+		if(curriculum != null && curriculum.isLecturesEnabled()) {
+			lecturesEnabledEl.select("on", true);
+		} else {
+			lecturesEnabledEl.select("off", true);
+		}
 		
 		String description = curriculum == null ? "" : curriculum.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,
@@ -204,15 +221,19 @@ public class EditCurriculumController extends FormBasicController {
 			organisation = organisationService.getDefaultOrganisation();
 		}
 		
+		boolean lecturesEnabled = lecturesEnabledEl.isOneSelected() && "on".equals(lecturesEnabledEl.getSelectedKey());
+		
 		if(curriculum == null) {
 			curriculum = curriculumService
-					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), organisation);
+					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(),
+							lecturesEnabled, organisation);
 			curriculumService.addMember(curriculum, getIdentity(), CurriculumRoles.curriculummanager);
 		} else {
 			curriculum = curriculumService.getCurriculum(curriculum);
 			curriculum.setIdentifier(identifierEl.getValue());
 			curriculum.setDisplayName(displayNameEl.getValue());
 			curriculum.setDescription(descriptionEl.getValue());
+			curriculum.setLecturesEnabled(lecturesEnabled);
 			curriculum.setOrganisation(organisation);
 			curriculum = curriculumService.updateCurriculum(curriculum);
 		}

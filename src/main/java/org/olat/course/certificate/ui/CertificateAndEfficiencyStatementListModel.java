@@ -21,6 +21,8 @@ package org.olat.course.certificate.ui;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -30,6 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 
 /**
  * 
@@ -45,6 +50,7 @@ public class CertificateAndEfficiencyStatementListModel
 	private static final Cols[] COLS = Cols.values();
 
 	private final Locale locale;
+	private Set<RepositoryEntryMyView> allEntriesViews;
 
 	public CertificateAndEfficiencyStatementListModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
@@ -127,6 +133,22 @@ public class CertificateAndEfficiencyStatementListModel
 	public boolean hasChildren(int row) {
 		CertificateAndEfficiencyStatementRow element = getObject(row);
 		return element.hasChildren();
+	}
+	
+	public List<RepositoryEntryRef> getRepositoryEntries() {
+		List<CertificateAndEfficiencyStatementRow> allRows = getAllRows();
+		return allRows.stream().filter(row -> row.getCourseRepoKey() != null)
+			.map(CertificateAndEfficiencyStatementRow::getCourseRepoKey)
+			.map(RepositoryEntryRefImpl::new).collect(Collectors.toList());
+	}
+
+	public List<RepositoryEntryRef> getNonFilteredRepositoryEntries() {
+		return allEntriesViews.stream().map(RepositoryEntryMyView::getKey)
+				.map(RepositoryEntryRefImpl::new).collect(Collectors.toList());
+	}
+
+	public void setNonFilteredRepositoryEntries(Set<RepositoryEntryMyView> allEntriesViews) {
+		this.allEntriesViews = allEntriesViews;
 	}
 
 	public enum Cols implements FlexiSortableColumnDef {

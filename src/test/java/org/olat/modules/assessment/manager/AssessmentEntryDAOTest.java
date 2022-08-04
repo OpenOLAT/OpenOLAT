@@ -902,7 +902,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), organisation);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, organisation);
 		CurriculumElement curEle1 = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -976,7 +976,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), organisation);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, organisation);
 		CurriculumElement curEle1 = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

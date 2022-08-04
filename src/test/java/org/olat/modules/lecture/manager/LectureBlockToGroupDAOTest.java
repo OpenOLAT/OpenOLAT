@@ -89,7 +89,7 @@ public class LectureBlockToGroupDAOTest extends OlatTestCase {
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		
 		String elementId = UUID.randomUUID().toString();
-		Curriculum curriculum = curriculumService.createCurriculum("Lecture group 1", "Curriculum with lecture 2", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lecture group 1", "Curriculum with lecture 2", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);

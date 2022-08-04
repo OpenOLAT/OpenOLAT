@@ -585,7 +585,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		lectureService.addTeacher(lectureBlock, teacher);
 		
 		String elementId = UUID.randomUUID().toString();
-		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
@@ -616,7 +616,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertNotNull(lectureBlock);
 		
 		String elementId = UUID.randomUUID().toString();
-		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-2", "Curriculum with lectures 2", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-2", "Curriculum with lectures 2", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
@@ -642,7 +642,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		String elementId = UUID.randomUUID().toString();
-		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
@@ -677,7 +677,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		String elementId = UUID.randomUUID().toString();
 		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture", "cur-lecture", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", curOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", false, curOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1060,7 +1060,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		String elementId = UUID.randomUUID().toString();
 		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-3", "Curriculum with lectures 5", "Curriculum", curOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-3", "Curriculum with lectures 5", "Curriculum", false, curOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation with master coaches",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1089,7 +1089,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		String elementId = UUID.randomUUID().toString();
 		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-1", "Curriculum with lectures 4", "Curriculum", curOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-1", "Curriculum with lectures 4", "Curriculum", false, curOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation with master coaches",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);

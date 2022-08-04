@@ -19,5 +19,12 @@
 		#end
 	 </div>
 	#end
+	
+	#if($r.visible("lectures"))
+	 <div class="o_curriculum_lectures">
+		$r.render("lectures")
+	 </div>
+	#end
+	
 	$r.render("certificates")
 </fieldset>

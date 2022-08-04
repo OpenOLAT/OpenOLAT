@@ -253,7 +253,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	public void shouldFilterLectureBlockInfosByEducationalTypeExclusion() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
+		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, false, organisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

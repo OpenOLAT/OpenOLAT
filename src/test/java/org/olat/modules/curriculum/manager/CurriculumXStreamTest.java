@@ -52,7 +52,7 @@ public class CurriculumXStreamTest extends OlatTestCase {
 	
 	@Test
 	public void toStream() {
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-XSTREAM-1", "My Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-XSTREAM-1", "My Curriculum 1", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

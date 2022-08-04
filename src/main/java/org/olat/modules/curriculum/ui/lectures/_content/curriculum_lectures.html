@@ -1,5 +1,10 @@
 <fieldset>
-	<legend>$r.translate("curriculum.element.title") "$r.escapeHtml($elementName) #if($r.isNotEmpty($elementIdentifier))<small class='text-muted'>$r.escapeHtml($elementIdentifier)</small>#end"</legend>
+	<legend>#if($r.isNotEmpty($elementName))
+		$r.translate("curriculum.element.title") "$r.escapeHtml($elementName) #if($r.isNotEmpty($elementIdentifier))<small class='text-muted'>$r.escapeHtml($elementIdentifier)</small>#end"
+	#else
+		$r.translate("curriculum.title") "$r.escapeHtml($curriculumName) #if($r.isNotEmpty($curriculumIdentifier))<small class='text-muted'>$r.escapeHtml($curriculumIdentifier)</small>#end"
+	#end</legend>
+	
 	<div class="o_block_bottom">
 		<div class="text-muted"><i class="o_icon o_icon-fw o_icon_curriculum_element"> </i>
 			$r.escapeHtml($curriculumName) #if($r.isNotEmpty($curriculumIdentifier))<small>$r.escapeHtml($curriculumIdentifier)</small>#end

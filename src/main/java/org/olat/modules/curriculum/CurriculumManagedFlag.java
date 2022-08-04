@@ -40,7 +40,8 @@ public enum CurriculumManagedFlag {
 	 description(all),
 	 externalId(all),
 	 delete(all),
-	 members(all);
+	 members(all),
+	 lectures(all);
 	
 	private CurriculumManagedFlag[] parents;
 	private static final Logger log = Tracing.createLoggerFor(CurriculumManagedFlag.class);

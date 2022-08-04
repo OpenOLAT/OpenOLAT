@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -45,6 +46,7 @@ public class LectureStatisticsSearchParameters {
 	private RepositoryEntryLifecycle lifecycle;
 	private List<OrganisationRef> organisations;
 	private List<RepositoryEntryRef> entries;
+	private List<IdentityRef> participants;
 	
 	private String curriculumSearchString;
 	
@@ -134,5 +136,24 @@ public class LectureStatisticsSearchParameters {
 
 	public void setCurriculumSearchString(String curriculumSearchString) {
 		this.curriculumSearchString = curriculumSearchString;
+	}
+	
+	public boolean hasParticipants() {
+		return participants != null && !participants.isEmpty();
+	}
+
+	public List<IdentityRef> getParticipants() {
+		return participants;
+	}
+
+	public void setParticipants(List<IdentityRef> participants) {
+		this.participants = participants;
+	}
+	
+	public boolean isParticipant(IdentityRef identity) {
+		if(identity == null) return false;
+		
+		return participants != null && participants.size() == 1
+				&& participants.get(0).getKey().equals(identity.getKey());
 	}
 }

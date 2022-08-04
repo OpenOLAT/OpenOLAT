@@ -60,7 +60,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 	public void getCurriculumMembers() {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
 		dbInstance.commitAndCloseSession();
@@ -77,7 +77,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElementMembers() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -96,7 +96,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElementMembersByLogin() {
 		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-5");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -125,7 +125,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-mastercoach-7");
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner-8");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-9");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-6", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-6", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-6", "6. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

@@ -3380,6 +3380,7 @@ create table o_cur_curriculum (
   c_managed_flags varchar(255),
   c_status varchar(32),
   c_degree varchar(255),
+  c_lectures bool default false not null,
   fk_group bigint not null,
   fk_organisation bigint,
   primary key (id)

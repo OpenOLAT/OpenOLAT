@@ -156,7 +156,7 @@ public class CurriculumElementsWebService {
 	public Response getCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, @Context HttpServletRequest httpRequest) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		CurriculumElementVO curriculumElementVo = CurriculumElementVO.valueOf(curriculumElement);
 		return Response.ok(curriculumElementVo).build();
@@ -347,7 +347,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!parentCurriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<CurriculumElementRef> orderedList = new ArrayList<>();
@@ -385,7 +385,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		List<CurriculumElement> entries = curriculumService.getCurriculumElements(curriculumElement);
 		CurriculumElementVO[] entriesVoes = new CurriculumElementVO[entries.size()];
@@ -419,7 +419,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
 		RepositoryEntryVO[] entriesVoes = new RepositoryEntryVO[entries.size()];
@@ -451,7 +451,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
@@ -488,7 +488,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
@@ -522,7 +522,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
 		if(entry == null) {
@@ -559,7 +559,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
 		if(entry == null) {
@@ -596,7 +596,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		SearchMemberParameters params = new SearchMemberParameters();
@@ -633,7 +633,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		if(role != null && !CurriculumRoles.isValueOf(role)) {
 			return Response.serverError().status(Status.CONFLICT).build();
@@ -669,7 +669,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(membership.getIdentityKey());
 		if(identity == null) {
@@ -705,7 +705,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -833,7 +833,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		List<Identity> members = curriculumService.getMembersIdentity(curriculumElement, role);
 		List<UserVO> voList = new ArrayList<>(members.size());
@@ -939,7 +939,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -1060,7 +1060,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		for(UserVO member:members) {
@@ -1173,7 +1173,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -1202,7 +1202,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		List<TaxonomyLevel> levels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(curriculumElement);
 		TaxonomyLevelVO[] voes = new TaxonomyLevelVO[levels.size()];
@@ -1230,7 +1230,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		List<TaxonomyLevel> levels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(curriculumElement);
 		for(TaxonomyLevel level:levels) {
@@ -1262,7 +1262,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
 		if(level == null) {

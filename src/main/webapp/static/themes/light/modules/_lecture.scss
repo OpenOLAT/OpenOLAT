@@ -99,4 +99,23 @@
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_right {
 	background-color: $alert-warning-bg !important;
 }
+
+.o_curriculum_lectures_statistics {
+	.table {
+		width: auto;
+		
+		.o_progress_statistics {
+			display: inline-block;
+			min-width: 300px;
+		}
+	}
+	ul {
+		padding-left: 1em; 
+	}
+
+	ul li {
+		display: inline-block;
+		padding-right: 2em; 
+	}
+}
 	

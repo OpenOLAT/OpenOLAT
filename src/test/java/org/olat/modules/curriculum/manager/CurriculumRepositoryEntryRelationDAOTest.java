@@ -65,7 +65,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRepositoryEntries() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -77,7 +77,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
+				.getRepositoryEntries(null, elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entry, entries.get(0));
@@ -85,7 +85,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRepositoryEntries_withLectures() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
@@ -102,7 +102,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, null, null);
+				.getRepositoryEntries(null, elements, RepositoryEntryStatusEnum.preparationToClosed(), true, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entryLecture, entries.get(0));
@@ -110,7 +110,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRepositoryEntries_withPermissions() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for checked relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for checked relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
 				"Element for checked relation", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -132,21 +132,21 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, author, roles);
+				.getRepositoryEntries(null, elements, RepositoryEntryStatusEnum.preparationToClosed(), true, author, roles);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entryLecture, entries.get(0));
 		
 		// check the second user without permission
 		List<RepositoryEntry> noEntries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, user, roles);
+				.getRepositoryEntries(null, elements, RepositoryEntryStatusEnum.preparationToClosed(), true, user, roles);
 		Assert.assertNotNull(noEntries);
 		Assert.assertTrue(noEntries.isEmpty());
 	}
 	
 	@Test
 	public void getCurriculumElements() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -164,7 +164,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getCurriculumElementsRepositoryEntryAnsUser() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

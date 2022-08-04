@@ -142,7 +142,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(assessedIdentity5, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(coach, group1, GroupRoles.coach.name());
 		
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), null);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

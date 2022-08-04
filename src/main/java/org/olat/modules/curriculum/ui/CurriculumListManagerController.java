@@ -59,7 +59,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -76,6 +78,8 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
+import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
+import org.olat.modules.lecture.LectureModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -100,12 +104,15 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private EditCurriculumOverviewController editCurriculumCtrl;
 	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private CurriculumElementLecturesController lecturesCtrl;
 	
 	private int counter = 0;
 	private final Roles roles;
 	private final boolean isMultiOrganisations;
 	private final CurriculumSecurityCallback secCallback;
 
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -150,6 +157,14 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(isMultiOrganisations, CurriculumCols.organisation));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements));
+		if(lectureModule.isEnabled()) {
+			DefaultFlexiColumnModel lecturesCol = new DefaultFlexiColumnModel("table.header.lectures", CurriculumCols.lectures.ordinal(), "lectures",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.lectures"), "lectures", null, "o_icon o_icon_lecture o_icon-fw"),
+							null));
+			lecturesCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(lecturesCol);
+		}
+		
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", CurriculumCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"),
 						new StaticFlexiCellRenderer(translate("select"), "edit")));
@@ -319,12 +334,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
-					CurriculumRow row = tableModel.getObject(se.getIndex());
-					doSelectCurriculum(ureq, row, null);
+					doSelectCurriculum(ureq, tableModel.getObject(se.getIndex()), null);
 				} else if("edit".equals(cmd)) {
-					CurriculumRow row = tableModel.getObject(se.getIndex());
-					doEditCurriculum(ureq, row);
-				}
+					doEditCurriculum(ureq, tableModel.getObject(se.getIndex()));
+				} else if("lectures".equals(cmd)) {
+					doOpenLectures(ureq, tableModel.getObject(se.getIndex()));
+				} 
 			} else if(event instanceof FlexiTableSearchEvent) {
 				doSearch((FlexiTableSearchEvent)event);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
@@ -335,7 +350,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				doOpenTools(ureq, (CurriculumRow)link.getUserObject(), link);
-			} 
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -389,7 +404,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			deleteCurriculumCtrl = new ConfirmCurriculumDeleteController(ureq, getWindowControl(), row);
 			listenTo(deleteCurriculumCtrl);
 			
-			String title = translate("delete.curriculum.title", new String[] { StringHelper.escapeHtml(row.getDisplayName()) });
+			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(row.getDisplayName()));
 			cmc = new CloseableModalController(getWindowControl(), "close", deleteCurriculumCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
@@ -420,6 +435,19 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			toolbarPanel.pushController(row.getDisplayName(), composerCtrl);
 			composerCtrl.activate(ureq, entries, null);
 		}
+	}
+	
+	private void doOpenLectures(UserRequest ureq, CurriculumRow row) {
+		removeAsListenerAndDispose(lecturesCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		Curriculum curriculum = curriculumService.getCurriculum(row);
+		lecturesCtrl = new CurriculumElementLecturesController(ureq, bwControl, toolbarPanel, curriculum, null, true, secCallback);
+		listenTo(lecturesCtrl);
+		toolbarPanel.pushController(row.getDisplayName(), null, row);
+		toolbarPanel.pushController(translate("lectures"), lecturesCtrl);
+		
 	}
 	
 	private void doOpenTools(UserRequest ureq, CurriculumRow row, FormLink link) {

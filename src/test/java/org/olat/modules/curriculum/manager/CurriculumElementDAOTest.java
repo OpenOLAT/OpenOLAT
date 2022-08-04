@@ -80,7 +80,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createCurriculumElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-1", "Type for", "First element", "AC-234");
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, type, CurriculumCalendars.disabled,
@@ -105,7 +105,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	 */
 	@Test
 	public void createCurriculumElement_rootElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum",
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false,
 				null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-1",
 				"Type for", "First element", "AC-234");
@@ -144,7 +144,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadByKey() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-2", "Type for", "First element", "AC-234");
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-2", "2. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, type, CurriculumCalendars.disabled,
@@ -170,7 +170,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadByKeys() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -191,7 +191,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadElements_curricullum() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-6", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-6", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-6", "6.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -215,7 +215,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadElementsWithInfos() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -236,7 +236,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void countElements_repoEntry() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -256,7 +256,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadElements_repoEntry() {
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -273,7 +273,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadElementsByCurriculums() {
-		Curriculum curriculum1 = curriculumDao.createAndPersist("Cur-for-load-1", "Curriculum to load 1", null, null);
+		Curriculum curriculum1 = curriculumDao.createAndPersist("Cur-for-load-1", "Curriculum to load 1", null, false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("El-load-1", "Element 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum1);
@@ -283,11 +283,11 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("El-load-3", "Element 3",
 				CurriculumElementStatus.active, null, null, parentElement, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum1);
-		Curriculum curriculum2 = curriculumDao.createAndPersist("Cur-for-load-2", "Curriculum to load 2", null, null);
+		Curriculum curriculum2 = curriculumDao.createAndPersist("Cur-for-load-2", "Curriculum to load 2", null, false, null);
 		CurriculumElement parentElement2 = curriculumElementDao.createCurriculumElement("El-load-4", "Element 4",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum2);
-		Curriculum otherCurriculum = curriculumDao.createAndPersist("Cur-for-load-3", "Curriculum to load3", null,
+		Curriculum otherCurriculum = curriculumDao.createAndPersist("Cur-for-load-3", "Curriculum to load3", null, false,
 				null);
 		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("El-load-5", "Element 5",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -304,7 +304,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 
 	@Test
 	public void createCurriculumElementParentChildren() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-3", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-3", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-3", "3. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -335,7 +335,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getParentLine() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-4", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-4", "4. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -366,7 +366,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void searchElements() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", false, null);
 		String externalId = UUID.randomUUID().toString();
 		String identifier = UUID.randomUUID().toString();
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element",
@@ -401,7 +401,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Identity nobody = JunitTestHelper.createAndPersistIdentityAsRndUser("curriculum-nobody");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Identity curriculumAdmin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("curriculum-admin");
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", defOrganisation);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", false, defOrganisation);
 		String externalId = UUID.randomUUID().toString();
 		String identifier = UUID.randomUUID().toString();
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element",
@@ -435,7 +435,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void searchElementsWithParams_allParameters() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Identity curriculumAdmin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("curriculum-admin");
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", defOrganisation);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", false, defOrganisation);
 		String externalId = UUID.randomUUID().toString();
 		String identifier = UUID.randomUUID().toString();
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element",
@@ -462,7 +462,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getDescendants() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-5", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -492,7 +492,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getChildren() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-15", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-15", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-15", "15. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -527,7 +527,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_elementToOtherElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-7", "7. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -573,7 +573,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_underSameElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-8", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-8", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-8", "8. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -609,7 +609,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_underSameElement_v2() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-8", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-8", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-8", "8. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -645,7 +645,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 
 	@Test
 	public void moveCurriculumElement_rootElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-9-1", "9.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -679,7 +679,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_rootToElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement1 = curriculumElementDao.createCurriculumElement("Element-10-1", "10.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -729,7 +729,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_elementToRoot() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement1 = curriculumElementDao.createCurriculumElement("Element-10-1", "10.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -774,8 +774,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveRootCurriculumElement_curriculumToCurriculum() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", null);
-		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", false, null);
+		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", false, null);
 
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -819,8 +819,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveRootCurriculumElement_curriculumToCurriculum_v2() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", null);
-		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", false, null);
+		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", false, null);
 
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -893,8 +893,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_elementCurriculumToCurriculum() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", null);
-		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", false, null);
+		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", false, null);
 
 		CurriculumElement stayingElement1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -983,7 +983,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveCurriculumElement_elementToRootOtherCurriculum() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement1 = curriculumElementDao.createCurriculumElement("Element-10-1", "10.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1007,7 +1007,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
 				curriculum);
 
-		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-for-el-8", "Target curriculum for element", "Curriculum", null);
+		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-for-el-8", "Target curriculum for element", "Curriculum", false, null);
 		CurriculumElement rootElement2 = curriculumElementDao.createCurriculumElement("Element-10-2", "10.2 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, targetCurriculum);
@@ -1043,7 +1043,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void reorderCurriculumElementsChildren() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-order-1", "Curriculum for element to reorder", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-order-1", "Curriculum for element to reorder", "Curriculum", false, null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-30-1", "30.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1090,7 +1090,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void reorderPartiallyCurriculumElementsChildren() {
-		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-order-1", "Curriculum for element to reorder", "Curriculum", null);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-order-1", "Curriculum for element to reorder", "Curriculum", false, null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-30-1", "30.1 Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1151,7 +1151,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void getMembersIdentity() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1167,7 +1167,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void getMembersIdentity_elementKeys() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1190,7 +1190,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void getMemberKeys() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "4. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1207,7 +1207,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void getMembers() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24b", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24b", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-24b", "4. Element (b)",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1224,7 +1224,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void getMembershipInfos_elements() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -1245,7 +1245,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void getMembershipInfos_curriculum() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", null);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);

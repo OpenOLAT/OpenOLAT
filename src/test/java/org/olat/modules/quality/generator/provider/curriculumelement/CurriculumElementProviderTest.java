@@ -76,7 +76,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation curriculumOrganisation = createOrganisation(defaultOrganisation);
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), curriculumOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, curriculumOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), null, null,
 				null, null, null, null, null, null, curriculum);
 		curriculumElement.setBeginDate(startDate);
