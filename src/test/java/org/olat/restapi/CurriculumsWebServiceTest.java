@@ -616,13 +616,13 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 
 		// curriculum with 2 courses
 		Organisation defOrg = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for checked relation", "Curriculum", false, defOrg);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
+		Curriculum curriculum = curriculumService.createCurriculum("cur-lectures-2", "Curriculum for lectures", "Curriculum", false, defOrg);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-lectures",
 				"Element for checked relation", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
 				curriculum);
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-not-user");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-part");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-auth");
 		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author);
 		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author);
 		
@@ -643,30 +643,30 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		
 		curriculumService.addRepositoryEntry(element, entryLecture1, false);
 		curriculumService.addRepositoryEntry(element, entryLecture2, false);
-		curriculumService.addMember(element, user, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 
-		lectureParticipantSummaryDao.createSummary(entryLecture1, user, DateUtils.addDays(new Date(), -2));
-		lectureParticipantSummaryDao.createSummary(entryLecture2, user, DateUtils.addDays(new Date(), -2));
+		lectureParticipantSummaryDao.createSummary(entryLecture1, participant, DateUtils.addDays(new Date(), -2));
+		lectureParticipantSummaryDao.createSummary(entryLecture2, participant, DateUtils.addDays(new Date(), -2));
 		
 		LectureBlock lectureBlock1_1 = createLectureBlock(entryLecture1, element);
 		LectureBlock lectureBlock1_2 = createLectureBlock(entryLecture1, element);
 		LectureBlock lectureBlock2_1 = createLectureBlock(entryLecture2, element);
 		LectureBlock lectureBlock2_2 = createLectureBlock(entryLecture2, element);
 		
-		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_1, user,
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_1, participant,
 				null, null, null, null, null, Collections.emptyList());
-		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_2, user,
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock1_2, participant,
 				null, null, null, null, null, Collections.emptyList());
-		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_1, user,
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_1, participant,
 				null, null, null, null, null, Collections.emptyList());
-		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_2, user,
+		lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock2_2, participant,
 				null, null, null, null, null, List.of(1, 2));
 		
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
-				.path("lectures").path(user.getKey().toString()).build();
+				.path("lectures").path(participant.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
@@ -683,8 +683,8 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	
 	private LectureBlock createLectureBlock(RepositoryEntry entry, CurriculumElement element) {
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
-		lectureBlock.setStartDate(new Date());
-		lectureBlock.setEndDate(new Date());
+		lectureBlock.setStartDate(DateUtils.addHours(lectureBlock.getCreationDate(), -2));
+		lectureBlock.setEndDate(DateUtils.addHours(lectureBlock.getCreationDate(), -1));
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);
 		lectureBlock.setEffectiveLecturesNumber(4);
