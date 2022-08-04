@@ -673,7 +673,7 @@ public class RepositoryManager {
 							|| status == RepositoryEntryStatusEnum.closed;
 				}
 				
-				if(!canLaunch && re.isPublicVisible()) {
+				if(!canLaunch && re.isPublicVisible() && !roles.isInviteeOnly()) {
 					canLaunch = acService.isAccessible(re, identity, Boolean.FALSE, false, false).isAccessible();
 				}
 			}

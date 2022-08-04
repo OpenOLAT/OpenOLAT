@@ -136,7 +136,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	}
 	
 	private boolean isPublicVisible(RepositoryEntry re, RepositoryEntrySecurity reSecurity, Identity identity, Roles roles) {
-		if (re.isPublicVisible()) {
+		if (re.isPublicVisible() && !roles.isInviteeOnly()) {
 			AccessResult accessResult = CoreSpringFactory.getImpl(ACService.class).isAccessible(re, identity, reSecurity.isMember(), roles.isGuestOnly(), true);
 			return accessResult.isAccessible() || !accessResult.getAvailableMethods().isEmpty();
 		}

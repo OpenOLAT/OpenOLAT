@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
@@ -70,6 +71,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	private final boolean isMember;
 	private final RepositoryEntrySecurity reSecurity;
 	private final boolean guestOnly;
+	private final boolean inviteeOnly;
 	private final boolean showStart;
 	private List<PriceMethod> types = new ArrayList<>(1);
 	
@@ -88,9 +90,10 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 		this.entry = entry;
 		this.isMember = isMember;
 		this.showStart = showStart;
-		this.reSecurity = repositoryManager.isAllowed(ureq, entry);
-		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		
+		reSecurity = repositoryManager.isAllowed(ureq, entry);
+		Roles roles = ureq.getUserSession().getRoles();
+		guestOnly = roles.isGuestOnly();
+		inviteeOnly = roles.isInviteeOnly();
 		initForm(ureq);
 	}
 
@@ -131,11 +134,13 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 				layoutCont.contextPut("educationalType", educationalType);
 			}
 			
-			if (reSecurity .isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
 				startLink = createStartLink(layoutCont);
 			} else {
 				if (reSecurity.canLaunch()) {
 					startLink = createStartLink(layoutCont);
+				} else if(inviteeOnly) {
+					accessRefused(ureq);
 				} else if (!isMember && entry.isPublicVisible()) {
 					AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
 					if (acResult.isAccessible()) {
