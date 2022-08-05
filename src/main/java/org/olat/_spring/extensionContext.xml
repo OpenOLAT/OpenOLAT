@@ -87,7 +87,7 @@
 	<!-- The life-cycle parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7405" />
-		<property name="navigationKey" value="modules" />
+		<property name="navigationKey" value="lifecycles" />
 		<property name="nodeIdentifierIfParent" value="lifecycleParent" />
 		<property name="translationPackage" value="org.olat.admin" />
 		<property name="i18nActionKey" value="menu.lifecycle" />
@@ -102,7 +102,7 @@
 	<!-- The payment parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7410" />
-		<property name="navigationKey" value="modules" />
+		<property name="navigationKey" value="payments" />
 		<property name="nodeIdentifierIfParent" value="paymentsParent" />
 		<property name="translationPackage" value="org.olat.admin" />
 		<property name="i18nActionKey" value="menu.payments" />
