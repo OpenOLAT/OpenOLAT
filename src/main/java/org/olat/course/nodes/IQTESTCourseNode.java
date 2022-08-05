@@ -42,6 +42,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -758,6 +759,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
 						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 				courseAssessmentService.updateScoreEvaluation(this, scoreEval, uce, publisher, false, Role.coach);
+				
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
 	}
