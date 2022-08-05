@@ -179,7 +179,7 @@ public class MSConfigController extends FormBasicController {
 		// Initial status
 		if (showInitialStatus) {
 			initialStatusEl = uifactory.addCheckboxesHorizontal("form.initial.status", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
-			initialStatusEl.setHelpUrl("form.initial.status.help");
+			initialStatusEl.setHelpText(translate("form.initial.status.help"));
 			String initialStatus = config.getStringValue(MSCourseNode.CONFIG_KEY_INITIAL_STATUS);
 			initialStatusEl.select(ENABLED_KEYS[0], AssessmentEntryStatus.inReview.name().equals(initialStatus));
 		}
