@@ -20,7 +20,7 @@
 		<property name="jobClass" value="org.olat.repository.manager.AutomaticLifecycleJob" />
 	</bean>
 	
-	<!-- life cycle admin. panel -->
+	<!-- life cycle admin. panel / semesters -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7216" />
 		<property name="actionController">	
@@ -29,7 +29,7 @@
 				<property name="factoryMethod" value="createLifecycleAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="lifecycles" />
+		<property name="navigationKey" value="repositoryTerms" />
 		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.lifecycle.title"/>
 		<property name="i18nDescriptionKey" value="admin.lifecycles.title"/>

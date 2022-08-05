@@ -1672,7 +1672,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void customizeCallout(UserRequest ureq) {
 		Choice choice = getColumnListAndTheirVisibility();
 		callout = new CloseableCalloutWindowController(ureq, wControl, choice,
-				customButton, "Customize", true, "o_sel_flexi_custom_callout");
+				customButton, translator.translate("customize.columns"), true, "o_sel_flexi_custom_callout");
 		callout.activate();
 		callout.addControllerListener(this);
 	}

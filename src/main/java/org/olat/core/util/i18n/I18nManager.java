@@ -1020,7 +1020,7 @@ public class I18nManager {
 	private String resolveValuesInternalKeys(Locale locale, String bundleName, String key, Properties currentProperties, boolean overlayEnabled, int recursionLevel,
 			String value) {
 		if (recursionLevel > 9) {
-			log.warn("Terminating resolving of properties after 10 levels, stopped in bundle::" + bundleName + " and key::" + key);
+			log.warn("Terminating resolving of properties after 10 levels, stopped in bundle::{} and key::{}", bundleName, key);
 			return value;
 		}
 		recursionLevel++;

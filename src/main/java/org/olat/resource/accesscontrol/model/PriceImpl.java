@@ -56,12 +56,12 @@ public class PriceImpl implements Price, Serializable {
 		this.currencyCode = currencyCode;
 	}
 	
-	
 	@Override
 	public BigDecimal getAmount() {
 		return amount;
 	}
-	
+
+	@Override
 	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
@@ -70,7 +70,8 @@ public class PriceImpl implements Price, Serializable {
 	public String getCurrencyCode() {
 		return currencyCode;
 	}
-	
+
+	@Override
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
 	}
@@ -84,7 +85,8 @@ public class PriceImpl implements Price, Serializable {
 		}
 		return false;
 	}
-	
+
+	@Override
 	public PriceImpl add(Price price) {
 		//replace with the multi currency manager
 		if(currencyCode != null && price.getCurrencyCode() != null && !currencyCode.equals(price.getCurrencyCode())) {
@@ -92,7 +94,8 @@ public class PriceImpl implements Price, Serializable {
 		}
 		return new PriceImpl(amount.add(price.getAmount()), currencyCode);
 	}
-	
+
+	@Override
 	public Price substract(Price price) {
 		//replace with the multi currency manager
 		if(currencyCode != null && price.getCurrencyCode() != null && !currencyCode.equals(price.getCurrencyCode())) {
@@ -100,7 +103,8 @@ public class PriceImpl implements Price, Serializable {
 		}
 		return new PriceImpl(amount.subtract(price.getAmount()), currencyCode);
 	}
-	
+
+	@Override
 	public Price multiply(int multiplicand) {
 		if(amount == null) {
 			return new PriceImpl(BigDecimal.ZERO, currencyCode);
@@ -109,13 +113,15 @@ public class PriceImpl implements Price, Serializable {
 		BigDecimal bigMultiplicand = new BigDecimal(multiplicand);
 		return new PriceImpl(amount.multiply(bigMultiplicand), currencyCode);
 	}
-	
+
+	@Override
 	public Price multiply(BigDecimal multiplicand) {
 		BigDecimal v = amount.multiply(multiplicand);
 		v = v.setScale(2, RoundingMode.HALF_UP);
 		return new PriceImpl(v, currencyCode);
 	}
-	
+
+	@Override
 	public Price divide(BigDecimal divisor) {
 		BigDecimal v = amount.divide(divisor, 2, RoundingMode.HALF_UP);
 		return new PriceImpl(v, currencyCode);

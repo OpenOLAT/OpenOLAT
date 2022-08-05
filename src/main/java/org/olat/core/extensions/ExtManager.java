@@ -217,7 +217,7 @@ public class ExtManager {
 	
 	private void append(ExtensionPointKeyPair key, GenericActionExtension gAE, AtomicInteger countDuplicate) {
 		if (navKeyGAExtensionlookup.containsKey(key)) {
-			log.info("Devel-Info :: duplicate navigation-key for extension :: " + key.navigationKey);
+			log.info("Devel-Info :: duplicate navigation-key for extension :: {}", key.navigationKey);
 			countDuplicate.incrementAndGet();
 		} else {
 			navKeyGAExtensionlookup.put(key, gAE);

@@ -606,7 +606,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private void doOpenAddFilter(UserRequest ureq, FormLink customButton) {
 		Choice choice = getFilterListAndTheirVisibility();
 		addFiltersCallout = new CloseableCalloutWindowController(ureq, wControl, choice,
-				customButton, "Customize", true, "o_sel_flexi_custom_callout");
+				customButton, null, true, "o_sel_flexi_custom_callout");
 		addFiltersCallout.activate();
 		addFiltersCallout.addControllerListener(this);
 	}

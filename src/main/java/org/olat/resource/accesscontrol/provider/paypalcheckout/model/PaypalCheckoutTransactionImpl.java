@@ -82,8 +82,8 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 	
 	@Embedded
 	@Target(PriceImpl.class)
-    @AttributeOverride(name="currencyCode", column = @Column(name="p_amount_currency_code") )
-    @AttributeOverride(name="amount", column = @Column(name="p_amount_amount") )
+    @AttributeOverride(name="amount", column = @Column(name="p_amount_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="p_amount_currency_code"))
 	private Price securePrice;
 	
 	@Column(name="p_status", nullable=false, insertable=true, updatable=true)
@@ -100,10 +100,11 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 	private String paypalAuthorizationId;
 	@Column(name="p_paypal_capture_id", nullable=true, insertable=true, updatable=true)
 	private String paypalCaptureId;
+	
 	@Embedded
 	@Target(PriceImpl.class)
-    @AttributeOverride(name="currencyCode", column = @Column(name="p_capture_currency_code") )
-    @AttributeOverride(name="amount", column = @Column(name="p_capture_amount") )
+    @AttributeOverride(name="amount", column = @Column(name="p_capture_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="p_capture_currency_code"))
 	private Price capturePrice;
 	
 	@Column(name="p_paypal_invoice_id", nullable=true, insertable=true, updatable=true)
