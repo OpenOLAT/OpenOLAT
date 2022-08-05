@@ -50,6 +50,7 @@ import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolType;
+import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
 import org.olat.modules.zoom.ZoomConfig;
@@ -106,6 +107,9 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     @Autowired
     private DB dbInstance;
 
+    @Autowired
+    private LTI13IDGenerator idGenerator;
+
     @Override
     public ZoomProfile createProfile(String name, String ltiKey, String clientId, String token) {
         LTI13Tool lti13Tool = createLtiTool(name, ltiKey, clientId);
@@ -128,7 +132,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         String copiedToolName = copiedName + ZOOM_PROFILE_SUFFIX;
         LTI13Tool originalTool = zoomProfile.getLtiTool();
         LTI13Tool copiedTool = lti13Service.createExternalTool(copiedToolName, originalTool.getToolUrl(),
-                originalTool.getClientId(), originalTool.getInitiateLoginUrl(), originalTool.getRedirectUrl(),
+                idGenerator.newId(), originalTool.getInitiateLoginUrl(), originalTool.getRedirectUrl(),
                 originalTool.getToolTypeEnum());
         copiedTool.setPublicKeyTypeEnum(originalTool.getPublicKeyTypeEnum());
         copiedTool.setPublicKey(originalTool.getPublicKey());
@@ -139,7 +143,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
                 updatedCopiedTool, zoomProfile.getToken());
         copiedZoomProfile.setMailDomains(zoomProfile.getMailDomains());
         copiedZoomProfile.setStudentsCanHost(zoomProfile.isStudentsCanHost());
-        copiedZoomProfile.setToken(zoomProfile.getToken());
+        copiedZoomProfile.setToken(idGenerator.newId().substring(0, 8));
         return zoomProfileDao.updateProfile(copiedZoomProfile);
     }
 
@@ -312,7 +316,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         LTI13Tool temporaryTool = null;
         LTI13ToolDeployment temporaryDeployment = null;
         try {
-            temporaryTool = createLtiTool("Zoom connection check", ltiKey, clientId);
+            temporaryTool = createLtiTool("Zoom connection check", ltiKey, idGenerator.newId());
             temporaryDeployment = createLtiToolDeployment(temporaryTool, null, null, null);
             dbInstance.commit();
 
