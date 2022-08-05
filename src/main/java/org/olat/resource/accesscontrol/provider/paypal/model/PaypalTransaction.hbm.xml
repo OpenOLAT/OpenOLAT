@@ -45,9 +45,9 @@
 	  <property name="secureSuccessUUID" column="success_uuid" type="string" not-null="true" length="32"/>
 	  <property name="secureCancelUUID" column="cancel_uuid" type="string" not-null="true" length="32"/>
 	  <component name="securePrice" class="org.olat.resource.accesscontrol.model.PriceImpl">
-   		<property name="currencyCode" column="amount_currency_code" type="string"/> 
    		<property name="amount" column="amount_amount" type="big_decimal"/>
-   	</component>
+   		<property name="currencyCode" column="amount_currency_code" type="string"/> 
+	  </component>
 	</class>
 	
 </hibernate-mapping>
