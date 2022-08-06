@@ -67,15 +67,15 @@
 		<apache.cxf>3.5.1</apache.cxf>
 		<apache.pdfbox>2.0.25</apache.pdfbox>
 		<apache.poi>5.2.2</apache.poi>
-		<apache.log4j>2.17.2</apache.log4j>
+		<apache.log4j>2.18.0</apache.log4j>
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.16.Final</io.undertow>
 		<jackson.version>2.13.3</jackson.version>
 		<swagger.ui.version>4.9.1</swagger.ui.version>
-		<org.mysql.version>8.0.28</org.mysql.version>
-		<org.postgresql.version>42.4.0</org.postgresql.version>
+		<org.mysql.version>8.0.30</org.mysql.version>
+		<org.postgresql.version>42.4.1</org.postgresql.version>
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.2.2</version.selenium>
