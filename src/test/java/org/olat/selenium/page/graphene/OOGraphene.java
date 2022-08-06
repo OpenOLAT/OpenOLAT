@@ -20,7 +20,6 @@
 package org.olat.selenium.page.graphene;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Calendar;
@@ -33,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -569,16 +569,25 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("document.getElementById('" + id + "').value = '" + content + "'");
 	}
 	
+	/**
+	 * Inject the formatted date as date in the input field ignoring
+	 * the date chooser. The date chooser will not be closed by this
+	 * method.
+	 * 
+	 * @param date The date to enter
+	 * @param seleniumCssClass The CSS class wrapping the input field
+	 * @param browser The browser
+	 */
 	public static final void date(Date date, String seleniumCssClass, WebDriver browser) {
 		Locale locale = getLocale(browser);
-		String dateText = DateFormat.getDateInstance(DateFormat.SHORT, locale).format(date);
+		String dateText = Formatter.getInstance(locale).formatDate(date);
 		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
 		browser.findElement(dateBy).sendKeys(dateText);
 	}
 	
 	public static final void datetime(Date date, String seleniumCssClass, WebDriver browser) {
 		Locale locale = getLocale(browser);
-		String dateText = DateFormat.getDateInstance(DateFormat.SHORT, locale).format(date);
+		String dateText = Formatter.getInstance(locale).formatDate(date);
 		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
 		browser.findElement(dateBy).sendKeys(dateText);
 		
