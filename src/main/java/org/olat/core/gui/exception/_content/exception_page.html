@@ -60,10 +60,6 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 <link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" />
-## 3) IE specific bugfixes for current theme
-<!--[if lte IE 7]>
-<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" />
-<![endif]-->
 ## 4) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 

@@ -1,0 +1,43 @@
+<div class="o_assistance_accordion">
+    <div class="o_title">
+        <h4>$title</h4>
+    </div>
+    <div class="o_items">
+        #foreach($helpItem in $helpItems)
+        #set ($index = $helpItem.getIndex())
+        #set ($helpItemDetails = $helpItem.getDetails())
+        <div class="o_item">
+            <div class="o_expand_collapse_icon">
+                $r.render($helpItem.getExpandButton())
+            </div>
+            <div class="o_item_content">
+                <div class="o_text_block">
+                    $r.render($helpItem.getTitleLink())
+                </div>
+                #if($helpItem.isExpanded())
+                <div class="o_text_block">
+                    $helpItem.getDetailsText()
+                </div>
+                #end
+                #if($helpItem.isExpanded() && $helpItem.hasComponents())
+                <div class="o_components_block">
+                    <div class="o_components">
+                        #foreach($component in $helpItem.getComponents())
+                        $r.render($component)
+                        #end
+                    </div>
+                </div>
+                #end
+            </div>
+        </div>
+        #end
+    </div>
+    #if($r.isNotEmpty($contextHelpUrl))
+    <div class="o_context_help">
+        <a target="_blank" href="$r.contextHelpLink($contextHelpUrl)">
+            <i class="o_icon o_icon_link_extern"></i>
+            <span>$contextHelpText</span>
+        </a>
+    </div>
+    #end
+</div>

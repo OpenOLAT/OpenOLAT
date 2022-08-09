@@ -82,21 +82,20 @@ public class GroupsPage {
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		OOGraphene.waitElement(popupBy, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
-		WebElement nameEl = browser.findElement(nameBy);
-		nameEl.sendKeys(name);
+		browser.findElement(nameBy).sendKeys(name);
 		OOGraphene.tinymce(description, browser);
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
 		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//div[contains(@class,'o_name')]//div[contains(text(),'" + name+ "')]");
-		OOGraphene.waitElement(groupNameBy, 2, browser);
+		OOGraphene.waitElement(groupNameBy, browser);
 		
 		return new GroupPage(browser);
 	}

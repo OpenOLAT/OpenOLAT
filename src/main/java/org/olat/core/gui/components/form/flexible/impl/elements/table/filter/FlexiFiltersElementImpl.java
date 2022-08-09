@@ -216,6 +216,16 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		return moreMenu;
 	}
 	
+	protected void setDirtySubComponents(boolean dirty) {
+		addFiltersButton.getComponent().setDirty(dirty);
+		saveFilterLink.getComponent().setDirty(dirty);
+		deleteFilterLink.getComponent().setDirty(dirty);
+		updateFilterLink.getComponent().setDirty(dirty);
+		resetFiltersButton.getComponent().setDirty(dirty);
+		collpaseFiltersButton.getComponent().setDirty(dirty);
+		moreMenu.getComponent().setDirty(dirty);
+	}
+	
 	public List<FlexiFilterButton> getFiltersButtons() {
 		for(FlexiFilterButton filterButton:filterButtons) {
 			boolean visible = filterButton.isEnabled() && !filterButton.isImplicit();
