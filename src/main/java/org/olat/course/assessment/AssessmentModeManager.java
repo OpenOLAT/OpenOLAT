@@ -216,11 +216,23 @@ public interface AssessmentModeManager {
 	public boolean isIpAllowed(String ipList, String address);
 	
 	/**
+	 * Check the Headers of the requests.
 	 * 
 	 * @param request The HTTP request
 	 * @param safeExamBrowserKey The key
 	 * @return true if the request is allowed based on the specified key
 	 */
 	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys, String configurationKey);
+	
+	/**
+	 * Check the parameters sent by the JavaScript API of Safe Exam Browser.
+	 * 
+	 * @param safeExamHash Correspond to SafeExamBrowser.security.configKey
+	 * @param url Correspond to window.location.toString()
+	 * @param safeExamBrowserKeys
+	 * @param configurationKey
+	 * @return
+	 */
+	public boolean isSafelyAllowedJs(String safeExamHash, String url, String safeExamBrowserKeys, String configurationKey);
 
 }

@@ -33,7 +33,7 @@
 		<div class="o_info">$r.translate("current.mode.end.info")</div>
 		<div class="o_button_group">$r.render($mode.continue.componentName)</div>
 	#else
-		<div class="o_error">$mode.errors</div>
+		<div class="o_error o_assessment_mode_error">$mode.errors</div>
 		#if($r.visible($mode.downloadSEBButton.componentName) || $r.visible($mode.downloadSEBConfigurationButton.componentName))
 			<div class="o_button_group">
 			#if($r.visible($mode.downloadSEBButton.componentName))
@@ -49,3 +49,29 @@
 #end
 
 <div class="o_button_group">$r.render("continue-main")</div>
+
+#if("not-checked" == $checked)
+<script>
+function checkSEBKeys () {
+	// if the SafeExamBrowser.security.updateKeys() function is not defined (for example on login from a normal
+	// browser or with an older SEB version), this will throw an error and not go in the didUpdateSEBKeys() callback
+	// function, so the ajax request to AssessmentModeGuardController will not be sent
+	SafeExamBrowser.security.updateKeys(didUpdateSEBKeys);
+}
+
+function didUpdateSEBKeys () {
+	jQuery("div.o_error.o_assessment_mode_error").addClass("hide");
+	
+	var configKey = SafeExamBrowser.security.configKey;
+	var browserExamKey = SafeExamBrowser.security.browserExamKey;
+	var currentPage = window.location.toString();
+	${r.openJavaScriptCommand('checkSEBKeys')}, 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage);
+}
+
+jQuery(function() {
+	if(SafeExamBrowser) {
+		checkSEBKeys();
+	}
+});
+</script>
+#end

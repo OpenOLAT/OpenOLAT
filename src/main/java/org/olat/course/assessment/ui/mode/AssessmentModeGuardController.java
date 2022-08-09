@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -104,6 +106,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		mainVC = createVelocityContainer("choose_mode");
 		mainVC.contextPut("guards", guards);
+		mainVC.contextPut("checked", hasSEBHeaders(ureq) ? "checked" : "not-checked");
 		
 		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
 		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
@@ -121,6 +124,14 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		//register for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+	}
+	
+	public boolean hasSEBHeaders(UserRequest ureq) {
+		HttpServletRequest request = ureq.getHttpReq();
+		String safeExamHash1 = request.getHeader("x-safeexambrowser-requesthash");
+		String safeExamHash2 = request.getHeader("x-safeexambrowser-configkeyhash");
+		return StringHelper.containsNonWhitespace(safeExamHash1)
+				|| StringHelper.containsNonWhitespace(safeExamHash2);
 	}
 	
 	public void deactivate() {
@@ -195,7 +206,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			allowed &= ipInRange;
 		}
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
-			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey(), null);
+			boolean safeExamCheck = isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
@@ -204,7 +215,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			}
 			allowed &= safeExamCheck;
 		} else if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
-			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), null, mode.getSafeExamBrowserConfigPListKey());
+			boolean safeExamCheck = isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey());
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
@@ -233,6 +244,15 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		guard.sync(state, sb.toString(), mode, getLocale());
 		return guard;
+	}
+	
+	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey) {
+		String safeExamHash = ureq.getParameter("configKey");
+		String url = ureq.getParameter("urlForKeyHash");
+		String browserExamKey = ureq.getParameter("browserExamKey");
+		getLogger().debug("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
+		return assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey)
+				|| assessmentModeMgr.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey);
 	}
 	
 	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont) {
@@ -415,6 +435,11 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			} else if("download.seb.config".equals(cmd)) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
 				downloadSebConfiguration(ureq, guard);
+			}
+		} else if(source == mainVC) {
+			if("checkSEBKeys".equals(event.getCommand())) {
+				syncAssessmentModes(ureq);
+				mainVC.contextPut("checked", "checked");
 			}
 		}
 	}

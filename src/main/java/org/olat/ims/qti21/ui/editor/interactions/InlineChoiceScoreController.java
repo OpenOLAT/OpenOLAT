@@ -22,7 +22,6 @@ package org.olat.ims.qti21.ui.editor.interactions;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,13 +36,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
-import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -62,7 +59,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InlineChoiceScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
+public class InlineChoiceScoreController extends AssessmentItemRefEditorController {
 	
 	private static final String[] modeKeys = new String[]{ ScoreEvaluation.allCorrectAnswers.name(),
 			ScoreEvaluation.perAnswer.name() };
@@ -133,15 +130,6 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 	
-	private InlineChoiceInteractionWrapper getChoiceWrapper(InlineChoiceInteractionEntry inlineChoiceInteractionEntry) {
-		for(InlineChoiceInteractionWrapper wrapper:wrappers) {
-			if(inlineChoiceInteractionEntry.equals(wrapper.getInlineChoiceInteractionEntry())) {
-				return wrapper;
-			}	
-		}
-		return null;
-	}
-	
 	private InlineChoiceInteractionWrapper createChoiceWrapper(InlineChoiceInteractionEntry inlineChoiceInteractionEntry, String context) {
 		List<InlineChoiceWrapper> choiceWrappers = new ArrayList<>();
 		for(InlineChoice inlineChoice:inlineChoiceInteractionEntry.getInlineChoices()) {
@@ -186,100 +174,6 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 			getLogger().error("", e);
 			return Map.of();
 		}
-	}
-
-	@Override
-	public void sync(UserRequest ureq, AssessmentItemBuilder assessmentItemBuilder) {
-		if(itemBuilder == assessmentItemBuilder) {
-			Map<Identifier,String> contextMap = this.extractContext(itemBuilder.getQuestion());
-			
-			List<InlineChoiceInteractionEntry> entries = itemBuilder.getInteractions();
-			for(InlineChoiceInteractionEntry entry:entries) {
-				String context = contextMap.get(entry.getResponseIdentifier());
-				InlineChoiceInteractionWrapper wrapper = getChoiceWrapper(entry);
-				if(wrapper == null) {
-					wrappers.add(createChoiceWrapper(entry, context));
-				} else {
-					wrapper.setContext(context);
-					syncInlineChoices(wrapper, entry);
-				}
-			}
-			
-			//remove removed entry
-			for(Iterator<InlineChoiceInteractionWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
-				Identifier responseIdentifier = wrapperIt.next().getResponseIdentifier();
-				if(itemBuilder.getInteractionEntry(responseIdentifier) == null) {
-					wrapperIt.remove();
-				}
-			}
-			
-			//reorder the wrappers
-			Map<Identifier,InlineChoiceInteractionWrapper> wrapperMap = new HashMap<>();
-			for(InlineChoiceInteractionWrapper wrapper:wrappers) {
-				wrapperMap.put(wrapper.getResponseIdentifier(), wrapper);
-			}
-			List<InlineChoiceInteractionWrapper> reorderedWrappers = new ArrayList<>();
-			for(InlineChoiceInteractionEntry entry:entries) {
-				Identifier responseIdentifier = entry.getResponseIdentifier();
-				InlineChoiceInteractionWrapper wrapper = wrapperMap.get(responseIdentifier);
-				if(wrapper != null) {
-					reorderedWrappers.add(wrapper);
-					wrapperMap.remove(responseIdentifier);
-				}
-			}
-			
-			if(wrapperMap.size() > 0) {//paranoid security
-				for(InlineChoiceInteractionWrapper wrapper:wrapperMap.values()) {
-					if(!reorderedWrappers.contains(wrapper)) {
-						reorderedWrappers.add(wrapper);
-					}
-				}
-			}
-			wrappers.clear();
-			wrappers.addAll(reorderedWrappers);
-		}
-	}
-	
-	private void syncInlineChoices(InlineChoiceInteractionWrapper wrapper, InlineChoiceInteractionEntry entry) {
-		Identifier correctResponseIdentifier = wrapper.getInlineChoiceInteractionEntry().getCorrectResponseId();
-		List<InlineChoiceWrapper> inlineChoiceWrappers = wrapper.getInlineChoices();
-		List<InlineChoice> inlineChoices = entry.getInlineChoices();
-		
-		for(Iterator<InlineChoiceWrapper> it=inlineChoiceWrappers.iterator(); it.hasNext(); ) {
-			InlineChoiceWrapper inlineChoiceWrapper = it.next();
-
-			boolean found = false;
-			if(inlineChoices != null && !inlineChoices.isEmpty()) {
-				for(InlineChoice inlineChoice:inlineChoices) {
-					if(inlineChoiceWrapper.getInlineChoice().getIdentifier().equals(inlineChoice.getIdentifier())) {
-						boolean correct = correctResponseIdentifier != null && correctResponseIdentifier.equals(inlineChoice.getIdentifier());
-						inlineChoiceWrapper.setCorrect(correct);
-						inlineChoiceWrapper.setInlineChoice(inlineChoice);
-						found = true;
-					}
-				}
-			}
-			
-			if(!found) {
-				it.remove();
-			}
-		}
-		
-		if(inlineChoices != null && !inlineChoices.isEmpty()) {
-			for(InlineChoice inlineChoice:inlineChoices) {
-				boolean found = false;
-				for(InlineChoiceWrapper inlineChoiceWrapper:inlineChoiceWrappers) {
-					if(inlineChoiceWrapper.getInlineChoice().getIdentifier().equals(inlineChoice.getIdentifier())) {
-						found = true;
-					}
-				}
-				
-				if(!found) {
-					wrapper.addInlineChoiceWrapper(createInlineChoiceWrapper(inlineChoice, entry));
-				}
-			}
-		}
-		
 	}
 	
 	@Override

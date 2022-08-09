@@ -58,6 +58,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.GlobalInlineChoice;
 import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -306,6 +307,8 @@ public class InlineChoiceEditorController extends FormBasicController implements
 				.collect(Collectors.toList());
 		itemBuilder.setGlobalInlineChoices(globalChoices);
 		
+		boolean checkMissingScores = itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer;
+		
 		Map<Identifier,InlineChoiceInteractionEntry> interactionEntries = itemBuilder.getInteractions().stream()
 				.collect(Collectors.toMap(InlineChoiceInteractionEntry::getResponseIdentifier, entry -> entry));
 		for(InlineChoiceInteractionWrapper interactionWrapper: interactionWrappers) {
@@ -316,8 +319,21 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			entry.setCorrectResponseId(interactionWrapper.getCorrectResponseId());
 			entry.setShuffle(interactionWrapper.isShuffle());
 			entry.getInlineChoices().clear();
+			
 			for(InlineChoice choice:interactionWrapper.getInlineChoices()) {
 				entry.getInlineChoices().add(InlineChoiceAssessmentItemBuilder.cloneInlineChoice(entry.getInteraction(), choice));
+			}
+			
+			// Set scores for new inline choices
+			if(checkMissingScores) {
+				Identifier correctResponseId = entry.getCorrectResponseId();
+				for(InlineChoice choice:interactionWrapper.getInlineChoices()) {
+					Identifier choiceIdentifier = choice.getIdentifier();
+					if(entry.getScore(choiceIdentifier) == null) {
+						double score = correctResponseId != null && correctResponseId.equals(choiceIdentifier) ? 1.0d : 0.0d;
+						entry.putScore(choice.getIdentifier(), Double.valueOf(score));
+					}
+				}
 			}
 		}
 		
@@ -509,6 +525,8 @@ public class InlineChoiceEditorController extends FormBasicController implements
 				interactionWrapper = createInlineChoiceInteraction(responseIdentifier, selectedText);
 			}
 		}
+		
+		this.itemBuilder.getScoreEvaluationMode();
 		
 		choicesSettingsCtrl = new InlineChoiceInteractionSettingsController(ureq, getWindowControl(), interactionWrapper,
 				restrictedEdit, readOnly);

@@ -551,7 +551,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 				evaluateAll(course.getCourseEnvironment(), rootNode, assessmentEntry.getIdentity(), assessmentEntry);
 				log.debug("Evaluated score accounting after lifecycle over in course {} for {}",courseEntry,
 						assessmentEntry.getIdentity());
-			
+				dbInstance.commitAndCloseSession();
 			}
 		}
 	}
