@@ -346,6 +346,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");
+		} else if(ftE.getCustomButton() != null) {
+			ftE.getCustomButton().getComponent().setDirty(false);
 		}
 		
 		// download
@@ -354,6 +356,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			ftE.getExportButton().setEnabled(!empty);
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");
+		} else if(ftE.getExportButton() != null) {
+			ftE.getExportButton().getComponent().setDirty(false);
 		}
 		
 		// all settings
@@ -362,9 +366,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<div class='btn-group o_table_settings'>");
 				renderFormItem(renderer, sb, ftE.getSettingsButton(), ubu, translator, renderResult, null);
 				sb.append("</div> ");
-			} else {
-				ftE.getSettingsButton().getComponent().setDirty(false);
 			}
+			ftE.getSettingsButton().getComponent().setDirty(false);
 		}
 		
 		if(StringHelper.containsNonWhitespace(filterIndication)) {

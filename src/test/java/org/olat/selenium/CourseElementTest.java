@@ -607,7 +607,7 @@ public class CourseElementTest extends Deployments {
 			.selectWithTitle(blogNodeTitle);
 		
 		String postTitle = "BlogPost-RW-1-" + UUID.randomUUID();
-		String postSummary = "Some explantations as teaser";
+		String postSummary = "Some explanations as teaser";
 		String postContent = "Content of the post";
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed
@@ -637,7 +637,7 @@ public class CourseElementTest extends Deployments {
 		
 		//the author publish a second post in its blog
 		String post2Title = "Blog-RW-2-" + UUID.randomUUID();
-		String post2Summary = "Some explantations as teaser";
+		String post2Summary = "Some explanations as teaser";
 		String post2Content = "Content of the post";
 		feed.addBlogPost()
 			.fillPostForm(post2Title, post2Summary, post2Content)

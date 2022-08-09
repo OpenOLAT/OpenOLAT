@@ -5,7 +5,7 @@
 	$r.render("userTable")
 #else
 	#if ($r.available("autocompletionsearch"))
-	<fieldset style="z-index:10" class="o_sel_usersearch_autocompletion"> ## fix IE7 layering issue
+	<fieldset class="o_sel_usersearch_autocompletion">
 		<legend>$r.translate("header.autocompletion")</legend>
 		<p><i>$r.translate("autocompletion.info")</i></p>
 		<p>$r.render("autocompletionsearch")</p>

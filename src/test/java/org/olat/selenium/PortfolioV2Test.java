@@ -392,7 +392,7 @@ public class PortfolioV2Test extends Deployments {
 			.selectWithTitle(blogNodeTitle);
 		
 		String postTitle = "Post-EP-" + UUID.randomUUID();
-		String postSummary = "Some explantations as teaser";
+		String postSummary = "Some explanations to tease people";
 		String postContent = "Content of the post";
 
 		FeedPage feed = FeedPage.getFeedPage(browser);

@@ -79,6 +79,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 				renderFormItem(renderer, sb, resetLink, "pull-right", args);
 				sb.append("</ul>");
 			}
+			ffE.setDirtySubComponents(false);
 			
 			sb.append("</div>");
 		}
