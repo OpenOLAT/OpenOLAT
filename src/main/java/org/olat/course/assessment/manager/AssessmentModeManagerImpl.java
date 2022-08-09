@@ -563,6 +563,26 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		return safe;
 	}
 	
+	@Override
+	public boolean isSafelyAllowedJs(String safeExamHash, String url, String safeExamBrowserKeys, String configurationKey) {
+		boolean safe = false;
+
+		if(StringHelper.containsNonWhitespace(safeExamHash) && StringHelper.containsNonWhitespace(url)) {
+			if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
+				for(StringTokenizer tokenizer = new StringTokenizer(safeExamBrowserKeys); tokenizer.hasMoreTokens() && !safe; ) {
+					String safeExamBrowserKey = tokenizer.nextToken();
+					safe = isSafeExam(safeExamHash, safeExamBrowserKey, url);
+				}
+			} else if(StringHelper.containsNonWhitespace(configurationKey)) {
+				safe = isSafeExam(safeExamHash, configurationKey, url);
+			} else {
+				safe = true;
+			}
+		}
+		
+		return safe;
+	}
+	
 	private boolean isSafeExam(String safeExamHash, String safeExamBrowserKey, String url) {
 		boolean safe = false;
 		
@@ -585,7 +605,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			if(!safe) {
 				log.warn("Failed safeexambrowser check: {} (Header) {} (Calculated) for URL: {}", safeExamHash, hash, url);
 			}
-			log.debug("safeexambrowser {} : {} (Header) {} (Calculated) for URL: {} and key: {}", (safeExamHash.equals(hash) ? "Success" : "Failed") , safeExamHash, hash, url, safeExamBrowserKey);
+			log.info("safeexambrowser {} : {} (Header) {} (Calculated) for URL: {} and key: {}", (safeExamHash.equals(hash) ? "Success" : "Failed") , safeExamHash, hash, url, safeExamBrowserKey);
 		}
 		return safe;
 	}

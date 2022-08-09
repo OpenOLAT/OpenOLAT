@@ -76,6 +76,7 @@ public class SafeExamBrowserConfigurationSerializer {
 				plist.add("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));
 			}
 			plist.add("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
+			plist.add("browserWindowWebView", 3);
 			plist.add("URLFilterEnable", configuration.isUrlFilter());
 			plist.add("URLFilterEnableContentFilter", configuration.isUrlContentFilter());
 			
@@ -122,6 +123,7 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.addProperty("audioMute", configuration.isAudioMute());
 			plist.addProperty("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.addProperty("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
+			plist.addProperty("browserWindowWebView", 3);
 			plist.addProperty("enableZoomPage", configuration.isAllowZoomInOut());
 			plist.addProperty("enableZoomText", configuration.isAllowZoomInOut());
 			plist.addProperty("examSessionClearCookiesOnStart", false);
