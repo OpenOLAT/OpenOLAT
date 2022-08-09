@@ -555,15 +555,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new InlineChoiceEditorController(ureq, getWindowControl(), inlineChoiceItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new InlineChoiceScoreController(ureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), inlineChoiceItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 
 		tabbedPane.addTab(translate("form.inlinechoice"), "o_sel_assessment_item_inlinechoice", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTabControllerCreator(ureq, translate("form.score"), "o_sel_assessment_item_score", uureq -> {
+			removeAsListenerAndDispose(scoreEditor);
+			scoreEditor = new InlineChoiceScoreController(ureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+			return scoreEditor;
+		}, true);
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return inlineChoiceItemBuilder;
 	}

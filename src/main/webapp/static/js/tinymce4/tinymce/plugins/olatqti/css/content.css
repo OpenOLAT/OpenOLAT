@@ -1,3 +1,7 @@
+.mce-content-body .inlinechoiceinteraction [contentEditable=false][data-mce-selected] {
+	cursor: default;
+}
+
 .textentryinteraction, .inlinechoiceinteraction {
     background-color: #eee;
     border-radius: 4px;
