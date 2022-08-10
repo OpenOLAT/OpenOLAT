@@ -208,6 +208,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		re.setResourcename(StringHelper.containsNonWhitespace(resourceName) ? resourceName : "-");
 		re.setDescription(description == null ? "" : description);
 		re.setAllowToLeaveOption(repositoryModule.getAllowToLeaveDefaultOption());
+		re.setInvitationByOwnerWithAuthorRightsEnabled(false);
+		re.setLTI13DeploymentByOwnerWithAuthorRightsEnabled(false);
+		
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());
 			resource = resourceManager.createAndPersistOLATResourceInstance(ores);

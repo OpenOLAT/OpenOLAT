@@ -164,8 +164,8 @@ create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_d
 
 
 -- External users
-alter table o_gp_business add invitations_coach_enabled number default 1 not null;
-alter table o_repositoryentry add invitations_owner_enabled number default 1 not null;
+alter table o_gp_business add invitations_coach_enabled number default 0 not null;
+alter table o_repositoryentry add invitations_owner_enabled number default 0 not null;
 
 alter table o_bs_invitation add i_type varchar(32) default 'binder' not null;
 alter table o_bs_invitation add i_url varchar(512) default null;
