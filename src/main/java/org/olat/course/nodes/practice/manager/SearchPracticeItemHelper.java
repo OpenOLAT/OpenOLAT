@@ -49,11 +49,31 @@ public class SearchPracticeItemHelper {
 		//
 	}
 	
+	/**
+	 * @param item The question item
+	 * @return If not an essay, drawing or upload (unkown type are allowed)
+	 */
 	public static boolean autoAnswer(QuestionItem item) {
 		String type = item.getItemType();
-		return !QTI21QuestionType.drawing.name().equals(type)
-				&& !QTI21QuestionType.essay.name().equals(type)
-				&& !QTI21QuestionType.upload.name().equals(type);
+		return autoAnswer(type);
+	}
+	
+	/**
+	 * @param type The question type
+	 * @return If not an essay, drawing or upload (unkown type are allowed)
+	 */
+	public static boolean autoAnswer(QTI21QuestionType type) {
+		return type == null || autoAnswer(type.name());
+	}
+	
+	/**
+	 * @param questionType The question type
+	 * @return If not an essay, drawing or upload (unkown type are allowed)
+	 */
+	public static boolean autoAnswer(String questionType) {
+		return !QTI21QuestionType.drawing.name().equals(questionType)
+				&& !QTI21QuestionType.essay.name().equals(questionType)
+				&& !QTI21QuestionType.upload.name().equals(questionType);
 	}
 
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams, Locale locale) {

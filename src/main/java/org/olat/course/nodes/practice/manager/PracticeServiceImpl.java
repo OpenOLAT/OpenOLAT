@@ -58,6 +58,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentItemSessionDAO;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.pool.QTI21MetadataConverter;
@@ -554,19 +555,19 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 				identifier = testEntry.getKey() + "-" + ref.getIdentifier().toString();
 			}
 
-			if(!identifiers.contains(identifier)
-					&& SearchPracticeItemHelper.autoAnswer(item)
+			AssessmentItem assessmentItem = null;
+			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(ref);
+			if(resolvedAssessmentItem != null) {
+				assessmentItem = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
+			}
+			
+			if(!identifiers.contains(identifier) && assessmentItem != null
+					&& isAssessmentItemAllowed(item, assessmentItem)
 					&& SearchPracticeItemHelper.accept(item, searchParams, locale)) {
-				
+
 				String displayName = item.getTitle();
 				if(displayName == null) {
-					ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(ref);
-					if(resolvedAssessmentItem != null) {
-						AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
-						if(assessmentItem != null) {
-							displayName = assessmentItem.getTitle();
-						}
-					}
+					displayName = assessmentItem.getTitle();
 				}
 				
 				String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
@@ -576,6 +577,20 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 		}
 		
 		return items;
+	}
+	
+	private boolean isAssessmentItemAllowed(QuestionItem item, AssessmentItem assessmentItem) {
+		if(assessmentItem == null) return false;
+
+		if(!SearchPracticeItemHelper.autoAnswer(item)) {
+			return false;
+		}
+		
+		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+		if(!SearchPracticeItemHelper.autoAnswer(type)) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
