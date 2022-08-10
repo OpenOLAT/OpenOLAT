@@ -52,6 +52,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * The name of the rule is misleading. The last attempt date was used
+ * as an approximation. The label in UI corrected this and are now
+ * "Date of last attempt".
  * 
  * Initial date: 09.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -126,7 +129,7 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI implements
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			if (courseNode == null) {
-				log.error("Initial attempt in course " + entry.getKey() + " (" + entry.getDisplayname() + ") is missing a course element");
+				log.error("Initial attempt in course {} ({}) is missing a course element", entry.getKey(), entry.getDisplayname());
 				return Collections.emptyMap();
 			}
 			
