@@ -1,4 +1,6 @@
-.mce-content-body .inlinechoiceinteraction [contentEditable=false][data-mce-selected] {
+.mce-content-body .inlinechoiceinteraction [contentEditable=false][data-mce-selected],
+.mce-content-body .textentryinteraction [contentEditable=false][data-mce-selected],
+.mce-content-body .hottext [contentEditable=false][data-mce-selected] {
 	cursor: default;
 }
 

@@ -231,11 +231,13 @@ public class CatalogMainController extends BasicController implements Activateab
 	private void doActivateTaxonomy(UserRequest ureq, Long key) {
 		for (CatalogLauncher catalogLauncher : launchersCtrl.getTaxonomyLevelCatalogLaunchers()) {
 			Levels levels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key, defaultSearchParams);
-			List<TaxonomyLevel> taxonomyLevels = levels.getTaxonomyLevels();
-			if (taxonomyLevels != null) {
-				stackPanel.popUpToRootController(ureq);
-				taxonomyLevels.forEach(level -> doOpenTaxonomyLevel(ureq, level, levels.getEducationalTypeKeys(), levels.getResourceTypes()));
-				break;
+			if(levels != null) {
+				List<TaxonomyLevel> taxonomyLevels = levels.getTaxonomyLevels();
+				if (taxonomyLevels != null) {
+					stackPanel.popUpToRootController(ureq);
+					taxonomyLevels.forEach(level -> doOpenTaxonomyLevel(ureq, level, levels.getEducationalTypeKeys(), levels.getResourceTypes()));
+					break;
+				}
 			}
 		}
 	}
