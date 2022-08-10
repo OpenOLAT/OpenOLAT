@@ -129,6 +129,9 @@ public class BusinessGroupDAO {
 		businessgroup.setWaitingListVisiblePublic(false);
 		businessgroup.setDownloadMembersLists(false);
 		
+		businessgroup.setLTI13DeploymentByCoachWithAuthorRightsEnabled(false);
+		businessgroup.setInvitationByCoachWithAuthorRightsEnabled(false);
+		
 		if(creator == null) {
 			allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
 		} else {
