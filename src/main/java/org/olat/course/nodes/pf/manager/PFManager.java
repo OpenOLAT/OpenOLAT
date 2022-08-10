@@ -495,7 +495,7 @@ public class PFManager {
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-				VFSSecurityCallback callback = calculateCallback(courseEnv, path, pfNode, dropbox, false);
+				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, false);
 				dropContainer.setLocalSecurityCallback(callback);
 				returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 			}
