@@ -385,8 +385,10 @@ public class RegistrationController extends BasicController implements Activatea
 			listenTo(disclaimerController);
 			
 			regarea.setContent(disclaimerController.getInitialComponent());
-		} else {
+		} else if(emailValidationStep) {
 			displayEmailForm(ureq);
+		} else {
+			displayRegistrationForm(ureq);
 		}
 	}
 	

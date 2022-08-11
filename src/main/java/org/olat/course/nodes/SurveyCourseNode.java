@@ -36,6 +36,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
@@ -76,6 +77,7 @@ import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
+import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.ReportHelperUserColumns;
@@ -361,9 +363,10 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 			
+			Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
 			LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
 			ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
-			ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper);
+			ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
 			
 			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
 					reportHelper.getComparator(), userColumns, getShortName());
