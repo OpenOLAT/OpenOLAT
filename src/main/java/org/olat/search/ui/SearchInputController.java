@@ -86,12 +86,14 @@ public class SearchInputController extends FormBasicController implements Generi
 	private static final String FUZZY_SEARCH = "~0.7";
 	private static final String CMD_DID_YOU_MEAN_LINK = "didYouMeanLink-";
 	private static final String SEARCH_STORE_KEY = "search-store-key";
+	private static final String DEFAULT_CONTEXT_HELP_PAGE = "manual_user/personal/Full-Text_Search/";
 	
 	private String parentContext;
 	private String documentType;
 	private String resourceUrl;
 	private boolean resourceContextEnable = true;
-	
+	private String contextHelpPage = DEFAULT_CONTEXT_HELP_PAGE;
+
 	private DisplayOption displayOption; 
 	
 	protected FormLink searchButton;
@@ -165,7 +167,15 @@ public class SearchInputController extends FormBasicController implements Generi
 	public void setResourceContextEnable(boolean resourceContextEnable) {
 		this.resourceContextEnable = resourceContextEnable;
 	}
-	
+
+	public String getContextHelpPage() {
+		return contextHelpPage;
+	}
+
+	public void setContextHelpPage(String contextHelpPage) {
+		this.contextHelpPage = contextHelpPage;
+	}
+
 	private EventBus singleUserEventCenter;
 	private static final OLATResourceable ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 	
@@ -368,6 +378,7 @@ public class SearchInputController extends FormBasicController implements Generi
 		resultCtlr.setDocumentType(getDocumentType());
 		resultCtlr.setParentContext(getParentContext());
 		resultCtlr.setResourceContextEnable(isResourceContextEnable());
+		resultCtlr.setContextHelpPage(getContextHelpPage());
 		listenTo(resultCtlr);
 	}
 	

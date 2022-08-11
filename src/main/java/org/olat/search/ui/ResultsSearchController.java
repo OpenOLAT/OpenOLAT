@@ -69,7 +69,14 @@ public class ResultsSearchController extends SearchInputController {
 	}
 
 	@Override
+	public void setContextHelpPage(String contextHelpPage) {
+		super.setContextHelpPage(contextHelpPage);
+		flc.contextPut("contextHelpPage", contextHelpPage);
+	}
+
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("contextHelpPage", getContextHelpPage());
 		extendedSearchLink = uifactory.addFormLink("switch.advanced.search", formLayout);
 		extendedSearchLink.setElementCssClass("o_search_link_extended");
 		simpleSearchLink = uifactory.addFormLink("switch.simple.search", formLayout);
