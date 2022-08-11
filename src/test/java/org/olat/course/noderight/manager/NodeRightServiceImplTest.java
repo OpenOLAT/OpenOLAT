@@ -455,7 +455,7 @@ public class NodeRightServiceImplTest {
 		UserCourseEnvironment coach = new TestUserCourseEnvironment(false, true, false, false, null, null, false);
 		UserCourseEnvironment participant = new TestUserCourseEnvironment(false, false, true, false, null, null, false);
 		UserCourseEnvironment guest = new TestUserCourseEnvironment(false, false, false, true, null, null, false);
-		UserCourseEnvironment all = new TestUserCourseEnvironment(true, true, true, true, Long.valueOf(1), Long.valueOf(2), true);
+		UserCourseEnvironment all = new TestUserCourseEnvironment(true, true, true, false, Long.valueOf(1), Long.valueOf(2), true);
 		UserCourseEnvironment identity = new TestUserCourseEnvironment(false, false, false, false, Long.valueOf(1), null, false);
 		UserCourseEnvironment group = new TestUserCourseEnvironment(false, false, false, false, null, Long.valueOf(2), true);
 		UserCourseEnvironment groupNotInCourse = new TestUserCourseEnvironment(false, false, false, false, null, Long.valueOf(3), true);
