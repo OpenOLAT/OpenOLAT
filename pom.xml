@@ -80,8 +80,8 @@
 		<org.postgresql.version>42.4.1</org.postgresql.version>
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.2.2</version.selenium>
-		<version.drone>3.0.0-alpha.5</version.drone>
+		<version.selenium>4.4.0</version.selenium>
+		<version.drone>3.0.0-alpha.6</version.drone>
 		<activemq.version>5.17.1</activemq.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
 
@@ -2487,7 +2487,7 @@
 		<dependency>
 			<groupId>org.zapodot</groupId>
 			<artifactId>embedded-ldap-junit</artifactId>
-			<version>0.8.1</version>
+			<version>0.8.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

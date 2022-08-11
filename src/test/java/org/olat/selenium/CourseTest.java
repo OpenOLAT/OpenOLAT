@@ -445,7 +445,7 @@ public class CourseTest extends Deployments {
 			.start();
 		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
 		MenuTreePageFragment ryomouCourseTree = ryomouCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(firstNodeTitle);
 		
 		//The author make a change on node 2
@@ -679,7 +679,7 @@ public class CourseTest extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(calendarNodeTitle);
 		// create a recurring event
 		CalendarPage calendar = new CalendarPage(browser);
@@ -790,7 +790,7 @@ public class CourseTest extends Deployments {
 			.autoPublish();
 		//open the course and see the CP
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(calendarNodeTitle);
 		
 		// create a recurring event
@@ -877,7 +877,7 @@ public class CourseTest extends Deployments {
 			.autoPublish();
 		//open the course and see the CP
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(calendarNodeTitle);
 		
 		// create a recurring event
@@ -1298,7 +1298,7 @@ public class CourseTest extends Deployments {
 			.publish();
 		
 		MenuTreePageFragment courseTree = course
-			.clickTree()
+			.tree()
 			.selectWithTitle(structureTitle.substring(0, 20));
 		course
 			.assertOnPassword()
@@ -1325,7 +1325,7 @@ public class CourseTest extends Deployments {
 		//go to the structure, give the password
 		CoursePageFragment kanuCourse = new CoursePageFragment(kanuBrowser);
 		MenuTreePageFragment kanuTree = kanuCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(structureTitle.substring(0, 20));
 		kanuCourse
 			.assertOnPassword()
@@ -1347,7 +1347,7 @@ public class CourseTest extends Deployments {
 			.enterPassword("super secret");
 		//find the secret info course element
 		ryomouCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(structureTitle.substring(0, 20))
 			.selectWithTitle(infoTitle.substring(0, 20));
 		ryomouCourse
@@ -1395,7 +1395,7 @@ public class CourseTest extends Deployments {
 			.autoPublish();
 		
 		courseRuntime
-			.clickTree()
+			.tree()
 			.assertWithTitle(nodeTitle)
 			.selectWithTitle(nodeTitle);
 		
@@ -1555,7 +1555,7 @@ public class CourseTest extends Deployments {
 		//author can see all
 		assessmentTool
 			.clickToolbarRootCrumb()
-			.clickTree()
+			.tree()
 			.assertWithTitle(bcTitle.substring(0, 20))
 			.assertWithTitle(msTitle.substring(0, 20))
 			.assertWithTitle(foTitle.substring(0, 20))

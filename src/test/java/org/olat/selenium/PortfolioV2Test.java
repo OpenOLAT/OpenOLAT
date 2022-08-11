@@ -206,7 +206,7 @@ public class PortfolioV2Test extends Deployments {
 		//go to the portfolio course element
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(portfolioNodeTitle);
 		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(ryomouBrowser);
 		BinderPage binder = portfolioCourseEl
@@ -261,7 +261,7 @@ public class PortfolioV2Test extends Deployments {
 		
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(forumTitle);
 		
 		String mediaTitle = "A post";
@@ -388,7 +388,7 @@ public class PortfolioV2Test extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(blogNodeTitle);
 		
 		String postTitle = "Post-EP-" + UUID.randomUUID();
@@ -731,7 +731,7 @@ public class PortfolioV2Test extends Deployments {
 		//go to the portfolio course element
 		CoursePageFragment reiTestCourse = new CoursePageFragment(reiBrowser);
 		reiTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(portfolioNodeTitle);
 		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(reiBrowser);
 		BinderPage reiBinder = portfolioCourseEl

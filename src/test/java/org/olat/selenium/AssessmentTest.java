@@ -172,7 +172,7 @@ public class AssessmentTest extends Deployments {
 		//open the course and see the test start page
 		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(scormNodeTitle);
 		
 		By scormH2By = By.cssSelector("div.o_course_run h2");
@@ -276,12 +276,11 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment courseRuntime = courseEditor
 			.clickToolbarBack();
 		courseRuntime
-			.clickTree()
+			.tree()
 			.selectWithTitle(testNodeTitle);
-		
 		//check that the title of the start page of test is correct
-		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
-		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
+		courseRuntime
+			.assertOnTitle(testNodeTitle);
 		
 		//add Ryomou and Kanu as a course member
 		courseRuntime.members().quickAdd(ryomou);
@@ -551,7 +550,7 @@ public class AssessmentTest extends Deployments {
 		//go to the test
 		CoursePageFragment reiTestCourse = new CoursePageFragment(reiBrowser);
 		reiTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
 		QTI21Page.getQTI21Page(reiBrowser)
@@ -650,7 +649,7 @@ public class AssessmentTest extends Deployments {
 		//go to the test
 		CoursePageFragment certificationCourse = new CoursePageFragment(browser);
 		certificationCourse
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected("Test 1");
 		//pass the test
 		QTI21Page.getQTI21Page(browser)
@@ -940,7 +939,7 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 		coursePage
 			.assertStatus(RepositoryEntryStatusEnum.published)// publish the course for the participants
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
@@ -958,7 +957,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
@@ -1114,7 +1113,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment coursePage = membersPage
 			.clickToolbarBack();
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
@@ -1132,7 +1131,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
@@ -1280,7 +1279,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment coursePage = membersPage
 			.clickToolbarBack();
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
@@ -1298,7 +1297,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
@@ -1468,7 +1467,7 @@ public class AssessmentTest extends Deployments {
 		//go to the task which is automatically assigned
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected(gtaNodeTitle);
 		OOGraphene.waitAndCloseBlueMessageWindow(ryomouBrowser);
 		
@@ -1609,7 +1608,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(assessmentNodeTitle);
 		
 		//Second login
@@ -1738,7 +1737,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment coursePage = membersPage
 			.clickToolbarBack();
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
@@ -1876,7 +1875,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment coursePage = membersPage
 			.clickToolbarBack();
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 
 		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
@@ -2001,7 +2000,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment coursePage = membersPage
 			.clickToolbarBack();
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 
 		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
