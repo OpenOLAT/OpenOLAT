@@ -157,7 +157,7 @@ public class InvitationListController extends FormBasicController {
 		
 		tableModel = new InvitationListTableModel(columnsModel, userPropertyHandlers, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("nomembers", null, "o_icon_user", null, null, false);
+		tableEl.setEmptyTableSettings("noinvitations", null, "o_icon_user", null, null, false);
 		tableEl.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		tableEl.setExportEnabled(true);
 		tableEl.setElementCssClass("o_sel_invitations_list");
