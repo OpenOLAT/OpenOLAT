@@ -242,7 +242,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if(allowNonInteractiveAccess && offerAccess.size() == 1) {
 			//is it a method without user interaction as the free access?
 			OfferAccess link = offerAccess.get(0);
-			if(!link.getMethod().isNeedUserInteraction()) {
+			if(!link.getMethod().isNeedUserInteraction() && link.getOffer().isAutoBooking()) {
 				return accessResource(identity, link, null);
 			}
 		}
