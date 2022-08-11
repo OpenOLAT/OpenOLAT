@@ -169,6 +169,17 @@ public class CoursePageFragment {
 	}
 	
 	/**
+	 * Wait the menu tree
+	 * 
+	 * @return The menu tree page
+	 */
+	public MenuTreePageFragment tree() {
+		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
+		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
+		return menuTree;
+	}
+	
+	/**
 	 * Click the first element of the menu tree.
 	 * 
 	 * @return The menu tree page

@@ -162,7 +162,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(cpNodeTitle);
 		
 		//check that the default title of CP (Lorem Ipsum) is visible in the iframe
@@ -422,7 +422,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
@@ -477,7 +477,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(podcastNodeTitle);
 		
 		//check that the title of the podcast is correct
@@ -535,7 +535,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(blogNodeTitle);
 		
 		//check that the title of the podcast is correct
@@ -603,7 +603,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(blogNodeTitle);
 		
 		String postTitle = "BlogPost-RW-1-" + UUID.randomUUID();
@@ -630,7 +630,7 @@ public class CourseElementTest extends Deployments {
 		//Navigate the course to the blog
 		CoursePageFragment participantCourse = new CoursePageFragment(participantDrone);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(blogNodeTitle);
 		FeedPage participantFeed = FeedPage.getFeedPage(participantDrone);
 		participantFeed.assertOnBlogPost(postTitle);
@@ -709,7 +709,7 @@ public class CourseElementTest extends Deployments {
 		editor.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(infoNodeTitle);
 		//set a message
 		infoMsgConfig
@@ -832,7 +832,7 @@ public class CourseElementTest extends Deployments {
 		editor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(dialogNodeTitle);
 		
 		// upload a second file
@@ -861,7 +861,7 @@ public class CourseElementTest extends Deployments {
 		// And opens the dialog course element
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(dialogNodeTitle);
 		DialogPage participantDialog = new DialogPage(participantBrowser);
 		participantDialog
@@ -968,7 +968,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(memberListTitle);
 		
 		//check the default configuration with authors, coaches and participants
@@ -995,7 +995,7 @@ public class CourseElementTest extends Deployments {
 		course = editor
 			.autoPublish();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(memberListTitle);
 		
 		memberList
@@ -1022,7 +1022,7 @@ public class CourseElementTest extends Deployments {
 		course = editor
 			.autoPublish();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(memberListTitle);
 		
 		memberList
@@ -1124,7 +1124,7 @@ public class CourseElementTest extends Deployments {
 		courseRuntime = courseEditor
 			.autoPublish();		
 		MenuTreePageFragment menuTree = courseRuntime
-			.clickTree();
+			.tree();
 
 		MemberListPage memberList = new MemberListPage(browser);
 		// check peek view
@@ -1238,7 +1238,7 @@ public class CourseElementTest extends Deployments {
 		
 		//go to the course element
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(participantFolderTitle);
 		// open the return box of the participant and upload a file
 		URL coachImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
@@ -1268,7 +1268,7 @@ public class CourseElementTest extends Deployments {
 		// And opens the participant folder
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(participantFolderTitle);
 		ParticipantFolderPage participantFolder = new ParticipantFolderPage(participantBrowser);
 		participantFolder
@@ -1468,7 +1468,7 @@ public class CourseElementTest extends Deployments {
 		//go to the forum
 		courseEditor
 			.clickToolbarBack()
-			.clickTree()
+			.tree()
 			.selectWithTitle(foTitle.substring(0, 20));
 		
 		ForumPage authorForum = ForumPage
@@ -1491,7 +1491,7 @@ public class CourseElementTest extends Deployments {
 		
 		//go to the forum
 		new CoursePageFragment(kanuBrowser)
-			.clickTree()
+			.tree()
 			.selectWithTitle(foTitle.substring(0, 20))
 			.assertWithTitleSelected(foTitle.substring(0, 20));
 		
@@ -1630,7 +1630,7 @@ public class CourseElementTest extends Deployments {
 		
 		//go to the forum
 		new CoursePageFragment(guestBrowser)
-			.clickTree()
+			.tree()
 			.selectWithTitle(foTitle.substring(0, 20));
 		
 		String guestAlias = "Guest-" + UUID.randomUUID();
@@ -1640,7 +1640,7 @@ public class CourseElementTest extends Deployments {
 	
 		// admin go to the forum
 		new CoursePageFragment(browser)
-			.clickTree()
+			.tree()
 			.selectWithTitle(foTitle.substring(0, 20));
 		//admin reply to the thread of guest
 		ForumPage adminForum = ForumPage
@@ -1756,7 +1756,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(ltiTitle);
 		LTIPage lti = new LTIPage(participantBrowser);
 		lti
@@ -1853,7 +1853,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 
 		ContactPage contactPage = new ContactPage(browser);
@@ -1979,7 +1979,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		courseRuntime
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
@@ -2211,7 +2211,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		String meetingName = "Quick meeting";
@@ -2287,7 +2287,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		String meetingName = "Quick meeting";
@@ -2363,7 +2363,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		String meetingName = "Recurring meeting";
@@ -2664,7 +2664,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
@@ -2779,7 +2779,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
@@ -2899,7 +2899,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment course = new CoursePageFragment(participantBrowser);
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 
 		CheckListPage checkPage = new CheckListPage(participantBrowser);
@@ -3016,7 +3016,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 
 		CheckListPage checkPage = new CheckListPage(browser);

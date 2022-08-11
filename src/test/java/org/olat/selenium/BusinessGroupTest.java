@@ -778,7 +778,7 @@ public class BusinessGroupTest extends Deployments {
 			//go to the enrollment
 			CoursePageFragment participantCourse = new CoursePageFragment(driver);
 			participantCourse
-				.clickTree()
+				.tree()
 				.selectWithTitle(enNodeTitle);
 		
 			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
@@ -893,7 +893,7 @@ public class BusinessGroupTest extends Deployments {
 		//go to the enrollment
 		CoursePageFragment participantCourse = new CoursePageFragment(ryomouBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(enNodeTitle);
 		
 		EnrollmentPage enrollmentPage = new EnrollmentPage(ryomouBrowser);
@@ -1007,7 +1007,7 @@ public class BusinessGroupTest extends Deployments {
 			//go to the enrollment
 			CoursePageFragment participantCourse = new CoursePageFragment(driver);
 			participantCourse
-				.clickTree()
+				.tree()
 				.selectWithTitle(enNodeTitle);
 		
 			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
@@ -1140,7 +1140,7 @@ public class BusinessGroupTest extends Deployments {
 			//go to the enrollment
 			CoursePageFragment participantCourse = new CoursePageFragment(driver);
 			participantCourse
-				.clickTree()
+				.tree()
 				.selectWithTitle(enNodeTitle);
 		
 			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);

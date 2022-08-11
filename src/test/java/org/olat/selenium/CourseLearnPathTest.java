@@ -156,7 +156,7 @@ public class CourseLearnPathTest extends Deployments {
 		//go to the group task
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		MenuTreePageFragment menuTree = participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(firstNodeTitle);
 		participantCourse
 			.assertOnLearnPathNodeReady(firstNodeTitle)
@@ -280,7 +280,7 @@ public class CourseLearnPathTest extends Deployments {
 		//go to the group task
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		GroupTaskPage participantTask = new GroupTaskPage(participantBrowser);
