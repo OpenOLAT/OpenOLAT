@@ -246,38 +246,38 @@ public class AccessConfigurationController extends FormBasicController {
 					addButton.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg");
 					addOfferLinks.add(addButton);
 				}
+				
+				if (openAccessSupported || guestSupported) {
+					addMethodDropdown.addElement(new SpacerItem("spacer"));
+				}
+				
+				addOpenAccessLink = uifactory.addFormLink("create.offer.open.link", "create.offer.open", null, formLayout, Link.LINK);
+				addOpenAccessLink.setIconLeftCSS("o_icon o_ac_openaccess_icon o_icon-fw");
+				addOpenAccessLink.setElementCssClass("o_sel_ac_add_open");
+				addOpenAccessLink.setVisible(openAccessSupported);
+				addMethodDropdown.addElement(addOpenAccessLink);
+				formLayout.add(addOpenAccessLink.getName(), addOpenAccessLink);
+				
+				addOpenAccessButton = uifactory.addFormLink("create.offer.open", offersContainer, Link.BUTTON);
+				addOpenAccessButton.setIconLeftCSS( ("o_icon o_ac_openaccess_icon o_icon-lg"));
+				addOpenAccessButton.setElementCssClass("o_sel_ac_add_open");
+				addOpenAccessButton.setVisible(openAccessSupported);
+				addOfferLinks.add(addOpenAccessButton);
+				
+				boolean addGuest = isAddGuest();
+				addGuestLink = uifactory.addFormLink("create.offer.guest.link", "create.offer.guest", null, formLayout, Link.LINK);
+				addGuestLink.setIconLeftCSS( ("o_icon o_ac_guests_icon o_icon-fw"));
+				addGuestLink.setElementCssClass("o_sel_ac_add_guest");
+				addGuestLink.setVisible(addGuest);
+				addMethodDropdown.addElement(addGuestLink);
+				formLayout.add(addGuestLink.getName(), addGuestLink);
+				
+				addGuestButton = uifactory.addFormLink("create.offer.guest", offersContainer, Link.BUTTON);
+				addGuestButton.setIconLeftCSS("o_icon o_ac_guests_icon o_icon-lg");
+				addGuestButton.setElementCssClass("o_sel_ac_add_guest");
+				addGuestButton.setVisible(addGuest);
+				addOfferLinks.add(addGuestButton);
 			}
-			
-			if (!managedBookings && (openAccessSupported || guestSupported)) {
-				addMethodDropdown.addElement(new SpacerItem("spacer"));
-			}
-			
-			addOpenAccessLink = uifactory.addFormLink("create.offer.open.link", "create.offer.open", null, formLayout, Link.LINK);
-			addOpenAccessLink.setIconLeftCSS("o_icon o_ac_openaccess_icon o_icon-fw");
-			addOpenAccessLink.setElementCssClass("o_sel_ac_add_open");
-			addOpenAccessLink.setVisible(openAccessSupported);
-			addMethodDropdown.addElement(addOpenAccessLink);
-			formLayout.add(addOpenAccessLink.getName(), addOpenAccessLink);
-			
-			addOpenAccessButton = uifactory.addFormLink("create.offer.open", offersContainer, Link.BUTTON);
-			addOpenAccessButton.setIconLeftCSS( ("o_icon o_ac_openaccess_icon o_icon-lg"));
-			addOpenAccessButton.setElementCssClass("o_sel_ac_add_open");
-			addOpenAccessButton.setVisible(openAccessSupported);
-			addOfferLinks.add(addOpenAccessButton);
-			
-			boolean addGuest = isAddGuest();
-			addGuestLink = uifactory.addFormLink("create.offer.guest.link", "create.offer.guest", null, formLayout, Link.LINK);
-			addGuestLink.setIconLeftCSS( ("o_icon o_ac_guests_icon o_icon-fw"));
-			addGuestLink.setElementCssClass("o_sel_ac_add_guest");
-			addGuestLink.setVisible(addGuest);
-			addMethodDropdown.addElement(addGuestLink);
-			formLayout.add(addGuestLink.getName(), addGuestLink);
-			
-			addGuestButton = uifactory.addFormLink("create.offer.guest", offersContainer, Link.BUTTON);
-			addGuestButton.setIconLeftCSS("o_icon o_ac_guests_icon o_icon-lg");
-			addGuestButton.setElementCssClass("o_sel_ac_add_guest");
-			addGuestButton.setVisible(addGuest);
-			addOfferLinks.add(addGuestButton);
 			
 			updateAddUI();
 		}
@@ -495,6 +495,8 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	protected void forgeLinks(AccessInfo infos) {
+		if(managedBookings) return;
+		
 		FormLink editLink = uifactory.addFormLink("edit_" + (++counter), "edit", "offer.edit", null, offersContainer, Link.BUTTON);
 		editLink.setUserObject(infos);
 		editLink.setGhost(true);
