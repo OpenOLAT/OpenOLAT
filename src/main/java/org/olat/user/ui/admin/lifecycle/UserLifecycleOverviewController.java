@@ -19,7 +19,6 @@
  */
 package org.olat.user.ui.admin.lifecycle;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -187,7 +186,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		}
 		params.setUserLoginBefore(lastLoginBefore);
 		
-		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
+		List<Integer> statusList = List.of(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		params.setExactStatusList(statusList);
 		params.setOrganisations(manageableOrganisations);
 		return params;
@@ -195,7 +194,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 	
 	private SearchIdentityParams getInactiveParams() {
 		SearchIdentityParams params = new SearchIdentityParams();
-		params.setStatus(Identity.STATUS_INACTIVE);
+		params.setExactStatusList(List.of(Identity.STATUS_INACTIVE));
 		params.setOrganisations(manageableOrganisations);
 		return params;
 	}
@@ -212,9 +211,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 			lastLoginBefore = toDate(userModule.getNumberOfInactiveDayBeforeDeactivation());
 		}
 		params.setUserLoginBefore(lastLoginBefore);
-		
-		List<Integer> statusList = Arrays.asList(Identity.STATUS_INACTIVE);
-		params.setExactStatusList(statusList);
+		params.setExactStatusList(List.of(Identity.STATUS_INACTIVE));
 		params.setOrganisations(manageableOrganisations);
 		return params;
 	}
