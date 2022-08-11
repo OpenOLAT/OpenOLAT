@@ -35,12 +35,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -186,17 +183,8 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
-		Controller runCtrl;
-		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(SurveyCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
-			runCtrl = new SurveyRunController(ureq, wControl, userCourseEnv, this, secCallback);
-		}
+		SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
+		Controller runCtrl = new SurveyRunController(ureq, wControl, userCourseEnv, this, secCallback);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, SURVEY_ICON);
 		return new NodeRunConstructionResult(ctrl);
 	}

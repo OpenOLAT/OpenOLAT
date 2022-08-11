@@ -94,7 +94,8 @@ public class NodeRightServiceImpl implements NodeRightService {
 				if (NodeRightRole.coach == grant.getRole() && userCourseEnv.isCoach()) {
 					return true;
 				}
-				if (NodeRightRole.participant == grant.getRole() && userCourseEnv.isParticipant()) {
+				if (NodeRightRole.participant == grant.getRole() && (userCourseEnv.isParticipant()
+						&& !userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly())) {
 					return true;
 				}
 				if (NodeRightRole.guest == grant.getRole() && userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()) {

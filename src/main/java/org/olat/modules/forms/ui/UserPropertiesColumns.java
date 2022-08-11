@@ -52,10 +52,11 @@ public class UserPropertiesColumns implements UserColumns {
 			String header = userPropertyTranslator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey());
 			row.addCell(col.getAndIncrement(), header, styles.getBottomAlignStyle());
 		}
+		row.addCell(col.getAndIncrement(), userPropertyTranslator.translate("table.header.submission.date"), styles.getBottomAlignStyle());
 	}
 
 	@Override
-	public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col) {
+	public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col, OpenXMLWorkbookStyles styles) {
 		if (session.getParticipation() != null && session.getParticipation().getExecutor() != null) {
 			User user = session.getParticipation().getExecutor().getUser();
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -63,6 +64,7 @@ public class UserPropertiesColumns implements UserColumns {
 				row.addCell(col.getAndIncrement(), value);
 			}
 		}
+		row.addCell(col.getAndIncrement(), session.getSubmissionDate(), styles.getDateTimeStyle());
 	}
 
 }
