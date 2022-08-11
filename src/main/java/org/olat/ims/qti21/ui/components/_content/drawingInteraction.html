@@ -12,75 +12,82 @@
 	#if($interaction.getPrompt())
 		<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
-	#if($isItemSessionOpen)
-	<div class="btn-toolbar clearfix o_block" role="toolbar">
-		<div class="o_group_tools btn-group">
-			<a href="javascript:;" class="btn btn-default" data-tool="select" title='$r.translate("paint.select")'><i class="o_icon o_icon_pointer"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="front"  title='$r.translate("paint.move.front")'><i class="o_icon o_icon_draw_front"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="back" title='$r.translate("paint.move.back")'><i class="o_icon o_icon_draw_back"> </i></a>
-		</div>
-		<div class="btn-group">
-			<a href="javascript:;" id="clear" class="clear btn btn-default" title='$r.translate("paint.delete")'><i class="o_icon o_icon_clear_all"> </i></a>
-			<a href="javascript:;" id="clearall" class="clearall btn btn-default" title='$r.translate("paint.clear.all")'><i class="o_icon o_icon_delete_item"> </i> $r.translate("paint.clear.all")</a>
-		</div> 
-		<div class="o_group_tools btn-group">
-			<a href="javascript:;" class="btn btn-default" data-tool="circle" title='$r.translate("paint.circle")'><i class="o_icon o_icon_circle"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="ellipse" title='$r.translate("paint.ellipse")'><i class="o_icon o_icon_draw_ellipse"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="rectangle" title='$r.translate("paint.rectangle")'><i class="o_icon o_icon_rectangle"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="text" title='$r.translate("paint.text")'><i class="o_icon o_icon_text"> </i></a>
-		</div>
-		<div class="o_group_tools btn-group">
-			<a href="javascript:;" class="btn btn-default" data-tool="line" title='$r.translate("paint.line")'><i class="o_icon o_icon_line o_icon-rotate-180"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="brush" title='$r.translate("paint.brush")'><i class="o_icon o_icon_brush"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="eraser" title='$r.translate("paint.eraser")'><i class="o_icon o_icon_eraser"> </i></a>
-		</div>
-		<div class="o_group_colors btn-group">
-			<a href="javascript:;" class="black btn btn-default" data-color="rgba(0,0,0,1.0)" title='$r.translate("paint.color.black")'><i class="o_icon o_icon_draw_color"> </i></a>
-			<a href="javascript:;" class="white btn btn-default" data-color="rgba(255,255,255,1.0)" title='$r.translate("paint.color.white")'><i class="o_icon o_icon_circle_color o_iconstack-1x"> </i><i class="o_icon o_icon_draw_color o_icon-stack-1x"> </i></a>
-			<a href="javascript:;" class="blue btn btn-default" data-color="rgba(0,0,255,1.0)" title='$r.translate("paint.color.blue")'><i class="o_icon o_icon_draw_color"> </i></a>
-			<a href="javascript:;" class="red btn btn-default" data-color="rgba(255,0,0,1.0)" title='$r.translate("paint.color.red")'><i class="o_icon o_icon_draw_color"> </i></a>
-			<a href="javascript:;" class="yellow btn btn-default" data-color="rgba(255,255,0,1.0)" title='$r.translate("paint.color.yellow")'><i class="o_icon o_icon_draw_color"> </i></a>
-			<a href="javascript:;" class="green btn btn-default" data-color="rgba(0,128,0,1.0)" title='$r.translate("paint.color.green")'><i class="o_icon o_icon_draw_color"> </i></a>
-			<a href="javascript:;" class="purple btn btn-default" data-color="rgba(128,0,128,1.0)" title='$r.translate("paint.color.purple")'><i class="o_icon o_icon_draw_color"> </i></a> 
-		</div>
-	</div>
-	<div class="btn-toolbar clearfix">
-		<div class="btn-group">
-			<canvas class="brush_size" width="50" height="50"> </canvas>
-		</div>
-		<div class="btn-group o_slider_width_range">	
-			<div class="width_range_ui"></div>$r.translate("drawing.brushsize")
-		</div>
-		<div class="btn-group o_slider_opacity_range">
-			<div class="opacity_range_ui"></div>$r.translate("drawing.opacity")
-		</div>
-	</div>
-	#end
 	
-	#set($widthWithBorder = $r.parseInt(${interaction.object.width}) + 2)
-	#set($heightWithBorder = $r.parseInt(${interaction.object.height}) + 2)
-	<div class="sketch_wrapper" style="position:relative; min-height:${interaction.object.height}px; ">
-		<div id="sketch_${responseIdentifier}" class="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px; background-position: center; background-repeat: no-repeat; background-image:url('${r.convertLinkFull($interaction.object.data)}') !important;" draggable="false" ondragstart="return false;">
-			<canvas id="paint_${responseIdentifier}" width="${interaction.object.width}" height="${interaction.object.height}" style="" draggable="false" ondragstart="return false;"></canvas>
+	#if($r.isTrue($isCorrectionSolution) || $r.isTrue($isSolutionMode))
+		<div class="o_note">$r.translate("warning.no.solution")</div>
+	#else
+	
+		#if($isItemSessionOpen)
+		<div class="btn-toolbar clearfix o_block" role="toolbar">
+			<div class="o_group_tools btn-group">
+				<a href="javascript:;" class="btn btn-default" data-tool="select" title='$r.translate("paint.select")'><i class="o_icon o_icon_pointer"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="front"  title='$r.translate("paint.move.front")'><i class="o_icon o_icon_draw_front"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="back" title='$r.translate("paint.move.back")'><i class="o_icon o_icon_draw_back"> </i></a>
+			</div>
+			<div class="btn-group">
+				<a href="javascript:;" id="clear" class="clear btn btn-default" title='$r.translate("paint.delete")'><i class="o_icon o_icon_clear_all"> </i></a>
+				<a href="javascript:;" id="clearall" class="clearall btn btn-default" title='$r.translate("paint.clear.all")'><i class="o_icon o_icon_delete_item"> </i> $r.translate("paint.clear.all")</a>
+			</div> 
+			<div class="o_group_tools btn-group">
+				<a href="javascript:;" class="btn btn-default" data-tool="circle" title='$r.translate("paint.circle")'><i class="o_icon o_icon_circle"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="ellipse" title='$r.translate("paint.ellipse")'><i class="o_icon o_icon_draw_ellipse"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="rectangle" title='$r.translate("paint.rectangle")'><i class="o_icon o_icon_rectangle"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="text" title='$r.translate("paint.text")'><i class="o_icon o_icon_text"> </i></a>
+			</div>
+			<div class="o_group_tools btn-group">
+				<a href="javascript:;" class="btn btn-default" data-tool="line" title='$r.translate("paint.line")'><i class="o_icon o_icon_line o_icon-rotate-180"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="brush" title='$r.translate("paint.brush")'><i class="o_icon o_icon_brush"> </i></a>
+				<a href="javascript:;" class="btn btn-default" data-tool="eraser" title='$r.translate("paint.eraser")'><i class="o_icon o_icon_eraser"> </i></a>
+			</div>
+			<div class="o_group_colors btn-group">
+				<a href="javascript:;" class="black btn btn-default" data-color="rgba(0,0,0,1.0)" title='$r.translate("paint.color.black")'><i class="o_icon o_icon_draw_color"> </i></a>
+				<a href="javascript:;" class="white btn btn-default" data-color="rgba(255,255,255,1.0)" title='$r.translate("paint.color.white")'><i class="o_icon o_icon_circle_color o_iconstack-1x"> </i><i class="o_icon o_icon_draw_color o_icon-stack-1x"> </i></a>
+				<a href="javascript:;" class="blue btn btn-default" data-color="rgba(0,0,255,1.0)" title='$r.translate("paint.color.blue")'><i class="o_icon o_icon_draw_color"> </i></a>
+				<a href="javascript:;" class="red btn btn-default" data-color="rgba(255,0,0,1.0)" title='$r.translate("paint.color.red")'><i class="o_icon o_icon_draw_color"> </i></a>
+				<a href="javascript:;" class="yellow btn btn-default" data-color="rgba(255,255,0,1.0)" title='$r.translate("paint.color.yellow")'><i class="o_icon o_icon_draw_color"> </i></a>
+				<a href="javascript:;" class="green btn btn-default" data-color="rgba(0,128,0,1.0)" title='$r.translate("paint.color.green")'><i class="o_icon o_icon_draw_color"> </i></a>
+				<a href="javascript:;" class="purple btn btn-default" data-color="rgba(128,0,128,1.0)" title='$r.translate("paint.color.purple")'><i class="o_icon o_icon_draw_color"> </i></a> 
+			</div>
 		</div>
-	</div>
-	<script>
-	jQuery(function() {
-		var itemOpen = $isItemSessionOpen; 
-		if(itemOpen) {
-			jQuery('#sketch_${responseIdentifier}').paintV2({
-				inputHolderId: '${responseIdentifier}',
-				formDispatchFieldId: '$r.formDispatchFieldId'
-			});
-		} else {
-			var canvas = document.getElementById("paint_${responseIdentifier}");
-			var ctx = canvas.getContext("2d");
-			var image = new Image();
-			image.onload = function() {
-			    ctx.drawImage(image, 0, 0);
-			};
-			image.src = jQuery('#op_${responseIdentifier}_png').val();
-		}
-	});
-	</script>
+		<div class="btn-toolbar clearfix">
+			<div class="btn-group">
+				<canvas class="brush_size" width="50" height="50"> </canvas>
+			</div>
+			<div class="btn-group o_slider_width_range">	
+				<div class="width_range_ui"></div>$r.translate("drawing.brushsize")
+			</div>
+			<div class="btn-group o_slider_opacity_range">
+				<div class="opacity_range_ui"></div>$r.translate("drawing.opacity")
+			</div>
+		</div>
+		#end
+		
+		#set($widthWithBorder = $r.parseInt(${interaction.object.width}) + 2)
+		#set($heightWithBorder = $r.parseInt(${interaction.object.height}) + 2)
+		<div class="sketch_wrapper" style="position:relative; min-height:${interaction.object.height}px; ">
+			<div id="sketch_${responseIdentifier}" class="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px; background-position: center; background-repeat: no-repeat; background-image:url('${r.convertLinkFull($interaction.object.data)}') !important;" draggable="false" ondragstart="return false;">
+				<canvas id="paint_${responseIdentifier}" width="${interaction.object.width}" height="${interaction.object.height}" style="" draggable="false" ondragstart="return false;"></canvas>
+			</div>
+		</div>
+		<script>
+		"use strict";
+		jQuery(function() {
+			var itemOpen = $isItemSessionOpen; 
+			if(itemOpen) {
+				jQuery('#sketch_${responseIdentifier}').paintV2({
+					inputHolderId: '${responseIdentifier}',
+					formDispatchFieldId: '$r.formDispatchFieldId'
+				});
+			} else {
+				var canvas = document.getElementById("paint_${responseIdentifier}");
+				var ctx = canvas.getContext("2d");
+				var image = new Image();
+				image.onload = function() {
+				    ctx.drawImage(image, 0, 0);
+				};
+				image.src = jQuery('#op_${responseIdentifier}_png').val();
+			}
+		});
+		</script>
+	#end
 </div>

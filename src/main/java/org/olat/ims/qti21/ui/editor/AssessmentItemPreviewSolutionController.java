@@ -33,7 +33,6 @@ import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
-import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,18 +61,14 @@ public class AssessmentItemPreviewSolutionController extends BasicController {
 			ResolvedAssessmentItem resolvedAssessmentItem, File rootDirectory, File itemFile) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
 		
-		mainVC = createVelocityContainer("assessment_item_preview_solution");
-	
-		QTI21QuestionType type = QTI21QuestionType.getType(resolvedAssessmentItem);
-		if(type != QTI21QuestionType.essay && type != QTI21QuestionType.drawing && type != QTI21QuestionType.upload) {
-			displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-					resolvedAssessmentItem, rootDirectory, itemFile,
-					QTI21DeliveryOptions.defaultSettings(), candidateAuditLogger);
-			if(!displayCtrl.isExploded()) {
-				displayCtrl.requestSolution(ureq);
-			}
-			mainVC.put("display", displayCtrl.getInitialComponent());
+		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
+				resolvedAssessmentItem, rootDirectory, itemFile,
+				QTI21DeliveryOptions.defaultSettings(), candidateAuditLogger);
+		if(!displayCtrl.isExploded()) {
+			displayCtrl.requestSolution(ureq);
 		}
+		mainVC = createVelocityContainer("assessment_item_preview_solution");
+		mainVC.put("display", displayCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
 
