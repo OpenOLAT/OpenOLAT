@@ -26,7 +26,10 @@
 package org.olat.collaboration;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
@@ -49,7 +52,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
@@ -570,11 +572,7 @@ public class CollaborationTools implements Serializable {
 				mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
 				BinderSecurityCallback secCallback = readOnly
 						? BinderSecurityCallbackFactory.getReadOnlyCallback() : BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-				BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
-				binderCtrl.activate(ureq, entries, null);
-				ctrl = binderCtrl;
-
+				ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
 				ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
 				npm.saveProperty(mapKeyProperty);
