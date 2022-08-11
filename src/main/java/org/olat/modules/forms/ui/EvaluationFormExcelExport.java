@@ -217,7 +217,7 @@ public class EvaluationFormExcelExport {
 		for (EvaluationFormSession session: sessions) {
 			Row row = exportSheet.newRow();
 			AtomicInteger col = new AtomicInteger();
-			userColumns.addColumns(session, row, col);
+			userColumns.addColumns(session, row, col, workbook.getStyles());
 			addResponses(workbook, session, row, col);
 		}
 	}
@@ -428,7 +428,7 @@ public class EvaluationFormExcelExport {
 		
 		public void addHeaderColumns(Row row, AtomicInteger col, OpenXMLWorkbookStyles styles);
 		
-		public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col);
+		public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col, OpenXMLWorkbookStyles styles);
 		
 	}
 }

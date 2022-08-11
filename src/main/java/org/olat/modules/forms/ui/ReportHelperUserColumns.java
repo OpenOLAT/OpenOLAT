@@ -47,7 +47,7 @@ public class ReportHelperUserColumns implements UserColumns {
 	}
 
 	@Override
-	public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col) {
+	public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col, OpenXMLWorkbookStyles styles) {
 		String name = reportHelper.getLegend(session).getName();
 		if (StringHelper.containsNonWhitespace(name)) {
 			row.addCell(col.get(), name);
