@@ -649,7 +649,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
 		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, getReportSessionFilter(),
-				getReportHelper().getComparator(), new ReportHelperUserColumns(getReportHelper()), surveyName);
+				getReportHelper().getComparator(), new ReportHelperUserColumns(getReportHelper(), getTranslator()), surveyName);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	

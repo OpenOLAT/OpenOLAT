@@ -21,6 +21,7 @@ package org.olat.modules.forms.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbookStyles;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -36,14 +37,17 @@ import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
 public class ReportHelperUserColumns implements UserColumns {
 	
 	private final ReportHelper reportHelper;
+	private Translator translator;
 
-	public ReportHelperUserColumns(ReportHelper reportHelper) {
+	public ReportHelperUserColumns(ReportHelper reportHelper, Translator translator) {
 		this.reportHelper = reportHelper;
+		this.translator = translator;
 	}
 
 	@Override
 	public void addHeaderColumns(Row row, AtomicInteger col, OpenXMLWorkbookStyles styles) {
 		col.getAndIncrement();
+		row.addCell(col.getAndIncrement(), translator.translate("submission.date"), styles.getBottomAlignStyle());
 	}
 
 	@Override
@@ -53,6 +57,7 @@ public class ReportHelperUserColumns implements UserColumns {
 			row.addCell(col.get(), name);
 		}
 		col.getAndIncrement();
+		row.addCell(col.getAndIncrement(), session.getSubmissionDate(), styles.getDateTimeStyle());
 	}
 
 }
