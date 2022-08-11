@@ -39,6 +39,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
@@ -110,12 +111,19 @@ public enum QTI21QuestionType {
 		return newIdentifier;
 	}
 	
+	public static QTI21QuestionType getType(ResolvedAssessmentItem resolvedAssessmentItem) {
+		AssessmentItem item = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
+		if(item != null) {
+			return getType(item);
+		}
+		return QTI21QuestionType.unkown;
+	}
+	
 	public static QTI21QuestionType getType(AssessmentItem item) {
 		if(QTI21Constants.TOOLNAME.equals(item.getToolName())) {
 			return getTypeRelax(item);
-		} else {
-			return QTI21QuestionType.unkown;
 		}
+		return QTI21QuestionType.unkown;
 	}
 	
 	public static QTI21QuestionType getTypeRelax(AssessmentItem item) {
