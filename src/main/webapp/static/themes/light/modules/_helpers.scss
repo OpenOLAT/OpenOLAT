@@ -155,6 +155,10 @@
 	.dropdown-menu {
 		text-align: left;	
 	}
+	
+	&.open {
+		position: relative;
+	}
 }
 /* use together with o_button_group to have buttons left or right aligned */
 .o_button_group_left {
