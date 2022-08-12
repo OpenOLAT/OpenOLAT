@@ -41,7 +41,7 @@ public class CSPModule extends AbstractSpringModule {
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_IMG_SRC = "'self' data:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC = "'self' data:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC = "'self' https://youtu.be https://www.youtube.com";
-	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC = "'self' https://player.vimeo.com https://youtu.be https://www.youtube.com https://s.ytimg.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC = "'self' https://player.vimeo.com https://youtu.be https://www.youtube.com https://s.ytimg.com https://applications.zoom.us";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC = "'self' blob:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_MEDIA_SRC = "'self' blob: https://player.vimeo.com https://youtu.be https://www.youtube.com";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC = "'self'";
