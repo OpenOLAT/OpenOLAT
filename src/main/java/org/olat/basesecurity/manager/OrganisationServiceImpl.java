@@ -51,6 +51,7 @@ import org.olat.basesecurity.model.OrganisationMembershipEvent;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.SearchMemberParameters;
+import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -136,6 +137,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public List<Organisation> findOrganisationByIdentifier(String identifier) {
 		return organisationDao.loadByIdentifier(identifier);
+	}
+
+	@Override
+	public List<Organisation> findOrganisations(SearchOrganisationParameters searchparams) {
+		return organisationDao.findOrganisations(searchparams);
 	}
 
 	@Override

@@ -45,6 +45,7 @@ import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.SearchMemberParameters;
+import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -204,6 +205,33 @@ public class OrganisationDAO {
 				.createQuery(sb.toString(), Long.class)
 				.getResultList();
 		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).longValue();
+	}
+	
+	public List<Organisation> findOrganisations(SearchOrganisationParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg");
+		
+		if(StringHelper.containsNonWhitespace(searchParams.getIdentifier())) {
+			sb.and().append("lower(org.identifier)=:identifier");
+		}
+		if(StringHelper.containsNonWhitespace(searchParams.getExternalId())) {
+			sb.and().append("org.externalId=:externalId");
+		}
+
+		TypedQuery<Organisation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class);
+
+		if(StringHelper.containsNonWhitespace(searchParams.getIdentifier())) {
+			query.setParameter("identifier", searchParams.getIdentifier().toLowerCase());
+		}
+		if(StringHelper.containsNonWhitespace(searchParams.getExternalId())) {
+			query.setParameter("externalId", searchParams.getExternalId());
+		}
+		
+		return query.getResultList();
 	}
 	
 	public List<OrganisationMember> getMembers(OrganisationRef organisation, SearchMemberParameters params) {

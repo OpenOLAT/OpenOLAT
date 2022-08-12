@@ -48,6 +48,7 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
+import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -96,7 +97,7 @@ public class OrganisationsWebService {
 	 */
 	@GET
 	@Path("version")
-	@Operation(summary = "The version of the User Web Service", description = "The version of the User Web Service")
+	@Operation(summary = "The version of the organisations Web Service", description = "The version of the organisations Web Service")
 	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
@@ -115,14 +116,23 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The list of all organization in the OpenOLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")	
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
+	public Response getOrganisations(@QueryParam("externalId") String externalId,
+			@QueryParam("identifier") String identifier, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<Organisation> organisations = organisationService.getOrganisations();
+		List<Organisation> organisations;
+		if(StringHelper.containsNonWhitespace(identifier) || StringHelper.containsNonWhitespace(externalId)) {
+			SearchOrganisationParameters params = new SearchOrganisationParameters();
+			params.setExternalId(externalId);
+			params.setIdentifier(identifier);
+			organisations = organisationService.findOrganisations(params);
+		} else {
+			organisations = organisationService.getOrganisations();
+		}
 		OrganisationVO[] organisationVOes = toArrayOfVOes(organisations);
 		return Response.ok(organisationVOes).build();
 	}
@@ -139,12 +149,12 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The persisted organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putOrganisation(OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Organisation savedOrganisation = saveOrganisation(organisation);
 		return Response.ok(OrganisationVO.valueOf(savedOrganisation)).build();
@@ -162,16 +172,49 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The merged organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Organisation savedOrganisation = saveOrganisation(organisation);
 		return Response.ok(OrganisationVO.valueOf(savedOrganisation)).build();
+	}
+	
+	@DELETE
+	@Path("{organisationKey}")
+	@Operation(summary = "Deletes an organization entity", description = "Deletes an new organization entity. Only administrators or system administrators of the organization can delete it.")
+	@ApiResponse(responseCode = "200", description = "The organisation was successfully deleted", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The organization or the identity was not found")
+	@ApiResponse(responseCode = "409", description = "Try to do something very dangerous")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response deleteOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
+		if(!isAdministrator(httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+
+		Roles roles = RestSecurityHelper.getRoles(httpRequest);
+		OrganisationRef organisationRef = new OrganisationRefImpl(organisationKey);
+		if(!roles.hasRole(organisationRef, OrganisationRoles.administrator) && !roles.hasRole(organisationRef, OrganisationRoles.sysadmin)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+			
+		Organisation organisationToDelete = organisationService.getOrganisation(organisationRef);
+		if(organisationToDelete == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();	
+		}
+		Organisation defOrganisation =  organisationService.getDefaultOrganisation();
+		if(organisationToDelete.equals(defOrganisation)) {
+			return Response.serverError().status(Status.CONFLICT).build();	
+		}
+		organisationService.deleteOrganisation(organisationToDelete, null);
+		return Response.ok().build();
 	}
 	
 	/**
@@ -189,12 +232,12 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The list of organizations", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMemberships(@PathParam("role") String role, @PathParam("identityKey") Long identityKey,
 			@QueryParam("withInheritance") Boolean withInheritance, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		if(!OrganisationRoles.isValue(role)) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
@@ -224,11 +267,11 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The list of all organizations in the OpenOLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
@@ -242,11 +285,11 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The list of all entries in the organization system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRepositoryEntriesInOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		OrganisationRef organisation = new OrganisationRefImpl(organisationKey);
 		List<RepositoryEntry> entries = repositoryService.getRepositoryEntryByOrganisation(organisation);
@@ -273,13 +316,13 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The merged organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(@PathParam("organisationKey") Long organisationKey, OrganisationVO organisation,
 			@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		if(organisation.getKey() == null) {
 			organisation.setKey(organisationKey);
@@ -352,11 +395,11 @@ public class OrganisationsWebService {
 	@ApiResponse(responseCode = "200", description = "The merged organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	public Response getMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return getMembers(organisationKey, getRoles(role));
 	}
@@ -393,13 +436,13 @@ public class OrganisationsWebService {
 	@Operation(summary = "Make the specified user a member of the specified organization", description = "Make the specified user a member of the specified organization\n" + 
 			" with the specified role")
 	@ApiResponse(responseCode = "200", description = "The membership was added")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The organization or the identity was not found")
 	public Response putMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@PathParam("identityKey") Long identityKey, @QueryParam("inheritanceMode") String inheritanceMode,
 			@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return putMember(organisationKey, identityKey, getRoles(role), inheritanceMode);
 	}
@@ -437,14 +480,14 @@ public class OrganisationsWebService {
 	@Path("{organisationKey}/{role}")
 	@Operation(summary = "Add a membership to the specified curriculum element", description = "Add a membership to the specified curriculum element")
 	@ApiResponse(responseCode = "200", description = "The membership was persisted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	public Response putMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@QueryParam("inheritanceMode") String inheritanceMode, UserVO[] members,
 			@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
@@ -488,12 +531,12 @@ public class OrganisationsWebService {
 	@Path("{organisationKey}/{role}/{identityKey}")
 	@Operation(summary = "Remove the membership", description = "Remove the membership of the identity from the specified organization and role")
 	@ApiResponse(responseCode = "200", description = "The membership was removed")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
 	public Response deleteMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return deleteMember(organisationKey, identityKey, getRoles(role));
 	}

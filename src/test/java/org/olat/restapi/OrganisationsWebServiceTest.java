@@ -41,6 +41,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.jgroups.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupMembership;
@@ -59,6 +60,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
@@ -109,6 +111,30 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 			}
 		}
 		Assert.assertTrue(found);
+	}
+	
+	@Test
+	public void getOrganisationsByExternalId()
+	throws IOException, URISyntaxException {
+		String externalId = UUID.randomUUID().toString();
+		Organisation organisation = organisationService.createOrganisation("REST Organisation-ext", "REST-organisation-ext", "", null, null);
+		organisation.setExternalId(externalId);
+		organisation = organisationService.updateOrganisation(organisation);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations")
+				.queryParam("externalId", externalId).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<OrganisationVO> organisationVoes = parseOrganisationArray(response.getEntity());
+		
+		Assert.assertNotNull(organisationVoes);
+		Assert.assertEquals(1, organisationVoes.size());
+		Assert.assertEquals(organisation.getKey(), organisationVoes.get(0).getKey());
 	}
 	
 	@Test
@@ -444,6 +470,66 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(savedVo.getKey(), savedOrganisation.getKey());
 		Assert.assertEquals(rootOrganisation, savedOrganisation.getParent());
 		Assert.assertEquals(rootOrganisation, savedOrganisation.getRoot());
+	}
+	
+	@Test
+	public void deleteOrganisation()
+	throws IOException, URISyntaxException {
+		IdentityWithLogin admin = JunitTestHelper.createAndPersistRndUser("org-del-admin");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 51", "REST-51-organisation", "", null, null);
+		organisationService.addMember(organisation, admin.getIdentity(), OrganisationRoles.administrator);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(admin));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Organisation deletedOrganisation = organisationService.getOrganisation(organisation);
+		Assert.assertNull(deletedOrganisation);
+	}
+	
+	@Test
+	public void deleteOrganisationDefaultForbidden()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Organisation defOrganisation = organisationService.getOrganisation(organisation);
+		Assert.assertNotNull(defOrganisation);
+		Assert.assertEquals(organisation, defOrganisation);
+	}
+	
+	@Test
+	public void deleteOrganisationForbidden()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 53", "REST-53-organisation", "", null, null);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Organisation deletedOrganisation = organisationService.getOrganisation(organisation);
+		Assert.assertNotNull(deletedOrganisation);
 	}
 	
 	@Test
