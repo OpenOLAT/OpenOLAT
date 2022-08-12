@@ -71,7 +71,7 @@
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.2.17.Final</io.undertow>
+		<io.undertow>2.2.19.Final</io.undertow>
 		<jackson.version>2.13.3</jackson.version>
 		<swagger.ui.version>4.13.2</swagger.ui.version>
 		<org.mysql.version>8.0.29</org.mysql.version>
@@ -2487,7 +2487,7 @@
 		<dependency>
 			<groupId>org.zapodot</groupId>
 			<artifactId>embedded-ldap-junit</artifactId>
-			<version>0.8.2</version>
+			<version>0.8.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2528,7 +2528,7 @@
 		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile -->
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.29.0-GA</version>
+			<version>3.29.1-GA</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
