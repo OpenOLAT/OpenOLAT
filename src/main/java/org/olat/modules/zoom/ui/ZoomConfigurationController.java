@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.link.LinkFactory.createLink;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -199,6 +200,15 @@ public class ZoomConfigurationController extends FormBasicController {
             cleanUp();
         } else if (modalCtrl == source) {
             cleanUp();
+        } else if (showApplicationsCtrl == source) {
+            if (event instanceof ShowZoomApplicationsController.OpenBusinessPathEvent) {
+                modalCtrl.deactivate();
+                cleanUp();
+                String businessPath = ((ShowZoomApplicationsController.OpenBusinessPathEvent) event).getBusinessPath();
+
+                NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+                updateUI();
+            }
         }
         super.event(ureq, source, event);
     }
@@ -246,8 +256,14 @@ public class ZoomConfigurationController extends FormBasicController {
     }
 
     private void updateUI() {
+        moduleEnabledEl.select(enabledKeys[0], zoomModule.isEnabled());
         boolean enabled = moduleEnabledEl.isAtLeastSelected(1);
+
         enableForEl.setVisible(enabled);
+        enableForEl.select(ENABLE_FOR_KEYS[0], zoomModule.isEnabledForCourseElement());
+        enableForEl.select(ENABLE_FOR_KEYS[1], zoomModule.isEnabledForCourseTool());
+        enableForEl.select(ENABLE_FOR_KEYS[2], zoomModule.isEnabledForGroupTool());
+
         profilesTableEl.setVisible(enabled);
         addProfileButton.setVisible(enabled);
     }

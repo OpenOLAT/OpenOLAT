@@ -91,6 +91,8 @@ public interface ZoomManager {
 
     String getMailDomainForUser(User user);
 
+    List<ZoomProfileDAO.ZoomProfileApplication> getProfileApplications(Long profileKey);
+
     class ZoomConnectionResponse {
 
         private final int status;

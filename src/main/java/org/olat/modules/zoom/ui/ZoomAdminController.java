@@ -74,13 +74,12 @@ public class ZoomAdminController extends BasicController implements Activateable
     }
 
     private void doOpenConfiguration(UserRequest ureq) {
-        if (configController == null) {
-            WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
-            configController = new ZoomConfigurationController(ureq, bwControl);
-            listenTo(configController);
-        } else {
-            addToHistory(ureq, configController);
-        }
+        removeAsListenerAndDispose(configController);
+
+        WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0L), null);
+        configController = new ZoomConfigurationController(ureq, bwControl);
+        listenTo(configController);
+
         mainVC.put("segmentCmp", configController.getInitialComponent());
     }
 

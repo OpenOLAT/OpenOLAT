@@ -22,6 +22,8 @@ package org.olat.modules.zoom.manager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.model.ZoomProfileImpl;
 import org.springframework.beans.factory.annotation.Autowired;
