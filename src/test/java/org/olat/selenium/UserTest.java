@@ -106,7 +106,6 @@ public class UserTest extends Deployments {
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
-			.openToolsMenu()
 			.settings()
 			.accessConfiguration()
 			.quickOpenAccess();
@@ -179,7 +178,6 @@ public class UserTest extends Deployments {
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
-			.openToolsMenu()
 			.settings()
 			.accessConfiguration()
 			.quickOpenAccess();
