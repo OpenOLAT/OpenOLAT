@@ -691,7 +691,6 @@ public class CourseElementTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(title)
-			.openToolsMenu()
 			.edit()
 			.createNode("info")
 			.nodeTitle(infoNodeTitle);
@@ -812,7 +811,6 @@ public class CourseElementTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(title)
-			.openToolsMenu()
 			.edit()
 			.createNode("dialog")
 			.nodeTitle(dialogNodeTitle);
@@ -956,7 +954,6 @@ public class CourseElementTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(title)
-			.openToolsMenu()
 			.edit()
 			.createNode("cmembers")
 			.nodeTitle(memberListTitle);
@@ -981,7 +978,6 @@ public class CourseElementTest extends Deployments {
 		
 		//the author is not satisfied with the configuration
 		editor = course
-			.openToolsMenu()
 			.edit()
 			.selectNode(memberListTitle);
 		MemberListConfigurationPage memberListConfig = new MemberListConfigurationPage(browser);
@@ -1007,7 +1003,6 @@ public class CourseElementTest extends Deployments {
 		
 		// perhaps only the coaches
 		editor = course
-			.openToolsMenu()
 			.edit()
 			.selectNode(memberListTitle);
 		memberListConfig = new MemberListConfigurationPage(browser);
@@ -1211,7 +1206,6 @@ public class CourseElementTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(title)
-			.openToolsMenu()
 			.edit()
 			.createNode("pf")
 			.nodeTitle(participantFolderTitle);

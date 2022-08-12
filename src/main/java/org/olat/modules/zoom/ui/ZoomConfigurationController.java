@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.link.LinkFactory.createLink;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,11 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -84,6 +81,7 @@ public class ZoomConfigurationController extends FormBasicController {
     private ZoomProfileEditController editZoomProfileCtrl;
     private ConfirmDeleteProfileController confirmDeleteProfileCtrl;
     private ProfileInUseController profileInUseCtrl;
+    private ShowZoomApplicationsController showApplicationsCtrl;
 
     @Autowired
     private ZoomModule zoomModule;
@@ -124,7 +122,15 @@ public class ZoomConfigurationController extends FormBasicController {
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.status));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.mailDomain));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.clientId));
-        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.applications));
+        FlexiCellRenderer renderer = new StaticFlexiCellRenderer("showApplications", new TextFlexiCellRenderer());
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(
+                ZoomProfileCols.applications.i18nHeaderKey(),
+                ZoomProfileCols.applications.ordinal(),
+                "showApplications",
+                true,
+                ZoomProfileCols.applications.name(),
+                renderer
+        ));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 
         StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ZoomProfileCols.tools.i18nHeaderKey(), ZoomProfileCols.tools.ordinal());
@@ -194,6 +200,15 @@ public class ZoomConfigurationController extends FormBasicController {
             cleanUp();
         } else if (modalCtrl == source) {
             cleanUp();
+        } else if (showApplicationsCtrl == source) {
+            if (event instanceof ShowZoomApplicationsController.OpenBusinessPathEvent) {
+                modalCtrl.deactivate();
+                cleanUp();
+                String businessPath = ((ShowZoomApplicationsController.OpenBusinessPathEvent) event).getBusinessPath();
+
+                NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+                updateUI();
+            }
         }
         super.event(ureq, source, event);
     }
@@ -205,6 +220,7 @@ public class ZoomConfigurationController extends FormBasicController {
         removeAsListenerAndDispose(editZoomProfileCtrl);
         removeAsListenerAndDispose(confirmDeleteProfileCtrl);
         removeAsListenerAndDispose(profileInUseCtrl);
+        removeAsListenerAndDispose(showApplicationsCtrl);
 
         calloutCtrl = null;
         toolsCtrl = null;
@@ -212,6 +228,7 @@ public class ZoomConfigurationController extends FormBasicController {
         editZoomProfileCtrl = null;
         confirmDeleteProfileCtrl = null;
         profileInUseCtrl = null;
+        showApplicationsCtrl = null;
     }
 
     @Override
@@ -230,6 +247,8 @@ public class ZoomConfigurationController extends FormBasicController {
                 SelectionEvent selectionEvent = (SelectionEvent)event;
                 if ("edit".equals(selectionEvent.getCommand())) {
                     doEdit(ureq, profilesTableModel.getObject(selectionEvent.getIndex()));
+                } else if ("showApplications".equals(selectionEvent.getCommand())) {
+                    doShowApplications(ureq, profilesTableModel.getObject(selectionEvent.getIndex()));
                 }
             }
         }
@@ -237,8 +256,14 @@ public class ZoomConfigurationController extends FormBasicController {
     }
 
     private void updateUI() {
+        moduleEnabledEl.select(enabledKeys[0], zoomModule.isEnabled());
         boolean enabled = moduleEnabledEl.isAtLeastSelected(1);
+
         enableForEl.setVisible(enabled);
+        enableForEl.select(ENABLE_FOR_KEYS[0], zoomModule.isEnabledForCourseElement());
+        enableForEl.select(ENABLE_FOR_KEYS[1], zoomModule.isEnabledForCourseTool());
+        enableForEl.select(ENABLE_FOR_KEYS[2], zoomModule.isEnabledForGroupTool());
+
         profilesTableEl.setVisible(enabled);
         addProfileButton.setVisible(enabled);
     }
@@ -303,6 +328,23 @@ public class ZoomConfigurationController extends FormBasicController {
         String title = translate("zoom.profile.edit", zoomProfile.getName());
         modalCtrl = new CloseableModalController(getWindowControl(), "close",
                 editZoomProfileCtrl.getInitialComponent(), true, title);
+        modalCtrl.activate();
+        listenTo(modalCtrl);
+    }
+
+    private void doShowApplications(UserRequest ureq, ZoomProfileRow row) {
+        if (guardModalController(showApplicationsCtrl)) {
+            return;
+        }
+
+        ZoomProfile zoomProfile = row.getZoomProfile();
+
+        showApplicationsCtrl = new ShowZoomApplicationsController(ureq, getWindowControl(), zoomProfile);
+        listenTo(showApplicationsCtrl);
+
+        String title = translate("zoom.profile.applications", zoomProfile.getName());
+        modalCtrl = new CloseableModalController(getWindowControl(), "close",
+                showApplicationsCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
         listenTo(modalCtrl);
     }

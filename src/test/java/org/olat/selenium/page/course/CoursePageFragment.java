@@ -223,16 +223,16 @@ public class CoursePageFragment {
 	 * 
 	 * @return IUtself
 	 */
-	public CoursePageFragment openToolsMenu() {
+	private CoursePageFragment openToolsMenu() {
+		OOGraphene.waitElement(toolsMenuCaret, browser);
 		browser.findElement(toolsMenuCaret).click();
 		OOGraphene.waitElement(toolsMenu, browser);
 		return this;
 	}
 	
 	public RemindersPage reminders() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		By reminderBy = By.cssSelector("a.o_sel_course_reminders");
 		browser.findElement(reminderBy).click();
 		OOGraphene.waitBusy(browser);
@@ -240,9 +240,7 @@ public class CoursePageFragment {
 	}
 	
 	public CourseSettingsPage settings() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
 		
 		By reminderBy = By.cssSelector("a.o_sel_course_settings");
 		browser.findElement(reminderBy).click();
@@ -259,9 +257,8 @@ public class CoursePageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment edit() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(By.xpath("//div[contains(@class,'o_edit_mode')]"), browser);
@@ -274,9 +271,8 @@ public class CoursePageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment tryToEdit() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy(browser);
 		return new CourseEditorPageFragment(browser);
@@ -287,9 +283,8 @@ public class CoursePageFragment {
 	 * @return
 	 */
 	public MembersPage members() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		browser.findElement(membersCourseBy).click();
 		OOGraphene.waitBusy(browser);
 
@@ -299,9 +294,8 @@ public class CoursePageFragment {
 	}
 	
 	public AssessmentToolPage assessmentTool() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		browser.findElement(assessmentToolBy).click();
 		OOGraphene.waitBusy(browser);
 
@@ -313,18 +307,16 @@ public class CoursePageFragment {
 	}
 	
 	public AssessmentModePage assessmentConfiguration() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		browser.findElement(assessmentModeBy).click();
 		OOGraphene.waitBusy(browser);
 		return new AssessmentModePage(browser);
 	}
 	
 	public LectureRepositoryAdminPage lecturesAdministration() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		browser.findElement(lecturesAdministrationBy).click();
 		OOGraphene.waitBusy(browser);
 		return new LectureRepositoryAdminPage(browser)
@@ -342,9 +334,8 @@ public class CoursePageFragment {
 	}
 	
 	public BookingPage bookingTool() {
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openToolsMenu();
+		
 		browser.findElement(bookingBy).click();
 		OOGraphene.waitBusy(browser);
 		return new BookingPage(browser);

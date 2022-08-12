@@ -22,6 +22,8 @@ package org.olat.modules.zoom.manager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.model.ZoomProfileImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +84,20 @@ public class ZoomProfileDAO {
                 .map(ZoomProfileWithConfigCount::new).collect(Collectors.toList());
     }
 
+    public List<ZoomProfileApplication> getApplications(Long profileKey) {
+        String queryString = "select p.name, c.description, c.ltiToolDeployment" +
+                " from zoomprofile as p inner join zoomconfig as c on (c.profile.key=p.key)" +
+                " where p.key=:profileKey order by c.description asc";
+        return dbInstance
+                .getCurrentEntityManager()
+                .createQuery(queryString, Object[].class)
+                .setParameter("profileKey", profileKey)
+                .getResultList()
+                .stream()
+                .map(ZoomProfileApplication::new)
+                .collect(Collectors.toList());
+    }
+
     public ZoomProfile updateProfile(ZoomProfile zoomProfile) {
         zoomProfile.setLastModified(new Date());
         return dbInstance.getCurrentEntityManager().merge(zoomProfile);
@@ -124,6 +140,44 @@ public class ZoomProfileDAO {
 
         public Long getConfigCount() {
             return configCount;
+        }
+    }
+
+    public static class ZoomProfileApplication {
+        private final String name;
+        private final String description;
+
+        private final LTI13ToolDeployment lti13ToolDeployment;
+
+        public ZoomProfileApplication(Object[] objectArray) {
+            this.name = PersistenceHelper.extractString(objectArray, 0);
+            this.description = PersistenceHelper.extractString(objectArray, 1);
+            this.lti13ToolDeployment = (LTI13ToolDeployment) objectArray[2];
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public LTI13ToolDeployment getLti13ToolDeployment() {
+            return lti13ToolDeployment;
+        }
+
+        public ZoomManager.ApplicationType getApplicationType() {
+            if (description == null) {
+                return null;
+            }
+
+            String[] parts = description.split("-");
+            if (parts.length != 3) {
+                return null;
+            }
+
+            return ZoomManager.ApplicationType.valueOf(parts[0]);
         }
     }
 }

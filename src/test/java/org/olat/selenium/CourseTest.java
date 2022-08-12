@@ -132,7 +132,6 @@ public class CourseTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(title)
-			.openToolsMenu()
 			.edit();
 		
 		//create a course element of type info messages
@@ -416,7 +415,6 @@ public class CourseTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(courseTitle)
-			.openToolsMenu()
 			.edit();
 		
 		//create a course element of type info messages
@@ -510,7 +508,6 @@ public class CourseTest extends Deployments {
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
 			.assertOnTitle(courseTitle)
-			.openToolsMenu()
 			.edit()
 			.assertOnEditor()
 			.selectRoot();
@@ -945,7 +942,6 @@ public class CourseTest extends Deployments {
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
 		CourseEditorPageFragment courseEditor = course
-			.openToolsMenu()
 			.edit();
 		courseEditor
 			.selectRoot();
@@ -997,7 +993,6 @@ public class CourseTest extends Deployments {
 		
 		//Author go in the list of bookings of the course
 		BookingPage bookingList = course
-			.openToolsMenu()
 			.bookingTool();
 		bookingList
 			.assertFirstNameInListIsOk(ryomou);
@@ -1051,7 +1046,6 @@ public class CourseTest extends Deployments {
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
 		RepositoryAccessPage courseAccess = course
-			.openToolsMenu()
 			.edit()
 			.createNode("info")
 			.nodeTitle(infoMessageTitle)
@@ -1091,7 +1085,6 @@ public class CourseTest extends Deployments {
 		
 		//Author go in the list of bookings of the course
 		BookingPage bookingList = course
-			.openToolsMenu()
 			.bookingTool();
 		bookingList
 			.assertFirstNameInListIsOk(user);
@@ -1169,7 +1162,6 @@ public class CourseTest extends Deployments {
 		//open course editor, create a node, set access
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
-			.openToolsMenu()
 			.edit()
 			.createNode("info")
 			.autoPublish()
@@ -1272,7 +1264,6 @@ public class CourseTest extends Deployments {
 		//open course editor, create a structure node
 		CoursePageFragment course = new CoursePageFragment(browser);
 		CourseEditorPageFragment editor = course
-			.openToolsMenu()
 			.edit();
 		editor
 			.createNode("st")

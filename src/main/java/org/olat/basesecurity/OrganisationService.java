@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.SearchMemberParameters;
+import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -70,6 +71,8 @@ public interface OrganisationService {
 	public Organisation getOrganisation(OrganisationRef organisation);
 	
 	public List<Organisation> findOrganisationByIdentifier(String identifier);
+	
+	public List<Organisation> findOrganisations(SearchOrganisationParameters searchparams);
 	
 	public List<Organisation> getOrganisationParentLine(Organisation organisation);
 	

@@ -40,6 +40,7 @@ import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.SearchMemberParameters;
+import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -132,6 +133,22 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(allOrganisations);
 		Assert.assertFalse(allOrganisations.isEmpty());
 		Assert.assertTrue(allOrganisations.contains(organisation));
+	}
+	
+	@Test
+	public void findOrganisations() {
+		String id = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-find-1", "ID-234", null, null, null);
+		organisation.setExternalId(id);
+		organisation = organisationDao.update(organisation);
+		dbInstance.commitAndCloseSession();
+		
+		SearchOrganisationParameters searchParams = new SearchOrganisationParameters();
+		searchParams.setExternalId(id);
+		
+		List<Organisation> idOrganisations = organisationDao.findOrganisations(searchParams);
+		assertThat(idOrganisations)
+			.containsExactlyInAnyOrder(organisation);
 	}
 	
 	@Test
