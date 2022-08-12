@@ -186,7 +186,8 @@ public class OrganisationsWebService {
 	
 	@DELETE
 	@Path("{organisationKey}")
-	@Operation(summary = "Deletes an organization entity", description = "Deletes an new organization entity. Only administrators or system administrators of the organization can delete it.")
+	@Operation(summary = "Deletes an organization entity", description = "Deletes an new organization entity. Only administrators or "
+			+ "system administrators of the organization can delete it. The users are moved to the default organisation.")
 	@ApiResponse(responseCode = "200", description = "The organisation was successfully deleted", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
@@ -213,7 +214,7 @@ public class OrganisationsWebService {
 		if(organisationToDelete.equals(defOrganisation)) {
 			return Response.serverError().status(Status.CONFLICT).build();	
 		}
-		organisationService.deleteOrganisation(organisationToDelete, null);
+		organisationService.deleteOrganisation(organisationToDelete, defOrganisation);
 		return Response.ok().build();
 	}
 	
