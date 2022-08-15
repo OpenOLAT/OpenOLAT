@@ -210,9 +210,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			allEmailLink.setIconLeftCSS("o_icon o_icon_mail");
 		}
 		
-		Identity ownId = getIdentity();
-		if (editable && (isManager(ureq) || owners.contains(ownId) || coaches.contains(ownId)
-				|| (canDownload && !waiting.contains(ownId)))) {
+		if (editable && isDownloadable(ureq)) {
 			downloadLink = uifactory.addFormLink("download", "members.download", null, formLayout, Link.BUTTON);
 			downloadLink.setIconLeftCSS("o_icon o_icon_download");
 			if(formLayout instanceof FormLayoutContainer) {
@@ -249,12 +247,19 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		}
 	}
 	
-	private boolean isManager(UserRequest ureq) {
-		if(businessGroup != null) {
+	private boolean isDownloadable(UserRequest ureq) {
+		Identity ownId = getIdentity();
+		if (businessGroup != null) {
 			Roles roles = ureq.getUserSession().getRoles();
-			return roles.isAdministrator() || roles.isGroupManager();
+			if (roles.isAdministrator() || roles.isGroupManager() || owners.contains(ownId) || coaches.contains(ownId) || (canDownload && !waiting.contains(ownId))) {
+				return true;
+			}
+		} else if (userCourseEnv != null) {
+			if (userCourseEnv.isAdmin() || userCourseEnv.isCoach() || (canDownload && !waiting.contains(ownId))) {
+				return true;
+			}
 		}
-		return userCourseEnv != null && userCourseEnv.isAdmin();
+		return false;
 	}
 	
 	private List<Member> initFormMemberList(String name, List<Identity> ids, Set<Long> duplicateCatcher, FormItemContainer formLayout, boolean withEmail) {
