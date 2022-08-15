@@ -91,7 +91,7 @@ public class GroupsPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		browser.findElement(submitBy).click();
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//div[contains(@class,'o_name')]//div[contains(text(),'" + name+ "')]");
