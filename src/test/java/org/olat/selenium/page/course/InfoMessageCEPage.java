@@ -209,8 +209,7 @@ public class InfoMessageCEPage {
 	public InfoMessageCEPage oldMessages() {
 		By oldMessagesBy = By.cssSelector("a.o_sel_course_info_old_msgs");
 		OOGraphene.waitElement(oldMessagesBy, browser);
-		OOGraphene.waitingTooLong();// I don't know why
-		browser.findElement(oldMessagesBy).click();
+		OOGraphene.click(oldMessagesBy, browser);
 		OOGraphene.scrollTop(browser);
 		OOGraphene.waitBusy(browser);
 		return this;

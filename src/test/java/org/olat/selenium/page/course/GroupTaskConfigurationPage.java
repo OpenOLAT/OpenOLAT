@@ -130,8 +130,9 @@ public class GroupTaskConfigurationPage {
 		
 		//save the group
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitElementDisappears(submitBy, 5, browser);
+		OOGraphene.click(submitBy, browser);
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_group_edit_group_form");
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	
