@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,16 +48,16 @@ public class GuestOfferController extends FormBasicController {
 	private MultipleSelectionElement catalogEl;
 
 	private final Offer offer;
-	private final boolean catalogSupported;
+	private final CatalogInfo catalogInfo;
 	private final boolean edit;
 
 	@Autowired
 	private CatalogV2Module catalogModule;
 	
-	public GuestOfferController(UserRequest ureq, WindowControl wControl, Offer offer, boolean catalogSupported, boolean edit) {
+	public GuestOfferController(UserRequest ureq, WindowControl wControl, Offer offer, CatalogInfo catalogInfo, boolean edit) {
 		super(ureq, wControl);
 		this.offer = offer;
-		this.catalogSupported = catalogSupported;
+		this.catalogInfo = catalogInfo;
 		this.edit = edit;
 		initForm(ureq);
 	}
@@ -77,7 +78,11 @@ public class GuestOfferController extends FormBasicController {
 		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
 		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
-		catalogEl.setVisible(catalogSupported && !catalogEl.getKeys().isEmpty());
+		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
+		
+		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
+			uifactory.addStaticTextElement("access.info.catalog.entries", catalogInfo.getDetails(), formLayout);
+		}
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

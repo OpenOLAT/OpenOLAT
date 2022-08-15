@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.model.OfferImpl;
@@ -46,9 +47,9 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 	private TextElement tokenEl;
 	
 	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
-		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogSupported, edit);
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
 		initForm(ureq);
 	}
 

@@ -43,6 +43,7 @@ import org.olat.repository.ui.author.AuthoringEditAccessShareController;
 import org.olat.repository.ui.author.AuthoringEditAccessShareController.PublicVisibleEvent;
 import org.olat.repository.ui.author.AuthoringEditAccessShareController.StatusEvent;
 import org.olat.repository.wizard.AccessAndProperties;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -75,10 +76,11 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		
 		boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 		Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
+		CatalogInfo catalogInfo = new CatalogInfo(true, false, null, null, null);
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
 				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,
-				defaultOfferOrganisations, true, false, managedBookings, "manual_user/course_create/Access_configuration#offer");
+				defaultOfferOrganisations, catalogInfo, false, managedBookings, "manual_user/course_create/Access_configuration#offer");
 		accessOffersCtrl.setReStatus(RepositoryEntryStatusEnum.preparation);
 		listenTo(accessOffersCtrl);
 		

@@ -101,7 +101,15 @@ public class LectureAdminSettingsPage {
 	 */
 	private LectureAdminSettingsPage setAuthorizedAbsence(boolean authorizedAbsence) {		
 		String checkName = "lecture.authorized.absence.enabled";
-		return set(checkName, "on", authorizedAbsence);
+		set(checkName, "on", authorizedAbsence);
+		
+		By countCheckBy = By.xpath("//label/input[@name='lecture.count.authorized.absence.attendant']");
+		if(authorizedAbsence) {
+			OOGraphene.waitElement(countCheckBy, browser);
+		} else {
+			OOGraphene.waitElementDisappears(countCheckBy, 5, browser);
+		}
+		return this;
 	}
 	
 	/**
@@ -136,7 +144,6 @@ public class LectureAdminSettingsPage {
 		
 		WebElement enableCheckEl = browser.findElement(enableCheckBy);
 		OOGraphene.check(enableCheckEl, Boolean.valueOf(enable));
-		OOGraphene.waitBusy(browser);
 		return this;
 		
 	}

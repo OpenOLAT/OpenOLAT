@@ -48,6 +48,7 @@ import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	protected final OfferAccess link;
 	private final boolean offerOrganisationsSupported;
 	private final Collection<Organisation> offerOrganisations;
-	private final boolean catalogSupported;
+	private final CatalogInfo catalogInfo;
 	private List<Organisation> organisations;
 	private final boolean edit;
 	
@@ -87,14 +88,14 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private OrganisationModule organisationModule;
 	
 	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AbstractConfigurationMethodController.class, getLocale(), getTranslator()));
 		this.link = link;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.offerOrganisations = offerOrganisations;
-		this.catalogSupported = catalogSupported;
+		this.catalogInfo = catalogInfo;
 		this.edit = edit;
 	}
 	
@@ -140,7 +141,11 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
 			catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
 		}
-		catalogEl.setVisible(catalogSupported && !catalogEl.getKeys().isEmpty());
+		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
+		
+		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
+			uifactory.addStaticTextElement("access.info.catalog.entries", catalogInfo.getDetails(), formLayout);
+		}
 		
 		String[] onValues = new String[] { translate("on") };
 		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys, onValues);
