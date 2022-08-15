@@ -35,6 +35,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -93,17 +94,17 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
-			boolean catalogSupported) {
+			CatalogInfo catalogInfo) {
 		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, catalogSupported, true);
+				offerOrganisations, catalogInfo, true);
 	}
 
 	@Override
 	public TokenAccessConfigurationController createConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
-			boolean catalogSupported) {
+			CatalogInfo catalogInfo) {
 		return new TokenAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, catalogSupported, false);
+				offerOrganisations, catalogInfo, false);
 	}
 	
 	@Override

@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderPart;
@@ -102,17 +103,17 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
-			boolean catalogSupported) {
+			CatalogInfo catalogInfo) {
 		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, catalogSupported, true);
+				offerOrganisations, catalogInfo, true);
 	}
 
 	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
-			boolean catalogSupported) {
+			CatalogInfo catalogInfo) {
 		return new PaypalCheckoutAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, catalogSupported, false);
+				offerOrganisations, catalogInfo, false);
 	}
 	
 	@Override

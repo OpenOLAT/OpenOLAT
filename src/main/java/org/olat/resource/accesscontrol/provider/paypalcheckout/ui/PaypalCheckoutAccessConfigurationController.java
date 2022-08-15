@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.PriceImpl;
@@ -62,9 +63,9 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 	private PaypalCheckoutModule paypalModule;
 	
 	public PaypalCheckoutAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
-		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogSupported, edit);
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
 		vatValues = new String[]{ translate("vat.on") };
 		initForm(ureq);
 	}

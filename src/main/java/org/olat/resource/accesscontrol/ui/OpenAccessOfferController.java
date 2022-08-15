@@ -41,6 +41,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,7 +62,7 @@ public class OpenAccessOfferController extends FormBasicController {
 	private final Offer offer;
 	private final boolean offerOrganisationsSupported;
 	private final Collection<Organisation> offerOrganisations;
-	private final boolean catalogSupported;
+	private final CatalogInfo catalogInfo;
 	private final boolean edit;
 	private List<Organisation> organisations;
 	
@@ -73,13 +74,13 @@ public class OpenAccessOfferController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	
 	public OpenAccessOfferController(UserRequest ureq, WindowControl wControl, Offer offer,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, boolean catalogSupported,
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
 		super(ureq, wControl);
 		this.offer = offer;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.offerOrganisations = offerOrganisations;
-		this.catalogSupported = catalogSupported;
+		this.catalogInfo = catalogInfo;
 		this.edit = edit;
 		initForm(ureq);
 	}
@@ -110,7 +111,11 @@ public class OpenAccessOfferController extends FormBasicController {
 		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
 			catalogEl.select(CATALOG_WEB,offer != null && offer.isCatalogWebPublish());
 		}
-		catalogEl.setVisible(catalogSupported && !catalogEl.getKeys().isEmpty());
+		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
+		
+		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
+			uifactory.addStaticTextElement("access.info.catalog.entries", catalogInfo.getDetails(), formLayout);
+		}
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

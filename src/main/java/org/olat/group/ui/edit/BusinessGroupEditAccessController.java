@@ -33,6 +33,7 @@ import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,7 +63,8 @@ public class BusinessGroupEditAccessController extends BasicController {
 			boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
 			boolean waitingList = businessGroup.getWaitingListEnabled();
 			accessCtrl = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(),
-					!waitingList, false, false, false, null, false, false, managed, "manual_user/groups/Group_Administration/#booking");
+					!waitingList, false, false, false, null, CatalogInfo.UNSUPPORTED, false, managed,
+					"manual_user/groups/Group_Administration/#booking");
 			listenTo(accessCtrl);
 			mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());
 		}

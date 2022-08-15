@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
@@ -58,6 +59,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
@@ -101,7 +103,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private final boolean guestSupported;
 	private final boolean offerOrganisationsSupported;
 	private Collection<Organisation> defaultOfferOrganisations;
-	private final boolean catalogSupported;
+	private final CatalogInfo catalogInfo;
 	private final boolean readOnly;
 	private final boolean managedBookings;
 	private final String helpUrl;
@@ -117,7 +119,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
-			boolean catalogSupported, boolean readOnly, boolean managedBookings, String helpUrl) {
+			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, String helpUrl) {
 		super(ureq, wControl, "access_configuration");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
@@ -127,7 +129,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.guestSupported = guestSupported;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
-		this.catalogSupported = catalogSupported;
+		this.catalogInfo = catalogInfo;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
 		this.helpUrl = helpUrl;
@@ -139,7 +141,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, Form form, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
-			boolean catalogSupported, boolean readOnly, boolean managedBookings, String helpUrl) {
+			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, String helpUrl) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
@@ -149,7 +151,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.guestSupported = guestSupported;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
-		this.catalogSupported = catalogSupported;
+		this.catalogInfo = catalogInfo;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
 		this.helpUrl = helpUrl;
@@ -383,6 +385,8 @@ public class AccessConfigurationController extends FormBasicController {
 			} else if("edit".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
 				editOffer(ureq, infos);
+			} else if("catalog".equals(cmd)) {
+				editCatalogInfo(ureq);
 			} else if (cmd.startsWith("create.")) {
 				AccessMethod method = (AccessMethod)source.getUserObject();
 				addOffer(ureq, method);
@@ -422,6 +426,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if(accessInfo.getLink() != null && accessInfo.getLink().equals(link)) {
 				accessInfo.setLink(link);
 				accessInfo.setOfferOrganisations(offerOrganisations);
+				forgeCatalogInfos(accessInfo);
 				updated = true;
 			}
 		}
@@ -438,6 +443,7 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), link, handler);
 		infos.setOfferOrganisations(offerOrganisations);
+		forgeCatalogInfos(infos);
 		accessInfos.add(infos);
 		
 		if (!readOnly && !managedBookings) {
@@ -453,6 +459,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if (accessInfo.getOffer().equals(offer)) {
 				accessInfo.setOffer(offer);
 				accessInfo.setOfferOrganisations(offerOrganisations);
+				forgeCatalogInfos(accessInfo);
 				updated = true;
 			}
 		}
@@ -463,6 +470,7 @@ public class AccessConfigurationController extends FormBasicController {
 			infos.setOfferOrganisations(offerOrganisations);
 			infos.setName(translate("offer.open.access.name"));
 			infos.setIconCss("o_ac_openaccess");
+			forgeCatalogInfos(infos);
 			accessInfos.add(infos);
 			if (!readOnly) {
 				forgeLinks(infos);
@@ -484,6 +492,7 @@ public class AccessConfigurationController extends FormBasicController {
 		infos.setOffer(offer);
 		infos.setName(translate("offer.guest.name"));
 		infos.setIconCss("o_ac_guest");
+		forgeCatalogInfos(infos);
 		accessInfos.add(infos);
 		
 		if (!readOnly) {
@@ -492,6 +501,19 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		offersContainer.setDirty(true);
 		updateAddUI();
+	}
+
+	private void forgeCatalogInfos(AccessInfo infos) {
+		if (catalogInfo.isShowDetails()) {
+			infos.setCatalogDetails(catalogInfo.getDetails());
+			if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
+				FormLink catEditLink = uifactory.addFormLink("cat_" + (++counter), "catalog", null, "", offersContainer, Link.NONTRANSLATED + Link.LINK);
+				catEditLink.setI18nKey(catalogInfo.getEditLabel());
+				catEditLink.setIconLeftCSS("o_icon o_icon_link_extern");
+				offersContainer.add(catEditLink.getName(), catEditLink);
+				infos.setCatalogEditLink(catEditLink);
+			}
+		}
 	}
 
 	protected void forgeLinks(AccessInfo infos) {
@@ -524,8 +546,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		removeAsListenerAndDispose(openAccessOfferCtrl);
-		openAccessOfferCtrl = new OpenAccessOfferController(ureq, getWindowControl(), openAccessOffer,
-				offerOrganisationsSupported, offerOrganisations, catalogSupported, offer != null);
+		openAccessOfferCtrl = new OpenAccessOfferController(ureq, getWindowControl(), openAccessOffer, offerOrganisationsSupported, offerOrganisations, catalogInfo, offer != null);
 		listenTo(openAccessOfferCtrl);
 		String title = translate("offer.open.access.name");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), openAccessOfferCtrl.getInitialComponent(), true, title);
@@ -541,7 +562,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		removeAsListenerAndDispose(guestOfferCtrl);
-		guestOfferCtrl = new GuestOfferController(ureq, getWindowControl(), guestOffer, catalogSupported, offer != null);
+		guestOfferCtrl = new GuestOfferController(ureq, getWindowControl(), guestOffer, catalogInfo, offer != null);
 		listenTo(guestOfferCtrl);
 		String title = translate("offer.guest.name");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), guestOfferCtrl.getInitialComponent(), true, title);
@@ -564,7 +585,7 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
 			Collection<Organisation> offerOrganisations = acService.getOfferOrganisations(link.getOffer());
-			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, offerOrganisations, catalogSupported);
+			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, offerOrganisations, catalogInfo);
 			if(editMethodCtrl != null) {
 				listenTo(editMethodCtrl);
 	
@@ -583,7 +604,7 @@ public class AccessConfigurationController extends FormBasicController {
 		removeAsListenerAndDispose(newMethodCtrl);
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
-			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, defaultOfferOrganisations, catalogSupported);
+			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, defaultOfferOrganisations, catalogInfo);
 		}
 		if(newMethodCtrl != null && handler != null) {
 			listenTo(newMethodCtrl);
@@ -605,6 +626,16 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		accessInfos.remove(infos);
 		updateAddUI();
+	}
+
+	private void editCatalogInfo(UserRequest ureq) {
+		try {
+			if (catalogInfo.isCatalogSupported() && StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
+				NewControllerFactory.getInstance().launch(catalogInfo.getEditBusinessPath(), ureq, getWindowControl());
+			}
+		} catch (Exception e) {
+			//
+		}
 	}
 
 	public void commitChanges() {
@@ -712,6 +743,8 @@ public class AccessConfigurationController extends FormBasicController {
 		private String iconCss;
 		private Offer offer;
 		private Collection<Organisation> offerOrganisations;
+		private String catalogDetails;
+		private FormLink catalogEditLink;
 		private OfferAccess link;
 		private AccessMethodHandler handler;
 		
@@ -848,7 +881,23 @@ public class AccessConfigurationController extends FormBasicController {
 					.map(Organisation::getDisplayName)
 					.collect(Collectors.joining(", "));
 		}
-		
+
+		public String getCatalogDetails() {
+			return catalogDetails;
+		}
+
+		public void setCatalogDetails(String catalogDetails) {
+			this.catalogDetails = catalogDetails;
+		}
+
+		public FormLink getCatalogEditLink() {
+			return catalogEditLink;
+		}
+
+		public void setCatalogEditLink(FormLink catalogEditLink) {
+			this.catalogEditLink = catalogEditLink;
+		}
+
 		@Override
 		public OfferAccess getLink() {
 			return link;
