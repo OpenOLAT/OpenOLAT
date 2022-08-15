@@ -53,18 +53,23 @@ public class UserAdminPage {
 	
 	public UserAdminPage openCreateUser() {
 		By createBy = By.cssSelector("ul.o_tools a.o_sel_useradmin_create");
-		WebElement createMenuItem = browser.findElement(createBy);
-		createMenuItem.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(createBy).click();
+		By createFormBy = By.cssSelector("form>fieldset.o_sel_id_create");
+		OOGraphene.waitElement(createFormBy, browser);
 		return this;
 	}
 	
 	public UserAdminPage openSearchUser() {
 		//In case it stay in the way
 		By createBy = By.cssSelector(".o_tree li.o_sel_useradmin_search>div>span.o_tree_link>a");
-		OOGraphene.waitElement(createBy, 5, browser);
+		OOGraphene.waitElement(createBy, browser);
 		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
+		return assertOnSearchUser();
+	}
+	
+	public UserAdminPage assertOnSearchUser() {
+		By searchFormBy = By.cssSelector("form>fieldset.o_sel_user_search_form");
+		OOGraphene.waitElement(searchFormBy, browser);
 		return this;
 	}
 	

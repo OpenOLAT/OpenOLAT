@@ -100,6 +100,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		setFormTitle("bigbluebutton.title");
 		setFormInfo("bigbluebutton.intro");
 		setFormContextHelp("manual_admin/administration/BigBlueButton_module/");
+		formLayout.setElementCssClass("o_sel_bbb_admin_configuration");
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("bigbluebutton.module.enabled", formLayout, ENABLED_KEY, enabledValues);
