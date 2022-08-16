@@ -36,6 +36,7 @@ import org.olat.modules.zoom.manager.ZoomProfileDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +58,7 @@ public class ShowZoomApplicationsController extends BasicController {
         List<ZoomProfileDAO.ZoomProfileApplication> applications = zoomManager.getProfileApplications(zoomProfile.getKey());
 
         mainVC = createVelocityContainer("show_applications");
-        List<Link> links = applications.stream().map(this::applicationToLink).collect(Collectors.toList());
+        List<Link> links = applications.stream().map(this::applicationToLink).filter(Objects::nonNull).collect(Collectors.toList());
         mainVC.contextPut("links", links);
 
         putInitialPanel(mainVC);
@@ -69,7 +70,12 @@ public class ShowZoomApplicationsController extends BasicController {
         Link link = LinkFactory.createLink(linkName, mainVC, this);
         StringBuilder businessPath = new StringBuilder(128);
 
-        switch (zoomProfileApplication.getApplicationType()) {
+        ZoomManager.ApplicationType applicationType = zoomProfileApplication.getApplicationType();
+        if (applicationType == null) {
+            return null;
+        }
+
+        switch (applicationType) {
             case courseElement:
                 ICourse course = CourseFactory.loadCourse(toolDeployment.getEntry());
                 String courseElementName = course.getRunStructure().getNode(toolDeployment.getSubIdent()).getShortName();
