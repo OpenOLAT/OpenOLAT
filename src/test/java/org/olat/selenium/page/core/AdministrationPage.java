@@ -129,10 +129,15 @@ public class AdministrationPage {
 	
 	public LectureAdminSettingsPage openLecturesSettings() {
 		selectModules();
+
+		By lecturesItemBy = By.xpath("//li[contains(@class,'o_sel_lectures')]");
+		OOGraphene.waitElement(lecturesItemBy, browser);
+		OOGraphene.moveTo(lecturesItemBy, browser);
 		
-		By lecturesBy = By.cssSelector(".o_sel_lectures span.o_tree_level_label_leaf>a");
+		By lecturesBy = By.xpath("//li[contains(@class,'o_sel_lectures')]//span[contains(@class,'o_tree_level_label_leaf')]/a[span[@class='o_tree_item']]");
 		browser.findElement(lecturesBy).click();
-		By lecturesActiveBy = By.cssSelector(".o_sel_lectures span.o_tree_link.active.o_tree_level_label_leaf>a");
+		
+		By lecturesActiveBy = By.xpath("//li[contains(@class,'o_sel_lectures')][contains(@class,'active')]//span[contains(@class,'o_tree_level_label_leaf')]/a[span[@class='o_tree_item']]");
 		OOGraphene.waitElement(lecturesActiveBy, browser);
 		return new LectureAdminSettingsPage(browser);
 	}
