@@ -46,6 +46,8 @@ public class RecordingTypeCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator trans) {
 		if(BigBlueButtonRecording.PRESENTATION.equals(cellValue)) {
 			render(target, translator.translate("recording.type.presentation"), "o_video_icon");
+		} else if(BigBlueButtonRecording.OPENCAST.equals(cellValue)) {
+			render(target, translator.translate("recording.type.opencast"), "o_opencast_icon");
 		} else if ("podcast".equals(cellValue)) {
 			render(target, translator.translate("recording.type.podcast"), "o_podcast_icon");
 		} else if ("download".equals(cellValue)) {

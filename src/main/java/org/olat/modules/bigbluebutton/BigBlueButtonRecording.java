@@ -30,6 +30,7 @@ import java.util.Date;
 public interface BigBlueButtonRecording {
 	
 	public static final String PRESENTATION = "presentation";
+	public static final String OPENCAST = "opencast";
 	
 	public String getRecordId();
 	

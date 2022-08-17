@@ -119,7 +119,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 			Date startTime = event.getStart();
 			Date endTime = event.getEnd();
 			String url = null;
-			String type = null;
+			String type = BigBlueButtonRecording.OPENCAST;
 			recordings.add(BigBlueButtonRecordingImpl.valueOf(recordId, name, meetingId, startTime, endTime, url, type));
 		}
 		return recordings;

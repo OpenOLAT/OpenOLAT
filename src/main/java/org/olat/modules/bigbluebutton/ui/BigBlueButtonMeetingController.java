@@ -333,7 +333,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		BigBlueButtonRecordingRow row = new BigBlueButtonRecordingRow(recording, pusblished);
 		if(administrator || moderator) {
 			String recId = recording.getRecording().getRecordId();
-			if(withPublish && BigBlueButtonRecording.PRESENTATION.equals(recording.getRecording().getType())) {
+			String recordingType = recording.getRecording().getType();
+			if(withPublish && (BigBlueButtonRecording.PRESENTATION.equals(recordingType)
+					|| BigBlueButtonRecording.OPENCAST.equals(recordingType))) {
 				FormLink publishLink = uifactory.addFormLink("publish-".concat(recId),
 						"publish", "publish.recording", tableEl);
 				row.setPublishLink(publishLink);
@@ -688,8 +690,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 	
 	private void doConfirmDeleteRecording(UserRequest ureq, BigBlueButtonRecording recording) {
-		String confirmDeleteTitle = translate("confirm.delete.recording.title", new String[]{ recording.getName() });
-		String confirmDeleteText = translate("confirm.delete.recording", new String[]{ recording.getName() });
+		String confirmDeleteTitle = translate("confirm.delete.recording.title", recording.getName());
+		String confirmDeleteText = translate("confirm.delete.recording", recording.getName());
 		confirmDeleteRecordingDialog = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmDeleteRecordingDialog);
 		confirmDeleteRecordingDialog.setUserObject(recording);
 	}
