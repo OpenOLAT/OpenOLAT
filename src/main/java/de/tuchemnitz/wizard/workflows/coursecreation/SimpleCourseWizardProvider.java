@@ -36,9 +36,12 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.wizard.AccessAndProperties;
 import org.olat.repository.wizard.RepositoryWizardProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfiguration;
@@ -52,6 +55,11 @@ import de.tuchemnitz.wizard.workflows.coursecreation.steps.CcStep00;
  */
 @Service
 public class SimpleCourseWizardProvider implements RepositoryWizardProvider {
+	
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
+	private CatalogV2Module catalogModule;
 
 	@Override
 	public String getType() {
@@ -76,7 +84,8 @@ public class SimpleCourseWizardProvider implements RepositoryWizardProvider {
 		
 		ICourse course = CourseFactory.loadCourse(entry);
 		String extLink = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-		CourseCreationConfiguration courseConfig = new CourseCreationConfiguration(course.getCourseTitle(), extLink);
+		boolean catalogEntrySupported = repositoryModule.isCatalogEnabled() && !catalogModule.isEnabled();
+		CourseCreationConfiguration courseConfig = new CourseCreationConfiguration(course.getCourseTitle(), extLink, catalogEntrySupported);
 		CourseCreationHelper ccHelper = new CourseCreationHelper(ureq.getLocale(), entry, courseConfig, course);
 
 		StepRunnerCallback finishCallback = (uureq, control, runContext) -> {
