@@ -129,11 +129,7 @@ public class AdministrationPage {
 	
 	public LectureAdminSettingsPage openLecturesSettings() {
 		selectModules();
-		
-		By lecturesBy = By.cssSelector(".o_sel_lectures span.o_tree_level_label_leaf>a");
-		browser.findElement(lecturesBy).click();
-		By lecturesActiveBy = By.cssSelector(".o_sel_lectures span.o_tree_link.active.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(lecturesActiveBy, browser);
+		openSubMenu("o_sel_lectures");
 		return new LectureAdminSettingsPage(browser);
 	}
 	
@@ -200,14 +196,9 @@ public class AdministrationPage {
 	
 	public TaxonomyAdminPage openTaxonomy() {
 		selectModules();
-		
-		By taxonomyBy = By.cssSelector(".o_sel_taxonomy span.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(taxonomyBy, browser);
-		browser.findElement(taxonomyBy).click();
-		By taxonomyListBy = By.className("o_taxonomy_listing");
-		OOGraphene.waitElement(taxonomyListBy, browser);
-		
-		return new TaxonomyAdminPage(browser).assertOnTaxonomyList();
+		openSubMenu("o_sel_taxonomy");
+		return new TaxonomyAdminPage(browser)
+				.assertOnTaxonomyList();
 	}
 	
 	public BigBlueButtonSettingsPage openBigBlueButtonSettings() {
@@ -219,5 +210,17 @@ public class AdministrationPage {
 		By bbbConfigBy = By.cssSelector("fieldset.o_sel_bbb_admin_configuration");
 		OOGraphene.waitElement(bbbConfigBy, browser);
 		return new BigBlueButtonSettingsPage(browser);
+	}
+	
+	private void openSubMenu(String liClass) {
+		By menuItemBy = By.xpath("//li[contains(@class,'" + liClass + "')]");
+		OOGraphene.waitElement(menuItemBy, browser);
+		OOGraphene.moveTo(menuItemBy, browser);
+		
+		By menuItemLinkBy = By.xpath("//li[contains(@class,'" + liClass + "')]//span[contains(@class,'o_tree_level_label_leaf')]/a[span[@class='o_tree_item']]");
+		browser.findElement(menuItemLinkBy).click();
+		
+		By activeMenuItemLinkBy = By.xpath("//li[contains(@class,'" + liClass + "')][contains(@class,'active')]//span[contains(@class,'o_tree_level_label_leaf')]/a[span[@class='o_tree_item']]");
+		OOGraphene.waitElement(activeMenuItemLinkBy, browser);
 	}
 }

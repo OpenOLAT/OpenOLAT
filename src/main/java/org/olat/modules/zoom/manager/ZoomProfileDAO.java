@@ -173,11 +173,16 @@ public class ZoomProfileDAO {
             }
 
             String[] parts = description.split("-");
-            if (parts.length != 3) {
+            if (parts.length < 2) {
                 return null;
             }
 
-            return ZoomManager.ApplicationType.valueOf(parts[0]);
+            ZoomManager.ApplicationType applicationType = ZoomManager.ApplicationType.valueOf(parts[0]);
+            if (applicationType != ZoomManager.ApplicationType.groupTool && parts.length < 3) {
+                return null;
+            }
+
+            return applicationType;
         }
     }
 }

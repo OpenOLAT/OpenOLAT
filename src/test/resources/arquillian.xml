@@ -28,7 +28,7 @@
 		<!--
 		<property name="downloadBinaries">false</property>
 		<property name="chromeDriverBinary">target/drone/6d795cff6911ddb1057dbfe1d7810f1a/chromedriver</property>
-		<property name="firefoxDriverBinary">target/drone/0c6eedff7695dc0cc006407af33bd496/geckodriver</property>
+		<property name="firefoxDriverBinary">target/drone/66a8842efe8a87c2b1e8237deb1c2905/geckodriver</property>
 		-->
 		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.31.0}</property>
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>

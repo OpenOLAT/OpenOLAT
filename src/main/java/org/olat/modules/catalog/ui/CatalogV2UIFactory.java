@@ -39,7 +39,7 @@ public class CatalogV2UIFactory {
 		return Comparator
 			.comparing(
 					TaxonomyLevel::getSortOrder,
-					Comparator.nullsLast(null))
+					Comparator.nullsLast(Integer::compare))
 			.thenComparing(Comparator.comparing(
 					level -> TaxonomyUIFactory.translateDisplayName(translator, level),
 					Comparator.nullsLast(String::compareTo)));

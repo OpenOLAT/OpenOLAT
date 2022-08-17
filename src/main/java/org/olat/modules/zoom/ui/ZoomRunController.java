@@ -19,9 +19,11 @@
  */
 package org.olat.modules.zoom.ui;
 
+import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,7 +36,6 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.lti.ui.LTIDisplayContentController;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomManager;
@@ -52,17 +53,14 @@ import java.util.List;
  */
 public class ZoomRunController extends BasicController implements Activateable2 {
 
-    private VelocityContainer container;
-    private Link startButton;
-
-    private StackedPanel mainPanel;
+    private LTI13DisplayController ltiCtrl;
 
     ZoomConfig zoomConfig;
 
     @Autowired
     ZoomManager zoomManager;
 
-    private LTIDisplayContentController ltiCtrl;
+    private Link openZoomButton;
 
     public ZoomRunController(UserRequest ureq, WindowControl wControl,
                              ZoomManager.ApplicationType zoomApplicationType,
@@ -92,31 +90,43 @@ public class ZoomRunController extends BasicController implements Activateable2 
                     break;
             }
             Controller ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, title, text);
-            mainPanel = new SimpleStackedPanel("zoomErrorContainer");
-            putInitialPanel(mainPanel);
-            mainPanel.setContent(ctrl.getInitialComponent());
+            StackedPanel errorPanel = new SimpleStackedPanel("zoomErrorContainer");
+            errorPanel.setContent(ctrl.getInitialComponent());
+            putInitialPanel(errorPanel);
         } else if (zoomConfig.getProfile().getStatus() == ZoomProfile.ZoomProfileStatus.inactive) {
-            container = createVelocityContainer("run");
-            container.contextPut("isConfigInactive", true);
-            container.contextPut("zoomProfileName", zoomConfig.getProfile().getName());
-            mainPanel = putInitialPanel(container);
+            VelocityContainer inactiveVC = createVelocityContainer("inactive");
+            inactiveVC.contextPut("zoomProfileName", zoomConfig.getProfile().getName());
+            putInitialPanel(inactiveVC);
         } else {
             ltiCtrl = new LTI13DisplayController(ureq, wControl, zoomConfig.getLtiToolDeployment(), admin, coach, participant);
-            ltiCtrl.openLtiContent(ureq);
-            putInitialPanel(ltiCtrl.getInitialComponent());
+
+            VelocityContainer runVC = createVelocityContainer("run");
+            runVC.put("lti", ltiCtrl.getInitialComponent());
+            runVC.put("assistance", getAssistanceAccordion(ureq, runVC));
+            putInitialPanel(runVC);
         }
+    }
+
+    private Component getAssistanceAccordion(UserRequest ureq, VelocityContainer vc) {
+        openZoomButton = LinkFactory.createButton("zoom.run.assistance.openZoomButton", vc, this);
+        openZoomButton.setCustomEnabledLinkCSS("btn btn-primary");
+        AssistanceAccordionController assistanceAccordionCtrl =
+                new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "zoom.run.assistance");
+        assistanceAccordionCtrl.setHelpLink("zoom.run.assistance.helpLinkText", "manual_admin/administration/Zoom/");
+        assistanceAccordionCtrl.addQuestionAnswer("zoom.run.assistance.item1.title",
+                "zoom.run.assistance.item1.details", new Component[] { openZoomButton });
+        return assistanceAccordionCtrl.getInitialComponent();
     }
 
     @Override
     protected void event(UserRequest ureq, Component source, Event event) {
-//        if (source == startButton) {
-//            openZoom(ureq);
-//        }
+        if (source == openZoomButton) {
+            openZoomInNewWindow();
+        }
     }
 
-    private void openZoom(UserRequest ureq) {
-        ltiCtrl.openLtiContent(ureq);
-        mainPanel.setContent(ltiCtrl.getInitialComponent());
+    private void openZoomInNewWindow() {
+        ltiCtrl.manuallyOpenLtiContentInSeparateWindow();
     }
 
     @Override
