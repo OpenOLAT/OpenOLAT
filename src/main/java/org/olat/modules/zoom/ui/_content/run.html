@@ -1,9 +1,8 @@
-#if ($isConfigAvailable)
-<div class="o_button_group">
-    $r.render("zoom.start")
+<div id="zoom-run-panel" class="o_flex_first_grow_vertical">
+    <div class="o_lti_panel">
+        $r.render("lti")
+    </div>
+    <div class="o_block_move_up_large">
+        $r.render("assistance")
+    </div>
 </div>
-#elseif ($isConfigInactive)
-<div class="o_warning">
-    $r.translate("zoom.config.inactive.warning", $zoomProfileName)
-</div>
-#end

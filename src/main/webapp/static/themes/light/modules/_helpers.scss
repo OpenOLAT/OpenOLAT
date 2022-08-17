@@ -135,6 +135,15 @@
 	}
 }
 
+.o_flex_first_grow_vertical {
+	display: flex;
+	flex-direction: column;
+	> div:first-child {
+		margin-bottom: auto;
+		overflow: auto;
+	}
+}
+
 /* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
 .o_button_group {
 	@extend %o_block;
