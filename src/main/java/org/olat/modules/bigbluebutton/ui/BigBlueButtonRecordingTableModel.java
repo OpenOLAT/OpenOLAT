@@ -75,7 +75,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 			case open: return row.isPublished();
 			case publish: return row.getPublishLink();
 			case tools: return row.getToolsLink();
-			case presentation: return BigBlueButtonRecording.PRESENTATION.equals(row.getType());
+			case presentation: return BigBlueButtonRecording.PRESENTATION.equals(row.getType())
+					|| BigBlueButtonRecording.OPENCAST.equals(row.getType());
 			default: return "ERROR";
 		}
 	}
