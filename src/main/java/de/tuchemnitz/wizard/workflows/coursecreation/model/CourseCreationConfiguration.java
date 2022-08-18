@@ -107,14 +107,16 @@ public class CourseCreationConfiguration {
 	private Integer subscriberCount = null;
 	// publish the course
 	private Boolean publish = true;
+	private final boolean catalogEntrySupported;
 	// selected catalog entry
 	private CatalogEntry selectedParent = null;
 	
 	private AccessAndProperties accessAndProperties;
 
-	public CourseCreationConfiguration(final String courseTitle, final String extLink) {
+	public CourseCreationConfiguration(final String courseTitle, final String extLink, boolean catalogEntrySupported) {
 		this.courseTitle = courseTitle;
 		this.extLink = extLink;
+		this.catalogEntrySupported = catalogEntrySupported;
 	}
 	
 	public AccessAndProperties getAccessAndProperties() {
@@ -401,6 +403,10 @@ public class CourseCreationConfiguration {
 		return extLink;
 	}
 	
+	public boolean isCatalogEntrySupported() {
+		return catalogEntrySupported;
+	}
+
 	public final CatalogEntry getSelectedCatalogEntry() {
 		return this.selectedParent;
 	}

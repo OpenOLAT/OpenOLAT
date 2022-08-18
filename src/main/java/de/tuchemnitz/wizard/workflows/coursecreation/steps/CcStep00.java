@@ -73,7 +73,8 @@ import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfigu
  */
 public class CcStep00 extends BasicStep {
 
-	CourseCreationConfiguration courseConfig;
+	private final CourseCreationConfiguration courseConfig;
+	private final RepositoryEntry repoEntry;
 
 	private PrevNextFinishConfig prevNextConfig;
 	private CloseableModalController cmc;
@@ -89,8 +90,9 @@ public class CcStep00 extends BasicStep {
 		super(ureq);
 
 		this.courseConfig = courseConfig;
+		this.repoEntry = repoEntry;
 		setI18nTitleAndDescr("coursecreation.choosecourseelements.title", "coursecreation.choosecourseelements.shortDescription");
-		setNextStep(new CcStep01(ureq, courseConfig, repoEntry));
+		setNextStep(courseConfig.isCatalogEntrySupported()? new CcStep01(ureq, courseConfig, repoEntry): new CcStep02(ureq, courseConfig));
 		prevNextConfig = PrevNextFinishConfig.NEXT;
 	}
 
@@ -101,6 +103,7 @@ public class CcStep00 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
+		stepsRunContext.put("repoEntry", repoEntry);
 		StepFormController stepP = new CcStep00Form(ureq, windowControl, form, stepsRunContext, null);
 		return stepP;
 	}

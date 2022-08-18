@@ -100,17 +100,8 @@ class CcStep01 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		stepsRunContext.put("repoEntry", repoEntry);
 		StepFormController stepP = new CcStep01Form(ureq, windowControl, form, stepsRunContext, null);
 		return stepP;
-	}
-
-	public CourseCreationConfiguration getCourseConfig() {
-		return courseConfig;
-	}
-
-	public RepositoryEntry getRepoEntry() {
-		return repoEntry;
 	}
 
 	class CcStep01Form extends StepFormBasicController {
@@ -153,12 +144,12 @@ class CcStep01 extends BasicStep {
 			formLayout.add(fic);
 
 			// load course
-			ICourse course = CourseFactory.loadCourse(getRepoEntry());
+			ICourse course = CourseFactory.loadCourse(repoEntry);
 
 			// show catalog selection tree
 			if (course != null) {
 				cic = new CatalogInsertController(ureq, getWindowControl(),
-						RepositoryManager.getInstance().lookupRepositoryEntry(course, false), getCourseConfig());
+						RepositoryManager.getInstance().lookupRepositoryEntry(course, false), courseConfig);
 				cic.addControllerListener(this);
 				fic.put("cc", cic.getInitialComponent());
 			}
@@ -169,7 +160,7 @@ class CcStep01 extends BasicStep {
 			if (cic != null) {
 				// close selection tree and remember selection
 				CatalogEntry ce = cic.getSelectedParent();
-				getCourseConfig().setSelectedCatalogEntry(ce);
+				courseConfig.setSelectedCatalogEntry(ce);
 			}
 		}
 

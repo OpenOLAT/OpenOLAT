@@ -76,7 +76,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		
 		boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 		Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
-		CatalogInfo catalogInfo = new CatalogInfo(true, false, null, null, null);
+		CatalogInfo catalogInfo = new CatalogInfo(true, false, null, null, null, null);
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
 				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,

@@ -770,12 +770,10 @@
 
 .o_portfolio_media_browser {
 
-	.o_portfolio_medias {
-		position: relative;
+	.o_rendertype_custom .o_portfolio_medias {
 		margin-bottom: $o-portfolio-media-browser-space;
 		margin-top: $o-portfolio-media-browser-space;
-		@include clearfix();
-		
+
 		.o_portfolio_media {
 			position: relative;
 			float: left; 

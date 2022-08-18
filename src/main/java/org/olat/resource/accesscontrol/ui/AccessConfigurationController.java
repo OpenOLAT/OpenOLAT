@@ -77,6 +77,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AccessConfigurationController extends FormBasicController {
 	
+	private static final String ICON_ACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_active\"> </i> ";
+	private static final String ICON_INACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_inactive\"> </i> ";
+	
 	private DropdownItem addMethodDropdown;
 	private FormLink addOpenAccessLink;
 	private FormLink addOpenAccessButton;
@@ -505,7 +508,10 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void forgeCatalogInfos(AccessInfo infos) {
 		if (catalogInfo.isShowDetails()) {
-			infos.setCatalogDetails(catalogInfo.getDetails());
+			String catalogDetails = catalogInfo.getCatalogVisibility().test(infos.getOffer())
+					? ICON_ACTIVE + catalogInfo.getDetails()
+					: ICON_INACTIVE + translate("access.info.catalog.oo.not.active");
+			infos.setCatalogDetails(catalogDetails);
 			if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
 				FormLink catEditLink = uifactory.addFormLink("cat_" + (++counter), "catalog", null, "", offersContainer, Link.NONTRANSLATED + Link.LINK);
 				catEditLink.setI18nKey(catalogInfo.getEditLabel());
@@ -735,9 +741,6 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	public class AccessInfo implements OfferWithOrganisation, OfferAccessWithOrganisation {
-		
-		private static final String ICON_ACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_active\"> </i> ";
-		private static final String ICON_INACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_inactive\"> </i> ";
 		
 		private String name;
 		private String iconCss;

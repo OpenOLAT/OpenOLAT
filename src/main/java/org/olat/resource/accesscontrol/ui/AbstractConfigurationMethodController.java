@@ -158,12 +158,12 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
 
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		if(edit) {
 			uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		} else {
 			uifactory.addFormSubmitButton("create", buttonGroupLayout);
 		}
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		
 		updateUI();
 	}
