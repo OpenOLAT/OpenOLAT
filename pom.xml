@@ -75,7 +75,7 @@
 		<jackson.version>2.13.3</jackson.version>
 		<swagger.ui.version>4.9.1</swagger.ui.version>
 		<org.mysql.version>8.0.30</org.mysql.version>
-		<org.postgresql.version>42.4.1</org.postgresql.version>
+		<org.postgresql.version>42.4.2</org.postgresql.version>
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.4.0</version.selenium>
@@ -2480,7 +2480,7 @@
 		<dependency>
 			<groupId>org.zapodot</groupId>
 			<artifactId>embedded-ldap-junit</artifactId>
-			<version>0.8.2</version>
+			<version>0.9.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
