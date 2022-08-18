@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -57,6 +58,7 @@ import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.accesscontrol.CatalogInfo;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -233,13 +235,16 @@ public class AuthoringEditAccessController extends BasicController {
 				}
 				details = sb.toString();
 			}
-			return new CatalogInfo(true, true, details, editBusinessPath, translate("access.open.metadata"));
+			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
+			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translate("access.open.metadata"));
 		} else if (repositoryModule.isCatalogEnabled()) {
 			String details = null;
+			Predicate<Offer> catalogVisibility = null;
 			String editBusinessPath = null;
 			List<CatalogEntry> catalogEntries = cataloogManager.getCatalogCategoriesFor(entry);
 			if (catalogEntries.isEmpty()) {
 				details = translate("access.no.catalog.entry");
+				catalogVisibility = offer -> false;
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			} else {
 				List<String> catalogEntryPaths = new ArrayList<>(catalogEntries.size());
@@ -254,8 +259,9 @@ public class AuthoringEditAccessController extends BasicController {
 				details = catalogEntryPaths.stream()
 						.sorted()
 						.collect(Collectors.joining(", "));
+				catalogVisibility = offer -> true;
 			}
-			return new CatalogInfo(true, true, details, editBusinessPath, translate("access.open.catalog"));
+			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translate("access.open.catalog"));
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

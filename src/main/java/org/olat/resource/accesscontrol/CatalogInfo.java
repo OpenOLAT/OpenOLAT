@@ -19,20 +19,25 @@
  */
 package org.olat.resource.accesscontrol;
 
+import java.util.function.Predicate;
+
 public class CatalogInfo {
 	
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, null, null);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, null, null, null);
 	
 	private final boolean catalogSupported;
 	private final boolean showDetails;
 	private final String details;
+	private final Predicate<Offer> catalogVisibility;
 	private final String editBusinessPath;
 	private final String editLabel;
 	
-	public CatalogInfo(boolean catalogSupported, boolean showDetails, String details, String editBusinessPath, String editLabel) {
+	public CatalogInfo(boolean catalogSupported, boolean showDetails, String details,
+			Predicate<Offer> catalogVisibility, String editBusinessPath, String editLabel) {
 		this.catalogSupported = catalogSupported;
 		this.showDetails = showDetails;
 		this.details = details;
+		this.catalogVisibility = catalogVisibility;
 		this.editBusinessPath = editBusinessPath;
 		this.editLabel = editLabel;
 	}
@@ -47,6 +52,10 @@ public class CatalogInfo {
 
 	public String getDetails() {
 		return details;
+	}
+
+	public Predicate<Offer> getCatalogVisibility() {
+		return catalogVisibility;
 	}
 
 	public String getEditBusinessPath() {
