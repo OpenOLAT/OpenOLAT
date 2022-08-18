@@ -286,9 +286,7 @@ public class CoursePageFragment {
 		openToolsMenu();
 		
 		browser.findElement(membersCourseBy).click();
-		OOGraphene.waitBusy(browser);
-
-		By mainId = By.id("o_main");
+		By mainId = By.cssSelector("#o_main.o_members_mgmt");
 		OOGraphene.waitElement(mainId, browser);
 		return new MembersPage(browser);
 	}
