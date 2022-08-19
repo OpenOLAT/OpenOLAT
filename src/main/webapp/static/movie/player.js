@@ -1,3 +1,4 @@
+"use strict";
 var BPlayer = {
 	/**
 	 * Create a video player within the given DOM element with the given parameters. Same as insertHTML5Player() 
@@ -332,11 +333,17 @@ var BPlayer = {
 		var mediaDomId = domId + '_oo' + Math.floor(Math.random() * 1000000) + 'vid';
 		var objectDomId = domId + '_oo' + Math.floor(Math.random() * 1000000) + 'obj';
 		if(config.provider == "sound") {
-			if(config.height) {
+			if(config.height && !isNaN(config.height)) {
 				meConfig.audioHeight = config.height;
+			} else {
+				meConfig.audioHeight = '40';
+				config.height = '40';
 			}
-			if(config.width) {
+			if(config.width && !isNaN(config.width)) {
 				meConfig.audioWidth = config.width;
+			} else {
+				meConfig.audioWidth = '300';
+				config.width = '300';
 			}
 			content = "<audio id='" + mediaDomId + "' controls='controls' oncontextmenu='return false;'";
 			if(typeof config.repeat != 'undefined' && config.repeat) {
