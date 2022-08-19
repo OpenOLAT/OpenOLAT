@@ -39,7 +39,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -66,6 +65,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
@@ -117,8 +117,6 @@ public class DropboxController extends BasicController {
 	@Autowired
 	private QuotaManager quotaManager;
 	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
-	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private NotificationsManager notificationsManager;
@@ -157,10 +155,11 @@ public class DropboxController extends BasicController {
 		
 		if (!previewMode) {
 			VFSContainer fDropbox = getDropBox(ureq.getIdentity());
-			int numFiles = fDropbox.getItems().size();
+			List<VFSItem> files = fDropbox.getItems(new VFSSystemItemFilter());
+			int numFiles = files.size();
 			if (numFiles > 0) {
 				myContent.contextPut("numfiles", new String[] {Integer.toString(numFiles)});
-				myContent.contextPut("filelist", fDropbox.getItems());
+				myContent.contextPut("filelist", files);
 			}
 			
 		} else {
