@@ -6,16 +6,18 @@
 		delete o_info.course;
 	#end
 </script>
-	$r.render("header")
-	<div class="o_column_container #if($hasNoDescription) o_full_space #end">
-		<div class="o_sidecolumn">
-			$r.render("metadata")
-		</div>	
-		<div class="o_maincolumn">
+	<div class="o_repo_header">
+		$r.render("header")
+	</div>
+	#if($hasDescription)
+		<div class="o_repo_desc o_repo_column">
 			$r.render("description")
 		</div>
-	</div>
-	<div class="o_bottom_container #if($hasNoDescription) o_full_space #end">
+	#end
+	<div class="o_repo_meta #if($hasDescription) o_repo_column #end">
+		$r.render("metadata")
+	</div>	
+	<div class="o_repo_footer #if($hasDescription) o_repo_column #end">
 		$r.render("link")
 		$r.render("technical")
 	</div>
