@@ -1,20 +1,20 @@
 <div class="o_repo_details o_block_large_bottom  #if($educationalTypeClass) $educationalTypeClass #end ">
-	$r.render("header")
-	<div class="o_column_container">
-		<div class="o_sidecolumn">
-			$r.render("metadata")
-		</div>	
-		<div class="o_maincolumn">
-			#if($r.available("access"))
-				$r.render("access")
-			#else
-				<div class="o_warning">
-					$r.translate("error.booking.not.available")
-				</div>
-			#end
-		</div>
+	<div class="o_repo_header">
+		$r.render("header")
 	</div>
-	<div class="o_bottom_container">
+	#if($r.available("access"))
+		<div class="o_repo_access o_repo_column">
+			$r.render("access")
+		</div>
+	#else
+		<div class="o_warning o_repo_column">
+			$r.translate("error.booking.not.available")
+		</div>
+	#end
+	<div class="o_repo_meta o_repo_column">
+		$r.render("metadata")
+	</div>	
+	<div class="o_repo_footer o_repo_column">
 		$r.render("link")
 	</div>
 </div>

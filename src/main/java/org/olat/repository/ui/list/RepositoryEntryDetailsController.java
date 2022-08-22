@@ -91,7 +91,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		accessListCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
 		listenTo(accessListCtrl);
 		mainVC.put("description", accessListCtrl.getInitialComponent());
-		mainVC.contextPut("hasNoDescription", Boolean.valueOf(!accessListCtrl.hasDescription()));
+		mainVC.contextPut("hasDescription", Boolean.valueOf(accessListCtrl.hasDescription()));
 		
 		metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, headerCtrl.getTypes());
 		listenTo(metadataCtrl);

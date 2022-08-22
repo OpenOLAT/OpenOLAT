@@ -80,70 +80,66 @@
 			}
 		}
 	}
-
-	/* one-column default styles for mobile-first */
-	.o_column_container {
-		display: flex;
-		flex-direction: column;
-		margin-top: 20px;		
-		margin-bottom: 20px;		
-	}
-	.o_sidecolumn {
-		order: 2;
+	
+	.o_repo_meta {
 		border: 1px solid $o-coursesite-sidecol-border;
 		border-radius: $o-coursesite-sidecol-radius;
 		background: $o-coursesite-sidecol-bg;
 		padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
 		column-count: 1;
+		.o_tag.o_taxonomy {
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			max-width: calc(100vw - 80px);
+		}
 	}
+	&>div {
+		margin-bottom: 20px;
+	}
+
+	display: grid;
+	grid-template-columns: 1fr;
+	
 	.o_subcolumn {
 		break-inside: avoid-column;
 		padding-top: 10px;
 	}
-	.o_maincolumn {
-		order: 1;
-	}
-	.o_bottom_container {
-		
-	}
 	
-	/* two column style for mid and large screen */
-	@media (min-width: 500px) { 	
-		.o_sidecolumn {
+	@media (min-width: 500px) {
+		.o_repo_meta {
 			column-count: 2;
+			.o_tag.o_taxonomy {
+				max-width: calc(50vw - 48px);
+			}
 		}
 		.subcolumn {
 			width: 45%;	
 		}
 	}
-	/* two column style for mid and large screen 	*/
-	@media (min-width: 800px) { 		
-		.o_column_container:not(.o_full_space) {
-			flex-direction: row;
-			flex-wrap: nowrap;
-			justify-content: left;
-			align-items: flex-start;
-			width: 100%;		
-			.o_sidecolumn {
-				flex-grow: 0;
-				flex-shrink: 0;
-				width: 300px;
-				margin-top: 20px;
+	
+	@media (min-width: $screen-md-min) {
+		grid-template-columns: 1fr auto;
+		&>div {
+			grid-column-start: span 2;
+		}
+		.o_repo_column {
+			grid-column-start: span 1;
+		}
+		.o_repo_meta {
+			&.o_repo_column {
+				min-width: 300px;
+				max-width: 450px;
+				margin-top: 20px; // Align with description title
+				margin-left: 60px;
 				column-count: 1;
+				.o_subcolumn {
+					width: auto;
+				}
 			}
-			.o_maincolumn {
-				flex-grow: 1;
-				flex-shrink: 1;
-				padding-right: 80px;
+			.o_tag.o_taxonomy {
+				max-width: 100%;
 			}
-		}
-	}
-	@media (min-width: $screen-md-min) { 	
-		.o_subcolumn {
-			width: auto;
-		}
-		.o_bottom_container:not(.o_full_space) {
-			padding-right: (300px + 80px);
 		}
 	}
 
