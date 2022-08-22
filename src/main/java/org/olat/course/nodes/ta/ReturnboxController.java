@@ -38,7 +38,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
@@ -95,7 +94,7 @@ public class ReturnboxController extends BasicController {
 		// returnbox display
 		myContent = createVelocityContainer("returnbox");
 		VFSContainer rootFolder = VFSManager.olatRootContainer(getReturnboxPathFor(userCourseEnv.getCourseEnvironment(), node, ureq.getIdentity()) , null);
-		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity()));
+		String fullName = userManager.getUserDisplayName(getIdentity());
 		VFSContainer namedContainer = new NamedContainerImpl(fullName, rootFolder);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		returnboxFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);

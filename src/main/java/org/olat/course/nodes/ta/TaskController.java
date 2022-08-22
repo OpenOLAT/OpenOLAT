@@ -499,9 +499,9 @@ public class TaskController extends BasicController {
 			} else if (col == 1) {
 				return "View";
 			} else if (col == 2) {				
-				return new Boolean(!hasAnyTaskAssigned());
+				return Boolean.valueOf(!hasAnyTaskAssigned());
 			} else if (col == 3) {				
-				return new Boolean(isTaskAssigned(taskTitle));
+				return Boolean.valueOf(isTaskAssigned(taskTitle));
 			}
 
 			return "ERROR";

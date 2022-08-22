@@ -255,12 +255,12 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		// if there is already user data available, make for read only
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
 		hasLogEntries = am.hasUserNodeLogs(node);
-		editScoring.contextPut("hasLogEntries", new Boolean(hasLogEntries));
+		editScoring.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
 		if (hasLogEntries) {
 			scoringController.setDisplayOnly(true);
 		}
 		//Initialstate
-		editScoring.contextPut("isOverwriting", new Boolean(false));
+		editScoring.contextPut("isOverwriting", Boolean.valueOf(false));
 		
 		// Solution-Tab		
 		solutionVC = createVelocityContainer("editSolutionFolder");
@@ -279,7 +279,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {		
-		if (log.isDebugEnabled()) log.debug("event source=" + source + " " + event.toString());		
+		if (log.isDebugEnabled()) log.debug("event source={} {}", source, event.toString());		
 		if (source == btfButton){
 			// check if there are already assigned tasks
 			CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
@@ -298,7 +298,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				cmc.activate();				
 			} else {				
 				// already assigned task => open dialog with warn
-				String[] args = new String[] { new Integer(assignedProps.size()).toString() };				
+				String[] args = new String[] { Integer.toString(assignedProps.size()) };				
 				dialogBoxController = activateOkCancelDialog(ureq, "", getTranslator().translate("taskfolder.overwriting.confirm", args), dialogBoxController);
 			}
 		} else if (source == vfButton) {
@@ -330,7 +330,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		if (source == modulesForm) {
 			boolean onoff = event.getCommand().endsWith("true");
 			if (event.getCommand().startsWith("task")) {
-				config.set(TACourseNode.CONF_TASK_ENABLED, new Boolean(onoff));
+				config.set(TACourseNode.CONF_TASK_ENABLED, Boolean.valueOf(onoff));
 				myTabbedPane.setEnabled(taskTabPosition, onoff);
 				if (onoff) {
 					accessabilityVC.put("taskCondition", taskConditionC.getInitialComponent());
@@ -338,7 +338,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 					accessabilityVC.remove(taskConditionC.getInitialComponent());
 				}
 			} else if (event.getCommand().startsWith("dropbox")) {
-				config.set(TACourseNode.CONF_DROPBOX_ENABLED, new Boolean(onoff));
+				config.set(TACourseNode.CONF_DROPBOX_ENABLED, Boolean.valueOf(onoff));
 				myTabbedPane.setEnabled(dropboxTabPosition, onoff);
 				if (onoff) {
 					accessabilityVC.put("dropCondition", dropConditionC.getInitialComponent());
@@ -346,14 +346,14 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 					accessabilityVC.remove(dropConditionC.getInitialComponent());
 				}
 			} else if (event.getCommand().startsWith("returnbox")) {
-				config.set(TACourseNode.CONF_RETURNBOX_ENABLED, new Boolean(onoff));
+				config.set(TACourseNode.CONF_RETURNBOX_ENABLED, Boolean.valueOf(onoff));
 				if (onoff) {
 					accessabilityVC.put("returnboxCondition", returnboxConditionC.getInitialComponent());
 				} else {
 					accessabilityVC.remove(returnboxConditionC.getInitialComponent());
 				}	
 			} else if (event.getCommand().startsWith("scoring")) {
-				config.set(TACourseNode.CONF_SCORING_ENABLED, new Boolean(onoff));
+				config.set(TACourseNode.CONF_SCORING_ENABLED, Boolean.valueOf(onoff));
 				myTabbedPane.setEnabled(scoringTabPosition, onoff);
 				if (onoff) {
 					accessabilityVC.put("scoringCondition", scoringConditionC.getInitialComponent());
@@ -361,7 +361,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 					accessabilityVC.remove(scoringConditionC.getInitialComponent());
 				}
 			} else if (event.getCommand().startsWith("solution")) {
-				config.set(TACourseNode.CONF_SOLUTION_ENABLED, new Boolean(onoff));
+				config.set(TACourseNode.CONF_SOLUTION_ENABLED, Boolean.valueOf(onoff));
 				myTabbedPane.setEnabled(solutionTabPosition, onoff);
 				if (onoff) {
 					accessabilityVC.put("solutionCondition", solutionConditionC.getInitialComponent());
@@ -418,7 +418,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			} else if (event == Event.DONE_EVENT) {
 				config.set(TACourseNode.CONF_TASK_TYPE, taskController.getTaskType());
 				config.set(TACourseNode.CONF_TASK_TEXT, taskController.getOptionalText());
-				config.set(TACourseNode.CONF_TASK_SAMPLING_WITH_REPLACEMENT, new Boolean(taskController.getIsSamplingWithReplacement()));
+				config.set(TACourseNode.CONF_TASK_SAMPLING_WITH_REPLACEMENT, Boolean.valueOf(taskController.getIsSamplingWithReplacement()));
 				config.setBooleanEntry(TACourseNode.CONF_TASK_PREVIEW, taskController.isTaskPreviewMode());
 				config.setBooleanEntry(TACourseNode.CONF_TASK_DESELECT, taskController.isTaskDeselectMode());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -428,7 +428,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			if (event == Event.CANCELLED_EVENT) {
 				if (hasLogEntries) {
 					scoringController.setDisplayOnly(true);}
-				editScoring.contextPut("isOverwriting", new Boolean(false));
+				editScoring.contextPut("isOverwriting", Boolean.FALSE);
 				return;				
 			} else if (event == Event.DONE_EVENT){
 				scoringController.updateModuleConfiguration(config);
@@ -439,7 +439,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			if (event == Event.CANCELLED_EVENT) {
 				return;
 			} else if (event == Event.DONE_EVENT) {
-				config.set(TACourseNode.CONF_DROPBOX_ENABLEMAIL, new Boolean(dropboxForm.mailEnabled()));
+				config.set(TACourseNode.CONF_DROPBOX_ENABLEMAIL, Boolean.valueOf(dropboxForm.mailEnabled()));
 				config.set(TACourseNode.CONF_DROPBOX_CONFIRMATION, dropboxForm.getConfirmation());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				return;
