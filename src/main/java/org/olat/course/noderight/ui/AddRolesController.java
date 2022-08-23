@@ -90,9 +90,11 @@ public class AddRolesController extends FormBasicController {
 		
 		startEl = uifactory.addDateChooser("grant.start", null, formLayout);
 		startEl.setDateChooserTimeEnabled(true);
+		startEl.setValidDateCheck("form.error.date");
 		
 		endEl = uifactory.addDateChooser("grant.end", null, formLayout);
 		endEl.setDateChooserTimeEnabled(true);
+		endEl.setValidDateCheck("form.error.date");
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
@@ -118,7 +120,9 @@ public class AddRolesController extends FormBasicController {
 		endEl.clearError();
 		Date start = startEl.getDate();
 		Date to = endEl.getDate();
-		if (start != null && to != null && start.after(to)) {
+		if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+			allOk &= false;
+		} else if (start != null && to != null && start.after(to)) {
 			endEl.setErrorKey("error.end.after.start", null);
 			allOk &= false;
 		}

@@ -79,8 +79,24 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		return element.getDate();
 	}
 	
+	public int getHour() {
+		return element.getHour();
+	}
+	
+	public int getMinute() {
+		return element.getMinute();
+	}
+	
 	public Date getSecondDate() {
 		return element.getSecondDate();
+	}
+	
+	public int getSecondHour() {
+		return element.getSecondHour();
+	}
+	
+	public int getSecondMinute() {
+		return element.getSecondMinute();
 	}
 
 	public String getValue() {

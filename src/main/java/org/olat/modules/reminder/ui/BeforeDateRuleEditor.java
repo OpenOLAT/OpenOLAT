@@ -20,7 +20,9 @@
 package org.olat.modules.reminder.ui;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -33,6 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -75,6 +78,7 @@ public class BeforeDateRuleEditor extends RuleEditorFragment {
 		
 		beforeEl = uifactory.addDateChooser("ruleElement.".concat(id), null, before, ruleCont);
 		beforeEl.setDateChooserTimeEnabled(true);
+		beforeEl.setValidDateCheck("form.error.date");
 		return ruleCont;
 	}
 
@@ -83,7 +87,11 @@ public class BeforeDateRuleEditor extends RuleEditorFragment {
 		boolean allOk = true;
 		
 		beforeEl.clearError();
-		if(beforeEl.getDate() == null) {
+		List<ValidationStatus> validationResults = new ArrayList<>();
+		beforeEl.validate(validationResults);
+		if(!validationResults.isEmpty()) {
+			allOk &= false;
+		} else if(beforeEl.getDate() == null) {
 			beforeEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
 		}

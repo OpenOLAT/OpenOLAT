@@ -79,9 +79,11 @@ public class AddIdentities_2_ConfirmController extends StepFormBasicController {
 		
 		startEl = uifactory.addDateChooser("grant.start", null, dateCont);
 		startEl.setDateChooserTimeEnabled(true);
+		startEl.setValidDateCheck("form.error.date");
 		
 		endEl = uifactory.addDateChooser("grant.end", null, dateCont);
 		endEl.setDateChooserTimeEnabled(true);
+		endEl.setValidDateCheck("form.error.date");
 		
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -110,9 +112,12 @@ public class AddIdentities_2_ConfirmController extends StepFormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		endEl.clearError();
+		startEl.clearError();
 		Date start = startEl.getDate();
 		Date to = endEl.getDate();
-		if (start != null && to != null && start.after(to)) {
+		if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+			allOk &= false;
+		} else if (start != null && to != null && start.after(to)) {
 			endEl.setErrorKey("error.end.after.start", null);
 			allOk &= false;
 		}

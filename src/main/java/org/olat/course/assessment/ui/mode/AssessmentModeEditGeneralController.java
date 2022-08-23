@@ -140,6 +140,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		beginEl = uifactory.addDateChooser("mode.begin", assessmentMode.getBegin(), formLayout);
 		beginEl.setElementCssClass("o_sel_assessment_mode_begin");
 		beginEl.setDateChooserTimeEnabled(true);
+		beginEl.setValidDateCheck("form.error.date");
 		beginEl.setMandatory(true);
 		beginEl.setEnabled((status == Status.none || status == Status.leadtime)
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.begin));
@@ -157,6 +158,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		endEl = uifactory.addDateChooser("mode.end", assessmentMode.getEnd(), formLayout);
 		endEl.setElementCssClass("o_sel_assessment_mode_end");
 		endEl.setDateChooserTimeEnabled(true);
+		endEl.setValidDateCheck("form.error.date");
 		endEl.setDefaultValue(beginEl);
 		endEl.setMandatory(true);
 		endEl.setEnabled(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.end));
@@ -226,9 +228,13 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		if(beginEl.getDate() == null) {
 			beginEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if(!validateFormItem(beginEl)) {
+			allOk &= false;
 		}
 		if(endEl.getDate() == null) {
 			endEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!validateFormItem(endEl)) {
 			allOk &= false;
 		}
 		if(beginEl.getDate() != null && endEl.getDate() != null

@@ -144,7 +144,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 		if (!validateIntegerOrEmpty(numOfDaysEl)) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 		}
-		if (!validateAbsulteDate()) {
+		if (!validateAbsoluteDate()) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 		}
 		
@@ -161,7 +161,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 		return true;
 	}
 	
-	private boolean validateAbsulteDate() {
+	private boolean validateAbsoluteDate() {
 		List<ValidationStatus> validationResults = new ArrayList<>(1);
 		absoluteDateEl.validate(validationResults);
 		if (!validationResults.isEmpty()) {

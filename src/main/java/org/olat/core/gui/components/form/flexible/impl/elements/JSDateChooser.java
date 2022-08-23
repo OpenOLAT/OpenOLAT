@@ -157,7 +157,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			return;
 		}
 		// check valid date
-		if (checkForValidDate && !checkValidDate()) {
+		if (checkForValidDate && (!checkValidDate() || !validateHoursAndMinutes())) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 		}
 	}
@@ -214,14 +214,31 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			//must be set
 			setErrorKey(forValidDateErrorKey, null);
 			return false;
-		}else{
-			return true;
 		}
+		return true;
+	}
+	
+	private boolean validateHoursAndMinutes() {
+		if((timeOnlyEnabled || dateChooserTimeEnabled)
+				&& ((hour < 0 || hour > 23 || minute < 0 || minute > 59)
+						|| (secondDate && (secondHour < 0 || secondHour > 23 || secondMinute < 0 || secondMinute > 59)))) {
+			setErrorKey(forValidDateErrorKey, null);
+			return false;
+		}
+		return true;
 	}
 
 	@Override
 	public Date getDate() {
 		return getDate(getValue(), hour, minute);
+	}
+	
+	public int getHour() {
+		return hour;
+	}
+	
+	public int getMinute() {
+		return minute;
 	}
 	
 	@Override
@@ -232,6 +249,14 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		return getDate(getSecondValue(), secondHour, secondMinute);
 	}
 	
+	public int getSecondHour() {
+		return secondHour;
+	}
+	
+	public int getSecondMinute() {
+		return secondMinute;
+	}
+	
 	private Date getDate(String val, int h, int m) {
 		Date d = null;
 		try {
@@ -239,11 +264,20 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			if(d != null && (isTimeOnly() || isDateChooserTimeEnabled()) && (m >= 0 || h >= 0)) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(d);
-				if(h >= 0) {
-					cal.set(Calendar.HOUR_OF_DAY, h);
-				}
-				if(m >= 0) {
-					cal.set(Calendar.MINUTE, m);
+				if(checkForValidDate) {// strict only if validation is enabled
+					if(h >= 0 && h <= 23) {
+						cal.set(Calendar.HOUR_OF_DAY, h);
+					}
+					if(m >= 0 && m <= 59) {
+						cal.set(Calendar.MINUTE, m);
+					}
+				} else {
+					if(h >= 0) {
+						cal.set(Calendar.HOUR_OF_DAY, h);
+					}
+					if(m >= 0) {
+						cal.set(Calendar.MINUTE, m);
+					}
 				}
 				d = cal.getTime();
 			} else if (d != null && isKeepTime() && getInitialDate() != null) {
@@ -267,7 +301,12 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	public void setDate(Date date) {
 		if (date == null) {
 			setValue("");
-			hour = minute = 0;
+			if(defaultTimeAtEndOfDay) {
+				hour = 23;
+				minute = 59;
+			} else {
+				hour = minute = 0;
+			}
 		} else {
 			setValue(formatDate(date));
 			Calendar cal = Calendar.getInstance();

@@ -76,7 +76,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		//input fields for hour and minute
 		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
 			String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";
-			renderTime(sb, jsdcc.getDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
+			renderTime(sb, jsdcc.getHour(), jsdcc.getMinute(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
 			if(jsdcc.isSecondDate() && jsdcc.isSameDay()) {
 				String separator;
 				if(jsdcc.getSeparator() != null) {
@@ -85,7 +85,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 					separator = " - ";
 				}
 				renderSeparator(sb, separator);
-				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
+				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
 			}
 		}
 		if(jsdcc.isSecondDate() && !jsdcc.isSameDay()) {
@@ -96,7 +96,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), receiverId, jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
 			}
 			if (jsdcc.isDateChooserTimeEnabled()) {
-				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms");
+				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms");
 			}
 		}
 	}
@@ -205,22 +205,15 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" value=\"").append(value).append("\" /></span></div></div>");
 	}
 	
-	private void renderTime(StringOutput sb, Date date, boolean defaultEndOfDay, String receiverId, JSDateChooserComponent teC, String cssClass) {
-		int hour;
-		int minute;
-		if(date == null) {
-			if(defaultEndOfDay) {
-				hour = 23;
-				minute = 59;
-			} else {
-				hour = minute = 0;
-			}
-		} else {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
-			hour = cal.get(Calendar.HOUR_OF_DAY);
-			minute = cal.get(Calendar.MINUTE);
+	private void renderTime(StringOutput sb, int hour, int minute, boolean defaultEndOfDay, String receiverId, JSDateChooserComponent teC, String cssClass) {
+		if(defaultEndOfDay && hour < 0) {
+			hour = 23;
+			minute = 59;
+		} else if(hour < 0) {
+			hour = 0;
+			minute = 0;
 		}
+		
 		sb.append("<div class='form-group o_date_ms ").append(cssClass).append("'>");
 		String hId = "o_dch_".concat(receiverId);
 		renderMS(sb, hId, receiverId, teC, hour);
