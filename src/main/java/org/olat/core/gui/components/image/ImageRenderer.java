@@ -89,7 +89,9 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		applySize(sb, size)
 		  .append("></div>")
 		  .append("<script>")
-		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
+		  .append("\"use strict\";\n")
+		  .append("jQuery(function() {\n")
+		  .append(" BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
 		sb.append("','").append(imgId).append("',");
 		if(size == null) {
 			sb.append("undefined").append(",").append("undefined");
@@ -102,7 +104,8 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("undefined");
 		}
-		sb.append(");")
+		sb.append(");\n")
+		  .append("});")
 		  .append("</script>")
 		  .append("</div>"); // ENDcomponent
 	}
