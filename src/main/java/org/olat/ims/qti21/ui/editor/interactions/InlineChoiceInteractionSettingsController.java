@@ -133,7 +133,8 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		choiceEl.setEnabled(editable);
 		
 		FormLink addButton = uifactory.addFormLink(id.concat("_add"), "add", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		addButton.setTitle(translate("add.global.choice"));
+		addButton.setTitle(translate("add.choice"));
+		addButton.setElementCssClass("o_sel_add_choice");
 		addButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addButton.setVisible(!restrictedEdit && !readOnly);
 		
@@ -148,7 +149,8 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		downButton.setVisible(!restrictedEdit && !readOnly);
 
 		FormLink deleteButton = uifactory.addFormLink(id.concat("_del"), "delete", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		deleteButton.setTitle(translate("remove.global.choice"));
+		deleteButton.setElementCssClass("o_sel_delete_choice");
+		deleteButton.setTitle(translate("remove.choice"));
 		deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		deleteButton.setVisible(editable);
 		

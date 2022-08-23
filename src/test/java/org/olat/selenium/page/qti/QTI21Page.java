@@ -181,14 +181,22 @@ public class QTI21Page {
 	/**
 	 * Select the key of the inline choice interaction.
 	 * 
-	 * @param key The key to select
+	 * @param value The value to select
 	 * @return Itself
 	 */
-	public QTI21Page answerInlineChoice(String key) {
+	public QTI21Page answerInlineChoice(String value) {
 		By inlineBy = By.xpath("//span[@class='inlineChoiceInteraction']/select");
 		OOGraphene.waitElement(inlineBy, browser);
 		WebElement inlineEl = browser.findElement(inlineBy);
-		new Select(inlineEl).selectByValue(key);
+		new Select(inlineEl).selectByValue(value);
+		return this;
+	}
+	
+	public QTI21Page answerInlineChoiceByText(String text, int position) {
+		By inlineBy = By.xpath("//span[@class='inlineChoiceInteraction'][" + position + "]/select");
+		OOGraphene.waitElement(inlineBy, browser);
+		WebElement inlineEl = browser.findElement(inlineBy);
+		new Select(inlineEl).selectByVisibleText(text);
 		return this;
 	}
 	

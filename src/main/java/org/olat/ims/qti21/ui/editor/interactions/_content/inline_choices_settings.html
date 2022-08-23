@@ -1,4 +1,4 @@
-<fieldset class="o_form form-horizontal">
+<fieldset class="o_form form-horizontal o_sel_inlinechoice_form">
 	<div class="form-group clearfix">
 		<label class="control-label col-sm-3">$r.translate("form.imd.shuffle")</label>
 		<div class="col-sm-9">$r.render("form.imd.shuffle")</div>
@@ -12,7 +12,7 @@
 	</div>
 	
 	#foreach($choice in $choices)
-	<div class="form-group clearfix">
+	<div class="form-group o_sel_choice_$foreach.count clearfix">
 		<div class="col-sm-3 o_inline_choice_correct_cell">
 			<span class="o_up_down">$r.render(${choice.getUpButton()})</span>
 			<span class="o_up_down">$r.render(${choice.getDownButton()})</span>
