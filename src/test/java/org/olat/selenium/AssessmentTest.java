@@ -379,7 +379,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void certificatesManuallyGenerated(@Drone @User WebDriver reiBrowser)
+	public void certificatesManuallyGenerated()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -436,13 +436,13 @@ public class AssessmentTest extends Deployments {
 			.generateCertificate();
 		
 		//Participant log in
-		LoginPage reiLoginPage = LoginPage.load(reiBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
 				
 		//open the efficiency statements
-		UserToolsPage reiUserTools = new UserToolsPage(reiBrowser);
+		UserToolsPage reiUserTools = new UserToolsPage(browser);
 		reiUserTools
 			.openUserToolsMenu()
 			.openMyEfficiencyStatement()
@@ -464,7 +464,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void certificatesGeneratedByTest(@Drone @User WebDriver reiBrowser)
+	public void certificatesGeneratedByTest()
 	throws IOException, URISyntaxException {
 		
 		//create an author and a participant
@@ -536,31 +536,31 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 		
 		//Participant log in
-		LoginPage reiLoginPage = LoginPage.load(reiBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
 		
 		//open the course
-		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the test
-		CoursePageFragment reiTestCourse = new CoursePageFragment(reiBrowser);
+		CoursePageFragment reiTestCourse = new CoursePageFragment(browser);
 		reiTestCourse
 			.tree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
-		QTI21Page.getQTI21Page(reiBrowser)
+		QTI21Page.getQTI21Page(browser)
 			.passE4()
 			.assertOnCourseAssessmentTestScore(4);
 		
 		OOGraphene.waitingALittleLonger();
 				
 		//open the efficiency statements
-		UserToolsPage reiUserTools = new UserToolsPage(reiBrowser);
+		UserToolsPage reiUserTools = new UserToolsPage(browser);
 		reiUserTools
 			.openUserToolsMenu()
 			.openMyEfficiencyStatement()
@@ -735,7 +735,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void assessmentCourseElement(@Drone @User WebDriver ryomouBrowser)
+	public void assessmentCourseElement()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -807,13 +807,13 @@ public class AssessmentTest extends Deployments {
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
 		//Ryomou login
-		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		
 		//see its beautiful efficiency statement
-		UserToolsPage ryomouUserTools = new UserToolsPage(ryomouBrowser);
+		UserToolsPage ryomouUserTools = new UserToolsPage(browser);
 		ryomouUserTools
 			.openUserToolsMenu()
 			.openMyEfficiencyStatement()
@@ -845,8 +845,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithGroupsAndStandardSettings(@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver kanuBrowser)
+	public void taskWithGroupsAndStandardSettings(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 			
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -943,43 +942,43 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(participantBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
+		CoursePageFragment ryomouTestCourse = new CoursePageFragment(participantBrowser);
 		ryomouTestCourse
 			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
-		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
+		GroupTaskPage ryomouTask = new GroupTaskPage(participantBrowser);
 		ryomouTask
 			.assertAssignmentAvailable()
 			.selectTask(taskName2)
 			.assertSubmissionAvailable();
 		
 		//Participant 2 log in
-		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
+		LoginPage kanuLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		kanuLoginPage
 			.loginAs(kanu)
 			.resume();
 		
 		//open the course
-		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
+		NavigationPage kanuNavBar = NavigationPage.load(participantBrowser);
 		kanuNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment kanuTestCourse = new CoursePageFragment(kanuBrowser);
+		CoursePageFragment kanuTestCourse = new CoursePageFragment(participantBrowser);
 		kanuTestCourse
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
@@ -988,7 +987,7 @@ public class AssessmentTest extends Deployments {
 		File submit1File = new File(submit1Url.toURI());
 		String submittedFilename = "my_solution.html";
 		String submittedText = "This is my solution";
-		GroupTaskPage kanuTask = new GroupTaskPage(kanuBrowser);
+		GroupTaskPage kanuTask = new GroupTaskPage(participantBrowser);
 		kanuTask
 			.assertTask(taskName2)
 			.assertSubmissionAvailable()
@@ -1522,8 +1521,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void bulkAssessment(@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver kanuBrowser)
+	public void bulkAssessment()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1595,48 +1593,49 @@ public class AssessmentTest extends Deployments {
 			.finish();
 		
 		//Ryomou login
-		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
-		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
+		CoursePageFragment ryomouCourse = new CoursePageFragment(browser);
 		ryomouCourse
 			.tree()
 			.selectWithTitle(assessmentNodeTitle);
 		
+		//Ryomou -> passed
+		By passedBy = By.cssSelector("div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, browser);
+		WebElement passedEl = browser.findElement(passedBy);
+		Assert.assertTrue(passedEl.isDisplayed());
+		
 		//Second login
-		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
+		LoginPage kanuLoginPage = LoginPage.load(browser, deploymentUrl);
 		kanuLoginPage
 			.loginAs(kanu)
 			.resume();
 		
-		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
+		NavigationPage kanuNavBar = NavigationPage.load(browser);
 		kanuNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment kanuCourse = new CoursePageFragment(kanuBrowser);
+		CoursePageFragment kanuCourse = new CoursePageFragment(browser);
 		kanuCourse
 			.clickTree()
 			.selectWithTitle(assessmentNodeTitle);
 		
-		//Ryomou -> passed
-		By passedBy = By.cssSelector("div.o_state.o_passed");
-		OOGraphene.waitElement(passedBy, ryomouBrowser);
-		WebElement passedEl = ryomouBrowser.findElement(passedBy);
-		Assert.assertTrue(passedEl.isDisplayed());
 		//Kanu -> failed
 		By failedBy = By.cssSelector("div.o_state.o_failed");
-		OOGraphene.waitElement(failedBy, kanuBrowser);
-		WebElement failedEl = kanuBrowser.findElement(failedBy);
+		OOGraphene.waitElement(failedBy, browser);
+		WebElement failedEl = browser.findElement(failedBy);
 		Assert.assertTrue(failedEl.isDisplayed());
 	}
 	
@@ -1811,7 +1810,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithoutSubmission(@Drone @User WebDriver ryomouBrowser)
+	public void taskWithoutSubmission()
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1891,24 +1890,24 @@ public class AssessmentTest extends Deployments {
 			.assertPassed();
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
+		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		
-		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
+		GroupTaskPage ryomouTask = new GroupTaskPage(browser);
 		//participant checks she passed the task
 		ryomouTask
 			.assertPassed()
@@ -1934,7 +1933,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskOptionalWithoutSubmission(@Drone @User WebDriver ryomouBrowser)
+	public void taskOptionalWithoutSubmission()
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -2017,24 +2016,24 @@ public class AssessmentTest extends Deployments {
 			.assertPassed();
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
+		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		
-		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
+		GroupTaskPage ryomouTask = new GroupTaskPage(browser);
 		//participant checks she passed the task
 		ryomouTask
 			.assertPassed()
