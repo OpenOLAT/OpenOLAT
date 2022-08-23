@@ -110,6 +110,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		startTimeEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
 		startTimeEl.setMandatory(true);
 		startTimeEl.setTimeOnly(true);
+		startTimeEl.setValidDateCheck("form.error.date");
 		
 		String leadtime = Long.toString(meetingsContext.getLeadTime());
 		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
@@ -126,6 +127,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		endTimeEl.setMandatory(true);
 		endTimeEl.setDefaultValue(startTimeEl);
 		endTimeEl.setTimeOnly(true);
+		endTimeEl.setValidDateCheck("form.error.date");
 		
 		String followup = Long.toString(meetingsContext.getFollowupTime());
 		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
@@ -175,11 +177,15 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		if(startTimeEl.getDate() == null) {
 			startTimeEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if(!this.validateFormItem(startTimeEl)) {
+			allOk &= false;
 		}
 		
 		endTimeEl.clearError();
 		if(endTimeEl.getDate() == null) {
 			endTimeEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!this.validateFormItem(endTimeEl)) {
 			allOk &= false;
 		}
 		

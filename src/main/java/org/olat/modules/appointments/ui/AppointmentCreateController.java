@@ -589,11 +589,15 @@ public class AppointmentCreateController extends FormBasicController {
 				if (startEl.getDate() != null && endEl.getDate() != null) {
 					Date start = startEl.getDate();
 					Date end = endEl.getDate();
-					if(end.before(start)) {
+					if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+						allOk &= false;
+					} else if(end.before(start)) {
 						endEl.setErrorKey("error.start.after.end", null);
 						allOk &= false;
 					}
 				}
+			} else if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+				allOk &= false;
 			}
 		}
 		
@@ -926,6 +930,7 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, next.getStart(), startDurationCont);
 		startEl.setDateChooserTimeEnabled(true);
+		startEl.setValidDateCheck("form.error.date");
 		startEl.setUserObject(wrapper);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		wrapper.setStartEl(startEl);
@@ -967,12 +972,14 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, null, startEndCont);
 		startEl.setDateChooserTimeEnabled(true);
+		startEl.setValidDateCheck("form.error.date");
 		startEl.setUserObject(wrapper);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		wrapper.setStartEl(startEl);
 		
 		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, null, startEndCont);
 		endEl.setDateChooserTimeEnabled(true);
+		endEl.setValidDateCheck("form.error.date");
 		wrapper.setEndEl(endEl);
 		
 		FormLink addEl = uifactory.addFormLink("add_" + counter++, CMD_START_END_ADD, "", null, startEndCont, Link.NONTRANSLATED + Link.BUTTON);

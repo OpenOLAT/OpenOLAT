@@ -170,6 +170,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 			startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
 			startDateEl.setMandatory(true);
 			startDateEl.setDateChooserTimeEnabled(true);
+			startDateEl.setValidDateCheck("form.error.date");
 			startDateEl.setEnabled(editable);
 			
 			String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
@@ -189,6 +190,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 			endDateEl.setMandatory(true);
 			endDateEl.setDefaultValue(startDateEl);
 			endDateEl.setDateChooserTimeEnabled(true);
+			endDateEl.setValidDateCheck("form.error.date");
 			endDateEl.setEnabled(editable);
 			
 			String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());

@@ -106,11 +106,13 @@ public class AssessmentMessageEditController extends FormBasicController {
 		publicationDateEl = uifactory.addDateChooser("publication.date", "publication.date", publicationDate, formLayout);
 		publicationDateEl.setEnabled(status == AssessmentMessageStatusEnum.planned);
 		publicationDateEl.setDateChooserTimeEnabled(true);
+		publicationDateEl.setValidDateCheck("form.error.date");
 		publicationDateEl.setMandatory(true);
 		Date expirationDate = message == null ? CalendarUtils.endOfDay(ureq.getRequestTimestamp()) : message.getExpirationDate();
 		expirationDateEl = uifactory.addDateChooser("expiration.date", "expiration.date", expirationDate, formLayout);
 		expirationDateEl.setEnabled(status == AssessmentMessageStatusEnum.planned || status == AssessmentMessageStatusEnum.published);
 		expirationDateEl.setDateChooserTimeEnabled(true);
+		expirationDateEl.setValidDateCheck("form.error.date");
 		expirationDateEl.setMandatory(true);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -153,10 +155,14 @@ public class AssessmentMessageEditController extends FormBasicController {
 			if(publicationDateEl.getDate() == null) {
 				publicationDateEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
+			} else if(!validateFormItem(publicationDateEl)) {
+				allOk &= false;
 			}
 			
 			if(expirationDateEl.getDate() == null) {
 				expirationDateEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(!validateFormItem(expirationDateEl)) {
 				allOk &= false;
 			}
 			

@@ -176,6 +176,7 @@ public class AppointmentEditController extends FormBasicController {
 		Date start = appointment != null? appointment.getStart(): null;
 		startEl = uifactory.addDateChooser("appointment.start", start, formLayout);
 		startEl.setDateChooserTimeEnabled(true);
+		startEl.setValidDateCheck("form.error.date");
 		startEl.setMandatory(true);
 		startEl.setEnabled(!hasParticipations);
 		startEl.addActionListener(FormEvent.ONCHANGE);
@@ -183,6 +184,7 @@ public class AppointmentEditController extends FormBasicController {
 		Date end = appointment != null? appointment.getEnd(): null;
 		endEl = uifactory.addDateChooser("appointment.end", end, formLayout);
 		endEl.setDateChooserTimeEnabled(true);
+		endEl.setValidDateCheck("form.error.date");
 		endEl.setMandatory(true);
 		endEl.setEnabled(!hasParticipations);
 		
@@ -436,7 +438,9 @@ public class AppointmentEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		if (startEl.getDate() != null && endEl.getDate() != null) {
+		if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+			allOk &= false;
+		} else if (startEl.getDate() != null && endEl.getDate() != null) {
 			Date start = startEl.getDate();
 			Date end = endEl.getDate();
 			if(end.before(start)) {
