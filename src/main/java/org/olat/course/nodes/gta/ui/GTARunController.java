@@ -277,6 +277,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 	
 	private void doOpenOverview(UserRequest ureq) {
 		overviewCtrl.reload();
+		addToHistory(ureq, overviewCtrl);
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
 		setPreferredSegment(ureq, CourseNodeSegment.overview);
@@ -292,6 +293,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", markedCtrl.getInitialComponent());
 		}
+		segmentView.select(markedLink);
 		return markedCtrl;
 	}	
 
@@ -305,6 +307,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", coachCtrl.getInitialComponent());
 		}
+		segmentView.select(coachLink);
 		setPreferredSegment(ureq, CourseNodeSegment.participants);
 		return coachCtrl;
 	}
@@ -317,6 +320,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", manageCtrl.getInitialComponent());
 		}
+		segmentView.select(manageLink);
 		return manageCtrl;
 	}
 	
@@ -359,6 +363,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+			segmentView.select(remindersLink);
 			setPreferredSegment(ureq, CourseNodeSegment.reminders);
 		}
 	}
