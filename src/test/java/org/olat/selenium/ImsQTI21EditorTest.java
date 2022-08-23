@@ -43,12 +43,14 @@ import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21GapEntriesEditorPage;
 import org.olat.selenium.page.qti.QTI21HotspotEditorPage;
 import org.olat.selenium.page.qti.QTI21HottextEditorPage;
+import org.olat.selenium.page.qti.QTI21InlineChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21LobEditorPage;
 import org.olat.selenium.page.qti.QTI21MatchEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21OrderEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
+import org.olat.selenium.page.qti.QTI21SettingsPage;
 import org.olat.selenium.page.qti.QTI21Page.TrueFalse;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
@@ -1383,7 +1385,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
 			.save();
 		
-		//add a gap entry: score per anser
+		//add a gap entry: score per answer
 		fibEditor = qtiEditor
 			.addFib()
 			.appendContent("European rocket ")
@@ -2071,6 +2073,185 @@ public class ImsQTI21EditorTest extends Deployments {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(3);
+	}
+	
+
+	@Test
+	@RunAsClient
+	public void qti21EditorInlineChoice()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO lisa = new UserRestClient(deploymentUrl).createRandomUser("Lisa");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Inline Choice QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single Choice")
+			.deleteNode();
+		
+		// Add an inline choice with score: all answers
+		QTI21InlineChoiceEditorPage inlineChoiceEditor = qtiEditor
+			.addInlineChoice()
+			.appendContent("European Rocket ")
+			.addInlineChoice("Falcon")
+			.addChoice("Vega", 2)
+			.addChoice("Vulcan", 3)
+			.setCorrect(2)
+			.saveInlineChoice()
+			.editInlineChoice("H-IIA", "lognat", 2)
+			.addChoice("Polar (PSLV)", 2)
+			.addChoice("Ariane", 3)
+			.setCorrect(3)
+			.saveInlineChoice()
+			.save();
+		
+		//set max score
+		inlineChoiceEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.allCorrectAnswers)
+			.setMaxScore("2")
+			.save();
+		// set feedbacks
+		inlineChoiceEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is a usefull hint")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a gap entry: score per answer
+		inlineChoiceEditor = qtiEditor
+			.addInlineChoice()
+			.appendContent("Heavy lift rocket ")
+			.addInlineChoice("Ariane V")
+			.addChoice("Vega C", 2)
+			.addChoice("Falcon 1", 3)
+			.addChoice("Terran 1", 4)
+			.setCorrect(1)
+			.saveInlineChoice()
+			.editInlineChoice("Falcon 9", "falc", 2)
+			.addChoice("RocketStar", 2)
+			.addChoice("Ariane 6", 3)
+			.setCorrect(3)
+			.saveInlineChoice()
+			.save();
+		//set max score
+		inlineChoiceEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("4")
+			.setScore("Ariane V", "3")
+			.setScore("Ariane 6", "1")
+			.save();
+		// set feedbacks
+		inlineChoiceEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Think to space")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		QTI21SettingsPage settings = qtiPage
+			.settings();
+		settings
+			.accessConfiguration()
+			.quickOpenAccess();
+		// show results
+		settings
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		qtiPage
+			.clickToolbarBack()
+			.publish();
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = NavigationPage.load(browser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// first user make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI21Page(browser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerInlineChoiceByText("Vulcan", 1)
+			.answerInlineChoiceByText("Ariane", 2)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerInlineChoiceByText("Vega", 1)
+			.answerInlineChoiceByText("Ariane", 2)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerInlineChoiceByText("Falcon 1", 1)
+			.answerInlineChoiceByText("Ariane 6", 2)
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3);// 2 points from the first question, 1 from the second
+		
+		//A second user makes the test, all correct answers at first attempt
+		LoginPage lisaLoginPage = LoginPage.load(browser, deploymentUrl);
+		lisaLoginPage
+			.loginAs(lisa.getLogin(), lisa.getPassword())
+			.resume();
+		NavigationPage reiNavBar = NavigationPage.load(browser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all the correct answers
+		QTI21Page
+			.getQTI21Page(browser)
+			.assertOnAssessmentItem()
+			.answerInlineChoiceByText("Vega", 1)
+			.answerInlineChoiceByText("Ariane", 2)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerInlineChoiceByText("Ariane V", 1)
+			.answerInlineChoiceByText("Ariane 6", 2)
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 2 points from the first question, 4 from the second
 	}
 	
 	/**

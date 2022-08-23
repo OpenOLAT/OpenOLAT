@@ -165,6 +165,11 @@ public class QTI21EditorPage {
 		return new QTI21HottextEditorPage(browser);
 	}
 	
+	public QTI21InlineChoiceEditorPage addInlineChoice() {
+		addQuestion(QTI21QuestionType.inlinechoice);
+		return new QTI21InlineChoiceEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		
