@@ -164,6 +164,7 @@ public abstract class ItemFormController extends FormBasicController {
 		publishDateChooser.setNotEmptyCheck("feed.publish.date.is.required");
 		publishDateChooser.setValidDateCheck("feed.publish.date.invalid");
 		publishDateChooser.setDateChooserTimeEnabled(true);
+		publishDateChooser.setValidDateCheck("form.error.date");
 		publishDateChooser.setVisible(hasDraftMode());
 
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -267,6 +268,11 @@ public abstract class ItemFormController extends FormBasicController {
 				widthEl.setErrorKey("feed.item.file.size.error", null);
 				allOk = false;
 			}
+		}
+		
+		publishDateChooser.clearError();
+		if(!validateFormItem(publishDateChooser)) {
+			allOk &= false;
 		}
 
 		String height = heightEl.getValue();

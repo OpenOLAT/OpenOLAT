@@ -38,14 +38,14 @@ public class PortfolioRendererHelper {
 				if(assessmentSection.getPassed() != null) {
 					if(assessmentSection.getPassed().booleanValue()) {
 						val = translator.translate("table.grading.passed.points",
-								new String[] { AssessmentHelper.getRoundedScore(assessmentSection.getScore()) });
+								AssessmentHelper.getRoundedScore(assessmentSection.getScore()));
 					} else {
 						val = translator.translate("table.grading.failed.points",
-								new String[] { AssessmentHelper.getRoundedScore(assessmentSection.getScore()) });
+								AssessmentHelper.getRoundedScore(assessmentSection.getScore()));
 					}
 				} else {
 					val = translator.translate("table.grading.points",
-							new String[] { AssessmentHelper.getRoundedScore(assessmentSection.getScore()) });
+							AssessmentHelper.getRoundedScore(assessmentSection.getScore()));
 				}
 			} else if(assessmentSection.getPassed() != null) {
 				if(assessmentSection.getPassed().booleanValue()) {

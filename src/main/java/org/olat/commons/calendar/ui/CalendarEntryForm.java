@@ -233,11 +233,15 @@ public class CalendarEntryForm extends FormBasicController {
 		if (begin.getDate() == null) {
 			begin.setErrorKey("cal.form.error.date", null);
 			allOk &= false;
+		} else if(!validateFormItem(begin)) {
+			allOk &= false;
 		}
 		
 		end.clearError();
 		if (end.getDate() == null) {
 			end.setErrorKey("cal.form.error.date", null);
+			allOk &= false;
+		} else if(!validateFormItem(end)) {
 			allOk &= false;
 		} else if (begin.getDate() != null && end.getDate().before(begin.getDate())) {
 			end.setErrorKey("cal.form.error.endbeforebegin", null);
@@ -408,6 +412,7 @@ public class CalendarEntryForm extends FormBasicController {
 		begin = uifactory.addDateChooser("begin", "cal.form.begin", null, formLayout);
 		begin.setDisplaySize(21);
 		begin.setDateChooserTimeEnabled(!event.isAllDayEvent());
+		begin.setValidDateCheck("form.error.date");
 		begin.setMandatory(true);
 		begin.setDate(event.getBegin());
 		begin.setEnabled(!managedDates);
@@ -416,6 +421,7 @@ public class CalendarEntryForm extends FormBasicController {
 		end = uifactory.addDateChooser("end", "cal.form.end", null, formLayout);
 		end.setDisplaySize(21);
 		end.setDateChooserTimeEnabled(!event.isAllDayEvent());
+		end.setValidDateCheck("form.error.date");
 		end.setMandatory(true);
 		end.setDate(event.getEnd());
 		end.setEnabled(!managedDates);

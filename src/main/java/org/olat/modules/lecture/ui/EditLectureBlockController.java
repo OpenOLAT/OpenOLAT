@@ -307,6 +307,7 @@ public class EditLectureBlockController extends FormBasicController {
 		dateEl.setSameDay(true);
 		dateEl.setSecondDate(true);
 		dateEl.setDateChooserTimeEnabled(true);
+		dateEl.setValidDateCheck("form.error.date");
 		dateEl.setSeparator("lecture.time.until");
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -356,6 +357,8 @@ public class EditLectureBlockController extends FormBasicController {
 		dateEl.clearError();
 		if(dateEl.getDate() == null) {
 			dateEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!validateFormItem(dateEl)) {
 			allOk &= false;
 		}
 

@@ -159,6 +159,12 @@ public class SectionEditController extends FormBasicController {
 			}
 		}
 		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 

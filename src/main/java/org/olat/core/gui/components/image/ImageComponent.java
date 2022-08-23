@@ -30,10 +30,12 @@ import java.io.File;
 import java.util.Collections;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -41,7 +43,6 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.ValidationResult;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -250,6 +251,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		if(isCropSelectionEnabled()) {
 			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/cropper/cropper.min.js");
 		}
+		
+		String type = getMimeType();
+		if(type != null && type.startsWith("video/")) {
+			// Preload media element
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("movie/mediaelementjs/mediaelement-and-player.min.js");
+			String css = StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css");
+			vr.getJsAndCSSAdder().addRequiredCSSPath(css, false, 1);
+		}
 	}
 
 	/**
@@ -298,7 +307,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 			setDirty(true);
 		} catch (Exception e) {
 			// log error, don't do anything else
-			log.error("Problem while setting image size to fit " + maxWidth + "x" + maxHeight + " for resource::" + media, e);
+			log.error("Problem while setting image size to fit {}x{} for resource::{}", maxWidth, maxHeight, media, e);
 		} 
 	}
 	

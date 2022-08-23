@@ -395,6 +395,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
 			startDateEl.setMandatory(true);
 			startDateEl.setDateChooserTimeEnabled(true);
+			startDateEl.setValidDateCheck("form.error.date");
 			startDateEl.setEnabled(editable);
 			
 			String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
@@ -414,6 +415,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			endDateEl.setMandatory(true);
 			endDateEl.setDefaultValue(startDateEl);
 			endDateEl.setDateChooserTimeEnabled(true);
+			endDateEl.setValidDateCheck("form.error.date");
 			endDateEl.setEnabled(editable);
 			
 			String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());
@@ -547,9 +549,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			if(startDateEl.getDate() == null) {
 				startDateEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
+			} else if(!validateFormItem(startDateEl)) {
+				allOk &= false;
 			}
 			if(endDateEl.getDate() == null) {
 				endDateEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(!validateFormItem(endDateEl)) {
 				allOk &= false;
 			}
 			
