@@ -134,7 +134,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager,
 		for(AdobeConnectMeeting meeting:meetings) {
 			deleteMeeting(meeting, errors);
 		}
-		return errors.hasErrors();
+		return !errors.hasErrors();
 	}
 
 	@Override
