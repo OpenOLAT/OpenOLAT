@@ -118,6 +118,13 @@ public class QTI21InlineChoiceEditorPage extends QTI21AssessmentItemEditorPage {
 		By saveBy = By.cssSelector("div.o_sel_inlinechoice_save button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
+		try {
+			By dirtySaveBy = By.cssSelector("div.o_sel_inlinechoice_save button.btn.btn-primary.o_button_dirty");
+			OOGraphene.waitElementDisappears(dirtySaveBy, 5, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Save inline choice", browser);
+			throw e;
+		}
 		return this;
 	}
 	

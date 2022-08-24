@@ -130,6 +130,9 @@ public class AdministrationPage {
 	public LectureAdminSettingsPage openLecturesSettings() {
 		selectModules();
 		openSubMenu("o_sel_lectures");
+		
+		By configurationFormBy = By.cssSelector("fieldset.o_sel_lectures_configuration_form");
+		OOGraphene.waitElement(configurationFormBy, browser);
 		return new LectureAdminSettingsPage(browser);
 	}
 	
