@@ -341,6 +341,7 @@ public class BinderListController extends FormBasicController
 			String binderKey = ureq.getParameter("dragged");
 			String siblingKey = ureq.getParameter("sibling");
 			doDragAndDrop(ureq, binderKey, siblingKey);
+			flc.setDirty(true);
 		}
 		super.event(ureq, source, event);
 	}

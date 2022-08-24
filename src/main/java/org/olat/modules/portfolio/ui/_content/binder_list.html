@@ -2,13 +2,8 @@
 	$r.contextHelpWithWrapper("manual_user/portfolio/My_portfolio_binders/")		
 </div>
 <div id="o_my_binders_list" class="o_drake">$r.render("table")</div>
-#if($r.available("delete.binder"))
-<div class="o_button_group">
-	$r.render("delete.binder")
-</div>
-#end
 <script>
-/* <![CDATA[ */ 
+"use strict";
 jQuery(function() {
 	destroyDrakes();// there can only be one
 	var container = jQuery('#o_my_binders_list .o_table_body').get(0);
@@ -27,9 +22,8 @@ jQuery(function() {
 		var siblingId = jQuery(".o_binder", sibling).attr('id');
 		var draggedKey = draggedId.substring(9, draggedId.length);
 		var siblingKey = siblingId.substring(9, siblingId.length);
-		$r.openNoResponseJavaScriptCommand("drop-binder"), "dragged", draggedKey, "sibling", siblingKey);
+		${r.openJavaScriptCommand('drop-binder')}, 'dragged', draggedKey, 'sibling', siblingKey);
 	});
 	registerDrake(drake);
 });
-/* ]]> */
 </script>
