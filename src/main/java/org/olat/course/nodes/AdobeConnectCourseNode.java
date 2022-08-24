@@ -215,7 +215,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			provider.delete(courseRe, getIdent());
 		} catch(Exception e) {
-			log.error("A room could not be deleted for course node: " + getIdent() + " of course:" + course, e);
+			log.error("A room could not be deleted for course node: {} of course:{}", getIdent(), course, e);
 		}
 	}
 }
