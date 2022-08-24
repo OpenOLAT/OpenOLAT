@@ -42,14 +42,16 @@ public class EasyConditionConfigPage {
 	public EasyConditionConfigPage setCoachExclusive() {
 		By coacheExclsuiveBy = By.cssSelector("input[name='coachExclusive'][type='checkbox']");
 		browser.findElement(coacheExclsuiveBy).click();
-		OOGraphene.waitBusy(browser);
+		By dateDisabledBy = By.xpath("//input[@name='dateSwitch'][@value='ison'][@disabled='disabled']");
+		OOGraphene.waitElement(dateDisabledBy, browser);
 		return this;
 	}
 	
 	public EasyConditionConfigPage setGroupCondition() {
 		By groupSwitchBy = By.cssSelector("input[name='groupSwitch'][type='checkbox']");
 		browser.findElement(groupSwitchBy).click();
-		OOGraphene.waitBusy(browser);
+		By createBy = By.cssSelector("a.o_sel_condition_create_groups");
+		OOGraphene.waitElement(createBy, browser);
 		return this;
 	}
 	
@@ -65,9 +67,8 @@ public class EasyConditionConfigPage {
 
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		
 		return this;
 	}

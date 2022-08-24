@@ -140,7 +140,7 @@ public class AppointmentPage {
 	 */
 	public AppointmentPage saveTopic()  {
 		By saveBy = By.xpath("//div[contains(@class,'modal-dialog')]//fieldset//button[contains(@class,'btn-primary')]");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
