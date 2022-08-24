@@ -227,6 +227,7 @@ public class PdfDocument {
     public static String cleanCharacters(String string) {
     	return string.replace("\u00AD", "")
     			.replace('\u00A0', ' ')
+    			.replace("\r", "")
     			.replace('\u2212', '-')
     			.replace('\u2666', '-');
     }

@@ -261,13 +261,13 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
 			currentContentStream.newLineAtOffset(textx, texty - rowHeight + (2 * cellMargin));
-			currentContentStream.showText(translator.translate("pdf.table.header.participants"));
+			showTextToStream(translator.translate("pdf.table.header.participants"), currentContentStream);
 			currentContentStream.endText();
 			
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
 			currentContentStream.newLineAtOffset(textx + nameMaxSizeWithMargin, texty - rowHeight + (2 * cellMargin));
-			currentContentStream.showText(translator.translate("pdf.table.header.signature"));
+			showTextToStream(translator.translate("pdf.table.header.signature"), currentContentStream);
 			currentContentStream.endText();
 		}
 
