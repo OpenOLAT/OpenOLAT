@@ -70,7 +70,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		if(!testSessionController.getTestSessionState().isEnded()) {
 			CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
 			final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
-	        if (!candidateSession.isExploded() && !candidateSessionContext.isTerminated()) {
+	        if (candidateSession != null && !candidateSession.isExploded() && !candidateSessionContext.isTerminated()) {
 
 	    		CandidateEvent candidateEvent = candidateSessionContext.getLastEvent();
 	    		CandidateTestEventType testEventType = candidateEvent.getTestEventType();

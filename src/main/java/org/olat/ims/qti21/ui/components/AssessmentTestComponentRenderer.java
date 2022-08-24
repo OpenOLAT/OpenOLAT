@@ -102,7 +102,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			CandidateSessionContext candidateSessionContext = cmp.getCandidateSessionContext();
 			final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
 			
-	        if (candidateSession.isExploded()) {
+			if (candidateSession == null) {
+				renderTestTerminated(sb, cmp, translator);
+	        } else if (candidateSession.isExploded()) {
 	            renderExploded(sb, translator);
 	        } else if (candidateSessionContext.isTerminated()) {
 	        	renderTestTerminated(sb, cmp, translator);
@@ -181,7 +183,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 
 		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
 		final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
-		if(candidateSession.isAuthorMode()) {
+		if(candidateSession != null && candidateSession.isAuthorMode()) {
 			sb.append("<div class='o_button_group'>");
 			String title = translator.translate("assessment.test.restart.test");
 			String explanation = translator.translate("assessment.test.restart.test.explanation");
