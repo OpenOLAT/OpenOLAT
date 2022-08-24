@@ -125,6 +125,16 @@ public class CourseLecturesProviderDAO {
 		sb.append("    ) lectureinfos");
 	}
 
+	/**
+	 * Idea to squeeze some more performance:
+	 * lb.fk_entry in
+	 *  (SELECT course.repositoryentry_id
+	 *     FROM o_repositoryentry course
+	 *          INNER JOIN o_lecture_block lb2 on lb2.fk_entry = course.repositoryentry_id
+	 *                 AND lb2.l_end_date > '2002-08-23 09:52:42'
+	 *                 AND lb2.l_end_date <= '2022-08-31 09:53:42'
+	 *  )
+	 */
 	private QueryBuilder getSubselect(SearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("   select lb.id as lecture_block_key");
@@ -191,18 +201,14 @@ public class CourseLecturesProviderDAO {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
 			sb.append("              select dc.q_topic_fk_identity, dc.q_generator_provider_key");
 			sb.append("                from o_qual_data_collection dc");
-			sb.append("               where dc.q_topic_fk_identity = tm.fk_identity_id");
-			sb.append("                 and dc.q_generator_provider_key = lb.fk_entry");
-			sb.append("                 and dc.fk_generator = :excludeGeneratorIdentKey");
+			sb.append("               where dc.fk_generator = :excludeGeneratorIdentKey");
 			sb.append("              )");
 		}
 		if (searchParams.getExcludeGeneratorAndTopicRepositoryRef() != null) {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
 			sb.append("              select dc.q_generator_provider_key, dc.q_topic_fk_repository");
 			sb.append("                from o_qual_data_collection dc");
-			sb.append("               where dc.q_generator_provider_key = tm.fk_identity_id");
-			sb.append("                 and dc.q_topic_fk_repository = lb.fk_entry");
-			sb.append("                 and dc.fk_generator = :excludeGeneratorRepoKey");
+			sb.append("               where dc.fk_generator = :excludeGeneratorRepoKey");
 			sb.append("              )");
 		}
 		if (searchParams.getExcludedEducationalTypeKeys()!= null && !searchParams.getExcludedEducationalTypeKeys().isEmpty()) {
