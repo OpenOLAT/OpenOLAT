@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -58,18 +57,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseScoreController extends FormBasicController {
 	
 	private static final String SCORE_VALUE_NONE = "options.score.points.none";
-	private static final String[] ONE_OPTION = { "xx" };
-	private static final String[] UNTRANSLATED = { "" };
 
 	private SingleSelection scoreEl;
-	private MultipleSelectionElement gradeApplyEl;
-	private MultipleSelectionElement userVisibilityEl;
-	private MultipleSelectionElement passedManuallyEl;
-	private MultipleSelectionElement passedProgressEl;
-	private MultipleSelectionElement passedAllEl;
-	private MultipleSelectionElement passedNumberEl;
+	private MultipleSelectionElement coachesCanEl;
+	private MultipleSelectionElement passedEl;
 	private TextElement passedNumberCutEl;
-	private MultipleSelectionElement passedPointsEl;
 	private TextElement passedPointsCutEl;
 	
 	private CloseableModalController cmc;
@@ -147,43 +139,31 @@ public class CourseScoreController extends FormBasicController {
 		scoreEl.select(scoreKey, true);
 		
 		// Coach rights
-		uifactory.addStaticTextElement("options.coach.can", null, formLayout);
-		
-		gradeApplyEl = uifactory.addCheckboxesHorizontal("options.grade.apply", formLayout, ONE_OPTION, UNTRANSLATED);
-		boolean gradeApply = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY);
-		gradeApplyEl.select(gradeApplyEl.getKey(0), gradeApply);
-		gradeApplyEl.setEnabled(editable);
-		
-		userVisibilityEl = uifactory.addCheckboxesHorizontal("options.user.visibility", formLayout, ONE_OPTION, UNTRANSLATED);
-		userVisibilityEl.addActionListener(FormEvent.ONCHANGE);
-		boolean coachUserVisibility = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		userVisibilityEl.select(userVisibilityEl.getKey(0), coachUserVisibility);
-		userVisibilityEl.setEnabled(editable);
-		
-		passedManuallyEl = uifactory.addCheckboxesHorizontal("options.passed.manually", formLayout, ONE_OPTION, UNTRANSLATED);
-		boolean passedManually = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		passedManuallyEl.select(passedManuallyEl.getKey(0), passedManually);
-		passedManuallyEl.setEnabled(editable);
+		SelectionValues coachesCanSV = new SelectionValues();
+		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_GRADE_APPLY, translate("options.grade.apply")));
+		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, translate("options.user.visibility")));
+		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_MANUALLY, translate("options.passed.manually")));
+		coachesCanEl = uifactory.addCheckboxesVertical("options.coaches.can", formLayout, coachesCanSV.keys(), coachesCanSV.values(), 1);
+		coachesCanEl.addActionListener(FormEvent.ONCHANGE);
+		coachesCanEl.setEnabled(editable);
+		coachesCanEl.select(STCourseNode.CONFIG_COACH_GRADE_APPLY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY));
+		coachesCanEl.select(STCourseNode.CONFIG_COACH_USER_VISIBILITY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY));
+		coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY));
 		
 		// Passed evaluation
-		StaticTextElement passedIfEl = uifactory.addStaticTextElement("options.passed.if", null, formLayout);
-		passedIfEl.setHelpTextKey("options.passed.if.help", null);
-		
-		passedProgressEl = uifactory.addCheckboxesHorizontal("options.passed.progress", formLayout, ONE_OPTION, UNTRANSLATED);
-		boolean passedProgress = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS);
-		passedProgressEl.select(passedProgressEl.getKey(0), passedProgress);
-		passedProgressEl.setEnabled(editable);
-		
-		passedAllEl = uifactory.addCheckboxesHorizontal("options.passed.all", formLayout, ONE_OPTION, UNTRANSLATED);
-		boolean passedAll = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL);
-		passedAllEl.select(passedAllEl.getKey(0), passedAll);
-		passedAllEl.setEnabled(editable);
-		
-		passedNumberEl = uifactory.addCheckboxesHorizontal("options.passed.number", formLayout, ONE_OPTION, UNTRANSLATED);
-		passedNumberEl.addActionListener(FormEvent.ONCHANGE);
-		boolean passedNumber = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER);
-		passedNumberEl.select(passedNumberEl.getKey(0), passedNumber);
-		passedNumberEl.setEnabled(editable);
+		SelectionValues passedSV = new SelectionValues();
+		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_PROGRESS, translate("options.passed.progress")));
+		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_ALL, translate("options.passed.all")));
+		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_NUMBER, translate("options.passed.number")));
+		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_POINTS, translate("options.passed.points")));
+		passedEl = uifactory.addCheckboxesVertical("options.passed", formLayout, passedSV.keys(), passedSV.values(), 1);
+		passedEl.setHelpTextKey("options.passed.help", null);
+		passedEl.addActionListener(FormEvent.ONCHANGE);
+		passedEl.setEnabled(editable);
+		passedEl.select(STCourseNode.CONFIG_PASSED_PROGRESS, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS));
+		passedEl.select(STCourseNode.CONFIG_PASSED_ALL, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL));
+		passedEl.select(STCourseNode.CONFIG_PASSED_NUMBER, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER));
+		passedEl.select(STCourseNode.CONFIG_PASSED_POINTS, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS));
 		
 		String passedNumberCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_NUMBER_CUT)
 				? String.valueOf(moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, 1))
@@ -191,13 +171,7 @@ public class CourseScoreController extends FormBasicController {
 		passedNumberCutEl = uifactory.addTextElement("options.passed.number.cut", 10, passedNumberCut, formLayout);
 		passedNumberCutEl.setCheckVisibleLength(true);
 		passedNumberCutEl.setDisplaySize(10);
-		passedNumberEl.setEnabled(editable);
-		
-		passedPointsEl = uifactory.addCheckboxesHorizontal("options.passed.points", formLayout, ONE_OPTION, UNTRANSLATED);
-		passedPointsEl.addActionListener(FormEvent.ONCHANGE);
-		boolean passedPoints = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS);
-		passedPointsEl.select(passedPointsEl.getKey(0), passedPoints);
-		passedPointsEl.setEnabled(editable);
+		passedNumberCutEl.setEnabled(editable);
 		
 		String passedPointsCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_POINTS_CUT)
 				? String.valueOf(moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, 1))
@@ -205,7 +179,7 @@ public class CourseScoreController extends FormBasicController {
 		passedPointsCutEl = uifactory.addTextElement("options.passed.points.cut", 10, passedPointsCut, formLayout);
 		passedPointsCutEl.setCheckVisibleLength(true);
 		passedPointsCutEl.setDisplaySize(10);
-		passedPointsEl.setEnabled(editable);
+		passedPointsCutEl.setEnabled(editable);
 		
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -218,23 +192,26 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		boolean userVisibility = userVisibilityEl.isAtLeastSelected(1);
-		passedManuallyEl.setVisible(userVisibility);
+		boolean userVisibility = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		if (userVisibility) {
+			coachesCanEl.setEnabled(STCourseNode.CONFIG_PASSED_MANUALLY, true);
+		} else {
+			coachesCanEl.setEnabled(STCourseNode.CONFIG_PASSED_MANUALLY, false);
+			coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, false);
+		}
 		
-		boolean passedNumber = passedNumberEl.isAtLeastSelected(1);
+		boolean passedNumber = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_NUMBER);
 		passedNumberCutEl.setVisible(passedNumber);
 		
-		boolean passedPoints = passedPointsEl.isAtLeastSelected(1);
+		boolean passedPoints = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		passedPointsCutEl.setVisible(passedPoints);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == userVisibilityEl) {
+		if (source == coachesCanEl) {
 			updateUI();
-		} else if (source == passedNumberEl) {
-			updateUI();
-		} else if (source == passedPointsEl) {
+		} else if (source == passedEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -357,15 +334,15 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, selectedScoreKey);
 		}
 		
-		boolean gradeApply = gradeApplyEl.isAtLeastSelected(1);
+		boolean gradeApply = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_GRADE_APPLY);
 		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, gradeApply);
 		editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, gradeApply);
 		
-		boolean userVisibility = userVisibilityEl.isAtLeastSelected(1);
+		boolean userVisibility = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);
 		editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);
 		
-		boolean passedManually = passedManuallyEl.isVisible() && passedManuallyEl.isAtLeastSelected(1);
+		boolean passedManually = coachesCanEl.isKeySelected(STCourseNode.CONFIG_PASSED_MANUALLY);
 		if (passedManually) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
 			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
@@ -374,7 +351,7 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
 		}
 		
-		boolean passedProgress = passedProgressEl.isAtLeastSelected(1);
+		boolean passedProgress = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS);
 		if (passedProgress) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
@@ -383,7 +360,7 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_PROGRESS);
 		}
 		
-		boolean passedAll = passedAllEl.isAtLeastSelected(1);
+		boolean passedAll = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_ALL);
 		if (passedAll) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
@@ -392,7 +369,7 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_ALL);
 		}
 		
-		boolean passedNumber = passedNumberEl.isAtLeastSelected(1);
+		boolean passedNumber = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_NUMBER);
 		if (passedNumber) {
 			int numberCut = Integer.parseInt(passedNumberCutEl.getValue());
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
@@ -406,7 +383,7 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_NUMBER_CUT);
 		}
 		
-		boolean passedPoints = passedPointsEl.isAtLeastSelected(1);
+		boolean passedPoints = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		if (passedPoints) {
 			int pointsCut = Integer.parseInt(passedPointsCutEl.getValue());
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_POINTS, true);
