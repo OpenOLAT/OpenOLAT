@@ -59,6 +59,7 @@ import org.olat.modules.adobeconnect.model.AdobeConnectPrincipal;
 import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.modules.adobeconnect.model.BreezeSession;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +72,8 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGroupData, UserDataDeletable {
+public class AdobeConnectManagerImpl implements AdobeConnectManager,
+	RepositoryEntryDataDeletable, DeletableGroupData, UserDataDeletable {
 	
 	private static final Logger log = Tracing.createLoggerFor(AdobeConnectManagerImpl.class);
 	
@@ -122,8 +124,19 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		adobeConnectUserDao.deleteAdobeConnectUser(identity);
-	}
+	}	
 	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<AdobeConnectMeeting> meetings = adobeConnectMeetingDao.getMeetings(re, null);
+		
+		AdobeConnectErrors errors = new AdobeConnectErrors();
+		for(AdobeConnectMeeting meeting:meetings) {
+			deleteMeeting(meeting, errors);
+		}
+		return !errors.hasErrors();
+	}
+
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		List<AdobeConnectMeeting> meetings = adobeConnectMeetingDao.getMeetings(group);
