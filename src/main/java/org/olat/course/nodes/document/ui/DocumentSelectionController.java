@@ -22,6 +22,7 @@ package org.olat.course.nodes.document.ui;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +39,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -57,12 +60,12 @@ public class DocumentSelectionController extends FormBasicController {
 	private FormLink selectRepositoryEntryLink;
 	private DropdownItem createDropdown;
 	
-	private final long leftQuataKB;
+	private final long leftQuotaKB;
 	private final DocTemplates docTemplates;
 
-	public DocumentSelectionController(UserRequest ureq, WindowControl wControl, long leftQuataKB) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.leftQuataKB = leftQuataKB;
+	public DocumentSelectionController(UserRequest ureq, WindowControl wControl, long leftQuotaKB) {
+		super(ureq, wControl, LAYOUT_VERTICAL, Util.createPackageTranslator(FileUploadController.class, ureq.getLocale()));
+		this.leftQuotaKB = leftQuotaKB;
 		this.docTemplates = DocTemplates.editablesOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), true).build();
 		
 		initForm(ureq);
@@ -73,7 +76,13 @@ public class DocumentSelectionController extends FormBasicController {
 		// Upload
 		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "config.file.upload", formLayout);
 		uploadEl.addActionListener(FormEvent.ONCHANGE);
-		uploadEl.setMaxUploadSizeKB(leftQuataKB, null, null);
+		if(leftQuotaKB <= 0l) {
+			String supportAddr = WebappHelper.getMailConfig("mailQuota");
+			uploadEl.setErrorKey("QuotaExceededSupport", new String[] { supportAddr });
+			uploadEl.setMaxUploadSizeKB(0l, null, null);
+		} else {
+			uploadEl.setMaxUploadSizeKB(leftQuotaKB, null, null);
+		}
 		
 		// Select
 		FormLayoutContainer selectCont = FormLayoutContainer.createButtonLayout("select", getTranslator());
