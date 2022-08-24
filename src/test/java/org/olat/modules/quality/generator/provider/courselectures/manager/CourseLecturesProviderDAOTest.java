@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.courselectures.manager;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -290,6 +291,30 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterLectureBlockInfosByStartDate() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseBeforeStartDate = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date otherStart = nextHour();
+		Date otherEnd = nextHour();
+		createLectureBlock(courseBeforeStartDate, teacher, 3, otherStart, otherEnd);
+		Date start11 = nextHour();
+		Date from = nextHour();
+		Date end11 = nextHour();
+		createLectureBlock(course, teacher, 1, start11, end11);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setFrom(from);
+		searchParams.setWhiteListRefs(List.of(course, courseBeforeStartDate));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
+				.containsExactlyInAnyOrder(course.getKey())
+				.doesNotContain(courseBeforeStartDate.getKey());
+	}
+	
+	@Test
 	public void shouldFilterLectureBlockInfosByEndDate() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -423,10 +448,20 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, otherCourse.getKey());
-		dataCollection.setTopicIdentity(teacher);
-		dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
-		qualityService.updateDataCollection(dataCollection);
+		QualityGenerator otherGenerator = generatorService.createGenerator("Gen", organisations);
+		QualityDataCollection dataCollectionGenerator = qualityService.createDataCollection(organisations, formEntry, otherGenerator, course1.getKey());
+		dataCollectionGenerator.setTopicIdentity(teacher);
+		dataCollectionGenerator.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		qualityService.updateDataCollection(dataCollectionGenerator);
+		Identity otherTeacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		QualityDataCollection dataCollectionOtherTeacher = qualityService.createDataCollection(organisations, formEntry, generator, course1.getKey());
+		dataCollectionOtherTeacher.setTopicIdentity(otherTeacher);
+		dataCollectionOtherTeacher.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		qualityService.updateDataCollection(dataCollectionOtherTeacher);
+		QualityDataCollection dataCollectionOtherCourse = qualityService.createDataCollection(organisations, formEntry, generator, otherCourse.getKey());
+		dataCollectionOtherCourse.setTopicIdentity(teacher);
+		dataCollectionOtherCourse.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		qualityService.updateDataCollection(dataCollectionOtherCourse);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
@@ -457,10 +492,20 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
-		dataCollection.setTopicRepositoryEntry(otherCourse);
-		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
-		qualityService.updateDataCollection(dataCollection);
+		QualityGenerator otherGenerator = generatorService.createGenerator("Gen", organisations);
+		QualityDataCollection dataCollectionOtherGenerator = qualityService.createDataCollection(organisations, formEntry, otherGenerator, teacher.getKey());
+		dataCollectionOtherGenerator.setTopicRepositoryEntry(course1);
+		dataCollectionOtherGenerator.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		qualityService.updateDataCollection(dataCollectionOtherGenerator);
+		Identity otherTeacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		QualityDataCollection dataCollectionOtherTeacher = qualityService.createDataCollection(organisations, formEntry, generator, otherTeacher.getKey());
+		dataCollectionOtherTeacher.setTopicRepositoryEntry(course1);
+		dataCollectionOtherTeacher.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		qualityService.updateDataCollection(dataCollectionOtherTeacher);
+		QualityDataCollection dataCollectionOtherCourse = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
+		dataCollectionOtherCourse.setTopicRepositoryEntry(otherCourse);
+		dataCollectionOtherCourse.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		qualityService.updateDataCollection(dataCollectionOtherCourse);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
