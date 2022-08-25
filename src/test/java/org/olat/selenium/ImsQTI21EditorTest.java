@@ -2075,7 +2075,14 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentTestScore(3);
 	}
 	
-
+	/**
+	 * An author makes a test with 2 items of type inline choice. Every
+	 * questions has 2 inline choices, first question with point for the
+	 * 2 interactions, the second points pro interactions.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
 	@RunAsClient
 	public void qti21EditorInlineChoice()
