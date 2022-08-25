@@ -53,6 +53,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.OpenPageEvent;
+import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
@@ -205,7 +206,7 @@ public class BinderController extends BasicController implements TooledControlle
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName) || "Section".equalsIgnoreCase(resName)) {
-			doOpenOverview(ureq).activate(ureq, entries, state);
+			doOpenEntries(ureq).activate(ureq, entries, state);
 		} else if("Entries".equalsIgnoreCase(resName)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenEntries(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -221,7 +222,11 @@ public class BinderController extends BasicController implements TooledControlle
 			doOpenHistory(ureq);
 		} else if("Toc".equalsIgnoreCase(resName)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doOpenOverview(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			if(!subEntries.isEmpty()) {
+				doOpenEntries(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			} else {
+				doOpenOverview(ureq);
+			}
 		} else if("Templates".equalsIgnoreCase(resName)) {
 			if(secCallback.canNewBinderAssignment()) {
 				doOpenTemplatesEditor(ureq);
@@ -260,6 +265,11 @@ public class BinderController extends BasicController implements TooledControlle
 				SectionSelectionEvent sse = (SectionSelectionEvent)event;
 				List<ContextEntry> entries = new ArrayList<>();
 				entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Section", sse.getSection().getKey())));
+				doOpenEntries(ureq).activate(ureq, entries, null);
+			} else if(event instanceof PageSelectionEvent) {
+				PageSelectionEvent pse = (PageSelectionEvent)event;
+				List<ContextEntry> entries = new ArrayList<>();
+				entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Page", pse.getPage().getKey())));
 				doOpenEntries(ureq).activate(ureq, entries, null);
 			} else if(event instanceof DeleteBinderEvent || event instanceof RestoreBinderEvent) {
 				fireEvent(ureq, event);

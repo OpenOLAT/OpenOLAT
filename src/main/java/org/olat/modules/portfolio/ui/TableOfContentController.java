@@ -40,7 +40,6 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
-import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -53,7 +52,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
@@ -61,13 +59,10 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -92,15 +87,10 @@ import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
-import org.olat.modules.portfolio.model.SectionRefImpl;
-import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
-import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
-import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
-import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
@@ -117,7 +107,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
+public class TableOfContentController extends BasicController implements TooledController {
 	
 	private Link printLink;
 	private Link newEntryLink;
@@ -154,7 +144,6 @@ public class TableOfContentController extends BasicController implements TooledC
 	private BinderMetadataEditController binderMetadataCtrl;
 	private ConfirmMoveBinderToTrashController moveBinderToTrashCtrl;
 	
-	private PageRunController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
 	
 	private int counter = 0;
@@ -554,32 +543,6 @@ public class TableOfContentController extends BasicController implements TooledC
 		summaryCtrl = null;
         super.doDispose();
 	}
-	
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) {
-			return;
-		}
-		
-		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName)) {
-			Long pageKey = entries.get(0).getOLATResourceable().getResourceableId();
-			Page page = portfolioService.getPageByKey(pageKey);
-			if(page != null && page.getSection() != null && binder.equals(page.getSection().getBinder())) {
-				Activateable2 activateable = doOpenPage(ureq, page);
-				if(activateable != null) {
-					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
-				}
-			}
-		} else if("Section".equalsIgnoreCase(resName)) {
-			Long sectionKey = entries.get(0).getOLATResourceable().getResourceableId();
-			Section section = portfolioService.getSection(new SectionRefImpl(sectionKey));
-			if(section != null && binder.equals(section.getBinder())) {
-				doOpenSection(ureq, section);
-			}
-		}
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -592,24 +555,6 @@ public class TableOfContentController extends BasicController implements TooledC
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(pageCtrl == source) {
-			if(event == Event.CHANGED_EVENT || event instanceof ClosePageEvent) {
-				loadModel();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
-				stackPanel.popController(pageCtrl);
-				loadModel();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof SelectPageEvent) {
-				SelectPageEvent spe = (SelectPageEvent)event;
-				if(SelectPageEvent.NEXT_PAGE.equals(spe.getCommand())) {
-					doNextPage(ureq, pageCtrl.getPage());
-				} else if(SelectPageEvent.PREVIOUS_PAGE.equals(spe.getCommand())) {
-					doPreviousPage(ureq, pageCtrl.getPage());
-				} else if(SelectPageEvent.ALL_PAGES.equals(spe.getCommand())) {
-					doAllPages();
-				}
-			}
 		} else if(binderMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				binder = binderMetadataCtrl.getBinder();
@@ -742,11 +687,6 @@ public class TableOfContentController extends BasicController implements TooledC
 			doExportBinderAsPdf(ureq);
 		} else if(toReferenceEntryLink == source) {
 			doOpenReferenceEntry(ureq);
-		} else if(stackPanel == source) {
-			if(event instanceof PopEvent && pageCtrl != null && ((PopEvent)event).getController() == pageCtrl && pageCtrl.getSection() != null) {
-				stackPanel.popUserObject(new TOCSection(pageCtrl.getSection()));
-				addToHistory(ureq, this);
-			}
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -858,78 +798,8 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
-	protected void doPreviousPage(UserRequest ureq, Page currentPage) {
-		Page selectedPage = currentPage;
-		for(SectionRow sectionRow:sectionList) {
-			int numOfPages = sectionRow.getPages() == null ? 0 : sectionRow.getPages().size();
-			for(int i=0; i<numOfPages; i++) {
-				PageRow pageRow = sectionRow.getPages().get(i);
-				if(currentPage.equals(pageRow.getPage()) && i > 0) {
-					selectedPage = sectionRow.getPages().get(i-1).getPage();
-				}
-			}
-		}
-
-		stackPanel.popController(pageCtrl);
-		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
-		doOpenPage(ureq, reloadedPage);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
-	}
-	
-	protected void doNextPage(UserRequest ureq, Page currentPage) {
-		Page selectedPage = currentPage;
-		for(SectionRow sectionRow:sectionList) {
-			int numOfPages = sectionRow.getPages() == null ? 0 : sectionRow.getPages().size();
-			for(int i=0; i<numOfPages; i++) {
-				PageRow pageRow = sectionRow.getPages().get(i);
-				if(currentPage.equals(pageRow.getPage()) && i+1 < numOfPages) {
-					selectedPage = sectionRow.getPages().get(i+1).getPage();
-				}
-			}
-		}
-
-		stackPanel.popController(pageCtrl);
-		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
-		doOpenPage(ureq, reloadedPage);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
-	}
-	
-	protected void doAllPages() {
-		stackPanel.popController(pageCtrl);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
-	}
-	
-	private PageRunController doOpenPage(UserRequest ureq, Page page) {
-		removeAsListenerAndDispose(pageCtrl);
-
-		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", page.getKey());
-		WindowControl swControl = addToHistory(ureq, pageOres, null);
-		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
-		
-		boolean openInEditMode = (secCallback.canEditPage(reloadedPage)
-				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
-		listenTo(pageCtrl);
-		
-		Section section = page.getSection();
-		if(section != null) {
-			stackPanel.pushController(section.getTitle(), null, new TOCSection(section));
-		}
-		stackPanel.pushController(page.getTitle(), pageCtrl);
-		
-		for(SectionRow sectionRow:sectionList) {
-			int numOfPages = sectionRow.getPages() == null ? 0 : sectionRow.getPages().size();
-			for(int i=0; i<numOfPages; i++) {
-				PageRow pageRow = sectionRow.getPages().get(i);
-				if(page.equals(pageRow.getPage())) {
-					boolean hasPrevious = (i > 0);
-					boolean hasNext = (i + 1 < numOfPages);
-					pageCtrl.initPaging(hasPrevious, hasNext);
-				}
-			}
-		}
-		
-		return pageCtrl;
+	private void doOpenPage(UserRequest ureq, Page page) {
+		fireEvent(ureq, new PageSelectionEvent(page));
 	}
 	
 	private void doOpenReferenceEntry(UserRequest ureq) {
@@ -1270,32 +1140,6 @@ public class TableOfContentController extends BasicController implements TooledC
 
 		public void setDownSectionLink(Link downSectionLink) {
 			this.downSectionLink = downSectionLink;
-		}
-	}
-	
-	private static class TOCSection {
-		
-		private final Section section;
-		
-		public TOCSection(Section section) {
-			this.section = section;
-		}
-
-		@Override
-		public int hashCode() {
-			return section.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj) {
-				return true;
-			}
-			if(obj instanceof TOCSection) {
-				TOCSection tocs = (TOCSection)obj;
-				return section.equals(tocs.section);
-			}
-			return false;
 		}
 	}
 	

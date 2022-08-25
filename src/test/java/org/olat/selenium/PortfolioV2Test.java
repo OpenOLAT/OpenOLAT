@@ -919,7 +919,8 @@ public class PortfolioV2Test extends Deployments {
 			.selectTableOfContent()
 			.selectEntryInToc(pageToDelete)
 			.moveEntryToTrash()
-			.assertOnPageInToc(pageTitle)
+			.assertOnPageInEntries(pageTitle)
+			.selectTableOfContent()
 			.assertOnPageNotInToc(pageToDelete);
 		
 		EntriesPage trash = portfolio
@@ -1006,9 +1007,8 @@ public class PortfolioV2Test extends Deployments {
 			.selectEntryInToc("Page 1");
 		
 		//reload the binder
-		portfolio
-			.clickToolbarBack()
-			.clickToolbarBack();
+		myBinders = portfolio
+			.clickToolbarCrumbBinders();
 		myBinders
 			.selectBinder(binderTitle);
 		
