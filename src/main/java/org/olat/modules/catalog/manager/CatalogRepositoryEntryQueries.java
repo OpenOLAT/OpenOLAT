@@ -361,8 +361,8 @@ public class CatalogRepositoryEntryQueries {
 				sb.append(" and (");
 				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
 				sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-				sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
-				sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+				sb.append(" and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
+				sb.append(" and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
 				sb.append(" or");
 				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
 				sb.append(" and offer.validFrom is null and offer.validTo is null");

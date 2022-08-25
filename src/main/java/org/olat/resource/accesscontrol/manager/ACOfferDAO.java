@@ -68,8 +68,8 @@ public class ACOfferDAO {
 		sb.and().append("resource.key=:resourceKey");
 		sb.and().append("offer.valid=").append(valid);
 		if(atDate != null) {
-			sb.and().append("(offer.validFrom is null or offer.validFrom<=:atDate)");
-			sb.and().append("(offer.validTo is null or offer.validTo>=:atDate)");
+			sb.and().append("(offer.validFrom is null or date(offer.validFrom)<=:atDate)");
+			sb.and().append("(offer.validTo is null or date(offer.validTo)>=:atDate)");
 		}
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.and().append(" oto.organisation.key in :organisationKeys");

@@ -182,6 +182,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).contains(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, null, 2);
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).contains(catalogItem.getRepositoryEntry());
+		setOfferValid(catalogItem, 1, 1);
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).doesNotContain(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, 2, 4);
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).doesNotContain(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, -4, -2);
