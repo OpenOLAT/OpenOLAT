@@ -27,7 +27,9 @@ import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.model.CatalogLauncherImpl;
@@ -44,6 +46,10 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CatalogLauncherToOrganisationDAO catalogLauncherToOrganisationDAO;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Autowired
 	private CatalogLauncherDAO sut;
@@ -186,6 +192,34 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		
 		assertThat(catalogLaunchers)
 				.contains(catalogLauncher1, catalogLauncher2, catalogLauncher3);
+	}
+	
+	@Test
+	public void shouldFilterByLauncherOrganisation() {
+		CatalogLauncher launcher1 = sut.create(random(), miniRandom());
+		CatalogLauncher launcher2 = sut.create(random(), miniRandom());
+		CatalogLauncher launcherNoOrganisation = sut.create(random(), miniRandom());
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		catalogLauncherToOrganisationDAO.createRelation(launcher1, organisation1);
+		catalogLauncherToOrganisationDAO.createRelation(launcher1, organisation2);
+		catalogLauncherToOrganisationDAO.createRelation(launcher2, organisation2);
+		dbInstance.commitAndCloseSession();
+		
+		// No filter
+		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
+		List<CatalogLauncher> catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(launcher1, launcher2, launcherNoOrganisation);
+		
+		// Filter by organisation
+		searchParams.setLauncherOrganisations(List.of(organisation1));
+		catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(launcher1, launcherNoOrganisation)
+				.doesNotContain(launcher2);
 	}
 
 }

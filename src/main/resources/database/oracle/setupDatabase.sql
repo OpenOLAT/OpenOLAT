@@ -1103,6 +1103,14 @@ create table o_ca_launcher (
    c_config varchar2(4000),
    primary key (id)
 );
+create table o_ca_launcher_to_organisation (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   fk_launcher number(20) not null,
+   fk_organisation number(20) not null,
+   primary key (id)
+);
 create table o_ca_filter (
    id number(20) generated always as identity,
    creationdate date not null,
@@ -4225,6 +4233,12 @@ alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (f
 create index idx_rsrv_to_rsrc_idx on o_ac_reservation(fk_resource);
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
 create index idx_rsrv_to_rsrc_id_idx on o_ac_reservation(fk_identity);
+
+-- catalog
+alter table o_ca_launcher_to_organisation add constraint rel_lto_launcher_idx foreign key (fk_launcher) references o_ca_launcher(id);
+create index idx_rel_lto_launcher_idx on o_ca_launcher_to_organisation (fk_launcher);
+alter table o_ca_launcher_to_organisation add constraint rel_lto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_lto_org_idx on o_ca_launcher_to_organisation (fk_organisation);
 
 -- note
 alter table o_note add constraint FKC2D855C263219E27 foreign key (owner_id) references o_bs_identity (id);

@@ -120,15 +120,27 @@ public class CatalogLauncherDAO {
 
 	public List<CatalogLauncher> load(CatalogLauncherSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select launcher");
+		sb.append("select distinct launcher");
 		sb.append("  from cataloglauncher launcher");
+		sb.append("       left join cataloglaunchertoorganisation as launcherToOrganisation");
+		sb.append("         on launcherToOrganisation.launcher.key = launcher.key");
 		if (searchParams.getEnabled() != null) {
 			sb.and().append("launcher.enabled = ").append(searchParams.getEnabled());
 		}
+		if (searchParams.getLauncherOrganisationKeys() != null && !searchParams.getLauncherOrganisationKeys().isEmpty()) {
+			sb.and().append("(");
+			sb.append("    launcherToOrganisation.organisation.key in :launcherOrganisationKeys");
+			sb.append(" or launcherToOrganisation.organisation.key is null");
+			sb.append(")");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CatalogLauncher.class)
-				.getResultList();
+		TypedQuery<CatalogLauncher> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogLauncher.class);
+		if (searchParams.getLauncherOrganisationKeys() != null && !searchParams.getLauncherOrganisationKeys().isEmpty()) {
+			query.setParameter("launcherOrganisationKeys", searchParams.getLauncherOrganisationKeys());
+		}
+		
+		return query.getResultList();
 	}
 
 }

@@ -19,8 +19,10 @@
  */
 package org.olat.modules.catalog;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.olat.core.id.Organisation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -56,6 +58,10 @@ public interface CatalogV2Service {
 	public CatalogLauncher getCatalogLauncher(CatalogLauncherRef catalogLauncher);
 
 	public List<CatalogLauncher> getCatalogLaunchers(CatalogLauncherSearchParams searchParams);
+	
+	public void updateLauncherOrganisations(CatalogLauncher catalogLauncher, Collection<Organisation> organisations);
+	
+	public List<Organisation> getCatalogLauncherOrganisations(CatalogLauncherRef catalogLauncher);
 	
 	public List<CatalogFilterHandler> getCatalogFilterHandlers();
 

@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +32,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
@@ -41,6 +44,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherRef;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
+import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
@@ -65,7 +69,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class CatalogV2ServiceImpl implements CatalogV2Service {
+public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataDeletable {
 	
 	@Autowired
 	private List<CatalogLauncherHandler> catalogLauncherHandlers;
@@ -78,6 +82,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 	private CatalogRepositoryEntryQueries queries;
 	@Autowired
 	private CatalogLauncherDAO catalogLauncherDao;
+	@Autowired
+	private CatalogLauncherToOrganisationDAO catalogLauncherToOrganisationDAO;
 	@Autowired
 	private CatalogFilterDAO catalogFilterDao;
 	@Autowired
@@ -245,6 +251,29 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 	}
 	
 	@Override
+	public void updateLauncherOrganisations(CatalogLauncher catalogLauncher, Collection<Organisation> organisations) {
+		if (organisations == null || organisations.isEmpty()) {
+			catalogLauncherToOrganisationDAO.delete(catalogLauncher);
+			return;
+		}
+		
+		List<CatalogLauncherToOrganisation> currentRelations = catalogLauncherToOrganisationDAO.loadRelations(catalogLauncher, null);
+		List<Organisation> currentOrganisations = currentRelations.stream()
+				.map(CatalogLauncherToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		
+		// Create relation for new organisations
+		organisations.stream()
+				.filter(org -> !currentOrganisations.contains(org))
+				.forEach(org -> catalogLauncherToOrganisationDAO.createRelation(catalogLauncher, org));
+
+		// Create relation of old organisations
+		currentRelations.stream()
+				.filter(rel -> !organisations.contains(rel.getOrganisation()))
+				.forEach(rel -> catalogLauncherToOrganisationDAO.delete(rel));
+	}
+	
+	@Override
 	public void doMove(CatalogLauncherRef catalogLauncherRef, boolean up) {
 		CatalogLauncher catalogLauncher = catalogLauncherDao.loadByKey(catalogLauncherRef);
 		if (catalogLauncher == null) return;
@@ -262,6 +291,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 
 	@Override
 	public void deleteCatalogLauncher(CatalogLauncherRef catalogLauncher) {
+		catalogLauncherToOrganisationDAO.delete(catalogLauncher);
 		catalogLauncherDao.delete(catalogLauncher);
 	}
 	
@@ -273,6 +303,11 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 	@Override
 	public List<CatalogLauncher> getCatalogLaunchers(CatalogLauncherSearchParams searchParams) {
 		return catalogLauncherDao.load(searchParams);
+	}
+	
+	@Override
+	public List<Organisation> getCatalogLauncherOrganisations(CatalogLauncherRef catalogLauncher) {
+		return catalogLauncherToOrganisationDAO.loadOrganisations(catalogLauncher);
 	}
 
 	@Override
@@ -324,6 +359,31 @@ public class CatalogV2ServiceImpl implements CatalogV2Service {
 	@Override
 	public List<CatalogFilter> getCatalogFilters(CatalogFilterSearchParams searchParams) {
 		return catalogFilterDao.load(searchParams);
+	}
+
+	@Override
+	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
+		catalogLauncherToOrganisationDAO.loadRelations(null, organisation).stream()
+				.map(CatalogLauncherToOrganisation::getLauncher)
+				.distinct()
+				.forEach(launcher -> deleteOrganisationData(launcher, organisation, replacementOrganisation));
+		return true;
+	}
+
+	private void deleteOrganisationData(CatalogLauncher launcher, Organisation organisation, Organisation replacementOrganisation) {
+		List<Organisation> organisations = catalogLauncherToOrganisationDAO.loadOrganisations(launcher);
+		organisations.remove(organisation);
+		if (replacementOrganisation != null && !organisations.contains(replacementOrganisation)) {
+			organisations.add(replacementOrganisation);
+		}
+		updateLauncherOrganisations(launcher, organisations);
+		
+		// Deactivate launcher so that it is not visible to all users
+		if (organisations.isEmpty()) {
+			CatalogLauncher reloadedLauncher = getCatalogLauncher(launcher);
+			reloadedLauncher.setEnabled(false);
+			update(reloadedLauncher);
+		}
 	}
 
 }

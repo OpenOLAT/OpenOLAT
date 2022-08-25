@@ -19,6 +19,15 @@
  */
 package org.olat.modules.catalog.ui.admin;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -28,10 +37,13 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
@@ -54,6 +66,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	private StaticTextElement nameEl;
 	private FormLink nameLink;
 	private MultipleSelectionElement enabledEl;
+	private MultipleSelectionElement organisationsEl;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController launcherNameTranslatorCtrl;
@@ -61,9 +74,14 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	private final CatalogLauncherHandler handler;
 	private final String identifier;
 	private CatalogLauncher catalogLauncher;
+	private List<Organisation> allOrganisations;
 	
 	@Autowired
 	private CatalogV2Service catalogService;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public AbstractLauncherEditController(UserRequest ureq, WindowControl wControl, CatalogLauncherHandler handler, CatalogLauncher catalogLauncher) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -120,6 +138,10 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.enabled", generalCont, ON_KEYS, onValues);
 		enabledEl.select(ON_KEYS[0], catalogLauncher == null || catalogLauncher.isEnabled());
 		
+		if (organisationModule.isEnabled()) {
+			initFormOrganisations(generalCont);
+		}
+		
 		initForm(generalCont);
 		
 		addFormPart(formLayout, ureq);
@@ -131,6 +153,25 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		buttonsWrapperCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private void initFormOrganisations(FormItemContainer formLayout) {
+		allOrganisations = organisationService.getOrganisations();
+		Collections.sort(allOrganisations, new OrganisationNameComparator(getLocale()));
+		
+		SelectionValues orgSV = new SelectionValues();
+		allOrganisations.forEach(org -> orgSV.add(entry(org.getKey().toString(), org.getDisplayName())));
+		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "admin.launcher.organisations", formLayout,
+				orgSV.keys(), orgSV.values(), null, null);
+		
+		if (catalogLauncher != null) {
+			List<Organisation> launchersOrganisations = catalogService.getCatalogLauncherOrganisations(catalogLauncher);
+			for (Organisation launcherOrganisation : launchersOrganisations) {
+				if (organisationsEl.getKeys().contains(launcherOrganisation.getKey().toString())) {
+					organisationsEl.select(launcherOrganisation.getKey().toString(), true);
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -174,6 +215,15 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		catalogLauncher.setEnabled(enabledEl.isAtLeastSelected(1));
 		catalogLauncher.setConfig(getConfig());
 		catalogLauncher = catalogService.update(catalogLauncher);
+		
+		Collection<Organisation> organisations = null;
+		if (organisationsEl != null && organisationsEl.isAtLeastSelected(1)) {
+			Collection<String> selectedKeys = organisationsEl.getSelectedKeys();
+			organisations = allOrganisations.stream()
+					.filter(org -> selectedKeys.contains(org.getKey().toString()))
+					.collect(Collectors.toSet());
+		}
+		catalogService.updateLauncherOrganisations(catalogLauncher, organisations);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

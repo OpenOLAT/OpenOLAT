@@ -1147,6 +1147,14 @@ create table o_ca_launcher (
    c_config varchar(4000),
    primary key (id)
 );
+create table o_ca_launcher_to_organisation (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  fk_launcher bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
+);
 create table o_ca_filter (
    id bigint not null auto_increment,
    lastmodified datetime not null,
@@ -3928,6 +3936,7 @@ alter table o_ac_reservation ENGINE = InnoDB;
 alter table o_ac_paypal_transaction ENGINE = InnoDB;
 alter table o_ac_auto_advance_order ENGINE = InnoDB;
 alter table o_ca_launcher ENGINE = InnoDB;
+alter table o_ca_launcher_to_organisation ENGINE = InnoDB;
 alter table o_ca_filter ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
@@ -4288,6 +4297,10 @@ alter table o_ac_auto_advance_order add constraint aao_ident_idx foreign key (fk
 -- reservations
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
+
+-- catalog
+alter table o_ca_launcher_to_organisation add constraint rel_lto_launcher_idx foreign key (fk_launcher) references o_ca_launcher (id);
+alter table o_ca_launcher_to_organisation add constraint rel_lto_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
 -- note
 alter table o_note add constraint FKC2D855C263219E27 foreign key (owner_id) references o_bs_identity (id);

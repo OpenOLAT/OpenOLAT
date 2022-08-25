@@ -19,36 +19,20 @@
  */
 package org.olat.modules.catalog;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Organisation;
 
 /**
+ * .
  * 
- * Initial date: 8 Jun 2022<br>
+ * Initial date: 25.08.2022<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogLauncherSearchParams {
-	
-	private Boolean enabled;
-	private Collection<Long> launcherOrganisationKeys;
+public interface CatalogLauncherToOrganisation {
 
-	public Boolean getEnabled() {
-		return enabled;
-	}
+	public CatalogLauncher getLauncher();
 
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
-	}
-
-	public Collection<Long> getLauncherOrganisationKeys() {
-		return launcherOrganisationKeys;
-	}
-
-	public void setLauncherOrganisations(Collection<? extends OrganisationRef> organisations) {
-		this.launcherOrganisationKeys = organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
-	}
+	public Organisation getOrganisation();
 
 }
