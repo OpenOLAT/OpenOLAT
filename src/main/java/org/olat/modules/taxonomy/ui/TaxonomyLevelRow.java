@@ -77,7 +77,7 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	
 	@Override
 	public String getCrump() {
-		return displayName;
+		return getDisplayName();
 	}
 	
 	public TaxonomyLevel getTaxonomyLevel() {
@@ -102,6 +102,10 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	public Integer getSortOrder() {
+		return taxonomyLevel.getSortOrder();
 	}
 	
 	public String getIdentifier() {
