@@ -151,6 +151,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, treeNodeRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.order));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.externalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
@@ -228,7 +229,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			}
 		}
 		
-		Collections.sort(rows, new FlexiTreeNodeComparator());
+		Collections.sort(rows, new TaxonomyTreeNodeComparator());
 
 		model.setObjects(rows);
 		tableEl.reset(resetPage, resetInternal, true);
@@ -753,6 +754,40 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		@Override
 		public String getCrump() {
 			return taxonomyDisplayName;
+		}
+	}
+	
+	private static class TaxonomyTreeNodeComparator extends FlexiTreeNodeComparator {
+		
+		@Override
+		protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
+			TaxonomyLevelRow r1 = (TaxonomyLevelRow)o1;
+			TaxonomyLevelRow r2 = (TaxonomyLevelRow)o2;
+
+			int c = 0;
+			if(r1 == null || r2 == null) {
+				c = compareNullObjects(r1, r2);
+			} else {
+				Integer s1 = r1.getSortOrder();
+				Integer s2 = r2.getSortOrder();
+	
+				if(s1 == null || s2 == null) {
+					c = -compareNullObjects(s1, s2);
+				} else {
+					c = s1.compareTo(s2);
+				}
+				
+				if(c == 0) {
+					String c1 = r1.getDisplayName();
+					String c2 = r2.getDisplayName();
+					if(c1 == null || c2 == null) {
+						c = -compareNullObjects(c1, s2);
+					} else {
+						c = c1.compareTo(c2);
+					}
+				}
+			}
+			return c;
 		}
 	}
 }

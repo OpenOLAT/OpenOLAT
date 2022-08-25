@@ -1,14 +1,12 @@
 <div class="o_catalog_re_launcher">
-	<div class="o_title">
-		<div>
-			<h3>
-				#if($title)
-					$title
-				#else
-					$r.render("title")
-				#end
-			</h3>
-		</div>
+	<div class="o_launcher_title">
+		<h3>
+			#if($title)
+				$title
+			#else
+				$r.render("title")
+			#end
+		</h3>
 	</div>
 	#if($r.available("emptyState"))
 		$r.render("emptyState")
