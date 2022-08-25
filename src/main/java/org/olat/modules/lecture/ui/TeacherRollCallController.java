@@ -685,10 +685,17 @@ public class TeacherRollCallController extends FormBasicController {
 		flc.contextPut("expandedDescription", Boolean.valueOf(nextState));
 	}
 	
-	
+	private List<Integer> generateAllAbsences() {
+		List<Integer> allAbsences = new ArrayList<>(numOfLectures);
+		for(int i=0; i<numOfLectures; i++) {
+			allAbsences.add(i);
+		}
+		return allAbsences;
+	}
 	
 	private void doUncheckAllRow(TeacherRollCallRow row) {
-		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, new ArrayList<>());
+		List<Integer> allAbsences = generateAllAbsences();
+		LectureBlockRollCall rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), allAbsences);
 		for(MultipleSelectionElement check:row.getChecks()) {
 			check.uncheckAll();
 		}
@@ -708,10 +715,7 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doCheckAllRow(TeacherRollCallRow row) {
-		List<Integer> allAbsences = new ArrayList<>(numOfLectures);
-		for(int i=0; i<numOfLectures; i++) {
-			allAbsences.add(i);
-		}
+		List<Integer> allAbsences = generateAllAbsences();
 		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, allAbsences);
 		for(MultipleSelectionElement check:row.getChecks()) {
 			check.select(onKeys[0], true);
