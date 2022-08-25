@@ -750,7 +750,13 @@
 	}
 	
 	.o_catalog_launcher {
-		margin-top: 40px;
+		margin-top: $o-cat2-launcher-margin-top;
+		.o_launcher_title {
+			margin: $o-cat2-launcher-title-margin;
+			h1, h2, h3 {
+				margin: 0;
+			}
+		}
 	}
 	
 	.o_taxonomy_launchers {
