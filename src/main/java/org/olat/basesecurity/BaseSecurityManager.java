@@ -471,11 +471,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
 	@Override
 	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names) {
-		return findAndCollectIdentitiesBy(names, null);
+		return findAndCollectIdentitiesBy(names, Identity.STATUS_VISIBLE_LIMIT, null);
 	}
 
 	@Override
-	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names, List<Organisation> organisations) {
+	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names, int statusLimit, List<Organisation> organisations) {
 		List<FindNamedIdentity> identities  = identityDao.findByNames(names, organisations);
 		Set<String> identListLowercase = names.stream()
 				.map(String::toLowerCase)
@@ -486,9 +486,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		List<String> notFoundNames = new ArrayList<>();
 		List<Identity> anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
 		
+		Integer validStatusLimit = Integer.valueOf(statusLimit);
+		
 		for(FindNamedIdentity identity:identities) {
 			identListLowercase.removeAll(identity.getNamesLowerCase());
-			if(!validIdentity(identity.getIdentity(), anonymousUsers)) {
+			if(!validIdentity(identity.getIdentity(), validStatusLimit, anonymousUsers)) {
 				notFoundNames.add(identity.getFirstFoundName());
 			} else if (!okSet.contains(identity.getIdentity())) {
 				okSet.add(identity.getIdentity());
@@ -521,9 +523,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return collection;
 	}
 	
-	private boolean validIdentity(Identity ident, List<Identity> anonymousUsers) {
+	private boolean validIdentity(Identity ident, Integer statusLimit, List<Identity> anonymousUsers) {
 		return ident != null
-				&& ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) < 0
+				&& ident.getStatus().compareTo(statusLimit) <= 0
 				&& !anonymousUsers.contains(ident);
 	}
 	
