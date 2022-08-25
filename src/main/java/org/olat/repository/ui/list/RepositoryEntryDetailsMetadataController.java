@@ -137,7 +137,8 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 		int counter = 0;
 		if (formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
+
+			layoutCont.contextPut("v", entry);
 			layoutCont.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 			boolean closed = entry.getEntryStatus().decommissioned();
 			layoutCont.contextPut("closed", Boolean.valueOf(closed));

@@ -118,4 +118,18 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitBusy(browser);
 		return assertHome();
 	}
+	
+	/**
+	 * Click the second crumbs in the bread crumb of a portfolio binder.
+	 * 
+	 * @return The list of binders
+	 */
+	public BindersPage clickToolbarCrumbBinders() {
+		By crumbBindersBy = By.xpath("//ol[@class='breadcrumb']/li[3]/a");
+		browser.findElement(crumbBindersBy).click();
+		OOGraphene.waitBusy(browser);
+		By listBindersBy = By.id("o_my_binders_list");
+		OOGraphene.waitElement(listBindersBy, browser);
+		return new BindersPage(browser);
+	}
 }
