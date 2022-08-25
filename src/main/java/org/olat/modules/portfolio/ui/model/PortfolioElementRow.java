@@ -53,7 +53,6 @@ public class PortfolioElementRow {
 	
 	private final Page page;
 	private final Section section;
-	private final Binder binder;
 	private Assignment assignment;
 	private PageUserStatus userInfosStatus;
 	private final AssessmentSection assessmentSection;
@@ -62,6 +61,7 @@ public class PortfolioElementRow {
 	
 	private String metaSectionTitle;
 	private String metaBinderTitle;
+	private final String binderTitle;
 	
 	private final boolean assessable;
 	private final boolean assignments;
@@ -99,7 +99,8 @@ public class PortfolioElementRow {
 		shared = false;
 		type = RowType.section;
 		this.section = section;
-		binder = section == null ? null : section.getBinder();
+		Binder binder = section == null ? null : section.getBinder();
+		binderTitle = binder == null ? null : binder.getTitle();
 		this.assessable = assessable;
 		this.assignments = assignments;
 		this.assessmentSection = assessmentSection;
@@ -109,7 +110,8 @@ public class PortfolioElementRow {
 			boolean assessable) {
 		this.page = page;
 		section = page.getSection();
-		binder = section == null ? null : section.getBinder();
+		Binder binder = section == null ? null : section.getBinder();
+		binderTitle = binder == null ? null : binder.getTitle();
 		shared = page.getBody().getUsage() > 1;
 		type = RowType.page;
 		this.assessable = assessable;
@@ -120,7 +122,8 @@ public class PortfolioElementRow {
 	public PortfolioElementRow(Assignment assignment, Section section, int assignmentPos) {
 		this.assignment = assignment;
 		this.section = section;
-		binder = section == null ? null : section.getBinder();
+		Binder binder = section == null ? null : section.getBinder();
+		binderTitle = binder == null ? null : binder.getTitle();
 		this.assignmentPos = assignmentPos;
 		
 		page = null;
@@ -256,14 +259,13 @@ public class PortfolioElementRow {
 		if (isRepresentingOtherPages()) {
 			if (translator != null) {
 				return translator.translate("multiple");
-			} else {
-				return "Multiple";
 			}
-		} else if(binder != null) {
-			return binder.getTitle();
-		} else {
-			return null;
+			return "Multiple";
 		}
+		if(binderTitle != null) {
+			return binderTitle;
+		} 
+		return null;
 	}
 	
 	public SectionStatus getSectionStatus() {
