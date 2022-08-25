@@ -83,7 +83,8 @@ public class UsermanagerUserBulkSearchForm extends FormBasicController {
 	public List<Identity> getUserList() {
 		String lines = searchEl.getValue();
 		List<String> identList = getLines(lines);
-		FindNamedIdentityCollection identityCollection = securityManager.findAndCollectIdentitiesBy(identList, manageableOrganisations);
+		FindNamedIdentityCollection identityCollection = securityManager
+				.findAndCollectIdentitiesBy(identList, Identity.STATUS_INACTIVE, manageableOrganisations);
 		Set<Identity> identities = new HashSet<>();
 		if(identityCollection.getUnique() != null && !identityCollection.getUnique().isEmpty()) {
 			identities.addAll(identityCollection.getUnique());

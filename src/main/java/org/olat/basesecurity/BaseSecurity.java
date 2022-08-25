@@ -143,10 +143,11 @@ public interface BaseSecurity {
 	 * them in unique identities, duplicate identities and not found identity names.
 	 *
 	 * @param names The list of strings to search for
+	 * @param statusLimit Limit the status the specified value and under
 	 * @param organisations Limit to the specified list of organizations
 	 * @return
 	 */
-	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names, List<Organisation> organisations);
+	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names, int statusLimit, List<Organisation> organisations);
 	
 	/**
 	 * Find an identity by its user
