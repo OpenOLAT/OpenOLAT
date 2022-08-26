@@ -564,7 +564,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		tabbedPane.addTab(translate("form.inlinechoice"), "o_sel_assessment_item_inlinechoice", itemEditor);
 		tabbedPane.addTabControllerCreator(ureq, translate("form.score"), "o_sel_assessment_item_score", uureq -> {
 			removeAsListenerAndDispose(scoreEditor);
-			scoreEditor = new InlineChoiceScoreController(ureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
+			scoreEditor = new InlineChoiceScoreController(uureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
 			listenTo(scoreEditor);
 			return scoreEditor;
 		}, true);
