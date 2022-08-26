@@ -73,11 +73,9 @@
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.2.19.Final</io.undertow>
 		<jackson.version>2.13.3</jackson.version>
-		<swagger.ui.version>4.13.2</swagger.ui.version>
-		<org.mysql.version>8.0.29</org.mysql.version>
-		<org.postgresql.version>42.4.0</org.postgresql.version>
+		<swagger.ui.version>4.14.0</swagger.ui.version>
 		<org.mysql.version>8.0.30</org.mysql.version>
-		<org.postgresql.version>42.4.2</org.postgresql.version>
+		<org.postgresql.version>42.5.0</org.postgresql.version>
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.4.0</version.selenium>
