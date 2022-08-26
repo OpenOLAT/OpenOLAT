@@ -199,6 +199,7 @@ public class QTI21EditForm extends FormBasicController {
 		initDateValues();
 		initRelativeToDateKV();
 		initForm(ureq);
+		updateShowResultsWarning();
 	}
 
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, RepositoryEntry courseEntry,
@@ -218,6 +219,7 @@ public class QTI21EditForm extends FormBasicController {
 		initDateValues();
 		initRelativeToDateKV();
 		initForm(ureq);
+		updateShowResultsWarning();
 	}
 
 	private void initDateValues() {
@@ -480,6 +482,7 @@ public class QTI21EditForm extends FormBasicController {
 				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsOptionsKeys, resultsOptionsValues, 1);
+		assessmentResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
 		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/tests/Test_settings/#results");
@@ -612,6 +615,7 @@ public class QTI21EditForm extends FormBasicController {
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
+			updateShowResultsWarning();
 			updateAssessmentModeVisibility();
 			markDirty();
 		} else if(testDateDependentEl == source) {
@@ -624,9 +628,14 @@ public class QTI21EditForm extends FormBasicController {
 			}
  		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
+			updateShowResultsWarning();
 			markDirty();
 		} else if (assessmentModeEl == source) {
 			updateAssessmentModeVisibility();
+			updateShowResultsWarning();
+			markDirty();
+		} else if(assessmentResultsOnFinishEl == source) {
+			updateShowResultsWarning();
 			markDirty();
 		} else if (source == gradeEnabledEl) {
 			doConfirmGrades(ureq);
@@ -634,6 +643,16 @@ public class QTI21EditForm extends FormBasicController {
 			doEditGradeScale(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateShowResultsWarning() {
+		if(showResultsOnFinishEl.isAtLeastSelected(1)
+				&& assessmentResultsOnFinishEl.isAtLeastSelected(1)
+				&& !correctionModeKeys[0].equals(correctionModeEl.getSelectedKey())) {
+			reportLayout.setFormWarning(translate("warning.show.results"));
+		} else {
+			reportLayout.setFormWarning(null);
+		}
 	}
 	
 	private void updateScoreVisibility() {
