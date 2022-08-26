@@ -70,7 +70,7 @@ public class PublicationController extends StepFormBasicController {
 		return () -> {
 			PublicationContext initialContext = new PublicationContext();
 			initialContext.setStatus(RepositoryEntryStatusEnum.preparation);
-			initialContext.setPublish(false);
+			initialContext.setPublish(true);
 			return initialContext;
 		};
 	}
