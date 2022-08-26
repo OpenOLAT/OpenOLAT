@@ -293,6 +293,15 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 	
 	public void loadModel(List<Identity> identityList) {
+		// Activate all filters
+		List<String> statusList = new ArrayList<>();
+		statusList.add(Identity.STATUS_ACTIV.toString());
+		statusList.add(Identity.STATUS_PERMANENT.toString());
+		statusList.add(Identity.STATUS_LOGIN_DENIED.toString());
+		statusList.add(Identity.STATUS_PENDING.toString());
+		statusList.add(Identity.STATUS_INACTIVE.toString());
+		tableEl.setSelectedFilterKeys(statusList);
+		
 		currentSearchParams = null;
 		IdentityListDataSource dataSource = new IdentityListDataSource(identityList, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);

@@ -975,7 +975,13 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public boolean deleteVideoTranscodings(OLATResource videoResource) {
 		videoTranscodingDao.deleteVideoTranscodings(videoResource);
-		VFSStatus deleteStatus = getTranscodingContainer(videoResource).delete();
+		VFSContainer container = getTranscodingContainer(videoResource);
+		VFSStatus deleteStatus;
+		if(container == null) {
+			deleteStatus = VFSConstants.YES;
+		} else {
+			deleteStatus = container.delete();
+		}
 		return deleteStatus == VFSConstants.YES;
 	}
 	
