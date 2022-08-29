@@ -40,6 +40,16 @@ class ReorderCurriculumElementComparator implements Comparator<CurriculumElement
 
 	@Override
 	public int compare(CurriculumElement c1, CurriculumElement c2) {
+		if(c1 == null && c2 == null) {
+			return 0;
+		}
+		if(c1 == null) {
+			return 1;
+		}
+		if(c2 == null) {
+			return -1;
+		}
+		
 		int index1 = orderedList.indexOf(c1.getKey());
 		int index2 = orderedList.indexOf(c2.getKey());
 		
