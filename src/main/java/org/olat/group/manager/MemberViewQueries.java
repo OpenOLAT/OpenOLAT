@@ -53,6 +53,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.resource.OLATResource;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -277,7 +278,7 @@ public class MemberViewQueries {
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from resourcereservation as reservation")
+		sb.append("select ident, reservation.resource from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
 		  .append(" where (reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
@@ -287,15 +288,36 @@ public class MemberViewQueries {
 		  .append(" ))");
 		searchByIdentity(sb, params);
 
-		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Identity.class)
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
 			.setParameter("repoEntryKey", entry.getKey());
 		searchByIdentity(query, params);
 		
-		List<Identity> identities = query.getResultList();
-		for(Identity identity:identities) {
-			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).getMemberShip().setPending(true);
+		Map<OLATResource,BusinessGroup> groupToBusinessGroup = null;
+		List<Object[]> rawObjects = query.getResultList();
+		for(Object[] rawObject:rawObjects) {
+			Identity identity = (Identity)rawObject[0];
+			OLATResource resource = (OLATResource)rawObject[1];
+			
+			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
+			m.getMemberShip().setPending(true);
+			if(resource != null ) {
+				if(resource.equals(entry.getOlatResource())) {
+					m.setRepositoryEntry(entry);
+				} else {
+					if(groupToBusinessGroup == null) {
+						groupToBusinessGroup = mapToResource(getBusinessGroups(entry));
+					}
+					m.addGroup(groupToBusinessGroup.get(resource));
+				}
+			}
 		}
+	}
+	
+	private Map<OLATResource,BusinessGroup> mapToResource(Map<Group,BusinessGroup> businessGroups) {
+		return businessGroups.values().stream()
+				.collect(Collectors.toMap(BusinessGroup::getResource, b -> b, (u, v) -> u));
+		
 	}
 	
 	private void getExternalUsers(Map<Identity,MemberView> views, BusinessGroup businessGroup) {
@@ -336,7 +358,9 @@ public class MemberViewQueries {
 		
 		List<Identity> identities = query.getResultList();
 		for(Identity identity:identities) {
-			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).getMemberShip().setPending(true);
+			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
+			m.addGroup(entry);
+			m.getMemberShip().setPending(true);
 		}
 	}
 	
