@@ -90,6 +90,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			emptyState.setIconCss("o_CourseModule_icon");
 		}
 		
+		int counter = 0;
 		List<LauncherItem> items = new ArrayList<>(entries.size());
 		for (CatalogRepositoryEntry entry : entries) {
 			LauncherItem item = new LauncherItem(entry);
@@ -102,7 +103,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), entry.getTaxonomyLevels());
 			item.setTaxonomyLevels(taxonomyLevels);
 			
-			Link learnMoreLink = LinkFactory.createLink("launcher.learn.more", mainVC, this);
+			String id = "o_llm_" + counter++;
+			Link learnMoreLink = LinkFactory.createLink(id, id, "launcher.learn.more", "launcher.learn.more", getTranslator(), mainVC, this, Link.LINK);
 			learnMoreLink.setIconRightCSS("o_icon o_icon_start");
 			learnMoreLink.setUserObject(entry.getKey());
 			item.setLearnMoreLink(learnMoreLink);
