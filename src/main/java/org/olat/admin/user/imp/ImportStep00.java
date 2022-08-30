@@ -367,7 +367,7 @@ class ImportStep00 extends BasicStep {
 						"OLAT", BaseSecurity.DEFAULT_ISSUER);
 				identity = authentication == null ? null : authentication.getIdentity();
 			} else {
-				identity = securityManager.findIdentityByUsernames(login);
+				identity = securityManager.findIdentityByUsername(login);
 			}
 			return identity;
 		}

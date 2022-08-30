@@ -26,6 +26,7 @@
 
 package org.olat.restapi;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -475,6 +476,45 @@ public class UserMgmtTest extends OlatRestTestCase {
 		conn.shutdown();
 	}
 	
+	
+	/**
+	 * This make sure that inactive user are returned. Really important for
+	 * synchronization operations.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testFindInactiveUsers() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		IdentityWithLogin inactiveId = JunitTestHelper.createAndPersistRndUser("user-inactive-1-id");
+		IdentityWithLogin loginDeniedId = JunitTestHelper.createAndPersistRndUser("user-inactive-2-id");
+		Identity inactiveIdentity = inactiveId.getIdentity();
+		Identity loginDeniedIdentity = loginDeniedId.getIdentity();
+		dbInstance.commit();
+		inactiveIdentity = securityManager.saveIdentityStatus(inactiveIdentity, Identity.STATUS_INACTIVE, inactiveIdentity);
+		loginDeniedIdentity = securityManager.saveIdentityStatus(loginDeniedIdentity, Identity.STATUS_LOGIN_DENIED, loginDeniedIdentity);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("status", Integer.toString(Identity.STATUS_INACTIVE))
+				.build();
+
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+		
+		assertThat(vos)
+			.map(UserVO::getKey)
+			.contains(inactiveIdentity.getKey())
+			.doesNotContain(loginDeniedIdentity.getKey());
+		
+		conn.shutdown();
+	}
 	
 	@Test
 	public void testFindUsersByAuthusername() throws IOException, URISyntaxException {

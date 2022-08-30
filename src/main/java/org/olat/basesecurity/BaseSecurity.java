@@ -94,13 +94,22 @@ public interface BaseSecurity {
 	public Identity findIdentityByNickName(String name);
 	
 	/**
-	 * Search an identity by identity name, nick name and authentications
+	 * Search an unique identity by identity name, nick name and authentications
 	 * names.
 	 * 
 	 * @param username
 	 * @return
 	 */
-	public Identity findIdentityByUsernames(String username);
+	public Identity findIdentityByUsername(String username);
+	
+	/**
+	 * Search identities by identity name, nick name and authentications
+	 * names.
+	 * 
+	 * @param username
+	 * @return
+	 */
+	public List<Identity> findIdentitiesByUsername(String username);
 
 	/**
 	 * Find an identity by its name. This is an exact match. Use the

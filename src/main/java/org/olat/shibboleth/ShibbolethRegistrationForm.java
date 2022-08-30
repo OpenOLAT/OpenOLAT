@@ -25,8 +25,12 @@
 
 package org.olat.shibboleth;
 
+import java.util.List;
+
 import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -55,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ShibbolethRegistrationForm extends FormBasicController {
 
 	private TextElement usernameEl;
-	private String proposedUsername;
+	private final String proposedUsername;
 
 	private final SyntaxValidator usernameSyntaxValidator;
 
@@ -68,8 +72,19 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		this.proposedUsername = proposedUsername;
-		this.usernameSyntaxValidator = new SyntaxValidator(usernameRulesFactory.createRules(false), false);
+		usernameSyntaxValidator = new SyntaxValidator(usernameRulesFactory.createRules(false), false);
 		initForm(ureq);
+	}
+	
+	/**
+	 * @return Login field.
+	 */
+	protected String getUsernameEl() {
+		return usernameEl.getValue();
+	}
+	
+	protected String getProposedUsername() {
+		return proposedUsername;
 	}
 	
 	@Override
@@ -87,7 +102,8 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
 				usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
 				allOk &= false;
-			} else if(!isNickNameUnique(username)) {
+			} else if(!isNickNameValid(username)) {
+
 				usernameEl.setErrorKey("sm.error.username_in_use", null);
 				allOk &= false;
 			}
@@ -99,15 +115,25 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean isNickNameUnique(String val) {
-		Identity identity= securityManager.findIdentityByNickName(val);
-		return identity == null;
+	private boolean isNickNameValid(String val) {
+		Identity identity = securityManager.findIdentityByNickName(val);
+		if(identity == null) {
+			return true;
+		}
+		
+		List<Identity> identities = securityManager.findIdentitiesByUsername(val);
+		if(identities == null || identities.isEmpty()) {
+			return true;
+		}
+		if(identities.size() > 1) {
+			return false;
+		}
+		
+		// If only one user with the default authentication is present, it can be migrated
+		List<Authentication> authentications = securityManager.getAuthentications(identities.get(0));
+		return authentications.stream()
+				.anyMatch(auth -> BaseSecurityModule.getDefaultAuthProviderIdentifier().equals(auth.getProvider()));
 	}
-
-	/**
-	 * @return Login field.
-	 */
-	protected String getUsernameEl() { return usernameEl.getValue(); }
 
 	@Override
 	protected void formOK(UserRequest ureq) {

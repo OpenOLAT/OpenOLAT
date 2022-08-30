@@ -50,6 +50,7 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	private static final Logger log = Tracing.createLoggerFor(ShibbolethMigrationForm.class);
 	
 	private final Authentication authentication;
+	
 	private TextElement login;
 	private TextElement password;
 	
