@@ -19,10 +19,6 @@
  */
 package org.olat.modules.ceditor;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 
 /**
@@ -32,7 +28,6 @@ import org.olat.core.gui.control.Controller;
  *
  */
 public interface PageElementEditorController extends Controller {
-	
 	
 	/**
 	 *
@@ -45,10 +40,5 @@ public interface PageElementEditorController extends Controller {
 	 * @param editMode
 	 */
 	public void setEditMode(boolean editMode);
-	
-	
-	public default List<Link> getOptionLinks() {
-		return new ArrayList<>(1);
-	}
 
 }

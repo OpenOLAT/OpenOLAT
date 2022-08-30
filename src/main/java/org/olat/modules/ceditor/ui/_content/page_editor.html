@@ -1,10 +1,10 @@
 $r.render("page_editor")
-#if($r.available("add.element"))
+#if($r.available("add.layout"))
 	<div class="o_button_group o_ce_add_main_btns">
 		#if($r.available("import.content") && $r.isVisible("import.content"))
 		<div class="btn-group">
 		#end
-		$r.render("add.element")
+		$r.render("add.layout")
 		#if($r.available("import.content"))
 			$r.render("import.content")
 		#end

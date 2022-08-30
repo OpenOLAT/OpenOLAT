@@ -28,7 +28,6 @@
     	if(typeof editor === "undefined") {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
-    		jQuery('#o_main_wrapper').css('z-index', 5);
     	} else {// if the same DOM element exists
     		editor.initWindowListener(editor.settings);
     		editor.initInteractJs(editor.settings);
@@ -85,7 +84,7 @@
 		interact('.o_page_part.o_page_part_view, .o_page_fragment_edit').draggable({
 			autoScroll: true,
 			ignoreFrom: '.o_page_part.o_page_edit form',
-			allowFrom: '.o_page_tools_dd, .o_page_part.o_page_part_view',
+			allowFrom: '.o_page_drag_handle',
 			modifiers: [
 				interact.modifiers.restrict({
 					restriction: '.o_page_content_editor'
@@ -121,7 +120,14 @@
 				}
 			},
 			checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
-				return dropped && jQuery(dropElement).attr("id") != jQuery(draggableElement).attr("id");
+				var jDraggableElement = jQuery(draggableElement);
+				var jDropElement = jQuery(dropElement);
+				var isDragContainer = jDraggableElement.hasClass('o_page_container_edit');
+				var isDragElement = jDraggableElement.hasClass('o_page_fragment_edit') && !isDragContainer;
+				var isDropZoneContainerSlot = jDropElement.parents('.o_page_container_slot').length > 0
+					|| jDropElement.hasClass('o_page_container_slot');
+				return dropped && jDropElement.attr("id") != jDraggableElement.attr("id") &&
+					((isDragContainer && !isDropZoneContainerSlot) || (isDragElement && isDropZoneContainerSlot));
 			},
 			ondragenter: function(event) {
 				var top = isTop(event.target, event.dragEvent.page.y);
@@ -129,7 +135,8 @@
 			},
 			ondragleave: function(event) {
 				jQuery(event.target)
-					.removeClass('oo-accepted').removeClass('oo-accepted-top')
+					.removeClass('oo-accepted')
+					.removeClass('oo-accepted-top')
 					.data('position', null);
 			}
 		});
@@ -163,13 +170,17 @@
 						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
 						|| jTarget.closest(".tox-dialog-wrap__backdrop").length > 0
 						|| jTarget.closest(".ML__keyboard").length > 0
+						|| jTarget.closest(".o_ceditor_inspector").length > 0
 						|| e.target.nodeName == 'BODY';
 					
 					if(!excludedEls) {	
-						var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
-							|| jQuery(e.target).closest(".o_page_side_options").length > 0;
-						var parts = jQuery(e.target).closest(".o_page_part");
-						if(parts.length == 1) {
+						var edited = jTarget.closest(".o_fragment_edited").length > 0;
+						var parts = jTarget.closest(".o_page_part");
+						if(jTarget.hasClass('o_page_container_tools') && !jTarget.parent().hasClass('o_page_container_edit')) {
+							var containerUrl = jTarget.data("oo-content-editor-url");
+							closeMathLive();
+							o_XHREvent(containerUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', jTarget.data('oo-page-fragment'));
+						} else if(parts.length == 1) {
 							var element = jQuery(parts.get(0));
 							var elementUrl = element.data("oo-content-editor-url");
 							closeMathLive();
@@ -204,10 +215,7 @@
 		}
 
 		var componentUrl = jElement.closest(".o_page_drop").data("oo-content-editor-url");
-		if(componentUrl == null) {
-			componentUrl = jQuery(target).closest(".o_page_content_editor")
-		}
-		
+
 		jQuery(source).css('display', 'none');// seem successful, prevent transformation return of end listener
 		o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", targetId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
 	}

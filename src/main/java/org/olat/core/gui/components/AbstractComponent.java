@@ -156,6 +156,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getComponentName() {
 		return name;
 	}
@@ -171,6 +172,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return boolean
 	 */
+	@Override
 	public boolean isVisible() {
 		return visible;
 	}
@@ -182,6 +184,7 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @param visible The visible to set
 	 */
+	@Override
 	public void setVisible(boolean visible) {
 		if(visible ^ this.visible){
 			this.visible = visible;
@@ -189,6 +192,7 @@ public abstract class AbstractComponent implements Component {
 		}
 	}
 
+	@Override
 	public void dispatchRequest(final UserRequest ureq) {
 			doDispatchRequest(ureq);
 	}
@@ -231,11 +235,12 @@ public abstract class AbstractComponent implements Component {
 				try{
 					listener.getUserActivityLogger().frameworkSetBusinessPathFromWindowControl(listener.getWindowControlForDebug());
 				} catch(AssertException e) {
-					log_.error("Error in setting up the businessPath on the IUserActivityLogger. listener="+listener, e);
+					log_.error("Error in setting up the businessPath on the IUserActivityLogger. listener={}", listener, e);
 					// still continue
 				}
 
 				ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
+					@Override
 					public void run() {
 						listener.dispatchEvent(ureq, AbstractComponent.this, event);
 					}
@@ -283,6 +288,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return Translator
 	 */
+	@Override
 	public Translator getTranslator() {
 		return translator;
 	}
@@ -292,6 +298,7 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @param translator The translator to set
 	 */
+	@Override
 	public void setTranslator(Translator translator) {
 		this.translator = translator;
 	}
@@ -299,6 +306,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return long the dispatchid (which is assigned at construction time of the component and never changes)
 	 */
+	@Override
 	public String getDispatchID() {
 		return dispatchID;
 	}
@@ -306,6 +314,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return the extended debuginfo
 	 */
+	@Override
 	public String getExtendedDebugInfo() {
 		// default impl to be overriden
 		return "n/a";
@@ -314,6 +323,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return
 	 */
+	@Override
 	public String getListenerInfo() {
 		return "listener:" + listeners.toString();
 	}
@@ -321,6 +331,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return getComponentName() + " " + super.toString();
 	}
@@ -330,6 +341,7 @@ public abstract class AbstractComponent implements Component {
 	 * if false: e.g. @see Link the link gets rendered but is not clickable
 	 * @return Returns the enabled.
 	 */
+	@Override
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -337,6 +349,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @param enabled The enabled to set.
 	 */
+	@Override
 	public void setEnabled(boolean enabled) {
 		if(enabled ^ this.enabled) {
 			setDirty(true);
@@ -349,6 +362,7 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @return Returns the latestDispatchedController.
 	 */
+	@Override
 	public Controller getLatestDispatchedController() {
 		return latestDispatchedController;
 	}
@@ -358,6 +372,7 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @return Returns the latestFiredEvent.
 	 */
+	@Override
 	public Event getAndClearLatestFiredEvent() {
 		Event tmp = latestFiredEvent;
 		latestFiredEvent = null; // gc
@@ -367,6 +382,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return returns whether the component needs to be rerendered or not
 	 */
+	@Override
 	public boolean isDirty() {
 		return dirty;
 	}
@@ -377,6 +393,7 @@ public abstract class AbstractComponent implements Component {
 	 * @see org.olat.core.gui.components.tree.MenuTree
 	 * @return whether the component has changed from a user's perspective. 
 	 */
+	@Override
 	public boolean isDirtyForUser() {
 		// default implementation
 		return isDirty();
@@ -385,6 +402,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @param dirty The dirty to set.
 	 */
+	@Override
 	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
 	}
@@ -392,6 +410,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return Returns the domReplaceable.
 	 */
+	@Override
 	public boolean isDomReplaceable() {
 		return domReplaceable;
 	}
@@ -402,14 +421,17 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @param domReplaceable The domReplaceable to set.
 	 */
+	@Override
 	public void setDomReplaceable(boolean domReplaceable) {
 		this.domReplaceable = domReplaceable;
 	}
 	
-	
+	@Override
 	public void setSpanAsDomReplaceable(boolean spanReplaceable){
 		this.spanReplaceable = spanReplaceable;
 	}
+	
+	@Override
 	public boolean getSpanAsDomReplaceable(){
 		return this.spanReplaceable;
 	}
@@ -419,6 +441,7 @@ public abstract class AbstractComponent implements Component {
 	 *         component always outputs an element with the dispatch ID as DOM
 	 *         ID
 	 */
+	@Override
 	public boolean isDomReplacementWrapperRequired() {
 		return this.domReplacementWrapperRequired;
 	}
@@ -430,6 +453,7 @@ public abstract class AbstractComponent implements Component {
 	 * to be called only by the container when a child is added
 	 * @param parent
 	 */
+	@Override
 	public void setParent(ComponentCollection parent){
 		this.parent = parent;
 	}
@@ -437,6 +461,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @return
 	 */
+	@Override
 	public ComponentCollection getParent(){
 		return parent;
 	}
@@ -446,6 +471,7 @@ public abstract class AbstractComponent implements Component {
 	 * for special components which provide a protection against back button usage.
 	 * @return
 	 */
+	@Override
 	public boolean isSilentlyDynamicalCmp() {
 		return false;
 	}
@@ -454,6 +480,7 @@ public abstract class AbstractComponent implements Component {
 	 * to be used by Window.java to detect browser back in ajax-mode
 	 * @return Returns the timestamp.
 	 */
+	@Override
 	public String getTimestamp() {
 		if(staticCmp) {
 			return "1";

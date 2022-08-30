@@ -1430,8 +1430,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				winnerP.setContent(guimsgPanel);
 				currentMsgHolder = winnerP;
 			} else {
-				currentMsgHolder = guimsgHolder;
-				currentMsgHolder.setContent(guimsgPanel);
+				if(currentMsgHolder != guimsgHolder) {
+					currentMsgHolder = guimsgHolder;
+					currentMsgHolder.setContent(guimsgPanel);
+				}
 				currentMsgHolder.setDirty(guimsgPanel.isDirty());
 			}
 		} else if(event == Window.AFTER_INLINE_RENDERING) {

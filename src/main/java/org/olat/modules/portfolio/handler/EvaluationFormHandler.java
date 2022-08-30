@@ -39,6 +39,7 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
@@ -221,6 +222,11 @@ public class EvaluationFormHandler implements PageElementHandler {
 				return new EvaluationFormExecutionController(ureq, wControl, formFile, storage, null);
 			}
 		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 }

@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -34,6 +35,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
@@ -41,6 +43,7 @@ import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
 import org.olat.modules.ceditor.model.StoredData;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
  * The controller show the image and its metadata, caption, description...<br>
@@ -76,6 +79,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		velocity_root = Util.getPackageVelocityRoot(ImageRunController.class);
 
 		mainVC = createVelocityContainer("image");
+		mainVC.setDomReplacementWrapperRequired(false);
 		File mediaFile = dataStorage.getFile(storedData);
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setMedia(mediaFile);
@@ -91,7 +95,6 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		mainVC.contextPut("media", storedData);
 		mainVC.contextPut("extendedMetadata", hints.isExtendedMetadata());
 
-
 		boolean showCaption = StringHelper.containsNonWhitespace(storedData.getDescription());
 		mainVC.contextPut("showCaption", Boolean.valueOf(showCaption));
 		if(showCaption) {
@@ -102,25 +105,22 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			initMetadata(ureq, storedData);
 		}
 		
-		mainVC.setDomReplacementWrapperRequired(false);
 		putInitialPanel(mainVC);
 	}
 	
-	public void updateImageSettings(ImageSettings settings, DublinCoreMetadata meta) {
+	private void updateImageSettings(ImageSettings settings, DublinCoreMetadata meta) {
 		if(settings.getAlignment() != null) {
 			mainVC.contextPut("alignment", settings.getAlignment().name());
 		}
 		if(settings.getSize() != null) {
-			mainVC.contextPut("size", settings.getSize().name());
+			mainVC.contextPut("imageSizeStyle", settings.getSize().name());
 		}
 		if(StringHelper.containsNonWhitespace(settings.getStyle())) {
 			imageCmp.setCssClasses(settings.getStyle());
+			mainVC.contextPut("style", settings.getStyle());
+			imageCmp.setDirty(true);
 		}
-		
-		if(settings.getSize() != null) {
-			mainVC.contextPut("imageSizeStyle", settings.getSize().name());
-		}
-		
+
 		mainVC.contextPut("someId", CodeHelper.getRAMUniqueID());
 		
 		if(meta != null) {
@@ -176,6 +176,29 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof ImageInspectorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			PageElement media = cpe.getElement();
+			if(media instanceof ImageElement) {
+				doUpdate((ImageElement) media);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void doUpdate(ImageElement element) {
+		ImageSettings settings = element.getImageSettings();
+		if(settings != null) {
+			DublinCoreMetadata meta = null;
+			if(element.getStoredData() instanceof DublinCoreMetadata) {
+				meta = (DublinCoreMetadata)element.getStoredData();
+			}
+			updateImageSettings(settings, meta);
+		}
 	}
 
 	@Override

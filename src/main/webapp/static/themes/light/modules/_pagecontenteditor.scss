@@ -7,155 +7,105 @@
 }
 .o_page_content_editor .o_page_part,
 .gu-mirror {
-	border: $o-panel-placeholder-border-width solid transparent;
+	border: $o-editor-element-border-width solid transparent;
 	&:hover {
-		border: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;    
+		border: $o-editor-element-border-width dotted $o-editor-border-color;    
 	}
 	/* visually compensate for border 
-	margin-left: -$o-panel-placeholder-border-width;
-	margin-right: -$o-panel-placeholder-border-width;
+	margin-left: -$o-editor-element-border-width;
+	margin-right: -$o-editor-element-border-width;
 	*/
 }
 
+
+
 .o_page_fragment_edit  {
 	position: relative;
-	display: grid;
 	
-	.o_page_tools_above {
-		height: $o-portfolio-editor-border-width;
+	&.o_fragment_edited {
+		box-shadow: #a0a0b0 0 0 0 1px, #eeeeee 1px 1px 1px 5px;
+		z-index: 2;
+	}
+	
+	.o_page_container_tools {
+		height: $o-editor-border-width;
+		line-height: 18px;
 		width: 100%;
-		background: $o-portfolio-editor-border-color;
-		position: absolute;
-		z-index: 3;
-		left: 0;
-		top: -$o-portfolio-editor-border-width;
-		box-shadow: 3px -8px 10px 0px rgba(0, 0, 0, 0.2);
-	
-		.o_page_add_above {
-			position: absolute;
-			left: 0;
-			right: 0;
-			margin-left: auto;
-			margin-right: auto;
-			width: 26px;
-			top: -$o-portfolio-editor-border-width + 6;
-			height: $o-portfolio-editor-border-width - 6;
-			background-color: $o-portfolio-editor-border-color;
-			border-radius: $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius 0 0;
-			
-			.o_icon {
-				color: #fff;
-				background-color: $o-portfolio-editor-border-color;
-			}
-		}
-		.o_sel_add_element_above {
-			display: inline-block;
-			padding: 3px 5px 0 7px;
-		}
-		
-		.o_page_others_above {
-			padding-right: $o-portfolio-editor-border-width;
-			line-height: $o-portfolio-editor-border-width;
-			vertical-align: middle;
-			.o_page_type {
-				display: none;
-			}
-			a {
-				float: right;
-				color: #fff;
-				padding-right: 1em;
-				&:hover {
-					color: darken(#fff, 10%);	
-				}				
-			}
-			a.o_ce_rule {
-				float: left;
-				padding-left: 1em;
-			}
-		}		
-	}
-	
-	.o_page_tools {
-		position: absolute;
-		z-index: 4;
-		top: 0;
-		right: 0;
-		width: $o-portfolio-editor-border-width;
-		height: 100%;
-		background: $o-portfolio-editor-border-color;
-	}
-	
-	.o_page_tools_dd {
-		/* d&d handle: dotted surface */
-		&:before {
-			content: ' ';
-			width: $o-portfolio-editor-border-width;
-			height: 100%;
-			position: absolute;
-			left: 0;
-			top: 0;
-			border: 3px $o-portfolio-editor-border-color solid;
-			border-bottom: ($o-portfolio-editor-border-width + 3px) $o-portfolio-editor-border-color solid;
-			
-			background-image: -webkit-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
-			background-image: -moz-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
-			background-image: -ms-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
-			background-image: repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
-			-webkit-background-size: 3px 3px;
-			-moz-background-size: 3px 3px;
-			background-size: 3px 3px;
-			
-			@extend %o_dragable;
-		}
-		
-		a {				
-			position: absolute;
-			display: inline-block;
-			width: $o-portfolio-editor-border-width;
-			height: $o-portfolio-editor-border-width;
-			line-height: $o-portfolio-editor-border-width;
-			text-align: center;
-			vertical-align: middle;
-			background: $o-portfolio-editor-border-color;
-
-			color: #fff;
-			&:hover {
-				color: darken(#fff, 10%);	
-			}
-			
-			&.o_disabled {
-				color: rgba(255,255,255,0.5) !important;
-				&:hover {
-					color: rgba(255,255,255,0.5) !important;	
-				}
-			}
-							
-			&.o_sel_move_up_element {
-				z-index: 4;
-				top: -$o-portfolio-editor-border-width;			
-			}
-			&.o_sel_move_down_element {
-				bottom: 0;
-			}
-		}
-	}
-
-	.o_page_part.o_page_edit {
-		padding-right: $o-portfolio-editor-border-width - $o-panel-placeholder-border-width; /* space for d&d handel */
-		border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
-		box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.2);
 		background-color: white;
-		&:hover {
-			border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
+		text-align: right;
+		padding: 2px 10px;
+		position: relative;
+		border-top: $o-editor-element-border-width solid $o-editor-border-color;
+		border-left: $o-editor-element-border-width solid $o-editor-border-color;
+		border-right: $o-editor-element-border-width solid $o-editor-border-color;
+		border-radius: 2px 2px 0 0;
+		
+		>a, >button {
+			margin-right: 0.5em;
+			color: black;
+			border: none;
+			background-color: transparent;
 		}
+		>a>span, >button>span {
+			display: none;
+		}
+		.o_container_name {
+			text-align: left;
+		}
+	}
+	
+	&.o_fragment_edited>.o_page_container_tools {
+		background-color: #eeeeee;
+	}
+	
+	.o_page_element_tools {
+		position: absolute;
+		top: -20px;
+		right: 20px;
+		z-index: 7;
+		
+		background: white;
+		border: 1px solid black;
+		padding: 1px 10px;
+		border-radius: $border-radius-small;
+		
+		>a {
+			margin-right: 0.5em;
+		}
+		>button {
+			margin-right: 0.5em;
+			border: none;
+			background-color: transparent;
+		}
+	}
+
+	.o_page_container_tools, .o_page_element_tools {
+		>a {
+			margin-right: 0.5em;
+		}
+		>button {
+			margin-right: 0.5em;
+			border: none;
+			background-color: transparent;
+		}
+	}
+
+	>.o_page_part, >.o_container_part {
+		border: $o-editor-element-border-width solid $o-editor-border-color;
+		border-radius: 0 0 2px 2px;
+		
+		&:hover {
+			border: $o-editor-element-border-width solid $o-editor-border-color;
+		}
+		
 		.o_page_edit_toolbar {
 			position: absolute;
 			z-index: 5;
 			left: 5px;
-			top: -$o-portfolio-editor-border-width;
+			top: -$o-editor-border-width;
 			display: inline-block;
-			height: $o-portfolio-editor-border-width;
-			line-height: $o-portfolio-editor-border-width;
+			height: $o-editor-border-width;
+			line-height: $o-editor-border-width;
 			vertical-align: middle;
 			a {				
 				color: #fff;
@@ -181,42 +131,29 @@
 		
 	}
 	
-	.o_page_add_below {
-		position: absolute;
-		z-index: 3;
-		
-		position: absolute;
-		z-index: 3;
-		left: 0;
-		right: 0;
-		margin-left: auto;
-		margin-right: auto;
-		width: 26px;
-		bottom: -$o-portfolio-editor-border-width + 5;
-		height: $o-portfolio-editor-border-width - 3;
-		background-color: $o-portfolio-editor-border-color;
-		border-radius: 0 0 $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius;
-			
-		.o_icon {
-			color: #fff;
-			background-color: $o-portfolio-editor-border-color;
-		}
-
-		.o_sel_add_element_below {
-			display: inline-block;
-			padding: 0 5px 5px 5px;
-			margin: 0px 0px 0px 2px;
-		}
-	}
-	
 	/* hide overlapping menu items when in drag&drop mode for better drop zone visibility */
 	&.gu-mirror,
 	&.gu-transit {
+		//TODO editor delete
 		.o_page_add_below,
 		.o_page_add_above {
 			display: none;
 		}
 	}
+}
+
+.o_page_inspector {
+	position: absolute;
+	z-index: 10;
+	
+	width: 220px;
+	right: 0;
+	top: 0px;
+	margin-right: 0px;
+}
+
+.o_rubric_inspector .o_ceditor_narrow {
+	padding: 6px 3px;
 }
 
 .o_page_container_slot.col-md-3, .o_page_container_slot.col-md-4 {
@@ -257,13 +194,13 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 .o_page_container {
 	.o_page_container_slot {
-		border: $o-panel-placeholder-border-width dotted $o-editor-container-border-color;
+		border: $o-editor-element-border-width dotted $o-editor-container-border-color;
 	}
 	&:hover .o_page_container_slot {
 		/* bug in web-kit: does not work when draging from outside */
-		border: $o-panel-placeholder-border-width dotted $o-editor-hover-border-color;    
+		border: $o-editor-element-border-width dotted $o-editor-hover-border-color;    
 	}
-	&:hover > .o_hover_text_wrapper > .o_hover_text {
+	&:hover .o_page_container_tools > .o_hover_text_wrapper > .o_hover_text {
 		visibility:visible;
 	}
 	.o_hover_text_wrapper {
@@ -273,14 +210,14 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 			position: absolute;
 			top: -10px;
 			left: -10px;
-			color: $o-portfolio-editor-border-color;
+			color: $o-editor-border-color;
 			// background-color: Window; // Does not work in Safari
 			background-color: white;
-			border-bottom: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+			border-bottom: $o-editor-element-border-width dotted $o-editor-border-color;
 			div {
 				display: inline-block;
 				padding: 1px 5px;
-				border-right: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+				border-right: $o-editor-element-border-width dotted $o-editor-border-color;
 			}
 		}
 	}
@@ -306,12 +243,15 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 
 .o_page_part.oo-accepted,
 .o_page_part.oo-accepted-top,
+.o_page_container_edit.o_page_drop.oo-accepted,
+.o_page_container_edit.o_page_drop.oo-accepted-top,
 .o_page_content_editor.o_page_drop.oo-accepted,
 .o_page_content_editor.o_page_drop.oo-accepted-top  {
-	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;
+	border: $o-editor-element-border-width dotted $o-editor-drag-accepted-color;
 }
 
 .o_page_part.o_page_drop.oo-accepted:after,
+.o_page_container_edit.o_page_drop.oo-accepted:after,
 .o_page_container_slot.o_page_drop.oo-accepted .o_page_container_slot-inner:after,
 .o_page_content_editor.o_page_drop.oo-accepted:after {
 	display: block;
@@ -323,6 +263,7 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 .o_page_part.o_page_drop.oo-accepted-top:before,
+.o_page_container_edit.o_page_drop.oo-accepted-top:before,
 .o_page_container_slot.o_page_drop.oo-accepted-top .o_page_container_slot-inner:before,
 .o_page_content_editor.o_page_drop.oo-accepted-top:before {
 	display: block;
@@ -340,19 +281,19 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 .o_page_part.oo-dragging, .o_page_fragment_edit.oo-dragging .o_page_part {
 	opacity: 0.6;
 	background-color: rgba(255, 255, 255, 0.6);
-	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;
+	border: $o-editor-element-border-width dotted $o-editor-drag-accepted-color;
 	box-shadow: 0px 0px 20px #aaa;
 }
 
 .gu-transit {
-	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;    	
+	border: $o-editor-element-border-width dotted $o-editor-drag-accepted-color;    	
  	opacity: 0.4;
   	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
   	filter: alpha(opacity=40);
 }
 .gu-mirror {
 	@extend %o_draging;
-	border: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;    	
+	border: $o-editor-element-border-width dotted $o-editor-border-color;    	
   	opacity: 0.8;
   	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
   	filter: alpha(opacity=80);
@@ -374,29 +315,6 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 
-/* Editor elements with side options on right side */
-.o_page_with_side_options_wrapper {
-	display: flex;
-	align-items: stretch;
-	flex-direction: row;
-}
-.o_page_side_options_target {
-	background-color: $o-editor-settings-bg;
-	flex-grow: 4;
-}
-.o_page_side_options {
-	flex-grow: 0;
-	background-color: $o-portfolio-editor-border-color;
-	border-left: 1px solid darken($o-editor-settings-bg, 25%);
-	border-bottom: 1px solid darken($o-editor-settings-bg, 25%);
-	padding: 5px;
-	z-index: 2;
-}
-@media (max-width: $screen-xs-max) {
-	.o_page_with_side_options_wrapper {
-		flex-direction: column-reverse;
-	}
-}
 
 /* Image */
 .o_page_content, .o_page_content_editor {
@@ -447,7 +365,7 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 	
 		/* image size */
 		&.o_image_size_style_none {
-		
+			// nothing
 		}		
 		&.o_image_size_style_small {
 			width: 25%;

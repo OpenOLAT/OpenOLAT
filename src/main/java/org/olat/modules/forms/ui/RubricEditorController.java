@@ -19,21 +19,14 @@
  */
 package org.olat.modules.forms.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-import static org.olat.modules.forms.ui.EvaluationFormFormatter.oneDecimal;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
@@ -43,8 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -52,7 +45,6 @@ import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.forms.model.xml.Rubric;
-import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -66,54 +58,22 @@ import org.olat.modules.forms.model.xml.StepLabel;
  */
 public class RubricEditorController extends FormBasicController implements PageElementEditorController {
 	
-	private static final String[] ENABLED_KEYS = new String[]{"on"};
-	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
-	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
-	private static final String GOOD_RATING_END_KEY = "rubric.good.rating.end";
-	private static final String GOOD_RATING_START_KEY = "rubric.good.rating.start";
-	private final String[] GOOD_RATING_KEYS = new String[] {
-			GOOD_RATING_END_KEY, GOOD_RATING_START_KEY
-	};
-
-	private static AtomicInteger count = new AtomicInteger();
-	private final Rubric rubric;
+	private int count = 0;
+	private Rubric rubric;
 	private boolean editMode = false;
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWeight;
 	private RubricController rubricCtrl;
 	
-	private final String[] nameDisplayKeys = new String[] { NameDisplay.execution.name(), NameDisplay.report.name() };
-	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_slider.name(), SliderType.continuous.name() };
-	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
-	private final String[] showSurveyConfigKey = new String[] { "rubric.survey.configuration.show" };
-	
 	private List<StepLabelColumn> stepLabels = new ArrayList<>();
 	private List<SliderRow> sliders = new ArrayList<>();
 	
 	private FormLink saveButton;
-	private MultipleSelectionElement surveyConfigEl;
-	private SingleSelection sliderTypeEl;
-	private SingleSelection scaleTypeEl;
-	private TextElement nameEl;
-	private MultipleSelectionElement nameDisplayEl;
-	private SingleSelection stepsEl;
-	private MultipleSelectionElement noAnswerEl;
-	private FormLayoutContainer insufficientCont;
-	private TextElement lowerBoundInsufficientEl;
-	private TextElement upperBoundInsufficientEl;
-	private FormLayoutContainer neutralCont;
-	private TextElement lowerBoundNeutralEl;
-	private TextElement upperBoundNeutralEl;
-	private FormLayoutContainer sufficientCont;
-	private TextElement lowerBoundSufficientEl;
-	private TextElement upperBoundSufficientEl;
-	private SingleSelection goodRatingEl;
-	private SingleSelection obligationEl;
+
 	private FormLink addSliderButton;
 	private Boolean showEnd;
 	private FormLink showEndButton;
 	private FormLink hideEndButton;
-	private FormLayoutContainer settingsLayout;
 
 	public RubricEditorController(UserRequest ureq, WindowControl wControl, Rubric rubric, boolean restrictedEdit,
 			boolean restrictedEditWeight) {
@@ -139,185 +99,16 @@ public class RubricEditorController extends FormBasicController implements PageE
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		rubricCtrl = new RubricController(ureq, getWindowControl(), rubric, mainForm);
+		rubricCtrl.setPropagateDirtiness(false);
 		listenTo(rubricCtrl);
 		formLayout.add("rubric", rubricCtrl.getInitialFormItem());
 	}
 
 	private void initEditForm(FormItemContainer formLayout) {
-		settingsLayout = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
+		FormLayoutContainer settingsLayout = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsLayout.setRootForm(mainForm);
 		formLayout.add("settings", settingsLayout);
-		
-		// slider type
-		String[] sliderTypeValues = new String[] { translate("slider.discrete"), translate("slider.discrete.slider"), translate("slider.continuous") };
-		sliderTypeEl = uifactory.addDropdownSingleselect("slider.type." + count.incrementAndGet(), "slider.type", settingsLayout, sliderTypeKeys, sliderTypeValues, null);
-		sliderTypeEl.addActionListener(FormEvent.ONCHANGE);
-		sliderTypeEl.setEnabled(!restrictedEdit);
-		boolean typeSelected = false;
-		if(rubric != null && rubric.getSliderType() != null) {
-			for(String sliderTypeKey:sliderTypeKeys) {
-				if(sliderTypeKey.equals(rubric.getSliderType().name())) {
-					sliderTypeEl.select(sliderTypeKey, true);
-					typeSelected = true;
-				}
-			}
-		}
-		if(!typeSelected) {
-			sliderTypeEl.select(sliderTypeKeys[0], true);
-		}
-		
-		// slider steps
-		stepsEl = uifactory.addDropdownSingleselect("slider.steps." + count.incrementAndGet(), "slider.steps", settingsLayout, sliderStepKeys, sliderStepKeys, null);
-		stepsEl.addActionListener(FormEvent.ONCHANGE);
-		stepsEl.setEnabled(!restrictedEdit);
-		boolean stepSelected = false;
-		if(rubric != null && rubric.getSteps() > 0) {
-			String steps = Integer.toString(rubric.getSteps());
-			for(String sliderStepKey:sliderStepKeys) {
-				if(sliderStepKey.equals(steps)) {
-					stepsEl.select(sliderStepKey, true);
-					stepSelected = true;
-				}
-			}
-		}
-		if(!stepSelected) {
-			stepsEl.select(sliderStepKeys[4], true);
-		}
-		
-		// survey configs
-		uifactory.addSpacerElement("rubric.survey.configuration.upper", settingsLayout, false);
-		surveyConfigEl = uifactory.addCheckboxesHorizontal("rubric.survey.configuration", settingsLayout,
-				showSurveyConfigKey, translateAll(getTranslator(), showSurveyConfigKey));
-		surveyConfigEl.addActionListener(FormEvent.ONCHANGE);
 
-		// name
-		nameEl = uifactory.addTextElement("rubric.name", 128, rubric.getName(), settingsLayout);
-		nameEl.setHelpTextKey("rubric.name.help", null);
-		
-		// name display
-		String[] nameDisplayValues = new String[] { translate("rubric.name.execution"), translate("rubric.name.report") };
-		nameDisplayEl = uifactory.addCheckboxesHorizontal("rubric.name.display", settingsLayout, nameDisplayKeys, nameDisplayValues);
-		nameDisplayEl.addActionListener(FormEvent.ONCHANGE);
-		nameDisplayEl.setEvaluationOnlyVisible(true);
-		for (NameDisplay nameDisplay : rubric.getNameDisplays()) {
-			nameDisplayEl.select(nameDisplay.name(), true);
-		}
-		
-		// scale type
-		scaleTypeEl = uifactory.addDropdownSingleselect("scale.type." + count.incrementAndGet(), "rubric.scale.type",
-				settingsLayout, ScaleType.getKeys(), ScaleType.getValues(getTranslator()), null);
-		scaleTypeEl.setHelpTextKey("rubric.scale.type.help", null);
-		scaleTypeEl.addActionListener(FormEvent.ONCHANGE);
-		scaleTypeEl.setEnabled(!restrictedEdit);
-		boolean scaleSelected = false;
-		if(rubric != null && rubric.getScaleType() != null) {
-			for(String scaleTypeKey: ScaleType.getKeys()) {
-				if(scaleTypeKey.equals(rubric.getScaleType().getKey())) {
-					scaleTypeEl.select(scaleTypeKey, true);
-					scaleSelected = true;
-				}
-			}
-		}
-		if(!scaleSelected) {
-			scaleTypeEl.select(ScaleType.getKeys()[0], true);
-		}
-		
-		// good rating side
-		goodRatingEl = uifactory.addDropdownSingleselect("rubric.good.rating" + count.incrementAndGet(), "rubric.good.rating",
-				settingsLayout, GOOD_RATING_KEYS, translateAll(getTranslator(), GOOD_RATING_KEYS), null);
-		goodRatingEl.setHelpTextKey("rubric.good.rating.help", null);
-		goodRatingEl.addActionListener(FormEvent.ONCHANGE);
-		if (rubric != null) {
-			String goodRatingKey = rubric.isStartGoodRating()? GOOD_RATING_START_KEY: GOOD_RATING_END_KEY;
-			goodRatingEl.select(goodRatingKey, true);
-		}
-		
-		// insufficient range
-		String insufficientPage = velocity_root + "/rubric_range_insufficient.html";
-		insufficientCont = FormLayoutContainer.createCustomFormLayout("insufficient",
-				getTranslator(), insufficientPage);
-		insufficientCont.setRootForm(mainForm);
-		settingsLayout.add("insufficient", insufficientCont);
-		insufficientCont.setLabel("rubric.insufficient", null);
-		insufficientCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.insufficient")} );
-		String insufficientLowerBound = rubric.getLowerBoundInsufficient() != null
-				? String.valueOf(rubric.getLowerBoundInsufficient())
-				: null;
-		lowerBoundInsufficientEl = uifactory.addTextElement("rubric.lower.bound.insufficient", null, 4,
-				insufficientLowerBound, insufficientCont);
-		lowerBoundInsufficientEl.setDomReplacementWrapperRequired(false);
-		lowerBoundInsufficientEl.setDisplaySize(4);
-		String insufficientUpperBound = rubric.getUpperBoundInsufficient() != null
-				? String.valueOf(rubric.getUpperBoundInsufficient())
-				: null;
-		upperBoundInsufficientEl = uifactory.addTextElement("rubric.upper.bound.insufficient", null, 4,
-				insufficientUpperBound, insufficientCont);
-		upperBoundInsufficientEl.setDomReplacementWrapperRequired(false);
-		upperBoundInsufficientEl.setDisplaySize(4);
-
-		// neutral range
-		String neutralPage = velocity_root + "/rubric_range_neutral.html";
-		neutralCont = FormLayoutContainer.createCustomFormLayout("neutral", getTranslator(),
-				neutralPage);
-		neutralCont.setRootForm(mainForm);
-		settingsLayout.add("neutral", neutralCont);
-		neutralCont.setLabel("rubric.neutral", null);
-		neutralCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.neutral")} );
-		String neutralLowerBound = rubric.getLowerBoundNeutral() != null ? String.valueOf(rubric.getLowerBoundNeutral())
-				: null;
-		lowerBoundNeutralEl = uifactory.addTextElement("rubric.lower.bound.neutral", null, 4, neutralLowerBound, neutralCont);
-		lowerBoundNeutralEl.setDomReplacementWrapperRequired(false);
-		lowerBoundNeutralEl.setDisplaySize(4);
-		String neutralUpperBound = rubric.getUpperBoundNeutral() != null ? String.valueOf(rubric.getUpperBoundNeutral())
-				: null;
-		upperBoundNeutralEl = uifactory.addTextElement("rubric.upper.bound.neutral", null, 4, neutralUpperBound, neutralCont);
-		upperBoundNeutralEl.setDomReplacementWrapperRequired(false);
-		upperBoundNeutralEl.setDisplaySize(4);
-
-		// sufficient range
-		String sufficientPage = velocity_root + "/rubric_range_sufficient.html";
-		sufficientCont = FormLayoutContainer.createCustomFormLayout("sufficient", getTranslator(),
-				sufficientPage);
-		sufficientCont.setRootForm(mainForm);
-		settingsLayout.add("sufficient", sufficientCont);
-		sufficientCont.setLabel("rubric.sufficient", null);
-		sufficientCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.sufficient")} );
-		String sufficientLowerBound = rubric.getLowerBoundSufficient() != null
-				? String.valueOf(rubric.getLowerBoundSufficient())
-				: null;
-		lowerBoundSufficientEl = uifactory.addTextElement("rubric.lower.bound.sufficient", null, 4, sufficientLowerBound,
-				sufficientCont);
-		lowerBoundSufficientEl.setDomReplacementWrapperRequired(false);
-		lowerBoundSufficientEl.setDisplaySize(4);
-		String sufficientUpperBound = rubric.getUpperBoundSufficient() != null
-				? String.valueOf(rubric.getUpperBoundSufficient())
-				: null;
-		upperBoundSufficientEl = uifactory.addTextElement("rubric.upper.bound.sufficient", null, 4, sufficientUpperBound,
-				sufficientCont);
-		upperBoundSufficientEl.setDomReplacementWrapperRequired(false);
-		upperBoundSufficientEl.setDisplaySize(4);
-		updatePlaceholders();
-		
-		// no answer
-		noAnswerEl = uifactory.addCheckboxesVertical("no.response." + count.incrementAndGet(),
-				"rubric.no.response.enabled", settingsLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS), 1);
-		noAnswerEl.setHelpTextKey("no.response.help", null);
-		noAnswerEl.setEnabled(!restrictedEdit);
-		
-		// mandatory
-		SelectionValues obligationKV = new SelectionValues();
-		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
-		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsLayout,
-				obligationKV.keys(), obligationKV.values());
-		obligationEl.select(OBLIGATION_MANDATORY_KEY, rubric.isMandatory());
-		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !rubric.isMandatory());
-		obligationEl.setEnabled(!restrictedEdit);
-		
-		uifactory.addSpacerElement("rubric.survey.configuration.upper", settingsLayout, false);
-
-		updateTypeSettings();
 		updateSteps();
 		
 		sliders.clear();
@@ -350,31 +141,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		
 		doShowHideEnd();
-		updateUI();
-	}
-
-	private void updateUI() {
-		updateSurveyConfigUI();
-	}
-
-	private void updateSurveyConfigUI() {
-		boolean isSurveyConfig = surveyConfigEl.isAtLeastSelected(1);
-		nameEl.setVisible(isSurveyConfig);
-		nameDisplayEl.setVisible(isSurveyConfig);
-		scaleTypeEl.setVisible(isSurveyConfig);
-		noAnswerEl.setVisible(isSurveyConfig);
-		noAnswerEl.select(noAnswerEl.getKey(0), rubric.isNoResponseEnabled());
-		insufficientCont.setVisible(isSurveyConfig);
-		lowerBoundInsufficientEl.setVisible(isSurveyConfig);
-		upperBoundInsufficientEl.setVisible(isSurveyConfig);
-		neutralCont.setVisible(isSurveyConfig);
-		lowerBoundNeutralEl.setVisible(isSurveyConfig);
-		upperBoundNeutralEl.setVisible(isSurveyConfig);
-		sufficientCont.setVisible(isSurveyConfig);
-		lowerBoundSufficientEl.setVisible(isSurveyConfig);
-		upperBoundSufficientEl.setVisible(isSurveyConfig);
-		goodRatingEl.setVisible(isSurveyConfig);
-		obligationEl.setVisible(isSurveyConfig);
 	}
 	
 	private void doShowEnd() {
@@ -391,12 +157,19 @@ public class RubricEditorController extends FormBasicController implements PageE
 		flc.contextPut("showEnd", showEnd);
 		flc.setDirty(true);
 	}
+	
+	private void updateSliders() {
+		for (SliderRow row: sliders) {
+			row.setSliderEl(createSliderEl());
+		}
+	}
 
 	private void updateSteps() {
 		List<StepLabelColumn> stepLabelColumns = new ArrayList<>();
-		if (stepsEl.isVisible() && stepsEl.isOneSelected()
-				&& (sliderTypeEl.isSelected(0) || sliderTypeEl.isSelected(1))) {
-			int steps = Integer.parseInt(stepsEl.getSelectedKey());
+		
+		SliderType sType = rubric.getSliderType();
+		if (sType == SliderType.discrete || sType == SliderType.discrete_slider) {
+			int steps = rubric.getSteps();
 			for(int i=0; i<steps; i++) {
 				Integer step = Integer.valueOf(i);
 				StepLabelColumn col = stepLabels.size() > step? stepLabels.get(step): null;
@@ -406,14 +179,15 @@ public class RubricEditorController extends FormBasicController implements PageE
 						label = rubric.getStepLabels().get(i).getLabel();
 					}
 					
-					TextElement textEl = uifactory.addTextElement("steplabel_" + count.incrementAndGet(), "steplabel_" + count.incrementAndGet(), null, 256, label, flc);
+					String id = "steplabel_" + (++count);
+					TextElement textEl = uifactory.addTextElement(id, id, null, 256, label, flc);
 					textEl.setDomReplacementWrapperRequired(false);
+					textEl.addActionListener(FormEvent.ONCHANGE);
 					textEl.setDisplaySize(4);
 					col = new StepLabelColumn(i, textEl);
 				}
-				if (scaleTypeEl.isOneSelected()) {
-					String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
-					ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
+				if (rubric.getScaleType() != null) {
+					ScaleType scaleType = rubric.getScaleType();
 					double stepValue = scaleType.getStepValue(steps, i + 1);
 					col.setExampleText(String.valueOf(stepValue));
 				} else {
@@ -428,105 +202,50 @@ public class RubricEditorController extends FormBasicController implements PageE
 		stepLabels = stepLabelColumns;
 		flc.contextPut("stepLabels", stepLabelColumns);
 	}
-	
-	private void updateTypeSettings() {
-		if(!sliderTypeEl.isOneSelected()) return;
-		
-		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
-		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider) {
-			stepsEl.setVisible(true);
-		} else if(selectedType == SliderType.continuous) {
-			stepsEl.setVisible(false);
-		}
-	}
-	
-	private void updateSliders() {
-		for (SliderRow row: sliders) {
-			row.setSliderEl(createSliderEl());
-		}
-	}
-	
-	private void updatePlaceholders() {
-		boolean startGoodRating = goodRatingEl.isOneSelected() && GOOD_RATING_START_KEY.equals(goodRatingEl.getSelectedKey())
-				? true
-				: false;
-		String selectedSliderType = sliderTypeEl.getSelectedKey();
-		SliderType sliderType =  SliderType.valueOf(selectedSliderType);
-		String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
-		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
-		
-		int steps = sliderType == SliderType.continuous? 100: Integer.parseInt(stepsEl.getSelectedKey());
-		double leftValue = scaleType.getStepValue(steps, 1);
-		double rightValue = scaleType.getStepValue(steps, steps);
-		double highValue = rightValue > leftValue? rightValue: leftValue;
-		double lowValue = rightValue < leftValue? rightValue: leftValue;
-		int diff = sliderType == SliderType.continuous? 10: 1;
-		boolean highIsGood = (startGoodRating && ScaleType.maxToOne.equals(scaleType))
-				|| (startGoodRating && !ScaleType.maxToOne.equals(scaleType));
-		
-		RatingPlaceholder placeholders;
-		if (highIsGood) {
-			placeholders = new RatingPlaceholder(
-					lowValue + 2 * diff,
-					highValue,
-					lowValue + diff,
-					lowValue + 2 * diff,
-					lowValue,
-					lowValue + diff
-					);
-		} else {
-			placeholders = new RatingPlaceholder(
-					lowValue,
-					highValue - 2 * diff,
-					highValue - 2 * diff,
-					highValue - diff,
-					highValue - diff,
-					highValue
-					);
-		}
-		
-		lowerBoundInsufficientEl.setPlaceholderText(oneDecimal(placeholders.getLowerBoundInsufficient()));
-		upperBoundInsufficientEl.setPlaceholderText(oneDecimal(placeholders.getUpperBoundInsufficient()));
-		lowerBoundNeutralEl.setPlaceholderText(oneDecimal(placeholders.getLowerBoundNeutral()));
-		upperBoundNeutralEl.setPlaceholderText(oneDecimal(placeholders.getUpperBoundNeutral()));
-		lowerBoundSufficientEl.setPlaceholderText(oneDecimal(placeholders.getLowerBoundSufficient()));
-		upperBoundSufficientEl.setPlaceholderText(oneDecimal(placeholders.getUpperBoundSufficient()));
-	}
 
 	private SliderRow forgeSliderRow(Slider slider) {
 		String startLabel = slider.getStartLabel();
+		String id = Integer.toString(++count);
 		RichTextElement startLabelEl = uifactory.addRichTextElementForStringDataMinimalistic(
-				"start.label." + count.incrementAndGet(), null, startLabel, 4, -1, flc, getWindowControl());
+				"start.label.".concat(id), null, startLabel, 4, -1, flc, getWindowControl());
 		startLabelEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-
+		
 		String endLabel = slider.getEndLabel();
 		RichTextElement endLabelEl = uifactory.addRichTextElementForStringDataMinimalistic(
-				"end.label." + count.incrementAndGet(), null, endLabel, 4, -1, flc, getWindowControl());
+				"end.label.".concat(id), null, endLabel, 4, -1, flc, getWindowControl());
 		endLabelEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
+		
+		if(!restrictedEdit) {
+			startLabelEl.addActionListener(FormEvent.ONCHANGE);
+			endLabelEl.addActionListener(FormEvent.ONCHANGE);
+		}
 		
 		// weight
 		String weight = slider.getWeight() != null? slider.getWeight().toString(): "";
-		TextElement weightEl = uifactory.addTextElement("weight" + count.incrementAndGet(), null, 4, weight, flc);
+		TextElement weightEl = uifactory.addTextElement("weight".concat(id), null, 4, weight, flc);
 		weightEl.setElementCssClass("o_slider_weight");
 		weightEl.setExampleKey("slider.weight", null);
 		weightEl.setEnabled(!restrictedEditWeight);
+		if(!restrictedEditWeight) {
+			weightEl.addActionListener(FormEvent.ONCHANGE);
+		}
 		
 		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, weightEl, createSliderEl());
 		
-		FormLink upButton = uifactory.addFormLink("up." + count.incrementAndGet(), "up", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+		FormLink upButton = uifactory.addFormLink("up.".concat(id), "up", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 		upButton.setDomReplacementWrapperRequired(false);
 		upButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
 		upButton.setUserObject(row);
 		row.setUpButton(upButton);
 		
-		FormLink downButton = uifactory.addFormLink("down." + count.incrementAndGet(), "down", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+		FormLink downButton = uifactory.addFormLink("down.".concat(id), "down", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 		downButton.setDomReplacementWrapperRequired(false);
 		downButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
 		downButton.setUserObject(row);
 		row.setDownButton(downButton);
 		
 		if(!restrictedEdit) {
-			FormLink deleteButton = uifactory.addFormLink("del." + count.incrementAndGet(), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+			FormLink deleteButton = uifactory.addFormLink("del.".concat(id), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 			deleteButton.setDomReplacementWrapperRequired(false);
 			deleteButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			deleteButton.setUserObject(row);
@@ -538,7 +257,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 
 	private FormItem createSliderEl() {
-		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
+		SliderType selectedType = rubric.getSliderType();
 		if (selectedType == SliderType.discrete) {
 			return createRadioEl();
 		} else if (selectedType == SliderType.discrete_slider) {
@@ -549,7 +268,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 	private FormItem createRadioEl() {
 		int start = 1;
-		int steps = Integer.parseInt(stepsEl.getSelectedKey());
+		int steps = rubric.getSteps();
 		int end = 1 + steps;
 		
 		double[] theSteps = new double[steps];
@@ -575,7 +294,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
 		sliderEl.setMinValue(1);
-		sliderEl.setMaxValue( Integer.parseInt(stepsEl.getSelectedKey()));
+		sliderEl.setMaxValue(rubric.getSteps());
 		sliderEl.setStep(1);
 		return sliderEl;
 	}
@@ -598,35 +317,40 @@ public class RubricEditorController extends FormBasicController implements PageE
 		this.editMode = editMode;
 		if (editMode) {
 			initEditForm(flc);
+		} else {
+			rubricCtrl.updateForm();
 		}
 		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof RubricInspectorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.getElement() instanceof Rubric) {
+				rubric = (Rubric)cpe.getElement();
+				updateSteps();
+				updateSliders();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (surveyConfigEl == source) {
-			updateUI();
-		} else if (addSliderButton == source) {
+		if (addSliderButton == source) {
 			doAddSlider();
 		} else if (showEndButton == source) {
 			doShowEnd();
 		} else if (hideEndButton == source) {
 			doHideEnd();
-		} else if(sliderTypeEl == source) {
-			updateTypeSettings();
-			updateSteps();
-			updateSliders();
-			updatePlaceholders();
-		} else if(stepsEl == source) {
-			updateSteps();
-			updateSliders();
-			updatePlaceholders();
-		} else if (scaleTypeEl == source) {
-			updateSteps();
-			updateSliders();
-			updatePlaceholders();
-		} else if (goodRatingEl == source) {
-			updatePlaceholders();
 		} else if(saveButton == source) {
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
@@ -639,6 +363,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 				doMoveDown((SliderRow)button.getUserObject());
 			} else if ("delete_slider".equals(button.getCmd())) {
 				doRemoveSlider((SliderRow)button.getUserObject());
+			}
+		} else if(source instanceof TextElement) {
+			String name = source.getName();
+			if(name != null && name.startsWith("steplabel_")) {
+				commitStepLabels();
+			} else {
+				commitFields();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -703,64 +434,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		boolean surveyConfigOk = true;
-		
-		// slider type
-		sliderTypeEl.clearError();
-		if(!sliderTypeEl.isOneSelected()) {
-			sliderTypeEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		// bounds
-		double min = -101;
-		double max = 101;
-		int steps = 100;
-		String selectedSliderType = sliderTypeEl.getSelectedKey();
-		SliderType sliderType =  SliderType.valueOf(selectedSliderType);
-		String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
-		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
-		if (sliderType != SliderType.continuous) {
-			steps = Integer.parseInt(stepsEl.getSelectedKey());
-		}
-		min = scaleType.getStepValue(steps, 1);
-		max = scaleType.getStepValue(steps, steps);
-		if (min > max) {
-			double temp = min;
-			min = max;
-			max = temp;
-		}
-		lowerBoundInsufficientEl.clearError();
-		if (isInvalidDouble(lowerBoundInsufficientEl.getValue(), min, max)
-				|| isInvalidDouble(upperBoundInsufficientEl.getValue(), min, max)
-				|| isOnlyOnePresent(lowerBoundInsufficientEl, upperBoundInsufficientEl)) {
-			lowerBoundInsufficientEl.setErrorKey("error.outside.range",
-					new String[] { String.valueOf(min), String.valueOf(max) });
-			surveyConfigOk = false;
-		}
-		lowerBoundNeutralEl.clearError();
-		if (isInvalidDouble(lowerBoundNeutralEl.getValue(), min, max)
-				|| isInvalidDouble(upperBoundNeutralEl.getValue(), min, max)
-				|| isOnlyOnePresent(lowerBoundNeutralEl, upperBoundNeutralEl)) {
-			lowerBoundNeutralEl.setErrorKey("error.outside.range",
-					new String[] { String.valueOf(min), String.valueOf(max) });
-			surveyConfigOk = false;
-		} else if (isOverlapping(lowerBoundInsufficientEl, upperBoundInsufficientEl, lowerBoundNeutralEl, upperBoundNeutralEl)) {
-			lowerBoundNeutralEl.setErrorKey("error.range.overlapping", null);
-			surveyConfigOk = false;
-		}
-		lowerBoundSufficientEl.clearError();
-		if (isInvalidDouble(lowerBoundSufficientEl.getValue(), min, max)
-				|| isInvalidDouble(upperBoundSufficientEl.getValue(), min, max)
-				|| isOnlyOnePresent(lowerBoundSufficientEl, upperBoundSufficientEl)) {
-			lowerBoundSufficientEl.setErrorKey("error.outside.range",
-					new String[] { String.valueOf(min), String.valueOf(max) });
-			surveyConfigOk = false;
-		} else if (isOverlapping(lowerBoundInsufficientEl, upperBoundInsufficientEl, lowerBoundSufficientEl, upperBoundSufficientEl)
-				|| isOverlapping(lowerBoundNeutralEl, upperBoundNeutralEl, lowerBoundSufficientEl, upperBoundSufficientEl)) {
-			lowerBoundSufficientEl.setErrorKey("error.range.overlapping", null);
-			surveyConfigOk = false;
-		}
 		
 		for(SliderRow row:sliders) {
 			TextElement weightEl = row.getWeightEl();
@@ -770,22 +443,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 				allOk = false;
 			}
 		}
-		
-		if (!surveyConfigOk) {
-			surveyConfigEl.select(surveyConfigEl.getKey(0), true);
-			updateSurveyConfigUI();
-			allOk &= false;
-		}
 
 		return allOk;
-	}
-	
-	private boolean isOnlyOnePresent(TextElement element1, TextElement element2) {
-		boolean present1 = StringHelper.containsNonWhitespace(element1.getValue());
-		boolean present2 = StringHelper.containsNonWhitespace(element2.getValue());
-		if (present1 && !present2) return true;
-		if (!present1 && present2) return true;
-		return false;
 	}
 
 	private boolean isInvalidDouble(String val, double min, double max) {
@@ -826,120 +485,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 		return !inside;
 	}
 	
-	private boolean isOverlapping(TextElement range1Lower, TextElement range1Upper, TextElement range2Lower, TextElement range2Upper) {
-		if (!StringHelper.containsNonWhitespace(range1Lower.getValue())
-				|| !StringHelper.containsNonWhitespace(range1Upper.getValue())
-				|| !StringHelper.containsNonWhitespace(range2Lower.getValue())
-				|| !StringHelper.containsNonWhitespace(range2Upper.getValue())) {
-			return false;
-		}
-		try {
-			double r1Lower = Double.parseDouble(range1Lower.getValue());
-			double r1Upper = Double.parseDouble(range1Upper.getValue());
-			double r2Lower = Double.parseDouble(range2Lower.getValue());
-			double r2Upper = Double.parseDouble(range2Upper.getValue());
-			
-			double r1Min = r1Lower < r1Upper? r1Lower: r1Upper;
-			double r1Max = r1Lower > r1Upper? r1Lower: r1Upper;
-			double r2Min = r2Lower < r2Upper? r2Lower: r2Upper;
-			double r2Max = r2Lower > r2Upper? r2Lower: r2Upper;
-			
-			if ((r1Min < r2Min && r1Max > r2Min) || (r2Min < r1Min && r2Max > r1Min)) {
-				return true;
-			}
-		} catch (Exception e) {
-			//
-		}
-		return false;
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		commitFields();
 		commitStepLabels();
 
-		String selectedSliderType = sliderTypeEl.getSelectedKey();
-		SliderType sliderType =  SliderType.valueOf(selectedSliderType);
-		rubric.setSliderType(sliderType);
-		if(sliderType == SliderType.continuous) {
-			rubric.setStart(1);
-			rubric.setEnd(100);
-			rubric.setSteps(100);
-		} else {
-			int steps = Integer.parseInt(stepsEl.getSelectedKey());
-			rubric.setStart(1);
-			rubric.setEnd(steps);
-			rubric.setSteps(steps);
-		}
-		
-		rubric.setName(nameEl.getValue());
-		
-		List<NameDisplay> nameDisplays = new ArrayList<>(2);
-		Collection<String> nameDisplayKeys = nameDisplayEl.getSelectedKeys();
-		for (String key : nameDisplayKeys) {
-			NameDisplay nameDisplay = NameDisplay.valueOf(key);
-			nameDisplays.add(nameDisplay);
-		}
-		rubric.setNameDisplays(nameDisplays);
-		
-		String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
-		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
-		rubric.setScaleType(scaleType);
-		
-		boolean noResonse = noAnswerEl.isAtLeastSelected(1);
-		rubric.setNoResponseEnabled(noResonse);
-		
-		String lowerBoundInsufficientValue = lowerBoundInsufficientEl.getValue();
-		if (StringHelper.containsNonWhitespace(lowerBoundInsufficientValue)) {
-			double lowerBoundInsufficient = Double.parseDouble(lowerBoundInsufficientValue);
-			rubric.setLowerBoundInsufficient(lowerBoundInsufficient);
-		} else {
-			rubric.setLowerBoundInsufficient(null);
-		}
-		String upperBoundInsufficientValue = upperBoundInsufficientEl.getValue();
-		if (StringHelper.containsNonWhitespace(upperBoundInsufficientValue)) {
-			double upperBoundInsufficient = Double.parseDouble(upperBoundInsufficientValue);
-			rubric.setUpperBoundInsufficient(upperBoundInsufficient);
-		} else {
-			rubric.setUpperBoundInsufficient(null);
-		}
-		String lowerBoundNeutralValue = lowerBoundNeutralEl.getValue();
-		if (StringHelper.containsNonWhitespace(lowerBoundNeutralValue)) {
-			double lowerBoundNeutral = Double.parseDouble(lowerBoundNeutralValue);
-			rubric.setLowerBoundNeutral(lowerBoundNeutral);
-		} else {
-			rubric.setLowerBoundNeutral(null);
-		}
-		String upperBoundNeutralValue = upperBoundNeutralEl.getValue();
-		if (StringHelper.containsNonWhitespace(upperBoundNeutralValue)) {
-			double upperBoundNeutral = Double.parseDouble(upperBoundNeutralValue);
-			rubric.setUpperBoundNeutral(upperBoundNeutral);
-		} else {
-			rubric.setUpperBoundNeutral(null);
-		}
-		String lowerBoundSufficientValue = lowerBoundSufficientEl.getValue();
-		if (StringHelper.containsNonWhitespace(lowerBoundSufficientValue)) {
-			double lowerBoundSufficient = Double.parseDouble(lowerBoundSufficientValue);
-			rubric.setLowerBoundSufficient(lowerBoundSufficient);
-		} else {
-			rubric.setLowerBoundSufficient(null);
-		}
-		String upperBoundSufficientValue = upperBoundSufficientEl.getValue();
-		if (StringHelper.containsNonWhitespace(upperBoundSufficientValue)) {
-			double upperBoundSufficient = Double.parseDouble(upperBoundSufficientValue);
-			rubric.setUpperBoundSufficient(upperBoundSufficient);
-		} else {
-			rubric.setUpperBoundSufficient(null);
-		}
-		
-		boolean startGoodRating = goodRatingEl.isOneSelected() && GOOD_RATING_START_KEY.equals(goodRatingEl.getSelectedKey())
-				? true
-				: false;
-		rubric.setStartGoodRating(startGoodRating);
-		
-		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
-		rubric.setMandatory(mandatory);
-		
 		rubricCtrl.updateForm();
 		
 		fireEvent(ureq, new ChangePartEvent(rubric));
@@ -947,15 +497,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 	
 	private void commitStepLabels() {
-		if(!sliderTypeEl.isOneSelected()) return;
-		
-		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
+
+		SliderType selectedType = rubric.getSliderType();
 		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider) {
 			if(rubric.getStepLabels() == null) {
 				rubric.setStepLabels(new ArrayList<>());
 			}
 
-			int steps = Integer.parseInt(stepsEl.getSelectedKey());
+			int steps = rubric.getSteps();
 			for(int i=0; i<stepLabels.size() && i<steps; i++) {
 				StepLabelColumn stepLabel = stepLabels.get(i);
 				if(i < rubric.getStepLabels().size()) {
@@ -1150,51 +699,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 		private RubricEditorController getOuterType() {
 			return RubricEditorController.this;
-		}
-		
-	}
-	
-	private static final class RatingPlaceholder {
-		
-		private final double lowerBoundInsufficient;
-		private final double upperBoundInsufficient;
-		private final double lowerBoundNeutral;
-		private final double upperBoundNeutral;
-		private final double lowerBoundSufficient;
-		private final double upperBoundSufficient;
-		
-		RatingPlaceholder(double lowerBoundInsufficient, double upperBoundInsufficient, double lowerBoundNeutral,
-				double upperBoundNeutral, double lowerBoundSufficient, double upperBoundSufficient) {
-			this.lowerBoundInsufficient = lowerBoundInsufficient;
-			this.upperBoundInsufficient = upperBoundInsufficient;
-			this.lowerBoundNeutral = lowerBoundNeutral;
-			this.upperBoundNeutral = upperBoundNeutral;
-			this.lowerBoundSufficient = lowerBoundSufficient;
-			this.upperBoundSufficient = upperBoundSufficient;
-		}
-
-		double getLowerBoundInsufficient() {
-			return lowerBoundInsufficient;
-		}
-
-		double getUpperBoundInsufficient() {
-			return upperBoundInsufficient;
-		}
-
-		double getLowerBoundNeutral() {
-			return lowerBoundNeutral;
-		}
-
-		double getUpperBoundNeutral() {
-			return upperBoundNeutral;
-		}
-
-		double getLowerBoundSufficient() {
-			return lowerBoundSufficient;
-		}
-
-		double getUpperBoundSufficient() {
-			return upperBoundSufficient;
 		}
 		
 	}

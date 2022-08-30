@@ -38,6 +38,8 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.filter.Filter;
 
+import com.google.common.base.Objects;
+
 /**
  * Initial Date: 27.11.2006 <br>
  * 
@@ -172,8 +174,9 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		if (value == null) {
 			value = "";
 		} else {
-			if(!preventTrim) // OO-31
+			if(!preventTrim) {// OO-31
 				value = value.trim();
+			}
 			
 			// Remember original value for dirty evaluation.
 			// null value is not regarded as initial value. only
@@ -184,11 +187,14 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 			}
 		}
 
-		this.value = StringHelper.cleanUTF8ForXml(value);
-		Component c = getComponent();
-		if (c != null) {
-			// c may be null since it is only created when this formelement is added to a FormItemContainer
-			c.setDirty(true);
+		String val = StringHelper.cleanUTF8ForXml(value);
+		if(!Objects.equal(val, this.value)) {
+			this.value = val;
+			Component c = getComponent();
+			if (c != null) {
+				// c may be null since it is only created when this formelement is added to a FormItemContainer
+				c.setDirty(true);
+			}
 		}
 	}
 

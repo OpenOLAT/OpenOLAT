@@ -42,4 +42,6 @@ public interface PageElementHandler {
 	
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
 	
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element);
+	
 }

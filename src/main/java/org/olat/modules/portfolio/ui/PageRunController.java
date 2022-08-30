@@ -31,6 +31,8 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.pdf.PdfModule;
@@ -73,10 +75,13 @@ import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageController;
@@ -138,6 +143,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private Link editLink;
 	private Link editMetadataLink, moveToTrashLink, restoreLink, deleteLink,
 		printLink, exportPageAsPdfLink;
+	private Component helpLink;
 	protected final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
@@ -163,6 +169,8 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	@Autowired
 	private PdfModule pdfModule;
+	@Autowired
+	private HelpModule helpModule;
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
@@ -208,6 +216,9 @@ public class PageRunController extends BasicController implements TooledControll
 		nextPageLink.setIconRightCSS("o_icon o_icon_move_right");
 		allPagesLink = LinkFactory.createButton("page.paging.all", mainVC, this);
 		allPagesLink.setVisible(false);
+		HelpLinkSPI provider = helpModule.getManualProvider();
+		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
+				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/portfolio/The_portfolio_editor/");
 
 		putInitialPanel(mainVC);
 		
@@ -281,6 +292,9 @@ public class PageRunController extends BasicController implements TooledControll
 			deleteLink.setElementCssClass("o_sel_pf_delete_page");
 			stackPanel.addTool(deleteLink, Align.left);
 		}
+		
+		stackPanel.addTool(allPagesLink, null);
+		stackPanel.addTool(helpLink, Align.rightEdge, false, "o_chelp_wrapper");
 	}
 	
 	/**
@@ -812,6 +826,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		private final List<PageElementHandler> handlers = new ArrayList<>();
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
+		private final List<PageLayoutHandler> creationlayoutHandlers = new ArrayList<>();
 		
 		public PortfolioPageEditorProvider(Roles roles) {
 			//handler for title
@@ -856,7 +871,11 @@ public class PageRunController extends BasicController implements TooledControll
 			//handler for container
 			ContainerHandler containerHandler = new ContainerHandler();
 			handlers.add(containerHandler);
-			creationHandlers.add(containerHandler);
+			for(ContainerLayout layout:ContainerLayout.values()) {
+				if(!layout.deprecated()) {
+					creationlayoutHandlers.add(new ContainerHandler(layout));
+				}
+			}
 			//handler for HR code
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
 			handlers.add(hrHandler);
@@ -885,6 +904,11 @@ public class PageRunController extends BasicController implements TooledControll
 		@Override
 		public List<PageElementHandler> getCreateHandlers() {
 			return creationHandlers;
+		}
+
+		@Override
+		public List<PageLayoutHandler> getCreateLayoutHandlers() {
+			return creationlayoutHandlers;
 		}
 
 		@Override
@@ -984,6 +1008,11 @@ public class PageRunController extends BasicController implements TooledControll
 
 		@Override
 		public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+			return null;
+		}
+		
+		@Override
+		public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 			return null;
 		}
 		

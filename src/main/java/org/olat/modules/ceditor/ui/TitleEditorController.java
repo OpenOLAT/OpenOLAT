@@ -19,19 +19,15 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.CodeHelper;
@@ -81,20 +77,10 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<String> headingFormatLinkNames = new ArrayList<>();
-		for(int i=1; i<=6; i++) {
-			FormLink headingFormatLink = uifactory.addFormLink("h" + i, "h" + i, "h" + i, null, formLayout, Link.LINK);
-			headingFormatLinkNames.add(headingFormatLink.getComponent().getComponentName());
-		}
-		flc.getFormItemComponent().contextPut("headingFormatLinkNames", headingFormatLinkNames);
-
 		String cmpId = "title-" + CodeHelper.getRAMUniqueID() + "h";
-		String content = title.getContent();
-		if(!StringHelper.containsNonWhitespace(content)) {
-			content = "<h1></h1>";
-		}
+		String content = TitleElement.toHtml(title.getContent(), title.getTitleSettings());
 		
-		titleItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
+		titleItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 2, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
 		
@@ -110,14 +96,20 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("h")) {
-				doChangeHeading(ureq, cmd);
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof TitleInspectorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.getElement().equals(title)) {
+				title = (TitleElement)cpe.getElement();
+				doUpdate();
 			}
-		} else if(titleItem == source) {
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(titleItem == source) {
 			doSave(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -128,17 +120,16 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		doSave(ureq);
 	}
 	
-	private void doChangeHeading(UserRequest ureq, String heading) {
-		String content = titleItem.getValue();
-		String text = FilterFactory.getHtmlTagsFilter().filter(content);
-		StringBuilder sb = new StringBuilder();
-		sb.append("<").append(heading).append(">").append(text).append("</").append(heading).append(">");
-		titleItem.setValue(sb.toString());
-		doSave(ureq);
+	private void doUpdate() {
+		String content = title.getContent();
+		String htmlContent = TitleElement.toHtml(content, title.getTitleSettings());
+		titleItem.setValue(htmlContent);
+		staticItem.setValue(contentOrExample(content));
 	}
 	
 	private void doSave(UserRequest ureq) {
-		String content = titleItem.getValue();
+		String htmlContent = titleItem.getValue();
+		String content = FilterFactory.getHtmlTagsFilter().filter(htmlContent);
 		title.setContent(content);
 		title = store.savePageElement(title);
 		staticItem.setValue(contentOrExample(content));
@@ -147,9 +138,11 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	private String contentOrExample(String content) {
 		String text = FilterFactory.getHtmlTagsFilter().filter(content);
-		String staticContent = content;
+		String staticContent;
 		if (!StringHelper.containsNonWhitespace(text)) {
 			staticContent = getTranslator().translate("title.example");
+		} else {
+			staticContent = TitleElement.toHtml(content, title.getTitleSettings());
 		}
 		return staticContent;
 	}

@@ -45,11 +45,13 @@ import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.ImageElement;
-import org.olat.modules.ceditor.ui.ImageEditorController;
+import org.olat.modules.ceditor.ui.ImageInspectorController;
+import org.olat.modules.ceditor.ui.ImageRunController;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
@@ -60,6 +62,7 @@ import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
@@ -169,12 +172,12 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MediaPart) {
 			MediaPart mediaPart = (MediaPart)element;
-			return new ImageEditorController(ureq, wControl, mediaPart, dataStorage, this);
+			return new ImageInspectorController(ureq, wControl, mediaPart, this);
 		}
-		return super.getEditor(ureq, wControl, element);
+		return super.getInspector(ureq, wControl, element);
 	}
 
 	@Override
@@ -188,6 +191,14 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		return new ImageMediaController(ureq, wControl, dataStorage, media, ExtendedMediaRenderingHints.valueOf(hints));
+	}
+
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof ImageElement) {
+			return new ImageRunController(ureq, wControl, dataStorage, (ImageElement)element, new StandardMediaRenderingHints());
+		}
+		return super.getEditor(ureq, wControl, element);
 	}
 
 	@Override
@@ -210,6 +221,10 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	
 	@Override
 	public ImageElement savePageElement(ImageElement element) {
-		return CoreSpringFactory.getImpl(PortfolioService.class).updatePart((MediaPart)element);
+		MediaPart mediaPart = CoreSpringFactory.getImpl(PortfolioService.class).updatePart((MediaPart)element);
+		if(mediaPart.getMedia() != null) {
+			mediaPart.getMedia().getMetadataXml();
+		}
+		return mediaPart;
 	}
 }

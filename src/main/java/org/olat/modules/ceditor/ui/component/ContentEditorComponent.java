@@ -171,6 +171,37 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 		}
 		return false;
 	}
+	
+
+	public ContentEditorContainerComponent previousRootContainerComponent(ContentEditorFragment component) {
+		int index = rootComponents.indexOf(component);
+		if(index < 1) {
+			return null;
+		}
+		
+		for(int i=index; i-->=0; ) {
+			ContentEditorFragment fragment = (ContentEditorContainerComponent)rootComponents.get(i);
+			if(fragment instanceof ContentEditorContainerComponent) {
+				return (ContentEditorContainerComponent)fragment;
+			}
+		}
+		return null;
+	}
+	
+	public ContentEditorContainerComponent nextRootContainerComponent(ContentEditorFragment component) {
+		int index = rootComponents.indexOf(component);
+		if(index < 1) {
+			return null;
+		}
+		
+		for(int i=index; i<rootComponents.size(); i++) {
+			ContentEditorFragment fragment = (ContentEditorContainerComponent)rootComponents.get(i);
+			if(fragment instanceof ContentEditorContainerComponent) {
+				return (ContentEditorContainerComponent)fragment;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Component getComponent(String name) {

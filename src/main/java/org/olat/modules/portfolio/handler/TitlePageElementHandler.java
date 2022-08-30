@@ -31,6 +31,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
@@ -38,6 +39,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.TitleEditorController;
+import org.olat.modules.ceditor.ui.TitleInspectorController;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.TitlePart;
 
@@ -80,6 +82,14 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TitlePart) {
 			return new TitleEditorController(ureq, wControl, (TitlePart)element, this);
+		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof TitlePart) {
+			return new TitleInspectorController(ureq, wControl, (TitlePart)element, this);
 		}
 		return null;
 	}

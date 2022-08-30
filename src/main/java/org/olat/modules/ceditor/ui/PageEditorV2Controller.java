@@ -33,6 +33,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -48,6 +49,7 @@ import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
@@ -83,11 +85,13 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final ContentEditorComponent editorCmp;
+	private Link addLayoutButton;
 	private Link addElementButton;
 	private Link importContentButton;
 	
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
+	private AddLayoutController addLayoutCtrl;
 	private AddElementsController addElementsCtrl;
 	private DeleteConfirmationController deleteConfirmationCtrl;
 	private CloseableCalloutWindowController addCalloutCtrl;
@@ -121,6 +125,10 @@ public class PageEditorV2Controller extends BasicController {
 			addElementButton = LinkFactory.createButton("add.element", mainVC, this);
 			addElementButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			addElementButton.setElementCssClass("o_sel_add_element_main");
+			
+			addLayoutButton = LinkFactory.createButton("add.layout", mainVC, this);
+			addLayoutButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			addLayoutButton.setElementCssClass("o_sel_add_container_main");
 		}
 		
 		if (StringHelper.containsNonWhitespace(provider.getImportButtonKey())) {
@@ -131,8 +139,16 @@ public class PageEditorV2Controller extends BasicController {
 		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
+		
+		wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_ceditor");
 	}
 	
+	@Override
+	protected void doDispose() {
+		super.doDispose();
+		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_ceditor");
+	}
+
 	public void loadModel(UserRequest ureq) {
 		List<? extends PageElement> elements = provider.getElements();
 		List<ContentEditorFragment> flatFragmentsList = new ArrayList<>(elements.size());
@@ -181,13 +197,13 @@ public class PageEditorV2Controller extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(addElementsCtrl == source) {
+		} else if(addElementsCtrl == source || addLayoutCtrl == source) {
 			addCalloutCtrl.deactivate();
 			cleanUp();
 			if(event instanceof AddElementEvent) {
 				AddElementEvent aee = (AddElementEvent)event;
 				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
-						aee.getTarget(), aee.getContainerColumn());
+						aee.getTarget(),  aee.getContainerColumn());
 			}
 		} else if(deleteConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
@@ -212,10 +228,12 @@ public class PageEditorV2Controller extends BasicController {
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(addElementsCtrl);
 		removeAsListenerAndDispose(addCalloutCtrl);
+		removeAsListenerAndDispose(addLayoutCtrl);
 		removeAsListenerAndDispose(addCtrl);
 		removeAsListenerAndDispose(cmc);
 		addElementsCtrl = null;
 		addCalloutCtrl = null;
+		addLayoutCtrl = null;
 		addCtrl = null;
 		cmc = null;
 	}
@@ -223,7 +241,11 @@ public class PageEditorV2Controller extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addElementButton) {
+			doCloseAllEditionEvent(ureq);
 			openAddElementCallout(ureq);
+		} else if (source == addLayoutButton) {
+			doCloseAllEditionEvent(ureq);
+			openAddLayoutCallout(ureq);
 		} else if(source == importContentButton) {
 			fireEvent(ureq, new ImportEvent());
 		} else if(event instanceof EditElementEvent) {
@@ -332,12 +354,24 @@ public class PageEditorV2Controller extends BasicController {
 		listenTo(addElementsCtrl);
 		
 		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addElementsCtrl.getInitialComponent(), dispatchId, "", true, "");
+				addElementsCtrl.getInitialComponent(), dispatchId, "", true, "o_sel_add_element_callout");
+		listenTo(addCalloutCtrl);
+		addCalloutCtrl.activate();
+	}
+	
+	private void openAddLayoutCallout(UserRequest ureq) {
+		addLayoutCtrl = new AddLayoutController(ureq, getWindowControl(), provider,
+				PageElementTarget.atTheEnd, getTranslator());
+		listenTo(addLayoutCtrl);
+		
+		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				addLayoutCtrl.getInitialComponent(), addLayoutButton, "", true, "");
 		listenTo(addCalloutCtrl);
 		addCalloutCtrl.activate();
 	}
 
-	private void doAddElement(UserRequest ureq, ContentEditorFragment refenceFragment, PageElementHandler handler, PageElementTarget target, int column) {
+	private void doAddElement(UserRequest ureq, ContentEditorFragment refenceFragment,
+			PageElementHandler handler, PageElementTarget target, int column) {
 		if(guardModalController(addCtrl)) return;
 		
 		if(handler instanceof InteractiveAddPageElementHandler) {
@@ -355,7 +389,8 @@ public class PageEditorV2Controller extends BasicController {
 			}
 		} else if(handler instanceof SimpleAddPageElementHandler) {
 			SimpleAddPageElementHandler simpleHandler = (SimpleAddPageElementHandler)handler;
-			doAddPageElement(ureq, simpleHandler.createPageElement(getLocale()), refenceFragment, target, column);
+			PageElement element = simpleHandler.createPageElement(getLocale());
+			doAddPageElement(ureq, element, refenceFragment, target, column);
 		}
 	}
 	
@@ -526,13 +561,61 @@ public class PageEditorV2Controller extends BasicController {
 		provider.removePageElement(fragment.getElement());
 		Component parent = ancestors.get(index + 1);
 		if(parent == editorCmp) {
+			if(fragment instanceof ContentEditorContainerComponent) {
+				moveElementsToPreviousContainer((ContentEditorContainerComponent)fragment);
+			}
 			editorCmp.removeRootComponent(fragment);
 		} else if(parent instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
+			if(fragment instanceof ContentEditorContainerComponent) {
+				moveElementsToContainerSlot((ContentEditorContainerComponent)fragment, container);
+			}
 			container.removeElementAt(fragment);
 		}
 		updateImportButtonVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	/**
+	 * Transfer the element of the container to a previous container. Only
+	 * for root containers.
+	 * 
+	 * @param container The container to empty
+	 */
+	private void moveElementsToPreviousContainer(ContentEditorContainerComponent container) {
+		List<ContentEditorFragment> fragmentsToTransfer = container.getAllContentEditorFragments();
+		if(fragmentsToTransfer.isEmpty()) {
+			return;
+		}
+		
+		ContentEditorContainerComponent previousContainer = editorCmp.previousRootContainerComponent(container);
+		if(previousContainer != null) {
+			previousContainer.transferElements(fragmentsToTransfer);
+		} else {
+			ContentEditorContainerComponent nextContainer = editorCmp.nextRootContainerComponent(container);
+			if(nextContainer != null) {
+				nextContainer.transferElements(fragmentsToTransfer);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param container The container to empty
+	 * @param parent The parent of the container to empty
+	 */
+	private void moveElementsToContainerSlot(ContentEditorContainerComponent container, ContentEditorContainerComponent parent) {
+		List<ContentEditorFragment> fragmentsToTransfer = container.getAllContentEditorFragments();
+		if(fragmentsToTransfer.isEmpty()) {
+			return;
+		}
+
+		int slot = parent.getContainerSettings().getColumnIndex(container.getElementId());
+		if(slot > 0) {
+			parent.transferElements(fragmentsToTransfer, slot);
+		} else {
+			parent.transferElements(fragmentsToTransfer);
+		}
 	}
 	
 	private void doMoveUpElement(UserRequest ureq, ContentEditorFragment fragment) {
@@ -638,29 +721,40 @@ public class PageEditorV2Controller extends BasicController {
 		
 		if(target instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)target;
-			targetContainer.setElementAt(source, dropEvent.getSlot(), null);
-			ok = true;
+			// Containers are never dropped in an other container, it's forbidden
+			if(source instanceof ContentEditorContainerComponent) {
+				ok = moveContainerInEditor(target, source, after);
+			} else {
+				targetContainer.setElementAt(source, dropEvent.getSlot(), null);
+				ok = true;
+			}
 		} else if(targetParent instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)targetParent;
 			PageElementTarget pos = after ? PageElementTarget.below : PageElementTarget.above;
 			targetContainer.addElement(source, target, pos);
 			ok = true;
 		} else if(targetParent == editorCmp) {
-			int index = editorCmp.indexOfRootComponent(target);
-			if(index >= 0) {
-				provider.movePageElement(source.getElement(), target.getElement(), after);
-				if(after) {
-					index++;
-				}
-				editorCmp.addRootComponent(index, source);
-				ok = true;
-			}
+			ok = moveContainerInEditor(target, source, after);
 		}
 
 		if(!ok) {
 			editorCmp.setDirty(true);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private boolean moveContainerInEditor(ContentEditorFragment target, ContentEditorFragment source, boolean after) {
+		boolean ok = false;
+		int index = editorCmp.indexOfRootComponent(target);
+		if(index >= 0) {
+			provider.movePageElement(source.getElement(), target.getElement(), after);
+			if(after) {
+				index++;
+			}
+			editorCmp.addRootComponent(index, source);
+			ok = true;
+		}
+		return ok;
 	}
 	
 	private ContentEditorFragment createFragmentComponent(UserRequest ureq, PageElement element) {
@@ -673,11 +767,21 @@ public class PageEditorV2Controller extends BasicController {
 		listenTo(editorPart);
 		String cmpId = "frag-" + (++counter);
 		
+		PageElementInspectorController inspectorPart = handler.getInspector(ureq, getWindowControl(), element);
+		if(inspectorPart != null) {
+			if(editorPart instanceof ControllerEventListener) {
+				inspectorPart.addControllerListener((ControllerEventListener)editorPart);
+			}
+			
+			inspectorPart = new ModalInspectorController(ureq, getWindowControl(), inspectorPart, element);
+			listenTo(inspectorPart);
+		}
+		
 		ContentEditorFragment cmp;
 		if(element instanceof ContainerElement) {
-			cmp = new ContentEditorContainerComponent(cmpId, (ContainerEditorController)editorPart);
+			cmp = new ContentEditorContainerComponent(cmpId, (ContainerEditorController)editorPart, inspectorPart);
 		} else {
-			cmp = new ContentEditorFragmentComponent(cmpId, element, editorPart);
+			cmp = new ContentEditorFragmentComponent(cmpId, element, editorPart, inspectorPart);
 		}
 		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());

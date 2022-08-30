@@ -34,6 +34,7 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
@@ -41,6 +42,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
+import org.olat.modules.ceditor.ui.HTMLRawInspectorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
@@ -84,6 +86,14 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLParagraph) {
 			return new HTMLRawEditorController(ureq, wControl, (HTMLParagraph)element, this, true);
+		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof HTMLParagraph) {
+			return new HTMLRawInspectorController(ureq, wControl, (HTMLParagraph)element, this);
 		}
 		return null;
 	}

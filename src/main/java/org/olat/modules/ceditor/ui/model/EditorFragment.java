@@ -19,9 +19,6 @@
  */
 package org.olat.modules.ceditor.ui.model;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -149,13 +146,6 @@ public class EditorFragment {
 
 	public void setMoveDownLink(Link moveDownLink) {
 		this.moveDownLink = moveDownLink;
-	}
-	
-	public List<Link> getAdditionalTools() {
-		if(editorPart instanceof PageElementEditorController) {
-			return ((PageElementEditorController)editorPart).getOptionLinks();
-		}
-		return Collections.emptyList();
 	}
 	
 	public String getType() {

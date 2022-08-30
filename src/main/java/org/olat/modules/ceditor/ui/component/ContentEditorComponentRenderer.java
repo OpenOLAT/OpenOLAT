@@ -54,6 +54,7 @@ public class ContentEditorComponentRenderer extends AbstractContentEditorCompone
 	
 	private void renderEditJavascript(Renderer renderer, StringOutput sb, ContentEditorComponent cmp) {
 		sb.append("<script>\n")
+		  .append("\"use strict\";\n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#o_c").append(cmp.getDispatchID()).append("').ceditor({\n")
 		  .append("  componentUrl: '").append(renderer.getUrlBuilder().getJavascriptURI()).append("',\n")

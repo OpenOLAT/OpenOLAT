@@ -66,6 +66,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private List<SliderWrapper> sliderWrappers;
 	private Map<String, EvaluationFormResponse> rubricResponses = new HashMap<>();
 	private boolean validationEnabled = true;
+	private boolean propagateDirtiness = true;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -245,6 +246,13 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(propagateDirtiness) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof SingleSelection || source instanceof SliderElement) {
 			Object uobject = source.getUserObject();
@@ -270,6 +278,14 @@ public class RubricController extends FormBasicController implements EvaluationF
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	protected boolean isPropagateDirtiness() {
+		return propagateDirtiness;
+	}
+
+	protected void setPropagateDirtiness(boolean propagateDirtiness) {
+		this.propagateDirtiness = propagateDirtiness;
 	}
 
 	@Override

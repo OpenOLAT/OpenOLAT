@@ -19,6 +19,11 @@
  */
 package org.olat.modules.ceditor.model;
 
+import java.beans.Transient;
+
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 
 /**
@@ -32,8 +37,28 @@ import org.olat.modules.ceditor.PageElement;
  */
 public interface TitleElement extends PageElement {
 	
+	public String getLayoutOptions();
+	
+	public void setLayoutOptions(String options);
+	
 	public String getContent();
 	
 	public void setContent(String content);
 
+	@Transient
+	public default TitleSettings getTitleSettings() {
+		if(StringHelper.containsNonWhitespace(getLayoutOptions())) {
+			return ContentEditorXStream.fromXml(getLayoutOptions(), TitleSettings.class);
+		}
+		return new TitleSettings();	
+	}
+	
+	public static String toHtml(String content, TitleSettings settings) {
+		if(settings != null && settings.getSize() > 0) {
+			int size = settings.getSize();
+			String text = FilterFactory.getHtmlTagsFilter().filter(content);
+			return "<h" + size + ">" + text + "</h" + size + ">";
+		}
+		return content;
+	}
 }

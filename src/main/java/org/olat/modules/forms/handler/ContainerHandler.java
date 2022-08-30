@@ -32,13 +32,17 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerElement;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
+import org.olat.modules.ceditor.ui.ContainerInspectorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Container;
@@ -55,13 +59,19 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContainerHandler implements EvaluationFormElementHandler, PageElementStore<ContainerElement>,
+public class ContainerHandler implements PageLayoutHandler, EvaluationFormElementHandler, PageElementStore<ContainerElement>,
 		SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
 
+	private final ContainerLayout layout;
 	private final Controller ruleLinkController;
-
+	
 	public ContainerHandler(Controller ruleLinkController) {
+		this(ruleLinkController, null);
+	}
+
+	public ContainerHandler(Controller ruleLinkController, ContainerLayout layout) {
 		this.ruleLinkController = ruleLinkController;
+		this.layout = layout;
 	}
 
 	@Override
@@ -74,6 +84,11 @@ public class ContainerHandler implements EvaluationFormElementHandler, PageEleme
 		return "o_icon_container";
 	}
 	
+	@Override
+	public ContainerLayout getLayout() {
+		return layout;
+	}
+
 	@Override
 	public PageElementCategory getCategory() {
 		return PageElementCategory.layout;
@@ -90,6 +105,14 @@ public class ContainerHandler implements EvaluationFormElementHandler, PageEleme
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ContainerElement) {
 			return new ContainerEditorController(ureq, wControl, (ContainerElement)element, this, ruleLinkController);
+		}
+		return null;
+	}
+
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof ContainerElement) {
+			return new ContainerInspectorController(ureq, wControl, (ContainerElement)element, this);
 		}
 		return null;
 	}

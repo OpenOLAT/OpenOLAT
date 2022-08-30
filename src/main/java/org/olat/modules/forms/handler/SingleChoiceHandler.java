@@ -31,6 +31,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -40,6 +41,7 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
 import org.olat.modules.forms.ui.SingleChoiceController;
 import org.olat.modules.forms.ui.SingleChoiceEditorController;
+import org.olat.modules.forms.ui.SingleChoiceInspectorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -91,6 +93,15 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 		if(element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
 			return new SingleChoiceEditorController(ureq, wControl, singleChoice, restrictedEdit);
+		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof SingleChoice) {
+			SingleChoice singleChoice = (SingleChoice) element;
+			return new SingleChoiceInspectorController(ureq, wControl, singleChoice, restrictedEdit);
 		}
 		return null;
 	}

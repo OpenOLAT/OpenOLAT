@@ -19,11 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -31,8 +27,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,11 +50,6 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
  */
 public class HTMLRawEditorController extends FormBasicController implements PageElementEditorController {
 	
-	private Link column1Link;
-	private Link column2Link;
-	private Link column3Link;
-	private Link column4Link;
-	
 	private RichTextElement htmlItem;
 	private StaticTextElement staticItem;
 	
@@ -78,11 +67,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		
 		initForm(ureq);
 		setEditMode(editMode);
-		
-		column1Link = LinkFactory.createToolLink("text.column.1", translate("text.column.1"), this);
-		column2Link = LinkFactory.createToolLink("text.column.2", translate("text.column.2"), this);
-		column3Link = LinkFactory.createToolLink("text.column.3", translate("text.column.3"), this);
-		column4Link = LinkFactory.createToolLink("text.column.4", translate("text.column.4"), this);
 
 		if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
 			TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
@@ -103,16 +87,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.setVisible(editMode);
 		staticItem.setVisible(!editMode);
 		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
-	}
-
-	@Override
-	public List<Link> getOptionLinks() {
-		List<Link> links = new ArrayList<>(5);
-		links.add(column4Link);
-		links.add(column3Link);
-		links.add(column2Link);
-		links.add(column1Link);
-		return links;
 	}
 
 	@Override
@@ -141,17 +115,16 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 		//
 	}
-
+	
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(column1Link == source) {
-			doSetColumn(1);
-		} else if(column2Link == source) {
-			doSetColumn(2);
-		} else if(column3Link == source) {
-			doSetColumn(3);
-		} else if(column4Link == source) {
-			doSetColumn(4);
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof HTMLRawInspectorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.getElement().equals(htmlPart)) {
+				htmlPart = (HTMLElement)cpe.getElement();
+				TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
+				setActiveColumLink(settings.getNumOfColumns());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -181,37 +154,8 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	}
 	
 	private void setActiveColumLink(int numOfColumns) {
-		column1Link.setIconLeftCSS("o_icon o_icon_column");
-		column2Link.setIconLeftCSS("o_icon o_icon_columns");
-		column3Link.setIconLeftCSS("o_icon o_icon_columns");
-		column4Link.setIconLeftCSS("o_icon o_icon_columns");
-		if(numOfColumns == 1) {
-			column1Link.setIconLeftCSS("o_icon o_icon_check");
-		} else if(numOfColumns == 2) {
-			column2Link.setIconLeftCSS("o_icon o_icon_check");
-		} else if(numOfColumns == 3) {
-			column3Link.setIconLeftCSS("o_icon o_icon_check");
-		} else if(numOfColumns == 4) {
-			column4Link.setIconLeftCSS("o_icon o_icon_check");
-		}
 		flc.getFormItemComponent().contextPut("htmlRawClass", "o_ce_html_raw o_html_col" + numOfColumns);
 		flc.setDirty(true);
-	}
-	
-	private void doSetColumn(int numOfColumns) {
-		TextSettings settings;
-		if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
-			settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
-		} else {
-			settings = new TextSettings();
-		}
-		
-		settings.setNumOfColumns(numOfColumns);
-
-		String settingsXml = ContentEditorXStream.toXml(settings);
-		htmlPart.setLayoutOptions(settingsXml);
-		htmlPart = store.savePageElement(htmlPart);
-		setActiveColumLink(numOfColumns);
 	}
 	
 	private String contentOrExample(String content) {

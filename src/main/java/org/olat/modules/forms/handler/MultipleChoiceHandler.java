@@ -31,6 +31,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -40,6 +41,7 @@ import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.MultipleChoice.Presentation;
 import org.olat.modules.forms.ui.MultipleChoiceController;
 import org.olat.modules.forms.ui.MultipleChoiceEditorController;
+import org.olat.modules.forms.ui.MultipleChoiceInspectorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -90,6 +92,15 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 		if(element instanceof MultipleChoice) {
 			MultipleChoice multipleChoice = (MultipleChoice) element;
 			return new MultipleChoiceEditorController(ureq, wControl, multipleChoice, restrictedEdit);
+		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof MultipleChoice) {
+			MultipleChoice multipleChoice = (MultipleChoice) element;
+			return new MultipleChoiceInspectorController(ureq, wControl, multipleChoice, restrictedEdit);
 		}
 		return null;
 	}

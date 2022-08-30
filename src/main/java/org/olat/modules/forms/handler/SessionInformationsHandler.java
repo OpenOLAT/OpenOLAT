@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -88,6 +89,11 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 			SessionInformations sessionInformations = (SessionInformations) element;
 			return new SessionInformationsEditorController(ureq, wControl, sessionInformations, restrictedEdit);
 		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 

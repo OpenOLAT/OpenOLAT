@@ -30,6 +30,7 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -85,6 +86,11 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 		if(element instanceof TextInput) {
 			return new TextInputEditorController(ureq, wControl, (TextInput)element, restrictedEdit);
 		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 

@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
@@ -87,6 +88,11 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 		if(element instanceof TableElement) {
 			return new TableEditorController(ureq, wControl, (TableElement)element, this);
 		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 

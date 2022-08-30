@@ -36,9 +36,34 @@ public class ContainerSettings {
 	
 	private String name;
 	private int numOfColumns = 2;
+	private ContainerLayout type;
 	private List<ContainerColumn> columns;
 	
+
+	public ContainerLayout getType() {
+		return type == null ? ContainerLayout.ofColumn(numOfColumns, columns) : type;
+	}
+
+	public void setType(ContainerLayout type) {
+		this.type = type;
+	}
 	
+	public void updateType(ContainerLayout type) {
+		this.setType(type);
+		
+		int numOfBlocks = type.numberOfBlocks();
+		if(columns != null && columns.size() >= numOfBlocks) {
+			ContainerColumn lastColumn = columns.get(numOfBlocks - 1);
+			for(int i=numOfBlocks; i<columns.size(); i++) {
+				ContainerColumn outColumn = columns.get(i);
+				if(outColumn != null && !outColumn.getElementIds().isEmpty()) {
+					lastColumn.getElementIds().addAll(outColumn.getElementIds());
+					outColumn.getElementIds().clear();
+				}
+			}
+		}	
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -49,6 +74,11 @@ public class ContainerSettings {
 
 	public int getNumOfColumns() {
 		return numOfColumns;
+	}
+	
+	@Transient
+	public int getNumOfBlocks() {
+		return getType().numberOfBlocks();
 	}
 
 	public void setNumOfColumns(int numOfColumns) {
@@ -95,7 +125,7 @@ public class ContainerSettings {
 	}
 	
 	public ContainerColumn getColumn(int index) {
-		if(index < numOfColumns) {
+		if(index < getNumOfBlocks()) {
 			List<ContainerColumn> columnList = getColumns();
 			if(columnList.size() <= index) {
 				for(int i=columnList.size(); i<=index; i++) {
@@ -115,6 +145,17 @@ public class ContainerSettings {
 			}
 		}
 		return null;
+	}
+	
+	public int getColumnIndex(String elementId) {
+		List<ContainerColumn> columnList = getColumns();
+		for(int i=0; i<columnList.size(); i++) {
+			ContainerColumn column = columnList.get(i);
+			if(column != null && column.contains(elementId)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	
 	public void setElementAt(String elementId, int column, String sibling) {

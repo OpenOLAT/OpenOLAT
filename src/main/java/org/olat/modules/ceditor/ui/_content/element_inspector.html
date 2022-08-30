@@ -1,0 +1,42 @@
+<div class="o_ceditor_inspector">
+	<h4>$title</h4>
+	$r.render("inspector")
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	var inspectorPosition = function() {
+		var totalWidth = window.innerWidth;
+		var jMain = jQuery("#o_main_container");
+		var mainWidth = jMain.width();
+		
+		var jInspector = jQuery(".o_page_inspector");
+		var inspectorWidth = jInspector.width();
+
+		var fragmentRect = jInspector.closest(".o_page_fragment_edit").get(0).getBoundingClientRect();
+		var mainRect = jMain.get(0).getBoundingClientRect();
+	
+		var margin = mainRect.right - mainRect.width;
+		var marginToContainer = mainRect.right - fragmentRect.right;
+		var positionX = marginToContainer + inspectorWidth;
+		if(margin < 0) {
+			positionX -= inspectorWidth;
+		} else if(margin < inspectorWidth) {
+			positionX -= (inspectorWidth - margin) + 15;
+		}
+		jInspector.css('margin-right', '-' + positionX + 'px');
+		
+		var containerEls = jInspector.parents(".o_page_container_edit");
+		if(containerEls.length > 0) {
+			var topContainerEl = containerEls.get(containerEls.length - 1);
+			var topContainerRect = topContainerEl.getBoundingClientRect();
+			var positionY = fragmentRect.top - topContainerRect.top;
+			jInspector.css('margin-top', '-' + positionY + 'px');
+		}
+	};
+	
+	jQuery(window).resize(inspectorPosition);
+	inspectorPosition();
+});
+</script>
+

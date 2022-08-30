@@ -32,7 +32,19 @@ public class Title extends AbstractHTMLElement implements TitleElement {
 	private static final long serialVersionUID = 1567753376804106600L;
 
 	public static final String TYPE = "formhtitle";
+	
+	private String layoutOptions;
+	
+	@Override
+	public String getLayoutOptions() {
+		return layoutOptions;
+	}
 
+	@Override
+	public void setLayoutOptions(String layoutOptions) {
+		this.layoutOptions = layoutOptions;
+	}
+	
 	@Override
 	public String getType() {
 		return TYPE;

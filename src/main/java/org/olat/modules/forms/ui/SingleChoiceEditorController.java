@@ -20,7 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import static org.olat.core.gui.components.updown.UpDown.Layout.LINK_HORIZONTAL;
-import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -48,7 +46,6 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.components.updown.UpDownFactory;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,13 +64,8 @@ import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
  */
 public class SingleChoiceEditorController extends FormBasicController implements PageElementEditorController {
 
-	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
-	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String CMD_DELETE = "delete";
 	
-	private TextElement nameEl;
-	private SingleSelection presentationEl;
-	private SingleSelection obligationEl;
 	private FormLink addChoiceEl;
 	private FlexiTableElement tableEl;
 	private ChoiceDataModel dataModel;
@@ -114,28 +106,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
-		
-		// name
-		nameEl = uifactory.addTextElement("rubric.name", 128, singleChoice.getName(), settingsCont);
-		nameEl.addActionListener(FormEvent.ONCHANGE);
-		
-		// presentation
-		presentationEl = uifactory.addRadiosHorizontal("sc_pres_" + postfix, "single.choice.presentation", settingsCont,
-				getPresentationKeys(), getPresentationValues());
-		if (Arrays.asList(Presentation.values()).contains(singleChoice.getPresentation())) {
-			presentationEl.select(singleChoice.getPresentation().name(), true);
-		}
-		presentationEl.addActionListener(FormEvent.ONCHANGE);
-		
-		SelectionValues obligationKV = new SelectionValues();
-		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
-		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
-				obligationKV.keys(), obligationKV.values());
-		obligationEl.select(OBLIGATION_MANDATORY_KEY, singleChoice.isMandatory());
-		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !singleChoice.isMandatory());
-		obligationEl.setEnabled(!restrictedEdit);
-		obligationEl.addActionListener(FormEvent.ONCLICK);
 		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -190,7 +160,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (nameEl == source || presentationEl == source || obligationEl == source || source instanceof TextElement) {
+		if (source instanceof TextElement) {
 			doSave();
 		} else if (addChoiceEl == source) {
 			doAddChoice();
@@ -218,23 +188,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void doSave() {
-		doSaveSingleChoice();
 		doSaveChoices();
 		singleChoiceCtrl.updateForm();
-	}
-
-	private void doSaveSingleChoice() {
-		singleChoice.setName(nameEl.getValue());
-		
-		Presentation presentation = null;
-		if (presentationEl.isOneSelected()) {
-			String selectedKey = presentationEl.getSelectedKey();
-			presentation = Presentation.valueOf(selectedKey);
-		}
-		singleChoice.setPresentation(presentation);
-		
-		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
-		singleChoice.setMandatory(mandatory);
 	}
 	
 	private void doSaveChoices() {

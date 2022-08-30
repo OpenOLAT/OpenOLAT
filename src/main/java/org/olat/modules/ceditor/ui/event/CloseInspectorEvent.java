@@ -17,37 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor.ui.component;
+package org.olat.modules.ceditor.ui.event;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 12 sept. 2018<br>
+ * Initial date: 30 août 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContainerCSSColumns {
+public class CloseInspectorEvent extends Event {
+
+	private static final long serialVersionUID = 4291961805435644416L;
 	
-	public static List<String> getCssColumns(int columns) {
-		switch(columns) {
-			case 1: return getCssColumns("col-xs-12", 1);
-			case 2: return getCssColumns("col-md-6 col-xs-12", 2);
-			case 3: return getCssColumns("col-md-4 col-xs-12", 3);
-			case 4: return getCssColumns("col-md-3 col-xs-12", 4);
-			case 5: return getCssColumns("col-md-2 col-xs-12", 5);
-			case 6: return getCssColumns("col-md-2 col-xs-12", 6);
-			default: return getCssColumns("col-md-1 col-xs-12", columns);
-		}
+	private final String elementId;
+	
+	public CloseInspectorEvent(String elementId) {
+		super("ce-close-inspector");
+		this.elementId = elementId;
 	}
 	
-	private static List<String> getCssColumns(String cssClass, int columns) {
-		List<String> cssColumns = new ArrayList<>(columns);
-		for(int i=0; i<columns; i++) {
-			cssColumns.add(cssClass);
-		}
-		return cssColumns;
+	public String getElementId() {
+		return elementId;
 	}
 
 }

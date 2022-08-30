@@ -23,6 +23,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.render.RenderResult;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -35,55 +37,35 @@ import org.olat.core.gui.translator.Translator;
  */
 public abstract class AbstractContentEditorComponentRenderer extends DefaultComponentRenderer {
 	
+	protected void renderInspector(Renderer renderer, StringOutput sb, Component cmp, URLBuilder containerUbu,
+			Translator translator, RenderResult renderResult, String[] args) {
+		if(cmp != null) {
+			sb.append("<div id='o_c").append(cmp.getDispatchID()).append("_inspector' class='o_page_inspector'>");
+			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, containerUbu, translator, renderResult, args);
+			sb.append("</div>");
+
+			cmp.setDirty(false);
+		}
+	}
 	
 	protected void renderAddAbove(StringOutput sb, Component cmp, URLBuilder ubu, Translator translator) {
-		sb.append("<div class='o_page_add_above'>");
 		sb.append("<a id='o_ccaab_").append(cmp.getDispatchID()).append("' ")
 			  .append("href='javascript:;' onclick=\"");// add elements directly in container
 		ubu.buildXHREvent(sb, "", false, true,
 				new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_above"),
 				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
 		sb.append(" return false;\" class='o_sel_add_element_above' title='").append(translator.translate("add.element"))
-		  .append("'><i class='o_icon o_icon_add'> </i></a>")
-		  .append("</div>");
+		  .append("'><i class='o_icon o_icon_add'> </i> ").append(translator.translate("add.element.above")).append("</a>");
 	}
 	
 	protected void renderAddBelow(StringOutput sb, Component cmp, URLBuilder ubu, Translator translator) {
-		sb.append("<div class='o_page_add_below'>");
 		sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' ")
 			  .append("href='javascript:;' onclick=\"");// add elements directly in container
 		ubu.buildXHREvent(sb, "", false, true,
 				new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_below"),
 				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-		sb.append(" return false;\" class='o_sel_add_element_below' title='").append(translator.translate("add.element"))
-		  .append("'><i class='o_icon o_icon_add'> </i></a>")
-		  .append("</div>");
-	}
-	
-	protected void renderPageUpDown(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {	
-		if(cmp.isMoveable()) {
-			sb.append("<div class='o_page_tools o_page_tools_dd'>");
-			
-			sb.append("<a id='o_ccup_").append(cmp.getDispatchID()).append("' ")
-			  .append("href='javascript:;' onclick=\"");// add elements directly in container
-			ubu.buildXHREvent(sb, "", false, true,
-				new NameValuePair(VelocityContainer.COMMAND_ID, "move_up"),
-				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-			sb.append(" return false;\" class='o_sel_move_up_element' title='").append(translator.translate("move.up"))
-			  .append("'><i class='o_icon o_icon-sm o_icon_move_up'> </i></a>");
-			
-			sb.append("<a id='o_ccdown_").append(cmp.getDispatchID()).append("' ")
-			  .append("href='javascript:;' onclick=\"");// add elements directly in container
-			ubu.buildXHREvent(sb, "", false, true,
-				new NameValuePair(VelocityContainer.COMMAND_ID, "move_down"),
-				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-			sb.append(" return false;\" class='o_sel_move_down_element' title='").append(translator.translate("move.down"))
-			  .append("'><i class='o_icon o_icon-sm o_icon_move_down'> </i></a>");
-			
-			sb.append("</div>");
-		} else {
-			sb.append("<div class='o_page_tools'> </div>");
-		}
+		sb.append(" return false;\" class='o_sel_add_element_below' title='").append(translator.translate("add.element.below"))
+		  .append("'><i class='o_icon o_icon_add'> </i> ").append(translator.translate("add.element.below")).append("</a>");
 	}
 	
 	protected void renderClose(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
@@ -93,7 +75,19 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 				new NameValuePair(VelocityContainer.COMMAND_ID, "save_element"),
 				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
 		sb.append(" return false;\" class='o_sel_save_element' title='").append(translator.translate("save.and.close"))
-		  .append("'><i class='o_icon o_icon-sm o_icon_close'> </i> <span>").append(translator.translate("save.and.close")).append("</span></a>");
+		  .append("'><i class='o_icon o_icon-fw o_icon_close'> </i> <span>").append(translator.translate("save.and.close")).append("</span></a>");
+	}
+	
+	protected void renderEdit(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isDeleteable()) {
+			sb.append("<a id='o_ccedit_").append(cmp.getDispatchID()).append("' ")
+				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "edit_fragment"),
+					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+			sb.append(" return false;\" class='o_sel_edit_element' title='").append(translator.translate("edit"))
+			  .append("'><i class='o_icon o_icon-fw o_icon_correction'> </i> <span>").append(translator.translate("edit")).append("</span></a>");
+		}
 	}
 	
 	protected void renderDelete(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
@@ -104,7 +98,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 					new NameValuePair(VelocityContainer.COMMAND_ID, "delete_element"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
 			sb.append(" return false;\" class='o_sel_delete_element' title='").append(translator.translate("delete"))
-			  .append("'><i class='o_icon o_icon-sm o_icon_delete_item'> </i> <span>").append(translator.translate("delete")).append("</span></a>");
+			  .append("'><i class='o_icon o_icon-fw o_icon_delete_item'> </i> <span>").append(translator.translate("delete")).append("</span></a>");
 		}
 	}
 	
@@ -116,7 +110,38 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
 			sb.append(" return false;\" class='o_sel_clone_element' title='").append(translator.translate("duplicate"))
-			  .append("'><i class='o_icon o_icon-sm o_icon_copy'> </i> <span>").append(translator.translate("duplicate")).append("</span></a>");
+			  .append("'><i class='o_icon o_icon-fw o_icon_copy'> </i> <span>").append(translator.translate("duplicate")).append("</span></a>");
 		}
+	}
+	
+	protected void renderDragZone(StringOutput sb, ContentEditorFragment cmp, Translator translator) {
+		sb.append("<span id='o_ccclone_").append(cmp.getDispatchID()).append("' class='o_page_drag_handle'")
+		  .append(" title='").append(translator.translate("drag.element")).append("'>")
+		  .append("<i class='o_icon o_icon-fw o_icon_menuhandel o_icon-rotate-90'> </i></span></a>");
+	}
+	
+	protected void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		// More button
+		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
+		  .append("<i class='o_icon o_icon_commands'> </i>")
+		  .append("</button>");
+		// Menu
+		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");
+		
+		sb.append("<li>");
+		renderAddAbove(sb, cmp, ubu, translator);
+		sb.append("</li>");
+		
+		sb.append("<li>");
+		renderAddBelow(sb, cmp, ubu, translator);
+		sb.append("</li>");
+		sb.append("<li class='divider'></li>");
+		
+		sb.append("<li>");
+		renderDelete(sb, cmp, ubu, translator);
+		sb.append("</li>");
+		
+		sb.append("</ul>");
+
 	}
 }

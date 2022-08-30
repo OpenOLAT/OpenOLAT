@@ -44,6 +44,8 @@ import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageLayoutHandler;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
@@ -194,6 +196,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 		
 		private final List<PageElementHandler> handlers = new ArrayList<>();
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
+		private final List<PageLayoutHandler> creationlayoutHandlers = new ArrayList<>();
 		
 		public FormPageEditorProvider() {
 			// handler for title
@@ -247,9 +250,14 @@ public class EvaluationFormEditorController extends BasicController implements T
 				creationHandlers.add(fileUploadhandler);
 				creationHandlers.add(sessionInformationsHandler);
 				creationHandlers.add(disclaimerHandler);
-				creationHandlers.add(containerHandler);
 				creationHandlers.add(hrHandler);
 				creationHandlers.add(htmlHandler); // legacy
+				
+				for(ContainerLayout layout:ContainerLayout.values()) {
+					if(!layout.deprecated()) {
+						creationlayoutHandlers.add(new ContainerHandler(EvaluationFormEditorController.this, layout));
+					}
+				}
 			}
 		}
 
@@ -261,6 +269,11 @@ public class EvaluationFormEditorController extends BasicController implements T
 		@Override
 		public List<PageElementHandler> getCreateHandlers() {
 			return creationHandlers;
+		}
+
+		@Override
+		public List<PageLayoutHandler> getCreateLayoutHandlers() {
+			return creationlayoutHandlers;
 		}
 
 		@Override

@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.ui.component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -35,11 +36,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
+import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
@@ -67,15 +70,22 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	private boolean deleteable = false;
 	private boolean ruleLinkEnabled = false;
 	
+	private final Controller inspectorPart;
 	private final ContainerEditorController editorPart;
 
 	private List<Component> components = new ArrayList<>();
 	
-	public ContentEditorContainerComponent(String name, ContainerEditorController editorPart) {
+	public ContentEditorContainerComponent(String name, ContainerEditorController editorPart, Controller inspectorPart) {
 		super(name);
 		this.editorPart = editorPart;
+		this.inspectorPart = inspectorPart;
+
 		editorPart.addControllerListener(this);
 		setDomReplacementWrapperRequired(false);
+		if(inspectorPart != null) {
+			components.add(inspectorPart.getInitialComponent());
+			inspectorPart.addControllerListener(this);
+		}
 	}
 
 	@Override
@@ -94,13 +104,12 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		if(cmd != null && fragment != null && getComponentName().equals(fragment)) {
 			switch(cmd) {
 				case "edit_fragment":
-					setEditMode(true);
-					fireEvent(ureq, new EditElementEvent(editorPart.getContainer().getId()));
-					break;
-				case "change_nbre_columns":
-					setNumOfColumns(Integer.parseInt(columns));
-					setDirty(true);
-					fireEvent(ureq, Event.CHANGED_EVENT);
+					if(isEditMode()) {
+						doCloseEditFragment();
+					} else {
+						setEditMode(true);
+						fireEvent(ureq, new EditElementEvent(editorPart.getContainer().getId()));
+					}
 					break;
 				case "save_element":
 				case "close_edit_fragment":
@@ -119,6 +128,9 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 					fireEvent(ureq, new MoveDownElementEvent(this));
 					break;
 				case "add_to_container":
+					// First stop editing
+					fireEvent(ureq, new CloseElementsEvent());
+					// Open the callout
 					String linkId =	"o_ccad_" + getElementId() + "_" + columns;
 					fireEvent(ureq, new OpenAddElementEvent(linkId, this, PageElementTarget.within, Integer.parseInt(columns)));
 					break;
@@ -158,6 +170,12 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 					setDirty(true);
 				}
 			}
+		} else if(source == inspectorPart) {
+			if (event instanceof ChangePartEvent) {
+				ChangePartEvent crle = (ChangePartEvent)event;
+				editorPart.reload((ContainerElement)crle.getElement());
+				setDirty(true);
+			}
 		}
 	}
 
@@ -179,7 +197,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 			setDirty(true);
 		}
 	}
-	
+
 	@Override
 	public boolean isCloneable() {
 		return cloneable;
@@ -221,6 +239,22 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	public void removeElementAt(ContentEditorFragment component) {
 		editorPart.removeElement(component.getElementId());
 		removeComponent(component);
+		setDirty(true);
+	}
+	
+	public void transferElements(List<ContentEditorFragment> fragments) {
+		int lastSlot = editorPart.getLastSlot();
+		transferElements(fragments, lastSlot);
+	}
+	
+	public void transferElements(List<ContentEditorFragment> fragments, int slot) {
+		List<String> elementsIds = fragments.stream()
+				.map(ContentEditorFragment::getElementId)
+				.collect(Collectors.toList());
+		editorPart.transferElements(elementsIds, slot);
+		for(ContentEditorFragment fragment:fragments) {
+			addComponent(fragment);
+		}
 		setDirty(true);
 	}
 	
@@ -268,12 +302,6 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		editorPart.setEditMode(editMode);
 		setDirty(true);
 	}
-	
-	protected void setNumOfColumns(int numOfColumns) {
-		ContainerSettings settings = getContainerSettings();
-		settings.setNumOfColumns(numOfColumns);
-		editorPart.setNumOfColumns(numOfColumns);
-	}
 
 	@Override
 	public String getElementId() {
@@ -281,7 +309,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	}
 	
 	@Override
-	public PageElement getElement() {
+	public ContainerElement getElement() {
 		return editorPart.getContainer();
 	}
 	
@@ -307,6 +335,16 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		return null;
 	}
 	
+	public List<ContentEditorFragment> getAllContentEditorFragments() {
+		List<ContentEditorFragment> editorFragements = new ArrayList<>();
+		for(Component component:getComponents()) {
+			if(component instanceof ContentEditorFragment) {
+				editorFragements.add((ContentEditorFragment)component);
+			}
+		}
+		return editorFragements;
+	}
+	
 	public void addComponent(ContentEditorFragment fragmentCmp) {
 		if(fragmentCmp == null || components.contains(fragmentCmp)) return;
 		
@@ -319,6 +357,10 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	public void removeComponent(ContentEditorFragment fragmentCmp) {
 		if(fragmentCmp == null) return;
 		components.remove(fragmentCmp);
+	}
+	
+	public Component getInspectorComponent() {
+		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
 	}
 
 	@Override

@@ -19,15 +19,12 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveVirtualKeyboardMode;
 import org.olat.core.gui.control.Controller;
@@ -74,11 +71,6 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 		mathItem.setVisible(editMode);
 		staticItem.setVisible(!editMode);
 		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
-	}
-
-	@Override
-	public List<Link> getOptionLinks() {
-		return List.of();
 	}
 
 	@Override

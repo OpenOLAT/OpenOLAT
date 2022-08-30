@@ -21,7 +21,6 @@ package org.olat.home;
 
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
@@ -50,7 +49,6 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 
 	private BreadcrumbedStackedPanel stackPanel;
 	private Controller currentCtr;
-	private LayoutMain3ColsController contentCtr;
 
 	public HomeMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -92,18 +90,15 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 				currentNavKey = navKey;
 				stackPanel.popUpToRootController(ureq);
 				
-				removeAsListenerAndDispose(contentCtr);
-				contentCtr = null;
-	
+				removeAsListenerAndDispose(currentCtr);
 				currentCtr = createController(gAE, ureq);
-				contentCtr = new LayoutMain3ColsController(ureq, getWindowControl(), currentCtr);
-				listenTo(contentCtr);
-				if (entries.size() >= 1) {
+				listenTo(currentCtr);
+				if (!entries.isEmpty()) {
 					entries = entries.subList(1, entries.size());
 				}
 
 				String actionText = gAE.getActionText(getLocale());
-				stackPanel.rootController(actionText, contentCtr);
+				stackPanel.rootController(actionText, currentCtr);
 				
 				if (currentCtr instanceof Activateable2) {
 					((Activateable2) currentCtr).activate(ureq, entries, entry.getTransientState());

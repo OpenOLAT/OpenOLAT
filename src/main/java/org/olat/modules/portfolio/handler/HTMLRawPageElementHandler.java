@@ -29,6 +29,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
@@ -79,6 +80,11 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 		if(element instanceof HTMLPart) {
 			return new HTMLRawEditorController(ureq, wControl, (HTMLPart)element, this, false);
 		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 

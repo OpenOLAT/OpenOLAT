@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -42,6 +43,7 @@ import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.ui.RubricController;
 import org.olat.modules.forms.ui.RubricEditorController;
+import org.olat.modules.forms.ui.RubricInspectorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -91,6 +93,14 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Rubric) {
 			return new RubricEditorController(ureq, wControl, (Rubric)element, restrictedEdit, restrictedEditWheight);
+		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof Rubric) {
+			return new RubricInspectorController(ureq, wControl, (Rubric)element, restrictedEdit);
 		}
 		return null;
 	}

@@ -21,9 +21,11 @@ package org.olat.selenium.page.portfolio;
 
 import java.io.File;
 
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -47,6 +49,31 @@ public class EntryPage {
 		return this;
 	}
 	
+	public EntryPage addLayout(ContainerLayout layout) {
+		By addBy = By.cssSelector(".o_ce_add_main_btns>a.btn.o_sel_add_container_main");
+		OOGraphene.waitElement(addBy, browser);
+		browser.findElement(addBy).click();
+		By addCalloutBy = By.cssSelector("div.popover div.o_inspector_layouts");
+		OOGraphene.waitElement(addCalloutBy, browser);
+		
+		By newLayoutBy = By.cssSelector("div.popover div.o_inspector_layouts ." + layout.cssClass());
+		browser.findElement(newLayoutBy).click();
+		OOGraphene.waitElementDisappears(newLayoutBy, 5, browser);
+		
+		By layoutBy = By.cssSelector(".o_container_part." + layout.cssClass());
+		OOGraphene.waitElement(layoutBy, browser);
+		return this;
+	}
+	
+	public EntryPage openElementsChooser(int container, int slot) {
+		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + container + "]//div[contains(@class,'o_page_container_slot')][" + slot + "]//a[contains(@class,'btn')][contains(@class,'o_page_add_in_container')]");
+		OOGraphene.waitElement(addBy, browser);
+		browser.findElement(addBy).click();
+		By addCalloutBy = By.cssSelector("div.popover div.o_sel_add_element_callout");
+		OOGraphene.waitElement(addCalloutBy, browser);
+		return this;
+	}
+	
 	public EntryPage openElementsChooser() {
 		By addBy = By.cssSelector("a.btn.o_sel_add_element_main");
 		OOGraphene.waitElement(addBy, browser);
@@ -60,8 +87,11 @@ public class EntryPage {
 	public EntryPage addTitle(String title) {
 		By addTitleBy = By.cssSelector("a#o_coadd_el_htitle");
 		browser.findElement(addTitleBy).click();
-		OOGraphene.waitElement(editFragmentBy, 5, browser);
-		OOGraphene.tinymce(title, ".o_page_part.o_page_edit", browser);
+		OOGraphene.waitElement(editFragmentBy, browser);
+		By titleBy = By.cssSelector(".o_page_fragment_edit.o_fragment_edited .o_page_edit_title");
+		OOGraphene.waitElement(titleBy, browser);
+		OOGraphene.waitTinymce(browser);
+		OOGraphene.tinymce("<h3>" + title + "</h3>", ".o_page_fragment_edit.o_fragment_edited .o_page_edit_title", browser);
 		return this;
 	}
 	
@@ -72,8 +102,9 @@ public class EntryPage {
 	 * @return
 	 */
 	public EntryPage setTitleSize(int size) {
-		By titleSize = By.xpath("//div[contains(@class,'o_page_edit_toolbar')]//a[span[contains(text(),'h" + size + "')]]");
-		browser.findElement(titleSize).click();
+		By titleSize = By.xpath("//div[@class='o_ceditor_inspector']//select[@id='o_fioheading_size_SELBOX']");
+		OOGraphene.waitElement(titleSize, browser);
+		new Select(browser.findElement(titleSize)).selectByValue(Integer.toString(size));
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -226,9 +257,10 @@ public class EntryPage {
 	 * @return Itself
 	 */
 	public EntryPage closeEditFragment() {
-		By closeBy = By.cssSelector("div.o_page_others_above a.o_sel_save_element");
-		browser.findElement(closeBy).click();
+		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_container_edit')][1]//div[contains(@class,'o_page_container_tools')]");
+		browser.findElement(toolbarContainerBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		return this;
 	}
 	

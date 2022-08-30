@@ -1,5 +1,5 @@
 #set($imageWidth = ${imageSize.width} + 25)
-<div class="o_image o_image_size_style_${imageSizeStyle} #if($r.isNotEmpty($alignment)) o_image_align_$alignment #end  #if($r.isNotEmpty($style)) $style #end" style='#if($imageSizeStyle == "none" && $r.isNotNull($imageSize)) width: 100%; max-width:${imageWidth}px #end'>
+<div id="$r.getCId()" class="o_image o_image_size_style_${imageSizeStyle} #if($r.isNotEmpty($alignment)) o_image_align_$alignment #end  #if($r.isNotEmpty($style)) $style #end" style='#if($imageSizeStyle == "none" && $r.isNotNull($imageSize)) width: 100%; max-width:${imageWidth}px #end'>
 	#if($r.isTrue($showDescription))
 		<a id="ldesc_${someId}" href='javascript:;' onclick="o_popoverWithTitle('ldesc_${someId}','desc_${someId}','$r.translate("show.description")','top').popover('show');" class="o_popover"><i class="o_icon o_icon-lg o_icon_help"> </i></a>
 	#end

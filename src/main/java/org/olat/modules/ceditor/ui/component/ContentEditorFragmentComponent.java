@@ -20,7 +20,6 @@
 package org.olat.modules.ceditor.ui.component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -29,7 +28,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -64,12 +62,16 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	private boolean moveable = false;
 	private boolean cloneable = false;
 	private boolean deleteable = false;
-	private Controller editorPart;
+	
 	private final PageElement pageElement;
 	
-	public ContentEditorFragmentComponent(String name, PageElement pageElement, Controller editorPart) {
+	private final Controller editorPart;
+	private final Controller inspectorPart;
+	
+	public ContentEditorFragmentComponent(String name, PageElement pageElement, Controller editorPart, Controller inspectorPart) {
 		super(name);
 		this.editorPart = editorPart;
+		this.inspectorPart = inspectorPart;
 		this.pageElement = pageElement;
 		setDomReplacementWrapperRequired(false);
 	}
@@ -133,13 +135,6 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		return editorPart.getInitialComponent();
 	}
 	
-	public List<Link> getAdditionalTools() {
-		if(editorPart instanceof PageElementEditorController) {
-			return ((PageElementEditorController)editorPart).getOptionLinks();
-		}
-		return Collections.emptyList();
-	}
-	
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
@@ -151,11 +146,11 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 					fireEvent(ureq, new EditElementEvent(pageElement.getId()));
 					break;
 				case "add_element_above":
-					String aboveLinkId = "o_ccaab_".concat(getDispatchID());
+					String aboveLinkId = "o_cmore_".concat(getDispatchID());//"o_ccaab_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddElementEvent(aboveLinkId, this, PageElementTarget.above));
 					break;
 				case "add_element_below":
-					String belowLinkId = "o_ccabe_".concat(getDispatchID());
+					String belowLinkId = "o_cmore_".concat(getDispatchID());//"o_ccabe_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddElementEvent(belowLinkId, this, PageElementTarget.below));
 					break;
 				case "save_element":
@@ -226,7 +221,10 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 			((PageElementEditorController)editorPart).setEditMode(false);
 		}
 		setDirty(true);
-		
+	}
+	
+	public Component getInspectorComponent() {
+		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
 	}
 
 	@Override
@@ -243,8 +241,8 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	public Iterable<Component> getComponents() {
 		List<Component> components = new ArrayList<>();
 		components.add(editorPart.getInitialComponent());
-		if(editorPart instanceof PageElementEditorController) {
-			components.addAll(((PageElementEditorController)editorPart).getOptionLinks());
+		if(inspectorPart != null) {
+			components.add(inspectorPart.getInitialComponent());
 		}
 		return components;
 	}

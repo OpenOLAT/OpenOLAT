@@ -114,6 +114,7 @@ import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
+import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SectionImpl;
@@ -1260,7 +1261,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <U extends PagePart> U updatePart(U part) {
-		return (U)pageDao.merge(part);
+		U mergedPart = (U)pageDao.merge(part);
+		if(mergedPart instanceof MediaPart) {
+			// Prevent lazy loading issues
+			Media media = ((MediaPart)mergedPart).getMedia();
+			if(media != null) {
+				media.getMetadataXml();
+			}
+		}
+		return mergedPart;
 	}
 
 	@Override

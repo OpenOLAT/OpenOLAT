@@ -243,8 +243,6 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 		String paramValue = getRootForm().getRequestParameter(paramId);
 		if (paramValue != null) {
 			setValue(paramValue);
-			// mark associated component dirty, that it gets rerendered
-			component.setDirty(true);
 		}
 	}
 

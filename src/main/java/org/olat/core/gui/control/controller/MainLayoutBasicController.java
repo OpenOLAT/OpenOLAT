@@ -61,9 +61,6 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 		super(ureq, wControl, fallbackTranslator);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider#getCustomCSS()
-	 */
 	@Override
 	public CustomCSS getCustomCSS() {
 		if (isLogDebugEnabled()) {
@@ -86,9 +83,6 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 		this.customCSS = newCustomCSS;		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#dispose()
-	 */
 	@Override
 	public synchronized void dispose() {
 		// first execute dispose from basic controller
@@ -99,5 +93,4 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 			customCSS = null;
 		}
 	}
-	
 }

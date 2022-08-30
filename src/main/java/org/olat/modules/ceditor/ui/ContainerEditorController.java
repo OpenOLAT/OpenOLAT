@@ -125,6 +125,10 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		return container;
 	}
 	
+	public void reload(ContainerElement container) {
+		this.container = container;
+	}
+	
 	public ContainerElement setNumOfColumns(int numOfColumns) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.setNumOfColumns(numOfColumns);
@@ -164,7 +168,6 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		return save(settings);
 	}
 	
-	
 	public ContainerElement addElement(String elementId, String collocatorId, PageElementTarget target) {
 		ContainerSettings settings = container.getContainerSettings();
 		ContainerColumn column = settings.getColumn(collocatorId);
@@ -183,6 +186,20 @@ public class ContainerEditorController extends FormBasicController implements Pa
 			} else {
 				elementIds.add(elementId);
 			}
+		}
+		return save(settings);
+	}
+	
+	public int getLastSlot() {
+		ContainerSettings settings = container.getContainerSettings();
+		int numOfBlocks = settings.getNumOfBlocks();
+		return numOfBlocks - 1;
+	}
+	
+	public ContainerElement transferElements(List<String> elementsIds, int slot) {
+		ContainerSettings settings = container.getContainerSettings();
+		for(String elementId:elementsIds) {
+			settings.setElementAt(elementId, slot, null);
 		}
 		return save(settings);
 	}

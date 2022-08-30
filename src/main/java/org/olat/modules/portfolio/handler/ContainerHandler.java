@@ -26,16 +26,21 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
-import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerElement;
+import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
+import org.olat.modules.ceditor.ui.ContainerInspectorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.ContainerPart;
@@ -46,7 +51,17 @@ import org.olat.modules.portfolio.model.ContainerPart;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContainerHandler implements PageElementHandler, PageElementStore<ContainerElement>, SimpleAddPageElementHandler {
+public class ContainerHandler implements PageLayoutHandler, PageElementStore<ContainerElement>, SimpleAddPageElementHandler {
+	
+	private final ContainerLayout layout;
+	
+	public ContainerHandler() {
+		this(null);
+	}
+	
+	public ContainerHandler(ContainerLayout layout) {
+		this.layout = layout;
+	}
 
 	@Override
 	public String getType() {
@@ -58,6 +73,11 @@ public class ContainerHandler implements PageElementHandler, PageElementStore<Co
 		return "o_icon_container";
 	}
 	
+	@Override
+	public ContainerLayout getLayout() {
+		return layout;
+	}
+
 	@Override
 	public PageElementCategory getCategory() {
 		return PageElementCategory.layout;
@@ -77,10 +97,30 @@ public class ContainerHandler implements PageElementHandler, PageElementStore<Co
 		}
 		return null;
 	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof ContainerElement) {
+			return new ContainerInspectorController(ureq, wControl, (ContainerElement)element, this);
+		}
+		return null;
+	}
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		return new ContainerPart();
+		ContainerSettings settings = new ContainerSettings();
+		if(layout == null) {
+			settings.setType(ContainerLayout.block_2cols);
+			settings.setNumOfColumns(ContainerLayout.block_2cols.numberOfBlocks());
+			
+		} else {
+			settings.setType(layout);
+			settings.setNumOfColumns(layout.numberOfBlocks());
+		}
+		String settingsXml = ContentEditorXStream.toXml(settings);
+		ContainerPart container = new ContainerPart();
+		container.setLayoutOptions(settingsXml);
+		return container;
 	}
 
 	@Override

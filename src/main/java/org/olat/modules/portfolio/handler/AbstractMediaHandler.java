@@ -50,6 +50,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.StoredData;
@@ -113,6 +114,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 			MediaPart mediaPart = (MediaPart)element;
 			return getMediaController(ureq, wControl, mediaPart.getMedia(), new StandardMediaRenderingHints());
 		}
+		return null;
+	}
+	
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 
