@@ -198,7 +198,7 @@ public class UserWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("externalId") String externalId,
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
-			@QueryParam("statusVisibleLimit") String statusVisibleLimit,
+			@QueryParam("statusVisibleLimit") String statusVisibleLimit, @QueryParam("status") Integer status,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
 
 		// User lookup allowed for authors, usermanagers and admins. For
@@ -245,13 +245,17 @@ public class UserWebService {
 				}
 			}
 			
-			Integer status = Identity.STATUS_VISIBLE_LIMIT;
+			Integer validStatus;
 			if(isAdministrativeUser && "all".equalsIgnoreCase(statusVisibleLimit)) {
-				status = null;
+				validStatus = null;
+			} else if(status != null && (status < Identity.STATUS_VISIBLE_LIMIT || (status < Identity.STATUS_DELETED && isAdministrativeUser))) {
+				validStatus = status;
+			} else {
+				validStatus = Identity.STATUS_VISIBLE_LIMIT;
 			}
 			
 			SearchIdentityParams searchParams = new SearchIdentityParams(login, userProps, true,
-					null, null, authProviders, null, null, null, null, status);
+					null, null, authProviders, null, null, null, null, validStatus);
 			if(StringHelper.containsNonWhitespace(externalId)) {
 				searchParams.setExternalId(externalId);
 			}
