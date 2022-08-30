@@ -548,7 +548,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		logAuditPassed(courseNode, identity, by, userCourseEnv, scoreEvaluation.getPassed());
 		if(scoreEvaluation.getAssessmentID()!=null) {
-			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString(), by);
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString(), by);
 		}
 		
 		// notify about changes
