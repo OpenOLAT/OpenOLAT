@@ -1134,10 +1134,11 @@ public class UserWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		Identity identity = securityManager.findIdentityByUsernames(username);
+		Identity identity = securityManager.findIdentityByUsername(username);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!isUserManagerOf(identity.getKey(), request)) {
+		}
+		if(!isUserManagerOf(identity.getKey(), request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return Response.ok(get(identity, true, true)).build();

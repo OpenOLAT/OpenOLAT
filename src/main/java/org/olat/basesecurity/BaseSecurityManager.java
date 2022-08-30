@@ -434,9 +434,14 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 	
 	@Override
-	public Identity findIdentityByUsernames(String username) {
+	public Identity findIdentityByUsername(String username) {
 		List<Identity> identities = identityDao.findByUsernames(username);
 		return identities.size() == 1 ? identities.get(0) : null;
+	}
+
+	@Override
+	public List<Identity> findIdentitiesByUsername(String username) {
+		return identityDao.findByUsernames(username);
 	}
 
 	@Override

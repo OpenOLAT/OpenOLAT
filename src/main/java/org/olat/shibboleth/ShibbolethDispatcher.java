@@ -50,6 +50,7 @@ import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
@@ -121,6 +122,15 @@ public class ShibbolethDispatcher implements Dispatcher{
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(req);
 
 		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);
+		if(Settings.isDebuging()) {
+			attributesMap.put("Shib-InetOrgPerson-mail", "new2shib@cyberiacafe.ch");
+			attributesMap.put("Shib-SwissEP-HomeOrganization", "Shibboleth");
+			attributesMap.put("Shib-InetOrgPerson-givenName", "Shib");
+			attributesMap.put("Shib-Person-surname", "New2");
+			attributesMap.put("Shib-InetOrgPerson-employeeNumber", "new2shib");
+			attributesMap.put("Shib-SwissEP-UniqueID", "new2shib");
+			attributesMap.put("Shib-InetOrgPerson", "shiborg");
+		}
 		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
 		shibbolethAttriutes.init(attributesMap);
 		String uid = shibbolethAttriutes.getUID();

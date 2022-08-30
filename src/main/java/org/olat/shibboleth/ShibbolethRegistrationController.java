@@ -25,6 +25,7 @@
 
 package org.olat.shibboleth;
 
+import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -169,8 +170,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					setErrorPage("sm.error.no_username", wControl);
 				}
 			} else {
-				Identity identity = securityManager.findIdentityByName(proposedUsername);
-				if(identity != null) {
+				List<Identity> identities = securityManager.findIdentitiesByUsername(proposedUsername);
+				if(!identities.isEmpty()) {
 					if(interceptor.allowChangeOfUsername()) {
 						setRegistrationForm(ureq, wControl, proposedUsername);
 					} else {
@@ -178,16 +179,14 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					}
 				} else if(interceptor.allowChangeOfUsername()) {
 					setRegistrationForm(ureq, wControl, proposedUsername);
+				} else if(areMandatoryUserPropertiesAvailable()) {
+					state = STATE_NEW_SHIB_USER;
+					mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 				} else {
-					if(areMandatoryUserPropertiesAvailable()) {
-						state = STATE_NEW_SHIB_USER;
-						mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
-					} else {
-						regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, wControl, shibbolethAttributes);
-						regWithUserPropForm.addControllerListener(this);
-						mainContainer.put("getUserPropsForm", regWithUserPropForm.getInitialComponent());
-						mainContainer.setPage(VELOCITY_ROOT + "/register_user_props.html");
-					}
+					regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, wControl, shibbolethAttributes);
+					regWithUserPropForm.addControllerListener(this);
+					mainContainer.put("getUserPropsForm", regWithUserPropForm.getInitialComponent());
+					mainContainer.setPage(VELOCITY_ROOT + "/register_user_props.html");
 				}
 			}
 		} else {
@@ -263,12 +262,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		} else if (source == regForm) {
 			if (event == Event.DONE_EVENT) {
 				String choosenLogin = regForm.getUsernameEl();
-				Identity identity = securityManager.findIdentityByLogin(choosenLogin);
-				if(identity == null) {
-					securityManager.findIdentityByNickName(choosenLogin);
-				}
-				
-				if (identity == null) { // ok, create new user
+				List<Identity> identities = securityManager.findIdentitiesByUsername(choosenLogin);
+				if (identities == null || identities.isEmpty()) { // ok, create new user
 					if (isMandatoryUserPropertyMissing()){
 						regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, getWindowControl(), shibbolethAttributes);
 						regWithUserPropForm.addControllerListener(this);
@@ -278,16 +273,19 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						state = STATE_NEW_SHIB_USER;
 						mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 					}
-				} else { // offer identity migration, if OLAT provider exists
-					Authentication auth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
+				} else if(identities.size() == 1) { // offer identity migration, if OLAT provider exists
+					Identity identityToMigrate = identities.get(0);
+					Authentication auth = securityManager.findAuthentication(identityToMigrate, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 					if (auth == null) { // no OLAT provider, migration not possible...
-						getWindowControl().setError(translator.translate("sr.error.loginexists", new String[] {WebappHelper.getMailConfig("mailSupport")}));
+						getWindowControl().setError(translator.translate("sr.error.loginexists", WebappHelper.getMailConfig("mailSupport")));
 					}	else { // OLAT provider exists, offer migration...
 						migrationForm = new ShibbolethMigrationForm(ureq, getWindowControl(), auth);
 						migrationForm.addControllerListener(this);
 						mainContainer.put("migrationForm", migrationForm.getInitialComponent());
 						mainContainer.setPage(VELOCITY_ROOT + "/migration.html");
 					}
+				} else {
+					setErrorPage("sm.error.username_in_use", getWindowControl());
 				}
 			}
 		} else if (source == languageChooserController) {
