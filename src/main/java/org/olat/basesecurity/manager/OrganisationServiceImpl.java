@@ -131,7 +131,13 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public Organisation getOrganisation(OrganisationRef organisation) {
-		return organisationDao.loadByKey(organisation.getKey());
+		List<Organisation> reloaded = getOrganisation(Collections.singletonList(organisation));
+		return !reloaded.isEmpty()? reloaded.get(0): null;
+	}
+	
+	@Override
+	public List<Organisation> getOrganisation(Collection<? extends OrganisationRef> organisations) {
+		return organisationDao.loadByKeys(organisations);
 	}
 
 	@Override
@@ -166,7 +172,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		for (OrganisationRoles role : OrganisationRoles.values()) {
 			setGrantedOrganisationRights(org, role, Collections.emptyList());
 		}
-		OrganisationImpl reloadedOrganisation = (OrganisationImpl)organisationDao.loadByKey(organisation.getKey());
+		OrganisationImpl reloadedOrganisation = (OrganisationImpl)getOrganisation(organisation);
 		if(DEFAULT_ORGANISATION_IDENTIFIER.equals(reloadedOrganisation.getIdentifier())) {
 			log.error("Someone try to delete the default organisation");
 			return;
@@ -190,7 +196,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		
 		Organisation replacementOrganisation = null;
 		if(organisationAlt != null) {
-			replacementOrganisation = organisationDao.loadByKey(organisationAlt.getKey());
+			replacementOrganisation = getOrganisation(organisationAlt);
 		}
 		
 		boolean delete = true;
@@ -218,8 +224,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			setGrantedOrganisationRights(org, role, Collections.emptyList());
 		}
 
-		OrganisationImpl toMove = (OrganisationImpl)organisationDao.loadByKey(organisationToMove.getKey());
-		Organisation newParent = organisationDao.loadByKey(newParentRef.getKey());
+		OrganisationImpl toMove = (OrganisationImpl)getOrganisation(organisationToMove);
+		Organisation newParent = getOrganisation(newParentRef);
 		if(newParent == null || newParent.equals(toMove.getParent())) {
 			return;// nothing to do
 		}

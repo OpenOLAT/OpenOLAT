@@ -19,20 +19,19 @@
  */
 package org.olat.course.site;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -40,7 +39,6 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.Util;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -50,8 +48,10 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.AccessDeniedFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Offer;
 
 /**
  * <h3>Description:</h3>
@@ -90,7 +90,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	private Controller createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		if (re == null) {
-			return messageController(ureq, wControl, "repositoryentry.not.existing");
+			return AccessDeniedFactory.createRepositoryEntryDoesNotExist(ureq, wControl);
 		}
 		
 		UserSession usess = ureq.getUserSession();
@@ -103,15 +103,29 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		Roles roles = usess.getRoles();
 		if(re.getEntryStatus() == RepositoryEntryStatusEnum.trash || re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 			if(!reSecurity.isEntryAdmin() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
-				return messageController(ureq, wControl, "repositoryentry.deleted");
+				return AccessDeniedFactory.createRepositoryEntryDeleted(ureq, wControl);
 			}
 		}
 		
 		if (!reSecurity.canLaunch()) {
-			if(isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
+			if(re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+				return AccessDeniedFactory.createRepositoryStatusClosed(ureq, wControl);
+			} else if (reSecurity.isMember() && CoreSpringFactory.getImpl(ACService.class).isAccessRefusedByStatus(re, usess.getIdentity())) {
+				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re, true);
+			} else if (reSecurity.isMember() || reSecurity.isMasterCoach()) {
+				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re, false);
+			} else if (isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
 				reSecurity = rm.isAllowed(ureq, re);
+			} else if (roles.isGuestOnly()) {
+				return AccessDeniedFactory.createNoGuestAccess(ureq, wControl);
+			} else if (!getOffersNowNotInRange(re, ureq.getIdentity(), roles).isEmpty()) {
+				return AccessDeniedFactory.createOfferNotNow(ureq, wControl, getOffersNowNotInRange(re, ureq.getIdentity(), roles));
+			} else if (AccessDeniedFactory.isNotInAuthorOrganisation(re, roles)) {
+				return AccessDeniedFactory.createNotInAuthorOrganisation(ureq, wControl, ureq.getIdentity());
+			} else if (!reSecurity.isMember()) {
+				return AccessDeniedFactory.createNotMember(ureq, wControl, re);
 			} else {
-				return messageController(ureq, wControl, "launch.noaccess");
+				return AccessDeniedFactory.createNoAccess(ureq, wControl);
 			}
 		}
 
@@ -142,16 +156,13 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		}
 		return false;
 	}
-
-	private Controller messageController(UserRequest ureq, WindowControl wControl, String i18nMesageKey) {
-		Translator trans = Util.createPackageTranslator(RepositoryService.class, ureq.getLocale());
-		String text = trans.translate(i18nMesageKey);
-		Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
-		
-		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, c);
-		layoutCtr.addDisposableChildController(c); // dispose content on layout dispose
-		return layoutCtr;
+	
+	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity, Roles roles) {
+		if (re.isPublicVisible() && !roles.isInviteeOnly()) {
+			List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
+			return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, offerOrganisations);
+		}
+		return Collections.emptyList();
 	}
 
 	@Override

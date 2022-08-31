@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -94,10 +96,10 @@ import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.AccessListController;
-import org.olat.resource.accesscontrol.ui.AccessRefusedController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -1021,38 +1023,55 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else {
 			if(security.canLaunch()) {
 				launchContent(ureq);
+			} else if (security.isMember() && acService.isAccessRefusedByStatus(re, getIdentity())) {
+				showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, true));
+			} else if (security.isMember() || security.isMasterCoach()) {
+				showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, false));
 			} else if(roles.isInviteeOnly()) {
-				accessRefused(ureq);
+				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 			} else if(re.isPublicVisible()) {
-				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), false);
-				if(acResult.isAccessible()) {
-					launchContent(ureq);
-				} else if (re != null
-						&& !re.getEntryStatus().decommissioned()
-						&& !acResult.getAvailableMethods().isEmpty()) {
-					//try auto booking
-					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
-					acResult = autoResult.getAcResult();
-					security = autoResult.getSecurity();
-					reloadSecurity(ureq);
+				if (acService.isAccessToResourcePending(re.getOlatResource(), getIdentity())) {
+					runtimeController = AccessDeniedFactory.createBookingPending(ureq, getWindowControl());
+					listenTo(runtimeController);
+					toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+				} else {
+					AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), false);
 					if(acResult.isAccessible()) {
 						launchContent(ureq);
+					} else if (re != null
+							&& !re.getEntryStatus().decommissioned()
+							&& !acResult.getAvailableMethods().isEmpty()) {
+						//try auto booking
+						ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
+						acResult = autoResult.getAcResult();
+						security = autoResult.getSecurity();
+						reloadSecurity(ureq);
+						if(acResult.isAccessible()) {
+							launchContent(ureq);
+						} else {
+							accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
+							listenTo(accessController);
+							toolbarPanel.rootController(re.getDisplayname(), accessController);
+						}
+					} else if (!getOffersNowNotInRange(re, getIdentity()).isEmpty()) {
+						showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(re, getIdentity())));
 					} else {
-						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
-						listenTo(accessController);
-						toolbarPanel.rootController(re.getDisplayname(), accessController);
+						showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 					}
-				} else {
-					accessRefused(ureq);
 				}
+			} else if (roles.isGuestOnly()) {
+				showAccessDenied(AccessDeniedFactory.createNoGuestAccess(ureq, getWindowControl()));
+			} else if (AccessDeniedFactory.isNotInAuthorOrganisation(re, roles)) {
+				showAccessDenied(AccessDeniedFactory.createNotInAuthorOrganisation(ureq, getWindowControl(), getIdentity()));
+			} else if (!reSecurity.isMember()) {
+				showAccessDenied(AccessDeniedFactory.createNotMember(ureq, getWindowControl(), re));
 			} else {
-				accessRefused(ureq);
+				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 			}
 		}
 	}
-	
-	private void accessRefused(UserRequest ureq) {
-		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), re, true);
+
+	private void showAccessDenied(Controller ctrl) {
 		listenTo(ctrl);
 		toolbarPanel.rootController(re.getDisplayname(), ctrl);
 	}
@@ -1068,6 +1087,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 		return new ACResultAndSecurity(acResult, security);
+	}
+	
+	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
+		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
+		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, offerOrganisations);
 	}
 	
 	protected boolean doMark(UserRequest ureq) {
@@ -1196,8 +1220,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(!launchDateUpdated.getAndSet(true)) {
 				userCourseInfoMgr.updateUserCourseInformations(re.getOlatResource(), getIdentity());
 			}
+		} else if (reSecurity.isMember() && acService.isAccessRefusedByStatus(re, getIdentity())) {
+			showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, true));
+		} else if (reSecurity.isMember() || reSecurity.isMasterCoach()) {
+			showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, false));
+		} else if (!reSecurity.isMember()) {
+			showAccessDenied(AccessDeniedFactory.createNotMember(ureq, getWindowControl(), re));
+		} else if (roles.isGuestOnly()) {
+			showAccessDenied(AccessDeniedFactory.createNoGuestAccess(ureq, getWindowControl()));
+		} else if (AccessDeniedFactory.isNotInAuthorOrganisation(re, roles)) {
+			showAccessDenied(AccessDeniedFactory.createNotInAuthorOrganisation(ureq, getWindowControl(), getIdentity()));
 		} else {
-			runtimeController = new AccessRefusedController(ureq, getWindowControl(), re, true);
+			runtimeController = AccessDeniedFactory.createNoAccess(ureq, getWindowControl());
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		}

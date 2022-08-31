@@ -106,7 +106,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check if the offer is saved
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
 		assertNotNull(offers);
 		assertEquals(1, offers.size());
 		Offer savedOffer = offers.get(0);
@@ -146,7 +146,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the offer
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
 		assertNotNull(offers);
 		assertEquals(1, offers.size());
 		assertEquals(offer, offers.get(0));
@@ -157,13 +157,13 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//try to retrieve the offer
-		List<Offer> noOffers = acOfferManager.findOfferByResource(testOres, true, null, null);
+		List<Offer> noOffers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
 		assertNotNull(noOffers);
 		assertEquals(0, noOffers.size());
 		dbInstance.commitAndCloseSession();
 
 		//retrieve all offers, deleted too
-		List<Offer> delOffers = acOfferManager.findOfferByResource(testOres, false, null, null);
+		List<Offer> delOffers = acOfferManager.findOfferByResource(testOres, false, null, false, null);
 		assertNotNull(delOffers);
 		assertEquals(1, delOffers.size());
 		assertEquals(offer, delOffers.get(0));
@@ -192,7 +192,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//load offer by resource -> nothing found
-		List<Offer> retrievedOffers = acOfferManager.findOfferByResource(testOres, true, null, null);
+		List<Offer> retrievedOffers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
 		assertNotNull(retrievedOffers);
 		assertEquals(0, retrievedOffers.size());
 
@@ -219,7 +219,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acOfferManager.deleteOffer(offerNotValid); // valid => false
 		dbInstance.commitAndCloseSession();
 		
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
 		
 		assertThat(offers).hasSize(1).containsExactlyInAnyOrder(offerValid);
 	}
@@ -254,9 +254,11 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acMethodManager.save(acMethodManager.createOfferAccess(offerInFuture, method));
 		dbInstance.commitAndCloseSession();
 		
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, date, null);
-		
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, date, false, null);
 		assertThat(offers).containsExactlyInAnyOrder(offerAlways, offerInRange);
+		
+		offers = acOfferManager.findOfferByResource(testOres, true, date, true, null);
+		assertThat(offers).containsExactlyInAnyOrder(offerInRange);
 	}
 	
 	@Test
@@ -287,7 +289,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acMethodManager.save(acMethodManager.createOfferAccess(offerInNoOrganisation, method));
 		dbInstance.commitAndCloseSession();
 		
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, List.of(organisation1, organisation2));
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, List.of(organisation1, organisation2));
 		
 		assertThat(offers).containsExactlyInAnyOrder(offerInOrganisation2, offerInOrganisation1);
 	}

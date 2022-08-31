@@ -136,7 +136,7 @@ public interface ACService {
 
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations);
 	
-	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, List<? extends OrganisationRef> offerOrganisations);
+	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, boolean dateMandatory, List<? extends OrganisationRef> offerOrganisations);
 
 	/**
 	 *

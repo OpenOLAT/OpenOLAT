@@ -84,7 +84,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organisation);
 		
-		OrganisationImpl reloadedOrganisation = (OrganisationImpl)organisationDao.loadByKey(organisation.getKey());
+		OrganisationImpl reloadedOrganisation = (OrganisationImpl)organisationDao.loadByKeys(Collections.singletonList(organisation)).get(0);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reloadedOrganisation.getKey());
 		Assert.assertNotNull(reloadedOrganisation.getCreationDate());

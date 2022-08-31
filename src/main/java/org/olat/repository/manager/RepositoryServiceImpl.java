@@ -452,7 +452,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		
-		acService.getOffers(reloadedRe, true, false, null, null).stream()
+		acService.getOffers(reloadedRe, true, false, null, false, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
 				.forEach(offer -> acService.deleteOffer(offer));
 		
@@ -497,7 +497,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
-		acService.getOffers(entry, true, false, null, null).stream()
+		acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
 				.forEach(offer -> acService.deleteOffer(offer));
 		

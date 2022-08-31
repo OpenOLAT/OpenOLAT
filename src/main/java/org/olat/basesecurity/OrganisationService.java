@@ -70,6 +70,8 @@ public interface OrganisationService {
 	 */
 	public Organisation getOrganisation(OrganisationRef organisation);
 	
+	public List<Organisation> getOrganisation(Collection<? extends OrganisationRef> organisations);
+	
 	public List<Organisation> findOrganisationByIdentifier(String identifier);
 	
 	public List<Organisation> findOrganisations(SearchOrganisationParameters searchparams);

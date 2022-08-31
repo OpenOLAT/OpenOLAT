@@ -247,7 +247,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	}
 	
 	private void initOpenAccess(RepositoryEntry entry, Set<Organisation> rootOrganisations) {
-		Offer offer= acService.getOffers(entry, true, false, null, null).stream()
+		Offer offer= acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(Offer::isOpenAccess)
 				.findFirst()
 				.orElseGet(() -> {
@@ -261,7 +261,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 
 	
 	private void initGuestAccess(RepositoryEntry entry) {
-		acService.getOffers(entry, true, false, null, null).stream()
+		acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(Offer::isGuestAccess)
 				.findFirst()
 				.orElseGet(() -> {

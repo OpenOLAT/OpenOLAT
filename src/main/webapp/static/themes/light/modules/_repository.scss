@@ -192,6 +192,23 @@
 	margin: 15px 15px 15px 0;
 	display: inline-block;
 }
+.o_re_access_denied {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.5em;
+	
+	.o_re_access_denied_cross {
+		fill: $o-repo-access-denied-cross-fill;
+	}
+	.o_re_access_denied_message {
+		text-align: center;
+		font-size: 1.5em
+	}
+	.o_re_access_denied_hint {
+		text-align: center;
+	}
+}
 
 .o_repo_links_microsites {
 	.o_togglebox_wrapper {

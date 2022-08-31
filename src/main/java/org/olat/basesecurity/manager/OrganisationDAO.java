@@ -141,22 +141,21 @@ public class OrganisationDAO {
 	 * The method fetch the group, the organisation type and the parent
 	 * organisation but not the root.
 	 * 
-	 * @param key the primary key of an organisation
-	 * @return The organisation or null if not found
+	 * @param organisationsRefs the primary keys of the organisations
+	 * @return A list of the found organisations.
 	 */
-	public Organisation loadByKey(Long key) {
+	public List<Organisation> loadByKeys(Collection<? extends OrganisationRef> organisationsRefs) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where org.key=:key");
+		  .append(" where org.key in :keys");
 		
-		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
-				.setParameter("key", key)
+				.setParameter("keys", organisationsRefs.stream().map(OrganisationRef::getKey).collect(Collectors.toList()))
 				.getResultList();
-		return organisations == null || organisations.isEmpty() ? null : organisations.get(0);
 	}
 	
 	public List<Organisation> loadByIdentifier(String identifier) {

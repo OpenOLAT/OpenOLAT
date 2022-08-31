@@ -78,7 +78,7 @@ public class AccessInformationController extends FormBasicController {
 			
 			// all users
 			List<Offer> offers = entry.isPublicVisible()
-					? acService.getOffers(entry, true, true, null, null)
+					? acService.getOffers(entry, true, true, null, false, null)
 					: Collections.emptyList();
 			boolean allUsersAccess = offers.stream().anyMatch(offer -> !offer.isGuestAccess());
 			layoutCont.contextPut("allUsersCatalog", getAccess(allUsersAccess));

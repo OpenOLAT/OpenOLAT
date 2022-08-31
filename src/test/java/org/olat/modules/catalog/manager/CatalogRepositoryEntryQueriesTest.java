@@ -149,7 +149,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntries_exclude_notInCatalog() {
 		TestCatalogItem catalogItem = createCatalogItem();
 		
-		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, null).stream()
+		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null).stream()
 				.forEach(offer -> {
 					offer.setCatalogPublish(false);
 					acService.save(offer);
@@ -268,7 +268,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntries_exclude_no_offer() {
 		TestCatalogItem catalogItem = createCatalogItem();
 		
-		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, null).stream()
+		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null).stream()
 				.forEach(offer -> {
 					acService.deleteOffer(offer);
 				});
@@ -281,7 +281,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntries_exclude_guest_offer() {
 		TestCatalogItem catalogItem = createCatalogItem();
 		
-		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, null).stream()
+		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null).stream()
 				.forEach(offer -> {
 					offer.setGuestAccess(true);
 					acService.save(offer);
@@ -366,7 +366,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntriesForOpenAccess_exclude_no_offer() {
 		TestCatalogItem catalogItem = createOpenAccessCatalogItem();
 		
-		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, null).stream()
+		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null).stream()
 				.forEach(offer -> {
 					acService.deleteOffer(offer);
 				});
@@ -430,7 +430,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntriesForGuests_exclude_no_offer() {
 		RepositoryEntry repositoryEntry = createRepositoryEntryForGuest();
 		
-		acService.getOffers(repositoryEntry, true, false, null, null).stream()
+		acService.getOffers(repositoryEntry, true, false, null, false, null).stream()
 				.forEach(offer -> {
 					acService.deleteOffer(offer);
 				});
@@ -443,7 +443,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntriesForGuests_exclude_no_guest_offer() {
 		RepositoryEntry repositoryEntry = createRepositoryEntryForGuest();
 		
-		acService.getOffers(repositoryEntry, true, false, null, null).stream()
+		acService.getOffers(repositoryEntry, true, false, null, false, null).stream()
 				.forEach(offer -> {
 					offer.setGuestAccess(false);
 					acService.save(offer);
@@ -737,7 +737,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		TestCatalogItem catalogItem = createCatalogItem(3);
 		
 		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
-		Offer offer = acService.getOffers(catalogItem.getRepositoryEntry(2), true, false, null, null).get(0);
+		Offer offer = acService.getOffers(catalogItem.getRepositoryEntry(2), true, false, null, false, null).get(0);
 		OfferAccess offerAccess = acService.getOfferAccess(offer, true).get(0);
 		searchParams.setAccessMethods(List.of(offerAccess.getMethod()));
 		
@@ -1096,7 +1096,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	}
 	
 	private void setOfferValid(TestCatalogItem catalogItem, Integer fromAddDays, Integer toAddDays) {
-		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, null).stream()
+		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null).stream()
 				.forEach(offer -> {
 					if (fromAddDays != null) {
 						offer.setValidFrom(DateUtils.addDays(catalogItem.getSearchParams().getOfferValidAt(), fromAddDays.intValue()));

@@ -54,7 +54,7 @@ public class ACOfferDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> organisations) {
+	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, boolean dateMandatory, List<? extends OrganisationRef> organisations) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select offer, access");
 		sb.append("  from acoffer offer");
@@ -70,6 +70,9 @@ public class ACOfferDAO {
 		if(atDate != null) {
 			sb.and().append("(offer.validFrom is null or date(offer.validFrom)<=:atDate)");
 			sb.and().append("(offer.validTo is null or date(offer.validTo)>=:atDate)");
+		}
+		if (dateMandatory) {
+			sb.and().append("(offer.validFrom is not null or offer.validTo is not null)");
 		}
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.and().append(" oto.organisation.key in :organisationKeys");

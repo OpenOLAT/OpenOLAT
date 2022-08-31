@@ -958,7 +958,7 @@ public class RepositoryEntryWebService {
 						.filter(org -> org.getParent() == null)
 						.collect(Collectors.toSet());
 			
-			Offer offer= acService.getOffers(entry, true, false, null, null).stream()
+			Offer offer= acService.getOffers(entry, true, false, null, false, null).stream()
 					.filter(Offer::isOpenAccess)
 					.findFirst()
 					.orElseGet(() -> {
@@ -972,7 +972,7 @@ public class RepositoryEntryWebService {
 					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), null);
 			updated = true;
 		} else {
-			List<Offer> offers = acService.getOffers(entry, true, false, null, null);
+			List<Offer> offers = acService.getOffers(entry, true, false, null, false, null);
 			for(Offer offer:offers) {
 				if(offer.isOpenAccess()) {
 					acService.deleteOffer(offer);
@@ -990,7 +990,7 @@ public class RepositoryEntryWebService {
 		final AtomicBoolean updated = new AtomicBoolean();
 		
 		if(enableGuests) {
-			acService.getOffers(entry, true, false, null, null).stream()
+			acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(Offer::isGuestAccess)
 				.findFirst()
 				.orElseGet(() -> {
@@ -1004,7 +1004,7 @@ public class RepositoryEntryWebService {
 			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
 					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), null);
 		} else {
-			List<Offer> offers = acService.getOffers(entry, true, false, null, null);
+			List<Offer> offers = acService.getOffers(entry, true, false, null, false, null);
 			for(Offer offer:offers) {
 				if(offer.isGuestAccess()) {
 					acService.deleteOffer(offer);

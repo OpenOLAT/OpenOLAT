@@ -22,6 +22,7 @@ package org.olat.repository.ui.list;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,6 +35,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -41,16 +44,17 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.AccessDeniedFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.ui.AccessRefusedController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -139,30 +143,48 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 			} else {
 				if (reSecurity.canLaunch()) {
 					startLink = createStartLink(layoutCont);
+				} else if (isMember && acService.isAccessRefusedByStatus(entry, getIdentity())) {
+					showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), entry, true));
+				} else if (isMember || reSecurity.isMasterCoach()) {
+					showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), entry, false));
 				} else if(inviteeOnly) {
-					accessRefused(ureq);
+					showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 				} else if (!isMember && entry.isPublicVisible()) {
-					AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
-					if (acResult.isAccessible()) {
-						startLink = createStartLink(layoutCont);
-					} else if (!acResult.getAvailableMethods().isEmpty()) {
-						for(OfferAccess access:acResult.getAvailableMethods()) {
-							AccessMethod method = access.getMethod();
-							String type = (method.getMethodCssClass() + "_icon").intern();
-							Price p = access.getOffer().getPrice();
-							String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-							AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
-							String displayName = amh.getMethodName(getLocale());
-							types.add(new PriceMethod(price, type, displayName));
+					if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())) {
+						showAccessDenied(AccessDeniedFactory.createBookingPending(ureq, getWindowControl()));
+					} else {
+						AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
+						if (acResult.isAccessible()) {
+							startLink = createStartLink(layoutCont);
+						} else if (!acResult.getAvailableMethods().isEmpty()) {
+							for(OfferAccess access:acResult.getAvailableMethods()) {
+								AccessMethod method = access.getMethod();
+								String type = (method.getMethodCssClass() + "_icon").intern();
+								Price p = access.getOffer().getPrice();
+								String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
+								AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
+								String displayName = amh.getMethodName(getLocale());
+								types.add(new PriceMethod(price, type, displayName));
+							}
+							String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+							startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+							startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
+							startLink.setElementCssClass("o_book btn-block");
+							startLink.setVisible(!guestOnly);
+						} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
+							showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
+						} else {
+							showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 						}
-						String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-						startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-						startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
-						startLink.setElementCssClass("o_book btn-block");
-						startLink.setVisible(!guestOnly);
 					}
+				} else if (guestOnly) {
+					showAccessDenied(AccessDeniedFactory.createNoGuestAccess(ureq, getWindowControl()));
+				} else if (!AccessDeniedFactory.isNotInAuthorOrganisation(entry, ureq.getUserSession().getRoles())) {
+					showAccessDenied(AccessDeniedFactory.createNotInAuthorOrganisation(ureq, getWindowControl(), getIdentity()));
+				} else if (!reSecurity.isMember()) {
+					showAccessDenied(AccessDeniedFactory.createNotMember(ureq, getWindowControl(), entry));
 				} else {
-					accessRefused(ureq);
+					showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 				}
 			}
 			
@@ -182,10 +204,14 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 		return link;
 	}
 	
-	private void accessRefused(UserRequest ureq) {
-		Controller ctrl = new AccessRefusedController(ureq, getWindowControl(), entry, false);
+	private void showAccessDenied(Controller ctrl) {	
 		listenTo(ctrl);
 		flc.put("access.refused", ctrl.getInitialComponent());
+	}
+	
+	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
+		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
+		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, offerOrganisations);
 	}
 
 	@Override

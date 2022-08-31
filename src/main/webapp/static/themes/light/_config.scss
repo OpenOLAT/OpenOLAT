@@ -405,6 +405,7 @@ $o-repo-trash-color					: #5A5958;	/* gray */
 $o-repo-deleted-color				: #888;		/* black */
 $o-repo-status-color-dark			: #333;
 $o-repo-status-color-bright			: #fff;
+$o-repo-access-denied-cross-fill		: $brand-primary  !default;
 
 /* Access control */
 $o-ac-offer-active-color			: #3c763d !default;

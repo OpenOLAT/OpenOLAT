@@ -38,7 +38,7 @@ public class AccessResult {
 	private List<OfferAccess> availableMethods;
 	
 	public AccessResult(boolean accessible) {
-		this(accessible, Collections.<OfferAccess>emptyList());
+		this(accessible, Collections.emptyList());
 	}
 	
 	public AccessResult(boolean accessible, List<OfferAccess> availableMethods) {
