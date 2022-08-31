@@ -24,7 +24,6 @@ import java.util.Locale;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.UserSession;
@@ -76,7 +75,7 @@ public class CoachingUserToolExtension extends UserToolExtension {
 
 	@Override
 	public boolean isEnabled() {
-		return CoreSpringFactory.getImpl(CoachingModule.class).isEnabled();
+		return true;// Notifications -> always on
 	}
 
 }
