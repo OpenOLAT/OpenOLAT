@@ -46,8 +46,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public interface ACService {
 	
-	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_GUEST = RepositoryEntryStatusEnum.publishedAndClosed();
-	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_OPEN = RepositoryEntryStatusEnum.publishedAndClosed();
+	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_GUEST = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
+	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_OPEN = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD_PERIOD = RepositoryEntryStatusEnum.preparationToPublished();
 
