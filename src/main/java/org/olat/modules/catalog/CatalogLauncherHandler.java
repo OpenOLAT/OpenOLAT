@@ -53,4 +53,11 @@ public interface CatalogLauncherHandler {
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
 			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams);
 
+	/**
+	 * Delete the data of a catalog launcher.
+	 * 
+	 * @param catalogLauncher deleted catalog launcher.
+	 */
+	public default void deleteLauncherData(CatalogLauncher catalogLauncher) {}
+	
 }

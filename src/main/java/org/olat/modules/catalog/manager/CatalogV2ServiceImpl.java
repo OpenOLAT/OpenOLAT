@@ -291,8 +291,15 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 
 	@Override
 	public void deleteCatalogLauncher(CatalogLauncherRef catalogLauncher) {
-		catalogLauncherToOrganisationDAO.delete(catalogLauncher);
-		catalogLauncherDao.delete(catalogLauncher);
+		CatalogLauncher reloadedLancher = getCatalogLauncher(catalogLauncher);
+		if (reloadedLancher != null) {
+			CatalogLauncherHandler handler = getCatalogLauncherHandler(reloadedLancher.getType());
+			if (handler != null) {
+				handler.deleteLauncherData(reloadedLancher);
+			}
+			catalogLauncherToOrganisationDAO.delete(reloadedLancher);
+			catalogLauncherDao.delete(reloadedLancher);
+		}
 	}
 	
 	@Override

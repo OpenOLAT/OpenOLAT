@@ -25,6 +25,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 
 /**
  * 
@@ -34,10 +38,15 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class CatalogLauncherTextController extends BasicController {
 
-	public CatalogLauncherTextController(UserRequest ureq, WindowControl wControl, String text) {
+	public CatalogLauncherTextController(UserRequest ureq, WindowControl wControl, String text, VFSContainer mediaContainer) {
 		super(ureq, wControl);
+		String baseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer));
+		
+		String formattedText = StringHelper.xssScan(text);
+		formattedText = FilterFactory.getBaseURLToMediaRelativeURLFilter(baseUrl).filter(formattedText);
+		
 		VelocityContainer mainVC = createVelocityContainer("launch_text");
-		mainVC.contextPut("text", text);
+		mainVC.contextPut("text", formattedText);
 		putInitialPanel(mainVC);
 	}
 

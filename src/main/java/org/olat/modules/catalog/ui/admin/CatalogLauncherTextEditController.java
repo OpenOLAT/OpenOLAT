@@ -29,17 +29,22 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.launcher.TextLauncherHandler;
 import org.olat.modules.catalog.launcher.TextLauncherHandler.Config;
@@ -60,8 +65,12 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 	private RichTextElement defaultLocaleTextEl;
 	private int defaultLocaleTabIndex = -1;
 	
+	private Controller mediaCtrl;
+	
 	private final TextLauncherHandler handler;
 	private final String i18nSuffix;
+	private final VFSContainer launcherContainer;
+	
 	private List<TranslationItem> translationItems;
 	
 	@Autowired
@@ -75,6 +84,8 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 		this.i18nSuffix = getCatalogLauncher() != null
 				? handler.fromXML(getCatalogLauncher().getConfig()).getI18nSuffix()
 				: UUID.randomUUID().toString().replace("-", "");
+		this.launcherContainer = handler.getOrCreateLauncherContainer(i18nSuffix);
+		this.launcherContainer.setLocalSecurityCallback(new FullAccessCallback());
 		
 		initForm(ureq);
 	}
@@ -105,6 +116,11 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 			}
 		}
 		tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
+		
+		VFSContainer mediaCont = VFSManager.getOrCreateContainer(launcherContainer, "media");
+		mediaCtrl = new FolderRunController(mediaCont, false, ureq, getWindowControl());
+		listenTo(mediaCtrl);
+		tabbedPane.addTab(translate("launcher.text.media"), null, mediaCtrl);
 	}
 
 	private void initTranslationController(UserRequest ureq, Locale locale, Locale overlayLocale) {
@@ -115,8 +131,10 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 		cont.setRootForm(mainForm);
 		tabbedPane.addTab(locale.getDisplayLanguage(getLocale()), cont);
 		
-		RichTextElement textEl = uifactory.addRichTextElementForStringDataCompact("text" + elementSuffix,
-				"launcher.text.text", text, 10, -1, null, cont, ureq.getUserSession(), getWindowControl());
+		RichTextElement textEl = uifactory.addRichTextElementForStringData("text" + elementSuffix, "launcher.text.text",
+				text, 10, -1, false, launcherContainer, null, cont, ureq.getUserSession(), getWindowControl());
+		textEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+		textEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		TranslationItem translationItem = new TranslationItem(locale, overlayLocale, textEl);
 		translationItems.add(translationItem);
@@ -152,6 +170,16 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 		return handler.toXML(config);
 	}
 	
+	@Override
+	public void dispose() {
+		super.dispose();
+		
+		// Dialog was open but not saved -> clean up
+		if (getCatalogLauncher() == null) {
+			handler.deleteLauncherContainer(i18nSuffix);
+		}
+	}
+
 	public static class TranslationItem {
 		
 		private final Locale locale;
