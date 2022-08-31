@@ -86,34 +86,4 @@ public class DiscoveryXStreamTest {
 		softly.assertAll();
 	}
 
-	@Test
-	public void shouldConvertCollaboraDiscoveryFile() throws Exception {
-		URL url = DiscoveryXStreamTest.class.getResource("discovery_collabora.xml");
-		Path resPath = Paths.get(url.toURI());
-		String xml = new String(Files.readAllBytes(resPath), "UTF8");
-		
-		Discovery discovery = DiscoveryXStream.fromXml(xml, Discovery.class);
-		
-		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(discovery).isNotNull();
-		ProofKey proofKey = discovery.getProofKey();
-		softly.assertThat(proofKey).isNull();
-		
-		NetZone netZone = discovery.getNetZones().get(0);
-		softly.assertThat(netZone.getName()).isEqualTo("external-http");
-		
-		App app = netZone.getApps().stream()
-				.filter(a -> a.getName().equals("application/vnd.ms-excel"))
-				.findFirst().get();
-		softly.assertThat(app.getName()).isNotNull();
-		
-		Action action = app.getActions().stream()
-				.filter(a -> "edit".equals(a.getName()) && "xla".equals(a.getExt()))
-				.findFirst().get();
-		softly.assertThat(action.getName()).isNotNull();
-		softly.assertThat(action.getExt()).isNotNull();
-		softly.assertThat(action.getUrlSrc()).isNotNull();
-		
-		softly.assertAll();
-	}
 }
