@@ -43,6 +43,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -146,6 +147,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		private final String displayName;
 		private final String teaser;
 		private final RepositoryEntryStatusEnum status;
+		private final RepositoryEntryEducationalType educationalType;
 		private String thumbnailRelPath;
 		private List<TaxonomyLevelNamePath> taxonomyLevels;
 		private Link learnMoreLink;
@@ -156,6 +158,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			this.displayName = entry.getDisplayname();
 			this.teaser = Formatter.truncate(entry.getTeaser(), 250);
 			this.status = entry.getStatus();
+			educationalType = entry.getEducationalType();
 		}
 
 		public Long getKey() {
@@ -176,6 +179,10 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		
 		public boolean isClosed() {
 			return status.decommissioned();
+		}
+
+		public RepositoryEntryEducationalType getEducationalType() {
+			return educationalType;
 		}
 
 		public String getThumbnailRelPath() {
