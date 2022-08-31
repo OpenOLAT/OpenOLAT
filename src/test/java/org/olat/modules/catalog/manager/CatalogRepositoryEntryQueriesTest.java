@@ -351,7 +351,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.closed);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.trash);
 		dbInstance.commitAndCloseSession();
@@ -415,7 +415,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.closed);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams(), 0, -1)).contains(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams(), 0, -1)).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.trash);
 		dbInstance.commitAndCloseSession();
