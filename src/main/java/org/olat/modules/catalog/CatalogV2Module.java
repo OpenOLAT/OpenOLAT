@@ -31,6 +31,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.catalog.site.CatalogContextEntryControllerCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +52,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE = "rectangle";
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE = "square";
 	private static final Path HEADER_BG_DIR = Paths.get(WebappHelper.getUserDataRoot(), "customizing", "catalog", "header", "background");
+	private static final String LAUNCHER_DIR = File.separator + "resources" + File.separator + "catalogV2" + File.separator + "launcher";
 	
 	private static final String KEY_ENABLED = "catalog.v2.enabled";
 	private static final String KEY_CATALOG_V1_MIGRATION = "catalog.v1.migration";
@@ -179,6 +182,10 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 		FileUtils.deleteDirsAndFiles(getHeaderBgDirectory(), true, false);
 		headerBgImageFilename = null;
 		removeProperty(KEY_HEADER_BG_IMAGE_URI, true);
+	}
+	
+	public VFSContainer getLauncherCont() {
+		return VFSManager.olatRootContainer(LAUNCHER_DIR);
 	}
 
 	public String getLauncherTaxonomyLevelStyle() {

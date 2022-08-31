@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.tabbedpane.TabbedPane.TabPane;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -93,6 +94,10 @@ public class TabbedPaneItem extends FormItemImpl implements FormItemCollection {
 	
 	public int addTab(String displayName, String elementCssClass, FormItem item) {
 		return component.addTab(displayName, elementCssClass, item);
+	}
+	
+	public int addTab(String displayName, String elementCssClass, Controller controller) {
+		return component.addTab(displayName, elementCssClass, controller);
 	}
 	
 	public void setSelectedPane(UserRequest ureq, int newSelectedPane) {

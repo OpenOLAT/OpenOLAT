@@ -25,12 +25,16 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogLauncherTextController;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherTextEditController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
@@ -54,6 +58,9 @@ public class TextLauncherHandler implements CatalogLauncherHandler {
 		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias("config", Config.class);
 	}
+	
+	@Autowired
+	private CatalogV2Module catalogModule;
 
 	@Override
 	public String getType() {
@@ -107,7 +114,28 @@ public class TextLauncherHandler implements CatalogLauncherHandler {
 			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
 		Config config = fromXML(catalogLauncher.getConfig());
 		String text = translator.translate(I18N_PREFIX + config.i18nSuffix);
-		return StringHelper.containsNonWhitespace(text)? new CatalogLauncherTextController(ureq, wControl, text): null;
+		VFSContainer mediaContainer = getOrCreateLauncherContainer(config.getI18nSuffix());
+		return StringHelper.containsNonWhitespace(text)
+				? new CatalogLauncherTextController(ureq, wControl, text, mediaContainer)
+				: null;
+	}
+	
+	@Override
+	public void deleteLauncherData(CatalogLauncher catalogLauncher) {
+		CatalogLauncherHandler.super.deleteLauncherData(catalogLauncher);
+		
+		Config config = fromXML(catalogLauncher.getConfig());
+		deleteLauncherContainer(config.getI18nSuffix());
+	}
+
+	public VFSContainer getOrCreateLauncherContainer(String i18nSuffix) {
+		VFSContainer textLauncherCont = VFSManager.getOrCreateContainer(catalogModule.getLauncherCont(), "text");
+		VFSContainer launcherCont = VFSManager.getOrCreateContainer(textLauncherCont, i18nSuffix);
+		return launcherCont;
+	}
+	
+	public void deleteLauncherContainer(String i18nSuffix) {
+		getOrCreateLauncherContainer(i18nSuffix).delete();
 	}
 	
 	public Config fromXML(String xml) {
