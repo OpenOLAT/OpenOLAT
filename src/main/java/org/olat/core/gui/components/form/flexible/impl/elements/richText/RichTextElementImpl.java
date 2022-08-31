@@ -224,6 +224,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 			if(submitValue != null) {
 				setValue(submitValue);
 				getRootForm().fireFormEvent(ureq, new FormEvent(cmd, this, FormEvent.ONCLICK));
+				// don't re-render component, value in GUI already correct
+				component.setDirty(false);
 			}
 		} else if (submitValue != null) {
 			setValue(submitValue);

@@ -119,8 +119,18 @@ public class ContainerHandler implements PageLayoutHandler, EvaluationFormElemen
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
+		ContainerSettings settings = new ContainerSettings();
+		if(layout == null) {
+			settings.setType(ContainerLayout.block_2cols);
+			settings.setNumOfColumns(ContainerLayout.block_2cols.numberOfBlocks());
+		} else {
+			settings.setType(layout);
+			settings.setNumOfColumns(layout.numberOfBlocks());
+		}
+		
 		Container container = new Container();
 		container.setId(UUID.randomUUID().toString());
+		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
 		return container;
 	}
 

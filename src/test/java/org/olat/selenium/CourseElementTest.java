@@ -37,8 +37,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
@@ -2051,16 +2051,16 @@ public class CourseElementTest extends Deployments {
 	@Test
 	@Ignore
 	@RunAsClient
-	public void survey(@Drone @Author WebDriver authorBrowser)
+	public void survey()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Maximilien");
-		LoginPage authorLoginPage = LoginPage.load(authorBrowser, deploymentUrl);
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a survey
 		String surveyTitle = "Survey-1-" + UUID.randomUUID();
-		NavigationPage navBar = NavigationPage.load(authorBrowser);
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createSurvey(surveyTitle)
@@ -2068,25 +2068,26 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		SurveyPage survey = SurveyPage
-			.loadPage(authorBrowser);
+			.loadPage(browser);
 		SurveyEditorPage surveyEditor = survey
 			.edit();
 		surveyEditor
-			.openElementsChooser()
+			.addLayout(ContainerLayout.block_3rows)
+			.openElementsChooser(1, 1)
 			.addTitle("My survey")
 			.setTitleSize(1)
 			.closeEditFragment()
 			.assertOnTitle("My survey", 1);
 		
 		surveyEditor
-			.openElementsChooser()
+			.openElementsChooser(1, 2)
 			.addMultipleChoiceElement()
 			.addMultipleChoice("Jupiter", 2)
 			.addMultipleChoice("Saturn", 3)
 			.closeEditFragment();
 		
 		surveyEditor
-			.openElementsChooser()
+			.openElementsChooser(1, 3)
 			.addSingleChoiceElement()
 			.addSingleChoice("Mercury", 2)
 			.addSingleChoice("Venus", 3)
@@ -2106,7 +2107,7 @@ public class CourseElementTest extends Deployments {
 		
 		String surveyNodeTitle = "SurveyNode-1";
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(authorBrowser)
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
 			.createNode("survey")

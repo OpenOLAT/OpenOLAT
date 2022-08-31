@@ -31,9 +31,9 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.User;
@@ -809,7 +809,6 @@ public class PortfolioV2Test extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	@Ignore
 	@RunAsClient
 	public void editPage() 
 			throws IOException, URISyntaxException {
@@ -832,42 +831,46 @@ public class PortfolioV2Test extends Deployments {
 		// add a title
 		String title = "My long title " + UUID.randomUUID();
 		entry
-			.openElementsChooser()
+			.contentEditor()
+			.addLayout(ContainerLayout.block_1_1lcols)
+			.openElementsChooser(1, 1)
 			.addTitle(title)
-			.setTitleSize(4)
+			.setTitleSize(3)
 			.closeEditFragment()
-			.assertOnTitle(title, 4);
+			.assertOnTitle(title, 3);
 		
 		// add an image
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File imageFile = new File(imageUrl.toURI());
 		entry
-			.openElementsChooser()
+			.contentEditor()
+			.openElementsChooser(1, 2)
 			.addImage("Blue is the new black", imageFile)
 			.assertOnImage(imageFile);
 		// close the editor and check
 		entry
-			.toggleEditor()
-			.assertOnTitle(title, 4)
+			.closeEditor()
+			.assertOnTitle(title, 3)
 			.assertOnImage(imageFile);
 		
 		//reopen the editor and add a document
 		URL pdfUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
 		File pdfFile = new File(pdfUrl.toURI());
 		entry
-			.toggleEditor()
-			.openElementsChooser()
+			.openEditor()
+			.openElementsChooser(1, 2)
 			.addDocument("Anything about", pdfFile)
 			.assertOnDocument(pdfFile);
 		//and a citation
 		String citation = "Close the world, open the next.";
 		entry
-			.openElementsChooser()
+			.contentEditor()
+			.openElementsChooser(1, 2)
 			.addCitation("Serial experiment", citation)
 			.assertOnCitation(citation);
 		//close the editor and check all parts
-		entry.toggleEditor()
-			.assertOnTitle(title, 4)
+		entry.closeEditor()
+			.assertOnTitle(title, 3)
 			.assertOnImage(imageFile)
 			.assertOnDocument(pdfFile)
 			.assertOnCitation(citation);

@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -37,6 +38,7 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.TitleElement;
+import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.TitleEditorController;
 import org.olat.modules.ceditor.ui.TitleInspectorController;
@@ -70,11 +72,13 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
-		String content = "";
+		String htmlContent = "";
 		if(element instanceof TitlePart) {
-			content = ((TitlePart)element).getContent();
+			TitlePart title = (TitlePart)element;
+			String content = title.getContent();
+			htmlContent = TitleElement.toHtml(content, title.getTitleSettings());
 		}
-		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent, null, false, null);
 		return new PageRunComponent(cmp);
 	}
 
@@ -96,7 +100,12 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		return new TitlePart();
+		TitlePart title = new TitlePart();
+		TitleSettings settings = new TitleSettings();
+		settings.setSize(3);
+		String settingsXml = ContentEditorXStream.toXml(settings);
+		title.setLayoutOptions(settingsXml);
+		return title;
 	}
 
 	@Override

@@ -145,11 +145,13 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	}
 
 	private Component getComponent(PageElement element) {
-		String content = "";
+		String htmlContent = "";
 		if(element instanceof Title) {
-			content = ((Title)element).getContent();
+			Title title = (Title)element;
+			String content = title.getContent();
+			htmlContent = TitleElement.toHtml(content, title.getTitleSettings());
 		}
-		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent, null, false, null);
 	}
 
 	@Override

@@ -19,13 +19,11 @@
  */
 package org.olat.selenium.page.portfolio;
 
-import java.io.File;
-
-import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.selenium.page.core.ContentEditorPage;
+import org.olat.selenium.page.core.ContentViewPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -34,8 +32,6 @@ import org.openqa.selenium.support.ui.Select;
  *
  */
 public class EntryPage {
-	
-	private final By editFragmentBy = By.cssSelector("div.o_page_fragment_edit");
 	
 	private final WebDriver browser;
 
@@ -49,161 +45,12 @@ public class EntryPage {
 		return this;
 	}
 	
-	public EntryPage addLayout(ContainerLayout layout) {
-		By addBy = By.cssSelector(".o_ce_add_main_btns>a.btn.o_sel_add_container_main");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
-		By addCalloutBy = By.cssSelector("div.popover div.o_inspector_layouts");
-		OOGraphene.waitElement(addCalloutBy, browser);
-		
-		By newLayoutBy = By.cssSelector("div.popover div.o_inspector_layouts ." + layout.cssClass());
-		browser.findElement(newLayoutBy).click();
-		OOGraphene.waitElementDisappears(newLayoutBy, 5, browser);
-		
-		By layoutBy = By.cssSelector(".o_container_part." + layout.cssClass());
-		OOGraphene.waitElement(layoutBy, browser);
-		return this;
-	}
-	
-	public EntryPage openElementsChooser(int container, int slot) {
-		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + container + "]//div[contains(@class,'o_page_container_slot')][" + slot + "]//a[contains(@class,'btn')][contains(@class,'o_page_add_in_container')]");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
-		By addCalloutBy = By.cssSelector("div.popover div.o_sel_add_element_callout");
-		OOGraphene.waitElement(addCalloutBy, browser);
-		return this;
-	}
-	
-	public EntryPage openElementsChooser() {
-		By addBy = By.cssSelector("a.btn.o_sel_add_element_main");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
-		OOGraphene.waitBusy(browser);
-		By addCalloutBy = By.cssSelector("div.popover div.o_sel_add_element_callout");
-		OOGraphene.waitElement(addCalloutBy, browser);
-		return this;
-	}
-	
-	public EntryPage addTitle(String title) {
-		By addTitleBy = By.cssSelector("a#o_coadd_el_htitle");
-		browser.findElement(addTitleBy).click();
-		OOGraphene.waitElement(editFragmentBy, browser);
-		By titleBy = By.cssSelector(".o_page_fragment_edit.o_fragment_edited .o_page_edit_title");
-		OOGraphene.waitElement(titleBy, browser);
-		OOGraphene.waitTinymce(browser);
-		OOGraphene.tinymce("<h3>" + title + "</h3>", ".o_page_fragment_edit.o_fragment_edited .o_page_edit_title", browser);
-		return this;
-	}
-	
 	/**
-	 * Change the size of the title.
 	 * 
-	 * @param size A value between 1 and 6
-	 * @return
+	 * @return The content editor
 	 */
-	public EntryPage setTitleSize(int size) {
-		By titleSize = By.xpath("//div[@class='o_ceditor_inspector']//select[@id='o_fioheading_size_SELBOX']");
-		OOGraphene.waitElement(titleSize, browser);
-		new Select(browser.findElement(titleSize)).selectByValue(Integer.toString(size));
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	/**
-	 * Check that the title is on the page with the right size.
-	 * 
-	 * @param title The title
-	 * @param size Its size (between 1 and 6)
-	 * @return Itself
-	 */
-	public EntryPage assertOnTitle(String title, int size) {
-		By titleBy = By.xpath("//div[contains(@class,'o_pf_content')]//h" + size + "[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(titleBy, 5, browser);
-		return this;
-	}
-	
-	public EntryPage addImage(String title, File image) {
-		By addImageBy = By.cssSelector("a#o_coadd_el_image");
-		browser.findElement(addImageBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By inputBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form .o_fileinput input[type='file']");
-		OOGraphene.uploadFile(inputBy, image, browser);
-		By previewBy = By.cssSelector("div.o_filepreview>div.o_image>img");
-		OOGraphene.waitElement(previewBy, 5, browser);
-		
-		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form .o_sel_pf_collect_title input[type='text']");
-		browser.findElement(titleBy).sendKeys(title);
-		
-		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form button.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	public EntryPage assertOnImage(File image) {
-		String filename = image.getName();
-		int typePos = filename.lastIndexOf('.');
-		if (typePos > 0) {
-			String ending = filename.substring(typePos + 1).toLowerCase();
-			filename = filename.substring(0, typePos + 1).concat(ending);
-		}
-		By titleBy = By.xpath("//figure[@class='o_image']/img[contains(@src,'" + filename + "')]");
-		OOGraphene.waitElement(titleBy, browser);
-		return this;
-	}
-	
-	public EntryPage addDocument(String title, File document) {
-		By addDocumentBy = By.cssSelector("a#o_coadd_el_bc");
-		browser.findElement(addDocumentBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By inputBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_fileinput input[type='file']");
-		OOGraphene.uploadFile(inputBy, document, browser);
-		OOGraphene.waitBusy(browser);
-		By uploadedBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_sel_file_uploaded");
-		OOGraphene.waitElement(uploadedBy, browser);
-		
-		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_sel_pf_collect_title input[type='text']");
-		browser.findElement(titleBy).sendKeys(title);
-		
-		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form button.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
-		return this;
-	}
-	
-	public EntryPage assertOnDocument(File file) {
-		String filename = file.getName();
-		By downloadLinkBy = By.xpath("//div[contains(@class,'o_download')]//a[contains(text(),'" + filename + "')]");
-		OOGraphene.waitElement(downloadLinkBy, 5, browser);
-		return this;
-	}
-	
-	public EntryPage addCitation(String title, String citation) {
-		By addCitationBy = By.cssSelector("a#o_coadd_el_citation");
-		browser.findElement(addCitationBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_citation_form .o_sel_pf_collect_title input[type='text']");
-		browser.findElement(titleBy).sendKeys(title);
-		
-		String citationSelector = ".o_sel_pf_collect_citation_form .o_sel_pf_collect_citation";
-		OOGraphene.tinymce(citation, citationSelector, browser);
-		
-		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_citation_form button.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	public EntryPage assertOnCitation(String citation) {
-		By citationBy = By.xpath("//blockquote[contains(@class,'o_quote')]//p[contains(text(),'" + citation + "')]");
-		OOGraphene.waitElement(citationBy, 5, browser);
-		return this;
+	public ContentEditorPage contentEditor() {
+		return new ContentEditorPage(browser, false);
 	}
 	
 	/**
@@ -243,25 +90,20 @@ public class EntryPage {
 		return new EntriesPage(browser);
 	}
 	
-	public EntryPage toggleEditor() {
+	public ContentEditorPage openEditor() {
 		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
 		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
-		return this;
+		return contentEditor();
 	}
 	
-	/**
-	 * Close the fragment editor.
-	 * 
-	 * @return Itself
-	 */
-	public EntryPage closeEditFragment() {
-		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_container_edit')][1]//div[contains(@class,'o_page_container_tools')]");
-		browser.findElement(toolbarContainerBy).click();
+	public ContentViewPage closeEditor() {
+		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
+		OOGraphene.waitElement(closeBy, browser);
+		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
-		return this;
+		return new ContentViewPage(browser);
 	}
 	
 	/**

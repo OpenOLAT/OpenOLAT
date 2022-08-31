@@ -22,14 +22,14 @@
     </container>
    
 	<extension qualifier="webdriver">
-		<property name="browser">${webdriver.browser:chrome}</property>
-		<property name="browserVersion">${webdriver.browserVersion:104.0.5112.79}</property>
+		<property name="browser">${webdriver.browser:firefox}</property>
+		<property name="browserVersion">${webdriver.browserVersion:}</property>
 		<property name="dimensions">1024x800</property>
-		<!-- -->
+		<!--
 		<property name="downloadBinaries">false</property>
 		<property name="chromeDriverBinary">target/drone/6d795cff6911ddb1057dbfe1d7810f1a/chromedriver</property>
 		<property name="firefoxDriverBinary">target/drone/66a8842efe8a87c2b1e8237deb1c2905/geckodriver</property>
-		<!-- -->
+		-->
 		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.31.0}</property>
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
 		<property name="chromeDriverVersion">${webdriver.chrome.version:104.0.5112.79}</property>

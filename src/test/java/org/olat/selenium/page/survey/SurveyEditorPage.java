@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.survey;
 
+import org.olat.selenium.page.core.ContentEditorPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -29,24 +30,11 @@ import org.openqa.selenium.WebDriver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SurveyEditorPage {
+public class SurveyEditorPage extends ContentEditorPage {
 	
-	protected final By editFragmentBy = By.cssSelector("div.o_page_fragment_edit");
-	
-	private final WebDriver browser;
 
 	public SurveyEditorPage(WebDriver browser) {
-		this.browser = browser;
-	}
-	
-	public SurveyEditorPage openElementsChooser() {
-		By addBy = By.cssSelector("a.btn.o_sel_add_element_main");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
-		OOGraphene.waitBusy(browser);
-		By addCalloutBy = By.cssSelector("div.popover div.o_sel_add_element_callout");
-		OOGraphene.waitElement(addCalloutBy, browser);
-		return this;
+		super(browser, true);
 	}
 	
 	public SurveyPage close() {
@@ -55,56 +43,9 @@ public class SurveyEditorPage {
 		return new SurveyPage(browser);
 	}
 	
-	/**
-	 * Close the fragment editor.
-	 * 
-	 * @return Itself
-	 */
-	public SurveyEditorPage closeEditFragment() {
-		OOGraphene.waitingALittleLonger();
-		By closeBy = By.cssSelector("div.o_page_others_above>a.o_sel_save_element>span");
-		OOGraphene.waitElement(closeBy, browser);
-		browser.findElement(closeBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By pageEditBy = By.cssSelector("div.o_page_part>div.o_page_fragment_edit>div.o_page_edit");
-		OOGraphene.waitElementDisappears(pageEditBy, 5, browser);
-		OOGraphene.waitingALittleLonger();
-		return this;
-	}
-	
-	public SurveyEditorPage addTitle(String title) {
-		By addTitleBy = By.cssSelector("a#o_coadd_el_formhtitle");
-		browser.findElement(addTitleBy).click();
-		OOGraphene.waitElement(editFragmentBy, browser);
-		OOGraphene.tinymce(title, ".o_page_part.o_page_edit", browser);
-		return this;
-	}
-	
-	/**
-	 * Change the size of the title.
-	 * 
-	 * @param size A value between 1 and 6
-	 * @return
-	 */
-	public SurveyEditorPage setTitleSize(int size) {
-		By titleSize = By.xpath("//div[contains(@class,'o_page_edit_toolbar')]//a[span[contains(text(),'h" + size + "')]]");
-		browser.findElement(titleSize).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	/**
-	 * Check that the title is on the page with the right size.
-	 * 
-	 * @param title The title
-	 * @param size Its size (between 1 and 6)
-	 * @return Itself
-	 */
-	public SurveyEditorPage assertOnTitle(String title, int size) {
-		By titleBy = By.xpath("//div[contains(@class,'o_page_content_editor')]//h" + size + "[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(titleBy, browser);
-		return this;
+	@Override
+	public SurveyEditorPage openElementsChooser(int container, int slot) {
+		return (SurveyEditorPage)super.openElementsChooser(container, slot);
 	}
 	
 	public SurveyEditorPage addRubricElement() {

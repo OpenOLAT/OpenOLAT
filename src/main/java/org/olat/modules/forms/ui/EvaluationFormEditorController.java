@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -32,7 +34,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -73,6 +74,7 @@ import org.olat.modules.forms.rules.EvaluationFormRuleHandlerProvider;
 import org.olat.modules.forms.rules.RuleHandlerProvider;
 import org.olat.modules.forms.rules.ui.EvaluationFormRulesController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -82,9 +84,9 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
  */
 public class EvaluationFormEditorController extends BasicController implements ToolbarAware {
 	
-	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbar;
 	private Link rulesLink;
+	private final Component helpLink;
 
 	private PageEditorV2Controller pageEditCtrl;
 	private CloseableModalController cmc;
@@ -97,6 +99,9 @@ public class EvaluationFormEditorController extends BasicController implements T
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWeight;
 	private final RuleHandlerProvider ruleHandlerProvider;
+	
+	@Autowired
+	private HelpModule helpModule;
 	
 	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			File formFile, DataStorage storage, boolean restrictedEdit, boolean restrictedEditWeight) {
@@ -114,22 +119,25 @@ public class EvaluationFormEditorController extends BasicController implements T
 			persistForm();
 		}
 		
-		mainVC = createVelocityContainer("editor");
+		HelpLinkSPI provider = helpModule.getManualProvider();
+		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
+				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/forms/Forms_in_the_ePortfolio_template/");
 		
 		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : new FullEditorSecurityCallback();
 		pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(), new FormPageEditorProvider(), secCallback, getTranslator());
 		listenTo(pageEditCtrl);
-		mainVC.put("page", pageEditCtrl.getInitialComponent());
 		
 		fireContainerRuleLinkEvent(ureq);
 		
-		putInitialPanel(mainVC);
+		putInitialPanel(pageEditCtrl.getInitialComponent());
 	}
 	
 	@Override
 	public void initToolbar() {
 		rulesLink = LinkFactory.createToolLink("rules", translate("rules"), this, "o_icon_branch");
 		toolbar.addTool(rulesLink, Align.left);
+		
+		toolbar.addTool(helpLink, Align.rightEdge, false, "o_chelp_wrapper");
 	}
 	
 	public boolean hasChanges() {

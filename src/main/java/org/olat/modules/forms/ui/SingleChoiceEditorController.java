@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -100,13 +99,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		singleChoiceCtrl = new SingleChoiceController(ureq, getWindowControl(), singleChoice);
 		formLayout.add("preview", singleChoiceCtrl.getInitialFormItem());
 
-		// settings
-		long postfix = CodeHelper.getRAMUniqueID();
-		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("sc_settings_cont_" + postfix,
-				getTranslator());
-		settingsCont.setRootForm(mainForm);
-		formLayout.add("settings", settingsCont);
-		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
@@ -117,13 +109,12 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		}
 		
 		dataModel = new ChoiceDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "choices", dataModel, getTranslator(), settingsCont);
+		tableEl = uifactory.addTableElement(getWindowControl(), "choices", dataModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setLabel("choice.values", null);
 		loadModel();
 		
-		addChoiceEl = uifactory.addFormLink("choice.add", settingsCont, Link.BUTTON);
+		addChoiceEl = uifactory.addFormLink("choice.add", formLayout, Link.BUTTON);
 		addChoiceEl.setElementCssClass("o_sel_add_single_choice");
 		addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
 		addChoiceEl.setVisible(!restrictedEdit);

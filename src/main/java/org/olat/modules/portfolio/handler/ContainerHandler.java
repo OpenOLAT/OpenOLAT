@@ -112,14 +112,13 @@ public class ContainerHandler implements PageLayoutHandler, PageElementStore<Con
 		if(layout == null) {
 			settings.setType(ContainerLayout.block_2cols);
 			settings.setNumOfColumns(ContainerLayout.block_2cols.numberOfBlocks());
-			
 		} else {
 			settings.setType(layout);
 			settings.setNumOfColumns(layout.numberOfBlocks());
 		}
-		String settingsXml = ContentEditorXStream.toXml(settings);
+		
 		ContainerPart container = new ContainerPart();
-		container.setLayoutOptions(settingsXml);
+		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
 		return container;
 	}
 
