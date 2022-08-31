@@ -499,7 +499,7 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append("        on oto.offer.key = offer.key");
 			sb.append("    where offer.valid = true");
 			sb.append("      and offer.openAccess = true");
-			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
+			sb.append("      and re2.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
 				sb.append("      and oto.organisation.key in :organisationKeys");
 				offerOrganisationsUsed = true;
