@@ -22,9 +22,12 @@ package org.olat.modules.catalog;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.FileUtils;
@@ -57,6 +60,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String KEY_ENABLED = "catalog.v2.enabled";
 	private static final String KEY_CATALOG_V1_MIGRATION = "catalog.v1.migration";
 	private static final String KEY_WEB_PUBLISH_ENABLED = "catalog.v2.web.publish.enabled";
+	private static final String KEY_TAXONOMY_EDIT_ROLES = "catalog.v2.taxonomy.edit.roles";
 	private static final String KEY_HEADER_BG_IMAGE_URI = "catalog.v2.header.bg.image.filename";
 	private static final String KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE = "catalog.v2.launcher.taxonomy.level.style";
 
@@ -64,6 +68,9 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private boolean enabled;
 	@Value("${catalog.v2.web.publish.enabled:false}")
 	private boolean webPublishEnabled;
+	@Value("${catalog.v2.taxonomy.edit.roles:administrator}")
+	private String taxonomyEditRolesValue;
+	private Set<OrganisationRoles> taxonomyEditRoles;
 	@Value("${catalog.v2.header.bg.image.filename:}")
 	private String headerBgImageFilename;
 	@Value("${catalog.v2.launcher.taxonomy.levelstyle:rectangle}")
@@ -91,6 +98,8 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 			webPublishEnabled = "true".equals(webPublishEnabledObj);
 		}
 		
+		taxonomyEditRolesValue = getStringPropertyValue(KEY_TAXONOMY_EDIT_ROLES, taxonomyEditRolesValue);
+		taxonomyEditRoles = null;
 		headerBgImageFilename = getStringPropertyValue(KEY_HEADER_BG_IMAGE_URI, headerBgImageFilename);
 		launcherTaxonomyLevelStyle = getStringPropertyValue(KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE, launcherTaxonomyLevelStyle);
 		
@@ -138,6 +147,22 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 		setBooleanProperty(KEY_WEB_PUBLISH_ENABLED, webPublishEnabled, true);
 	}
 	
+	public Set<OrganisationRoles> getTaxonomyEditRoles() {
+		if (taxonomyEditRoles == null) {
+			taxonomyEditRoles = Arrays.stream(taxonomyEditRolesValue.split(","))
+					.filter(OrganisationRoles::valid)
+					.map(OrganisationRoles::valueOf)
+					.collect(Collectors.toSet());
+		}
+		return taxonomyEditRoles;
+	}
+
+	public void setTaxonomyEditRoles(Set<OrganisationRoles> taxonomyEditRoles) {
+		this.taxonomyEditRoles = taxonomyEditRoles;
+		this.taxonomyEditRolesValue = taxonomyEditRoles.stream().map(OrganisationRoles::name).collect(Collectors.joining(","));
+		setStringProperty(KEY_TAXONOMY_EDIT_ROLES, taxonomyEditRolesValue, true);
+	}
+
 	public File getHeaderBgDirectory() {
 		File dir = HEADER_BG_DIR.toFile();
 		if (!dir.exists()) {

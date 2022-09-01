@@ -497,6 +497,19 @@
 		background: $o-toolbar-bg-color;
 	}
 }
+.o_breadcrump_edit_mode {
+	>.o_breadcrumb {
+		>.breadcrumb {
+			background: repeating-linear-gradient(
+				300deg,
+				$o-toolbar-edit_stripe-color,
+				$o-toolbar-edit_stripe-color 10px,
+				$o-toolbar-edit-bg-color 10px,
+				$o-toolbar-edit-bg-color 20px
+			);
+		}
+	}
+}
 
 /* Test / Assessment coach view */
 .o_segment_toolbar .o_toolbar {

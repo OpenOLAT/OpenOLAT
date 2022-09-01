@@ -1,3 +1,13 @@
+#if($r.available("taxonomy.edit") || $r.available("open.admin"))
+	<div class="o_button_group o_button_group_right">
+		#if($r.available("taxonomy.edit"))
+			$r.render("taxonomy.edit")
+		#end
+		#if($r.available("open.admin"))
+			$r.render("open.admin")
+		#end
+	</div>
+#end
 #foreach($componentName in $componentNames)
 	<div class="o_catalog_launcher">
 		$r.render($componentName)

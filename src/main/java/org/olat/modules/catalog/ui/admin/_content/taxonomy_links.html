@@ -1,0 +1,11 @@
+<div class="o_block_small_top">
+	#if($r.isNotEmpty($taxonomyLinks))
+		#foreach($link in $taxonomyLinks)
+			<div>
+				$r.render($link.getName())
+			</div>
+		#end
+	#else
+		<div>-</div>
+	#end
+</div>
