@@ -46,7 +46,9 @@ import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -181,6 +183,10 @@ public class CPPrintMapper implements Mapper {
 			output.append(sb.toString());
 			output.append("<link href=\"").append(themeBaseUri).append("content.css\" rel=\"stylesheet\" />\n");
 			output.append("<link href=\"").append(themeBaseUri).append("theme.css\" rel=\"stylesheet\" />\n");
+			output.append("<script>\n")
+			      .append(Formatter.mathJaxConfiguration())
+			      .append("</script>");
+			output.append("<script src=\"").append(WebappHelper.getMathJaxCdn()).append("tex-mml-chtml.js").append("\"></script>\n");
 		} catch(IOException e) {
 			log.error("", e);
 		}

@@ -1,5 +1,26 @@
 <div class="o_offline_cp">
-	<div class="o_offline_cp_header">$r.escapeHtml($title)</div>
-	<div class="o_offline_cp_footer">$r.escapeHtml($title)</div>
-	$content
+	<table>
+		<thead class="o_offline_cp_header">
+			<tr>
+				<td>
+					<span class="o_offline_cp_title">$r.escapeHtml($title)</span>
+					<span class="o_offline_cp_printed">$r.translate("print.date", $printedAt)</span>
+					<span class="o_offline_cp_logo"><img src="$r.staticThemeLink('images/cp-logo.png')" /></span>
+				</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>$content</td>
+			</tr>
+		</tbody>
+		<tfoot class="o_offline_cp_footer">
+			<tr>
+				<td>
+					<span class="o_offline_cp_title">$r.escapeHtml($title)</span>
+					<span class="o_offline_cp_printed">$r.translate("print.date", $printedAt)</span>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
 </div>

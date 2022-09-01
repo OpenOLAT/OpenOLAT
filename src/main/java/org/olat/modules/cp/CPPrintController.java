@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -48,6 +49,8 @@ public class CPPrintController extends BasicController {
 		String pages = printMapper.pagesToHtml();
 		mainVC.contextPut("content", pages);
 		mainVC.contextPut("title", ctm.getRootNode().getTitle());
+		Formatter formatter = Formatter.getInstance(getLocale());
+		mainVC.contextPut("printedAt", formatter.formatDate(ureq.getRequestTimestamp()));
 		putInitialPanel(mainVC);
 	}
 

@@ -3,27 +3,27 @@
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 	}
-}
+	
+	.o_offline_cp_header {
+		display: table-header-group;
+		padding-bottom: 20px;
+	}
+	
+	.o_offline_cp_header .o_offline_cp_printed {
+   		display: none;
+	}
 
-.o_offline_cp_footer {
-	position:fixed;
-	bottom: 0;
-	width:100%;
-	height:32px
+   	.o_offline_cp_footer {
+   		display: table-footer-group;
+   		height: 32px;
+   		width: 100%;
+   	}
+   	
+   	.o_offline_cp_footer .o_offline_cp_title {
+   		display: none;
+	}
+   	
+   	.o_offline_cp_logo {
+   		display: none;
+   	}
 }
-
-.o_offline_cp_header {
-	display: none;
-}
-
-/* Example of header which works in AthenaPDF */
-/*
-.o_offline_cp_header {
-	position:fixed;
-	top: 0;
-	left: 0;
-	bottom: calc(1vh - 32px);
-	width:100%;
-	height:32px
-}
-*/

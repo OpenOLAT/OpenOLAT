@@ -387,6 +387,14 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 	
+	public StringOutput staticThemeLink(String uri) {
+		StringOutput sb = new StringOutput(100);
+		sb.append(Settings.createServerURI());	
+		GUISettings settings = CoreSpringFactory.getImpl(GUISettings.class);
+		Renderer.renderStaticURI(sb, "themes/" + settings.getGuiThemeIdentifyer() + "/" + uri);
+		return sb;
+	}
+	
 	public StringOutput mathJaxCdn() {
 		StringOutput sb = new StringOutput(100);
 		sb.append(WebappHelper.getMathJaxCdn());
