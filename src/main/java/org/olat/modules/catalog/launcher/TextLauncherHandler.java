@@ -74,7 +74,7 @@ public class TextLauncherHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 1000;
+		return 1;
 	}
 
 	@Override

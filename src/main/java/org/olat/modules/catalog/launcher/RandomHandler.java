@@ -88,7 +88,7 @@ public class RandomHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 900;
+		return 180;
 	}
 
 	@Override

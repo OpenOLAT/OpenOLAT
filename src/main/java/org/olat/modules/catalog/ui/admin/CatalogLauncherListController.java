@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -151,17 +152,30 @@ public class CatalogLauncherListController extends FormBasicController {
 				})
 				.collect(Collectors.toSet());
 		
-		catalogService.getCatalogLauncherHandlers().stream()
+		List<CatalogLauncherHandler> handlers = catalogService.getCatalogLauncherHandlers().stream()
 				.filter(CatalogLauncherHandler::isEnabled)
 				.filter(handler -> !unaddableHanderTypes.contains(handler.getType()))
-				.sorted((h1, h2) -> Integer.compare(h2.getSortOrder(), h1.getSortOrder()))
-				.forEach(handler -> {
-					FormLink link = uifactory.addFormLink(handler.getType(), CMD_ADD, handler.getTypeI18nKey(), null, dummyCont, Link.LINK);
-					link.setUserObject(handler);
-					addLauncherDropdown.addElement(link);
-				});
+				.sorted((h1, h2) -> Integer.compare(h1.getSortOrder(), h2.getSortOrder()))
+				.collect(Collectors.toList());
+		
+		int lastSeparator = 0;
+		for(CatalogLauncherHandler handler : handlers) {
+			// for each 100-group, create a separator
+			int separator = handler.getSortOrder() / 100;
+			if (separator > lastSeparator) {
+				addLauncherDropdown.addElement(new SpacerItem("spacer" + separator));
+				lastSeparator = separator;
+			}
+			addHandlerLink(handler);
+		}
 		
 		addLauncherDropdown.setVisible(addLauncherDropdown.size() > 0);
+	}
+	
+	private void addHandlerLink(CatalogLauncherHandler handler) {
+		FormLink link = uifactory.addFormLink(handler.getType(), CMD_ADD, handler.getTypeI18nKey(), null, dummyCont, Link.LINK);
+		link.setUserObject(handler);
+		addLauncherDropdown.addElement(link);
 	}
 
 	void loadModel() {

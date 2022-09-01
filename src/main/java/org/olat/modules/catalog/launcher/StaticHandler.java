@@ -77,7 +77,7 @@ public class StaticHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 100;
+		return 120;
 	}
 
 	@Override

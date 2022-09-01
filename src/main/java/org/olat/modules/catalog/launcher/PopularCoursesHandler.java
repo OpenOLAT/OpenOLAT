@@ -87,7 +87,7 @@ public class PopularCoursesHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 800;
+		return 100;
 	}
 
 	@Override
