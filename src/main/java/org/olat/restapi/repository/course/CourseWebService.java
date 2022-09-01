@@ -22,6 +22,7 @@ package org.olat.restapi.repository.course;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -33,12 +34,14 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -71,7 +74,9 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -103,6 +108,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
@@ -475,6 +481,109 @@ public class CourseWebService {
 		OlatResourceVO vo = new OlatResourceVO(course);
 		return Response.ok(vo).build();
 	}
+	
+	
+	/**
+	 * Mostly for the last modification of the image.
+	 *
+	 * @param httpRequest The HTTP request
+	 * @return Mostly the last modification of the image
+	 */
+	@HEAD
+	@Path("image")
+	@Operation(summary = "Head the teaser image of the course", description = "Head the teaser image of the course")
+	@ApiResponse(responseCode = "200", description = "The image's last modification of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The image or course not found")
+	@Produces({MediaType.WILDCARD})
+	public Response headImage(@Context HttpServletRequest httpRequest) {
+		if(!isManager(httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		VFSLeaf leaf = repositoryManager.getImage(entry);
+		if(leaf == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Date lastModified = new Date(leaf.getLastModified());
+		return Response.ok().lastModified(lastModified).build();
+	}
+	
+	/**
+	 * Download the teaser image of the course.
+	 * 
+	 * @param httpRequest The HTTP request
+	 * @param request The request
+	 * @return The image
+	 */
+	@GET
+	@Path("image")
+	@Operation(summary = "Get the teaser image of the course", description = "Get the teaser image of the course")
+	@ApiResponse(responseCode = "200", description = "The image of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or image not found")
+	@Produces({MediaType.WILDCARD})
+	public Response getTeaser(@Context HttpServletRequest httpRequest, @Context Request request) {
+		if(!isManager(httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		VFSLeaf leaf = repositoryManager.getImage(entry);
+		if(leaf instanceof LocalImpl) {
+			File image = ((LocalImpl)leaf).getBasefile();
+			Date lastModified = new Date(image.lastModified());
+			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+			if(response == null) {
+				response = Response.ok(image).lastModified(lastModified).cacheControl(cc);
+			}
+			return response.build();
+		}
+		return Response.serverError().status(Status.NOT_FOUND).build();
+	}
+	
+	/**
+	 * Upload the image of a course.
+	 * 
+	 * @param identityKey The user key identifier of the user being searched
+	 * @param file The image
+	 * @param request The REST request
+	 * @return Nothing
+	 */
+	@POST
+	@Path("image")
+	@Operation(summary = "Upload the teaser image of a course", description = "Upload the teaser image of a course")
+	@ApiResponse(responseCode = "200", description = "Nothing if successful")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The course not found")
+	@Consumes({MediaType.MULTIPART_FORM_DATA})
+	public Response postPortrait(@Context HttpServletRequest httpRequest) {
+		MultipartReader partsReader = null;
+		try {
+			if(!isManager(httpRequest)) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
+			
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			partsReader = new MultipartReader(httpRequest);
+			File image = partsReader.getFile();
+			String filename = partsReader.getFilename();
+			if(repositoryManager.setImage(image, filename, entry)) {
+				return Response.ok().build();
+			}
+			return Response.serverError().status(Status.CONFLICT).build();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		} finally {
+			MultipartReader.closeQuietly(partsReader);
+		}
+	}
+
 	
 	/**
 	 * Export the course.

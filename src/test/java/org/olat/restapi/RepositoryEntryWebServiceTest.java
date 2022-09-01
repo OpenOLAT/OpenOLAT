@@ -41,6 +41,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
@@ -57,6 +58,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -81,6 +83,7 @@ import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
+import org.olat.test.VFSJavaIOFile;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -748,6 +751,91 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
 		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
 	}
+	
+	
+	
+	
+	@Test
+	public void headRepositoryEntryImage() throws IOException, URISyntaxException {
+		URL imageUrl = RepositoryEntryWebServiceTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		repositoryManager.setImage(new VFSJavaIOFile(image), entry, admin);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(entry.getKey().toString())
+				.path("image").build();
+		HttpHead method = conn.createHead(request, "image/jpg", true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+	}
+	
+	@Test
+	public void getCourseImage() throws IOException, URISyntaxException {
+		URL imageUrl = RepositoryEntryWebServiceTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		repositoryManager.setImage(new VFSJavaIOFile(image), entry, admin);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(entry.getKey().toString())
+				.path("image").build();
+		HttpGet method = conn.createGet(request, "image/jpg", true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		byte[] imageArr = EntityUtils.toByteArray(response.getEntity());
+		Assert.assertNotNull(imageArr);
+		Assert.assertEquals(image.length(), imageArr.length);
+	}
+	
+	@Test
+	public void postCourseImage() throws IOException, URISyntaxException {
+		URL imageUrl = RepositoryEntryWebServiceTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(entry.getKey().toString())
+				.path("image").build();
+		
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addMultipart(method, "image.jpg", image);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		VFSLeaf imageLeaf = repositoryManager.getImage(entry);
+		Assert.assertNotNull(imageLeaf);
+		// Because the image is small, it's not scaled
+		Assert.assertEquals(image.length(), imageLeaf.getSize());
+	}
+	
 	
 	@Test
 	public void getTaxonomylevels() throws IOException, URISyntaxException {
