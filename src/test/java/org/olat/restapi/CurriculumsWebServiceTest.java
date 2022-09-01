@@ -268,6 +268,34 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void deleteCurriculum()
+	throws IOException, URISyntaxException {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Del-Curriculum", "REST del Curriculum", "A curriculum deleted by REST API", false, defOrganisation);
+		Curriculum notDeletedCurriculum = curriculumService.createCurriculum("REST-Not-Me-Curriculum", "REST don't delete me", "A curriculum by REST API", false, defOrganisation);
+		dbInstance.commit();
+		CurriculumElement element = curriculumService.createCurriculumElement("by-key", "Element will be deleted",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
+		Assert.assertNull(deletedCurriculum);
+		CurriculumElement deletedElement = curriculumService.getCurriculumElement(element);
+		Assert.assertNull(deletedElement);
+		Curriculum survivingCurriculum = curriculumService.getCurriculum(notDeletedCurriculum);
+		Assert.assertNotNull(survivingCurriculum);
+	}
+	
+	@Test
 	public void createCurriculum_notAuthorized()
 	throws IOException, URISyntaxException {
 		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("rest-curriculum");

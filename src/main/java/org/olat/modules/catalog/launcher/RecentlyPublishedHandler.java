@@ -91,7 +91,7 @@ public class RecentlyPublishedHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 150;
+		return 110;
 	}
 
 	@Override

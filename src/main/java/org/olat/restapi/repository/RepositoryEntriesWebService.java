@@ -336,7 +336,9 @@ public class RepositoryEntriesWebService {
 
 				String softkey = partsReader.getValue("softkey");
 				String resourcename = partsReader.getValue("resourcename");
-				String displayname = partsReader.getValue("displayname");	
+				String displayname = partsReader.getValue("displayname");
+				String externalId = partsReader.getValue("externalId");
+				String externalRef = partsReader.getValue("externalRef");
 				String organisationKey = partsReader.getValue("organisationkey");
 				Organisation organisation = null;
 				if(StringHelper.containsNonWhitespace(organisationKey)) {
@@ -349,7 +351,8 @@ public class RepositoryEntriesWebService {
 						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager,
 						OrganisationRoles.author);
 				if(hasAdminRights) {
-					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, status, organisation);
+					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname,
+							softkey, externalId, externalRef, status, organisation);
 					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
 					return Response.ok(vo).build();
 				} else {
@@ -366,7 +369,7 @@ public class RepositoryEntriesWebService {
 	}
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
-			String displayname, String softkey, RepositoryEntryStatusEnum status, Organisation organisation) {
+			String displayname, String softkey, String externalId, String externalRef, RepositoryEntryStatusEnum status, Organisation organisation) {
 		try {
 			RepositoryHandler handler = null;
 			for(String type:handlerFactory.getSupportedTypes()) {
@@ -390,6 +393,12 @@ public class RepositoryEntriesWebService {
 				}
 				if(StringHelper.containsNonWhitespace(softkey)) {
 					addedEntry.setSoftkey(softkey);
+				}
+				if(StringHelper.containsNonWhitespace(externalId)) {
+					addedEntry.setExternalId(externalId);
+				}
+				if(StringHelper.containsNonWhitespace(externalRef)) {
+					addedEntry.setExternalRef(externalRef);
 				}
 				addedEntry.setEntryStatus(status);
 				addedEntry = repositoryService.update(addedEntry);

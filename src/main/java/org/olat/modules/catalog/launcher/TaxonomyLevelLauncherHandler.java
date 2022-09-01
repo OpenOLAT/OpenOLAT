@@ -103,7 +103,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 
 	@Override
 	public int getSortOrder() {
-		return 500;
+		return 300;
 	}
 
 	@Override

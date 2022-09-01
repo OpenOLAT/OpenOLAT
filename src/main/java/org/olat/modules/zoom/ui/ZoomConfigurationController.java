@@ -207,6 +207,8 @@ public class ZoomConfigurationController extends FormBasicController {
                 String businessPath = ((ShowZoomApplicationsController.OpenBusinessPathEvent) event).getBusinessPath();
 
                 NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+
+                reloadModuleState();
                 updateUI();
             }
         }
@@ -255,10 +257,12 @@ public class ZoomConfigurationController extends FormBasicController {
         super.formInnerEvent(ureq, source, event);
     }
 
-    private void updateUI() {
+    private void reloadModuleState() {
         moduleEnabledEl.select(enabledKeys[0], zoomModule.isEnabled());
-        boolean enabled = moduleEnabledEl.isAtLeastSelected(1);
+    }
 
+    private void updateUI() {
+        boolean enabled = moduleEnabledEl.isAtLeastSelected(1);
         enableForEl.setVisible(enabled);
         enableForEl.select(ENABLE_FOR_KEYS[0], zoomModule.isEnabledForCourseElement());
         enableForEl.select(ENABLE_FOR_KEYS[1], zoomModule.isEnabledForCourseTool());

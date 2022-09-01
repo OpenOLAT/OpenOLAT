@@ -43,6 +43,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -79,6 +80,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.vfs.LocalImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -110,6 +113,7 @@ import org.olat.resource.accesscontrol.Offer;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.support.vo.OlatResourceVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -1095,6 +1099,104 @@ public class RepositoryEntryWebService {
 				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
 		
 		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
+	}
+	
+	
+	/**
+	 * Mostly for the last modification of the image.
+	 *
+	 * @param httpRequest The HTTP request
+	 * @return Mostly the last modification of the image
+	 */
+	@HEAD
+	@Path("image")
+	@Operation(summary = "Head the teaser image of the resource", description = "Head the teaser image of the resource")
+	@ApiResponse(responseCode = "200", description = "The last modification date of the image resource", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The resource or the image not found")
+	@Produces({MediaType.WILDCARD})
+	public Response headImage(@Context HttpServletRequest httpRequest) {
+		if(!isAuthorEditor(httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		VFSLeaf leaf = repositoryManager.getImage(entry);
+		if(leaf == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Date lastModified = new Date(leaf.getLastModified());
+		return Response.ok().lastModified(lastModified).build();
+	}
+	
+	/**
+	 * Download the teaser image of the resource.
+	 * 
+	 * @param httpRequest The HTTP request
+	 * @param request The request
+	 * @return The image
+	 */
+	@GET
+	@Path("image")
+	@Operation(summary = "Get the teaser image of the resource", description = "Get the teaser image of the resource")
+	@ApiResponse(responseCode = "200", description = "The image of the resource", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The resource or image not found")
+	@Produces({MediaType.WILDCARD})
+	public Response getTeaser(@Context HttpServletRequest httpRequest, @Context Request request) {
+		if(!isAuthorEditor(httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		VFSLeaf leaf = repositoryManager.getImage(entry);
+		if(leaf instanceof LocalImpl) {
+			File image = ((LocalImpl)leaf).getBasefile();
+			Date lastModified = new Date(image.lastModified());
+			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+			if(response == null) {
+				response = Response.ok(image).lastModified(lastModified).cacheControl(cc);
+			}
+			return response.build();
+		}
+		return Response.serverError().status(Status.NOT_FOUND).build();
+	}
+	
+	/**
+	 * Upload the image of a course.
+	 * 
+	 * @param identityKey The user key identifier of the user being searched
+	 * @param file The image
+	 * @param request The REST request
+	 * @return The image
+	 */
+	@POST
+	@Path("image")
+	@Operation(summary = "Upload the teaser image of a resource", description = "Upload the teaser image of a resource")
+	@ApiResponse(responseCode = "200", description = "Nothing if successful")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The resource or the portrait not found")
+	@Consumes({MediaType.MULTIPART_FORM_DATA})
+	public Response postPortrait(@Context HttpServletRequest httpRequest) {
+		MultipartReader partsReader = null;
+		try {
+			if(!isAuthorEditor(httpRequest)) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
+			
+			partsReader = new MultipartReader(httpRequest);
+			File image = partsReader.getFile();
+			String filename = partsReader.getFilename();
+			if(repositoryManager.setImage(image, filename, entry)) {
+				return Response.ok().build();
+			}
+			return Response.serverError().status(Status.CONFLICT).build();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		} finally {
+			MultipartReader.closeQuietly(partsReader);
+		}
 	}
 	
 	@GET

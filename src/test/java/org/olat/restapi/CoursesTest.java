@@ -67,6 +67,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -565,6 +566,49 @@ public class CoursesTest extends OlatRestTestCase {
 		Long repoKey = vo.getRepoEntryKey();
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoKey);
 		assertTrue(repositoryEntryRelationDao.hasRole(owner.getIdentity(), re, GroupRoles.owner.name()));
+	}
+	
+	@Test
+	public void importCourseMetadata() throws IOException, URISyntaxException {
+		URL courseUrl = CoursesTest.class.getResource("Course_with_blog.zip");
+		File courseZip = new File(courseUrl.toURI());
+
+		assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri( getContextURI())
+				.path("repo/courses").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+
+		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
+		String externalId = softKey + "-Ext-ID";
+		String externalRef = softKey + "-Ext-Ref";
+		
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", courseZip, ContentType.APPLICATION_OCTET_STREAM, courseZip.getName())
+				.addTextBody("filename", "Very_small_course.zip")
+				.addTextBody("displayname", "External course")
+				.addTextBody("externalId", externalId)
+				.addTextBody("externalRef", externalRef)
+				.addTextBody("softkey", softKey)
+				.build();
+		method.setEntity(entity);
+
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+
+		CourseVO vo = conn.parse(response, CourseVO.class);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(vo.getRepoEntryKey());
+		Assert.assertNotNull(re);
+		Assert.assertEquals(softKey, re.getSoftkey());
+		Assert.assertEquals(externalId, re.getExternalId());
+		Assert.assertEquals(externalRef, re.getExternalRef());
+		Assert.assertEquals("External course", re.getDisplayname());
+		
+		ICourse course = CourseFactory.loadCourse(re);
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		Assert.assertEquals("External course", rootNode.getLongTitle());
+		Assert.assertEquals("Course including Blog", rootNode.getShortTitle());
 	}
 
 	@Test

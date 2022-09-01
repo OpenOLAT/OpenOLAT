@@ -33,10 +33,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
@@ -64,6 +67,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -81,6 +85,7 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
+import org.olat.test.VFSJavaIOFile;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -638,6 +643,88 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertNotNull(educationTypeVo);
 		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
 		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
+	}
+	
+	@Test
+	public void headCourseImage() throws IOException, URISyntaxException {
+		URL imageUrl = CourseTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+		
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commit();
+		repositoryManager.setImage(new VFSJavaIOFile(image), courseEntry, admin);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString())
+				.path("image").build();
+		HttpHead method = conn.createHead(request, "image/jpg", true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+	}
+	
+	@Test
+	public void getCourseImage() throws IOException, URISyntaxException {
+		URL imageUrl = CourseTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+		
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commit();
+		repositoryManager.setImage(new VFSJavaIOFile(image), courseEntry, admin);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString())
+				.path("image").build();
+		HttpGet method = conn.createGet(request, "image/jpg", true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		byte[] imageArr = EntityUtils.toByteArray(response.getEntity());
+		Assert.assertNotNull(imageArr);
+		Assert.assertEquals(image.length(), imageArr.length);
+	}
+	
+	@Test
+	public void postCourseImage() throws IOException, URISyntaxException {
+		URL imageUrl = CourseTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+		
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString())
+				.path("image").build();
+		
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addMultipart(method, "image.jpg", image);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		VFSLeaf imageLeaf = repositoryManager.getImage(courseEntry);
+		Assert.assertNotNull(imageLeaf);
+		// Because the image is small, it's not scaled
+		Assert.assertEquals(image.length(), imageLeaf.getSize());
 	}
 	
 	@Test

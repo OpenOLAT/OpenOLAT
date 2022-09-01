@@ -208,7 +208,7 @@ public class RepositoryManager {
 		}
 
 		String sourceImageSuffix = FileUtils.getFileSuffix(srcFile.getName());
-		VFSContainer targetMediaDir = this.getMediaDirectory(target.getOlatResource());
+		VFSContainer targetMediaDir = getMediaContainer(target.getOlatResource());
 		VFSLeaf newImage = targetMediaDir.createChildLeaf(target.getResourceableId() + "." + sourceImageSuffix);
 		if (newImage != null) {
 			return VFSManager.copyContent(srcFile, newImage, false, savedBy);
@@ -228,7 +228,7 @@ public class RepositoryManager {
 	}
 	
 	public VFSLeaf getImage(Long repoEntryKey, OLATResourceable ores) {
-		VFSContainer repositoryHome = getMediaDirectory(ores);
+		VFSContainer repositoryHome = getMediaContainer(ores);
 		
 		String imageName = repoEntryKey + ".jpg";
 		VFSItem image = repositoryHome.resolve(imageName);
@@ -243,7 +243,7 @@ public class RepositoryManager {
 		return null;
 	}
 	
-	private VFSContainer getMediaDirectory(OLATResourceable re) {
+	private File getMediaDirectory(OLATResourceable re) {
 		File fResourceFileroot;
 		if("CourseModule".equals(re.getResourceableTypeName())) {
 			fResourceFileroot = new File(FolderConfig.getCanonicalRoot(), PersistingCourseImpl.COURSE_ROOT_DIR_NAME);
@@ -251,7 +251,11 @@ public class RepositoryManager {
 		} else {
 			fResourceFileroot = FileResourceManager.getInstance().getFileResourceRoot(re);
 		}
-		File mediaHome = new File(fResourceFileroot, "media");
+		return new File(fResourceFileroot, "media");
+	}
+	
+	private VFSContainer getMediaContainer(OLATResourceable re) {
+		File mediaHome = getMediaDirectory(re);
 		return new LocalFolderImpl(mediaHome);
 	}
 
@@ -271,7 +275,7 @@ public class RepositoryManager {
 			targetExtension = ".jpg";
 		}
 		
-		VFSContainer repositoryHome = getMediaDirectory(re.getOlatResource());
+		VFSContainer repositoryHome = getMediaContainer(re.getOlatResource());
 		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + targetExtension);
 		if(repoImage == null) {
 			VFSItem item = repositoryHome.resolve(re.getResourceableId() + targetExtension);
@@ -290,6 +294,37 @@ public class RepositoryManager {
 		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTURE_WIDTH, PICTURE_WIDTH, false);
 		return size != null;
 	}
+	
+	public boolean setImage(File newImageFile, String filename, RepositoryEntry re) {
+		VFSLeaf currentImage = getImage(re);
+		if(currentImage != null) {
+			currentImage.deleteSilently();//no versions for this
+		}
+
+		if(newImageFile == null || !newImageFile.exists() || newImageFile.length() <= 0l) {
+			return false;
+		}
+
+		String targetExtension = ".png";
+		String extension = FileUtils.getFileSuffix(filename);
+		if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)) {
+			targetExtension = ".jpg";
+		}
+		
+		File repositoryHome = getMediaDirectory(re.getOlatResource());
+		File repoImage = new File(repositoryHome, re.getResourceableId() + targetExtension);
+
+		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
+			Size newImageSize = imageHelper.getSize(newImageFile, extension);
+			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
+				return FileUtils.copyFileToFile(newImageFile, repoImage, true);
+			}
+		}
+
+		Size size = imageHelper.scaleImage(newImageFile, targetExtension, repoImage, PICTURE_WIDTH, PICTURE_WIDTH, false);
+		return size != null;
+	}
+	
 
 	/**
 	 * Lookup repo entry by key.

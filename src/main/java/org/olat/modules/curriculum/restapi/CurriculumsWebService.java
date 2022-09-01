@@ -238,6 +238,23 @@ public class CurriculumsWebService {
 		CurriculumVO curriculumVo = CurriculumVO.valueOf(curriculum);
 		return Response.ok(curriculumVo).build();
 	}
+	
+	@DELETE
+	@Path("{curriculumKey}")
+	@Operation(summary = "Delete a specific curriculum",
+		description = "Delete a specific curriculum")
+	@ApiResponse(responseCode = "200", description = "")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response deleteCurriculum(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(!isManager(curriculum, httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		curriculumService.deleteCurriculum(curriculum);
+		return Response.ok().build();
+	}
 
 	@Path("{curriculumKey}/elements")
 	public CurriculumElementsWebService getCurriculumElementWebService(@PathParam("curriculumKey") Long curriculumKey,
