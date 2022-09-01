@@ -424,12 +424,15 @@ public class CoursesWebService {
 				String softKey = partsReader.getValue("softkey");
 				String displayName = partsReader.getValue("displayname");
 				String organisation = partsReader.getValue("organisationkey");
+				String externalId = partsReader.getValue("externalId");
+				String externalRef = partsReader.getValue("externalRef");
 				Long organisationKey = null;
 				if(StringHelper.isLong(organisation)) {
 					organisationKey = Long.valueOf(organisation);
 				}
 				
-				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, accessStatus, organisationKey);
+				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, externalId, externalRef,
+						accessStatus, organisationKey);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
@@ -455,7 +458,7 @@ public class CoursesWebService {
 	}
 
 	private ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP, String displayName,
-			String softKey, RepositoryEntryStatusEnum status, Long organisationKey) {
+			String softKey, String externalId, String externalRef, RepositoryEntryStatusEnum status, Long organisationKey) {
 
 		log.info("REST Import course {} START", displayName);
 		if(!StringHelper.containsNonWhitespace(displayName)) {
@@ -483,8 +486,14 @@ public class CoursesWebService {
 		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, organisation, Locale.ENGLISH, fCourseImportZIP, null);
 		if(StringHelper.containsNonWhitespace(softKey)) {
 			re.setSoftkey(softKey);
-			re = repositoryService.update(re);
 		}
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			re.setExternalId(externalId);
+		}
+		if(StringHelper.containsNonWhitespace(externalRef)) {
+			re.setExternalRef(externalRef);
+		}
+		re = repositoryService.update(re);
 		log.info("REST Import course {} END", displayName);
 
 		//publish

@@ -38,6 +38,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -336,10 +337,14 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testImportWiki() throws IOException, URISyntaxException {
+	public void testImportWikiWithMetadata() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("wiki-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
+		
+		String softKey = UUID.randomUUID().toString().substring(0, 30);
+		String externalId = softKey + "-Ext-ID";
+		String externalRef = softKey + "Ext-Ref";
 
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -351,6 +356,9 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 				.addTextBody("filename", "wiki-demo.zip")
 				.addTextBody("resourcename", "Wiki demo")
 				.addTextBody("displayname", "Wiki demo")
+				.addTextBody("externalId", externalId)
+				.addTextBody("externalRef", externalRef)
+				.addTextBody("softkey", softKey)
 				.build();
 		method.setEntity(entity);
 		
@@ -361,9 +369,13 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		
 		Long key = vo.getKey();
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
-		assertNotNull(re);
-		assertNotNull(re.getOlatResource());
-		assertEquals("Wiki demo", re.getDisplayname());
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getOlatResource());
+		Assert.assertEquals("Wiki demo", re.getDisplayname());
+		Assert.assertEquals(externalId, re.getExternalId());
+		Assert.assertEquals(externalRef, re.getExternalRef());
+		Assert.assertEquals(softKey, re.getSoftkey());
+		
 		log.info(re.getOlatResource().getResourceableTypeName());
 		
 		conn.shutdown();
