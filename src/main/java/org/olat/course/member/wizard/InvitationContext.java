@@ -19,6 +19,9 @@
  */
 package org.olat.course.member.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -42,23 +45,18 @@ public class InvitationContext {
 	
 	private final boolean overrideManaged;
 	
-	private String email;
-	private String firstName;
-	private String lastName;
-	private final InvitationAdditionalInfos additionalInfos;
-	
+	private String rawEmail;
+	private String rawNames;
 	private MailTemplate mailTemplate;
 	
-	private Identity identity;
-	private boolean identityInviteeOnly;
-	
+	private List<TransientInvitation> invitations = new ArrayList<>();
+
 	private MailerResult result;
 	
 	private InvitationContext(RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.overrideManaged = overrideManaged;
-		additionalInfos = new InvitationAdditionalInfosImpl();
 	}
 	
 	public static InvitationContext valueOf(BusinessGroup businessGroup) {
@@ -76,50 +74,29 @@ public class InvitationContext {
 	public BusinessGroup getBusinessGroup() {
 		return businessGroup;
 	}
+	
+	public List<TransientInvitation> getInvitations() {
+		return new ArrayList<>(invitations);
+	}
 
 	public boolean isOverrideManaged() {
 		return overrideManaged;
 	}
 
-	public String getEmail() {
-		return email;
+	public String getRawEmail() {
+		return rawEmail;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public InvitationAdditionalInfos getAdditionalInfos() {
-		return additionalInfos;
-	}
-
-	public Identity getIdentity() {
-		return identity;
+	public void setRawEmail(String email) {
+		this.rawEmail = email;
 	}
 	
-	public boolean isIdentityInviteeOnly() {
-		return identityInviteeOnly;
+	public String getRawNames() {
+		return rawNames;
 	}
-
-	public void setIdentity(Identity identity, boolean identityInviteeOnly) {
-		this.identity = identity;
-		this.identityInviteeOnly = identityInviteeOnly;
+	
+	public void setRawNames(String rawNames) {
+		this.rawNames = rawNames;
 	}
 
 	public MailerResult getResult() {
@@ -144,5 +121,103 @@ public class InvitationContext {
 
 	public void setMemberPermissions(MemberPermissionChangeEvent memberPermissions) {
 		this.memberPermissions = memberPermissions;
+	}
+	
+	public boolean hasInviteeOnly() {
+		boolean inviteeOnly = false;
+		for(TransientInvitation invitation:invitations) {
+			inviteeOnly |= invitation.getIdentity() == null || invitation.isIdentityInviteeOnly();
+		}
+		return inviteeOnly;
+	}
+	
+	public void clearInvitations() {
+		invitations.clear();
+	}
+	
+	public void setInvitation(String email, Identity identity, boolean identityInviteeOnly) {
+		invitations.clear();
+		
+		TransientInvitation invitation = new TransientInvitation();
+		invitation.setEmail(trim(email));
+		invitation.setIdentity(identity);
+		invitation.setIdentityInviteeOnly(identityInviteeOnly);
+		invitations.add(invitation);
+	}
+	
+	public void addInvitation(String email, String firstName, String lastName) {
+		TransientInvitation invitation = new TransientInvitation();
+		invitation.setEmail(trim(email));
+		invitation.setFirstName(trim(firstName));
+		invitation.setLastName(trim(lastName));
+		invitation.setIdentityInviteeOnly(true);
+		invitations.add(invitation);
+	}
+	
+	public void addInvitation(String email, Identity identity, boolean identityInviteeOnly) {
+		TransientInvitation invitation = new TransientInvitation();
+		invitation.setEmail(trim(email));
+		invitation.setIdentity(identity);
+		invitation.setIdentityInviteeOnly(identityInviteeOnly);
+		invitations.add(invitation);
+	}
+	
+	private String trim(String val) {
+		return val == null ? null : val.trim();
+	}
+	
+	public class TransientInvitation {
+		
+		private String email;
+		private String firstName;
+		private String lastName;
+		private final InvitationAdditionalInfos additionalInfos = new InvitationAdditionalInfosImpl();
+
+		private Identity identity;
+		private boolean identityInviteeOnly;
+		
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getFirstName() {
+			return firstName;
+		}
+		
+		public void setFirstName(String firstName) {
+			this.firstName = firstName;
+		}
+		
+		public String getLastName() {
+			return lastName;
+		}
+		
+		public void setLastName(String lastName) {
+			this.lastName = lastName;
+		}
+		
+		public InvitationAdditionalInfos getAdditionalInfos() {
+			return additionalInfos;
+		}
+		
+		public Identity getIdentity() {
+			return identity;
+		}
+		
+		public void setIdentity(Identity identity) {
+			this.identity = identity;
+		}
+		
+		public boolean isIdentityInviteeOnly() {
+			return identityInviteeOnly;
+		}
+		
+		public void setIdentityInviteeOnly(boolean identityInviteeOnly) {
+			this.identityInviteeOnly = identityInviteeOnly;
+		}
 	}
 }

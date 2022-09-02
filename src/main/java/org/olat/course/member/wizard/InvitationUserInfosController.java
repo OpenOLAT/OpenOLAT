@@ -39,12 +39,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.course.member.wizard.InvitationContext.TransientInvitation;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
+ * Only for a single user.
  * 
  * Initial date: 5 juil. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -59,16 +61,16 @@ public class InvitationUserInfosController extends StepFormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	private final InvitationContext context;
+	private final TransientInvitation transientInvitation;
 	private Map<String,FormItem> propFormItems = new HashMap<>();
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public InvitationUserInfosController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			StepsRunContext runContext, InvitationContext context) {
+			StepsRunContext runContext, TransientInvitation transientInvitation) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		this.context = context;
+		this.transientInvitation = transientInvitation;
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, isAdministrativeUser);
@@ -80,8 +82,8 @@ public class InvitationUserInfosController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_external_user_data");
 		
-		User existingUser = context.getIdentity() == null ? null : context.getIdentity().getUser();
-		if(existingUser != null && !context.isIdentityInviteeOnly()) {
+		User existingUser = transientInvitation.getIdentity() == null ? null : transientInvitation.getIdentity().getUser();
+		if(existingUser != null && !transientInvitation.isIdentityInviteeOnly()) {
 			setFormWarning("warn.user.already.exists");
 		}
 		
@@ -99,7 +101,7 @@ public class InvitationUserInfosController extends StepFormBasicController {
 				if(existingUser != null) {
 					fi.setEnabled(false);
 				} else if(fi instanceof TextElement && UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
-					((TextElement)fi).setValue(context.getEmail());
+					((TextElement)fi).setValue(transientInvitation.getEmail());
 					fi.setEnabled(false);
 				}
 			}
@@ -110,7 +112,7 @@ public class InvitationUserInfosController extends StepFormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		Identity identity = context.getIdentity();
+		Identity identity = transientInvitation.getIdentity();
 		User user = identity == null ? null : identity.getUser();
 	
 		// validate special rules for each user property
@@ -135,11 +137,11 @@ public class InvitationUserInfosController extends StepFormBasicController {
 			FormItem ui = propFormItems.get(propName);
 			String uiValue = userPropertyHandler.getStringValue(ui);
 			if(UserConstants.FIRSTNAME.equals(propName)) {
-				context.setFirstName(uiValue);
+				transientInvitation.setFirstName(uiValue);
 			} else if(UserConstants.LASTNAME.equals(propName)) {
-				context.setLastName(uiValue);
+				transientInvitation.setLastName(uiValue);
 			} else if(!UserConstants.EMAIL.equals(propName)) {
-				context.getAdditionalInfos().getUserAttributes().put(propName, uiValue);
+				transientInvitation.getAdditionalInfos().getUserAttributes().put(propName, uiValue);
 			}
 		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);

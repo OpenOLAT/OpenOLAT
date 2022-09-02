@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.course.member.wizard.InvitationContext.TransientInvitation;
 
 /**
  * 
@@ -51,6 +52,10 @@ public class Invitation_2_UserInfosStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new InvitationUserInfosController(ureq, wControl, form, runContext, context);
+		if(context.getInvitations().size() == 1) {
+			TransientInvitation invitation = context.getInvitations().get(0);
+			return new InvitationUserInfosController(ureq, wControl, form, runContext, invitation);
+		}
+		return new InvitationUsersListInfosController(ureq, wControl, form, runContext, context);
 	}
 }

@@ -45,6 +45,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.course.member.wizard.InvitationContext.TransientInvitation;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
@@ -86,12 +87,16 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-		Step step;
-		if(context.getIdentity() == null || context.isIdentityInviteeOnly()) {
-			step = executeInvitation(ureq, wControl);
-		} else {
-			step = executeMembership(ureq, wControl, context.getIdentity());
+		Step step = StepsMainRunController.DONE_UNCHANGED;
+		
+		for(TransientInvitation invitation:context.getInvitations()) {
+			if(invitation.getIdentity() == null || invitation.isIdentityInviteeOnly()) {
+				step = executeInvitation(ureq, wControl, invitation);
+			} else {
+				step = executeMembership(ureq, wControl, invitation.getIdentity());
+			}
 		}
+		
 		return step;
 	}
 	
@@ -118,12 +123,12 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
-	private Step executeInvitation(UserRequest ureq, WindowControl wControl) {
+	private Step executeInvitation(UserRequest ureq, WindowControl wControl, TransientInvitation transientInvitation) {
 		MemberPermissionChangeEvent changes = context.getMemberPermissions();
 		
 		List<String> repoRoles = roles(changes);
 		if(!repoRoles.isEmpty() && context.getRepoEntry() != null) {
-			executeInvitation(ureq, wControl, context.getRepoEntry(), null, repoRoles); 
+			executeInvitation(ureq, wControl, transientInvitation, context.getRepoEntry(), null, repoRoles); 
 		}
 		
 		List<BusinessGroupMembershipChange> allModifications = changes.getGroupChanges();
@@ -132,7 +137,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 				BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(allModification.getGroupKey());
 				List<String> groupRoles = roles(allModifications, allModification.getGroupKey());
 				if(businessGroup != null && !groupRoles.isEmpty()) {
-					executeInvitation(ureq, wControl, context.getRepoEntry(), businessGroup, groupRoles);
+					executeInvitation(ureq, wControl, transientInvitation, context.getRepoEntry(), businessGroup, groupRoles);
 				}
 			}
 		}
@@ -178,7 +183,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		return new ArrayList<>(roles);
 	}
 	
-	private Step executeInvitation(UserRequest ureq, WindowControl wControl,
+	private Step executeInvitation(UserRequest ureq, WindowControl wControl, TransientInvitation transientInvitation,
 			RepositoryEntry repoEntry, BusinessGroup businessGroup, List<String> roles) {
 		Group group = null;
 		OLATResourceable ores = null;
@@ -194,10 +199,10 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		}
 		
 		Invitation invitation = invitationService.createInvitation(type);
-		invitation.setFirstName(context.getFirstName());
-		invitation.setLastName(context.getLastName());
-		invitation.setMail(context.getEmail());
-		invitation.setAdditionalInfos(context.getAdditionalInfos());
+		invitation.setFirstName(transientInvitation.getFirstName());
+		invitation.setLastName(transientInvitation.getLastName());
+		invitation.setMail(transientInvitation.getEmail());
+		invitation.setAdditionalInfos(transientInvitation.getAdditionalInfos());
 		invitation.setRegistration(true);
 		invitation.setRoleList(roles);
 		
@@ -208,7 +213,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
 		
 		ContactList contactList = new ContactList("Invitation");
-		contactList.add(context.getEmail());
+		contactList.add(transientInvitation.getEmail());
 
 		MailTemplate template = context.getMailTemplate();
 		

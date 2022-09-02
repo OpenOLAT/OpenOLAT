@@ -50,6 +50,10 @@ public class SelectionValues {
 		return new SelectionValue(key, value);
 	}
 	
+	public static SelectionValue entry(String key, String value, String description, String icon, String cssClass, boolean enabled) {
+		return new SelectionValue(key, value, description, icon, cssClass, enabled);
+	}
+	
 	/**
 	 * Adds the key / value pair at the end of the pairs. Since the key has to be
 	 * unique, an existing pair with the same key is removed.

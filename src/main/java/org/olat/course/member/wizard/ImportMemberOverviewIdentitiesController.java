@@ -101,7 +101,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			
 			String notFoundNames = membersByNameContext.getNotFoundNames().stream()
 					.collect(Collectors.joining(", "));
-			String msg = translate("user.notfound", new String[]{notFoundNames});
+			String msg = translate("user.notfound", notFoundNames);
 			warnLayout.contextPut("notFounds", msg);
 		}
 		
@@ -120,7 +120,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			}
 		}
 		
-		ArrayList<Identity> identities = new ArrayList<>(membersByNameContext.getIdentities());
+		List<Identity> identities = new ArrayList<>(membersByNameContext.getIdentities());
 		identities.sort(IdentityComporatorFactory.createLastnameFirstnameComporator());
 		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(identities,
 				resultingPropertyHandlers, getLocale(), tableColumnModel);

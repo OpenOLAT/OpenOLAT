@@ -62,8 +62,7 @@ public class InvitationMailController extends StepFormBasicController {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, context.getBusinessGroup(), getIdentity());
 		}
 		
-		boolean mandatoryEmail = context.getIdentity() == null
-				|| context.isIdentityInviteeOnly()
+		boolean mandatoryEmail = context.hasInviteeOnly()
 				|| businessGroupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
 		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, true, false, mandatoryEmail, rootForm);
 		
