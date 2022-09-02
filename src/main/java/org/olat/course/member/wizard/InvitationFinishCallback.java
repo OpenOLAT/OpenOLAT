@@ -224,7 +224,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		
 		MailerResult result = new MailerResult();
 		MailContext ctxt = new MailContextImpl(ores, null, wControl.getBusinessControl().getAsString());
-		MailBundle bundle = mailManager.makeMailBundle(ctxt, null, template, ureq.getIdentity(), null, result);
+		MailBundle bundle = mailManager.makeMailBundle(ctxt, template, ureq.getIdentity(), null, result);
 		bundle.setContactList(contactList);
 
 		result = mailManager.sendExternMessage(bundle, result, true);

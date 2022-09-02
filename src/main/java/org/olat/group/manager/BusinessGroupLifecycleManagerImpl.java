@@ -930,7 +930,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 
 		MailerResult result = new MailerResult();
 		MailContext context = new MailContextImpl("[BusinessGroup:" + businessGroup.getKey() + "]");
-		MailBundle bundle = mailManager.makeMailBundle(context, null, template, null, null, result);
+		MailBundle bundle = mailManager.makeMailBundle(context, template, null, null, result);
 		if(bundle != null) {
 			bundle.setTo(receiver);
 			bundle.setToId(null);

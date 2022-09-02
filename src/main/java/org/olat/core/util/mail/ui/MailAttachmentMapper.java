@@ -51,10 +51,9 @@ public class MailAttachmentMapper implements Mapper {
 			if(startIndex >= 0 && endIndex > startIndex) {
 				String attachmentKey = relPath.substring(startIndex + ATTACHMENT_CONTEXT.length(), endIndex);
 				try {
-					Long key = new Long(attachmentKey);
+					Long key = Long.valueOf(attachmentKey);
 					VFSLeaf datas = mailManager.getAttachmentDatas(key);
-					MediaResource resource = new VFSMediaResource(datas);
-					return resource;	
+					return new VFSMediaResource(datas);	
 				} catch(NumberFormatException e) {
 					return new NotFoundMediaResource();
 				}

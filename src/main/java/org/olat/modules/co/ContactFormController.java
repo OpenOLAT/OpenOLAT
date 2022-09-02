@@ -267,7 +267,7 @@ public class ContactFormController extends BasicController {
 			template.setSubjectTemplate(cntctForm.getSubject());
 			template.setBodyTemplate(cntctForm.getBody());
 			template.setAttachments(cntctForm.getAttachments());
-			bundle = mailService.makeMailBundle(context, null, template, null, null, result);
+			bundle = mailService.makeMailBundle(context, template, null, null, result);
 		}
 		return bundle;
 	}

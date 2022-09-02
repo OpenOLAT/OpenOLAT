@@ -160,18 +160,46 @@ public interface MailManager {
 	 */
 	public MailBundle[] makeMailBundles(MailContext ctxt, List<Identity> recipientsTO,
 			MailTemplate template, Identity sender, String metaId, MailerResult result);
-	
+
 	/**
+	 * Package the mail in a bundle, use velocity on the template...
 	 * 
-	 * @param ctxt
-	 * @param recipientTO
-	 * @param template
-	 * @param sender
-	 * @param metaId
-	 * @param result
-	 * @return
+	 * @param ctxt The context where the mail will be sent
+	 * @param recipientTO The recipient
+	 * @param template The mail template
+	 * @param sender Who send the mail
+	 * @param metaId The ID of the mailing
+	 * @param result The mailer result
+	 * @return The mail bundle
 	 */
 	public MailBundle makeMailBundle(MailContext ctxt, Identity recipientTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result);
+	
+	/**
+	 * Package the mail in a bundle, use velocity on the template...
+	 * 
+	 * @param ctxt The context where the mail will be sent
+	 * @param externalRecipientTO The recipient
+	 * @param template The mail template
+	 * @param sender Who send the mail
+	 * @param metaId The ID of the mailing
+	 * @param result The mailer result
+	 * @return The mail bundle
+	 */
+	public MailBundle makeMailBundle(MailContext ctxt, String externalRecipientTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result);
+	
+	/**
+	 * Package the mail in a bundle, use velocity on the template...
+	 * 
+	 * @param ctxt The context where the mail will be sent
+	 * @param template The mail template
+	 * @param sender Who send the mail
+	 * @param metaId The ID of the mailing
+	 * @param result The mailer result
+	 * @return The mail bundle
+	 */
+	public MailBundle makeMailBundle(MailContext ctxt,
 			MailTemplate template, Identity sender, String metaId, MailerResult result);
 	
 	/**

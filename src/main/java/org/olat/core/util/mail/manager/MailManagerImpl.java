@@ -643,6 +643,34 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 		return bundles.toArray(new MailBundle[bundles.size()]);
 	}
+	
+	@Override
+	public MailBundle makeMailBundle(MailContext ctxt, MailTemplate template, Identity sender, String metaId,
+			MailerResult result) {
+		MailBundle bundle;
+		MailContent msg = createWithContext(null, template, result);
+		if(msg != null && result.getReturnCode() == MailerResult.OK){
+			// send mail
+			bundle = new MailBundle();
+			bundle.setContext(ctxt);
+			bundle.setFromId(sender);
+			bundle.setMetaId(metaId);
+			bundle.setContent(msg);
+		} else {
+			bundle = null;
+		}
+		return bundle;
+	}
+
+	@Override
+	public MailBundle makeMailBundle(MailContext ctxt, String externalRecipientTO,
+			MailTemplate template, Identity sender, String metaId, MailerResult result) {	
+		MailBundle bundle = makeMailBundle(ctxt, template, sender, metaId, result);
+		if(bundle != null) {
+			bundle.setTo(externalRecipientTO);
+		}
+		return bundle;
+	}
 
 	@Override
 	public MailBundle makeMailBundle(MailContext ctxt, Identity recipientTo,

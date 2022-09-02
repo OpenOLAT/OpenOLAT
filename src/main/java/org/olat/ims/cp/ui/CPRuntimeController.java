@@ -21,9 +21,15 @@ package org.olat.ims.cp.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
@@ -39,9 +45,23 @@ import org.olat.repository.ui.RepositoryEntrySettingsController;
  */
 public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	
+	private Link notificationLink;
+	
+	private CloseableModalController cmc;
+	private CPNotificationsController notificationsCtrl;
+	
 	public CPRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
+	}
+	
+	@Override
+	protected void initToolbar(Dropdown toolsDropdown) {
+		if (reSecurity.isEntryAdmin()) {
+			notificationLink = LinkFactory.createToolLink("cpnotifications", translate("command.cp.notifications"), this, "o_icon_message");
+			toolbarPanel.addTool(notificationLink, Align.right);
+		}
+		super.initToolbar(toolsDropdown);
 	}
 
 	@Override
@@ -55,12 +75,47 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 				}
 				setActiveTool(null);
 			}
+		} else if(notificationLink == source) {
+			doNotifications(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
-	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl, RepositoryEntry refreshedEntry) {
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(notificationsCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
+		removeAsListenerAndDispose(notificationsCtrl);
+		removeAsListenerAndDispose(cmc);
+		notificationsCtrl = null;
+		cmc = null;
+	}
+	
+	@Override
+	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl,
+			RepositoryEntry refreshedEntry) {
 		return new CPSettingsController(ureq, bwControl, toolbarPanel, refreshedEntry);
+	}
+	
+	private void doNotifications(UserRequest ureq) {
+		if (reSecurity.isEntryAdmin()) {
+			notificationsCtrl = new CPNotificationsController(ureq, getWindowControl(), getRepositoryEntry());
+			listenTo(notificationsCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", notificationsCtrl.getInitialComponent(),
+					true, translate("command.cp.notifications"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 }
