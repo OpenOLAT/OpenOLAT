@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -108,13 +109,16 @@ public class InvitationUserInfosController extends StepFormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		Identity identity = context.getIdentity();
+		User user = identity == null ? null : identity.getUser();
 	
 		// validate special rules for each user property
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			//we assume here that there are only textElements for the user properties
 			FormItem formItem = flc.getFormComponent(userPropertyHandler.getName());
 			formItem.clearError();
-			if(!userPropertyHandler.isValid(null, formItem, null) || formItem.hasError()) {
+			if(!userPropertyHandler.isValid(user, formItem, null) || formItem.hasError()) {
 				allOk &= false;
 			}
 		}
