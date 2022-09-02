@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.22</org.springframework.version>
-		<org.hibernate.version>5.6.10.Final</org.hibernate.version>
+		<org.hibernate.version>5.6.11.Final</org.hibernate.version>
 		<apache.cxf>3.5.3</apache.cxf>
 		<apache.pdfbox>2.0.26</apache.pdfbox>
 		<apache.poi>5.2.2</apache.poi>
@@ -2286,7 +2286,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.51.0-SNAPSHOT</version>
+			<version>0.55.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
