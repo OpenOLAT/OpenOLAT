@@ -203,7 +203,9 @@ public class InfoMetadataController extends StepFormBasicController {
 		String authors = authorsEl.getValue().trim();
 		context.setAuthors(authors);
 		
-		context.setTaxonomyLevelRefs(taxonomyLevelEl.getSelection());
+		if (taxonomyLevelEl != null) {
+			context.setTaxonomyLevelRefs(taxonomyLevelEl.getSelection());
+		}
 		
 		if (educationalTypeEl != null) {
 			Long educationalTypeKey = educationalTypeEl.isOneSelected()
