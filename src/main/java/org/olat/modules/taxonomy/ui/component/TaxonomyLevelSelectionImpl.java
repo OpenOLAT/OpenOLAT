@@ -239,7 +239,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 		if (!StringHelper.containsNonWhitespace(linkTitle)) {
 			linkTitle = "&nbsp;";
 		}
-		linkTitle = "<div class=\"o_tax_ls_tags\">" + linkTitle + "</div>";
+		linkTitle = "<div class=\"o_taxonomy_tags o_tax_ls_tags\">" + linkTitle + "</div>";
 		button.setI18nKey(linkTitle);
 	}
 	

@@ -508,10 +508,13 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void forgeCatalogInfos(AccessInfo infos) {
 		if (catalogInfo.isShowDetails()) {
-			String catalogDetails = catalogInfo.getCatalogVisibility().test(infos.getOffer())
-					? ICON_ACTIVE + catalogInfo.getDetails()
-					: ICON_INACTIVE + translate("access.info.catalog.oo.not.active");
-			infos.setCatalogDetails(catalogDetails);
+			if (catalogInfo.getCatalogVisibility().test(infos.getOffer())) {
+				infos.setCatalogIcon(ICON_ACTIVE);
+				infos.setCatalogDetails(catalogInfo.getDetails());
+			} else {
+				infos.setCatalogIcon(ICON_INACTIVE);
+				infos.setCatalogDetails(translate("access.info.catalog.oo.not.active"));
+			}
 			if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
 				FormLink catEditLink = uifactory.addFormLink("cat_" + (++counter), "catalog", null, "", offersContainer, Link.NONTRANSLATED + Link.LINK);
 				catEditLink.setI18nKey(catalogInfo.getEditLabel());
@@ -746,6 +749,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private String iconCss;
 		private Offer offer;
 		private Collection<Organisation> offerOrganisations;
+		private String catalogIcon;
 		private String catalogDetails;
 		private FormLink catalogEditLink;
 		private OfferAccess link;
@@ -883,6 +887,14 @@ public class AccessConfigurationController extends FormBasicController {
 					.sorted(new OrganisationNameComparator(getLocale()))
 					.map(Organisation::getDisplayName)
 					.collect(Collectors.joining(", "));
+		}
+
+		public String getCatalogIcon() {
+			return catalogIcon;
+		}
+
+		public void setCatalogIcon(String catalogIcon) {
+			this.catalogIcon = catalogIcon;
 		}
 
 		public String getCatalogDetails() {
