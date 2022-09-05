@@ -51,6 +51,8 @@ import org.olat.course.groupsandrights.GroupsAndRightsController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
+import org.olat.modules.invitation.InvitationModule;
+import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.ui.InvitationListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -96,6 +98,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private final boolean entryAdmin;
 	private final boolean principal;
 	private final boolean canInvite;
+	private final boolean invitationsEnabled;
 	private final boolean groupManagementRight;
 	private final boolean memberManagementRight;
 	private final MemberListSecurityCallback secCallback;
@@ -106,6 +109,10 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private AccessControlModule acModule;
 	@Autowired 
 	private CourseModule courseModule;
+	@Autowired
+	private InvitationModule invitationModule;
+	@Autowired
+	private InvitationService invitationService;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin, boolean principal,
@@ -121,6 +128,9 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		this.coachCourseEnv = coachCourseEnv;
 		secCallback = MemberListSecurityCallbackFactory.getSecurityCallback(coachCourseEnv.isCourseReadOnly(),
 				entryAdmin || groupManagementRight || memberManagementRight);
+		
+		invitationsEnabled = invitationModule.isCourseInvitationEnabled() 
+				|| invitationService.hasInvitations(re);
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -179,7 +189,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			}
 		}
 		
-		if(entryAdmin || principal || memberManagementRight) {
+		if(invitationsEnabled && (entryAdmin || principal || memberManagementRight)) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.invitations"), CMD_INVITATIONS);
 			node.setAltText(translate("menu.invitations.alt"));
 			node.setCssClass("o_sel_membersmgt_invitations");
@@ -309,7 +319,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private InvitationListController doOpenInvitations(UserRequest ureq, WindowControl bwControl) {
 		if (entryAdmin || principal || memberManagementRight) {
 			if(invitationListCtrl == null) {
-				invitationListCtrl = new InvitationListController(ureq, bwControl, repoEntry);
+				boolean readOnly = (!entryAdmin && !memberManagementRight && !groupManagementRight) || coachCourseEnv.isCourseReadOnly();
+				invitationListCtrl = new InvitationListController(ureq, bwControl, repoEntry, readOnly);
 				listenTo(invitationListCtrl);
 			} else {
 				invitationListCtrl.reloadModel();

@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.invitation.model.InvitationEntry;
+import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.portfolio.Binder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -54,15 +55,21 @@ public interface InvitationService {
 	
 	public boolean hasInvitations(String token);
 	
+	public boolean hasInvitations(RepositoryEntryRef entry);
+	
+	public boolean hasInvitations(BusinessGroupRef businessGroup);
+	
+	public Invitation getInvitation(Invitation invitation);
+	
 	public Invitation findInvitation(String token);
 
 	public Invitation findInvitation(Binder binder, IdentityRef identity);
 
 	public List<InvitationEntry> findInvitations(Identity identity);
 
-	public List<Invitation> findInvitations(RepositoryEntryRef entry);
+	public List<Invitation> findInvitations(RepositoryEntryRef entry, SearchInvitationParameters searchParams);
 	
-	public List<Invitation> findInvitations(BusinessGroupRef businessGroup);
+	public List<Invitation> findInvitations(BusinessGroupRef businessGroup, SearchInvitationParameters searchParams);
 	
 	public Identity getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale, Identity doer);
 	
@@ -76,6 +83,8 @@ public interface InvitationService {
 	 */
 	public void acceptInvitation(Invitation invitation, Identity identity);
 	
+	public void inactivateInvitations(RepositoryEntryRef entry, IdentityRef identity);
+	
 	/**
 	 * Link the identity to the invitation.
 	 * 
@@ -84,6 +93,14 @@ public interface InvitationService {
 	 * @return The merged identity
 	 */
 	public Invitation update(Invitation invitation, Identity identity);
+	
+	/**
+	 * Merge the invitation.
+	 * 
+	 * @param invitation The invitation to update
+	 * @return The merged invitation
+	 */
+	public Invitation update(Invitation invitation);
 	
 	/**
 	 * @param invitation The invitation

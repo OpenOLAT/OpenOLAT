@@ -39,6 +39,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -77,6 +78,8 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private InvitationService invitationService;
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
@@ -121,6 +124,9 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 		if(remainingRoles.isEmpty()) {
 			OLATResource resource = repositoryManager.lookupRepositoryEntryResource(repoKey);
 			notificationsManager.unsubscribeAllForIdentityAndResId(identity, resource.getResourceableId());
+			
+			// Inactivate the invitations
+			invitationService.inactivateInvitations(re, identity);
 		}
 	}
 	

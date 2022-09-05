@@ -91,7 +91,7 @@ public class InvitationServiceTest extends OlatTestCase {
 		Assert.assertEquals("Unchou", updatedInvitation.getLastName());
 		Assert.assertEquals("kanu.unchou@frentix.com", updatedInvitation.getMail());
 		
-		Invitation reloadedInvitation = invitationDao.findInvitation(invitation.getToken());
+		Invitation reloadedInvitation = invitationDao.findInvitationByToken(invitation.getToken());
 		Assert.assertEquals("Kanu", reloadedInvitation.getFirstName());
 		Assert.assertEquals("Unchou", reloadedInvitation.getLastName());
 		Assert.assertEquals("kanu.unchou@frentix.com", reloadedInvitation.getMail());

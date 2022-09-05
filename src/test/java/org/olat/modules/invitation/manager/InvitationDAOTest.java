@@ -39,6 +39,7 @@ import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -79,12 +80,26 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void findInvitation_token() {
+	public void findInvitationByToken() {
 		Invitation invitation = createDummyInvitation();
 		Assert.assertNotNull(invitation);
 		dbInstance.commitAndCloseSession();
 		
-		Invitation reloadedInvitation = invitationDao.findInvitation(invitation.getToken());
+		Invitation reloadedInvitation = invitationDao.findInvitationByToken(invitation.getToken());
+		Assert.assertNotNull(reloadedInvitation);
+		Assert.assertNotNull(reloadedInvitation.getKey());
+		Assert.assertNotNull(reloadedInvitation.getBaseGroup());
+		Assert.assertEquals(invitation, reloadedInvitation);
+		Assert.assertEquals(invitation.getToken(), reloadedInvitation.getToken());
+	}
+	
+	@Test
+	public void findInvitationByKey() {
+		Invitation invitation = createDummyInvitation();
+		Assert.assertNotNull(invitation);
+		dbInstance.commitAndCloseSession();
+		
+		Invitation reloadedInvitation = invitationDao.findInvitationByKey(invitation.getKey());
 		Assert.assertNotNull(reloadedInvitation);
 		Assert.assertNotNull(reloadedInvitation.getKey());
 		Assert.assertNotNull(reloadedInvitation.getBaseGroup());
@@ -159,7 +174,8 @@ public class InvitationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(invitation);
 		
-		List<Invitation> foundInvitations = invitationDao.findInvitations(businessGroup);
+		SearchInvitationParameters searchParams = new SearchInvitationParameters();
+		List<Invitation> foundInvitations = invitationDao.findInvitations(businessGroup, searchParams);
 		assertThat(foundInvitations)
 			.isNotNull()
 			.containsExactlyInAnyOrder(invitation);
@@ -177,8 +193,9 @@ public class InvitationDAOTest extends OlatTestCase {
 		invitation = invitationDao.update(invitation);
 		dbInstance.commit();
 		Assert.assertNotNull(invitation);
-		
-		List<Invitation> foundInvitations = invitationDao.findInvitations(entry);
+
+		SearchInvitationParameters searchParams = new SearchInvitationParameters();
+		List<Invitation> foundInvitations = invitationDao.findInvitations(entry, searchParams);
 		assertThat(foundInvitations)
 			.isNotNull()
 			.containsExactlyInAnyOrder(invitation);
@@ -242,7 +259,23 @@ public class InvitationDAOTest extends OlatTestCase {
 		invitationDao.deleteInvitation(invitation.getBaseGroup());
 		dbInstance.commit();
 		
-		Invitation deletedInvitation = invitationDao.findInvitation(invitation.getToken());
+		Invitation deletedInvitation = invitationDao.findInvitationByToken(invitation.getToken());
+		Assert.assertNull(deletedInvitation);
+	}
+	
+	@Test
+	public void deleteInvitationByIdentity() {
+		Invitation invitation = createDummyInvitation();
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-5");
+		((InvitationImpl)invitation).setIdentity(invitee);
+		invitation = invitationDao.update(invitation);
+		dbInstance.commitAndCloseSession();
+		
+		int deletedRows = invitationDao.deleteInvitation(invitee);
+		dbInstance.commit();
+		Assert.assertEquals(1, deletedRows);
+		
+		Invitation deletedInvitation = invitationDao.findInvitationByKey(invitation.getKey());
 		Assert.assertNull(deletedInvitation);
 	}
 	

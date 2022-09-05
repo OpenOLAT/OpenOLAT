@@ -22,8 +22,10 @@ package org.olat.user.ui.admin;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -36,6 +38,9 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationStatusEnum;
+import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,9 +55,13 @@ public class ConfirmToRegisteredUserController extends FormBasicController {
 	private final Identity identityToModify;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private InvitationService invitationService;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -110,6 +119,14 @@ public class ConfirmToRegisteredUserController extends FormBasicController {
 			RolesByOrganisation updatedRoles = new RolesByOrganisation(defaultOrganisation, rolesList);
 			securityManager.updateRoles(getIdentity(), identityToModify, updatedRoles);
 		}
+		
+		List<InvitationEntry> invitationEntries = invitationService.findInvitations(identityToModify);
+		for(InvitationEntry invitationEntry:invitationEntries) {
+			Invitation invitation = invitationEntry.getInvitation();
+			invitation.setStatus(InvitationStatusEnum.inactive);
+			invitationService.update(invitation);
+		}
+		dbInstance.commit();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

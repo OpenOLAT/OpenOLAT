@@ -470,6 +470,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_businessgroup_status_trash:before { content: $fa-var-trash-o;}
 .o_icon_businessgroup_status_deleted:before { content: $fa-var-trash-o;}
 
+/* Invitation status icon */
+.o_icon_invitation_status_active:before { content: $fa-var-check;}
+.o_icon_invitation_status_inactive:before { content: $fa-var-ban; }
 
 /* course element icons */
 .o_sp_icon:before { content: $fa-var-file-text-o; }

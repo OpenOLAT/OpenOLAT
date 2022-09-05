@@ -48,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.invitation.InvitationAdditionalInfos;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.manager.InvitationAdditionalInfosXStream;
 
@@ -84,6 +85,10 @@ public class InvitationImpl implements Persistable, Invitation {
 
 	@Column(name="token", nullable=true, unique=true, insertable=true, updatable=true)
 	private String token;
+	@Enumerated(EnumType.STRING)
+	@Column(name="i_status", nullable=true, unique=true, insertable=true, updatable=true)
+	private InvitationStatusEnum status;
+	
 	@Column(name="first_name", nullable=true, unique=true, insertable=true, updatable=true)
 	private String firstName;
 	@Column(name="last_name", nullable=true, unique=true, insertable=true, updatable=true)
@@ -137,6 +142,16 @@ public class InvitationImpl implements Persistable, Invitation {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	@Override
+	public InvitationStatusEnum getStatus() {
+		return status;
+	}
+
+	@Override
+	public void setStatus(InvitationStatusEnum status) {
+		this.status = status;
 	}
 
 	@Override

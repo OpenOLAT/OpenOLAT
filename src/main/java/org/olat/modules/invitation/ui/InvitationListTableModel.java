@@ -70,8 +70,11 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 	public Object getValueAt(InvitationRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
+				case role: return row.getInvitationRoles();
+				case status: return row.getInvitationStatus();
 				case invitationDate: return row.getInvitationDate();
 				case invitationLink: return row.getUrlLink();
+				case tools: return row.getToolsLink();
 				default: return "ERROR";
 			}
 		}
@@ -92,8 +95,11 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 	
 	public enum  InvitationCols implements FlexiSortableColumnDef {
 		
+		role("table.header.role"),
+		status("table.header.status"),
 		invitationDate("table.header.invitation"),
-		invitationLink("table.header.invitation.link");
+		invitationLink("table.header.invitation.link"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

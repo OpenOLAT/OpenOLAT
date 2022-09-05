@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.modules.invitation.InvitationAdditionalInfos;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
 
 /**
@@ -40,6 +41,10 @@ public interface Invitation extends CreateInfo {
 	public Long getKey();
 
 	public String getToken();
+	
+	public InvitationStatusEnum getStatus();
+
+	public void setStatus(InvitationStatusEnum status);
 	
 	public String getFirstName();
 	

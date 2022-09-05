@@ -220,7 +220,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		if(repoEntry != null) {
 			String courseUrl = invitationService.toUrl(invitation, repoEntry);
 			if(template instanceof RepositoryEntryMailTemplate) {
-				((RepositoryEntryMailTemplate) template).setCourseUrl(courseUrl);
+				((RepositoryEntryMailTemplate)template).setCourseUrl(courseUrl);
 			}
 		} else if(businessGroup != null) {
 			String businessGroupUrl = invitationService.toUrl(invitation, businessGroup);

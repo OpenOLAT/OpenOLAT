@@ -968,7 +968,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLINVITATIONS, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		
-		invitationsCtrl = new InvitationListController(ureq, getWindowControl(), businessGroup);
+		invitationsCtrl = new InvitationListController(ureq, getWindowControl(), businessGroup, readOnly);
 		listenTo(invitationsCtrl);
 		mainPanel.setContent(invitationsCtrl.getInitialComponent());
 	}

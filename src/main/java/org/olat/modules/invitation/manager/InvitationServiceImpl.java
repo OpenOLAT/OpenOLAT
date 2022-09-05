@@ -54,15 +54,18 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.invitation.InvitationAdditionalInfos;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.manager.BinderDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,7 +77,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InvitationServiceImpl implements InvitationService {
+public class InvitationServiceImpl implements InvitationService, UserDataDeletable {
 	
 	private static final Logger log = Tracing.createLoggerFor(InvitationServiceImpl.class);
 	
@@ -179,8 +182,26 @@ public class InvitationServiceImpl implements InvitationService {
 	}
 
 	@Override
+	public boolean hasInvitations(RepositoryEntryRef entry) {
+		return invitationDao.hasInvitations(entry);
+	}
+
+	@Override
+	public boolean hasInvitations(BusinessGroupRef businessGroup) {
+		return invitationDao.hasInvitations(businessGroup);
+	}
+
+	@Override
+	public Invitation getInvitation(Invitation invitation) {
+		if(invitation == null || invitation.getKey() == null) {
+			return null;
+		}
+		return invitationDao.findInvitationByKey(invitation.getKey());
+	}
+
+	@Override
 	public Invitation findInvitation(String token) {
-		return invitationDao.findInvitation(token);
+		return invitationDao.findInvitationByToken(token);
 	}
 	
 	@Override
@@ -194,13 +215,13 @@ public class InvitationServiceImpl implements InvitationService {
 	}
 
 	@Override
-	public List<Invitation> findInvitations(RepositoryEntryRef entry) {
-		return invitationDao.findInvitations(entry);
+	public List<Invitation> findInvitations(RepositoryEntryRef entry, SearchInvitationParameters searchParams) {
+		return invitationDao.findInvitations(entry, searchParams);
 	}
 
 	@Override
-	public List<Invitation> findInvitations(BusinessGroupRef businessGroup) {
-		return invitationDao.findInvitations(businessGroup);
+	public List<Invitation> findInvitations(BusinessGroupRef businessGroup, SearchInvitationParameters searchParams) {
+		return invitationDao.findInvitations(businessGroup, searchParams);
 	}
 
 	@Override
@@ -262,6 +283,22 @@ public class InvitationServiceImpl implements InvitationService {
 	}
 	
 	@Override
+	public void inactivateInvitations(RepositoryEntryRef entry, IdentityRef identity) {
+		SearchInvitationParameters searchParams = new SearchInvitationParameters();
+		searchParams.setIdentityKey(identity.getKey());
+		List<Invitation> invitations = findInvitations(entry, searchParams);
+		for(Invitation invitation:invitations) {
+			invitation.setStatus(InvitationStatusEnum.inactive);
+			update(invitation);
+		}
+	}
+
+	@Override
+	public Invitation update(Invitation invitation) {
+		return invitationDao.update(invitation);
+	}
+
+	@Override
 	public Invitation update(Invitation invitation, Identity identity) {
 		((InvitationImpl)invitation).setIdentity(identity);
 		return invitationDao.update(invitation);
@@ -272,6 +309,11 @@ public class InvitationServiceImpl implements InvitationService {
 		invitationDao.deleteInvitation(invitation);
 	}
 	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		invitationDao.deleteInvitation(identity);
+	}
+
 	@Override
 	public String toUrl(Invitation invitation) {
 		if(invitation == null || invitation.getType() == null) return null;

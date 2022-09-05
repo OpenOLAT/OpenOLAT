@@ -778,6 +778,7 @@ create table o_bs_invitation (
    last_name varchar(64),
    mail varchar(128),
    i_type varchar(32) default 'binder' not null,
+   i_status varchar(32) default 'active',
    i_url varchar(512),
    i_roles varchar(255),
    i_registration bool default false not null,

@@ -75,3 +75,15 @@ div.o_skype_button {
 .o_useradmin div#o_main_toolbar.o_toolbar {
 	margin-top: 0px;
 }
+
+.o_labeled_light {
+	&.o_invitation_status_active {
+	    border-color: $o-invitation-active-color;
+	    color: $o-invitation-active-color;
+	}
+	
+	&.o_invitation_status_inactive {
+	    border-color: $o-invitation-inactive-color;
+	    color: $o-invitation-inactive-color;
+	}
+}

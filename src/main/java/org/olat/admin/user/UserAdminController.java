@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.olat.admin.user.UserShortDescription.Builder;
 import org.olat.admin.user.UserShortDescription.Rows;
-import org.olat.admin.user.course.CourseOverviewController;
+import org.olat.admin.user.course.RepositoryEntriesOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -167,7 +167,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
-	private CourseOverviewController courseCtr;
+	private RepositoryEntriesOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
 	private CloseableModalController cmc;
 	private UserDataExportController exportDataCtrl;
@@ -516,7 +516,7 @@ public class UserAdminController extends BasicController implements Activateable
 	
 			userTabP.addTab(ureq, translate(NLS_VIEW_COURSES), uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
-				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
+				courseCtr = new RepositoryEntriesOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();
 			});

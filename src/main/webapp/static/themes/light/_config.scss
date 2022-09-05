@@ -830,6 +830,19 @@ $o-qual-exec-participated-color		: #14892c;
 $o-qual-exec-over-color				: #aaa;
 $o-qual-hm-base-background-color	: #337ab7;
 
+/* Invitation */
+$o-invitation-active-color			: #14892c;	/* green */
+$o-invitation-inactive-color		: #99583D;	/* brown */
+
+
+$o-repo-trash-color					: #5A5958;	/* gray */
+$o-repo-deleted-color				: #888;		/* black */
+$o-repo-status-color-dark			: #333;
+$o-repo-status-color-bright			: #fff;
+$o-repo-access-denied-cross-fill		: $brand-primary  !default;
+
+
+
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
 $o-portlet-border-radius		: $panel-border-radius !default;
