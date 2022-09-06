@@ -51,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -93,6 +94,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private GuestOfferController guestOfferCtrl;
 	private AbstractConfigurationMethodController newMethodCtrl;
 	private AbstractConfigurationMethodController editMethodCtrl;
+	private MethodSelectionController methodSelectionCtrl;
 
 	private final List<Offer> deletedOfferList = new ArrayList<>();
 	private final List<AccessInfo> accessInfos = new ArrayList<>();
@@ -111,6 +113,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private final boolean managedBookings;
 	private final String helpUrl;
 	private final Formatter formatter;
+	private List<AccessMethod> methods;
 
 	@Autowired
 	private DB dbInstance;
@@ -138,6 +141,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
+		initMethods(ureq.getUserSession().getRoles());
 		initForm(ureq);
 	}
 
@@ -160,7 +164,22 @@ public class AccessConfigurationController extends FormBasicController {
 		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
+		initMethods(ureq.getUserSession().getRoles());
 		initForm(ureq);
+	}
+	
+	private void initMethods(Roles roles) {
+		methods = acService.getAvailableMethods(getIdentity(), roles).stream()
+				.filter(this::isAddable)
+				.collect(Collectors.toList());
+	}
+	
+	private boolean isAddable(AccessMethod method) {
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+		if ((handler.isPaymentMethod() && !allowPaymentMethod) || !method.isVisibleInGui()) {
+			return false;
+		}
+		return true;
 	}
 
 	public void setDefaultOfferOrganisations(Collection<Organisation> defaultOfferOrganisations) {
@@ -232,12 +251,8 @@ public class AccessConfigurationController extends FormBasicController {
 				addMethodDropdown.setOrientation(DropdownOrientation.right);
 				addMethodDropdown.setExpandContentHeight(true);
 				
-				List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
 				for(AccessMethod method:methods) {
 					AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-					if((handler.isPaymentMethod() && !allowPaymentMethod) || !method.isVisibleInGui()) {
-						continue;
-					}
 					
 					String title = handler.getMethodName(getLocale());
 					FormLink addLink = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
@@ -350,6 +365,16 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (methodSelectionCtrl == source) {
+			if(event.equals(Event.DONE_EVENT)) {
+				String methodType = methodSelectionCtrl.getSelectedType();
+				cmc.deactivate();
+				cleanUp();
+				doMethodSelected(ureq, methodType);
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if (cmc == source) {
 			cleanUp();
 		} else {
@@ -544,6 +569,8 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	private void editOpenAccessOffer(UserRequest ureq, Offer offer) {
+		guardModalController(openAccessOfferCtrl);
+		
 		Offer openAccessOffer = offer;
 		Collection<Organisation> offerOrganisations = null;
 		if (openAccessOffer == null) {
@@ -564,6 +591,8 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	private void editGuestOffer(UserRequest ureq, Offer offer) {
+		guardModalController(guestOfferCtrl);
+		
 		Offer guestOffer = offer;
 		if (guestOffer == null) {
 			guestOffer = acService.createOffer(resource, displayName);
@@ -580,6 +609,8 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	private void editOffer(UserRequest ureq, AccessInfo infos) {
+		guardModalController(editMethodCtrl);
+		
 		if (infos.getOffer().isOpenAccess()) {
 			editOpenAccessOffer(ureq, infos.getOffer());
 			return;
@@ -607,6 +638,8 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 	
 	private void addOffer(UserRequest ureq, AccessMethod method) {
+		guardModalController(newMethodCtrl);
+		
 		Offer offer = acService.createOffer(resource, displayName);
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		
@@ -625,6 +658,32 @@ public class AccessConfigurationController extends FormBasicController {
 		} else {
 			addOffer(link, defaultOfferOrganisations);
 			checkOverlap();
+		}
+	}
+	
+	public void doAddFirstOffer(UserRequest ureq) {
+		guardModalController(methodSelectionCtrl);
+		if (accessInfos.isEmpty() && !readOnly && !managedBookings) {
+			methodSelectionCtrl = new MethodSelectionController(ureq, getWindowControl(), openAccessSupported, guestSupported, methods);
+			listenTo(methodSelectionCtrl);
+			String title = translate("offer.add");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), methodSelectionCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	private void doMethodSelected(UserRequest ureq, String methodType) {
+		if (MethodSelectionController.KEY_OPEN_ACCESS.equals(methodType)) {
+			editOpenAccessOffer(ureq, null);
+		} else if (MethodSelectionController.KEY_GUEST_ACCESS.equals(methodType)) {
+			editGuestOffer(ureq, null);
+		} else {
+			for (AccessMethod method : methods) {
+				if (method.getType().equals(methodType)) {
+					addOffer(ureq, method);
+				}
+			}
 		}
 	}
 	

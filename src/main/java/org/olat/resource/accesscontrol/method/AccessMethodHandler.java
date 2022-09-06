@@ -64,6 +64,8 @@ public interface AccessMethodHandler {
 	
 	public String getMethodName(Locale locale);
 	
+	public String getDescription(Locale locale);
+	
 	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles);
 	
 	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link);

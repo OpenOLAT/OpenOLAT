@@ -83,6 +83,12 @@ public class FreeAccessHandler implements AccessMethodHandler {
 		Translator translator = Util.createPackageTranslator(FreeSubmitController.class, locale);
 		return translator.translate("free.method");
 	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		Translator translator = Util.createPackageTranslator(FreeSubmitController.class, locale);
+		return translator.translate("free.method.desc");
+	}
 	
 	@Override
 	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {

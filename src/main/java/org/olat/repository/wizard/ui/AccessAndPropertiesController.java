@@ -91,7 +91,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add(accessShareCtrl.getInitialFormItem());
 		formLayout.add(accessOffersCtrl.getInitialFormItem());
-		accessOffersCtrl.getInitialFormItem().setVisible(false);
+		accessOffersCtrl.getInitialFormItem().setVisible(entry.isPublicVisible());
 	}
 
 	@Override

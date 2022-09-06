@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.provider.auto;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -59,6 +60,11 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 	@Override
 	public boolean isPaymentMethod() {
 		return false;
+	}
+	
+	@Override
+	public String getDescription(Locale locale) {
+		return null;
 	}
 
 	@Override

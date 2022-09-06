@@ -140,6 +140,7 @@ public class AuthoringEditAccessController extends BasicController {
 		} else if(accessOffersCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				doSaveAccessOffers(ureq);
+				accessShareCtrl.validateOfferAvailable();
 				fireEvent(ureq, new ReloadSettingsEvent());
 			}
 		}
@@ -165,7 +166,12 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canReference(),
 				accessShareCtrl.canDownload(),
 				accessShareCtrl.getSelectedOrganisations());
+		accessShareCtrl.validateOfferAvailable();
+		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq);
+		if (publicEnabledNow) {
+			accessOffersCtrl.doAddFirstOffer(ureq);
+		}
 		initAccessOverview(ureq);
 		
 		fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));

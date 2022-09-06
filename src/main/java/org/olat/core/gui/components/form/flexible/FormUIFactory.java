@@ -470,6 +470,14 @@ public class FormUIFactory {
 		formLayout.add(ss);
 		return ss;
 	}
+	
+	public SingleSelection addCardSingleSelectHorizontal(final String name, String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
+		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		setLabelIfNotNull(i18nLabel, ss);
+		formLayout.add(ss);
+		return ss;
+	}
 
 	/**
 	 * A radio button group rendered vertically as cards with a card title,
