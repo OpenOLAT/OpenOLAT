@@ -140,6 +140,7 @@ public class AuthoringEditAccessController extends BasicController {
 		} else if(accessOffersCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				doSaveAccessOffers(ureq);
+				accessShareCtrl.validateOfferAvailable();
 				fireEvent(ureq, new ReloadSettingsEvent());
 			}
 		}
@@ -165,7 +166,12 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canReference(),
 				accessShareCtrl.canDownload(),
 				accessShareCtrl.getSelectedOrganisations());
+		accessShareCtrl.validateOfferAvailable();
+		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq);
+		if (publicEnabledNow) {
+			accessOffersCtrl.doAddFirstOffer(ureq);
+		}
 		initAccessOverview(ureq);
 		
 		fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
@@ -226,6 +232,7 @@ public class AuthoringEditAccessController extends BasicController {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			} else {
 				StringBuilder sb = new StringBuilder();
+				sb.append("<div class=\"o_taxonomy_tags\">");
 				for (TaxonomyLevelNamePath taxonomyLevel : taxonomyLevels) {
 					sb.append("<span class=\"o_tag o_taxonomy\" title=\"");
 					sb.append(StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash()));
@@ -233,6 +240,7 @@ public class AuthoringEditAccessController extends BasicController {
 					sb.append(taxonomyLevel.getDisplayName());
 					sb.append("</span>");
 				}
+				sb.append("</div>");
 				details = sb.toString();
 			}
 			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();

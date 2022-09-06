@@ -88,9 +88,6 @@
 		padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
 		column-count: 1;
 		.o_tag.o_taxonomy {
-			white-space: nowrap;
-			text-overflow: ellipsis;
-			overflow: hidden;
 			max-width: calc(100vw - 80px);
 		}
 	}
@@ -228,8 +225,19 @@
 		display: flex;
 		.o_ac_offer_col {
 			width: 100%;
+			overflow: hidden;
 			padding: 15px;
 			background-color: $panel-bg;
+			.o_ac_active_wrapper {
+				display: flex;
+				.o_ac_active_icon {
+					padding-right: 3px;
+				}
+				.o_ac_active_text {
+					width: 100%;
+					overflow: hidden;
+				}
+			}
 			.o_cmds {
 				padding-right: 15px;
 			}

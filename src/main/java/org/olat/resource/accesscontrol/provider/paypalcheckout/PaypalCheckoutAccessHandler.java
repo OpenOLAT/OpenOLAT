@@ -42,6 +42,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.AuthorACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalSubmitController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAccessController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutTransactionDetailsController;
@@ -84,6 +85,12 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	public String getMethodName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(PaypalCheckoutAccessController.class, locale);
 		return translator.translate("paypal.checkout.method");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
+		return translator.translate("paypal.method.desc");
 	}
 	
 	@Override

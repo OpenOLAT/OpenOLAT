@@ -86,6 +86,12 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
 		return translator.translate("paypal.method");
 	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
+		return translator.translate("paypal.method.desc");
+	}
 	
 	@Override
 	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {

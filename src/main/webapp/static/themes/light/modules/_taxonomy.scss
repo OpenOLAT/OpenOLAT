@@ -33,6 +33,7 @@
 
 .o_tag.o_competence,
 .o_tag.o_taxonomy {
+	@extend %o_nowrap;
 	background-color: #ffffff;
 	color: $o-competences-font-color;
 	border-color: $o-competences-color; 
@@ -81,21 +82,25 @@
 		margin-top: 0px;
 	}		
 }
+.o_taxonomy_tags {
+	display: flex;
+	flex-wrap: wrap;
+}
 
 /** Taxonomy level selection element **/
 .o_tax_ls_button {
 	font-size: 12px;
-	white-space: initial;
 	display: flex;
+	&>span {
+		width: 100%;
+	}
 	.o_icon {
 		margin: auto 0 auto auto;
 	}
 	.o_tax_ls_tags {
-		display: flex;
-		flex-wrap: wrap;
 		gap: 2px;
 		.o_tag {
-			white-space: initial;
+			@extend %o_nowrap;
 			background-color: #ffffff;
 			color: $o-competences-font-color;
 			border-color: $o-competences-color; 

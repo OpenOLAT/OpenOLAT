@@ -80,6 +80,12 @@ public class TokenAccessHandler implements AccessMethodHandler {
 		Translator translator = Util.createPackageTranslator(TokenAccessController.class, locale);
 		return translator.translate("token.method");
 	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		Translator translator = Util.createPackageTranslator(TokenAccessController.class, locale);
+		return translator.translate("token.method.desc");
+	}
 	
 	@Override
 	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {

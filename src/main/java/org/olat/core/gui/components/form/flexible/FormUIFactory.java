@@ -471,29 +471,14 @@ public class FormUIFactory {
 		return ss;
 	}
 	
-	/**
-	 * A radio button group rendered horizontally as cards with a card title,
-	 * description and icon. When there is not enough space the cards will render on
-	 * multiple lines (fixed width). If you need custom styling, width etc, use the
-	 * setElementCssClass on the SingleSelection.
-	 * 
-	 * @param name              The form item name and i18n key for the label
-	 * @param i18nLabel			The label
-	 * @param formLayout        The layout where the form item is added
-	 * @param theKeys           Array of keys for each card
-	 * @param theTitles         The titles of the cards
-	 * @param theDescriptions   The optional descriptions of the cards
-	 * @param theIconCssClasses The optional icons of the cards
-	 * @return
-	 */
-	public SingleSelection addCardSingleSelectHorizontal(final String name, final String i18nLabel, final FormItemContainer formLayout, final SelectionValues values) {
+	public SingleSelection addCardSingleSelectHorizontal(final String name, String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons());
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
 	}
-
+	
 	/**
 	 * A radio button group rendered vertically as cards with a card title,
 	 * description and icon. If you need custom styling, width etc, use the

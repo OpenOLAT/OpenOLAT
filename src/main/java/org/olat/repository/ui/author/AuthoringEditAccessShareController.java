@@ -65,6 +65,8 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -113,11 +115,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
+	private ACService acService;
+	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
+	
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -126,10 +131,11 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		status = false;
 		
 		initForm(ureq);
+		validateOfferAvailable();
 	}
 	
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -210,8 +216,12 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		setFormTitle("details.access");
 		setFormContextHelp("manual_user/course_create/Access_configuration/#access-configuration");
 		formLayout.setElementCssClass("o_sel_repo_access_configuration");
-
-		initStatus(formLayout);
+		
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setRootForm(mainForm);
+		formLayout.add(generalCont);
+		
+		initStatus(generalCont);
 		statusEl.setVisible(status);
 		statusEl.setEnabled(!readOnly);
 		
@@ -219,7 +229,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				getAccessTranslatedValue("rentry.access.type.private", "rentry.access.type.private.explain", "o_icon-fw o_icon_locked"),
 				getAccessTranslatedValue("rentry.access.type.public", "rentry.access.type.public.explain", "o_icon-fw o_icon_unlocked")
 		};
-		accessEl = uifactory.addRadiosVertical("entry.access.type", "rentry.access.type", formLayout, accessKey, accessValues);
+		accessEl = uifactory.addRadiosVertical("entry.access.type", "rentry.access.type", generalCont, accessKey, accessValues);
 		accessEl.setEnabled(!readOnly);
 		if (embbeded || catalogModule.isEnabled()) {
 			accessEl.addActionListener(FormEvent.ONCHANGE);
@@ -233,26 +243,26 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		repoLinkCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/repo_links.html");
 		repoLinkCont.setLabel("cif.repo.link", null);
 		repoLinkCont.setRootForm(mainForm);
-		formLayout.add("repoLink", repoLinkCont);
+		generalCont.add("repoLink", repoLinkCont);
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
 		
 		catalogLinksCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/catalog_links.html");
 		catalogLinksCont.setLabel("cif.catalog.links", null);
 		catalogLinksCont.setRootForm(mainForm);
-		formLayout.add("catalogLinks", catalogLinksCont);
+		generalCont.add("catalogLinks", catalogLinksCont);
 		
 		showMicrositeLinks = uifactory.addFormLink("show.additional", "nodeConfigForm.show.additional", null, catalogLinksCont, Link.LINK);
 		showMicrositeLinks.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
 		
 		updateCatalogLinksUI();
 		
-		initLeaveOption(formLayout);
+		initLeaveOption(generalCont);
 		
-		uifactory.addSpacerElement("author.config", formLayout, false);
+		uifactory.addSpacerElement("author.config", generalCont, false);
 		
 		UserSession usess = ureq.getUserSession();
-		initFormOrganisations(formLayout, usess);
+		initFormOrganisations(generalCont, usess);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
 		
@@ -268,7 +278,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		if (supportsDownload) {
 			canSV.add(SelectionValues.entry(KEY_DOWNLOAD, translate("cif.canDownload")));
 		}
-		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", formLayout, canSV.keys(), canSV.values(), 1);
+		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", generalCont, canSV.keys(), canSV.values(), 1);
 		authorCanEl.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
 		authorCanEl.select(KEY_REFERENCE, entry.getCanReference()); 
 		authorCanEl.select(KEY_COPY, entry.getCanCopy()); 
@@ -279,7 +289,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		if(!embbeded && !readOnly) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsCont.setRootForm(mainForm);
-			formLayout.add("buttons", buttonsCont);
+			generalCont.add("buttons", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
@@ -394,11 +404,22 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			}
 		}
 	}
+	
+	public void validateOfferAvailable() {
+		setFormWarning(null);
+		if (accessEl.isKeySelected(KEY_PUBLIC)) {
+			List<Offer> offers = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
+			if (offers.isEmpty()) {
+				setFormWarning("error.public.no.offers");
+			}
+		}
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == accessEl) {
 			updateCatalogLinksUI();
+			markDirty();
 			if (embbeded) {
 				fireEvent(ureq, new PublicVisibleEvent(accessEl.isKeySelected(KEY_PUBLIC)));
 			}

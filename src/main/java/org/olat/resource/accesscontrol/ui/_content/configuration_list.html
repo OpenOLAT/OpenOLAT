@@ -26,11 +26,16 @@
 					<div>
 						<label class="control-label col-sm-3" for="o_ac_cat_${offer.link.key}">$r.translate("access.info.catalog.entries")</label>
 					</div>
-					<div class="form-control-static col-sm-9" id="o_ac_cat_${offer.link.key}">
-						$offer.catalogDetails
-						#if($r.available($offer.catalogEditLink.component.componentName))
-							&nbsp;&nbsp; $r.render($offer.catalogEditLink)
-						#end
+					<div class="form-control-static col-sm-9 o_ac_active_wrapper" id="o_ac_cat_${offer.link.key}">
+						<div class="o_ac_active_icon">
+							$offer.catalogIcon
+						</div>
+						<div class="o_ac_active_text">
+							$offer.catalogDetails
+							#if($r.available($offer.catalogEditLink.component.componentName))
+								&nbsp;&nbsp; $r.render($offer.catalogEditLink)
+							#end
+						</div>
 					</div>
 				#end
 				
