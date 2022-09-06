@@ -92,6 +92,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.invitation.InvitationModule;
+import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.ui.InvitationListController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -262,6 +263,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private InstantMessagingModule imModule;
 	@Autowired
 	private InvitationModule invitationModule;
+	@Autowired
+	private InvitationService invitationService;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 	@Autowired
@@ -1475,7 +1478,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				root.addChild(gtnChild);
 			}
 			
-			if(invitationModule.isBusinessGroupInvitationEnabled()) {
+			if(invitationModule.isBusinessGroupInvitationEnabled() || invitationService.hasInvitations(businessGroup)) {
 				gtnChild = new GenericTreeNode(nodeIdPrefix.concat("invitations"));
 				gtnChild.setTitle(translate("menutree.invitations"));
 				gtnChild.setUserObject(ACTIVITY_MENUSELECT_INVITATIONS);

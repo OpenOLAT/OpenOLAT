@@ -28,7 +28,8 @@ import org.olat.basesecurity.Invitation;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
-import org.olat.modules.invitation.model.InvitationEntry;
+import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.portfolio.Binder;
 import org.olat.repository.RepositoryEntry;
@@ -64,8 +65,19 @@ public interface InvitationService {
 	public Invitation findInvitation(String token);
 
 	public Invitation findInvitation(Binder binder, IdentityRef identity);
+	
+	public List<Invitation> findInvitations(Identity identity);
 
-	public List<InvitationEntry> findInvitations(Identity identity);
+	/**
+	 * 
+	 * @param searchParams The search parameters
+	 * @param followToBusinessGroups true look up the invitations of business groups
+	 * 	linked to the entries, false limit strictly to invitations on repository entries
+	 * @return A list of invitations with their repository entries
+	 */
+	public List<InvitationWithRepositoryEntry> findInvitationsWithEntries(SearchInvitationParameters searchParams, boolean followToBusinessGroups);
+	
+	public List<InvitationWithBusinessGroup> findInvitationsWithBusinessGroups(SearchInvitationParameters searchParams);
 
 	public List<Invitation> findInvitations(RepositoryEntryRef entry, SearchInvitationParameters searchParams);
 	

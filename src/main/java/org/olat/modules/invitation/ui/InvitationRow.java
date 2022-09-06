@@ -37,7 +37,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class InvitationRow {
 	
-	private final Invitation invitation;
+	private Invitation invitation;
 	private final Identity identity;
 	private final FormLink urlLink;
 	private final FormLink toolsLink;
@@ -74,13 +74,47 @@ public class InvitationRow {
 	public Invitation getInvitation() {
 		return invitation;
 	}
+	
+	public void setInvitation(Invitation invitation) {
+		this.invitation = invitation;
+	}
 
 	public Identity getIdentity() {
 		return identity;
 	}
 	
+	public String getResourceableTypeName() {
+		if(entry != null) {
+			return entry.getOlatResource().getResourceableTypeName();
+		}
+		if(businessGroup != null) {
+			return businessGroup.getResourceableTypeName();
+		}
+		return null;
+	}
+	
+	public RepositoryEntry getRepositoryEntry() {
+		return entry;
+	}
+	
 	public String getRepositoryEntryDisplayname() {
 		return entry == null ? null : entry.getDisplayname();
+	}
+	
+	public Long getRepositoryEntryKey() {
+		return entry == null ? null : entry.getKey();
+	}
+	
+	public String getRepositoryEntryExternalRef() {
+		return entry == null ? null : entry.getExternalRef();
+	}
+	
+	public BusinessGroup getBusinessGroup() {
+		return businessGroup;
+	}
+	
+	public Long getBusinessGroupKey() {
+		return businessGroup == null ? null : businessGroup.getKey();
 	}
 	
 	public String getBusinessGroupName() {

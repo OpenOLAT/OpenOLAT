@@ -56,8 +56,9 @@ import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
-import org.olat.modules.invitation.model.InvitationEntry;
+import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
+import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.manager.BinderDAO;
@@ -208,10 +209,20 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	public Invitation findInvitation(Binder binder, IdentityRef identity) {
 		return invitationDao.findInvitation(binder.getBaseGroup(), identity);
 	}
+	
+	@Override
+	public List<Invitation> findInvitations(Identity identity) {
+		return invitationDao.findInvitations(identity);
+	}
 
 	@Override
-	public List<InvitationEntry> findInvitations(Identity identity) {
-		return invitationDao.findInvitations(identity);
+	public List<InvitationWithRepositoryEntry> findInvitationsWithEntries(SearchInvitationParameters searchParams, boolean followToBusinessGroups) {
+		return invitationDao.findInvitationsWithRepositoryEntries(searchParams, followToBusinessGroups);
+	}
+
+	@Override
+	public List<InvitationWithBusinessGroup> findInvitationsWithBusinessGroups(SearchInvitationParameters searchParams) {
+		return invitationDao.findInvitationsWitBusinessGroups(searchParams);
 	}
 
 	@Override

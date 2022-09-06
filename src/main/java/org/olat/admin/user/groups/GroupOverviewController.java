@@ -71,7 +71,6 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BGRoleCellRenderer;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.modules.invitation.InvitationService;
-import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.modules.invitation.ui.InvitationURLController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -190,9 +189,9 @@ public class GroupOverviewController extends FormBasicController {
 			}
 		}
 		
-		List<InvitationEntry> invitations = invitationService.findInvitations(identity);
+		List<Invitation> invitations = invitationService.findInvitations(identity);
 		Map<Group,Invitation> groupToInvitations = invitations.stream()
-				.collect(Collectors.toMap(InvitationEntry::getInvitationGroup, InvitationEntry::getInvitation, (u, v) -> u));
+				.collect(Collectors.toMap(Invitation::getBaseGroup, inv -> inv, (u, v) -> u));
 
 		//retrieve all user's membership if there are more than 50 groups
 		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(groupKeysWithMembers, identity);

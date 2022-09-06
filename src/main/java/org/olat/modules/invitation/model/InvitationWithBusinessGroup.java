@@ -21,37 +21,34 @@ package org.olat.modules.invitation.model;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.Invitation;
-import org.olat.repository.RepositoryEntry;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
- * Initial date: 15 juil. 2022<br>
+ * Initial date: 5 sept. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InvitationEntry {
+public class InvitationWithBusinessGroup {
 	
 	private final Invitation invitation;
-	private final RepositoryEntry entry;
+	private final BusinessGroup businessGroup;
 	
-	public InvitationEntry(Invitation invitation, RepositoryEntry entry) {
+	public InvitationWithBusinessGroup(Invitation invitation, BusinessGroup businessGroup) {
 		this.invitation = invitation;
-		this.entry = entry;
+		this.businessGroup = businessGroup;
 	}
-
+	
 	public Invitation getInvitation() {
 		return invitation;
+	}
+	
+	public BusinessGroup getBusinessGroup() {
+		return businessGroup;
 	}
 	
 	public Group getInvitationGroup() {
 		return invitation.getBaseGroup();
 	}
 
-	public RepositoryEntry getEntry() {
-		return entry;
-	}
-	
-	public Long getEntryKey() {
-		return entry == null ? null : entry.getKey();
-	}
 }

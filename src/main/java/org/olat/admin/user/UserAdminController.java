@@ -30,7 +30,9 @@ import java.util.List;
 
 import org.olat.admin.user.UserShortDescription.Builder;
 import org.olat.admin.user.UserShortDescription.Rows;
+import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.course.RepositoryEntriesOverviewController;
+import org.olat.admin.user.groups.BusinessGroupsOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -154,7 +156,9 @@ public class UserAdminController extends BasicController implements Activateable
 	private TabbedPane userTabP;
 	private Controller prefsCtr;
 	private Controller pwdCtr;
+	private Controller grpCtr;
 	private Controller quotaCtr;
+	private Controller courseCtr;
 	private Controller propertiesCtr;
 	private Controller userShortDescrCtr;
 	private UserRolesController rolesCtr;
@@ -167,8 +171,6 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
-	private RepositoryEntriesOverviewController courseCtr;
-	private GroupOverviewController grpCtr;
 	private CloseableModalController cmc;
 	private UserDataExportController exportDataCtrl;
 	private CompetencesOverviewController competencesCtrl;
@@ -509,14 +511,24 @@ public class UserAdminController extends BasicController implements Activateable
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf || isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
-				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
+				if(isInvitee) {
+					boolean canModifyInvitation = managerRoles.isAdministrator() || managerRoles.isUserManager() || managerRoles.isRolesManager();
+					grpCtr = new BusinessGroupsOverviewController(uureq, getWindowControl(), identity, canModify, canModifyInvitation);
+				} else {
+					grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
+				}
 				listenTo(grpCtr);
 				return grpCtr.getInitialComponent();
 			});
 	
 			userTabP.addTab(ureq, translate(NLS_VIEW_COURSES), uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
-				courseCtr = new RepositoryEntriesOverviewController(uureq, getWindowControl(), identity, canModify);
+				if(isInvitee) {
+					boolean canModifyInvitation = managerRoles.isAdministrator() || managerRoles.isUserManager() || managerRoles.isRolesManager();
+					courseCtr = new RepositoryEntriesOverviewController(uureq, getWindowControl(), identity, canModify, canModifyInvitation);
+				} else {
+					courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
+				}
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();
 			});

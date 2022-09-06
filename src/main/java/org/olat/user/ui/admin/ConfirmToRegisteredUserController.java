@@ -40,7 +40,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
-import org.olat.modules.invitation.model.InvitationEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -120,9 +119,8 @@ public class ConfirmToRegisteredUserController extends FormBasicController {
 			securityManager.updateRoles(getIdentity(), identityToModify, updatedRoles);
 		}
 		
-		List<InvitationEntry> invitationEntries = invitationService.findInvitations(identityToModify);
-		for(InvitationEntry invitationEntry:invitationEntries) {
-			Invitation invitation = invitationEntry.getInvitation();
+		List<Invitation> invitations = invitationService.findInvitations(identityToModify);
+		for(Invitation invitation:invitations) {
 			invitation.setStatus(InvitationStatusEnum.inactive);
 			invitationService.update(invitation);
 		}

@@ -46,6 +46,12 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
+	public InvitationListTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+		super(columnModel);
+		this.locale = locale;
+		userPropertyHandlers = List.of();
+	}
+	
 	public InvitationListTableModel(FlexiTableColumnModel columnModel, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
@@ -70,6 +76,12 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 	public Object getValueAt(InvitationRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
+				case repositoryEntryType: return row.getRepositoryEntry();
+				case repositoryEntryKey: return row.getRepositoryEntryKey();
+				case repositoryEntryExternalRef: return row.getRepositoryEntryExternalRef();
+				case repositoryEntryDisplayname: return row.getRepositoryEntryDisplayname();
+				case businessGroupKey: return row.getBusinessGroupKey();
+				case businessGroupName: return row.getBusinessGroupName();
 				case role: return row.getInvitationRoles();
 				case status: return row.getInvitationStatus();
 				case invitationDate: return row.getInvitationDate();
@@ -99,6 +111,12 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 		status("table.header.status"),
 		invitationDate("table.header.invitation"),
 		invitationLink("table.header.invitation.link"),
+		repositoryEntryType("table.header.type"),
+		repositoryEntryKey("table.header.id"),
+		repositoryEntryDisplayname("table.header.displayname"),
+		repositoryEntryExternalRef("table.header.external.ref"),
+		businessGroupKey("table.header.id"),
+		businessGroupName("table.header.name"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

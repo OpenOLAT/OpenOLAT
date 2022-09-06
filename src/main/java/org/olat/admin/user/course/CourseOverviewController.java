@@ -80,7 +80,8 @@ import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.invitation.InvitationService;
-import org.olat.modules.invitation.model.InvitationEntry;
+import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
+import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.invitation.ui.InvitationURLController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -230,10 +231,12 @@ public class CourseOverviewController extends FormBasicController  {
 
 	private void updateModel() {
 		List<MemberView> memberships = memberQueries.getIdentityMemberships(editedIdentity);
-		List<InvitationEntry> invitations = invitationService.findInvitations(editedIdentity);
+		SearchInvitationParameters searchParams = new SearchInvitationParameters();
+		searchParams.setIdentityKey(editedIdentity.getKey());
+		List<InvitationWithRepositoryEntry> invitations = invitationService.findInvitationsWithEntries(searchParams, true);
 		Map<Long,Invitation> repoEntryKeyToInvitations = invitations.stream()
 				.filter(invitation -> invitation.getEntry() != null)
-				.collect(Collectors.toMap(InvitationEntry::getEntryKey, InvitationEntry::getInvitation, (u,v) -> u));
+				.collect(Collectors.toMap(InvitationWithRepositoryEntry::getEntryKey, InvitationWithRepositoryEntry::getInvitation, (u,v) -> u));
 
 		Map<OLATResource,CourseMemberView> resourceToViewMap = new HashMap<>();
 		for(MemberView membership: memberships) {

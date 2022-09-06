@@ -323,7 +323,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				invitationListCtrl = new InvitationListController(ureq, bwControl, repoEntry, readOnly);
 				listenTo(invitationListCtrl);
 			} else {
-				invitationListCtrl.reloadModel();
+				invitationListCtrl.loadModel();
 			}
 			mainVC.put("content", invitationListCtrl.getInitialComponent());
 			return invitationListCtrl;
