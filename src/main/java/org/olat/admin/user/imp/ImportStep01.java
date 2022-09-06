@@ -57,12 +57,12 @@ class ImportStep01 extends BasicStep {
 	private static final String[] theKeys = new String[]{ "", "update", "ignore" };
 
 	private boolean newUsers;
-	private boolean canCreateOLATPassword;
+	private final UserImportContext userImportContext;
 
-	public ImportStep01(UserRequest ureq, boolean canCreateOLATPassword, boolean newUsers) {
+	public ImportStep01(UserRequest ureq, UserImportContext userImportContext, boolean newUsers) {
 		super(ureq);
 		this.newUsers = newUsers;
-		this.canCreateOLATPassword = canCreateOLATPassword;
+		this.userImportContext = userImportContext;
 		setI18nTitleAndDescr("step1.description", "step1.short.description");
 		setNextStep(new ImportStep02(ureq));
 	}
@@ -146,15 +146,21 @@ class ImportStep01 extends BasicStep {
 			int cntNew = newIdents.size();
 			int cntOld = cntall - cntNew;
 			textContainer.contextPut("newusers", newUsers);
-			String overview = getTranslator().translate("import.confirm", new String[] { "" + cntall, "" + cntNew, "" + cntOld });
+			String overview = getTranslator().translate("import.confirm", "" + cntall, "" + cntNew, "" + cntOld);
 			textContainer.contextPut("overview", overview);
 			textContainer.contextPut("updateusers", updateIdents.isEmpty());
+			
+			if(userImportContext.getPreselectedOrganisation() != null) {
+				String org = userImportContext.getPreselectedOrganisation().getDisplayName();
+				uifactory.addStaticTextElement("organisation", org, textContainer);
+			}
+
 			if(!updateIdents.isEmpty()) {
 				String[] theValues = new String[]{ translate("update.select"), translate("update.yes"), translate("update.no") };
 				updateEl = uifactory
 						.addDropdownSingleselect("update.user", textContainer, theKeys, theValues, null);
 				
-				if(canCreateOLATPassword) {
+				if(userImportContext.canCreateOLATPassword()) {
 					updatePasswordEl = uifactory
 						.addDropdownSingleselect("update.password", textContainer, theKeys, theValues, null);
 				}
@@ -171,7 +177,7 @@ class ImportStep01 extends BasicStep {
 			
 			// fixed fields:
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.login));
-			if (canCreateOLATPassword) {
+			if (userImportContext.canCreateOLATPassword()) {
 				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.cred));
 			}
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.lang));

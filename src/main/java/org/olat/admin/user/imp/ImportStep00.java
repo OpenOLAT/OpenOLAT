@@ -87,15 +87,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 class ImportStep00 extends BasicStep {
 
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
-	private boolean canCreateOLATPassword;
+	private final UserImportContext userImportContext;
 	private Mapper excelMapper;
 	private TextAreaElement textAreaElement;
 
-	public ImportStep00(UserRequest ureq, boolean canCreateOLATPassword) {
+	public ImportStep00(UserRequest ureq, UserImportContext userImportContext) {
 		super(ureq);
-		this.canCreateOLATPassword = canCreateOLATPassword;
+		this.userImportContext = userImportContext;
 		setI18nTitleAndDescr("step0.description", "step0.short.descr");
-		setNextStep(new ImportStep01(ureq, canCreateOLATPassword, false));
+		setNextStep(new ImportStep01(ureq, userImportContext, false));
 	}
 
 	@Override
@@ -153,7 +153,7 @@ class ImportStep00 extends BasicStep {
 			addToRunContext("validImport", Boolean.TRUE);
 			boolean newUsers = false;
 			if (!newIdents.isEmpty()) {
-				setNextStep(new ImportStep01(ureq, canCreateOLATPassword, true));
+				setNextStep(new ImportStep01(ureq, userImportContext, true));
 				newUsers = true;
 			}
 			addToRunContext("newUsers", newUsers);
@@ -219,7 +219,7 @@ class ImportStep00 extends BasicStep {
 				columnId++;
 
 				// pwd row
-				if (canCreateOLATPassword) {
+				if (userImportContext.canCreateOLATPassword()) {
 					if (parts.length > columnId) {
 						String trimmedPwd = parts[columnId].trim();
 						// treat all white-space-only passwords as non-passwords.
@@ -542,7 +542,7 @@ class ImportStep00 extends BasicStep {
 
 			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/step0.html");
 			formLayout.add(textContainer);
-			textContainer.contextPut("canCreateOLATPassword", canCreateOLATPassword);
+			textContainer.contextPut("canCreateOLATPassword", userImportContext.canCreateOLATPassword());
 
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 			excelMapper = createMapper(ureq);
@@ -589,7 +589,7 @@ class ImportStep00 extends BasicStep {
 				headerLine.append(translate("table.user.login")).append(" *");
 				StringBuilder dataLine = new StringBuilder();
 				dataLine.append("demo");
-				if (canCreateOLATPassword) {
+				if (userImportContext.canCreateOLATPassword()) {
 					headerLine.append("\t").append(translate("table.user.pwd"));
 					dataLine.append("\t").append("olat4you");
 				}
