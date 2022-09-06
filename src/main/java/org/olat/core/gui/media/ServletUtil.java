@@ -49,15 +49,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.session.UserSessionManager;
 
 /**
  * @author Felix Jost
@@ -226,12 +222,7 @@ public class ServletUtil {
 					rstart = System.currentTimeMillis();
 				}
 				
-				if (Settings.isDebuging()) {
-					SlowBandWidthSimulator sbs = Windows.getWindows(CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(httpReq)).getSlowBandWidthSimulator();
-					out = sbs.wrapOutputStream(httpResp.getOutputStream());
-				} else {
-					out = httpResp.getOutputStream();
-				}
+				out = httpResp.getOutputStream();
 
 				if (ranges != null && ranges.size() == 1) {
 					
@@ -260,7 +251,7 @@ public class ServletUtil {
 				
 				if (debug) {
 					long rstop = System.currentTimeMillis();
-					log.debug("time to serve (mr="+mr.getClass().getName()+") "+ (size == null ? "n/a" : "" + size) + " bytes: " + (rstop - rstart));
+					log.debug("time to serve (mr={}) {} bytes: {}", mr.getClass().getName(), (size == null ? "n/a" : "" + size), (rstop - rstart));
 				}
 			}
 		} catch (IOException e) {
@@ -506,7 +497,7 @@ public class ServletUtil {
 	 * @param response
 	 * @param result
 	 */
-	public static void serveStringResource(HttpServletRequest httpReq, HttpServletResponse response, String result) {
+	public static void serveStringResource(HttpServletResponse response, String result) {
 		setStringResourceHeaders(response);
 
 		// log the response headers prior to sending the output
@@ -541,21 +532,14 @@ public class ServletUtil {
 			int encLen = baos.size();
 			response.setContentLength(encLen);
 			
-			OutputStream os;
-			if (Settings.isDebuging()) {
-				SlowBandWidthSimulator sbs = Windows.getWindows(CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(httpReq)).getSlowBandWidthSimulator();
-				os = sbs.wrapOutputStream(response.getOutputStream());	
-			} else {
-				os = response.getOutputStream();
-			}
+			OutputStream os = response.getOutputStream();
 			byte[] bout = baos.toByteArray();
 			os.write(bout);
 			os.close();
 			
 			if (isDebug) {
 				long rstop = System.currentTimeMillis();
-				log.debug("time to serve inline-resource " + result.length() + " chars / " + encLen + " bytes: " 
-					+ (rstop - rstart));
+				log.debug("time to serve inline-resource {} chars / {} bytes: {}", result.length(), encLen, (rstop - rstart));
 			}
 		} catch (IOException e) {
 			if (isDebug) {

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Container;
@@ -57,7 +56,6 @@ import org.olat.core.gui.control.winmgr.WindowManagerImpl;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.intercept.DebugHelper;
-import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 
 /**
  * 
@@ -139,11 +137,6 @@ public class DevelopmentController extends BasicController {
 		toggleAutorefresh = LinkFactory.createButtonSmall("toggleAutorefresh", myContent, this);
 		// do it with web 1.0 full page reload timer
 		myContent.contextPut("autorefresh", "false");
-		
-		// slow bandwidth simulation
-		SlowBandWidthSimulator sbs = Windows.getWindows(ureq).getSlowBandWidthSimulator();
-		bandwithController = sbs.createAdminGUI().createController(ureq, getWindowControl());
-		myContent.put("bandwidth",bandwithController.getInitialComponent());
 
 		mainpanel = new Panel("developermainpanel");
 		

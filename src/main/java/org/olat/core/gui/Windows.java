@@ -40,8 +40,6 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.winmgr.WindowManagerImpl;
-import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
-import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulatorImpl;
 import org.olat.core.util.FIFOMap;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -61,8 +59,6 @@ public class Windows implements Disposable, Serializable {
 	private Boolean fullScreen;
 	private final AtomicInteger assessmentStarted = new AtomicInteger();
 	private transient WindowManager windowManagerImpl;
-
-	private transient SlowBandWidthSimulator sbws;
 	
 	private Windows() {
 		// private constructor
@@ -328,14 +324,6 @@ public class Windows implements Disposable, Serializable {
 			chiefController.getWindow().getWindowBackOffice().dispose();
 		}
 		windows.clear();
-	}
-
-	/**
-	 * @return
-	 */
-	public SlowBandWidthSimulator getSlowBandWidthSimulator() {
-		if (sbws == null) sbws = new SlowBandWidthSimulatorImpl();
-		return sbws;
 	}
 	
 	private static class UriPrefixIdPair {

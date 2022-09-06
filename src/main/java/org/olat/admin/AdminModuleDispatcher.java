@@ -94,7 +94,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 				SysInfoMessage2XML(mrg.getInfoMessageNodeOnly(), result);
 				SysInfoMessage2XML(mrg.getMaintenanceMessageNodeOnly(), result);
 			}
-			ServletUtil.serveStringResource(request, response, result.toString());
+			ServletUtil.serveStringResource(response, result.toString());
 			
 		} else {
 			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request)) {
@@ -112,21 +112,21 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private void handleSessionsCommand(HttpServletRequest request, HttpServletResponse response, String cmd) {
 		if (cmd.equalsIgnoreCase(CMD_SET_LOGIN_BLOCKED)) {
 			CoreSpringFactory.getImpl(AdminModule.class).setLoginBlocked(true, false);
-			ServletUtil.serveStringResource(request, response, "Ok, login blocked");
+			ServletUtil.serveStringResource(response, "Ok, login blocked");
 		} else if (cmd.equalsIgnoreCase(CMD_SET_LOGIN_NOT_BLOCKED)) {
 			CoreSpringFactory.getImpl(AdminModule.class).setLoginBlocked(false, false);
-			ServletUtil.serveStringResource(request, response, "Ok, login no more blocked");
+			ServletUtil.serveStringResource(response, "Ok, login no more blocked");
 		}else if (cmd.equalsIgnoreCase(CMD_SET_MAX_SESSIONS)) {
 			handleSetMaxSessions(request, response);
 		}else if (cmd.equalsIgnoreCase(CMD_INVALIDATE_ALL_SESSIONS)) {
 			CoreSpringFactory.getImpl(UserSessionManager.class).invalidateAllSessions();
-			ServletUtil.serveStringResource(request, response, "Ok, Invalidated all sessions");
+			ServletUtil.serveStringResource(response, "Ok, Invalidated all sessions");
 		}else if (cmd.equalsIgnoreCase(CMD_INVALIDATE_OLDEST_SESSIONS)) {
 			handleInvidateOldestSessions(request, response);
 		}else if(cmd.equalsIgnoreCase(CMD_SET_SESSIONTIMEOUT)) {
 			handleSetSessiontimeout(request, response);
 		} else {
-			ServletUtil.serveStringResource(request, response, "NOT OK, unknown command=" + cmd);
+			ServletUtil.serveStringResource(response, "NOT OK, unknown command=" + cmd);
 		}
 	}
 
@@ -138,14 +138,14 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private void handleSetMaxSessions(HttpServletRequest request, HttpServletResponse response) {
 		String maxSessionsString = request.getParameter(PARAMETER_MAX_MESSAGE);
 		if (maxSessionsString == null || maxSessionsString.equals("")) {
-			ServletUtil.serveStringResource(request, response, "NOT_OK, missing parameter " + PARAMETER_MAX_MESSAGE);
+			ServletUtil.serveStringResource(response, "NOT_OK, missing parameter " + PARAMETER_MAX_MESSAGE);
 		} else {
 			try {
 				int maxSessions = Integer.parseInt(maxSessionsString);
 				CoreSpringFactory.getImpl(AdminModule.class).setMaxSessions(maxSessions);
-				ServletUtil.serveStringResource(request, response, "Ok, max-session=" + maxSessions);
+				ServletUtil.serveStringResource(response, "Ok, max-session=" + maxSessions);
 			} catch (NumberFormatException nbrException) {
-				ServletUtil.serveStringResource(request, response, "NOT_OK, parameter " + PARAMETER_MAX_MESSAGE + " must be a number");
+				ServletUtil.serveStringResource(response, "NOT_OK, parameter " + PARAMETER_MAX_MESSAGE + " must be a number");
 			}
 		}
 	}
@@ -153,14 +153,14 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private void handleSetSessiontimeout(HttpServletRequest request, HttpServletResponse response) {
 		String paramStr = request.getParameter(PARAMETER_SESSIONTIMEOUT);
 		if (paramStr == null || paramStr.equals("")) {
-			ServletUtil.serveStringResource(request, response, "NOT_OK, missing parameter " + PARAMETER_SESSIONTIMEOUT);
+			ServletUtil.serveStringResource(response, "NOT_OK, missing parameter " + PARAMETER_SESSIONTIMEOUT);
 		} else {
 			try {
 				int sessionTimeout = Integer.parseInt(paramStr);
 				CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
-				ServletUtil.serveStringResource(request, response, "Ok, sessiontimeout=" + sessionTimeout);
+				ServletUtil.serveStringResource(response, "Ok, sessiontimeout=" + sessionTimeout);
 			} catch (NumberFormatException nbrException) {
-				ServletUtil.serveStringResource(request, response, "NOT_OK, parameter " + PARAMETER_SESSIONTIMEOUT + " must be a number");
+				ServletUtil.serveStringResource(response, "NOT_OK, parameter " + PARAMETER_SESSIONTIMEOUT + " must be a number");
 			}
 		}
 	}
@@ -174,14 +174,14 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private void handleInvidateOldestSessions(HttpServletRequest request, HttpServletResponse response) {
 		String nbrSessionsString = request.getParameter(PARAMETER_NBR_SESSIONS);
 		if (nbrSessionsString == null || nbrSessionsString.equals("")) {
-			ServletUtil.serveStringResource(request, response, "NOT_OK, missing parameter " + PARAMETER_NBR_SESSIONS);
+			ServletUtil.serveStringResource(response, "NOT_OK, missing parameter " + PARAMETER_NBR_SESSIONS);
 		} else {
 			try {
 				int nbrSessions = Integer.parseInt(nbrSessionsString);
 				CoreSpringFactory.getImpl(UserSessionManager.class).invalidateOldestSessions(nbrSessions);
-				ServletUtil.serveStringResource(request, response, "Ok, Invalidated oldest sessions, nbrSessions=" + nbrSessions);
+				ServletUtil.serveStringResource(response, "Ok, Invalidated oldest sessions, nbrSessions=" + nbrSessions);
 			} catch (NumberFormatException nbrException) {
-				ServletUtil.serveStringResource(request, response, "NOT_OK, parameter " + PARAMETER_NBR_SESSIONS + " must be a number");
+				ServletUtil.serveStringResource(response, "NOT_OK, parameter " + PARAMETER_NBR_SESSIONS + " must be a number");
 			}
 		}
 	}
@@ -204,7 +204,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 				}
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
 				mrg.setInfoMessage(message, start, end, clearOnRestart);
-				ServletUtil.serveStringResource(request, response, "Ok, new infoMessage is::" + message);
+				ServletUtil.serveStringResource(response, "Ok, new infoMessage is::" + message);
 			} else if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE)){
 				Date start = parseDateFromRequest(request, PARAMETER_START);
 				Date end = parseDateFromRequest(request, PARAMETER_END);				
@@ -214,7 +214,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 				}
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
 				mrg.setMaintenanceMessage(message, start, end, clearOnRestart);
-				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
+				ServletUtil.serveStringResource(response, "Ok, new maintenanceMessage is::" + message);
 			} 
 		} else {
 			DispatcherModule.sendForbidden(request.getPathInfo(), response);
