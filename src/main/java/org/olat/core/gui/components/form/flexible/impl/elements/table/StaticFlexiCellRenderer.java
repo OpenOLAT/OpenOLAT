@@ -224,8 +224,14 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				}
 			} else {
 				String href = href(source, row);
+				String actionId = getId(cellValue, row, source);
 				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, push, pair);
-				target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
+				target.append("<a");
+				if(actionId != null) {
+					target.append(" id=\"").append(actionId).append("\"");
+					
+				}
+				target.append(" href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
 			}
 			
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
@@ -238,21 +244,34 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
 				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
 			}
-			if(labelDelegate == null) {
-				String label = getLabel();
-				if(label != null) {
-					target.append(label);
-				}
-			} else {
-				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-			}
+			
+			getLabel(renderer, target, cellValue, row, source, ubu, translator);
 			
 			if(StringHelper.containsNonWhitespace(iconRightCSS)) {
 				target.append(" <i class=\"o_icon ").append(iconRightCSS).append("\">&nbsp;</i>");
 			}
 			target.append("</a>");
-		} else if(labelDelegate == null) {
-			target.append(getLabel());
+		} else {
+			getLabel(renderer, target, cellValue, row, source, ubu, translator);
+		}
+	}
+	
+	/**
+	 * @param cellValue The Value of the cell
+	 * @param row The index of the row 
+	 * @param source The table component
+	 */
+	protected String getId(Object cellValue, int row, FlexiTableComponent source) {
+		return null;
+	}
+	
+	protected void getLabel(Renderer renderer, StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(labelDelegate == null) {
+			String labelVal = getLabel();
+			if(labelVal != null) {
+				target.append(labelVal);
+			}
 		} else {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 		}

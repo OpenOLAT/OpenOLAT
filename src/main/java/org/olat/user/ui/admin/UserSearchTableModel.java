@@ -81,6 +81,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 				case inactivationDate: return userRow.getInactivationDate();
 				case daysToInactivation: return getDaysToInactivation(userRow);
 				case daysToDeletion: return getDaysToDeletion(userRow);
+				case organisations: return userRow.getOrganisations();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -121,7 +122,8 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		inactivationDate("table.identity.inactivation.date"),
 		daysToInactivation("table.identity.days.inactivation"),
 		daysToDeletion("table.identity.days.deletion"),
-		expirationDate("table.identity.expiration.date");
+		expirationDate("table.identity.expiration.date"),
+		organisations("table.identity.organisations");
 		
 		private final String i18nKey;
 		

@@ -1,0 +1,10 @@
+<ul class="list-unstyled">
+#foreach($organisation in $organisations)
+	<li>
+		#if($r.isNotEmpty($organisation.parentLine))
+		<small class="tetx-muted">${organisation.getParentLine()}</small><br>
+		#end
+		<strong>${organisation.getDisplayName()}</strong>
+	</li>
+#end
+</ul>

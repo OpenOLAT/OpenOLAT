@@ -73,6 +73,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -103,6 +104,8 @@ import org.olat.user.ui.admin.bulk.move.UserBulkMove_1_ChooseRoleStep;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
 import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.identity.UserInfoSegmentedController;
+import org.olat.user.ui.organisation.OrganisationParentLineController;
+import org.olat.user.ui.organisation.OrganisationsSmallListController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -148,10 +151,13 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private UserAdminController userAdminCtr;
 	private ContactFormController contactCtr;
 	private UserInfoSegmentedController userInfoCtr;
+	private CloseableCalloutWindowController calloutCtrl;
 	private ChangeStatusController changeStatusController;
 	private StepsMainRunController userBulkMoveController;
 	private StepsMainRunController userBulkChangesController;
 	private ConfirmDeleteUserController confirmDeleteUserController;
+	private OrganisationParentLineController organisationParentLineCtrl;
+	private OrganisationsSmallListController organisationsSmallListCtrl;
 	
 	private final Roles roles;
 	private final UserSearchTableSettings settings;
@@ -236,6 +242,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		if(settings.isVCard()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.vcard", translate("table.identity.vcard"), "vcard"));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.organisations, new IdentityOrganisationsCellRenderer()));
 		
 		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule, userLifecycleManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -455,7 +462,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		} else if(userInfoCtr == source) {
 			stackPanel.popController(userInfoCtr);
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(cmc == source || calloutCtrl == source
+				|| organisationParentLineCtrl == source
+				|| organisationsSmallListCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -464,15 +473,21 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteUserController);
 		removeAsListenerAndDispose(userBulkChangesController);
+		removeAsListenerAndDispose(organisationParentLineCtrl);
+		removeAsListenerAndDispose(organisationsSmallListCtrl);
 		removeAsListenerAndDispose(userBulkMoveController);
 		removeAsListenerAndDispose(changeStatusController);
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(userInfoCtr);
 		removeAsListenerAndDispose(contactCtr);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteUserController = null;
+		organisationParentLineCtrl = null;
+		organisationsSmallListCtrl = null;
 		userBulkChangesController = null;
 		userBulkMoveController = null;
 		changeStatusController = null;
+		calloutCtrl = null;
 		userInfoCtr = null;
 		contactCtr = null;
 		cmc = null;
@@ -494,6 +509,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					doSelectIdentity(ureq, userRow);
 				} else if("vcard".equals(cmd)) {
 					doSelectVcard(ureq, userRow);
+				} else if(IdentityOrganisationsCellRenderer.CMD_FIRST_ORGANISATION.equals(cmd)) {
+					String targetId = IdentityOrganisationsCellRenderer.getFirstOrganisationId(te.getIndex());
+					doShowOrganisationParentLine(ureq, targetId, userRow);
+				} else if(IdentityOrganisationsCellRenderer.CMD_OTHER_ORGANISATIONS.equals(cmd)) {
+					String targetId = IdentityOrganisationsCellRenderer.getOtherOrganisationsId(te.getIndex());
+					doShowOrganisations(ureq, targetId, userRow);
 				}
 			}
 		} else if(mailButton == source) {
@@ -596,6 +617,27 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		stackPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
 		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
 		updateNextPrevious(userRow, true);	
+	}
+	
+	private void doShowOrganisationParentLine(UserRequest ureq, String elementId, IdentityPropertiesRow userRow) {
+		Organisation organisation = userRow.getOrganisations().get(0);
+		organisationParentLineCtrl = new OrganisationParentLineController(ureq, getWindowControl(), organisation);
+		listenTo(organisationParentLineCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), organisationParentLineCtrl.getInitialComponent(), elementId, "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
+	private void doShowOrganisations(UserRequest ureq, String elementId, IdentityPropertiesRow userRow) {
+		List<Organisation> organisations = userRow.getOrganisations();
+		organisationsSmallListCtrl = new OrganisationsSmallListController(ureq, getWindowControl(), organisations);
+		listenTo(organisationsSmallListCtrl);
+		
+		String title = translate("num.of.organisations", Integer.toString(organisations.size()));
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), organisationsSmallListCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void updateNextPrevious(IdentityPropertiesRow row, boolean vcard) {

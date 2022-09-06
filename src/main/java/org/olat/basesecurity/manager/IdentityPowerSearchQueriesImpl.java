@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -121,6 +122,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		List<Object[]> rawList = dbq.getResultList();
 		List<IdentityPropertiesRow> rows = new  ArrayList<>(rawList.size());
 		int numOfProperties = userPropertyHandlers.size();
+		List<Long> rowsKeys = new ArrayList<>(rawList.size());
 		for(Object[] rawObject:rawList) {
 			int pos = 0;
 			
@@ -137,12 +139,44 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawObject[pos++];
 			}
-
-			rows.add(new IdentityPropertiesRow(identityKey, creationDate, lastLogin, status,
+			
+			IdentityPropertiesRow row = new IdentityPropertiesRow(identityKey, creationDate, lastLogin, status,
 					inactivationDate, reactivationDate, expirationDate, deletionEmailDate,
-					userPropertyHandlers, userProperties, locale));
+					userPropertyHandlers, userProperties, locale);
+			rows.add(row);
+			rowsKeys.add(identityKey);
 		}
+		
+		Map<Long,List<Organisation>> organisations = getOrganisations(rowsKeys);
+		for(IdentityPropertiesRow row:rows) {
+			List<Organisation> organisationsList = organisations.get(row.getIdentityKey());
+			row.setOrganisations(organisationsList);
+		}
+
 		return rows;
+	}
+	
+	public Map<Long,List<Organisation>> getOrganisations(List<Long> identityKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select membership.identity.key, org from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key in (:identityKeys) and membership.role=:role");
+		
+		
+		List<Object[]> rawObjectsList = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKeys", identityKeys)
+				.setParameter("role", OrganisationRoles.user.name())
+				.getResultList();
+		
+		Map<Long,List<Organisation>> map = new HashMap<>();
+		for(Object[] rawObjects:rawObjectsList) {
+			Long identityKey = (Long)rawObjects[0];
+			Organisation organisation = (Organisation)rawObjects[1];
+			map.computeIfAbsent(identityKey, key -> new ArrayList<>(3))
+				.add(organisation);
+		}
+		return map;
 	}
 	
 	private void writeUserProperties(String user, QueryBuilder sb, List<UserPropertyHandler> userPropertyHandlers) {

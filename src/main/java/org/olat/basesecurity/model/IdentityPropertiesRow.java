@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityLifecycle;
+import org.olat.core.id.Organisation;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -44,6 +45,8 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	private final Date expirationDate;
 	private final Date deletionEmailDate;
 	
+	private List<Organisation> organisations;
+
 	public IdentityPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		status = identity.getStatus();
@@ -101,6 +104,14 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	@Override
 	public Date getDeletionEmailDate() {
 		return deletionEmailDate;
+	}
+
+	public List<Organisation> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(List<Organisation> organisations) {
+		this.organisations = organisations;
 	}
 	
 }
