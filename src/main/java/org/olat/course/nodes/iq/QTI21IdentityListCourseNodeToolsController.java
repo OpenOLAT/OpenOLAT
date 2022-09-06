@@ -402,7 +402,6 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void doOpenCorrection(UserRequest ureq) {
-		boolean assessmentEntryDone = isAssessementEntryDone();
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
@@ -414,7 +413,11 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates, getTranslator());
 		
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity, assessmentEntryDone);
+		boolean assessmentEntryDone = isAssessementEntryDone();
+		boolean running = lastSession.getFinishTime() == null && lastSession.getTerminationTime() == null;
+		boolean readOnly = assessmentEntryDone || running;
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model,
+				assessedIdentity, readOnly);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("tool.correction"), correctionCtrl);
 	}

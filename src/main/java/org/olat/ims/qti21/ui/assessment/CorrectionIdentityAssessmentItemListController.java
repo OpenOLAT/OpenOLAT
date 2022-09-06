@@ -228,6 +228,12 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		for(AssessmentItemSession itemSession:allItemSessions) {
 			identifierToItemSessions.put(itemSession.getAssessmentItemIdentifier(), itemSession);
 		}
+		
+		if(readOnly && candidateSession.getTerminationTime() == null && candidateSession.getFinishTime() == null) {
+			setFormWarning("warning.preview.running");
+		} else {
+			setFormWarning(null);
+		}
 
 		//reorder to match the list of assessment items
 		List<CorrectionIdentityAssessmentItemRow> rows = new ArrayList<>();
@@ -405,11 +411,12 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 						itemRef, itemNode);
 				itemCorrection.setItemSession(reloadItemSession);
 				
+				boolean running = candidateSession.getTerminationTime() == null && candidateSession.getFinishTime() == null;
 				ResolvedAssessmentItem resolvedAssessmentItem = model.getResolvedAssessmentTest().getResolvedAssessmentItem(itemRef);
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
-						tableModel.getObjects(), model, gradingTimeRecord, readOnly, false);
+						tableModel.getObjects(), model, gradingTimeRecord, readOnly || running, running, false);
 				listenTo(identityItemCtrl);
 				stackPanel.pushController(assessmentItem.getTitle(), identityItemCtrl);
 				updatePreviousNext();
