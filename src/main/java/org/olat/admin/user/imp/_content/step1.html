@@ -1,8 +1,18 @@
 <h4>$r.translate("step1.description")</h4>
+
+#if($r.visible("organisation"))
+	<div class="form-group clearfix">
+		$r.render("organisation_LABEL", "organisation", "col-sm-3")
+		<div class="col-sm-9">
+			$r.render("organisation", "form")
+		</div>
+	</div>
+#end
+
 #if($newusers=="true")
 	<p class="o_warning">$overview</p>
 #else 
-	<p class="o_error">$r.translate("step1.nonewusers")</p>
+	<div class="o_error o_block">$r.translate("step1.nonewusers")</div>
 #end
 
 #if($r.visible("update.user"))

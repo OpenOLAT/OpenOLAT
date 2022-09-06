@@ -14,5 +14,9 @@
 	$r.render("next.item")
 	$r.render("back.overview")
 </div>
+
+#if($r.isNotEmpty($off_warn))
+	<div class="o_warning">$off_warn</div>
+#end
 $r.render("items")
 

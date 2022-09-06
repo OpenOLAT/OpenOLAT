@@ -64,7 +64,7 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
 			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
-			GradingTimeRecordRef gradingTimeRecord, boolean readOnly, boolean pageIdentity) {
+			GradingTimeRecordRef gradingTimeRecord, boolean readOnly, boolean runningWarning, boolean pageIdentity) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("corrections_navigation");
 		
@@ -72,6 +72,10 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 				itemCorrection, assessmentEntry, assessmentEntryList, model, gradingTimeRecord, readOnly, pageIdentity);
 		listenTo(itemCtrl);
 		mainVC.put("items", itemCtrl.getInitialComponent());
+		
+		if(runningWarning) {
+			mainVC.contextPut("off_warn", translate("warning.preview.running"));
+		}
 		
 		backLink = LinkFactory.createLinkBack(mainVC, this);
 		backLink.setElementCssClass("o_correction_navigation_back");

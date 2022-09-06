@@ -501,11 +501,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 						candidateSession, testSessionState, reloadItemSession, itemSessionState,
 						itemRef, itemNode);
 				itemCorrection.setItemSession(reloadItemSession);
-
-				boolean assessmentEntryDone = model.isAssessmentEntryDone(assessedIdentity);
+				
+				boolean running = candidateSession.getTerminationTime() == null && candidateSession.getFinishTime() == null;
+				boolean readOnly = model.isAssessmentEntryDone(assessedIdentity) || running;
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model, null, assessmentEntryDone, true);
+						selectedItemSessions, model, null, readOnly, running, true);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				

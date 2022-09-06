@@ -251,7 +251,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		if(!readOnly) {
 			correctionCol = new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null));
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("correction"), "correction"),
+							new StaticFlexiCellRenderer(translate("preview"), "preview")));
 			columnsModel.addFlexiColumnModel(correctionCol);
 		}
 		DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
@@ -446,8 +448,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					} else {
 						doOpenResult(ureq, testSession);
 					}
-				} else if("correction".equals(cmd)) {
+				} else if("correction".equals(cmd) ) {
 					doCorrection(ureq, testSession);
+				} else if("preview".equals(cmd)) {
+					doOpenCorrection(ureq, testSession);
 				} else if("invalidate".equals(cmd)) {
 					confirmInvalidateTestSession(ureq, testSession);
 				}
@@ -477,6 +481,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private void doOpenCorrection(UserRequest ureq, AssessmentTestSession session) {
 		boolean assessmentEntryDone = isAssessmentEntryDone();
+		boolean running = session.getTerminationTime() == null && session.getFinishTime() == null;
 		RepositoryEntry testEntry = session.getTestEntry();
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
@@ -488,7 +493,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			lastSessions.put(assessedIdentity, session);
 			Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 			testSessionStates.put(assessedIdentity, testSessionState);
-			boolean correctionReadOnly = readOnly || assessmentEntryDone;
+			boolean correctionReadOnly = readOnly || assessmentEntryDone || running;
 			CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
 					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates, getTranslator());
 			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,

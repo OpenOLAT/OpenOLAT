@@ -38,6 +38,8 @@ import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -120,6 +122,8 @@ public class UserImportController extends BasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
+	@Autowired
+	private OrganisationService organisationservice;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -251,6 +255,11 @@ public class UserImportController extends BasicController {
 		if(userToUpdate.getExpirationDate() != null) {
 			identity = securityManager.saveIdentityExpirationDate(identity, userToUpdate.getExpirationDate(), getIdentity());
 		}
+		
+		if(preselectedOrganisation != null
+				&& !organisationservice.hasRole(identity, preselectedOrganisation, OrganisationRoles.user)) {
+			organisationservice.addMember(preselectedOrganisation, identity, OrganisationRoles.user);
+		}
 		return identity;
 	}
 	
@@ -293,8 +302,9 @@ public class UserImportController extends BasicController {
 		// use fallback translator for user property translation
 		setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
 		userPropertyHandlers = um.getUserPropertyHandlersFor(usageIdentifyer, true);
-				
-		Step start = new ImportStep00(ureq, canCreateOLATPassword);
+		
+		final UserImportContext userImportContext = new UserImportContext(canCreateOLATPassword, preselectedOrganisation);		
+		final Step start = new ImportStep00(ureq, userImportContext);
 		// callback executed in case wizard is finished.
 		StepRunnerCallback finish = (uureq, swControl, runContext) -> {
 			// all information to do now is within the runContext saved
