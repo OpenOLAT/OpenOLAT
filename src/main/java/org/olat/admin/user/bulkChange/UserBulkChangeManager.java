@@ -212,28 +212,9 @@ public class UserBulkChangeManager implements InitializingBean {
 			// loop over securityGroups defined above
 			Map<OrganisationRoles,String> roleChangeMap = userBulkChanges.getRoleChangeMap();
 			if(!roleChangeMap.isEmpty()) {
-				OrganisationRef organisationRef = userBulkChanges.getOrganisation();
-				Organisation organisation = organisationRef == null
-						? organisationService.getDefaultOrganisation() : organisationService.getOrganisation(organisationRef);
-				for (OrganisationRoles organisationRole : OrganisationRoles.values()) {
-					if (roleChangeMap.containsKey(organisationRole)) {
-						boolean isInGroup = organisationService.hasRole(identity, organisation, organisationRole);
-						String thisRoleAction = roleChangeMap.get(organisationRole);
-						// user not anymore in security group, remove him
-						if (isInGroup && thisRoleAction.equals("remove")) {
-							organisationService.removeMember(organisation, identity, organisationRole, false);
-							log.info(Tracing.M_AUDIT, "User::{} removed system role::{} from user:: {}", actingIdentity.getKey(), organisationRole, identity);
-						}
-						// user not yet in security group, add him
-						if (!isInGroup && thisRoleAction.equals("add")) {
-							organisationService.addMember(organisation, identity, organisationRole);
-							log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{}", actingIdentity.getKey(), organisationRole, identity);
-						}
-					}
-				}
+				changeRoles(identity, roleChangeMap, userBulkChanges.getOrganisation(), actingIdentity);
 			}
 			
-
 			// set status
 			if (canManagedCritical && userBulkChanges.getStatus() != null) {
 				Integer status = userBulkChanges.getStatus();	
@@ -290,6 +271,36 @@ public class UserBulkChangeManager implements InitializingBean {
 			MailPackage mailing = new MailPackage();
 			businessGroupService.updateMemberships(actingIdentity, changes, mailing);
 			dbInstance.commit();
+		}
+	}
+	
+	private void changeRoles(Identity identity, Map<OrganisationRoles,String> roleChangeMap, OrganisationRef organisationRef,
+			Identity actingIdentity) {
+		Organisation organisation = organisationRef == null
+				? organisationService.getDefaultOrganisation() : organisationService.getOrganisation(organisationRef);
+		for (OrganisationRoles organisationRole : OrganisationRoles.values()) {
+			if (roleChangeMap.containsKey(organisationRole)) {
+				boolean isInGroup = organisationService.hasRole(identity, organisation, organisationRole);
+				String thisRoleAction = roleChangeMap.get(organisationRole);
+				// user not anymore in security group, remove him
+				if (isInGroup && thisRoleAction.equals("remove")) {
+					boolean allowed = true;
+					if(organisationRole == OrganisationRoles.user) {
+						// need to have at least one user membership
+						allowed = organisationService.getOrganisations(identity, OrganisationRoles.user).size() > 1;
+					}
+					
+					if(allowed) {
+						organisationService.removeMember(organisation, identity, organisationRole, false);
+						log.info(Tracing.M_AUDIT, "User::{} removed system role::{} from user:: {}", actingIdentity.getKey(), organisationRole, identity);
+					}
+				}
+				// user not yet in security group, add him
+				if (!isInGroup && thisRoleAction.equals("add")) {
+					organisationService.addMember(organisation, identity, organisationRole);
+					log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{}", actingIdentity.getKey(), organisationRole, identity);
+				}
+			}
 		}
 	}
 	

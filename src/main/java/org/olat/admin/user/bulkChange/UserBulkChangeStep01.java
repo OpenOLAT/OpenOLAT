@@ -153,10 +153,22 @@ class UserBulkChangeStep01 extends BasicStep {
 				boolean loginDenied = chkStatus.isAtLeastSelected(1) && setStatus.isOneSelected()
 						&& Integer.toString(Identity.STATUS_LOGIN_DENIED).equals(setStatus.getSelectedKey());
 				sendLoginDeniedEmail.setVisible(loginDenied);
-			} else if(source instanceof MultipleSelectionElement) {
+			} else if(source instanceof MultipleSelectionElement
+					&& ((MultipleSelectionElement)source).getUserObject() instanceof RoleChange) {
 				MultipleSelectionElement check = (MultipleSelectionElement)source;
 				RoleChange change = (RoleChange)check.getUserObject();
 				change.getSet().setVisible(change.getCheck().isAtLeastSelected(1));
+			} else if(source instanceof SingleSelection
+					&& ((SingleSelection)source).getUserObject() instanceof RoleChange) {
+				SingleSelection actionEl = (SingleSelection)source;
+				RoleChange change = (RoleChange)actionEl.getUserObject();
+				if(OrganisationRoles.user.equals(change.getRole())) {
+					if(actionEl.isOneSelected() && "remove".equals(actionEl.getSelectedKey())) {
+						actionEl.setErrorKey("warning.remove.user", true);
+					} else {
+						actionEl.setErrorKey(null, true);
+					}
+				}
 			}
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -169,14 +181,16 @@ class UserBulkChangeStep01 extends BasicStep {
 		
 		private void initRole(OrganisationRoles role, FormItemContainer formLayout) {
 			MultipleSelectionElement chkRole = uifactory.addCheckboxesHorizontal("rolechk_" + (++counter), "table.role." + role.name(), formLayout, onKeys, onValues);
-			chkRole.addActionListener(FormEvent.ONCLICK);
+			chkRole.addActionListener(FormEvent.ONCHANGE);
 
 			SingleSelection setRole = uifactory.addDropdownSingleselect("roleset_" + (++counter), null, formLayout, addremove, addremoveTranslated, null);
+			setRole.addActionListener(FormEvent.ONCHANGE);
 			setRole.setVisible(false);
 			
 			RoleChange change = new RoleChange(chkRole, setRole, role);
 			roleChanges.add(change);
 			chkRole.setUserObject(change);
+			setRole.setUserObject(change);
 		}
 
 		@Override
@@ -205,6 +219,7 @@ class UserBulkChangeStep01 extends BasicStep {
 			// check user rights:
 			Roles roles = ureq.getUserSession().getRoles();
 			if(roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator()) {
+				initRole(OrganisationRoles.user, innerFormLayout);
 				initRole(OrganisationRoles.author, innerFormLayout);
 			}
 			if(roles.isRolesManager() || roles.isAdministrator()) {
