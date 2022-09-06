@@ -47,7 +47,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -58,11 +60,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -74,6 +81,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
@@ -108,6 +116,14 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	
 	public static final String USER_PROPS_ID = "org.olat.admin.user.ExtendedIdentitiesTableDataModel";
 	public static final int USER_PROPS_OFFSET = 500;
+	public static final String ALL_TAB_ID = "All";
+	public static final String ACTIVE_TAB_ID = "Active";
+	public static final String PERMANENT_ID = "Permanent";
+	public static final String INACTIVE_TAB_ID = "Inactive";
+	public static final String PENDING_TAB_ID = "Pending";
+	public static final String LOGIN_DENIED_TAB_ID = "LoginDenied";
+	public static final String FILTER_STATUS = "status";
+	public static final String FILTER_ORGANISATIONS = "organisations";
 	
 	private Link nextLink;
 	private Link previousLink;
@@ -116,6 +132,13 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private FormLink bulkDeleteButton;
 	private FormLink bulkStatusButton;
 	private FormLink bulkChangesButton;
+	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab activeTab;
+	private FlexiFiltersTab inactiveTab;
+	private FlexiFiltersTab permanentTab;
+	private FlexiFiltersTab pendingTab;
+	private FlexiFiltersTab loginDeniedTab;
 	
 	private FlexiTableElement tableEl;
 	private UserSearchTableModel tableModel;
@@ -134,6 +157,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private final UserSearchTableSettings settings;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	private final List<Organisation> manageableOrganisations;
 	
 	private boolean tableDirty = false;
 	private SearchIdentityParams currentSearchParams;
@@ -164,6 +188,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.principal,
+				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
 		
 		initForm(ureq);
 		if(stackPanel != null) {
@@ -218,11 +245,84 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(settings.isTableSearch());
-		tableEl.setAndLoadPersistedPreferences(ureq, "user_search_table-v2");
+		tableEl.setAndLoadPersistedPreferences(ureq, "user_search_table-v4");
 		
 		initBulkActions(formLayout);
+		initFilters(settings.isStatusFilter(), settings.isOrganisationsFilter());
 		if(settings.isStatusFilter()) {
-			initTableFilters();
+			initFiltersPresets(ureq);
+		}
+	}
+	
+	private void initFiltersPresets(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.reloadData, List.of());
+		allTab.setElementCssClass("o_sel_users_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("rightsForm.status.activ"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, Identity.STATUS_ACTIV.toString())));
+		activeTab.setElementCssClass("o_sel_users_active");
+		activeTab.setFiltersExpanded(true);
+		tabs.add(activeTab);
+		
+		permanentTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PERMANENT_ID, translate("rightsForm.status.permanent"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, Identity.STATUS_PERMANENT.toString())));
+		permanentTab.setElementCssClass("o_sel_users_permanent");
+		permanentTab.setFiltersExpanded(true);
+		tabs.add(permanentTab);
+		
+		pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("rightsForm.status.pending"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, Identity.STATUS_PENDING.toString())));
+		pendingTab.setElementCssClass("o_sel_users_pending");
+		pendingTab.setFiltersExpanded(true);
+		tabs.add(pendingTab);
+		
+		inactiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INACTIVE_TAB_ID, translate("rightsForm.status.inactive"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, Identity.STATUS_INACTIVE.toString())));
+		inactiveTab.setElementCssClass("o_sel_users_inactive");
+		inactiveTab.setFiltersExpanded(true);
+		tabs.add(inactiveTab);
+		
+		loginDeniedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(LOGIN_DENIED_TAB_ID, translate("rightsForm.status.inactive"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, Identity.STATUS_LOGIN_DENIED.toString())));
+		loginDeniedTab.setElementCssClass("o_sel_users_login_denied");
+		loginDeniedTab.setFiltersExpanded(true);
+		tabs.add(loginDeniedTab);
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
+	}
+	
+	private void initFilters(boolean withStatusFilters, boolean withOrganisationsFilters) {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		if(withStatusFilters) {
+			SelectionValues statusValues = new SelectionValues();
+			statusValues.add(SelectionValues.entry(Identity.STATUS_ACTIV.toString(), translate("rightsForm.status.activ")));
+			statusValues.add(SelectionValues.entry(Identity.STATUS_PERMANENT.toString(), translate("rightsForm.status.permanent")));
+			statusValues.add(SelectionValues.entry(Identity.STATUS_PENDING.toString(), translate("rightsForm.status.pending")));
+			statusValues.add(SelectionValues.entry(Identity.STATUS_INACTIVE.toString(), translate("rightsForm.status.inactive")));
+			statusValues.add(SelectionValues.entry(Identity.STATUS_LOGIN_DENIED.toString(), translate("rightsForm.status.login_denied")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+					FILTER_STATUS, statusValues, true));
+		}
+		
+		if(withOrganisationsFilters) {
+			Collections.sort(manageableOrganisations, new OrganisationNameComparator(getLocale()));
+			SelectionValues organisationsValues = new SelectionValues();
+			for(Organisation organisation:manageableOrganisations) {
+				organisationsValues.add(SelectionValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.organisations"),
+					FILTER_ORGANISATIONS, organisationsValues, true));
+		}
+		
+		if(!filters.isEmpty()) {
+			tableEl.setFilters(true, filters, false, false);
 		}
 	}
 	
@@ -247,31 +347,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		bulkMovebutton = uifactory.addFormLink("command.move.to.organisation", formLayout, Link.BUTTON);
 		bulkMovebutton.setVisible(settings.isBulkOrganisationMove());
 		tableEl.addBatchButton(bulkMovebutton);
-	}
-	
-	private void initTableFilters() {
-		FlexiTableFilter activeFilter = new FlexiTableFilter(translate("rightsForm.status.activ"), Integer.toString(Identity.STATUS_ACTIV));
-		FlexiTableFilter permanentFilter = new FlexiTableFilter(translate("rightsForm.status.permanent"), Integer.toString(Identity.STATUS_PERMANENT));
-		FlexiTableFilter pendingFilter = new FlexiTableFilter(translate("rightsForm.status.pending"), Integer.toString(Identity.STATUS_PENDING));
-		FlexiTableFilter inactiveFilter = new FlexiTableFilter(translate("rightsForm.status.inactive"), Integer.toString(Identity.STATUS_INACTIVE));
-		FlexiTableFilter loginDeniedFilter = new FlexiTableFilter(translate("rightsForm.status.login_denied"), Integer.toString(Identity.STATUS_LOGIN_DENIED));
-		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(activeFilter);
-		filters.add(permanentFilter);
-		filters.add(pendingFilter);
-		filters.add(inactiveFilter);
-		filters.add(loginDeniedFilter);
-		filters.add(FlexiTableFilter.SPACER);
-		filters.add(new FlexiTableFilter(translate("table.showall"), "showAll", true));
-
-		tableEl.setFilters("", filters, true);
-		
-		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
-		selectedFilters.add(activeFilter);
-		selectedFilters.add(permanentFilter);
-		selectedFilters.add(pendingFilter);
-		selectedFilters.add(loginDeniedFilter);
-		tableEl.setSelectedFilters(selectedFilters);
 	}
 
 	public void loadModel(SearchIdentityParams params) {
@@ -625,7 +700,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 				changeErrors.append(err);
 			}
 			getWindowControl().setError(translate("bulkChange.partialsuccess",
-					new String[] { sucChanges.toString(), selIdentCount.toString(), changeErrors.toString() }));
+					sucChanges.toString(), selIdentCount.toString(), changeErrors.toString()));
 		} else {
 			showInfo("bulkChange.success");
 		}
@@ -645,9 +720,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		String title;
 		if(identities.size() == 1) {
 			String fullname = userManager.getUserDisplayName(identities.get(0));
-			title = translate("delete.user.data.title", new String[] { fullname });
+			title = translate("delete.user.data.title", fullname);
 		} else {
-			title = translate("delete.users.data.title", new String[] { Integer.toString(identities.size()) });
+			title = translate("delete.users.data.title", Integer.toString(identities.size()));
 		}
 		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteUserController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
@@ -693,9 +768,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		String title;
 		if(identities.size() == 1) {
 			String fullName = userManager.getUserDisplayName(identities.get(0));
-			title = translate("bulkStatus.title.single", new String[] { StringHelper.escapeHtml(fullName) });
+			title = translate("bulkStatus.title.single", StringHelper.escapeHtml(fullName));
 		} else {
-			title = translate("bulkStatus.title.plural", new String[] { Integer.toString(identities.size()) });
+			title = translate("bulkStatus.title.plural", Integer.toString(identities.size()));
 		}
 		cmc = new CloseableModalController(getWindowControl(), "close", changeStatusController.getInitialComponent(), true, title, true);
 		listenTo(cmc);

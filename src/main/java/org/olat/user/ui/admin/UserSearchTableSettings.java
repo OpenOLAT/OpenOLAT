@@ -32,15 +32,18 @@ public class UserSearchTableSettings {
 	private final boolean bulkDelete;
 	private final boolean bulkOrganisationMove;
 	private final boolean statusFilter;
+	private final boolean organisationsFilter;
 	private final boolean tableSearch;
 	private final boolean lifecycleColumns;
 	
-	private UserSearchTableSettings(boolean vCard, boolean lifecycleColumns, boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete, boolean statusFilter, boolean tableSearch) {
+	private UserSearchTableSettings(boolean vCard, boolean lifecycleColumns, boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete,
+			boolean statusFilter, boolean organisationsFilter, boolean tableSearch) {
 		this.vCard = vCard;
 		this.bulkMail = bulkMail;
 		this.bulkDelete = bulkDelete;
 		this.bulkOrganisationMove = bulkOrganisationMove;
 		this.statusFilter = statusFilter;
+		this.organisationsFilter = organisationsFilter;
 		this.tableSearch = tableSearch;
 		this.lifecycleColumns = lifecycleColumns;
 	}
@@ -49,11 +52,12 @@ public class UserSearchTableSettings {
 	 * @return The table seetings with only the search enabled
 	 */
 	public static UserSearchTableSettings minimal() {
-		return new UserSearchTableSettings(false, false, false, false, false, false, true);
+		return new UserSearchTableSettings(false, false, false, false, false, false, false, true);
 	}
 	
-	public static UserSearchTableSettings withVCard(boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete, boolean statusFilter, boolean tableSearch) {
-		return new UserSearchTableSettings(false, false, bulkMail, bulkOrganisationMove, bulkDelete, statusFilter, tableSearch);
+	public static UserSearchTableSettings withVCard(boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete,
+			boolean statusFilter, boolean organisationsFilter, boolean tableSearch) {
+		return new UserSearchTableSettings(false, false, bulkMail, bulkOrganisationMove, bulkDelete, statusFilter, organisationsFilter, tableSearch);
 	}
 	
 	public boolean isVCard() {
@@ -82,5 +86,9 @@ public class UserSearchTableSettings {
 	
 	public boolean isStatusFilter() {
 		return statusFilter;
+	}
+	
+	public boolean isOrganisationsFilter() {
+		return organisationsFilter;
 	}
 }

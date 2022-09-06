@@ -85,6 +85,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private final boolean showEmailButton;
 	private final boolean showTableSearch;
 	private final boolean showStatusFilters;
+	private final boolean showOrganisationsFilters;
 	private final boolean showOrganisationMove;
 	private List<Organisation> manageableOrganisations;
 	private SearchIdentityParams identityQueryParams;
@@ -115,6 +116,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.stackedPanel = stackedPanel;
 		this.manageableOrganisations = manageableOrganisations;
 		showStatusFilters = true;
+		showOrganisationsFilters = true;
 		showEmailButton = true;
 		showDelete = true;
 		showOrganisationMove = false;
@@ -155,7 +157,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 */
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
 			SearchIdentityParams predefinedQuery, boolean showEmailButton, boolean showOrganisationMove, boolean showDelete,
-			boolean showStatusFilters, boolean showTableSearch) {
+			boolean showStatusFilters, boolean showOrganisationsFilters, boolean showTableSearch) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.showDelete = showDelete;
@@ -163,12 +165,13 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.showEmailButton = showEmailButton;
 		this.showTableSearch = showTableSearch;
 		this.showStatusFilters = showStatusFilters;
+		this.showOrganisationsFilters = showOrganisationsFilters;
 		this.showOrganisationMove = showOrganisationMove;
 
 		identityQueryParams = predefinedQuery;
 		
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, true));
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, showOrganisationsFilters, true));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		putInitialPanel(tableCtr.getInitialComponent());
@@ -192,11 +195,12 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
 		showStatusFilters = false;
+		showOrganisationsFilters = false;
 		showTableSearch = false;
 		showOrganisationMove = false;
 		
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, false, showDelete, true, true));
+				UserSearchTableSettings.withVCard(showEmailButton, false, showDelete, true, true, true));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identitiesList);
 		
@@ -293,7 +297,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, true));
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete,
+						showStatusFilters, showOrganisationsFilters, true));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identities);
 		stackedPanel.pushController("Results", tableCtr);
@@ -310,7 +315,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, withTableSearch));
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete,
+						showStatusFilters, showOrganisationsFilters, withTableSearch));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		stackedPanel.pushController("Results", tableCtr);

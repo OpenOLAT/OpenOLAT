@@ -29,6 +29,7 @@ import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.id.Identity;
@@ -99,11 +100,15 @@ public class IdentityListDataSource implements FlexiTableDataSourceDelegate<Iden
 	
 	private List<Integer> getStatusFromFilter(List<FlexiTableFilter> filters) {
 		List<Integer> statusList = new ArrayList<>();
-		if(filters != null && !filters.isEmpty()) {
-			for(FlexiTableFilter filter:filters) {
-				if(!filter.isShowAll() && StringHelper.isLong(filter.getFilter())) {
-					statusList.add(Integer.parseInt(filter.getFilter()));
-				}	
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_STATUS);
+		if(statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				for(String value:filterValues) {
+					if(StringHelper.isLong(value)) {
+						statusList.add(Integer.parseInt(value));
+					}	
+				}
 			}
 		}
 		return statusList;

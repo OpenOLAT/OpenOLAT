@@ -27,13 +27,16 @@ import java.util.Locale;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -51,12 +54,14 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 	private final Locale locale;
 	private final List<Integer> preselectedStatusList;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final List<OrganisationRef> preselectedOrganisationsList;
 	
 	public UserSearchDataSource(SearchIdentityParams searchParams, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		this.locale = locale;
 		this.searchParams = searchParams;
 		this.userPropertyHandlers = userPropertyHandlers;
 		preselectedStatusList = searchParams.getExactStatusList();
+		preselectedOrganisationsList = searchParams.getOrganisations();
 		searchQuery = CoreSpringFactory.getImpl(IdentityPowerSearchQueries.class);
 	}
 
@@ -103,17 +108,24 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 			}
 		}
 		
+		List<OrganisationRef> organisationsList = getOrganisationsFromFilter(filters);
+		if(organisationsList.isEmpty()) {
+			searchParams.setOrganisations(preselectedOrganisationsList);
+		} else {
+			searchParams.setOrganisations(organisationsList);
+		}
+
 		List<IdentityPropertiesRow> rows = searchQuery
 				.getIdentitiesByPowerSearch(searchParams, userPropertyHandlers, locale, sortKey, firstResult, maxResults);
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 	}
 	
 	private boolean isStatusShowAll(List<FlexiTableFilter> filters) {
-		if(filters != null && !filters.isEmpty()) {
-			for(FlexiTableFilter filter:filters) {
-				if(filter.isShowAll()) {
-					return true;
-				}	
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_STATUS);
+		if(statusFilter != null ) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if(filterValues == null || filterValues.isEmpty() || filterValues.size() == 5) {
+				return true;
 			}
 		}
 		return false;
@@ -121,13 +133,33 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 	
 	private List<Integer> getStatusFromFilter(List<FlexiTableFilter> filters) {
 		List<Integer> statusList = new ArrayList<>();
-		if(filters != null && !filters.isEmpty()) {
-			for(FlexiTableFilter filter:filters) {
-				if(!filter.isShowAll() && StringHelper.isLong(filter.getFilter())) {
-					statusList.add(Integer.parseInt(filter.getFilter()));
-				}	
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_STATUS);
+		if(statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				for(String value:filterValues) {
+					if(StringHelper.isLong(value)) {
+						statusList.add(Integer.parseInt(value));
+					}	
+				}
 			}
 		}
 		return statusList;
+	}
+	
+	private List<OrganisationRef> getOrganisationsFromFilter(List<FlexiTableFilter> filters) {
+		List<OrganisationRef> organisationsList = new ArrayList<>();
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_ORGANISATIONS);
+		if(statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				for(String value:filterValues) {
+					if(StringHelper.isLong(value)) {
+						organisationsList.add(new OrganisationRefImpl(Long.valueOf(value)));
+					}	
+				}
+			}
+		}
+		return organisationsList;
 	}
 }

@@ -125,7 +125,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 			putInitialPanel(mainVC);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
-			getWindowControl().setWarning(translate("error.noaccess.to.user", new String[]{ supportAddr }));
+			getWindowControl().setWarning(translate("error.noaccess.to.user", supportAddr));
 			putInitialPanel(new Panel("empty"));
 		}
 	}

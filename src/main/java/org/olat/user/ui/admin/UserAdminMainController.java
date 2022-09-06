@@ -387,16 +387,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "useradmin": return createUserSearchController(ureq, bwControl);
 			// groups
 			case "groupcoach": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(null, true, GroupRoles.coach, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true);
+					SearchIdentityParams.resources(null, true, GroupRoles.coach, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			case "groupparticipant": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(null, true, GroupRoles.participant, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true);
+					SearchIdentityParams.resources(null, true, GroupRoles.participant, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			// resources
 			case "coauthors": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.owner, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true);
+					SearchIdentityParams.resources(GroupRoles.owner, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			case "courseparticipants": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.participant, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true);
+					SearchIdentityParams.resources(GroupRoles.participant, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			case "coursecoach": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.coach, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true);
+					SearchIdentityParams.resources(GroupRoles.coach, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			// status
 			case "pendinggroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_PENDING);
 			case "inactivegroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_INACTIVE);
@@ -408,7 +408,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "guestuser": return createUserSearchController(ureq, bwControl, OrganisationRoles.guest);
 			// predefined queries
 			case "userswithoutgroup":
-				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups(), false, true, true, true);
+				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups(), false, true, true, true, true);
 			case "userswithoutemail":
 				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, true, false);
@@ -416,7 +416,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true, false);
 			case "noauthentication": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true);
+					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			// time based predefined queries
 			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
 			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
@@ -428,7 +428,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 	private Controller getController(UserRequest ureq, Organisation organisation) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.organisation(organisation, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, getWindowControl(), predefinedQuery, true, true, true, true);
+		return createUserSearchController(ureq, getWindowControl(), predefinedQuery, true, true, true, false, true);
 	}
 	
 	private Controller createInfoController(UserRequest ureq, WindowControl bwControl, Presentation template) {
@@ -439,25 +439,25 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Calendar cal = Calendar.getInstance();
 		cal.add(unit, amount);
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.created(cal.getTime(), null, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, OrganisationRoles role) {
 		final OrganisationRoles[] roles = { role };
 		final GroupMembershipInheritance[] inheritence = { GroupMembershipInheritance.root, GroupMembershipInheritance.none };
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(roles, inheritence, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, CurriculumRoles role) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.resources(null, true, null, role, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, Integer status) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(null, null, null);
 		predefinedQuery.setExactStatusList(List.of(status));
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, false, true);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, false, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl) {
@@ -465,7 +465,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl,
-			SearchIdentityParams predefinedQuery, boolean showOrganisationMove, boolean showDelete, boolean statusFilter, boolean tableSearch) {
+			SearchIdentityParams predefinedQuery, boolean showOrganisationMove, boolean showDelete,
+			boolean statusFilter, boolean organisationsFilter, boolean tableSearch) {
 		if(manageableOrganisations != null) {
 			List<OrganisationRef> allowedOrganisations = new ArrayList<>(manageableOrganisations);
 			if(predefinedQuery.getOrganisations() != null) {
@@ -474,7 +475,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			predefinedQuery.setOrganisations(allowedOrganisations);
 		}
 		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true, showOrganisationMove, showDelete,
-				statusFilter, tableSearch);
+				statusFilter, organisationsFilter, tableSearch);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, IdentityRelation relation) {
