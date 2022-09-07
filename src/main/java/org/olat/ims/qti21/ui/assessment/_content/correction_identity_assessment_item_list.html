@@ -1,21 +1,22 @@
-<div class="clearfix">
-	$r.render("back")
-</div>
+<div class="clearfix">$r.render("back")</div>
 #if($r.isNotEmpty($title))
 	<h4><i class="o_icon o_icon-fw o_icon_user"> </i> $r.escapeHtml($title)</h4>
 #end
 #if($r.isNotEmpty($off_warn))
 	<div class="o_warning">$off_warn</div>
 #end
+<fieldset>
+	<legend>$r.translate("questions.list.title")</legend>
+	$r.render("table")
+	#if($r.visible("save.tests") || $r.visible("back.overview"))
+	<div class="o_button_group">
+		#if($r.visible("save.tests"))
+			$r.render("save.tests")
+		#end
+		#if($r.visible("back.overview"))
+			$r.render("back.overview")
+		#end
+	</div>
+	#end
+</fieldset>
 
-$r.render("table")
-#if($r.visible("save.tests") || $r.visible("back.overview"))
-<div class="o_button_group">
-	#if($r.visible("save.tests"))
-		$r.render("save.tests")
-	#end
-	#if($r.visible("back.overview"))
-		$r.render("back.overview")
-	#end
-</div>
-#end

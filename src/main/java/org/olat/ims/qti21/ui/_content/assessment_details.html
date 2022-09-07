@@ -1,6 +1,9 @@
-$r.render("sessions")
-#if($r.available("menu.reset.title"))
-	<div class="o_button_group">
-		$r.render("menu.reset.title")
-	</div>
-#end
+<fieldset>
+	<legend>$r.translate("test.sessions.title")</legend>
+	$r.render("sessions")
+	#if($r.available("menu.reset.title"))
+		<div class="o_button_group">
+			$r.render("menu.reset.title")
+		</div>
+	#end
+</fieldset>

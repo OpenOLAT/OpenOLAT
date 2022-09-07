@@ -43,9 +43,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -65,6 +68,10 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
@@ -251,9 +258,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		if(!readOnly) {
 			correctionCol = new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer(translate("correction"), "correction"),
-							new StaticFlexiCellRenderer(translate("preview"), "preview")));
+					new CorrectionCellRender());
 			columnsModel.addFlexiColumnModel(correctionCol);
 		}
 		DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
@@ -840,6 +845,28 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		@Override
 		public int compare(QTI21AssessmentTestSessionDetails q1, QTI21AssessmentTestSessionDetails q2) {
 			return comparator.compare(q1.getTestSession(), q2.getTestSession());
+		}
+	}
+	
+	private class CorrectionCellRender implements FlexiCellRenderer, ActionDelegateCellRenderer {
+		
+		private final FlexiCellRenderer correctionDelegate = new StaticFlexiCellRenderer(translate("correction"), "correction");
+		private final FlexiCellRenderer previewDelegate = new StaticFlexiCellRenderer(translate("preview"), "preview");
+		private final List<String> actions = List.of("correction", "preview");
+		
+		@Override
+		public List<String> getActions() {
+			return actions;
+		}
+		
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if(Boolean.TRUE.equals(cellValue)) {
+				correctionDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			} else if(Boolean.FALSE.equals(cellValue)) {
+				previewDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			}
 		}
 	}
 }
