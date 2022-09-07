@@ -957,7 +957,7 @@ public class CourseTest extends Deployments {
 		RepositoryAccessPage courseAccess = course
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.booking)
+			.setAccessToMembersOnly()
 			.save();
 		//add booking by secret token
 		courseAccess
@@ -1045,23 +1045,14 @@ public class CourseTest extends Deployments {
 		String infoMessageTitle = "Some informations";
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
-		RepositoryAccessPage courseAccess = course
+		course
 			.edit()
 			.createNode("info")
 			.nodeTitle(infoMessageTitle)
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.booking)
-			.save();
-		//add booking by secret token
-		courseAccess
-			.boooking()
-			.openAddDropMenu()
-			.addFreeBooking()
-			.configureFreeBooking("It's free");
-		courseAccess
-			.save()
+			.setAccessWithFreeBooking("It's free")
 			.cleanBlueBox()
 			.clickToolbarBack();
 		course
@@ -1167,7 +1158,7 @@ public class CourseTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		course
@@ -1282,7 +1273,7 @@ public class CourseTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		//publish
 		course
@@ -1644,7 +1635,7 @@ public class CourseTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		
 		String courseUrl = authorBrowser.getCurrentUrl();
@@ -1743,8 +1734,7 @@ public class CourseTest extends Deployments {
 		cpPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
-			.save()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		//publish
 		cpPage

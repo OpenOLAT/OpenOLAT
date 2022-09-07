@@ -468,7 +468,7 @@ public class PortfolioV2Test extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save();
 		
 		//go to members management

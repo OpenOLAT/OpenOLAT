@@ -88,7 +88,7 @@ public class AssessmentTest extends Deployments {
 	 * SCORM within. It publish the course, add a participant to the
 	 * course. The participant log in, select the course above, run
 	 * the SCORM and finish it.<br>
-	 * At the end, the author go to the assessment tool and chec that
+	 * At the end, the author go to the assessment tool and check that
 	 * the participant has successfully passed the test.
 	 * 
 	 * @param authorLoginPage
@@ -138,7 +138,7 @@ public class AssessmentTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.cleanBlueBox()
 			.clickToolbarBack();
@@ -505,7 +505,7 @@ public class AssessmentTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		//publish the course
@@ -622,8 +622,7 @@ public class AssessmentTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		
 		course
@@ -773,8 +772,7 @@ public class AssessmentTest extends Deployments {
 			.settings();
 		courseSettings
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		courseSettings
 			.certificates()
 			.enableCertificates(true)
@@ -1559,7 +1557,7 @@ public class AssessmentTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save();
 		CoursePageFragment courseRuntime = courseEditor
 			.clickToolbarBack();

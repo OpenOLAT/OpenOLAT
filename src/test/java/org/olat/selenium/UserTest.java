@@ -108,7 +108,7 @@ public class UserTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess();
+			.setAccessToRegisteredUser();
 
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -180,7 +180,7 @@ public class UserTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess();
+			.setAccessToRegisteredUser();
 
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl)

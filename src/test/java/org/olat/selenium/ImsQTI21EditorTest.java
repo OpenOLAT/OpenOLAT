@@ -50,11 +50,10 @@ import org.olat.selenium.page.qti.QTI21MatchEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21OrderEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
-import org.olat.selenium.page.qti.QTI21SettingsPage;
 import org.olat.selenium.page.qti.QTI21Page.TrueFalse;
+import org.olat.selenium.page.qti.QTI21SettingsPage;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
-import org.olat.selenium.page.repository.UserAccess;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -342,8 +341,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		RepositoryAccessPage courseAccess = qtiPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		courseAccess
 			.boooking()
 			.openAddDropMenu()
@@ -573,8 +571,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		RepositoryAccessPage courseAccess = qtiPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		courseAccess
 			.boooking()
 			.openAddDropMenu()
@@ -858,8 +855,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		RepositoryAccessPage courseAccess = qtiPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		courseAccess
 			.boooking()
 			.openAddDropMenu()
@@ -1048,8 +1044,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		RepositoryAccessPage courseAccess = qtiPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		courseAccess
 			.boooking()
 			.addOpenAsFirstMethod()
@@ -1235,8 +1230,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		RepositoryAccessPage courseAccess = qtiPage
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		courseAccess
 			.boooking()
 			.openAddDropMenu()
@@ -1417,7 +1411,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1595,7 +1589,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1765,7 +1759,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1916,7 +1910,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2028,7 +2022,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2182,7 +2176,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.settings();
 		settings
 			.accessConfiguration()
-			.quickOpenAccess();
+			.setAccessToRegisteredUser();
 		// show results
 		settings
 			.options()
@@ -2372,7 +2366,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2565,7 +2559,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		// publish
 		qtiPage
@@ -2766,7 +2760,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2957,7 +2951,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3146,7 +3140,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3286,7 +3280,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3391,7 +3385,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3498,7 +3492,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3613,7 +3607,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3771,7 +3765,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
