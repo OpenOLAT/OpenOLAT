@@ -499,6 +499,7 @@ public class PageEditorV2Controller extends BasicController {
 			return null;
 		}
 		
+		doCloseAllEditionEvent(ureq);
 		PageElement clonedElement = cloneHandler.clonePageElement(element);
 		ContentEditorFragment clonedFragment = null;
 		if (clonedElement != null) {

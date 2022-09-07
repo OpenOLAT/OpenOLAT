@@ -28,6 +28,9 @@
 	}
 	
 	.o_page_container_tools {
+		display: flex;
+		justify-content: flex-end;
+		align-items: baseline;
 		height: $o-editor-border-width;
 		line-height: 18px;
 		width: 100%;
@@ -50,7 +53,7 @@
 			display: none;
 		}
 		.o_container_name {
-			text-align: left;
+			margin-right: auto;
 		}
 	}
 	
@@ -128,7 +131,10 @@
 		.o_richtext_mce textarea {
 			border: 0;
 		}
-		
+	}
+	
+	>.o_container_part {
+		margin-bottom: 1px;
 	}
 	
 	/* hide overlapping menu items when in drag&drop mode for better drop zone visibility */

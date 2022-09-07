@@ -208,8 +208,9 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		nameCtrl = new ContainerNameController(ureq, getWindowControl(), container.getContainerSettings().getName());
 		nameCtrl.addControllerListener(this);
 		
+		String title = translate("change.container.name");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), nameCtrl.getInitialComponent(),
-				nameLinkId, "", true, null);
+				nameLinkId, title, true, null);
 		calloutCtrl.addControllerListener(this);
 		calloutCtrl.activate();
 	}
