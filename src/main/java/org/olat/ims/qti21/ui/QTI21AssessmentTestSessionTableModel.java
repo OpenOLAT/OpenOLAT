@@ -125,10 +125,12 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		}
 	}
 	
-	private boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
+	private Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
 		AssessmentTestSession testSession = session.getTestSession();
-		return lastSession != null && lastSession.equals(testSession)
-				&& (testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
+		if(lastSession != null && lastSession.equals(testSession)) {
+			return Boolean.valueOf(testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
+		}
+		return null;
 	}
 	
 	private boolean isTestSessionOpen(QTI21AssessmentTestSessionDetails session) {
