@@ -97,6 +97,14 @@ public class OOGraphene {
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
 	}
 	
+	public static void waitModalDialog(WebDriver browser, String fieldsetClass) {
+		waitBusyAndScrollTop(browser);
+		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body fieldset." + fieldsetClass);
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
+	}
+	
 	/**
 	 * Wait until the busy flag is ok, the browser scrolled
 	 * to the top and that the body of the modal dialog is visible.

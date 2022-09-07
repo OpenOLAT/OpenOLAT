@@ -246,6 +246,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		fromDate.setExampleKey("form.easy.example.bdate", null);
 		fromDate.setDateChooserTimeEnabled(true);
 		fromDate.setDisplaySize(fromDate.getExampleDateString().length());
+		fromDate.setValidDateCheck("form.error.date");
 		dateSubContainer.add(fromDate);
 		
 		toDate = new JSDateChooser("toDate", getLocale());
@@ -255,6 +256,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		toDate.setDateChooserTimeEnabled(true);
 		toDate.setDisplaySize(toDate.getExampleDateString().length());
 		toDate.setDefaultTimeAtEndOfDay(true);
+		toDate.setValidDateCheck("form.error.date");
 		dateSubContainer.add(toDate);
 
 		dateSwitch = uifactory.addCheckboxesHorizontal("dateSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.dateSwitch") });
@@ -638,47 +640,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		// (1)
 		// dateswitch is enabled and the datefields are valid
 		// check complex rules involving checks over multiple elements
-		Date fromDateVal = fromDate.getDate();
-		Date toDateVal = toDate.getDate();
-		if (dateSwitch.getSelectedKeys().size() == 1 && !fromDate.hasError() && !toDate.hasError()) {
-			// one must be set
-			if (fromDate.isEmpty() && toDate.isEmpty()) {
-				// error concern both input fields -> set it as switch error				
-				dateSubContainer.setErrorKey("form.easy.error.date", null);
-				retVal = false;
-			} else {
-				// remove general error				
-				dateSubContainer.clearError();
-			}
-			// check valid dates
-
-			// if both are set, check from < to
-			if (fromDateVal != null && toDateVal != null) {
-				/*
-				 * bugfix http://bugs.olat.org/jira/browse/OLAT-813 valid dates and not
-				 * empty, in easy mode we assume that Start and End date should
-				 * implement the meaning of
-				 * ----false---|S|-----|now|-TRUE---------|E|---false--->t .............
-				 * Thus we check for Startdate < Enddate, error otherwise
-				 */
-				if (fromDateVal.after(toDateVal)) {					
-					dateSubContainer.setErrorKey("form.easy.error.bdateafteredate", null);
-					retVal = false;
-				} else {
-					// remove general error
-					dateSwitch.clearError();
-				}
-			} else {
-				if (fromDateVal == null && !fromDate.isEmpty()) {
-					//not a correct begin date
-					fromDate.setErrorKey("form.easy.error.bdate", null);
-					retVal = false;
-				}
-				if (toDateVal == null && !toDate.isEmpty()) {
-					toDate.setErrorKey("form.easy.error.edate", null);
-					retVal = false;
-				}
-			}
+		
+		dateSubContainer.clearError();
+		if (dateSwitch.getSelectedKeys().size() == 1) {
+			retVal &= validateFromToDates();
 		}
 
 		// (2)
@@ -707,6 +672,51 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		}
 		//
 		return retVal;
+	}
+	
+	private boolean validateFromToDates() {
+		boolean allOk = true;
+		
+		Date fromDateVal = fromDate.getDate();
+		Date toDateVal = toDate.getDate();
+		// clear all errors
+		toDate.clearError();
+		fromDate.clearError();
+		dateSubContainer.clearError();
+
+		// validate again the 2 fields
+		// one must be set
+		if (fromDate.isEmpty() && toDate.isEmpty()) {
+			// error concern both input fields -> set it as switch error				
+			dateSubContainer.setErrorKey("form.easy.error.date", null);
+			allOk &= false;
+		} else if(!this.validateFormItem(fromDate) || !this.validateFormItem(toDate)) {
+			allOk &= false;
+		} else if (fromDateVal != null && toDateVal != null) {
+
+			// if both are set, check from < to
+			/*
+			 * bugfix http://bugs.olat.org/jira/browse/OLAT-813 valid dates and not
+			 * empty, in easy mode we assume that Start and End date should
+			 * implement the meaning of
+			 * ----false---|S|-----|now|-TRUE---------|E|---false--->t .............
+			 * Thus we check for Startdate < Enddate, error otherwise
+			 */
+			if (fromDateVal.after(toDateVal)) {					
+				dateSubContainer.setErrorKey("form.easy.error.bdateafteredate", null);
+				allOk &= false;
+			}
+		} else if (fromDateVal == null && !fromDate.isEmpty()) {
+			//not a correct begin date
+			fromDate.setErrorKey("form.easy.error.bdate", null);
+			allOk &= false;
+		} else if (toDateVal == null && !toDate.isEmpty()) {
+			toDate.setErrorKey("form.easy.error.edate", null);
+			allOk &= false;
+		}
+
+		
+		return allOk;
 	}
 
 	/**

@@ -49,7 +49,6 @@ import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21CorrectionPage;
 import org.olat.selenium.page.qti.QTI21GradingPage;
 import org.olat.selenium.page.qti.QTI21Page;
-import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -578,7 +577,7 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.quickOpenAccess()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1063,7 +1062,7 @@ public class ImsQTI21Test extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save();
 		
 		//add a participant
@@ -1198,7 +1197,7 @@ public class ImsQTI21Test extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save();
 		
 		//add a participant
@@ -1354,7 +1353,7 @@ public class ImsQTI21Test extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save();
 		
 		//add a participant
@@ -1528,7 +1527,7 @@ public class ImsQTI21Test extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save();
 		
 		//add a participant
@@ -1711,7 +1710,7 @@ public class ImsQTI21Test extends Deployments {
 			.publish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 			

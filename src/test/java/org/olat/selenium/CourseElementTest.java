@@ -231,8 +231,7 @@ public class CourseElementTest extends Deployments {
 		course
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save()
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		
 		course
@@ -1719,8 +1718,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.save();
+			.setAccessToRegisteredUser();
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
@@ -1828,7 +1826,7 @@ public class CourseElementTest extends Deployments {
 			.publish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		
@@ -2610,7 +2608,7 @@ public class CourseElementTest extends Deployments {
 			.publish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		
@@ -2733,7 +2731,7 @@ public class CourseElementTest extends Deployments {
 			.publish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		
@@ -2880,7 +2878,7 @@ public class CourseElementTest extends Deployments {
 			.publish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		
@@ -2995,7 +2993,7 @@ public class CourseElementTest extends Deployments {
 			.publish()
 			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly)
+			.setAccessToMembersOnly()
 			.save()
 			.clickToolbarBack();
 		

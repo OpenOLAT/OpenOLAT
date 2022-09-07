@@ -39,33 +39,40 @@ public class RepositoryAccessPage {
 	}
 	
 	/**
-	 * The method save the settings.
+	 * Select the option public only.
 	 * 
 	 * @param access Type of access
 	 * @return Itself
 	 */
-	public RepositoryAccessPage setUserAccess(UserAccess access) {
-		if(access == UserAccess.membersOnly) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
-			browser.findElement(allUsersBy).click();
-		} else if(access == UserAccess.booking || access == UserAccess.registred || access == UserAccess.guest) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='public']");
-			browser.findElement(allUsersBy).click();
-		}
+	public RepositoryAccessPage setAccessToPublic() {
+		By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='public']");
+		browser.findElement(allUsersBy).click();
+		return this;
+	}
+	
+	public RepositoryAccessPage setAccessToMembersOnly() {
+		By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
+		browser.findElement(allUsersBy).click();
 		return this;
 	}
 	
 	/**
-	 * Add a public access to a learn resource without any booking method.
+	 * Add a public access for registered user to a learn
+	 * resource with the open booking method.
 	 * 
 	 * @return Itself
 	 */
-	public RepositoryAccessPage quickOpenAccess() {
-		setUserAccess(UserAccess.registred)
+	public RepositoryAccessPage setAccessToRegisteredUser() {
+		setAccessToPublic()
 			.save()
-			.boooking()
-			.addOpenAsFirstMethod()
-			.configureOpenMethod("Hello");
+			.selectModalOpenBooking("Hello");
+		return this;
+	}
+	
+	public RepositoryAccessPage setAccessWithFreeBooking(String message) {
+		setAccessToPublic()
+			.save()
+			.selectModalFreeBooking(message);
 		return this;
 	}
 	
@@ -73,6 +80,48 @@ public class RepositoryAccessPage {
 		By saveSwitch = By.cssSelector("fieldset.o_sel_repo_access_configuration button.btn.btn-primary");
 		browser.findElement(saveSwitch).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public RepositoryAccessPage selectModalOpenBooking(String description) {
+		OOGraphene.waitModalDialog(browser);
+		
+		// select open
+		By openBy = By.xpath("//div[@class='modal-content']//input[@value='open.access']");
+		OOGraphene.waitElement(openBy, browser);
+		browser.findElement(openBy).click();
+		
+		// save
+		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		
+		// wait second popup
+		OOGraphene.waitModalDialog(browser, "o_sel_accesscontrol_open_form");
+		// configure method
+		new BookingPage(browser)
+			.configureOpenMethod(description);
+
+		return this;
+	}
+	
+	public RepositoryAccessPage selectModalFreeBooking(String message) {
+		OOGraphene.waitModalDialog(browser);
+		
+		// select open
+		By openBy = By.xpath("//div[@class='modal-content']//input[@value='free.method']");
+		OOGraphene.waitElement(openBy, browser);
+		browser.findElement(openBy).click();
+		
+		// save
+		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		
+		// wait second popup
+		OOGraphene.waitModalDialog(browser, "o_sel_accesscontrol_free_form");
+		// configure method
+		new BookingPage(browser)
+			.configureFreeBooking(message);
+
 		return this;
 	}
 
@@ -92,13 +141,8 @@ public class RepositoryAccessPage {
 	 * Click toolbar
 	 */
 	public void clickToolbarBack() {
-		try {
-			By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
-			browser.findElement(toolbarBackBy).click();
-			OOGraphene.waitBusy(browser);
-		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Toolbar Back", browser);
-			throw e;
-		}
+		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+		browser.findElement(toolbarBackBy).click();
+		OOGraphene.waitBusy(browser);
 	}
 }
