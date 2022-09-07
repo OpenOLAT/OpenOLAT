@@ -120,10 +120,14 @@ public class OOGraphene {
 	}
 	
 	public static void waitModalDialogDisappears(WebDriver browser) {
+		waitModalDialogDisappears(browser, timeout);
+	}
+	
+	public static void waitModalDialogDisappears(WebDriver browser, Duration timeoutDuration) {
 		try {
 			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
 			new WebDriverWait(browser, driverTimeout)
-				.withTimeout(timeout).pollingEvery(poolingSlow)
+				.withTimeout(timeoutDuration).pollingEvery(poolingSlow)
 				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);

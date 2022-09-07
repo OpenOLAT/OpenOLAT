@@ -20,9 +20,7 @@
 package org.olat.selenium.page.repository;
 
 import java.time.Duration;
-import java.util.List;
 
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
@@ -59,16 +57,20 @@ public class FeedPage {
 	 * @return
 	 */
 	public FeedPage assertOnBlogPost(String title) {
-		//assert on post
-		boolean found = false;
-		By postTitleBy = By.cssSelector(".o_post h3.o_title>a>span");
-		List<WebElement> postTitleEls = browser.findElements(postTitleBy);
-		for(WebElement postTitleEl:postTitleEls) {
-			if(postTitleEl.getText().contains(title)) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
+		By titleBy = By.xpath("//div[contains(@class,'o_post')]//h3[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(titleBy, browser);
+		return this;
+	}
+	
+	public FeedPage assertOnBlogPostTitle() {
+		By episodeTitleby = By.cssSelector("div.o_post h3.o_title");
+		OOGraphene.waitElementSlowly(episodeTitleby, 20, browser);
+		return this;
+	}
+	
+	public FeedPage assertOnPodcastEpisodeTitle() {
+		By episodeTitleby = By.cssSelector("div.o_podcast_episodes h3.o_title");
+		OOGraphene.waitElementSlowly(episodeTitleby, 20, browser);
 		return this;
 	}
 	
@@ -95,11 +97,11 @@ public class FeedPage {
 	}
 	
 	private FeedPage newExternalFeed(By configureExternalButton, String title, String url) {
+		OOGraphene.waitElement(configureExternalButton, browser);
 		browser.findElement(configureExternalButton).click();
-		OOGraphene.waitBusy(browser);
-		By popupBy = By.cssSelector("div.modal-dialog");
-		OOGraphene.waitElement(popupBy, 5, browser);
-		
+		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
+
 		if(title != null) {
 			By titleBy = By.cssSelector("div.o_sel_feed_title input[type='text']");
 			WebElement titleEl = browser.findElement(titleBy);
@@ -118,7 +120,7 @@ public class FeedPage {
 		//save the settings
 		By saveButton = By.xpath("//div[contains(@class,'modal-body')]//form//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveButton).click();
-		OOGraphene.waitBusy(browser, Duration.ofSeconds(20));
+		OOGraphene.waitModalDialogDisappears(browser, Duration.ofSeconds(30));
 		return this;
 	}
 	
@@ -135,7 +137,7 @@ public class FeedPage {
 		browser.findElement(newItemButton).click();
 		OOGraphene.waitBusy(browser);
 		By postForm = By.className("o_sel_feed_form");
-		OOGraphene.waitElement(postForm, 1, browser);
+		OOGraphene.waitElement(postForm, browser);
 		return this;
 	}
 	
