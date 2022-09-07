@@ -147,7 +147,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
 			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo,
-			EfficiencyStatement efficiencyStatement, Certificate certificate, boolean links) {
+			EfficiencyStatement efficiencyStatement, Certificate preloadedCertificate, boolean links) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -165,10 +165,10 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 
 		this.statementOwner = statementOwner;
 		this.efficiencyStatement = efficiencyStatement;
-		if(certificate == null) {
+		if(preloadedCertificate == null) {
 			this.certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
 		} else {
-			this.certificate = certificate;
+			this.certificate = preloadedCertificate;
 		}
 		
 		mainVC = createVelocityContainer("certificate_efficiencystatement");
