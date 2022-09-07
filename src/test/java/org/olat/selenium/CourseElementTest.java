@@ -434,7 +434,6 @@ public class CourseElementTest extends Deployments {
 	 * a podcast, publish the course, go the the course and configure
 	 * the podcast to read an external feed.
 	 * 
-	 * @param loginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -480,22 +479,23 @@ public class CourseElementTest extends Deployments {
 			.selectWithTitle(podcastNodeTitle);
 		
 		//check that the title of the podcast is correct
-		WebElement podcastH2 = browser.findElement(By.cssSelector("div.o_podcast_info>h2>i.o_FileResource-PODCAST_icon"));
-		Assert.assertNotNull(podcastH2);
-		//Assert.assertEquals(podcastTitle, podcastH2.getText().trim());
-		
-		FeedPage feed = FeedPage.getFeedPage(browser);
-		feed.newExternalPodcast(podcastTitle, "http://podcasts.srf.ch/rock_special_mpx.xml");
+		By podcastElementBy = By.cssSelector("div.o_podcast_info>h2>i.o_FileResource-PODCAST_icon");
+		OOGraphene.waitElement(podcastElementBy, browser);
 
-		//check only that the "episodes" title is visible
-		/*
-		By episodeTitleby = By.cssSelector("div.o_podcast_episodes>h4.o_title");
-		OOGraphene.waitElement(episodeTitleby, 20, browser);
-		WebElement episodeH4 = browser.findElement(episodeTitleby);
-		Assert.assertNotNull(episodeH4);
-		*/
+		FeedPage.getFeedPage(browser)
+			.newExternalPodcast(podcastTitle, "https://www.srf.ch/feed/podcast/sd/6e633013-c03d-4f49-a1b7-d5b58cfed837.xml")
+			.assertOnPodcastEpisodeTitle();
 	}
 	
+	
+	/**
+	 * Create a course with a course element of type blog. Create
+	 * a blog, publish the course, go the the course and configure
+	 * the blog to read the OpenOlat RSS feed.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
 	@RunAsClient
 	public void courseWithBlog_externalFeed()
@@ -542,16 +542,9 @@ public class CourseElementTest extends Deployments {
 		Assert.assertNotNull(podcastH2);
 		//Assert.assertEquals(blogTitle, podcastH2.getText().trim());
 		
-		FeedPage feed = FeedPage.getFeedPage(browser);
-		feed.newExternalBlog(blogTitle, "https://www.openolat.com/feed/");
-
-		//check only that the subscription link is visible
-		/*
-		By subscriptionBy = By.cssSelector("div.o_subscription>a");
-		OOGraphene.waitElement(subscriptionBy, 20, browser);
-		WebElement subscriptionLink = browser.findElement(subscriptionBy);
-		Assert.assertTrue(subscriptionLink.isDisplayed());
-		*/
+		FeedPage.getFeedPage(browser)
+			.newExternalBlog(blogTitle, "https://www.openolat.com/feed/")
+			.assertOnBlogPostTitle();
 	}
 
 	/**

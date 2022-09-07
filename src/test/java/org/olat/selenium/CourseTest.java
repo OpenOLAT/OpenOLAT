@@ -64,7 +64,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
-import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
@@ -954,18 +953,11 @@ public class CourseTest extends Deployments {
 		course = courseEditor
 			.createNode("info")
 			.autoPublish();
-		RepositoryAccessPage courseAccess = course
+		course
 			.settings()
 			.accessConfiguration()
-			.setAccessToMembersOnly()
-			.save();
-		//add booking by secret token
-		courseAccess
-			.boooking()
-			.openAddDropMenu()
-			.addTokenMethod()
-			.configureTokenMethod("secret", "The password is secret");
-		courseAccess
+			//add booking by secret token
+			.setAccessWithTokenBooking("secret", "The password is secret")
 			.clickToolbarBack();
 		// publish the course
 		course

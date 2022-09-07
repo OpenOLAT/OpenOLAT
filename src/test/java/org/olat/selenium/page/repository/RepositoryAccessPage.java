@@ -76,6 +76,13 @@ public class RepositoryAccessPage {
 		return this;
 	}
 	
+	public RepositoryAccessPage setAccessWithTokenBooking(String token, String message) {
+		setAccessToPublic()
+			.save()
+			.selectModalTokenBooking(token, message);
+		return this;
+	}
+	
 	public RepositoryAccessPage save() {
 		By saveSwitch = By.cssSelector("fieldset.o_sel_repo_access_configuration button.btn.btn-primary");
 		browser.findElement(saveSwitch).click();
@@ -123,6 +130,28 @@ public class RepositoryAccessPage {
 			.configureFreeBooking(message);
 
 		return this;
+	}
+	
+	public RepositoryAccessPage selectModalTokenBooking(String token, String message) {
+		OOGraphene.waitModalDialog(browser);
+		
+		// select open
+		By openBy = By.xpath("//div[@class='modal-content']//input[@value='token.method']");
+		OOGraphene.waitElement(openBy, browser);
+		browser.findElement(openBy).click();
+		
+		// save
+		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		
+		// wait second popup
+		OOGraphene.waitModalDialog(browser, "o_sel_accesscontrol_token_form");
+		// configure method
+		new BookingPage(browser)
+			.configureTokenMethod(token, message);
+
+		return this;
+		
 	}
 
 	public RepositoryAccessPage cleanBlueBox() {
