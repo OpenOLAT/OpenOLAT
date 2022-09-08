@@ -461,6 +461,9 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		if(sourceInteraction != null) {
 			Identifier sourceCorrectResponseIdentifier = sourceInteraction.getCorrectResponseId();
 			List<InlineChoice> sourceInlineChoices = sourceInteraction.getInlineChoices();
+			if(!sourceInlineChoices.isEmpty()) {
+				interaction.removeAllInlineChoices();
+			}
 			
 			for(InlineChoice sourceInlineChoice:sourceInlineChoices) {
 				Identifier sourceIdentifier = sourceInlineChoice.getIdentifier();
@@ -597,6 +600,10 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		
 		public void removeInlineChoice(InlineChoice inlineChoice) {
 			inlineChoices.remove(inlineChoice);
+		}
+		
+		public void removeAllInlineChoices() {
+			inlineChoices.clear();
 		}
 		
 		public InlineChoice getInlineChoice(Identifier identifier) {
