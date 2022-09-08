@@ -53,7 +53,6 @@ import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.qti.QTI21Page.TrueFalse;
 import org.olat.selenium.page.qti.QTI21SettingsPage;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
-import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -338,16 +337,10 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.clickToolbarBack();
 		// access to all
-		RepositoryAccessPage courseAccess = qtiPage
+		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser();
-		courseAccess
-			.boooking()
-			.openAddDropMenu()
-			.addOpenMethod()
-			.configureOpenMethod("Hello");
-		courseAccess
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -568,16 +561,10 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.clickToolbarBack();
 		// access to all
-		RepositoryAccessPage courseAccess = qtiPage
+		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser();
-		courseAccess
-			.boooking()
-			.openAddDropMenu()
-			.addOpenMethod()
-			.configureOpenMethod("Hello");
-		courseAccess
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -852,16 +839,10 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.clickToolbarBack();
 		// access to all
-		RepositoryAccessPage courseAccess = qtiPage
+		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser();
-		courseAccess
-			.boooking()
-			.openAddDropMenu()
-			.addOpenMethod()
-			.configureOpenMethod("Hello");
-		courseAccess
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1041,15 +1022,10 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.clickToolbarBack();
 		// access to all
-		RepositoryAccessPage courseAccess = qtiPage
+		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser();
-		courseAccess
-			.boooking()
-			.addOpenAsFirstMethod()
-			.configureOpenMethod("Hello");
-		courseAccess
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1227,16 +1203,10 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.clickToolbarBack();
 		// access to all
-		RepositoryAccessPage courseAccess = qtiPage
+		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser();
-		courseAccess
-			.boooking()
-			.openAddDropMenu()
-			.addOpenMethod()
-			.configureOpenMethod("Hello");
-		courseAccess
+			.setAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3336,7 +3306,7 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorEssay(@Drone @User WebDriver participantBrowser)
+	public void qti21EditorEssay()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -3397,11 +3367,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -3411,7 +3381,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI21Page(participantBrowser);
+				.getQTI21Page(browser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.saveAnswer()
