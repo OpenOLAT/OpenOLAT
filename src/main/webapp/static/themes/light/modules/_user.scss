@@ -87,3 +87,9 @@ div.o_skype_button {
 	    color: $o-invitation-inactive-color;
 	}
 }
+
+.o_organisation_small_list {
+	>li {
+		margin: 6px 0;
+	}
+}

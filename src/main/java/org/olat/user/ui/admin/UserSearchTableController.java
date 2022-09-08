@@ -35,10 +35,12 @@ import org.olat.admin.user.bulkChange.UserBulkChangeStep00;
 import org.olat.admin.user.bulkChange.UserBulkChanges;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
@@ -104,7 +106,6 @@ import org.olat.user.ui.admin.bulk.move.UserBulkMove_1_ChooseRoleStep;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
 import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.identity.UserInfoSegmentedController;
-import org.olat.user.ui.organisation.OrganisationParentLineController;
 import org.olat.user.ui.organisation.OrganisationsSmallListController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,7 +157,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private StepsMainRunController userBulkMoveController;
 	private StepsMainRunController userBulkChangesController;
 	private ConfirmDeleteUserController confirmDeleteUserController;
-	private OrganisationParentLineController organisationParentLineCtrl;
 	private OrganisationsSmallListController organisationsSmallListCtrl;
 	
 	private final Roles roles;
@@ -176,6 +176,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -242,7 +244,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		if(settings.isVCard()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.vcard", translate("table.identity.vcard"), "vcard"));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.organisations, new IdentityOrganisationsCellRenderer()));
+		if(organisationModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.organisations, new IdentityOrganisationsCellRenderer()));
+		}
 		
 		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule, userLifecycleManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -463,7 +467,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			stackPanel.popController(userInfoCtr);
 			cleanUp();
 		} else if(cmc == source || calloutCtrl == source
-				|| organisationParentLineCtrl == source
 				|| organisationsSmallListCtrl == source) {
 			cleanUp();
 		}
@@ -473,7 +476,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteUserController);
 		removeAsListenerAndDispose(userBulkChangesController);
-		removeAsListenerAndDispose(organisationParentLineCtrl);
 		removeAsListenerAndDispose(organisationsSmallListCtrl);
 		removeAsListenerAndDispose(userBulkMoveController);
 		removeAsListenerAndDispose(changeStatusController);
@@ -482,7 +484,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		removeAsListenerAndDispose(contactCtr);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteUserController = null;
-		organisationParentLineCtrl = null;
 		organisationsSmallListCtrl = null;
 		userBulkChangesController = null;
 		userBulkMoveController = null;
@@ -509,9 +510,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					doSelectIdentity(ureq, userRow);
 				} else if("vcard".equals(cmd)) {
 					doSelectVcard(ureq, userRow);
-				} else if(IdentityOrganisationsCellRenderer.CMD_FIRST_ORGANISATION.equals(cmd)) {
-					String targetId = IdentityOrganisationsCellRenderer.getFirstOrganisationId(te.getIndex());
-					doShowOrganisationParentLine(ureq, targetId, userRow);
 				} else if(IdentityOrganisationsCellRenderer.CMD_OTHER_ORGANISATIONS.equals(cmd)) {
 					String targetId = IdentityOrganisationsCellRenderer.getOtherOrganisationsId(te.getIndex());
 					doShowOrganisations(ureq, targetId, userRow);
@@ -619,18 +617,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		updateNextPrevious(userRow, true);	
 	}
 	
-	private void doShowOrganisationParentLine(UserRequest ureq, String elementId, IdentityPropertiesRow userRow) {
-		Organisation organisation = userRow.getOrganisations().get(0);
-		organisationParentLineCtrl = new OrganisationParentLineController(ureq, getWindowControl(), organisation);
-		listenTo(organisationParentLineCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), organisationParentLineCtrl.getInitialComponent(), elementId, "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
 	private void doShowOrganisations(UserRequest ureq, String elementId, IdentityPropertiesRow userRow) {
-		List<Organisation> organisations = userRow.getOrganisations();
+		List<OrganisationWithParents> organisations = userRow.getOrganisations();
 		organisationsSmallListCtrl = new OrganisationsSmallListController(ureq, getWindowControl(), organisations);
 		listenTo(organisationsSmallListCtrl);
 		

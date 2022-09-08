@@ -21,6 +21,7 @@ package org.olat.user.ui.admin;
 
 import java.util.List;
 
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -30,6 +31,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -39,11 +41,9 @@ import org.olat.core.id.Organisation;
  */
 public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, ActionDelegateCellRenderer {
 	
-	public static final String CMD_FIRST_ORGANISATION = "fOrganisation";
 	public static final String CMD_OTHER_ORGANISATIONS = "oOrganisations";
-	private static final List<String> actions = List.of(CMD_FIRST_ORGANISATION, CMD_OTHER_ORGANISATIONS);
+	private static final List<String> actions = List.of(CMD_OTHER_ORGANISATIONS);
 	
-	private StaticFlexiCellRenderer firstOrganisationRenderer = new FirstCellRenderer();
 	private StaticFlexiCellRenderer otherOrganisationsRenderer = new OtherCellRenderer();
 
 	@Override
@@ -51,9 +51,13 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof List) {
 			@SuppressWarnings("unchecked")
-			List<Organisation> organisations = (List<Organisation>)cellValue;
+			List<OrganisationWithParents> organisations = (List<OrganisationWithParents>)cellValue;
 			if(!organisations.isEmpty()) {
-				firstOrganisationRenderer.render(renderer, target, cellValue, row, source, ubu, translator);
+				OrganisationWithParents organisation = organisations.get(0);
+				String escapedTitle = parentLineToString(organisation);
+				String escapedName = StringHelper.escapeHtml(organisation.getDisplayName());
+				target.append("<span title='").append(escapedTitle).append("'>")
+				      .append(escapedName).append("</span>");
 			}
 			if(organisations.size() > 1) {
 				target.append(" | ");
@@ -62,13 +66,20 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 		}
 	}
 	
+	private String parentLineToString(OrganisationWithParents organisation) {
+		List<Organisation> parents = organisation.getParents();
+		StringBuilder sb = new StringBuilder(128);
+		for(Organisation parent:parents) {
+			sb.append(StringHelper.escapeHtml(parent.getDisplayName()))
+			  .append(" / ");
+		}
+		sb.append(StringHelper.escapeHtml(organisation.getDisplayName()));
+		return sb.toString();
+	}
+	
 	@Override
 	public List<String> getActions() {
 		return actions;
-	}
-	
-	public static String getFirstOrganisationId(int row) {
-		return "o_c" + CMD_FIRST_ORGANISATION + "_" + row;
 	}
 	
 	public static String getOtherOrganisationsId(int row) {
@@ -93,28 +104,6 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 			List<Organisation> organisations = (List<Organisation>)cellValue;
 			if(organisations.size() > 1) {
 				target.append("+").append(organisations.size() - 1);
-			}
-		}
-	}
-
-	private static class FirstCellRenderer extends StaticFlexiCellRenderer {
-		
-		public FirstCellRenderer() {
-			super("", CMD_FIRST_ORGANISATION);
-		}
-
-		@Override
-		protected String getId(Object cellValue, int row, FlexiTableComponent source) {
-			return getFirstOrganisationId(row);
-		}
-
-		@Override
-		protected void getLabel(Renderer renderer, StringOutput target, Object cellValue, int row,
-				FlexiTableComponent source, URLBuilder ubu, Translator translator) {	
-			@SuppressWarnings("unchecked")
-			List<Organisation> organisations = (List<Organisation>)cellValue;
-			if(!organisations.isEmpty()) {
-				target.append(organisations.get(0).getDisplayName());
 			}
 		}
 	}

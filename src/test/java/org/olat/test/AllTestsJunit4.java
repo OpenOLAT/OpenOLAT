@@ -314,6 +314,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.manager.OrganisationTypeDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationTypeToTypeDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationServiceTest.class,
+	org.olat.basesecurity.manager.OrganisationOrderedTreeCacheTest.class,
 	org.olat.basesecurity.manager.SecurityGroupDAOTest.class,
 	org.olat.modules.appointments.ui.StartDurationTest.class,
 	org.olat.modules.ceditor.ContentEditorXStreamTest.class,

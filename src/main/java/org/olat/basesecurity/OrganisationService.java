@@ -24,12 +24,15 @@ import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -40,7 +43,8 @@ import org.olat.core.id.Roles;
 public interface OrganisationService {
 	
 	public static final String DEFAULT_ORGANISATION_IDENTIFIER = "default-org";
-	
+	public static final OLATResourceable ORGANISATIONS_CHANGED_EVENT_CHANNEL = OresHelper
+			.createOLATResourceableType("OrganisationChangedChannel");
 
 	/**
 	 * Create a brand new organization. The membership inheritance
@@ -102,6 +106,13 @@ public interface OrganisationService {
 	 * @return A list of active or inactive organisations.
 	 */
 	public List<Organisation> getOrganisations();
+	
+	/**
+	 * 
+	 * @return Returns an immutable list of organisations, ordered by its tree structure,
+	 *   default organisation first and alphabetically. The list is cached.
+	 */
+	public List<OrganisationWithParents> getOrderedTreeOrganisationsWithParents();
 	
 	/**
 	 * 

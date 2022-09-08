@@ -20,6 +20,7 @@
 package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -38,12 +39,12 @@ import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -68,6 +69,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private OrganisationOrderedTreeCache organisationTree;
 	
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
@@ -147,18 +150,34 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			rowsKeys.add(identityKey);
 		}
 		
-		Map<Long,List<Organisation>> organisations = getOrganisations(rowsKeys);
+		List<OrganisationWithParents> organisations = organisationTree.getOrderedOrganisationsWithParents();
+		Map<Long,OrganisationWithParents> organisationsMap = organisations.stream()
+				.collect(Collectors.toMap(OrganisationWithParents::getKey, org -> org, (u,v) -> u));
+		
+		Map<Long,List<Long>> identityToOorganisations = getOrganisations(rowsKeys);
 		for(IdentityPropertiesRow row:rows) {
-			List<Organisation> organisationsList = organisations.get(row.getIdentityKey());
-			row.setOrganisations(organisationsList);
+			List<Long> organisationsKeysList = identityToOorganisations.get(row.getIdentityKey());
+			List<OrganisationWithParents> orgs;
+			if(organisationsKeysList == null) {
+				orgs = List.of();
+			} else {
+				orgs = new ArrayList<>(organisationsKeysList.size());
+				for(Long organisationKey:organisationsKeysList) {
+					orgs.add(organisationsMap.get(organisationKey));
+				}
+				if(orgs.size() > 1) {
+					Collections.sort(orgs);
+				}
+			}
+			row.setOrganisations(orgs);
 		}
 
 		return rows;
 	}
 	
-	public Map<Long,List<Organisation>> getOrganisations(List<Long> identityKeys) {
+	public Map<Long,List<Long>> getOrganisations(List<Long> identityKeys) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select membership.identity.key, org from organisation org")
+		sb.append("select membership.identity.key, org.key from organisation org")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where membership.identity.key in (:identityKeys) and membership.role=:role");
@@ -169,12 +188,12 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				.setParameter("role", OrganisationRoles.user.name())
 				.getResultList();
 		
-		Map<Long,List<Organisation>> map = new HashMap<>();
+		Map<Long,List<Long>> map = new HashMap<>();
 		for(Object[] rawObjects:rawObjectsList) {
 			Long identityKey = (Long)rawObjects[0];
-			Organisation organisation = (Organisation)rawObjects[1];
+			Long organisationKey = (Long)rawObjects[1];
 			map.computeIfAbsent(identityKey, key -> new ArrayList<>(3))
-				.add(organisation);
+				.add(organisationKey);
 		}
 		return map;
 	}

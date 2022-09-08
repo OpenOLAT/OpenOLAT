@@ -20,13 +20,9 @@
 package org.olat.user.ui.organisation;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,9 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,32 +39,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OrganisationsSmallListController extends BasicController {
-	
-	@Autowired
-	private OrganisationService organisationService;
 
-	public OrganisationsSmallListController(UserRequest ureq, WindowControl wControl, List<Organisation> organisations) {
+	public OrganisationsSmallListController(UserRequest ureq, WindowControl wControl,
+			List<OrganisationWithParents> organisations) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("organisation_small_list");
 		
-		Set<OrganisationRef> organisationCollections = new HashSet<>();
-		for(Organisation organisation:organisations) {
-			organisationCollections.addAll(organisation.getParentLine());
-		}
-		
-		List<Organisation> parents = organisationService.getOrganisation(organisationCollections);
-		Map<Long,Organisation> parentsMap = parents.stream()
-				.collect(Collectors.toMap(Organisation::getKey, org -> org, (u,v) -> u));
-		
 		List<OrganisationItem> organisationsList = new ArrayList<>();
-		for(Organisation organisation:organisations) {
+		for(OrganisationWithParents organisation:organisations) {
 			StringBuilder sb = new StringBuilder();
-			for(OrganisationRef parent:organisation.getParentLine()) {
-				Organisation pl = parentsMap.get(parent.getKey());
-				if(pl != null) {
-					sb.append(StringHelper.escapeHtml(pl.getDisplayName())).append(" / ");
-				}
+			for(Organisation parent:organisation.getParents()) {
+				sb.append(StringHelper.escapeHtml(parent.getDisplayName())).append(" / ");
 			}
 			String displayName = StringHelper.escapeHtml(organisation.getDisplayName());
 			organisationsList.add(new OrganisationItem(displayName, sb.toString()));

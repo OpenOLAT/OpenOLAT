@@ -138,7 +138,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 
 		@Override
 		public boolean sortable() {
-			return !this.equals(action);
+			return !this.equals(action) && !this.equals(organisations);
 		}
 
 		@Override

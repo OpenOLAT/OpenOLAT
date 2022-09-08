@@ -45,11 +45,13 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeRef;
 import org.olat.basesecurity.RightProvider;
 import org.olat.basesecurity.model.IdentityToRoleKey;
+import org.olat.basesecurity.model.OrganisationChangeEvent;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipEvent;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.CoreSpringFactory;
@@ -93,6 +95,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Autowired
 	private OrganisationRoleRightDAO organisationRoleRightDAO;
 	@Autowired
+	private OrganisationOrderedTreeCache organisationOrderedTreeCache;
+	@Autowired
 	private List<RightProvider> allRights;
 
 	@Override
@@ -116,7 +120,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			Group organisationGroup = organisation.getGroup();
 			List<GroupMembership> memberships = groupDao.getMemberships(parentOrganisation.getGroup(),
 					GroupMembershipInheritance.inherited, GroupMembershipInheritance.root);
-			List<OrganisationMembershipEvent> events = new ArrayList<>(memberships.size());
+			List<MultiUserEvent> events = new ArrayList<>(memberships.size());
 			for(GroupMembership membership:memberships) {
 				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited
 						|| membership.getInheritanceMode() == GroupMembershipInheritance.root) {
@@ -126,6 +130,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			}
 			sendDeferredEvents(organisation, events);
 		}
+		sendDeferredEventOrganisationChangedChannel(OrganisationChangeEvent.organisationCreated(organisation));
 		return organisation;
 	}
 
@@ -162,7 +167,10 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public Organisation updateOrganisation(Organisation organisation) {
-		return organisationDao.update(organisation);
+		Organisation updatedOrganisation = organisationDao.update(organisation);
+		dbInstance.commit();
+		sendDeferredEventOrganisationChangedChannel(OrganisationChangeEvent.organisationChanged(organisation));
+		return updatedOrganisation;
 	}
 
 	@Override
@@ -214,6 +222,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			reloadedOrganisation.setStatus(OrganisationStatus.deleted.name());
 			organisationDao.update(reloadedOrganisation);
 		}
+		
+		sendDeferredEventOrganisationChangedChannel(OrganisationChangeEvent.organisationDeleted(organisation));
 	}
 
 	@Override
@@ -353,6 +363,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		return organisationDao.find(OrganisationStatus.notDelete());
 	}
 	
+	@Override
+	public List<OrganisationWithParents> getOrderedTreeOrganisationsWithParents() {
+		return organisationOrderedTreeCache.getOrderedOrganisationsWithParents();
+	}
+
 	@Override
 	public boolean isMultiOrganisations() {
 		return  organisationDao.count(OrganisationStatus.notDelete()) > 1;
@@ -593,6 +608,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 				}
 			}
 		}
+	}
+	
+	private void sendDeferredEventOrganisationChangedChannel(MultiUserEvent event) {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(event, ORGANISATIONS_CHANGED_EVENT_CHANNEL);
 	}
 	
 	private void sendDeferredEvent(Organisation organisation, MultiUserEvent event) {

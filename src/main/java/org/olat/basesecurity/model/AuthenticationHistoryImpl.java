@@ -34,7 +34,6 @@ import javax.persistence.TemporalType;
 
 import org.olat.basesecurity.AuthenticationHistory;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 
@@ -46,7 +45,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="authenticationhistory")
 @Table(name="o_bs_authentication_history")
-public class AuthenticationHistoryImpl implements CreateInfo, AuthenticationHistory, Persistable  {
+public class AuthenticationHistoryImpl implements AuthenticationHistory, Persistable  {
 
 	private static final long serialVersionUID = 298718878316926796L;
 

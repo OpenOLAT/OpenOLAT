@@ -1,8 +1,8 @@
-<ul class="list-unstyled">
+<ul class="list-unstyled o_organisation_small_list">
 #foreach($organisation in $organisations)
 	<li>
 		#if($r.isNotEmpty($organisation.parentLine))
-		<small class="tetx-muted">${organisation.getParentLine()}</small><br>
+		<small class="text-muted">${organisation.getParentLine()}</small><br>
 		#end
 		<strong>${organisation.getDisplayName()}</strong>
 	</li>
