@@ -72,7 +72,7 @@
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.2.19.Final</io.undertow>
-		<jackson.version>2.13.3</jackson.version>
+		<jackson.version>2.13.4</jackson.version>
 		<swagger.ui.version>4.14.0</swagger.ui.version>
 		<org.mysql.version>8.0.30</org.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
@@ -80,7 +80,7 @@
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.4.0</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
-		<activemq.version>5.17.1</activemq.version>
+		<activemq.version>5.17.2</activemq.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
