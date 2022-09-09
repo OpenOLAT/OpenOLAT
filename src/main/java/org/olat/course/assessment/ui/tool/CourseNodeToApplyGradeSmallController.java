@@ -22,12 +22,14 @@ package org.olat.course.assessment.ui.tool;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -55,7 +57,6 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback, List<String> manualGradeSubIdents) {
 		super(ureq, wControl, courseEntry, assessmentCallback);
 		this.manualGradeSubIdents = manualGradeSubIdents;
-		loadModel();
 	}
 	
 	@Override
@@ -79,16 +80,17 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 	}
 
 	@Override
-	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries() {
+	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Set<Particpant> participants) {
 		Map<String, List<AssessmentEntry>> nodeIdentToEntries = new HashMap<>(manualGradeSubIdents.size());
 		for (String subIdent : manualGradeSubIdents) {
-			nodeIdentToEntries.put(subIdent, loadAssessmentEntries(subIdent));
+			nodeIdentToEntries.put(subIdent, loadAssessmentEntries(subIdent, participants));
 		}
 		return nodeIdentToEntries;
 	}
 	
-	private List<AssessmentEntry> loadAssessmentEntries(String subIdent) {
+	private List<AssessmentEntry> loadAssessmentEntries(String subIdent, Set<Particpant> participants) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, subIdent, null, assessmentCallback);
+		params.setParticipants(participants);
 		params.setScoreNull(Boolean.FALSE);
 		params.setGradeNull(Boolean.TRUE);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);

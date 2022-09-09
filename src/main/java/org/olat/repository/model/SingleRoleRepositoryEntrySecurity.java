@@ -40,7 +40,8 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 		coach("role.coach", "o_icon_coach"),
 		principal("role.principal", "o_icon_principal"),
 		masterCoach("role.master.coach", "o_icon_master_coach"),
-		participant("role.participant", "o_icon_user");
+		participant("role.participant", "o_icon_user"),
+		fakeParticipant("role.fake.participant", "o_icon_fake_participant");
 		
 		private final String i18nKey;
 		private final String iconCssClass;
@@ -61,6 +62,7 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	}
 	
 	private Role currentRole;
+	private Role previousRole;
 	private RepositoryEntrySecurity wrappedSecurity;
 	
 	public SingleRoleRepositoryEntrySecurity(RepositoryEntrySecurity wrappedSecurity) {
@@ -90,7 +92,12 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	}
 
 	public void setCurrentRole(Role role) {
-		this.currentRole = role;
+		previousRole = currentRole;
+		currentRole = role;
+	}
+
+	public Role getPreviousRole() {
+		return previousRole;
 	}
 
 	public RepositoryEntrySecurity getWrappedSecurity() {
@@ -106,8 +113,9 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 			|| (Role.coach == currentRole && !wrappedSecurity.isCoach())
 			|| (Role.principal == currentRole && !wrappedSecurity.isPrincipal())
 			|| (Role.masterCoach == currentRole && !wrappedSecurity.isMasterCoach())
-			|| (Role.participant == currentRole && !wrappedSecurity.isParticipant())) {
-			currentRole = getDefaultRole();
+			|| (Role.participant == currentRole && !wrappedSecurity.isParticipant())
+			|| (Role.fakeParticipant == currentRole && !isFakeParticipantAvailable())) {
+			setCurrentRole(getDefaultRole());
 		}
 	}
 	
@@ -134,7 +142,19 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 		if (Role.participant != currentRole && wrappedSecurity.isParticipant()) {
 			otherRoles.add(Role.participant);
 		}
+		if (Role.fakeParticipant != currentRole && isFakeParticipantAvailable()) {
+			otherRoles.add(Role.fakeParticipant);
+		}
 		return otherRoles;
+	}
+	
+	private boolean isFakeParticipantAvailable() {
+		if (wrappedSecurity.isOwner() || wrappedSecurity.isCoach() || wrappedSecurity.isMasterCoach()) {
+			if (!wrappedSecurity.isParticipant()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -149,7 +169,7 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 
 	@Override
 	public boolean isParticipant() {
-		return Role.participant == currentRole;
+		return Role.participant == currentRole || Role.fakeParticipant == currentRole;
 	}
 
 	@Override

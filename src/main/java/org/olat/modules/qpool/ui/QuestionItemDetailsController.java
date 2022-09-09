@@ -301,7 +301,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		QuestionStatus actualStatus = metadatasCtrl.getItem().getQuestionStatus();
 
 		Dropdown statusDropdown = new Dropdown("process.states", "lifecycle.status", false, getTranslator());
-		statusDropdown.setElementCssClass("o_qpool_tools_status o_with_labeled");
+		statusDropdown.setLabeled(true, true);
+		statusDropdown.setElementCssClass("o_qpool_tools_status");
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_" + actualStatus.name());
 		statusDropdown.setInnerText(translate("lifecycle.status." + actualStatus.name()));
 		statusDropdown.setInnerCSS("o_labeled o_qpool_status_" + actualStatus.name());

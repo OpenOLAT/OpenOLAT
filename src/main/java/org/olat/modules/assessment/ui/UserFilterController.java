@@ -41,31 +41,48 @@ import org.olat.modules.assessment.ui.event.UserFilterEvent;
  */
 public class UserFilterController extends FormBasicController {
 
+	private static final String MEMBERS = "members";
 	private static final String OTHER_USER = "other.users";
+	private static final String FAKE_PARTICIPANTS = "fake.participants";
 	private static final String ANONYMOUS = "anonymousUsers";
 	
 	private MultipleSelectionElement restrictionEl;
 	
-	private final boolean canAnonymous;
+	private final boolean canMembers;
 	private final boolean canOtherUsers;
+	private final boolean canFakeParticipants;
+	private final boolean canAnonymous;
+	private final boolean initialMembers;
 	private final boolean initialOtherUser;
+	private final boolean initialFakeParticipants;
 	private final boolean initialAnonymous;
 
-	public UserFilterController(UserRequest ureq, WindowControl wControl, boolean canOtherUsers, boolean canAnonymous,
-			boolean initialOtherUser, boolean initialAnonymous) {
+	public UserFilterController(UserRequest ureq, WindowControl wControl, boolean canMembers, boolean canOtherUsers,
+			boolean canFakeParticipants, boolean canAnonymous, boolean initialMembers, boolean initialOtherUser,
+			boolean initialFakeParticipants, boolean initialAnonymous) {
 		super(ureq, wControl, "user_filter");
-		this.canAnonymous = canAnonymous;
+		this.canMembers = canMembers;
 		this.canOtherUsers = canOtherUsers;
+		this.canFakeParticipants = canFakeParticipants;
+		this.canAnonymous = canAnonymous;
+		this.initialMembers = initialMembers;
 		this.initialOtherUser = initialOtherUser;
+		this.initialFakeParticipants = initialFakeParticipants;
 		this.initialAnonymous = initialAnonymous;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<String> allowKeyList = new ArrayList<>(2);
+		List<String> allowKeyList = new ArrayList<>(3);
+		if(canMembers) {
+			allowKeyList.add(MEMBERS);
+		}
 		if(canOtherUsers) {
 			allowKeyList.add(OTHER_USER);
+		}
+		if(canFakeParticipants) {
+			allowKeyList.add(FAKE_PARTICIPANTS);
 		}
 		if(canAnonymous) {
 			allowKeyList.add(ANONYMOUS);
@@ -79,8 +96,14 @@ public class UserFilterController extends FormBasicController {
 		restrictionEl = uifactory.addCheckboxesHorizontal("user.restrictions", null, formLayout, allowKeys, allowValues);
 		restrictionEl.setDomReplacementWrapperRequired(false);
 		restrictionEl.addActionListener(FormEvent.ONCHANGE);
+		if(initialMembers && allowKeyList.contains(MEMBERS)) {
+			restrictionEl.select(MEMBERS, true);
+		}
 		if(initialOtherUser && allowKeyList.contains(OTHER_USER)) {
 			restrictionEl.select(OTHER_USER, true);
+		}
+		if(initialFakeParticipants && allowKeyList.contains(FAKE_PARTICIPANTS)) {
+			restrictionEl.select(FAKE_PARTICIPANTS, true);
 		}
 		if(initialAnonymous && allowKeyList.contains(ANONYMOUS)) {
 			restrictionEl.select(ANONYMOUS, true);
@@ -96,9 +119,11 @@ public class UserFilterController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(restrictionEl == source) {
 			Collection<String> selectedKeys = restrictionEl.getSelectedKeys();
+			boolean withMembers = selectedKeys.contains(MEMBERS);
 			boolean withOtherUsers = selectedKeys.contains(OTHER_USER);
+			boolean withFakeParticipants = selectedKeys.contains(FAKE_PARTICIPANTS);
 			boolean withAnonymousUsers = selectedKeys.contains(ANONYMOUS);
-			fireEvent(ureq, new UserFilterEvent(withOtherUsers, withAnonymousUsers));
+			fireEvent(ureq, new UserFilterEvent(withMembers, withOtherUsers, withFakeParticipants, withAnonymousUsers));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

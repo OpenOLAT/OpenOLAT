@@ -23,9 +23,11 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
@@ -39,6 +41,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ScoreAccountingTrigger;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
@@ -106,6 +109,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private CourseAssessmentQueries courseAssessmentQueries;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -425,8 +430,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		if (reSecurity.isGroupCoach()) {
 			coachedGroups = userCourseEnv.getCoachedGroups();
 		}
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
+				userCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
 		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
-				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
+				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 
 	@Override

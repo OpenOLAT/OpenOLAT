@@ -37,5 +37,6 @@ public class SelectionEvents {
 	public static final Event NOT_DONE_EVENT = new Event("assessment-tool-select-not-done");
 	public static final Event MEMBERS_EVENT = new Event("assessment-tool-select-members");
 	public static final Event NON_MEMBERS_EVENT = new Event("assessment-tool-select-non-members");
+	public static final Event FAKE_PARTICIPANTS_EVENT = new Event("assessment-tool-select-fake-participants");
 
 }

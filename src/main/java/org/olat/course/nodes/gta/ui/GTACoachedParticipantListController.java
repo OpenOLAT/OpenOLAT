@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,15 +68,20 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -135,7 +141,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
 
-	private List<UserPropertiesRow> assessableIdentities;
+	private final List<UserPropertiesRow> assessableIdentities;
+	private final Set<Long> fakeParticipantKeys;
 	private final UserCourseEnvironment coachCourseEnv;
 	
 	private int count;
@@ -163,11 +170,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
+	private AssessmentToolManager assessmentToolManager;
+	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
 		super(ureq, wControl, coachCourseEnv.getCourseEnvironment(), gtaNode);
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -177,9 +187,17 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.markedOnly = markedOnly;
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
-		assessableIdentities = getAssessableIdentities().stream()
+		
+		Set<Identity> identities = new HashSet<>(getAssessableIdentities());
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(
+				courseEnv.getCourseGroupManager().getCourseEntry(), getIdentity(), coachCourseEnv.isAdmin(),
+				coachCourseEnv.isCoach());
+		identities.addAll(securityManager.loadIdentityByRefs(fakeParticipants));
+		
+		assessableIdentities = identities.stream()
 				.map(participant -> new UserPropertiesRow(participant, userPropertyHandlers, getLocale()))
 				.collect(Collectors.toList());
+		fakeParticipantKeys = fakeParticipants.stream().map(IdentityRef::getKey).collect(Collectors.toSet());
 		
 		initForm(ureq);
 		updateModel(ureq);
@@ -321,6 +339,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		
 		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
 			SelectionValues obligationValues = new SelectionValues();
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
@@ -329,24 +349,27 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
 					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
 			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
-			tableEl.setFilters(true, List.of(obligationFilter), false, true);
+			filters.add(obligationFilter);
+		}
+		
+		if (!fakeParticipantKeys.isEmpty()) {
+			SelectionValues membersValues = new SelectionValues();
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			filters.add(membersFilter);
+		}
+		
+		if (!filters.isEmpty()) {
+			tableEl.setFilters(true, filters, false, true);
 		}
 	}
 	
 	protected void updateModel(UserRequest ureq) {
-		List<AssessmentObligation> filterObligations = null;
-		List<FlexiTableFilter> filters = tableEl.getFilters();
-		if (filters != null && !filters.isEmpty()) {
-			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
-			if (obligationFilter != null) {
-				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
-				if (filterValues != null && !filterValues.isEmpty()) {
-					filterObligations = filterValues.stream()
-							.map(AssessmentObligation::valueOf)
-							.collect(Collectors.toList());
-				}
-			}
-		}
+		List<AssessmentObligation> filterObligations = getFilterObligations();
+		Set<Particpant> filterParticipants = getFilterParticipants();
 		
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
@@ -385,7 +408,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			if (markedOnly && mark == null) continue;
 			
 			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
-			if (isExcludedByObligation(filterObligations, assessment)) continue;
+			if (isExcludedByObligation(filterObligations, assessment) || isExcludedByParticipant(filterParticipants, assessableIdentity)) continue;
 			
 			FormLink markLink = uifactory.addFormLink("mark_" + assessableIdentity.getIdentityKey(), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
@@ -432,6 +455,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
+
+	private List<AssessmentObligation> getFilterObligations() {
+		List<AssessmentObligation> filterObligations = null;
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters != null && !filters.isEmpty()) {
+			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
+			if (obligationFilter != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+				if (filterValues != null && !filterValues.isEmpty()) {
+					filterObligations = filterValues.stream()
+							.map(AssessmentObligation::valueOf)
+							.collect(Collectors.toList());
+				}
+			}
+		}
+		return filterObligations;
+	}
 	
 	private boolean isExcludedByObligation(List<AssessmentObligation> filterObligations, AssessmentEntry assessmentEntry) {
 		if (filterObligations == null || filterObligations.isEmpty() || assessmentEntry == null) {
@@ -448,6 +488,30 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			return true;
 		}
 		
+		return false;
+	}
+	
+	private Set<SearchAssessedIdentityParams.Particpant> getFilterParticipants() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(Particpant::valueOf)
+						.collect(Collectors.toSet());
+			}
+		}
+		return null;
+	}
+	
+	private boolean isExcludedByParticipant(Set<Particpant> filterParticipants, UserPropertiesRow assessableIdentity) {
+		if (filterParticipants != null && filterParticipants.size() == 1) {
+			if (filterParticipants.contains(Particpant.fakeParticipant)) {
+				return !fakeParticipantKeys.contains(assessableIdentity.getIdentityKey());
+			}
+			return fakeParticipantKeys.contains(assessableIdentity.getIdentityKey());
+		}
 		return false;
 	}
 	

@@ -197,11 +197,12 @@ public class DataCollectionController extends BasicController implements TooledC
 		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
 	
 		Dropdown statusDropdown = new Dropdown("process.states", "data.collection.status", false, getTranslator());
-		statusDropdown.setElementCssClass("o_qual_tools_status o_with_labeled");
+		statusDropdown.setElementCssClass("o_qual_tools_status");
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
 		statusDropdown.setInnerText(translate("data.collection.status." + actualStatus.name().toLowerCase()));
 		statusDropdown.setInnerCSS("o_labeled o_qual_dc_status_" + actualStatus.name().toLowerCase());
 		statusDropdown.setOrientation(DropdownOrientation.normal);
+		statusDropdown.setLabeled(true, true);
 	
 		statusPreparationLink = LinkFactory.createToolLink("data.collection.status.preparation", translate("data.collection.status.preparation"), this);
 		statusPreparationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_preparation");

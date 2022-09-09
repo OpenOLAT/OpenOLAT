@@ -22,24 +22,32 @@ package org.olat.course.learningpath.ui;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -47,12 +55,18 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
@@ -84,6 +98,8 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean isAdministrativeUser;
+	private final List<Identity> coachedIdentities;
+	private final Set<Long> fakeParticipantKeys;
 
 	@Autowired
 	private UserManager userManager;
@@ -95,6 +111,8 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 
 	public LearningPathIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv) {
@@ -102,11 +120,31 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		this.stackPanel = stackPanel;
 		this.coachCourseEnv = coachCourseEnv;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USAGE_IDENTIFIER, isAdministrativeUser);
 		
+		Set<Identity> identities = new HashSet<>(getCoachedIdentities());
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(
+				coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdentity(),
+				coachCourseEnv.isAdmin(), coachCourseEnv.isCoach());
+		identities.addAll(securityManager.loadIdentityByRefs(fakeParticipants));
+		
+		coachedIdentities = new ArrayList<>(identities);
+		fakeParticipantKeys = fakeParticipants.stream().map(IdentityRef::getKey).collect(Collectors.toSet());
+		
 		initForm(ureq);
+	}
+	
+	public List<Identity> getCoachedIdentities() {
+		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		RepositoryEntry re = cgm.getCourseEntry();
+		
+		return coachCourseEnv.isAdmin()
+				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+						.stream().distinct().collect(Collectors.toList())
+				: repositoryService.getCoachedParticipants(getIdentity(), re);
 	}
 
 	@Override
@@ -135,8 +173,21 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("table.empty.curriculum", null, "o_icon_user");
 		tableEl.setExportEnabled(true);
+		initFilters();
 		
 		loadModel();
+	}
+	
+	private void initFilters() {
+		if (!fakeParticipantKeys.isEmpty()) {
+			SelectionValues membersValues = new SelectionValues();
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			tableEl.setFilters(true, List.of(membersFilter), false, true);
+		}
 	}
 
 	@Override
@@ -157,14 +208,10 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	}
 
 	private void loadModel() {
+		Set<Particpant> filterParticipants = getFilterParticipants();
 		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		RepositoryEntry re = cgm.getCourseEntry();
 		String subIdent = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getIdent();
-		
-		List<Identity> coachedIdentities = coachCourseEnv.isAdmin()
-				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
-						.stream().distinct().collect(Collectors.toList())
-				: repositoryService.getCoachedParticipants(getIdentity(), re);
 		
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(re, subIdent);
 		Map<Long, AssessmentEntry> identityKeyToCompletion = new HashMap<>();
@@ -174,6 +221,8 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		
 		List<LearningPathIdentityRow> rows = new ArrayList<>(coachedIdentities.size());
 		for (Identity coachedIdentity : coachedIdentities) {
+			if (isExcludedByParticipant(filterParticipants, coachedIdentity)) continue;
+			
 			AssessmentEntry assessmentEntry = identityKeyToCompletion.get(coachedIdentity.getKey());
 			Double completion = assessmentEntry != null ? assessmentEntry.getCompletion(): null;
 			Boolean passed = assessmentEntry != null ? assessmentEntry.getPassed(): null;
@@ -186,6 +235,30 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		tableEl.reset(true, true, true);
 	}
 	
+	private Set<SearchAssessedIdentityParams.Particpant> getFilterParticipants() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(Particpant::valueOf)
+						.collect(Collectors.toSet());
+			}
+		}
+		return null;
+	}
+	
+	private boolean isExcludedByParticipant(Set<Particpant> filterParticipants, Identity identity) {
+		if (filterParticipants != null && filterParticipants.size() == 1) {
+			if (filterParticipants.contains(Particpant.fakeParticipant)) {
+				return !fakeParticipantKeys.contains(identity.getKey());
+			}
+			return fakeParticipantKeys.contains(identity.getKey());
+		}
+		return false;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (tableEl == source) {
@@ -196,6 +269,8 @@ public class LearningPathIdentityListController extends FormBasicController impl
 				if (CMD_SELECT.equals(cmd)) {
 					doSelect(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				loadModel();
 			}
 		}
 		

@@ -25,12 +25,15 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.AssessmentResponseImpl;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.vitero.model.GroupRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -109,7 +112,7 @@ public class AssessmentResponseDAO {
 	 * @return
 	 */
 	public boolean hasResponses(QTI21StatisticSearchParams searchParams) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select response.key from qtiassessmentresponse response ")
 		  .append(" inner join response.assessmentItemSession itemSession")
 		  .append(" inner join itemSession.assessmentTestSession testSession")
@@ -119,9 +122,7 @@ public class AssessmentResponseDAO {
 		  .append("  and testSession.finishTime is not null and testSession.authorMode=false")
 		  .append("  and (");
 
-		if(searchParams.isViewAllUsers()) {
-			sb.append(" testSession.identity.key is not null");
-		} else if(searchParams.getLimitToGroups() != null) {
+		if(searchParams.getLimitToGroups() != null) {
 			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
 			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and rel.group.key in (:limitGroupKeys)")
 			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
@@ -131,14 +132,29 @@ public class AssessmentResponseDAO {
 			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key in (:limitIdentityKeys)")
 			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
 			  .append(" )");
-		} else {
-			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
-			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key ")
-			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
-			  .append(" )");
-		}
-		if(searchParams.isViewAnonymUsers()) {
-			sb.append(" or testSession.anonymousIdentifier is not null");
+		} else if (searchParams.isViewMembers() && searchParams.isViewNonMembers() && searchParams.isViewAnonymUsers()) {
+			//no restrictions
+			sb.append("1=1");
+		} else if (searchParams.isViewMembers() || searchParams.isViewNonMembers() || searchParams.isViewAnonymUsers()) {
+			boolean or = false;
+			if (searchParams.isViewMembers()) {
+				sb.append(" testSession.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroupmember membership ")
+				  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.role='").append(GroupRole.participant).append("'")
+				  .append(" )");
+				or = true;
+			}
+			if (searchParams.isViewNonMembers()) {
+				if (or) sb.append(" or ");
+				sb.append(" testSession.identity.key not in (select membership.identity.key from repoentrytogroup as rel, bgroupmember as membership")
+				  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.role")
+				      .in(GroupRoles.participant.name(), GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name())
+				.append(" )");
+				or = true;
+			}
+			if (searchParams.isViewAnonymUsers()) {
+				if (or) sb.append(" or ");
+				sb.append(" testSession.anonymousIdentifier is not null");
+			}
 		}
 		sb.append(")");
 		

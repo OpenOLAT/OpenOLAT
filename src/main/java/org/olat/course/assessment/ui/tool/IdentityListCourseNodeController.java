@@ -105,6 +105,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
@@ -442,7 +443,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		if (assessmentCallback.canAssessNonMembers()) {
 			tabs.forEach(tab -> {
-				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, "membersOnly"));
+				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, Particpant.member));
 			});
 		}
 		
@@ -493,12 +494,17 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		
 		// members
-		if (assessmentCallback.canAssessNonMembers()) {
-			SelectionValues memebersValues = new SelectionValues();
-			memebersValues.add(SelectionValues.entry("membersOnly", translate("filter.members")));
-			memebersValues.add(SelectionValues.entry("nonMembersOnly", translate("filter.other.users")));
-			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.members.label"),
-					AssessedIdentityListState.FILTER_MEMBERS, memebersValues, true));
+		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+			SelectionValues membersValues = new SelectionValues();
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			if (assessmentCallback.canAssessNonMembers()) {
+				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.nonMember.name(), translate("filter.other.users")));
+			}
+			if (assessmentCallback.canAssessFakeParticipants()) {
+				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true));
 		}
 
 		// groups
@@ -853,11 +859,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
 		if(membersFilter != null) {
-			String filterValue = ((FlexiTableExtendedFilter)membersFilter).getValue();
-			if("membersOnly".equals(filterValue)) {
-				params.setMemebersOnly(true);
-			} else if("nonMembersOnly".equals(filterValue)) {
-				params.setNonMemebersOnly(true);
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				Set<Particpant> participants = filterValues.stream()
+						.map(Particpant::valueOf)
+						.collect(Collectors.toSet());
+				params.setParticipants(participants);
 			}
 		}
 		

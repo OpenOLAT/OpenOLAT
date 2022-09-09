@@ -362,11 +362,6 @@ a.o_repo_tools_status {
 	    background-color: $o-repo-deleted-color;
 	    border-color: $o-repo-deleted-color;
 	    color: $o-repo-status-color-bright;
-	}	
-	&.o_repo_role {
-	    background-color: $o-labeled_bg-color;
-	    border-color: $o-labeled_bg-color;
-	    color: $o-repo-status-color-bright;
 	}
 }
 /* hover effect for menu pulldowns in toolbar */
@@ -392,10 +387,6 @@ a.o_repo_tools_status {
 	&.o_repo_status_deleted {
 	    background-color: darken($o-repo-deleted-color,10%);
 	}
-	&.o_repo_role {
-	    background-color: lighten($o-labeled_bg-color,10%);
-	    border-color: lighten($o-labeled_bg-color,10%);
-	}	
 }
 
 /* Status light style, mainly for in-table renderings */
@@ -453,5 +444,30 @@ a.o_repo_tools_status {
 }
 
 
+.o_fake_participant_stop {
+	display: flex;
+	align-items: center;
+	@media (max-width: $screen-xs-min) {
+		flex-wrap: wrap;
+	}
+	.o_fps_message {
+		display: flex;
+		align-items: center;
+		.o_icon {
+			color: $brand-warning;
+			font-size: 200%;
+		}
+		.o_fps_text {
+			margin: 0 10px;
+		}
+	}
+	.o_fps_button {
+		@media (max-width: $screen-xs-min) {
+			text-align: center;
+			width: 100%;
+			margin-top: 5px;
+		}
+	}
+}
 
 

@@ -45,7 +45,7 @@ public class QTI21StatisticSearchParams {
 	private ArchiveOptions archiveOptions;
 	
 	private boolean viewAnonymUsers;
-	private boolean viewAllUsers;
+	private boolean viewMembers;
 	private boolean viewNonMembers;
 	
 	public QTI21StatisticSearchParams(ArchiveOptions options, RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent) {
@@ -56,7 +56,8 @@ public class QTI21StatisticSearchParams {
 		
 		if(options == null) {
 			viewAnonymUsers = true;
-			viewAllUsers = true;
+			viewMembers = true;
+			viewNonMembers = true;
 		} else if(options.getGroup() != null) {
 			limitToGroups = new ArrayList<>(2);
 			limitToGroups.add(options.getGroup().getBaseGroup());
@@ -64,22 +65,22 @@ public class QTI21StatisticSearchParams {
 			limitToIdentities = new ArrayList<>(options.getIdentities());
 		} else {
 			viewAnonymUsers = true;
-			viewAllUsers = true;
+			viewMembers = true;
+			viewNonMembers = true;
 		}
 	}
 	
 	public QTI21StatisticSearchParams(RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent) {
-		this.nodeIdent = nodeIdent;
-		this.courseEntry = courseEntry;
-		this.testEntry = testEntry;
+		this(testEntry, courseEntry, nodeIdent, true, false, false);
 	}
 	
 	public QTI21StatisticSearchParams(RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent,
-			boolean viewAllUsers, boolean viewAnonymUsers) {
+			boolean viewMembers, boolean viewNonMembers, boolean viewAnonymUsers) {
 		this.nodeIdent = nodeIdent;
 		this.courseEntry = courseEntry;
 		this.testEntry = testEntry;
-		this.viewAllUsers = viewAllUsers;
+		this.viewMembers = viewMembers;
+		this.viewNonMembers = viewNonMembers;
 		this.viewAnonymUsers = viewAnonymUsers;
 	}
 	
@@ -110,13 +111,13 @@ public class QTI21StatisticSearchParams {
 	public void setLimitToIdentities(List<Identity> limitToIdentities) {
 		this.limitToIdentities = limitToIdentities;
 	}
-	
-	public boolean isViewAllUsers() {
-		return viewAllUsers;
+
+	public boolean isViewMembers() {
+		return viewMembers;
 	}
-	
-	public void setViewAllUsers(boolean view) {
-		this.viewAllUsers = view;
+
+	public void setViewMembers(boolean viewMembers) {
+		this.viewMembers = viewMembers;
 	}
 
 	public boolean isViewNonMembers() {

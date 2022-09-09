@@ -37,6 +37,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -59,6 +60,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -83,13 +85,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params, boolean courseInfoLaunch) {
 		RepositoryEntry courseEntry = params.getEntry();
 		
-		int othersLoggedIn = 0;
-		int numOfOtherUsers = 0;
 		int numOfParticipants = 0;
 		int participantLoggedIn = 0;
+		int numOfNonParticipants = 0;
+		int nonParticipantsLoggedIn = 0;
+		int numOfFakeParticipants = 0;
+		int fakeParticipantsLoggedIn = 0;
 		
 		List<Long> launchedKeys;
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		if (courseInfoLaunch) {
 			sb.append("select infos.identity.key from usercourseinfos as infos")
 			  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)");
@@ -116,73 +120,124 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		
 		if(params.isAdmin()) {
-			sb = new StringBuilder();
-			sb.append("select participant.identity.key from repoentrytogroup as rel")
-	          .append("  inner join rel.group as bGroup")
-	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
-	          .append("  where rel.entry.key=:repoEntryKey");
+			boolean hasGroupFilter = params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys();
+			if (params.isParticipantAll() || params.isParticipantAllMembers()) {
+				Set<Long> participantKeys = new HashSet<>();
+				if (hasGroupFilter) {
+					if (params.hasBusinessGroupKeys()) {
+						sb = new QueryBuilder();
+						sb.append("select distinct participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant");
+						sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=bgi.baseGroup.key and rel.group.key=participant.group.key and bgi.key in (:businessGroupKeys) ");
+						sb.append("  and participant.role='").append(GroupRoles.participant.name()).append("'");
+						List<Long> keys = dbInstance.getCurrentEntityManager()
+								.createQuery(sb.toString(), Long.class)
+								.setParameter("repoEntryKey", courseEntry.getKey())
+								.setParameter("businessGroupKeys", params.getBusinessGroupKeys())
+								.getResultList();
+						participantKeys.addAll(keys);
+					}
+					if (params.hasCurriculumElementKeys()) {
+						sb = new QueryBuilder();
+						sb.append("select distinct participant.identity.key from repoentrytogroup as rel, curriculumelement curEl, bgroupmember as participant");
+						sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=curEl.group.key and rel.group.key=participant.group.key and curEl.key in (:curriculumElementKeys) ");
+						sb.append("   and participant.role='").append(GroupRoles.participant.name()).append("'");
+						List<Long> keys = dbInstance.getCurrentEntityManager()
+								.createQuery(sb.toString(), Long.class)
+								.setParameter("repoEntryKey", courseEntry.getKey())
+								.setParameter("curriculumElementKeys", params.getCurriculumElementKeys())
+								.getResultList();
+						if (params.hasBusinessGroupKeys()) {
+							participantKeys.retainAll(keys);
+						} else {
+							participantKeys.addAll(keys);
+						}
+					}
+				} else {
+					sb = new QueryBuilder();
+					sb.append("select distinct participant.identity.key from repoentrytogroup as rel");
+					sb.append("  inner join rel.group as bGroup");
+					sb.append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')");
+					sb.append("  where rel.entry.key=:repoEntryKey");
+					List<Long> keys = dbInstance.getCurrentEntityManager()
+						.createQuery(sb.toString(), Long.class)
+						.setParameter("repoEntryKey", courseEntry.getKey())
+						.getResultList();
+					participantKeys.addAll(keys);
+				}
+				
+				numOfParticipants = participantKeys.size();
+				Set<Long> loggedInKeys = new HashSet<>(participantKeys);
+				loggedInKeys.retainAll(launchedKeys);
+				participantLoggedIn = loggedInKeys.size();
+			}
 			
-			List<Long> keys = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("repoEntryKey", courseEntry.getKey())
-				.getResultList();
-			Set<Long> participantKeys = new HashSet<>(keys);
-			numOfParticipants = participantKeys.size();
-			
-			Set<Long> participantLoggedInKeys = new HashSet<>(participantKeys);
-			participantLoggedInKeys.retainAll(launchedKeys);
-			participantLoggedIn = participantLoggedInKeys.size();
-
-			//count the users which login but are not members of the course
-			if(params.isNonMembers()) {
-				sb = new StringBuilder();
-				sb.append("select ae.identity.key");
+			if (!hasGroupFilter && (params.isParticipantAll() || params.isParticipantNonMembers())) {
+				sb = new QueryBuilder();
+				sb.append("select distinct ae.identity.key");
 				sb.append("  from assessmententry ae");
-				sb.append(" where ae.identity.key is not null"); // exclude anonymous 
-				sb.append("   and ae.repositoryEntry.key = :entryKey");
-				if(params.getSubIdent() != null) {
-					sb.append(" and ae.subIdent=:subIdent");
+				sb.append(" where ae.repositoryEntry.key = :repoEntryKey");
+				sb.append(" and ae.identity.key not in (");
+				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+				sb.append("   and participant.role").in(GroupRoles.participant.name(), GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name()).append("");
+				sb.append(")");
+				if (params.getFakeParticipantIdentityKeys() != null && !params.getFakeParticipantIdentityKeys().isEmpty()) {
+					sb.append(" and ae.identity.key not in :fakeParticipantKeys");
 				}
 				TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-					.createQuery(sb.toString(), Long.class)
-					.setParameter("entryKey", courseEntry.getKey());
-				if(params.getSubIdent() != null) {
-					query.setParameter("subIdent", params.getSubIdent());
+						.createQuery(sb.toString(), Long.class)
+						.setParameter("repoEntryKey", courseEntry.getKey());
+				if (params.getFakeParticipantIdentityKeys() != null && !params.getFakeParticipantIdentityKeys().isEmpty()) {
+						query.setParameter("fakeParticipantKeys", params.getFakeParticipantIdentityKeys());
 				}
-				List<Long> allKeys =  query.getResultList();
-				
-				Set<Long> otherKeys = new HashSet<>(allKeys);
-				otherKeys.removeAll(participantKeys);
-				numOfOtherUsers = otherKeys.size();
-				otherKeys.retainAll(launchedKeys);
-				othersLoggedIn = otherKeys.size();
+				List<Long> nonParticipantKeys = query	.getResultList();
+				numOfNonParticipants = nonParticipantKeys.size();
+				Set<Long> loggedInKeys = new HashSet<>(nonParticipantKeys);
+				loggedInKeys.retainAll(launchedKeys);
+				nonParticipantsLoggedIn = loggedInKeys.size();
+			}
+			
+			if (!hasGroupFilter && (params.isParticipantAll() || params.isParticipantFakeParticipants())) {
+				numOfFakeParticipants = params.getFakeParticipantSize();
+				fakeParticipantsLoggedIn = params.getFakeParticipantSize();
 			}
 		} else if(params.isCoach()) {
-			sb = new StringBuilder();
-			sb.append("select participant.identity.key from repoentrytogroup as rel")
-	          .append("  inner join rel.group as bGroup")
-	          .append("  inner join bGroup.members as coach on (coach.identity.key=:identityKey and coach.role='").append(GroupRoles.coach.name()).append("')")
-	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
-	          .append("  where rel.entry.key=:repoEntryKey");
+			if (params.isParticipantCoachedMembers()) {
+				sb = new QueryBuilder();
+				sb.append("select participant.identity.key from repoentrytogroup as rel");
+				sb.append("  inner join rel.group as bGroup");
+				sb.append("  inner join bGroup.members as coach on (coach.identity.key=:identityKey and coach.role='").append(GroupRoles.coach.name()).append("')");
+				sb.append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')");
+				sb .append("  where rel.entry.key=:repoEntryKey");
+				
+				List<Long> keys  = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Long.class)
+					.setParameter("identityKey", coach.getKey())
+					.setParameter("repoEntryKey", courseEntry.getKey())
+					.getResultList();
+				Set<Long> participantKeys = new HashSet<>(keys);
+				numOfParticipants = participantKeys.size();
+				
+				Set<Long> participantLoggedInKeys = new HashSet<>(keys);
+				participantLoggedInKeys.retainAll(launchedKeys);
+				participantLoggedIn = participantLoggedInKeys.size();
+				
+				if (params.isParticipantFakeParticipants()) {
+					numOfFakeParticipants = params.getFakeParticipantSize();
+					fakeParticipantsLoggedIn = params.getFakeParticipantSize();
+				}
+			}
 			
-			List<Long> keys  = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("identityKey", coach.getKey())
-				.setParameter("repoEntryKey", courseEntry.getKey())
-				.getResultList();
-
-			Set<Long> participantKeys = new HashSet<>(keys);
-			numOfParticipants = participantKeys.size();
-			
-			Set<Long> participantLoggedInKeys = new HashSet<>(keys);
-			participantLoggedInKeys.retainAll(launchedKeys);
-			participantLoggedIn = participantLoggedInKeys.size();
 		}
-		return new AssessmentMembersStatistics(numOfParticipants, participantLoggedIn, numOfOtherUsers, othersLoggedIn);
+		
+		return new AssessmentMembersStatistics(numOfParticipants, participantLoggedIn, numOfNonParticipants, nonParticipantsLoggedIn,
+				numOfFakeParticipants, fakeParticipantsLoggedIn);
 	}
 	
 	@Override
 	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		QueryParams queryParams = new QueryParams();
+		
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select avg(aentry.score) as scoreAverage, ")
 		  .append(" max(aentry.score) as scoreMax,")
@@ -196,11 +251,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
 		  .append(" where v.key=:repoEntryKey");
+		queryParams.addRepoEntryKey();
 		if(params.getReferenceEntry() != null) {
 			sf.append(" and aentry.referenceEntry.key=:referenceKey");
 		}
 		if(params.getSubIdent() != null) {
 			sf.append(" and aentry.subIdent=:subIdent");
+			queryParams.addSubIdent();
 		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			sf.append(" and (");
@@ -209,49 +266,21 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sf.append(" aentry.obligation in (:assessmentObligations))");
 		}
-		sf.append(" and (aentry.identity.key in");
-		if(params.isAdmin()) {
-			if (params.isMemebersOnly() || !params.isNonMembers()) {
-				sf.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
-				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
-				  .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  )");
-			} else {
-				sf.append(" (select ae.identity.key from assessmententry ae")
-				  .append(" where ae.identity.key is not null") // exclude anonymous 
-				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
-				if(params.getSubIdent() != null) {
-					sf.append(" and ae.subIdent=:subIdent");
-				}
-				sf.append("  )");
-			}
-		} else if(params.isCoach()) {
-			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-	          .append("    where rel.entry.key=:repoEntryKey")
-	          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-	          .append("      and rel.group.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
-	          .append("  )");
-		}
-		sf.append(" ) group by v.key");
+		appendIdentityQuery(sf, params, queryParams, "aentry.identity.key");
+		sf.append(" group by v.key");
 
-		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
-			.createQuery(sf.toString(), Object[].class)
-			.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin()) {
-			stats.setParameter("identityKey", coach.getKey());
-		}
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sf.toString(), Object[].class);
+		appendQueryParams(query, queryParams, params, coach);
 		if(params.getReferenceEntry() != null) {
-			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
-		}
-		if(params.getSubIdent() != null) {
-			stats.setParameter("subIdent", params.getSubIdent());
+			query.setParameter("referenceKey", params.getReferenceEntry().getKey());
 		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
-			stats.setParameter("assessmentObligations", params.getAssessmentObligations());
+			query.setParameter("assessmentObligations", params.getAssessmentObligations());
 		}
 
 		AssessmentStatistics entry = new AssessmentStatistics();
-		List<Object[]> results = stats.getResultList();
+		List<Object[]> results = query.getResultList();
 		if(results != null && !results.isEmpty()) {
 			Object[] result = results.get(0);
 			Double averageScore = (Double)result[0];
@@ -278,6 +307,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	
 	@Override
 	public List<AssessmentScoreStatistic> getScoreStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		QueryParams queryParams = new QueryParams();
+		
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select new org.olat.course.assessment.model.AssessmentScoreStatistic(")
 		  .append(" round(aentry.score), ")
@@ -292,6 +323,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(params.getSubIdent() != null) {
 			sf.append(" and aentry.subIdent=:subIdent");
+			queryParams.addSubIdent();
 		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			sf.append(" and (");
@@ -300,48 +332,136 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sf.append(" aentry.obligation in (:assessmentObligations))");
 		}
-		sf.append(" and (aentry.identity.key in");
-		if(params.isAdmin()) {
-			if (params.isMemebersOnly() || !params.isNonMembers()) {
-				sf.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
-				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
-				  .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  )");
-			} else {
-				sf.append(" (select ae.identity.key from assessmententry ae")
-				  .append(" where ae.identity.key is not null") // exclude anonymous 
-				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
-				if(params.getSubIdent() != null) {
-					sf.append(" and ae.subIdent=:subIdent");
-				}
-				sf.append("  )");
-			}
-		} else if(params.isCoach()) {
-			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-	          .append("    where rel.entry.key=:repoEntryKey")
-	          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-	          .append("      and rel.group.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
-	          .append("  )");
-		}
-		sf.append(" ) group by round(aentry.score)");
+		appendIdentityQuery(sf, params, queryParams, "aentry.identity.key");
+		sf.append(" group by round(aentry.score)");
 
 		TypedQuery<AssessmentScoreStatistic> stats = dbInstance.getCurrentEntityManager()
 				.createQuery(sf.toString(), AssessmentScoreStatistic.class)
 				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin()) {
-			stats.setParameter("identityKey", coach.getKey());
-		}
+		appendQueryParams(stats, queryParams, params, coach);
 		if(params.getReferenceEntry() != null) {
 			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
-		}
-		if(params.getSubIdent() != null) {
-			stats.setParameter("subIdent", params.getSubIdent());
 		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			stats.setParameter("assessmentObligations", params.getAssessmentObligations());
 		}
 		
 		return stats.getResultList();
+	}
+
+	private void appendIdentityQuery(QueryBuilder sb, SearchAssessedIdentityParams params, QueryParams queryParams, String identKey) {
+		if (params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys()) {
+			if (params.isAdmin() && !(params.isParticipantAll() || params.isParticipantAllMembers())) {
+				sb.append(" and :repoEntryKey <> :repoEntryKey"); // return empty list
+				queryParams.addRepoEntryKey();
+			} else {
+				sb.append(" and (");
+				if (params.hasBusinessGroupKeys()) {
+					sb.append(identKey).append(" in (");
+					sb.append("select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant");
+					sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=bgi.baseGroup.key and rel.group.key=participant.group.key and bgi.key in (:businessGroupKeys) ");
+					sb.append("  and participant.role='").append(GroupRoles.participant.name()).append("'");
+					sb.append(")");
+					queryParams.addRepoEntryKey();
+					queryParams.addBusinessGroupKeys();
+				}
+				if(params.hasCurriculumElementKeys()) {
+					if(params.hasBusinessGroupKeys()) {
+						sb.append(" or ");
+					}
+					sb.append(identKey).append(" in (");
+					sb.append("select participant.identity.key from repoentrytogroup as rel, curriculumelement curEl, bgroupmember as participant");
+					sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=curEl.group.key and rel.group.key=participant.group.key and curEl.key in (:curriculumElementKeys) ");
+					sb.append("   and participant.role='").append(GroupRoles.participant.name()).append("'");
+					sb.append(")");
+					queryParams.addRepoEntryKey();
+					queryParams.addCurriculumElementKeys();
+				}
+				sb.append(")");
+			}
+		} if (params.isParticipantAll()) {
+			sb.append(" and ").append(identKey).append(" in (");
+			sb.append("select ae.identity.key from assessmententry ae");
+			sb.append(" where ae.identity.key is not null"); // exclude anonymous 
+			sb.append("   and ae.repositoryEntry.key = :repoEntryKey");
+			if (params.getSubIdent() != null) {
+				sb.append(" and ae.subIdent=:subIdent");
+				queryParams.addSubIdent();
+			}
+			sb.append(")");
+			queryParams.addRepoEntryKey();
+		} else {
+			sb.append(" and (");
+			boolean filtered = false;
+			if (params.isParticipantCoachedMembers()) {
+				sb.append(identKey).append(" in (");
+				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach");
+				sb.append(" where rel.entry.key=:repoEntryKey");
+				sb.append("   and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey");
+				sb.append("   and rel.group.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'");
+				sb.append(")");
+				queryParams.addRepoEntryKey();
+				queryParams.addCoachKey();
+				filtered = true;
+			}
+			if (params.isParticipantFakeParticipants()) {
+				if (filtered) sb.append(" or ");
+				sb.append(identKey).append(" in :fakeParticipantKeys");
+				queryParams.addFakeParticipantKeys();
+				filtered = true;
+			}
+			if (params.isParticipantNonMembers()) {
+				if (filtered) sb.append(" or ");
+				sb.append("(");
+				sb.append(identKey).append(" in (");
+				sb.append("select ae.identity.key");
+				sb.append("  from assessmententry ae");
+				sb.append(" where ae.repositoryEntry.key = :repoEntryKey");
+				sb.append(") and ");
+				sb.append(identKey).append(" not in (");
+				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+				sb.append("   and participant.role").in(GroupRoles.participant.name(), GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name()).append("");
+				sb.append(") and ");
+				sb.append(identKey).append(" not in :fakeParticipantKeys");
+				sb.append(")");
+				queryParams.addRepoEntryKey();
+				queryParams.addFakeParticipantKeys();
+				filtered = true;
+			}
+			if (params.isParticipantAllMembers()) {
+				if (filtered) sb.append(" or ");
+				sb.append(identKey).append(" in (");
+				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+				sb.append("   and participant.role='").append(GroupRoles.participant.name()).append("'");
+				sb.append(")");
+				queryParams.addRepoEntryKey();
+				filtered = true;
+			}
+			sb.append(")");
+		}
+	}
+
+	private void appendQueryParams(TypedQuery<?> query, QueryParams queryParams, SearchAssessedIdentityParams params, Identity coach) {
+		if(queryParams.isRepoEntryKey()) {
+			query.setParameter("repoEntryKey", params.getEntry().getKey());
+		}
+		if(queryParams.isCoachKey()) {
+			query.setParameter("identityKey", coach.getKey());
+		}
+		if (queryParams.isSubIdent()) {
+			query.setParameter("subIdent", params.getSubIdent());
+		}
+		if(queryParams.isBusinessGroupKeys()) {
+			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
+		}
+		if(queryParams.isCurriculumElementKeys()) {
+			query.setParameter("curriculumElementKeys", params.getCurriculumElementKeys());
+		}
+		if(queryParams.isFakeParticipantKeys()) {
+			query.setParameter("fakeParticipantKeys", params.getFakeParticipantIdentityKeys());
+		}
 	}
 
 	@Override
@@ -490,105 +610,32 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 	@Override
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params) {
-		if (params.isAdmin() && params.isNonMembers() && params.isNonMemebersOnly() && (params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys())) {
-			return new ArrayList<>(0);
-		}
-		
 		TypedQuery<Identity> list = createAssessedParticipants(coach, params, Identity.class);
 		return list.getResultList();
 	}
 	
 	private <T> TypedQuery<T> createAssessedParticipants(Identity coach, SearchAssessedIdentityParams params, Class<T> classResult) {
-		boolean needsSubIdent = false;
-		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ");
+		sb.append("select distinct ");
 		if(Identity.class.equals(classResult)) {
 			sb.append("ident").append(" from ").append(IdentityImpl.class.getName()).append(" as ident")
 			  .append(" inner join fetch ident.user user");
 		} else {
 			sb.append(" ident.key").append(" from ").append(IdentityImpl.class.getName()).append(" as ident");
 		}
-		sb.append(" where ident.status<").append(Identity.STATUS_DELETED).append(" and");
-		
-		if (params.isAdmin() && params.isNonMembers() && params.isNonMemebersOnly()) {
-			if (!params.hasBusinessGroupKeys() && !params.hasCurriculumElementKeys()) {
-				sb.append(" ident.key not in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
-				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
-				  .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  ) and ")
-				  .append(" ident.key in (select ae.identity.key from assessmententry ae")
-				  .append(" where ae.identity.key is not null") // exclude anonymous 
-				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
-				if(params.getSubIdent() != null) {
-					sb.append(" and ae.subIdent=:subIdent");
-					needsSubIdent = true;
-				}
-				sb.append("  )");
-			}
-		} else if((params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys())) {
-			sb.append("(");
-			if(params.hasBusinessGroupKeys()) {
-				sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
-				.append("    where rel.entry.key=:repoEntryKey and rel.group.key=bgi.baseGroup.key and rel.group.key=participant.group.key and bgi.key in (:businessGroupKeys) ")
-				  .append("    and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  )");
-			}
-			if(params.hasCurriculumElementKeys()) {
-				if(params.hasBusinessGroupKeys()) {
-					sb.append(" or ");
-				}
-				sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, curriculumelement curEl, bgroupmember as participant")
-				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=curEl.group.key and rel.group.key=participant.group.key and curEl.key in (:curriculumElementKeys) ")
-				  .append("    and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  )");
-			}
-			sb.append(")");
-		} else if(params.isAdmin()) {
-			if (params.isMemebersOnly() || !params.isNonMembers()) {
-				sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
-				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
-				  .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  )");
-			} else {
-				sb.append(" ident.key in (select ae.identity.key from assessmententry ae")
-				  .append(" where ae.identity.key is not null") // exclude anonymous 
-				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
-				if(params.getSubIdent() != null) {
-					sb.append(" and ae.subIdent=:subIdent");
-					needsSubIdent = true;
-				}
-				sb.append("  )");
-			}
-		} else if(params.isCoach()) {
-			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-	          .append("    where rel.entry.key=:repoEntryKey")
-	          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-	          .append("      and rel.group.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
-	          .append("  )");
-		}
+		sb.append(" where ident.status<").append(Identity.STATUS_DELETED);
+		QueryParams queryParams = new QueryParams();
+		appendIdentityQuery(sb, params, queryParams, "ident.key");
 		
 		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
 		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(), identityKey == null);
 
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), classResult)
-				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(params.isCoach() && !params.isAdmin() && !params.hasBusinessGroupKeys() && !params.hasCurriculumElementKeys()) {
-			query.setParameter("identityKey", coach.getKey());
-		}
+				.createQuery(sb.toString(), classResult);
 		if(identityKey != null) {
 			query.setParameter("searchIdentityKey", identityKey);
 		}
-		if(needsSubIdent) {
-			query.setParameter("subIdent", params.getSubIdent());
-		}
-		if(params.hasBusinessGroupKeys() && !params.isNonMemebersOnly()) {
-			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
-		}
-		if(params.hasCurriculumElementKeys() && !params.isNonMemebersOnly()) {
-			query.setParameter("curriculumElementKeys", params.getCurriculumElementKeys());
-		}
+		appendQueryParams(query, queryParams, params, coach);
 		appendUserSearchToQuery(searchArr, query);
 		return query;
 	}
@@ -663,12 +710,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append("select aentry from assessmententry aentry")
 		  .append(" inner join fetch aentry.identity as assessedIdentity")
 		  .append(" inner join fetch assessedIdentity.user as assessedUser");
-		applySearchAssessedIdentityParams(sb, params, status);
+		QueryParams queryParams = new QueryParams();
+		applySearchAssessedIdentityParams(sb, params, status, queryParams);
 		
 		TypedQuery<AssessmentEntry> list = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), AssessmentEntry.class);
 		
-		applySearchAssessedIdentityParams(list, coach, params, status);
+		appendQueryParams(list, queryParams, params, coach);
+		applySearchAssessedIdentityParams(list, params, status);
 		
 		return list.getResultList();
 	}
@@ -682,26 +731,22 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" inner join fetch assignment.grader as grader")
 		  .append(" inner join fetch grader.identity as graderIdent")
 		  .append(" inner join fetch graderIdent.user as graderUser");
-		applySearchAssessedIdentityParams(sb, params, status);
+		QueryParams queryParams = new QueryParams();
+		applySearchAssessedIdentityParams(sb, params, status, queryParams);
 		
 		TypedQuery<GradingAssignment> list = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), GradingAssignment.class);
 
-		applySearchAssessedIdentityParams(list, coach, params, status);
+		appendQueryParams(list, queryParams, params, coach);
+		applySearchAssessedIdentityParams(list, params, status);
 		
 		return list.getResultList();
 	}
 	
-	private void applySearchAssessedIdentityParams(TypedQuery<?> list, Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
+	private void applySearchAssessedIdentityParams(TypedQuery<?> list, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
 		list.setParameter("repoEntryKey", params.getEntry().getKey());
 		if(params.getReferenceEntry() != null) {
 			list.setParameter("referenceKey", params.getReferenceEntry().getKey());
-		}
-		if(params.getSubIdent() != null) {
-			list.setParameter("subIdent", params.getSubIdent());
-		}
-		if(!params.isAdmin()) {
-			list.setParameter("identityKey", coach.getKey());
 		}
 		if(status != null) {
 			list.setParameter("assessmentStatus", status.name());
@@ -720,13 +765,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 	}
 	
-	private void applySearchAssessedIdentityParams(QueryBuilder sb, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
+	private void applySearchAssessedIdentityParams(QueryBuilder sb, SearchAssessedIdentityParams params, AssessmentEntryStatus status, QueryParams queryParams) {
 		sb.append(" where aentry.repositoryEntry.key=:repoEntryKey");
 		if(params.getReferenceEntry() != null) {
 			sb.append(" and aentry.referenceEntry.key=:referenceKey");
 		}
 		if(params.getSubIdent() != null) {
 			sb.append(" and aentry.subIdent=:subIdent");
+			queryParams.addSubIdent();
 		}
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
@@ -751,30 +797,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sb.append(" aentry.obligation in (:assessmentObligations))");
 		}
-		sb.append(" and (aentry.identity.key in");
-		if(params.isAdmin()) {
-			if (params.isMemebersOnly() || !params.isNonMembers()) {
-				sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
-				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
-				  .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-				  .append("  )");
-			} else {
-				sb.append(" (select ae.identity.key from assessmententry ae")
-				  .append(" where ae.identity.key is not null") // exclude anonymous 
-				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
-				if(params.getSubIdent() != null) {
-					sb.append(" and ae.subIdent=:subIdent");
-				}
-				sb.append("  )");
-			}
-		} else if(params.isCoach()) {
-			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-	          .append("    where rel.entry.key=:repoEntryKey")
-	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
-	          .append("  )");
-		}
-		sb.append(" )");
+		appendIdentityQuery(sb, params, queryParams, "aentry.identity.key");
 		
 		if(params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
 			for(Map.Entry<String, String> entry:params.getUserProperties().entrySet()) {
@@ -1048,6 +1071,135 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			return repoEntryKeyToCoachGradeApplicable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
 		}
 		return false;
+	}
+	
+	@Override
+	public Set<IdentityRef> getFakeParticipants(RepositoryEntry entry, Identity identity, boolean admin, boolean coach) {
+		if (admin) {
+			return getFakeParticipantsAsOwner(entry);
+		} else if (coach) {
+			return getFakeParticipantAsCoach(entry, identity);
+		}
+		return Collections.emptySet();
+	}
+
+	private Set<IdentityRef> getFakeParticipantsAsOwner(RepositoryEntry entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select aentry.identity.key");
+		sb.append("  from assessmententry aentry");
+		sb.and().append("aentry.repositoryEntry.key = :repoEntryKey");
+		sb.and().append("aentry.identity.key not in (");
+		sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+		sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+		sb.append("   and participant.role='").append(GroupRoles.participant.name()).append("'");
+		sb.append(")");
+		sb.and().append("aentry.identity.key in (");
+		sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+		sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+		sb.append("   and participant.role").in(GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name()).append("");
+		sb.append(")");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList()
+				.stream()
+				.map(IdentityRefImpl::new)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Coach can see (only) himself if he is not a participant but if he has an assessment entry anyway.
+	 */
+	private Set<IdentityRef> getFakeParticipantAsCoach(RepositoryEntry entry, Identity identity) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select aentry.key");
+		sb.append("  from assessmententry aentry");
+		sb.and().append("aentry.repositoryEntry.key = :repoEntryKey");
+		sb.and().append("aentry.identity.key = :identityKey");
+		
+		boolean hasAssessmentEntry = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList()
+				.isEmpty();
+		if (hasAssessmentEntry) {
+			return Collections.emptySet();
+		}
+		
+		sb = new QueryBuilder();	
+		sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+		sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+		sb.append("   and participant.role").in(GroupRoles.participant.name()).append("");
+		sb.append("   and participant.identity.key = :identityKey");
+		
+		boolean isNotParticipant = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList()
+				.isEmpty();
+		return isNotParticipant? Set.of(new IdentityRefImpl(identity.getKey())): Collections.emptySet();
+	}
+
+	public class QueryParams {
+		
+		private boolean repoEntryKey;
+		private boolean coachKey;
+		private boolean subIdent;
+		private boolean businessGroupKeys;
+		private boolean curriculumElementKeys;
+		private boolean fakeParticipantKeys;
+		
+		public boolean isRepoEntryKey() {
+			return repoEntryKey;
+		}
+		
+		public void addRepoEntryKey() {
+			this.repoEntryKey = true;
+		}
+
+		public boolean isCoachKey() {
+			return coachKey;
+		}
+
+		public void addCoachKey() {
+			this.coachKey = true;
+		}
+
+		public boolean isSubIdent() {
+			return subIdent;
+		}
+		
+		public void addSubIdent() {
+			this.subIdent = true;
+		}
+		
+		public boolean isBusinessGroupKeys() {
+			return businessGroupKeys;
+		}
+
+		public void addBusinessGroupKeys() {
+			this.businessGroupKeys = true;
+		}
+
+		public boolean isCurriculumElementKeys() {
+			return curriculumElementKeys;
+		}
+		
+		public void addCurriculumElementKeys() {
+			this.curriculumElementKeys = true;
+		}
+
+		public boolean isFakeParticipantKeys() {
+			return fakeParticipantKeys;
+		}
+
+		public void addFakeParticipantKeys() {
+			this.fakeParticipantKeys = true;
+		}
+
 	}
 	
 }

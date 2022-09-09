@@ -32,20 +32,32 @@ public class UserFilterEvent extends Event {
 	private static final long serialVersionUID = -8695229967742591048L;
 	private static final String CMD = "filter-user";
 	
-	private final boolean withAnonymousUser;
+	private final boolean withMembers;
 	private final boolean withNonParticipantUsers;
+	private final boolean withFakeParticipants;
+	private final boolean withAnonymousUser;
 	
-	public UserFilterEvent(boolean withNonParticipantUsers, boolean withAnonymousUser) {
+	public UserFilterEvent(boolean withMembers, boolean withNonParticipantUsers, boolean withFakeParticipants, boolean withAnonymousUser) {
 		super(CMD);
+		this.withMembers = withMembers;
 		this.withNonParticipantUsers = withNonParticipantUsers;
+		this.withFakeParticipants = withFakeParticipants;
 		this.withAnonymousUser = withAnonymousUser;
 	}
 
-	public boolean isWithAnonymousUser() {
-		return withAnonymousUser;
+	public boolean isWithMembers() {
+		return withMembers;
 	}
 
 	public boolean isWithNonParticipantUsers() {
 		return withNonParticipantUsers;
+	}
+
+	public boolean isWithFakeParticipants() {
+		return withFakeParticipants;
+	}
+
+	public boolean isWithAnonymousUser() {
+		return withAnonymousUser;
 	}
 }

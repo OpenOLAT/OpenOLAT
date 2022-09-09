@@ -27,35 +27,45 @@ package org.olat.modules.assessment.model;
  */
 public class AssessmentMembersStatistics {
 	
-	private final int numOfParticipants;
-	private final int numOfOtherUsers;
-	private final int numOfOthersLoggedIn;
-	private final int numOfParticipantsLoggedIn; 
+	private final int numOfMembers;
+	private final int numOfMembersLoggedIn;
+	private final int numOfNonMembers;
+	private final int numOfNonMembersLoggedIn;
+	private final int numOfFakeParticipants;
+	private final int numOfFakeParticipantsLoggedIn;
 	
-	public AssessmentMembersStatistics(int numOfParticipants, int numOfParticipantsLoggedIn, int numOfOtherUsers, int numOfOthersLoggedIn) {
-		this.numOfParticipants = numOfParticipants;
-		this.numOfParticipantsLoggedIn = numOfParticipantsLoggedIn;
-		this.numOfOtherUsers = numOfOtherUsers;
-		this.numOfOthersLoggedIn = numOfOthersLoggedIn;
+	public AssessmentMembersStatistics(int numOfMembers, int numOfMembersLoggedIn, int numOfNonMembers,
+			int numOfNonMembersLoggedIn, int numOfFakeParticipants, int numOfFakeParticipantsLoggedIn) {
+		this.numOfMembers = numOfMembers;
+		this.numOfMembersLoggedIn = numOfMembersLoggedIn;
+		this.numOfNonMembers = numOfNonMembers;
+		this.numOfNonMembersLoggedIn = numOfNonMembersLoggedIn;
+		this.numOfFakeParticipants = numOfFakeParticipants;
+		this.numOfFakeParticipantsLoggedIn = numOfFakeParticipantsLoggedIn;
 	}
 
-	public int getNumOfParticipants() {
-		return numOfParticipants;
+	public int getNumOfMembers() {
+		return numOfMembers;
 	}
 
-	public int getNumOfOtherUsers() {
-		return numOfOtherUsers;
+	public int getNumOfMembersLoggedIn() {
+		return numOfMembersLoggedIn;
+	}
+
+	public int getNumOfNonMembers() {
+		return numOfNonMembers;
 	}
 	
-	public int getOthersLoggedIn() {
-		return numOfOthersLoggedIn;
+	public int getNumOfNonMembersLoggedIn() {
+		return numOfNonMembersLoggedIn;
 	}
 
-	public int getNumOfParticipantsLoggedIn() {
-		return numOfParticipantsLoggedIn;
+	public int getNumOfFakeParticipants() {
+		return numOfFakeParticipants;
 	}
 
-	public int getTotal() {
-		return numOfOtherUsers + numOfParticipants;
+	public int getNumOfFakeParticipantsLoggedIn() {
+		return numOfFakeParticipantsLoggedIn;
 	}
+	
 }

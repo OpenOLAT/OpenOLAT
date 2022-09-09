@@ -107,7 +107,8 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		
 		searchParams = new QTI21StatisticSearchParams(testEntry, courseEntry, courseNode.getIdent());
 		searchParams.setViewAnonymUsers(false);//In assessment tool, no user allowed
-		searchParams.setViewAllUsers(false);
+		searchParams.setViewMembers(false);
+		searchParams.setViewNonMembers(false);
 		
 		if(asOptions.getGroup() != null) {// filter by business group
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
@@ -117,6 +118,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		} else if(asOptions.getIdentities() != null && !asOptions.getIdentities().isEmpty()) {
 			searchParams.setLimitToIdentities(asOptions.getIdentities());
 		} else {
+			searchParams.setViewMembers(true);
 			searchParams.setViewNonMembers(asOptions.isNonMembers());
 		}
 		

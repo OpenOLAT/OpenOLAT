@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.event.BusinessGroupEvent;
 import org.olat.course.assessment.ui.tool.event.CurriculumElementEvent;
 import org.olat.course.assessment.ui.tool.event.SelectionEvents;
@@ -63,6 +64,8 @@ public class AssessmentEventToState {
 				return true;
 			} else if (event == SelectionEvents.NON_MEMBERS_EVENT) {
 				return true;
+			} else if (event == SelectionEvents.FAKE_PARTICIPANTS_EVENT) {
+				return true;
 			} else if (event instanceof BusinessGroupEvent) {
 				return true;
 			} else if (event instanceof CurriculumElementEvent) {
@@ -90,9 +93,11 @@ public class AssessmentEventToState {
 							AssessmentEntryStatus.inProgress.name(), AssessmentEntryStatus.inReview.name()),
 					null, null, null, null, null, null, false);
 		} else if (event == SelectionEvents.MEMBERS_EVENT) {
-			return new AssessedIdentityListState(null, null, null, "membersOnly", null, null, null, false);
+			return new AssessedIdentityListState(null, null, null, Collections.singletonList(Particpant.member.name()), null, null, null, false);
 		} else if (event == SelectionEvents.NON_MEMBERS_EVENT) {
-			return new AssessedIdentityListState(null, null, null, "nonMembersOnly", null, null, null, false);
+			return new AssessedIdentityListState(null, null, null, Collections.singletonList(Particpant.nonMember.name()), null, null, null, false);
+		} else if (event == SelectionEvents.FAKE_PARTICIPANTS_EVENT) {
+			return new AssessedIdentityListState(null, null, null, Collections.singletonList(Particpant.fakeParticipant.name()), null, null, null, false);
 		} else if (event instanceof BusinessGroupEvent) {
 			BusinessGroupEvent bge = (BusinessGroupEvent)event;
 			List<String> groupKeys = bge.getKeys().stream().map(key -> "businessgroup-" + key).collect(Collectors.toList());

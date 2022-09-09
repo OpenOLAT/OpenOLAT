@@ -140,7 +140,8 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		
 		RepositoryEntryStatusEnum entryStatus = entry.getEntryStatus();
 		statusDropdown.setI18nKey("details.label.status");
-		statusDropdown.setElementCssClass("o_repo_tools_status o_with_labeled");
+		statusDropdown.setElementCssClass("o_repo_tools_status");
+		statusDropdown.setLabeled(true, true);
 		statusDropdown.setIconCSS("o_icon o_icon_repo_status_".concat(entryStatus.name()));
 		statusDropdown.setInnerText(translate(entryStatus.i18nKey()));
 		statusDropdown.setInnerCSS("o_labeled o_repo_status_".concat(entryStatus.name()));

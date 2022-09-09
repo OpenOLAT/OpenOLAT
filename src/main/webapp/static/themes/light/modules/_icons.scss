@@ -159,6 +159,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_external_link:before { content: $fa-var-external-link }
 .o_icon_extra_time:before { content: $fa-var-clock-o;}
 .o_icon_failed:before { content: $fa-var-times-circle;}
+.o_icon_fake_participant:before { content: $fa-var-street-view ;}
 .o_icon_files:before { content: $fa-var-files-o;}
 .o_icon_fileupload:before { content: $fa-var-file-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
@@ -259,7 +260,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_options:before { content: $fa-var-toggle-on; }
 .o_icon_origin:before { content: $fa-var-globe; }
 .o_icon_others:before { content: $fa-var-star; }
-.o_icon_owner:before {content: $fa-var-star; }
+.o_icon_owner:before {content: $fa-var-key; }
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_paragraph:before { content: $fa-var-paragraph; }
 .o_icon_passed:before { content: $fa-var-check-circle;}

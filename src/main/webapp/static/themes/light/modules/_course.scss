@@ -613,8 +613,25 @@
 	}
 }
 #o_assessment_tool_main {
-	.o_chelp_wrapper {
-		margin-bottom: 0;
+	.o_assessment_tool_header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		h2 {
+			margin-right: auto;
+		}
+		.o_assessment_tool_user {
+			align-self: start;
+			@media (max-width: $screen-xs-max) {
+				margin-bottom: 10px;
+				text-align: right;
+				width: 100%;
+				order: 4;
+			}
+		}
+		.o_chelp_wrapper {
+			margin-bottom: 0;
+		}
 	}
 }
 

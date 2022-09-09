@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.miniRandom;
 import static org.olat.test.JunitTestHelper.random;
@@ -27,6 +28,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
@@ -48,6 +51,7 @@ import org.olat.course.assessment.model.AssessedCurriculumElement;
 import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.manager.CourseElementDAO;
 import org.olat.course.nodes.CourseNode;
@@ -189,38 +193,71 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae7.setPassed(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(ae7);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
+		// Coach has done the assessment as a fake participant
+		AssessmentEntry aeCoach = assessmentEntryDao.createAssessmentEntry(coach, null, entry, subIdent, null, refEntry);
+		aeCoach.setScore(BigDecimal.valueOf(10.0));
+		aeCoach.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(aeCoach);
 		dbInstance.commitAndCloseSession();
 		
 		// coach of group 1 with id 1 and id2
 		List<BusinessGroup> coachedGroups = Collections.singletonList(group1);
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false, true, false, coachedGroups);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false,
+				true, false, coachedGroups, singleton(coach));
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
+		params.setParticipants(Collections.singleton(Particpant.member));
 
-		// statistics
+		// Test with the coached members
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(coach, params);
 		Assert.assertEquals(4.0d, statistics.getAverageScore().doubleValue(), 0.0001);
 		Assert.assertEquals(1, statistics.getCountFailed());
 		Assert.assertEquals(2, statistics.getCountPassed());
-
-		//check assessed identities list
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(coach, params);
-		Assert.assertNotNull(assessedIdentities);
-		Assert.assertEquals(4, assessedIdentities.size());
 		
-		//check only the queries
 		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
-		Assert.assertNotNull(participantStatistics);
+		Assert.assertEquals(4, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+
+		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(coach, params);
+			assertThat(assessedIdentities).containsExactlyInAnyOrder(
+					assessedIdentity1,
+					assessedIdentity2,
+					assessedIdentity5,
+					assessedIdentity6
+				);
 
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, AssessmentEntryStatus.notStarted);
-		Assert.assertNotNull(assessmentEntries);
 		Assert.assertEquals(0, assessmentEntries.size());
+		
+		// Not, let's get infos for fake participants as well
+		params.setParticipants(null);
+		
+		statistics = assessmentToolManager.getStatistics(coach, params);
+		Assert.assertEquals(5.5d, statistics.getAverageScore().doubleValue(), 0.0001);
+		Assert.assertEquals(1, statistics.getCountFailed());
+		Assert.assertEquals(3, statistics.getCountPassed());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(4, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(1, participantStatistics.getNumOfFakeParticipants());
+		
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(coach, params);
+		assertThat(assessedIdentities).containsExactlyInAnyOrder(
+					assessedIdentity1,
+					assessedIdentity2,
+					assessedIdentity5,
+					assessedIdentity6,
+					coach
+				);
+		
 		
 		// separate check with more options in the search parameters
 		// add by group key 
 		params.setBusinessGroupKeys(Collections.singletonList(group1.getKey()));
 		params.setCurriculumElementKeys(Collections.singletonList(curriculumElement1.getKey()));
-
+		
 		//check assessed identities list
 		List<Identity> assessedIdentitiesAlt = assessmentToolManager.getAssessedIdentities(coach, params);
 		Assert.assertNotNull(assessedIdentitiesAlt);
@@ -266,6 +303,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		
 		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, entry);
@@ -273,9 +312,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, entry);
 		
-		businessGroupRelationDao.addRole(assessedIdentity1, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity2, group1, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(assessedIdentity3, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity3, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity3, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(coach, group1, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
@@ -316,19 +354,23 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.createAssessmentEntry(assessedIdentity8, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(assessedIdentity9, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
+		// Fake participants
+		AssessmentEntry aeAdmin = assessmentEntryDao.createAssessmentEntry(admin, null, entry, subIdent, null, refEntry);
+		aeAdmin.setScore(BigDecimal.valueOf(10.0));
+		aeAdmin.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(aeAdmin);
+		AssessmentEntry aeCoach = assessmentEntryDao.createAssessmentEntry(coach, null, entry, subIdent, null, refEntry);
+		aeCoach.setScore(BigDecimal.valueOf(10.0));
+		aeCoach.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(aeCoach);
 		dbInstance.commitAndCloseSession();
 		
 		// administrator with full access
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Set.of(admin, coach));
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
-
-		//check assessed identities list
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
-		Assert.assertNotNull(assessedIdentities);
-		Assert.assertEquals(9, assessedIdentities.size());
+		params.setParticipants(Set.of(Particpant.member, Particpant.nonMember));
 		
-		// statistics
-		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
+		AssessmentStatistics statistics = assessmentToolManager.getStatistics(coach, params);
 		Assert.assertEquals(5.28571d, statistics.getAverageScore().doubleValue(), 0.0001);
 		Assert.assertEquals(9d, statistics.getMaxScore().doubleValue(), 0.0001);
 		Assert.assertEquals(9, statistics.getCountTotal());
@@ -339,9 +381,95 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(8, statistics.getCountNotDone());
 		Assert.assertEquals(7, statistics.getCountScore());
 		
-		//check only the queries as the statistics need the course infos
-		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(admin, params, true);
-		Assert.assertNotNull(participantStatistics);
+		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(3, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(6, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+
+		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(coach, params);
+			assertThat(assessedIdentities).containsExactlyInAnyOrder(
+					assessedIdentity1,
+					assessedIdentity2,
+					assessedIdentity3,
+					assessedIdentity4,
+					assessedExtIdentity5,
+					assessedExtIdentity6,
+					assessedExtIdentity7,
+					assessedIdentity8,
+					assessedIdentity9
+				);
+		
+		// Check the participant filter: No Filter
+		params.setParticipants(null);
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(11, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(3, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(6, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(2, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: Members
+		params.setParticipants(Set.of(Particpant.member));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(3, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(3, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: Not member
+		params.setParticipants(Set.of(Particpant.nonMember));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(6, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(0, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(6, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: Member or not member
+		params.setParticipants(Set.of(Particpant.member, Particpant.nonMember));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(9, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(3, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(6, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: fake participants
+		params.setParticipants(Set.of(Particpant.fakeParticipant));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(2, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(0, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(2, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: Not member and group member
+		params.setParticipants(Set.of(Particpant.nonMember));
+		params.setBusinessGroupKeys(List.of(group1.getKey()));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(0, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(0, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: (Member of not member) and group member
+		params.setParticipants(Set.of(Particpant.member, Particpant.nonMember));
+		params.setBusinessGroupKeys(List.of(group1.getKey()));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(2, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(2, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 	}
 	
 	@Test
@@ -360,6 +488,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11");
 		Identity assessedExtIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-12");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9");
+		Identity coachWithAE = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9-ae");
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -369,6 +498,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		businessGroupRelationDao.addRelationToResource(group1, entry);
 		
 		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(coachWithAE, entry, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity4, entry, GroupRoles.participant.name());
 		
@@ -387,6 +517,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity6, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity7, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
+		assessmentEntryDao.createAssessmentEntry(coachWithAE, null, entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// the course infos need to calculate the number of participants
@@ -398,18 +529,19 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity6);
 		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity7);
 		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity8);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), coachWithAE);
 		dbInstance.commitAndCloseSession();
 		
 		// statistics as admin
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Collections.emptySet());
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 
 		AssessmentMembersStatistics statisticsAsAdmin = assessmentToolManager.getNumberOfParticipants(admin, params, true);
 		Assert.assertNotNull(statisticsAsAdmin);
-		Assert.assertEquals(3, statisticsAsAdmin.getNumOfOtherUsers());
-		Assert.assertEquals(4, statisticsAsAdmin.getNumOfParticipants());
-		Assert.assertEquals(3, statisticsAsAdmin.getOthersLoggedIn());
-		Assert.assertEquals(4, statisticsAsAdmin.getNumOfParticipantsLoggedIn());
+		Assert.assertEquals(3, statisticsAsAdmin.getNumOfNonMembers());
+		Assert.assertEquals(4, statisticsAsAdmin.getNumOfMembers());
+		Assert.assertEquals(3, statisticsAsAdmin.getNumOfNonMembersLoggedIn());
+		Assert.assertEquals(4, statisticsAsAdmin.getNumOfMembersLoggedIn());
 	}
 	
 	@Test
@@ -451,7 +583,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		params.setAssessmentObligations(List.of(AssessmentObligation.mandatory, AssessmentObligation.optional));
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
@@ -490,7 +622,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		List<AssessmentScoreStatistic> scoreStatistics = assessmentToolManager.getScoreStatistics(admin, params);
 		assertThat(scoreStatistics).hasSize(2);
@@ -527,7 +659,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
@@ -570,7 +702,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		params.setScoreNull(Boolean.FALSE);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
@@ -610,7 +742,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		params.setGradeNull(Boolean.FALSE);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
@@ -651,7 +783,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3, ae4);
@@ -1124,6 +1256,74 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assertThat(coachingEntries).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
 				.as("owner can aply grade")
 				.contains(ae1.getKey(), ae2.getKey());
+	}
+	
+	@Test
+	public void getFakeParticipants() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity formerParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coachWithoutAE = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coachAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity ownerInOtherRE = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity ownerAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity masterCoachAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(coachWithoutAE, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(coachAndParticipant, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coachAndParticipant, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(owner, entry, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(ownerInOtherRE, entryOther, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(ownerAndParticipant, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(ownerAndParticipant, entry, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(masterCoach, entry, CurriculumRoles.mastercoach.name());
+		repositoryEntryRelationDao.addRole(masterCoachAndParticipant, entry, CurriculumRoles.participant.name());
+		repositoryEntryRelationDao.addRole(masterCoachAndParticipant, entry, CurriculumRoles.mastercoach.name());
+		
+		assessmentEntryDao.createAssessmentEntry(participant, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(formerParticipant, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(coach, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(coachAndParticipant, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(owner, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(ownerInOtherRE, null, entryOther, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(ownerAndParticipant, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(masterCoach, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(masterCoachAndParticipant, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		// Admin
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(entry, admin, true, true);
+		assertThat(fakeParticipants).extracting(IdentityRef::getKey)
+				.containsExactlyInAnyOrder(
+						coach.getKey(),
+						owner.getKey(),
+						masterCoach.getKey())
+				.doesNotContain(
+						participant.getKey(),
+						coachWithoutAE.getKey(),
+						coachAndParticipant.getKey(),
+						ownerInOtherRE.getKey(),
+						ownerAndParticipant.getKey(),
+						masterCoachAndParticipant.getKey()
+						);
+		
+		// Coach with assessment entry
+		fakeParticipants = assessmentToolManager.getFakeParticipants(entry, coach, false, true);
+		assertThat(fakeParticipants).extracting(IdentityRef::getKey)
+				.containsExactlyInAnyOrder(coach.getKey());
+		
+		// Coach without assessment entry
+		fakeParticipants = assessmentToolManager.getFakeParticipants(entry, coachWithoutAE, false, true);
+		assertThat(fakeParticipants).isEmpty();
 	}
 
 	private AssessmentEntry createAssessmentEntry(Identity identity, RepositoryEntry entry, String subIdent,

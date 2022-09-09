@@ -1,5 +1,13 @@
 <div id="o_assessment_tool_main">
-<h2><i class="o_icon o_icon_assessment_tool"> </i>  $r.translate("assessment.tool.overview") $r.contextHelpWithWrapper("manual_user/course_operation/Assessment_tool_-_overview/")</h2>
+<div class="o_assessment_tool_header">
+	<h2><i class="o_icon o_icon_assessment_tool"> </i>  $r.translate("assessment.tool.overview")</h2>
+	#if($r.available("user.filter"))
+		<div class="o_assessment_tool_user">
+			$r.render("user.filter")
+		</div>
+	#end
+	<div>$r.contextHelpWithWrapper("manual_user/course_operation/Assessment_tool_-_overview/")</div>
+</div>
 #if(!$hasAssessableNodes)
 	<p class="o_warning">$r.translate("index.noAssessableNodes")</p>
 #end

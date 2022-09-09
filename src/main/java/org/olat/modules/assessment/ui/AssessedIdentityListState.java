@@ -54,7 +54,7 @@ public class AssessedIdentityListState implements StateEntry {
 	private List<String> status;
 	private List<String> passed;
 	private String userVisibility;
-	private String members;
+	private List<String> members;
 	private List<String> obligations;
 	private List<String> groupKeys;
 	
@@ -62,7 +62,7 @@ public class AssessedIdentityListState implements StateEntry {
 		//
 	}
 	
-	public AssessedIdentityListState(List<String> status, List<String> passed, String userVisibility, String members,
+	public AssessedIdentityListState(List<String> status, List<String> passed, String userVisibility, List<String> members,
 			List<String> obligations, List<String> groupKeys, String tabId, boolean filtersExpanded) {
 		this.tabId = tabId;
 		this.status = status;
@@ -98,8 +98,8 @@ public class AssessedIdentityListState implements StateEntry {
 					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
 				}
 			} else if(FILTER_MEMBERS.equals(filter.getFilter())) {
-				if(filter instanceof FlexiTableSingleSelectionFilter) {
-					state.setMembers(((FlexiTableSingleSelectionFilter)filter).getValue());
+				if(filter instanceof FlexiTableMultiSelectionFilter) {
+					state.setMembers(((FlexiTableMultiSelectionFilter)filter).getValues());
 				} else {
 					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
 				}
@@ -136,8 +136,8 @@ public class AssessedIdentityListState implements StateEntry {
 				((FlexiTableSingleSelectionFilter)filter).setValue(getUserVisibility());
 			} else if(FILTER_MEMBERS.equals(filter.getFilter())
 					&& getMembers() != null
-					&& filter instanceof FlexiTableSingleSelectionFilter) {
-				((FlexiTableSingleSelectionFilter)filter).setValue(getMembers());
+					&& filter instanceof FlexiTableMultiSelectionFilter) {
+				((FlexiTableMultiSelectionFilter)filter).setValues(getMembers());
 			} else if(FILTER_OBLIGATION.equals(filter.getFilter())
 					&& getObligations() != null
 					&& filter instanceof FlexiTableMultiSelectionFilter) {
@@ -190,11 +190,11 @@ public class AssessedIdentityListState implements StateEntry {
 		this.obligations = obligations;
 	}
 
-	public String getMembers() {
+	public List<String> getMembers() {
 		return members;
 	}
 
-	public void setMembers(String members) {
+	public void setMembers(List<String> members) {
 		this.members = members;
 	}
 

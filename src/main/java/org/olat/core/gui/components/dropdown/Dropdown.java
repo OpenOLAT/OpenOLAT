@@ -59,6 +59,8 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private String carretIconCSS;
 	private String innerText;
 	private String innerCSS;
+	private boolean labeledToggle = false;
+	private boolean labeledMenu = false;
 	private List<Component> components = new ArrayList<>();
 	
 	public Dropdown(String name, String i18nKey, boolean domReplacementWrapperRequired, Translator translator) {
@@ -147,32 +149,33 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	public void setCarretIconCSS(String carretIconCSS) {
 		this.carretIconCSS = carretIconCSS;
 	}
+	
+	public void setLabeled(boolean labeledToggle, boolean labeledMenu) {
+		this.labeledToggle = labeledToggle;
+		this.labeledMenu = labeledMenu;
+	}
+
+	public boolean isLabeledToggle() {
+		return labeledToggle;
+	}
+
+	public boolean isLabeledMenu() {
+		return labeledMenu;
+	}
 
 	public void addComponent(Component component) {
 		if(component != null) {
 			components.add(component);
 		}
 	}
-
-	public void addComponent(Link component) {
-		if(component != null) {
-			components.add(component);
-		}
-	}
 	
-	public void addComponent(int index, Link component) {
+	public void addComponent(int index, Component component) {
 		if(component != null) {
 			if(index >= 0 && index < components.size()) {
 				components.add(index, component);
 			} else {
 				components.add(component);
 			}
-		}
-	}
-	
-	public void addComponent(Spacer spacer) {
-		if(spacer != null) {
-			components.add(spacer);
 		}
 	}
 	

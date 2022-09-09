@@ -60,6 +60,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
+		if(dropdown.isLabeledToggle()) {
+			sb.append(" o_with_labeled");
+		}
 		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
 		sb.append("' id='").append(btnDomID);
 		sb.append("' data-toggle='dropdown'>");		
@@ -117,6 +120,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		sb.append("<ul class='dropdown-menu");
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
+		}
+		if(dropdown.isLabeledMenu()) {
+			sb.append(" o_with_labeled");
 		}
 		if(dropdown.getOrientation() == DropdownOrientation.right) {
 			sb.append(" dropdown-menu-right");

@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -194,15 +195,31 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		searchParams.setViewAnonymUsers(view);
 	}
 	
+	public boolean isViewParticipantUsers() {
+		return searchParams.isViewMembers();
+	}
+	
+	public void setViewPaticipantUsers(boolean view) {
+		if(view != searchParams.isViewMembers()) {
+			statisticAssessment = null;
+		}
+		searchParams.setViewMembers(view);
+	}
+	
 	public boolean isViewNonParticipantUsers() {
-		return searchParams.isViewAllUsers();
+		return searchParams.isViewNonMembers();
 	}
 	
 	public void setViewNonPaticipantUsers(boolean view) {
-		if(view != searchParams.isViewAllUsers()) {
+		if(view != searchParams.isViewNonMembers()) {
 			statisticAssessment = null;
 		}
-		searchParams.setViewAllUsers(view);
+		searchParams.setViewNonMembers(view);
+	}
+
+	public void setLimitToIdentities(List<Identity> limitToIdentities) {
+		statisticAssessment = null;
+		searchParams.setLimitToIdentities(limitToIdentities);
 	}
 	
 	public boolean isWithFilter() {

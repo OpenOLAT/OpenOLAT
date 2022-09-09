@@ -1,4 +1,9 @@
 <div class="o_block_top">
+	#if($r.available("user.filter"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("user.filter")
+		</div>
+	#end
 	$r.render("stats")
 </div>
 #if($r.available("details"))

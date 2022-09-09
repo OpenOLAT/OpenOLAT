@@ -23,11 +23,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.core.CoreSpringFactory;
@@ -95,6 +97,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallbackFactory;
@@ -180,6 +183,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
+import org.olat.repository.ui.FakeParticipantStopController;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
@@ -252,6 +256,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private ZoomRunController zoomCtrl;
 	private AssessmentModeListController assessmentModeCtrl;
 	private StopAssessmentWarningController stopAssessmentCtrl;
+	private FakeParticipantStopController fakeParticipantStopCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
@@ -276,6 +281,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
@@ -346,6 +353,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		setAssessmentModeMessage(ureq);
+		updateFakeParticipantMessage(ureq);
 	}
 
 	private void loadRights() {
@@ -497,7 +505,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			cc.removeCurrentCustomCSSFromView();
 		}
 		setCustomCSS(null);
-		setCourseClosedMessage();
+		updateCourseWarningMessage();
 	}
 
 	@Override
@@ -531,13 +539,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(rmc != null) {
 			rmc.initToolbarAndProgressbar();
 		}
-		setCourseClosedMessage();
+		updateCourseWarningMessage();
 	}
 	
-	private void setCourseClosedMessage() {
+	private void updateCourseWarningMessage() {
 		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 		if(userCourseEnv != null) {
-			if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+			if (isFakeParticipantMessageSet()) {
+				// Highest priority
+			} else if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				toolbarPanel.setMessage(translate("course.closed"));
 				toolbarPanel.setMessageCssClass("o_warning");
 			} else if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.deleted
@@ -551,6 +561,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if(!isAssessmentModeMessageSet()) {
 			toolbarPanel.setMessage(null);
 			toolbarPanel.setMessageComponent(null);
+		}
+	}
+	
+	private boolean isFakeParticipantMessageSet() {
+		return fakeParticipantStopCtrl != null && fakeParticipantStopCtrl.getInitialComponent() == toolbarPanel.getMessageComponent();
+	}
+	
+	private void updateFakeParticipantMessage(UserRequest ureq) {
+		removeAsListenerAndDispose(fakeParticipantStopCtrl);
+		fakeParticipantStopCtrl = null;
+		
+		if (Role.fakeParticipant == reSecurity.getCurrentRole()) {
+			fakeParticipantStopCtrl = new FakeParticipantStopController(ureq, getWindowControl());
+			listenTo(fakeParticipantStopCtrl);
+			toolbarPanel.setMessageComponent(fakeParticipantStopCtrl.getInitialComponent());
+		} else {
+			toolbarPanel.removeMessageComponent();
 		}
 	}
 	
@@ -1355,7 +1382,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			reloadSecurity(ureq);
 		}
 		if(popedController != null && popedController == assessmentToolCtr) {
-			setCourseClosedMessage();
+			updateCourseWarningMessage();
 		}
 		if(popedController != null && (popedController == editorCtrl || popedController == settingsCtrl)) {
 			loadRepositoryEntry();
@@ -1401,6 +1428,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (source == unsupportedCourseNodesCtrl) {
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == fakeParticipantStopCtrl) {
+			if (event == FakeParticipantStopController.STOP_EVENT) {
+				doSwitchRole(ureq, reSecurity.getPreviousRole());
+			}
 		}
 		
 		if (event.equals(CourseDisclaimerEvent.ACCEPTED)) {
@@ -2231,7 +2262,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(reSecurity.isGroupCoach()) {
 			coachedGroups = userCourseEnv.getCoachedGroups();
 		}
-		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(getRepositoryEntry(),
+				userCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
+		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
+				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 	
 	private void doEfficiencyStatements(UserRequest ureq) {

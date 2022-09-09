@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.CourseNodeToReviewTableModel.ToReviewCols;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.nodes.CourseNode;
@@ -92,7 +94,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 	protected abstract String getTitleI18nKey();
 	protected abstract String getTitleNumberI18nKey();
 	protected abstract String getTableEmptyI18nKey();
-	protected abstract Map<String, List<AssessmentEntry>> loadNodeIdentToEntries();
+	protected abstract Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Set<Particpant> participants);
 	protected abstract Supplier<AssessedIdentityListState> getIdentityFilter();
 	
 	protected CourseNodeToReviewAbstractSmallController(UserRequest ureq, WindowControl wControl,
@@ -141,8 +143,8 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		tableEl.setEmptyTableSettings(getTableEmptyI18nKey(), null, getIconCssClass());
 	}
 	
-	public void loadModel() {
-		Map<String, List<AssessmentEntry>> nodeIdentToEntries = loadNodeIdentToEntries();
+	public void loadModel(Set<Particpant> participants) {
+		Map<String, List<AssessmentEntry>> nodeIdentToEntries = loadNodeIdentToEntries(participants);
 		
 		List<CourseNodeToReviewRow> rows = new ArrayList<>(nodeIdentToEntries.size());
 		for (Map.Entry<String, List<AssessmentEntry>> entry : nodeIdentToEntries.entrySet()) {

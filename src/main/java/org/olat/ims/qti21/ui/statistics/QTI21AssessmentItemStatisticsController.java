@@ -119,8 +119,8 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers(),
-					resourceResult.isViewNonParticipantUsers(), resourceResult.isViewAnonymousUsers());
+					false, resourceResult.canViewNonParticipantUsers(), false, resourceResult.canViewAnonymousUsers(),
+					true, resourceResult.isViewNonParticipantUsers(), false, resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
@@ -257,6 +257,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			if(event instanceof UserFilterEvent) {
 				UserFilterEvent ufe = (UserFilterEvent)event;
 				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
+				resourceResult.setViewPaticipantUsers(ufe.isWithMembers());
 				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());
 				updateData(ureq);
 			}

@@ -586,6 +586,9 @@ div.o_assessment_user_type_filter {
 	div.form-inline {
 		margin-left: 5px;
 		display: inline-block;
+		.checkbox-inline {
+			vertical-align: unset;
+		}
 	}
 }
 

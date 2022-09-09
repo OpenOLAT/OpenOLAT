@@ -75,7 +75,7 @@ public class CertificatesReportMediaResource extends OpenXMLWorkbookResource {
 	private final List<RepositoryEntry> entries;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private final CertificatesReportParameters reportParams;
-	private final AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, null);
+	private final AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, null, null);
 	
 	@Autowired
 	private DB dbInstance;

@@ -50,6 +50,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
@@ -124,9 +125,9 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		downloadRawLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
-			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers(),
-					resourceResult.isViewNonParticipantUsers(), resourceResult.isViewAnonymousUsers());
+			filterCtrl = new UserFilterController(ureq, getWindowControl(), 
+					true, resourceResult.canViewNonParticipantUsers(), false, resourceResult.canViewAnonymousUsers(),
+					true, resourceResult.isViewNonParticipantUsers(), false, resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
@@ -150,6 +151,22 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 			stackPanel.addTool(printLink, Align.right);
 			stackPanel.addTool(downloadRawLink, Align.right);
 		}
+	}
+	
+	public void updateData(boolean participants, boolean nonParticipans, boolean anonymous) {
+		resourceResult.setViewPaticipantUsers(participants);
+		if (resourceResult.canViewNonParticipantUsers()) {
+			resourceResult.setViewNonPaticipantUsers(nonParticipans);
+		}
+		if (resourceResult.canViewAnonymousUsers()) {
+			resourceResult.setViewAnonymousUsers(anonymous);
+		}
+		updateData();
+	}
+	
+	public void updateData(List<Identity> limitToIdentities) {
+		resourceResult.setLimitToIdentities(limitToIdentities);
+		updateData();
 	}
 
 	private void updateData() {
@@ -277,9 +294,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		if(filterCtrl == source) {
 			if(event instanceof UserFilterEvent) {
 				UserFilterEvent ufe = (UserFilterEvent)event;
-				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
-				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());
-				updateData();
+				updateData(ufe.isWithMembers(), ufe.isWithNonParticipantUsers(), ufe.isWithAnonymousUser());
 			}
 		}
 		super.event(ureq, source, event);

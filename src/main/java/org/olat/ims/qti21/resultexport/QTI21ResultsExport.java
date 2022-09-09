@@ -231,7 +231,6 @@ public class QTI21ResultsExport {
 		}
 		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, testEntry, entry, courseNode.getIdent());
 		if(withNonParticipants) {
-			searchParams.setViewAllUsers(true);
 			searchParams.setViewNonMembers(true);
 		} else {
 			searchParams.setLimitToIdentities(identities);

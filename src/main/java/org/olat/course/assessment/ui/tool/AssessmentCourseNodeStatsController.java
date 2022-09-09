@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -34,6 +36,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -44,6 +47,8 @@ import org.olat.modules.assessment.ui.AssessmentStatsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.PercentStat;
 import org.olat.modules.assessment.ui.ScoreStat;
+import org.olat.modules.assessment.ui.UserFilterController;
+import org.olat.modules.assessment.ui.event.UserFilterEvent;
 import org.olat.modules.grade.GradeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,11 +61,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentCourseNodeStatsController extends BasicController implements AssessmentCourseNodeOverviewController {
 
 	private final AssessmentStatsController assessmentStatsCtrl;
-	private Controller detailsCtrl;
+	private UserFilterController userFilterCtrl;
+	protected Controller detailsCtrl;
 
 	protected final UserCourseEnvironment userCourseEnv;
 	protected final CourseNode courseNode;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
+	protected final SearchAssessedIdentityParams params;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -78,13 +85,20 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		setVelocityRoot(Util.getPackageVelocityRoot(AssessmentCourseNodeStatsController.class));
 		VelocityContainer mainVC = createVelocityContainer("course_node_stats");
 		
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
+		params = new SearchAssessedIdentityParams(
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
 		if(assessmentCallback.canAssessBusinessGoupMembers() && assessmentCallback.getCoachedGroups() != null && !assessmentCallback.getCoachedGroups().isEmpty()) {
 			params.setBusinessGroupKeys(assessmentCallback.getCoachedGroups().stream().map(BusinessGroup::getKey).collect(Collectors.toList()));
 		}
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
+		params.setParticipants(Set.of(Particpant.member));
+		
+		if (params.isNonMembers() || params.hasFakeParticipants()) {
+			userFilterCtrl = new UserFilterController(ureq, wControl, true, params.isNonMembers(), params.hasFakeParticipants(), false, true, false, false, false);
+			listenTo(userFilterCtrl);
+			mainVC.put("user.filter", userFilterCtrl.getInitialComponent());
+		}
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		PercentStat percentStat = null;
@@ -131,7 +145,23 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == assessmentStatsCtrl) {
+		if (source == userFilterCtrl) {
+			if (event instanceof UserFilterEvent) {
+				UserFilterEvent ufe = (UserFilterEvent)event;
+				Set<Particpant> participants = new HashSet<>(2);
+				if (ufe.isWithMembers()) {
+					participants.add(Particpant.member);
+				}
+				if (ufe.isWithNonParticipantUsers()) {
+					participants.add(Particpant.nonMember);
+				}
+				if (ufe.isWithFakeParticipants()) {
+					participants.add(Particpant.fakeParticipant);
+				}
+				params.setParticipants(participants);
+				reload();
+			}
+		} else if (source == assessmentStatsCtrl) {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);

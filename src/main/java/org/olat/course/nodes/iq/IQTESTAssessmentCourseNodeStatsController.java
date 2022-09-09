@@ -19,26 +19,22 @@
  */
 package org.olat.course.nodes.iq;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.olat.basesecurity.Group;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeStatsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
-import org.olat.group.BusinessGroup;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,8 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseNodeStatsController {
 	
 	@Autowired
-	private RepositoryService repositoryService;
-
+	private AssessmentToolManager assessentToolManager;
+	
 	public IQTESTAssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNode courseNode,
 			AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
@@ -65,11 +61,7 @@ public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseN
 
 	@Override
 	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl) {
-		StatisticResourceOption options = new StatisticResourceOption();
-		if (!userCourseEnv.isAdmin()) {
-			options.setParticipantsGroups(getCoachedGroups());
-		}
-		StatisticResourceResult statisticNodeResult = courseNode.createStatisticNodeResult(ureq, wControl, userCourseEnv, options, StatisticType.TEST);
+		StatisticResourceResult statisticNodeResult = courseNode.createStatisticNodeResult(ureq, wControl, userCourseEnv, new StatisticResourceOption(), StatisticType.TEST);
 		if (statisticNodeResult instanceof QTI21StatisticResourceResult) {
 			QTI21StatisticResourceResult qti21StatisticResourceResult = (QTI21StatisticResourceResult)statisticNodeResult;
 			qti21StatisticResourceResult.getTreeModel();
@@ -77,30 +69,16 @@ public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseN
 		}
 		return null;
 	}
-	
-	private List<Group> getCoachedGroups() {
-		List<Group> groups = new ArrayList<>();
+
+	@Override
+	public void reload() {
+		super.reload();
 		
-		if(assessmentCallback.canAssessRepositoryEntryMembers()) {
-			Group bGroup = repositoryService.getDefaultGroup(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
-			groups.add(bGroup);
+		if (detailsCtrl instanceof QTI21AssessmentTestStatisticsController) {
+			QTI21AssessmentTestStatisticsController qtiStatsCtrl = (QTI21AssessmentTestStatisticsController)detailsCtrl;
+			List<Identity> assessedIdentities = assessentToolManager.getAssessedIdentities(getIdentity(), params);
+			qtiStatsCtrl.updateData(assessedIdentities);
 		}
-		
-		if(assessmentCallback.canAssessBusinessGoupMembers() && assessmentCallback.getCoachedGroups() != null) {
-			List<Group> bgBaseGroups = assessmentCallback.getCoachedGroups().stream()
-					.map(BusinessGroup::getBaseGroup)
-					.collect(Collectors.toList());
-			groups.addAll(bgBaseGroups);
-		}
-		
-		if(assessmentCallback.canAssessCurriculumMembers() && userCourseEnv.getCoachedCurriculumElements() != null) {
-			List<Group> ceBaseGroups = userCourseEnv.getCoachedCurriculumElements().stream()
-					.map(CurriculumElement::getGroup)
-					.collect(Collectors.toList());
-			groups.addAll(ceBaseGroups);
-		}
-		
-		return groups;
 	}
 
 }

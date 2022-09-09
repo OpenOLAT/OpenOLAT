@@ -20,6 +20,7 @@
 package org.olat.course.assessment;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -78,5 +79,7 @@ public interface AssessmentToolManager {
 	public AssessmentEntry getAssessmentEntries(IdentityRef assessedIdentity, RepositoryEntry entry, String subIdent);
 
 	public List<CoachingAssessmentEntry> getCoachingEntries(CoachingAssessmentSearchParams params);
+
+	public Set<IdentityRef> getFakeParticipants(RepositoryEntry entry, Identity identity, boolean admin, boolean coach);
 
 }

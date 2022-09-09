@@ -31,6 +31,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownText;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -152,6 +154,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private Link principalLink;
 	private Link masterCoachLink;
 	private Link participantLink;
+	private Link fakeParticipantLink;
 	
 	private Link preparationLink;
 	private Link reviewLink;
@@ -373,7 +376,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		RepositoryEntry entry = getRepositoryEntry();
 		RepositoryEntryStatusEnum entryStatus = entry.getEntryStatus();
 		statusDropdown.setI18nKey("details.label.status");
-		statusDropdown.setElementCssClass("o_repo_tools_status o_with_labeled");
+		statusDropdown.setElementCssClass("o_repo_tools_status");
+		statusDropdown.setLabeled(true, true);
 		statusDropdown.setIconCSS("o_icon o_icon_repo_status_".concat(entryStatus.name()));
 		statusDropdown.setInnerText(translate(entryStatus.i18nKey()));
 		statusDropdown.setInnerCSS("o_labeled o_repo_status_".concat(entryStatus.name()));
@@ -402,7 +406,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private void initRole() {
 		rolesDropdown = new Dropdown("toolbox.roles", "role.switch", false, getTranslator());
-		rolesDropdown.setElementCssClass("o_sel_switch_role o_with_labeled");
+		rolesDropdown.setOrientation(DropdownOrientation.right);
+		rolesDropdown.setElementCssClass("o_sel_switch_role");
+		rolesDropdown.setLabeled(true, false);
 		rolesDropdown.setIconCSS("o_icon " + reSecurity.getCurrentRole().getIconCssClass());
 		rolesDropdown.setInnerText(translate(reSecurity.getCurrentRole().getI18nKey()));
 		rolesDropdown.setInnerCSS("o_labeled");
@@ -411,44 +417,51 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if (otherRoles.contains(Role.owner)) {
 			ownerLink = LinkFactory.createToolLink("role.owner", translate(Role.owner.getI18nKey()), this);
 			ownerLink.setIconLeftCSS("o_icon o_icon-fw " + Role.owner.getIconCssClass());
-			ownerLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(ownerLink);
 		}
 		if (otherRoles.contains(Role.administrator)) {
 			administratorLink = LinkFactory.createToolLink("role.administrator", translate(Role.administrator.getI18nKey()), this);
 			administratorLink.setIconLeftCSS("o_icon o_icon-fw " + Role.administrator.getIconCssClass());
-			administratorLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(administratorLink);
 		}
 		if (otherRoles.contains(Role.learningResourceManager)) {
 			learningResourceManagerLink = LinkFactory.createToolLink("role.learning.resource.manager", translate(Role.learningResourceManager.getI18nKey()), this);
 			learningResourceManagerLink.setIconLeftCSS("o_icon o_icon-fw " + Role.learningResourceManager.getIconCssClass());
-			learningResourceManagerLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(learningResourceManagerLink);
 		}
 		if (otherRoles.contains(Role.coach)) {
 			coachLink = LinkFactory.createToolLink("role.coach", translate(Role.coach.getI18nKey()), this);
 			coachLink.setIconLeftCSS("o_icon o_icon-fw " + Role.coach.getIconCssClass());
-			coachLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(coachLink);
 		}
 		if (otherRoles.contains(Role.principal)) {
 			principalLink = LinkFactory.createToolLink("role.principal", translate(Role.principal.getI18nKey()), this);
 			principalLink.setIconLeftCSS("o_icon o_icon-fw " + Role.principal.getIconCssClass());
-			principalLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(principalLink);
 		}
 		if (otherRoles.contains(Role.masterCoach)) {
 			masterCoachLink = LinkFactory.createToolLink("role.master.coach", translate(Role.masterCoach.getI18nKey()), this);
 			masterCoachLink.setIconLeftCSS("o_icon o_icon-fw " + Role.masterCoach.getIconCssClass());
-			masterCoachLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(masterCoachLink);
 		}
 		if (otherRoles.contains(Role.participant)) {
 			participantLink = LinkFactory.createToolLink("role.participant", translate(Role.participant.getI18nKey()), this);
 			participantLink.setIconLeftCSS("o_icon o_icon-fw " + Role.participant.getIconCssClass());
-			participantLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(participantLink);
+		}
+		if (rolesDropdown.size() > 0) {
+			rolesDropdown.addComponent(0, new DropdownText("switch", translate("role.roles")));
+			
+		}
+		if (otherRoles.contains(Role.fakeParticipant)) {
+			if (rolesDropdown.size() > 0) {
+				rolesDropdown.addComponent(new Spacer("switch.spacer"));
+			}
+			rolesDropdown.addComponent(new DropdownText("switch", translate("role.switch.to")));
+			
+			fakeParticipantLink = LinkFactory.createToolLink("role.fake.participant", translate(Role.fakeParticipant.getI18nKey()), this);
+			fakeParticipantLink.setIconLeftCSS("o_icon o_icon-fw " + Role.fakeParticipant.getIconCssClass());
+			rolesDropdown.addComponent(fakeParticipantLink);
 		}
 		if (rolesDropdown.size() > 0) {
 			toolbarPanel.addTool(rolesDropdown, Align.right);
@@ -751,6 +764,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doSwitchRole(ureq, Role.masterCoach);
 		} else if (participantLink == source) {
 			doSwitchRole(ureq, Role.participant);
+		} else if (fakeParticipantLink == source) {
+			doSwitchRole(ureq, Role.fakeParticipant);
 		} else if(preparationLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
 		} else if(reviewLink == source) {

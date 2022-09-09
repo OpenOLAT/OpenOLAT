@@ -77,6 +77,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	
 	private static final String CMD_MEMBERS = "members";
 	private static final String CMD_NON_MEMBERS = "non.members";
+	private static final String CMD_FAKE_PARTICIPANTS = "fake.participants";
 	private static final String CMD_GROUP = "group";
 	private static final String CMD_CURRICULUM_ELEMENT = "curEle";
 	
@@ -268,12 +269,21 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	}
 
 	private void updateUI() {
-		int numOfParticipants = memberStatistics.getNumOfParticipants();
-		int numOfOtherUsers = memberStatistics.getNumOfOtherUsers();
-		String[] args = new String[]{ Integer.toString(numOfParticipants), Integer.toString(numOfOtherUsers) };
-		String assessedIdentitiesText = numOfOtherUsers > 0
-				? translate("assessment.tool.num.assessed.participants.others", args)
-				: translate("assessment.tool.num.assessed.participants", args);
+		int sumParticipants = 0;
+		if (params.isParticipantAll()) {
+			sumParticipants = memberStatistics.getNumOfMembers() + memberStatistics.getNumOfNonMembers() + memberStatistics.getNumOfFakeParticipants();
+		} else {
+			if (params.isParticipantCoachedMembers() || params.isParticipantAllMembers()) {
+				sumParticipants += memberStatistics.getNumOfMembers();
+			}
+			if (params.isParticipantNonMembers()) {
+				sumParticipants += memberStatistics.getNumOfNonMembers();
+			}
+			if (params.isParticipantFakeParticipants()) {
+				sumParticipants += memberStatistics.getNumOfFakeParticipants();
+			}
+		}
+		String assessedIdentitiesText = translate("assessment.tool.num.assessed.participants", String.valueOf(sumParticipants));
 		assessedIdentitiesLink.setI18nKey(assessedIdentitiesText);
 		
 		if (!businessGroupStatistics.isEmpty()) {
@@ -325,26 +335,28 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private void updateLaunchModel() {
 		List<LaunchRow> rows = new ArrayList<>(2);
 		
-		LaunchRow participantRow = new LaunchRow();
+		if (params.isParticipantAll() || params.isParticipantAllMembers() || params.isParticipantCoachedMembers()) {
+			LaunchRow participantRow = new LaunchRow();
+			
+			participantRow.setNumIdentities(memberStatistics.getNumOfMembers());
+			participantRow.setNumLaunches(memberStatistics.getNumOfMembersLoggedIn());
+			
+			String participantsLinkText = translate("assessment.tool.num.participants", Integer.toString(memberStatistics.getNumOfMembers()));
+			FormLink participantsLink = uifactory.addFormLink("num.participants", CMD_MEMBERS, null, null, null, Link.NONTRANSLATED);
+			participantsLink.setI18nKey(participantsLinkText);
+			participantsLink.setEnabled(!readOnly);
+			participantRow.setAssessedIdentitiesLink(participantsLink);
+
+			rows.add(participantRow);
+		}
 		
-		participantRow.setNumIdentities(memberStatistics.getNumOfParticipants());
-		participantRow.setNumLaunches(memberStatistics.getNumOfParticipantsLoggedIn());
-		
-		String participantsLinkText = translate("assessment.tool.num.participants", Integer.toString(memberStatistics.getNumOfParticipants()));
-		FormLink participantsLink = uifactory.addFormLink("num.participants", CMD_MEMBERS, null, null, null, Link.NONTRANSLATED);
-		participantsLink.setI18nKey(participantsLinkText);
-		participantsLink.setEnabled(!readOnly);
-		participantRow.setAssessedIdentitiesLink(participantsLink);
-		
-		rows.add(participantRow);
-		
-		if (assessmentCallback.canAssessNonMembers() && memberStatistics.getNumOfOtherUsers() > 0) {
+		if (assessmentCallback.canAssessNonMembers() && (params.isParticipantAll() || params.isParticipantNonMembers())) {
 			LaunchRow otherUsersRow = new LaunchRow();
 			
-			otherUsersRow.setNumIdentities(memberStatistics.getNumOfOtherUsers());
-			otherUsersRow.setNumLaunches(memberStatistics.getOthersLoggedIn());
+			otherUsersRow.setNumIdentities(memberStatistics.getNumOfNonMembers());
+			otherUsersRow.setNumLaunches(memberStatistics.getNumOfMembersLoggedIn());
 			
-			String otherUsersText = translate("assessment.tool.num.other.users", Integer.toString(memberStatistics.getNumOfOtherUsers()));
+			String otherUsersText = translate("assessment.tool.num.other.users", Integer.toString(memberStatistics.getNumOfNonMembers()));
 			FormLink otherUsersLink = uifactory.addFormLink("num.other.users", CMD_NON_MEMBERS, null, null, null, Link.NONTRANSLATED);
 			otherUsersLink.setI18nKey(otherUsersText);
 			otherUsersLink.setEnabled(!readOnly);
@@ -353,13 +365,27 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			rows.add(otherUsersRow);
 		}
 		
+		if (assessmentCallback.canAssessNonMembers() && (params.isParticipantAll() || params.isParticipantFakeParticipants())) {
+			LaunchRow row = new LaunchRow();
+			
+			row.setNumIdentities(memberStatistics.getNumOfFakeParticipants());
+			row.setNumLaunches(memberStatistics.getNumOfFakeParticipantsLoggedIn());
+			
+			String linkText = translate("assessment.tool.num.fake.participants", Integer.toString(memberStatistics.getNumOfFakeParticipants()));
+			FormLink link = uifactory.addFormLink("num.other.fake.participants", CMD_FAKE_PARTICIPANTS, null, null, null, Link.NONTRANSLATED);
+			link.setI18nKey(linkText);
+			link.setEnabled(!readOnly);
+			row.setAssessedIdentitiesLink(link);
+			
+			rows.add(row);
+		}
+		
 		launchTableModel.setObjects(rows);
 		launchTableEl.reset();
 	}
 	
-	
 	private void updateBusinessGroupModel() {
-		if (businessGroupStatistics.isEmpty()) {
+		if (businessGroupStatistics.isEmpty() || !(params.isParticipantAll() || params.isParticipantAllMembers() || params.isParticipantCoachedMembers())) {
 			groupTableEl.setVisible(false);
 			return;
 		}
@@ -392,7 +418,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	}
 	
 	private void updateCurriculumElementModel() {
-		if (curriculumElementStatistics.isEmpty()) {
+		if (curriculumElementStatistics.isEmpty() || !(params.isParticipantAll() || params.isParticipantAllMembers() || params.isParticipantCoachedMembers())) {
 			curriculumElementTableEl.setVisible(false);
 			return;
 		}
@@ -460,6 +486,8 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 				fireEvent(ureq, SelectionEvents.MEMBERS_EVENT);
 			} else if (CMD_NON_MEMBERS.equals(link.getCmd())) {
 				fireEvent(ureq, SelectionEvents.NON_MEMBERS_EVENT);
+			} else if (CMD_FAKE_PARTICIPANTS.equals(link.getCmd())) {
+				fireEvent(ureq, SelectionEvents.FAKE_PARTICIPANTS_EVENT);
 			} else if (CMD_GROUP.equals(link.getCmd())) {
 				Long key = (Long)link.getUserObject();
 				fireEvent(ureq, new BusinessGroupEvent(Collections.singletonList(key)));

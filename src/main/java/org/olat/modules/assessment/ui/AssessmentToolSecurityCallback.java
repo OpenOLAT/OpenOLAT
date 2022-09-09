@@ -20,7 +20,9 @@
 package org.olat.modules.assessment.ui;
 
 import java.util.List;
+import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -38,16 +40,18 @@ public class AssessmentToolSecurityCallback {
 	private final boolean curriculumMembers;
 	
 	private final List<BusinessGroup> coachedGroups;
+	private final Set<IdentityRef> fakeParticipants;
 	
-	public AssessmentToolSecurityCallback(boolean admin, boolean nonMembers,
-			boolean repositoryEntryMembers, boolean businessGoupMembers, boolean curriculumMembers,
-			List<BusinessGroup> coachedGroups) {
+	public AssessmentToolSecurityCallback(boolean admin, boolean nonMembers, boolean repositoryEntryMembers,
+			boolean businessGoupMembers, boolean curriculumMembers, List<BusinessGroup> coachedGroups,
+			Set<IdentityRef> fakeParticipants) {
 		this.admin = admin;
 		this.nonMembers = nonMembers;
 		this.repositoryEntryMembers = repositoryEntryMembers;
 		this.businessGoupMembers = businessGoupMembers;
 		this.curriculumMembers = curriculumMembers;
 		this.coachedGroups = coachedGroups;
+		this.fakeParticipants = fakeParticipants;
 	}
 
 
@@ -71,11 +75,19 @@ public class AssessmentToolSecurityCallback {
 		return curriculumMembers || admin;
 	}
 	
+	public boolean canAssessFakeParticipants() {
+		return fakeParticipants != null && !fakeParticipants.isEmpty();
+	}
+	
 	public boolean canStartStopAllAssessments() {
 		return admin;
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {
 		return coachedGroups;
+	}
+
+	public Set<IdentityRef> getFakeParticipants() {
+		return fakeParticipants;
 	}
 }

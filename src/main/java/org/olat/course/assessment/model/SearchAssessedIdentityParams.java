@@ -20,9 +20,13 @@
 package org.olat.course.assessment.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -36,10 +40,17 @@ import org.olat.repository.RepositoryEntry;
  */
 public class SearchAssessedIdentityParams {
 	
+	public static final int PARTICIPANT_SIZE = Particpant.values().length;
+	
 	public enum Passed {
 		passed,
 		failed,
 		notGraded;
+	}
+	public enum Particpant {
+		member,
+		nonMember,
+		fakeParticipant
 	}
 	
 	private final RepositoryEntry entry;
@@ -55,13 +66,13 @@ public class SearchAssessedIdentityParams {
 	private List<AssessmentEntryStatus> assessmentStatus;
 	private List<Passed> passed;
 	private Boolean userVisibility;
-	private boolean memebersOnly;
-	private boolean nonMemebersOnly;
+	private Set<Particpant> participants;
 	private Collection<AssessmentObligation> assessmentObligations;
 	
 	private String searchString;
 	private List<Long> businessGroupKeys;
 	private List<Long> curriculumElementKeys;
+	private Set<Long> fakeParticipantIdentityKeys;
 	
 	private Map<String,String> userProperties;
 	
@@ -75,6 +86,9 @@ public class SearchAssessedIdentityParams {
 		coach = secCallback.canAssessRepositoryEntryMembers()
 				|| secCallback.canAssessBusinessGoupMembers()
 				|| secCallback.canAssessCurriculumMembers();
+		fakeParticipantIdentityKeys = secCallback.getFakeParticipants() != null
+				? secCallback.getFakeParticipants().stream().map(IdentityRef::getKey).collect(Collectors.toSet())
+				: Collections.emptySet();
 	}
 	
 	public RepositoryEntry getEntry() {
@@ -148,25 +162,17 @@ public class SearchAssessedIdentityParams {
 	public void setUserVisibility(Boolean userVisibility) {
 		this.userVisibility = userVisibility;
 	}
-
-	public boolean isMemebersOnly() {
-		return memebersOnly;
-	}
-
-	public void setMemebersOnly(boolean memebersOnly) {
-		this.memebersOnly = memebersOnly;
-	}
-
-	public boolean isNonMemebersOnly() {
-		return nonMemebersOnly;
-	}
-
-	public void setNonMemebersOnly(boolean nonMemebersOnly) {
-		this.nonMemebersOnly = nonMemebersOnly;
-	}
-
+	
 	public Collection<AssessmentObligation> getAssessmentObligations() {
 		return assessmentObligations;
+	}
+
+	public Set<Particpant> getParticipants() {
+		return participants;
+	}
+
+	public void setParticipants(Set<Particpant> participants) {
+		this.participants = participants;
 	}
 
 	public void setAssessmentObligations(Collection<AssessmentObligation> assessmentObligations) {
@@ -197,6 +203,18 @@ public class SearchAssessedIdentityParams {
 		this.curriculumElementKeys = curriculumElementKeys;
 	}
 
+	public Set<Long> getFakeParticipantIdentityKeys() {
+		return fakeParticipantIdentityKeys;
+	}
+	
+	public boolean hasFakeParticipants() {
+		return fakeParticipantIdentityKeys != null && !fakeParticipantIdentityKeys.isEmpty();
+	}
+
+	public int getFakeParticipantSize() {
+		return fakeParticipantIdentityKeys != null? fakeParticipantIdentityKeys.size(): 0;
+	}
+
 	public Map<String, String> getUserProperties() {
 		return userProperties;
 	}
@@ -204,4 +222,50 @@ public class SearchAssessedIdentityParams {
 	public void setUserProperties(Map<String, String> userProperties) {
 		this.userProperties = userProperties;
 	}
+	
+	public boolean isParticipantAll() {
+		if (isAdmin()) {
+			if (getParticipants() == null || getParticipants().isEmpty()) {
+				return true;
+			}
+			
+			int numParticipantFilter = hasFakeParticipants() ? PARTICIPANT_SIZE: PARTICIPANT_SIZE-1;
+			if (numParticipantFilter == getParticipants().size()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isParticipantCoachedMembers() {
+		if (isCoach()) {
+			return getParticipants() == null || getParticipants().isEmpty() || getParticipants().contains(Particpant.member);
+		}
+		return false;
+	}
+
+	public boolean isParticipantFakeParticipants() {
+		if (isCoach()) {
+			return getParticipants() == null || getParticipants().isEmpty() || (hasFakeParticipants() && getParticipants().contains(Particpant.fakeParticipant));
+		}
+		if (isAdmin()) {
+			return getParticipants() != null && hasFakeParticipants() && getParticipants().contains(Particpant.fakeParticipant);
+		}
+		return false;
+	}
+
+	public boolean isParticipantNonMembers() {
+		if (isAdmin()) {
+			return getParticipants() != null && getParticipants().contains(Particpant.nonMember);
+		}
+		return false;
+	}
+	
+	public boolean isParticipantAllMembers() {
+		if (isAdmin()) {
+			return getParticipants() != null && getParticipants().contains(Particpant.member);
+		}
+		return false;
+	}
+	
 }

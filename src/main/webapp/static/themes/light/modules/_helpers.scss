@@ -419,6 +419,15 @@
 	}
 }
 
+.dropdown-menu {
+	li {
+		.o_dropwdown_menu_subtitle {
+			@extend %o_muted;
+			padding: 3px 10px;
+		}
+	}
+} 
+
 /* media classes for video and image component */
 .o_video, .o_video video, %o_video, .o_video_wrapper {
 	@include img-responsive(inline-block);

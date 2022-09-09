@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -56,6 +57,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
@@ -139,7 +141,10 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		if(reSecurity.isGroupCoach()) {
 			coachedGroups = userCourseEnv.getCoachedGroups();
 		}
-		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
+				userCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
+		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
+				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 
 	@Override
@@ -193,13 +198,18 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
 		
 		// members
-		if (assessmentCallback.canAssessNonMembers()) {
+		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			SelectionValues membersValues = new SelectionValues();
-			membersValues.add(SelectionValues.entry("membersOnly", translate("filter.members")));
-			membersValues.add(SelectionValues.entry("nonMembersOnly", translate("filter.other.users")));
-			FlexiTableSingleSelectionFilter filter = new FlexiTableSingleSelectionFilter(translate("filter.members.label"),
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			if (assessmentCallback.canAssessNonMembers()) {
+				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.nonMember.name(), translate("filter.other.users")));
+			}
+			if (assessmentCallback.canAssessFakeParticipants()) {
+				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			}
+			FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			filter.setValue("membersOnly");
+			filter.setValues(List.of(Particpant.member.name()));
 			filters.add(filter);
 		}
 
@@ -286,17 +296,13 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		
 		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
 		if(membersFilter != null) {
-			String filterValue = ((FlexiTableExtendedFilter)membersFilter).getValue();
-			if("membersOnly".equals(filterValue)) {
-				params.setMemebersOnly(true);
-				params.setNonMemebersOnly(false);
-			} else if("nonMembersOnly".equals(filterValue)) {
-				params.setMemebersOnly(false);
-				params.setNonMemebersOnly(true);
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				Set<Particpant> participants = filterValues.stream()
+						.map(Particpant::valueOf)
+						.collect(Collectors.toSet());
+				params.setParticipants(participants);
 			}
-		} else {
-			params.setMemebersOnly(true);
-			params.setNonMemebersOnly(false);
 		}
 		
 		return params;
