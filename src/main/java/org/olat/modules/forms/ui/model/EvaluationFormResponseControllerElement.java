@@ -24,6 +24,9 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
 import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -37,7 +40,7 @@ import org.olat.modules.forms.rules.RulesEngine;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormResponseControllerElement implements EvaluationFormExecutionElement {
+public class EvaluationFormResponseControllerElement implements EvaluationFormExecutionElement, ControllerEventListener {
 	
 	private final EvaluationFormResponseController controller;
 	private boolean visible = true;
@@ -73,6 +76,13 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 		this.visible = visible;
 		controller.getInitialFormItem().setVisible(visible);
 		controller.setValidationEnabled(visible);
+	}
+	
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		if(controller instanceof ControllerEventListener) {
+			((ControllerEventListener)controller).dispatchEvent(ureq, source, event);
+		}
 	}
 
 	@Override

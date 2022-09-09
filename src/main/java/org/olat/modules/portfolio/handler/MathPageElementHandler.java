@@ -38,7 +38,7 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.MathElement;
 import org.olat.modules.ceditor.ui.MathLiveEditorController;
-import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.MathLiveRunComponent;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MathPart;
 
@@ -75,7 +75,7 @@ public class MathPageElementHandler implements PageElementHandler, PageElementSt
 			cmp.setValue(mathPart.getContent());
 			cmp.setElementCssClass("o_ce_math");
 		}
-		return new PageRunComponent(cmp);
+		return new MathLiveRunComponent(cmp);
 	}
 
 	@Override

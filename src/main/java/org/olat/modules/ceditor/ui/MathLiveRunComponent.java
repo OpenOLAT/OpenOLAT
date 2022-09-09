@@ -19,55 +19,37 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.math.MathLiveComponent;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
-import org.olat.modules.ceditor.PageRunElement;
-import org.olat.modules.ceditor.ValidatingController;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.model.MathElement;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
  * 
- * Initial date: 23 déc. 2016<br>
+ * Initial date: 8 sept. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRunControllerElement implements PageRunElement, ControllerEventListener, Disposable {
+public class MathLiveRunComponent extends PageRunComponent {
 	
-	private Controller controller;
-	
-	public PageRunControllerElement(Controller controller) {
-		this.controller = controller;
+	public MathLiveRunComponent(MathLiveComponent component) {
+		super(component);
 	}
 	
-	@Override
-	public void dispose() {
-		if(controller != null) {
-			controller.dispose();
-		}
-	}
-
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
-		if(controller instanceof ControllerEventListener) {
-			((ControllerEventListener)controller).dispatchEvent(ureq, source, event);
+		if((source instanceof ModalInspectorController || source instanceof PageElementEditorController)
+				&& event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			PageElement element = cpe.getElement();
+			if(element instanceof MathElement) {
+				MathElement math = (MathElement)element;
+				((MathLiveComponent)getComponent()).setValue(math.getContent());
+			}
 		}
-	}
-
-	@Override
-	public Component getComponent() {
-		return controller.getInitialComponent();
-	}
-
-	@Override
-	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
-		if(controller instanceof ValidatingController) {
-			return ((ValidatingController)controller).validate(ureq, messages);
-		}
-		return true;
 	}
 }

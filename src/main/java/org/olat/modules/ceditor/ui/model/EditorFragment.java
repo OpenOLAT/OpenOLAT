@@ -23,7 +23,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.model.ContainerElement;
 
@@ -35,33 +34,24 @@ import org.olat.modules.ceditor.model.ContainerElement;
  */
 public class EditorFragment {
 
-	private boolean editMode;
 	private PageElement element;
 	private final PageElementHandler handler;
 
 	private final String cmpId;
 	private Controller editorPart;
-	private Link addElementAboveLink, addElementBelowLink, saveLink, deleteLink, moveUpLink, moveDownLink;
 	
+	private Link saveLink;
+	private Link deleteLink;
+	private Link moveUpLink;
+	private Link moveDownLink;
+	private Link addElementAboveLink;
+	private Link addElementBelowLink;
+
 	public EditorFragment(PageElement element, PageElementHandler handler, String cmpId, Controller editorPart) {
 		this.element = element;
 		this.handler = handler;
 		this.cmpId = cmpId;
 		this.editorPart = editorPart;
-	}
-
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		if(editorPart instanceof PageElementEditorController) {
-			PageElementEditorController editorCtrl = (PageElementEditorController)editorPart;
-			if(editorCtrl.isEditMode() != editMode) {
-				((PageElementEditorController)editorPart).setEditMode(editMode);
-			}
-		}
 	}
 	
 	public String getCmpId() {

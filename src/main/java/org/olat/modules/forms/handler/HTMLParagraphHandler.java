@@ -23,8 +23,8 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -43,7 +43,7 @@ import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.HTMLRawInspectorController;
-import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.TextRunComponent;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -78,8 +78,8 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
-		Component cmp = getComponent(element);
-		return new PageRunComponent(cmp);
+		TextComponent cmp = getComponent(element);
+		return new TextRunComponent(cmp);
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 		return null;
 	}
 
-	private Component getComponent(PageElement element) {
+	private TextComponent getComponent(PageElement element) {
 		if(element instanceof HTMLParagraph) {
 			return ComponentsFactory.getContent((HTMLParagraph)element);
 		}

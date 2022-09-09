@@ -173,7 +173,7 @@
 						|| jTarget.closest(".o_ceditor_inspector").length > 0
 						|| e.target.nodeName == 'BODY';
 					
-					if(!excludedEls) {	
+					if(!excludedEls) {
 						var edited = jTarget.closest(".o_fragment_edited").length > 0;
 						var parts = jTarget.closest(".o_page_part");
 						if(jTarget.hasClass('o_page_container_tools') && !jTarget.parent().hasClass('o_page_container_edit')) {
@@ -187,7 +187,8 @@
 							o_XHREvent(elementUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
 						} else if(!edited) {
 							closeMathLive();
-							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment');
+							o_afterserver();
+							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'ignore-validating-error', 'oo-ignore-validating-error');
 						}
 					}
 				}

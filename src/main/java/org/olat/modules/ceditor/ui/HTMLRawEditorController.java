@@ -23,16 +23,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
@@ -51,10 +48,8 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 public class HTMLRawEditorController extends FormBasicController implements PageElementEditorController {
 	
 	private RichTextElement htmlItem;
-	private StaticTextElement staticItem;
 	
 	private HTMLElement htmlPart;
-	private boolean editMode = false;
 	private final boolean minimalEditor;
 	private final PageElementStore<HTMLElement> store;
 	
@@ -66,7 +61,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		this.minimalEditor = minimalEditor;
 		
 		initForm(ureq);
-		setEditMode(editMode);
 
 		if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
 			TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
@@ -74,19 +68,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		} else {
 			setActiveColumLink(1);
 		}
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		htmlItem.setVisible(editMode);
-		staticItem.setVisible(!editMode);
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override
@@ -104,10 +85,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
 		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);
 
-		String formattedContent = Formatter.formatLatexFormulas(content);
-		staticItem = uifactory.addStaticTextElement(cmpId + "_static", null, formattedContent, formLayout);
-		staticItem.setDomWrapperElement(DomWrapperElement.div); // content contains multiple P elements
-		
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);
 	}
 
@@ -120,7 +97,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof HTMLRawInspectorController && event instanceof ChangePartEvent) {
 			ChangePartEvent cpe = (ChangePartEvent)event;
-			if(cpe.getElement().equals(htmlPart)) {
+			if(cpe.isElement(htmlPart)) {
 				htmlPart = (HTMLElement)cpe.getElement();
 				TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
 				setActiveColumLink(settings.getNumOfColumns());
@@ -135,8 +112,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 			String content = htmlItem.getValue();
 			htmlPart.setContent(content);
 			htmlPart = store.savePageElement(htmlPart);
-			String formattedContent = Formatter.formatLatexFormulas(content);
-			staticItem.setValue(formattedContent);
 			fireEvent(ureq, new ChangePartEvent(htmlPart));
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -147,9 +122,6 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		String content = htmlItem.getValue();
 		htmlPart.setContent(content);
 		htmlPart = store.savePageElement(htmlPart);
-
-		String formattedContent = Formatter.formatLatexFormulas(content);
-		staticItem.setValue(formattedContent);
 		fireEvent(ureq, new ChangePartEvent(htmlPart));
 	}
 	

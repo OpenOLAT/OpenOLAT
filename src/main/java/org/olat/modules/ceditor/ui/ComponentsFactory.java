@@ -33,22 +33,28 @@ import org.olat.modules.ceditor.model.ParagraphElement;
  *
  */
 public class ComponentsFactory {
+	
+	public static final String getElementCssClass(HTMLRawElement element) {
+		int numOfColumns = element.getTextSettings().getNumOfColumns();
+		return "o_ce_html_raw o_html_col" + numOfColumns;
+	}
 
 	public static final TextComponent getContent(HTMLRawElement element) {
 		String content = Formatter.formatLatexFormulas(element.getContent());
-		int numOfColumns = element.getTextSettings().getNumOfColumns();
-
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
-		cmp.setElementCssClass("o_ce_html_raw o_html_col" + numOfColumns);
+		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
+	}
+	
+	public static final String getElementCssClass(ParagraphElement element) {
+		int numOfColumns = element.getTextSettings().getNumOfColumns();
+		return "o_ce_html_paragraph o_html_col" + numOfColumns;
 	}
 	
 	public static final TextComponent getContent(ParagraphElement element) {
 		String content = Formatter.formatLatexFormulas(element.getContent());
-		int numOfColumns = element.getTextSettings().getNumOfColumns();
-
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
-		cmp.setElementCssClass("o_ce_html_paragraph o_html_col" + numOfColumns);
+		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
 	}
 }

@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.velocity.context.Context;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -366,6 +367,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 			return formComponents.get(name);
 		}
 		return listeningOnlyFormComponents.get(name);
+	}
+	
+	public Context getContext() {
+		return formLayoutContainer.getContext();
 	}
 	
 	public void contextPut(String key, Object value) {

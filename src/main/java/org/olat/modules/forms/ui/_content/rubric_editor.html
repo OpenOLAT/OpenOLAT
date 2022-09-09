@@ -1,23 +1,22 @@
-#if($editMode)
-	#if($showEnd)
-		#set($colLabelButtons = "col-xs-12 col-ms-12 col-md-2 col-md-push-10")
-		#set($colLabelLabel = "col-xs-12 col-ms-12 col-md-3 col-md-pull-2")
-		#set($colLabelSpace = "hidden")
-		#set($colLabelValue = "col-xs-12 col-ms-12 col-md-4 col-md-pull-2")
-		#set($colSliderStart = "col-md-3")
-		#set($colSliderPreview = "col-md-4")
-		#set($colSliderEnd = "col-md-3")
-		#set($colSliderButtons = "col-md-2")
-	#else
-		#set($colLabelButtons = "col-xs-12 col-ms-12 col-md-2 col-md-push-10")
-		#set($colLabelLabel = "col-xs-12 col-ms-12 col-md-3 col-md-pull-2")
-		#set($colLabelSpace = "col-xs-12 col-ms-12 col-md-2 col-sm-hidden col-md-pull-2")
-		#set($colLabelValue = "col-xs-12 col-ms-12 col-md-5 col-md-pull-2")
-		#set($colSliderStart = "col-md-5")
-		#set($colSliderPreview = "col-md-5")
-		#set($colSliderEnd = "hidden")
-		#set($colSliderButtons = "col-md-2")
-	#end
+#if($showEnd)
+	#set($colLabelButtons = "col-xs-12 col-ms-12 col-md-2 col-md-push-10")
+	#set($colLabelLabel = "col-xs-12 col-ms-12 col-md-3 col-md-pull-2")
+	#set($colLabelSpace = "hidden")
+	#set($colLabelValue = "col-xs-12 col-ms-12 col-md-4 col-md-pull-2")
+	#set($colSliderStart = "col-md-3")
+	#set($colSliderPreview = "col-md-4")
+	#set($colSliderEnd = "col-md-3")
+	#set($colSliderButtons = "col-md-2")
+#else
+	#set($colLabelButtons = "col-xs-12 col-ms-12 col-md-2 col-md-push-10")
+	#set($colLabelLabel = "col-xs-12 col-ms-12 col-md-3 col-md-pull-2")
+	#set($colLabelSpace = "col-xs-12 col-ms-12 col-md-2 col-sm-hidden col-md-pull-2")
+	#set($colLabelValue = "col-xs-12 col-ms-12 col-md-5 col-md-pull-2")
+	#set($colSliderStart = "col-md-5")
+	#set($colSliderPreview = "col-md-5")
+	#set($colSliderEnd = "hidden")
+	#set($colSliderButtons = "col-md-2")
+#end
 <div class="o_evaluation_editor_form">
 	$r.render("settings")
 	
@@ -87,6 +86,3 @@
 		#end
 	</div>
 </div>
-#else
-	$r.render("rubric")
-#end

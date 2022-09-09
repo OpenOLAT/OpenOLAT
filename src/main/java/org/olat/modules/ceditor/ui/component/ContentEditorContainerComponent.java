@@ -193,7 +193,6 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	public void setEditMode(boolean editMode) {
 		if(this.editMode != editMode) {
 			this.editMode = editMode;
-			editorPart.setEditMode(editMode);
 			setDirty(true);
 		}
 	}
@@ -299,7 +298,6 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	
 	private void doCloseEditFragment() {
 		editMode = false;
-		editorPart.setEditMode(editMode);
 		setDirty(true);
 	}
 

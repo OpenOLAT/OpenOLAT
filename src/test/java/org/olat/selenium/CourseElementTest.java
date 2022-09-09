@@ -1672,7 +1672,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithLTI(@Drone @User WebDriver participantBrowser)
+	public void courseWithLTI()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1728,23 +1728,23 @@ public class CourseElementTest extends Deployments {
 			.finish();
 		
 		//Participant login
-		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant.getLogin(), participant.getPassword())
 			.resume();
 
-		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
 			.openMyCourses()
 			.openSearch()
 			.extendedSearch(courseTitle)
 			.select(courseTitle);
 		
-		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		participantCourse
 			.tree()
 			.selectWithTitle(ltiTitle);
-		LTIPage lti = new LTIPage(participantBrowser);
+		LTIPage lti = new LTIPage(browser);
 		lti
 			.start()
 			.outcomeToolProvider();
@@ -2152,7 +2152,7 @@ public class CourseElementTest extends Deployments {
 		
 		userSurvey
 			.answerMultipleChoice("Saturn")
-			//.answerSingleChoice("Venus")
+			.answerSingleChoice("Venus")
 			.saveAndCloseSurvey()
 			.assertOnSurveyClosed();
 	}

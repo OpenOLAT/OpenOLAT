@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class StandaloneExecutionController extends BasicController implements Controller {
+public class StandaloneExecutionController extends BasicController {
 
 	private static final Logger log = Tracing.createLoggerFor(StandaloneExecutionController.class);
 	
@@ -72,19 +72,19 @@ public class StandaloneExecutionController extends BasicController implements Co
 		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByIdentifier(identifier);
 		if (participation == null) {
 			doShowNotFound(ureq);
-			log.debug("No participation found for " + identifier);
+			log.debug("No participation found for {}", identifier);
 		} else if (EvaluationFormParticipationStatus.done.equals(participation.getStatus())) {
 			doShowAlreadyDone(ureq);
-			log.debug("Participation already done: " + identifier);
+			log.debug("Participation already done: {}", identifier);
 		} else {
 			OLATResourceable surveyOres = participation.getSurvey().getIdentifier().getOLATResourceable();
 			EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory.getProvider(surveyOres);
 			if (standaloneProvider.isExecutable(participation)) {
 				doShowExecution(ureq, participation);
-				log.debug("Execute evaluation form with " + identifier);
+				log.debug("Execute evaluation form with {}", identifier);
 			} else {
 				doShowNotExecuteable(ureq);
-				log.debug("Participation not executeable (" + standaloneProvider + "): " + identifier);
+				log.debug("Participation not executeable ({}): {}", standaloneProvider, identifier);
 			}
 		}
 	}

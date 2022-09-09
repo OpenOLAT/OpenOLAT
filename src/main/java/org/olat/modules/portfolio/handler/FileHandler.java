@@ -40,6 +40,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
@@ -159,6 +160,15 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		return new FileMediaController(ureq, wControl, media, hints);
+	}
+
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		Controller mediaCtrl = super.getEditor(ureq, wControl, element);
+		if(mediaCtrl instanceof FileMediaController) {
+			((FileMediaController)mediaCtrl).setEditable(true);
+		}
+		return mediaCtrl;
 	}
 
 	@Override

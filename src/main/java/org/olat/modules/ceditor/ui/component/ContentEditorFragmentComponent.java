@@ -34,7 +34,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
@@ -67,11 +67,13 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	
 	private final Controller editorPart;
 	private final Controller inspectorPart;
+	private final PageRunElement viewPart;
 	
-	public ContentEditorFragmentComponent(String name, PageElement pageElement, Controller editorPart, Controller inspectorPart) {
+	public ContentEditorFragmentComponent(String name, PageElement pageElement, PageRunElement viewPart, Controller editorPart, Controller inspectorPart) {
 		super(name);
 		this.editorPart = editorPart;
 		this.inspectorPart = inspectorPart;
+		this.viewPart = viewPart;
 		this.pageElement = pageElement;
 		setDomReplacementWrapperRequired(false);
 	}
@@ -83,7 +85,6 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	
 	@Override
 	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
 		doEditFragment(null, editMode);
 	}
 
@@ -131,8 +132,12 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		return false;
 	}
 	
-	public Component getPageElementComponent() {
-		return editorPart.getInitialComponent();
+	public Component getViewPageElementComponent() {
+		return viewPart == null ? null : viewPart.getComponent();
+	}
+	
+	public Component getEditorPageElementComponent() {
+		return editorPart == null ? null : editorPart.getInitialComponent();
 	}
 	
 	@Override
@@ -146,11 +151,11 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 					fireEvent(ureq, new EditElementEvent(pageElement.getId()));
 					break;
 				case "add_element_above":
-					String aboveLinkId = "o_cmore_".concat(getDispatchID());//"o_ccaab_".concat(getDispatchID());
+					String aboveLinkId = "o_cmore_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddElementEvent(aboveLinkId, this, PageElementTarget.above));
 					break;
 				case "add_element_below":
-					String belowLinkId = "o_cmore_".concat(getDispatchID());//"o_ccabe_".concat(getDispatchID());
+					String belowLinkId = "o_cmore_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddElementEvent(belowLinkId, this, PageElementTarget.below));
 					break;
 				case "save_element":
@@ -197,17 +202,9 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	}
 	
 	private void doEditFragment(UserRequest ureq, boolean editMode) {
+		boolean changed = this.editMode != editMode;
 		this.editMode = editMode;
-		if(editorPart instanceof PageElementEditorController) {
-			PageElementEditorController editorCtrl = (PageElementEditorController)editorPart;
-			if(editorCtrl.isEditMode() != editMode) {
-				((PageElementEditorController)editorPart).setEditMode(editMode);
-				setDirty(true);
-				if(editMode) {
-					fireEvent(ureq, new EditPageElementEvent(this));
-				}
-			}
-		} else {
+		if(changed) {
 			setDirty(true);
 			if(editMode) {
 				fireEvent(ureq, new EditPageElementEvent(this));
@@ -217,9 +214,6 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	
 	private void doCloseEditFragment() {
 		this.editMode = false;
-		if(editorPart instanceof PageElementEditorController) {
-			((PageElementEditorController)editorPart).setEditMode(false);
-		}
 		setDirty(true);
 	}
 	
@@ -240,7 +234,12 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	@Override
 	public Iterable<Component> getComponents() {
 		List<Component> components = new ArrayList<>();
-		components.add(editorPart.getInitialComponent());
+		if(editorPart != null) {
+			components.add(editorPart.getInitialComponent());
+		}
+		if(viewPart != null) {
+			components.add(viewPart.getComponent());
+		}
 		if(inspectorPart != null) {
 			components.add(inspectorPart.getInitialComponent());
 		}

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.ceditor.ui.event;
 
+import java.util.Objects;
+
 import org.olat.core.gui.control.Event;
 import org.olat.modules.ceditor.PageElement;
 
@@ -41,5 +43,8 @@ public class ChangePartEvent extends Event {
 	public PageElement getElement() {
 		return element;
 	}
-
+	
+	public boolean isElement(PageElement el) {
+		return element != null && el != null && Objects.equals(element.getId(), el.getId());
+	}
 }

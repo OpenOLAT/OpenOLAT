@@ -60,10 +60,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private int count = 0;
 	private Rubric rubric;
-	private boolean editMode = false;
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWeight;
-	private RubricController rubricCtrl;
 	
 	private List<StepLabelColumn> stepLabels = new ArrayList<>();
 	private List<SliderRow> sliders = new ArrayList<>();
@@ -84,7 +82,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 		this.showEnd = initShowEnd();
 
 		initForm(ureq);
-		setEditMode(editMode);
 	}
 
 	private Boolean initShowEnd() {
@@ -98,13 +95,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		rubricCtrl = new RubricController(ureq, getWindowControl(), rubric, mainForm);
-		rubricCtrl.setPropagateDirtiness(false);
-		listenTo(rubricCtrl);
-		formLayout.add("rubric", rubricCtrl.getInitialFormItem());
-	}
-
-	private void initEditForm(FormItemContainer formLayout) {
 		FormLayoutContainer settingsLayout = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsLayout.setRootForm(mainForm);
 		formLayout.add("settings", settingsLayout);
@@ -306,28 +296,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 		sliderEl.setMaxValue(100);
 		return sliderEl;
 	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		if (editMode) {
-			initEditForm(flc);
-		} else {
-			rubricCtrl.updateForm();
-		}
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof RubricInspectorController && event instanceof ChangePartEvent) {
 			ChangePartEvent cpe = (ChangePartEvent)event;
-			if(cpe.getElement() instanceof Rubric) {
+			if(cpe.isElement(rubric)) {
 				rubric = (Rubric)cpe.getElement();
 				updateSteps();
 				updateSliders();
@@ -371,6 +345,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			} else {
 				commitFields();
 			}
+			fireEvent(ureq, new ChangePartEvent(rubric));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -489,8 +464,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 	protected void formOK(UserRequest ureq) {
 		commitFields();
 		commitStepLabels();
-
-		rubricCtrl.updateForm();
 		
 		fireEvent(ureq, new ChangePartEvent(rubric));
 		fireEvent(ureq, new ClosePartEvent(rubric));

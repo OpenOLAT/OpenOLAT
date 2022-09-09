@@ -136,7 +136,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			if(mediaCtrl != null) {
 				// Move this to the MediaHandler if even more Media types are editable inline.
 				if (mediaCtrl instanceof FileMediaController && editable) {
-					((FileMediaController)mediaCtrl).setEditMode(editable);
+					((FileMediaController)mediaCtrl).setEditable(editable);
 				}
 				listenTo(mediaCtrl);
 				layoutCont.put("media", mediaCtrl.getInitialComponent());

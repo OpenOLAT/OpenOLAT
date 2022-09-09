@@ -74,7 +74,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	private final Media media;
 	private final MediaRenderingHints hints;
 	private VFSLeaf vfsLeaf;
-	private boolean editMode = false;
+	private boolean editable = false;
 
 	@Autowired
 	private PortfolioFileStorage fileStorage;
@@ -155,21 +155,15 @@ public class FileMediaController extends BasicController implements PageElementE
 		}
 	}
 
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
+	public void setEditable(boolean editable) {
+		this.editable = editable;
 		updateUI();
 	}
 	
 	private Mode getMode() {
 		if (isEditingExcluded()) {
 			return null;
-		} else if (editMode && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
+		} else if (editable && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
 			return Mode.EDIT;
 		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.VIEW, true)) {
 			return Mode.VIEW;

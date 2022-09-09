@@ -32,9 +32,11 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -59,7 +61,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 
 	private SingleSelection singleChoiceEl;
 	
-	private final SingleChoice singleChoice;
+	private SingleChoice singleChoice;
 	private boolean validationEnabled = true;
 	private RulesEngine rulesEngine;
 	private Map<ChoiceSelectedCondition, Rule> selectedConditionToRule;
@@ -124,6 +126,15 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 			singleChoiceEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		fireChoiceSelectedCondition();
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			singleChoice = (SingleChoice)cpe.getElement();
+			updateForm();
+		}
 	}
 
 	@Override

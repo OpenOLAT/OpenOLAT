@@ -1,25 +1,21 @@
-#if($editMode)
-	<div class="o_page_table_edition">
-		<div class="o_table_title">
-			$r.render("table.title")
-		</div>
-		<table class="o_ce_table #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if(!$r.isTrue($settings.striped)) b_no_stripes #end #if($r.isTrue($settings.bordered)) b_border #else b_borderless #end">
-		#foreach($tableRow in $tableRows)
-			<tr>
-			#foreach($tableColumn in $tableRow.columns)
-				#if($r.isTrue($tableColumn.header))
-					<th>$r.render($tableColumn.text)</th>
-				#else
-					<td>$r.render($tableColumn.text)</td>
-				#end
-			#end
-			</tr>
-		#end
-		</table>
-		<div class="o_table_caption">
-			$r.render("table.caption")
-		</div>
+<div class="o_page_table_edition">
+	<div class="o_table_title">
+		$r.render("table.title")
 	</div>
-#else
-	$r.render("run")
-#end
+	<table class="o_ce_table #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if(!$r.isTrue($settings.striped)) b_no_stripes #end #if($r.isTrue($settings.bordered)) b_border #else b_borderless #end">
+	#foreach($tableRow in $tableRows)
+		<tr>
+		#foreach($tableColumn in $tableRow.columns)
+			#if($r.isTrue($tableColumn.header))
+				<th>$r.render($tableColumn.text)</th>
+			#else
+				<td>$r.render($tableColumn.text)</td>
+			#end
+		#end
+		</tr>
+	#end
+	</table>
+	<div class="o_table_caption">
+		$r.render("table.caption")
+	</div>
+</div>

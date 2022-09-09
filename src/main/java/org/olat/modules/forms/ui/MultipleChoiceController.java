@@ -35,9 +35,11 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -65,7 +67,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	private MultipleSelectionElement multipleChoiceEl;
 	private TextElement otherEl;
 	
-	private final MultipleChoice multipleChoice;
+	private MultipleChoice multipleChoice;
 	private List<EvaluationFormResponse> multipleChoiceResponses;
 	private boolean validationEnabled = true;
 	private RulesEngine rulesEngine;
@@ -137,6 +139,15 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 				.filter(rule -> rule.getCondition() instanceof ChoiceSelectedCondition)
 				.collect(Collectors.toMap(rule -> (ChoiceSelectedCondition)rule.getCondition(), Function.identity()));
 		fireChoiceSelectedCondition();
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			multipleChoice = (MultipleChoice)cpe.getElement();
+			updateForm();
+		}
 	}
 	
 	@Override

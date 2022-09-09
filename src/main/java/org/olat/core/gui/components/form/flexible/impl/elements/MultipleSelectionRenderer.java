@@ -333,6 +333,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		} else {
 			//use the selection form dispatch id and not the one of the element!
 			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null, check.getFormDispatchId()));
+			//TODO editor force focus to move on
+			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(check.getFormDispatchId()).append("';\"");
 		}
 		sb.append(" />");
 		String iconLeftCSS = check.getIconLeftCSS();

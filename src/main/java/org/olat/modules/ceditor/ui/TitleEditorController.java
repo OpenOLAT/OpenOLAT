@@ -23,14 +23,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.render.DomWrapperElement;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -47,10 +44,8 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 public class TitleEditorController extends FormBasicController implements PageElementEditorController {
 	
 	private RichTextElement titleItem;
-	private StaticTextElement staticItem;
 	
 	private TitleElement title;
-	private boolean editMode = false;
 	private final PageElementStore<TitleElement> store;
 	
 	public TitleEditorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store) {
@@ -59,35 +54,14 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		this.store = store;
 		
 		initForm(ureq);
-		setEditMode(editMode);
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		titleItem.setVisible(editMode);
-		staticItem.setVisible(!editMode);
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String cmpId = "title-" + CodeHelper.getRAMUniqueID() + "h";
 		String content = TitleElement.toHtml(title.getContent(), title.getTitleSettings());
-		
-		titleItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 2, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
+		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 2, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
-		
-		staticItem = uifactory.addStaticTextElement(cmpId.concat("_static"), null, contentOrExample(content), formLayout);
-		staticItem.setDomWrapperElement(DomWrapperElement.div); // content contains multiple P elements
-
-		flc.getFormItemComponent().contextPut("cmpId", cmpId);
 	}
 
 	@Override
@@ -124,7 +98,6 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		String content = title.getContent();
 		String htmlContent = TitleElement.toHtml(content, title.getTitleSettings());
 		titleItem.setValue(htmlContent);
-		staticItem.setValue(contentOrExample(content));
 	}
 	
 	private void doSave(UserRequest ureq) {
@@ -132,7 +105,6 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		String content = FilterFactory.getHtmlTagsFilter().filter(htmlContent);
 		title.setContent(content);
 		title = store.savePageElement(title);
-		staticItem.setValue(contentOrExample(content));
 		fireEvent(ureq, new ChangePartEvent(title));
 	}
 

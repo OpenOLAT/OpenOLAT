@@ -30,7 +30,6 @@ import org.olat.core.gui.components.math.MathLiveVirtualKeyboardMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.MathElement;
@@ -45,10 +44,8 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 public class MathLiveEditorController extends FormBasicController implements PageElementEditorController {
 
 	private MathLiveElement mathItem;
-	private MathLiveElement staticItem;
 	
 	private MathElement mathPart;
-	private boolean editMode = false;
 	private final PageElementStore<MathElement> store;
 	
 	public MathLiveEditorController(UserRequest ureq, WindowControl wControl, MathElement mathPart, PageElementStore<MathElement> store) {
@@ -57,20 +54,6 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 		this.store = store;
 		
 		initForm(ureq);
-		setEditMode(editMode);
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		mathItem.setVisible(editMode);
-		staticItem.setVisible(!editMode);
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override
@@ -81,9 +64,6 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 		mathItem = uifactory.addMathLiveElement(cmpId, null, content, formLayout);
 		mathItem.setVirtualKeyboardMode(MathLiveVirtualKeyboardMode.onfocus);
 		mathItem.setSendOnBlur(true);
-
-		staticItem = uifactory.addMathLiveElement(cmpId + "_static", null, content, formLayout);
-		staticItem.setEnabled(false);
 		
 		((FormLayoutContainer)formLayout).contextPut("mathCmpId", cmpId);
 	}
@@ -96,24 +76,20 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(mathItem == source) {
-			String content = mathItem.getValue();
-			mathPart.setContent(content);
-			mathPart = store.savePageElement(mathPart);
-			String formattedContent = Formatter.formatLatexFormulas(content);
-			staticItem.setValue(formattedContent);
-			fireEvent(ureq, new ChangePartEvent(mathPart));
+			doSave(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		doSave(ureq);
+	}
+	
+	private void doSave(UserRequest ureq) {
 		String content = mathItem.getValue();
 		mathPart.setContent(content);
 		mathPart = store.savePageElement(mathPart);
-
-		String formattedContent = Formatter.formatLatexFormulas(content);
-		staticItem.setValue(formattedContent);
 		fireEvent(ureq, new ChangePartEvent(mathPart));
 	}
 }

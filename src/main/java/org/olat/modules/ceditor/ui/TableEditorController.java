@@ -53,12 +53,9 @@ public class TableEditorController extends FormBasicController implements PageEl
 
 	private int currentNumOfRows;
 	private int currentNumOfColumns;
-	private boolean editMode = false;
 	private TableElement table;
 	private final PageElementStore<TableElement> store;
 	private final List<EditorRow> rowList = new ArrayList<>();
-	
-	private TableRunController runCtrl;
 	
 	public TableEditorController(UserRequest ureq, WindowControl wControl,
 			TableElement table, PageElementStore<TableElement> store) {
@@ -72,21 +69,6 @@ public class TableEditorController extends FormBasicController implements PageEl
 		currentNumOfRows = content.getNumOfRows() < 1 ? 3 : content.getNumOfRows();
 		currentNumOfColumns = content.getNumOfColumns() < 1 ? 4 : content.getNumOfColumns();
 		loadModel(currentNumOfRows, currentNumOfColumns);
-		
-		runCtrl = new TableRunController(ureq, getWindowControl(), table);
-		listenTo(runCtrl);
-		flc.put("run", runCtrl.getComponent());
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override
@@ -114,7 +96,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof TableInspectorController && event instanceof ChangePartEvent) {
 			ChangePartEvent cpe = (ChangePartEvent)event;
-			if(cpe.getElement().equals(table)) {
+			if(cpe.isElement(table)) {
 				table = (TableElement)cpe.getElement();
 				doUpdate();
 			}
@@ -146,8 +128,6 @@ public class TableEditorController extends FormBasicController implements PageEl
 		currentNumOfColumns = content.getNumOfColumns() < 1 ? 4 : content.getNumOfColumns();
 		loadModel(currentNumOfRows, currentNumOfColumns);
 		
-		// Update preview
-		runCtrl.loadModel(table);
 		// Live preview
 		TableSettings settings = table.getTableSettings();
 		flc.contextPut("settings", settings); 
@@ -235,8 +215,6 @@ public class TableEditorController extends FormBasicController implements PageEl
 		String contentXml = ContentEditorXStream.toXml(content);
 		table.setContent(contentXml);
 		table = store.savePageElement(table);
-		runCtrl.loadModel(table);//update preview
-		flc.contextPut("settings", settings); // live preview
 		fireEvent(ureq, new ChangePartEvent(table));	
 	}
 	

@@ -24,8 +24,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -42,9 +42,9 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.model.TitleSettings;
-import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.TitleEditorController;
 import org.olat.modules.ceditor.ui.TitleInspectorController;
+import org.olat.modules.ceditor.ui.TextRunComponent;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -82,8 +82,8 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
-		Component cmp = getComponent(element);
-		return new PageRunComponent(cmp);
+		TextComponent cmp = getComponent(element);
+		return new TextRunComponent(cmp);
 	}
 
 	@Override
@@ -144,7 +144,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 		return null;
 	}
 
-	private Component getComponent(PageElement element) {
+	private TextComponent getComponent(PageElement element) {
 		String htmlContent = "";
 		if(element instanceof Title) {
 			Title title = (Title)element;

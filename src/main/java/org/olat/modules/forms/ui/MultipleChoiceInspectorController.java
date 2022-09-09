@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.MultipleChoice.Presentation;
 import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
@@ -126,15 +127,23 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 	}
 	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (nameEl == source || presentationEl == source || source == withOthersEl || source == obligationEl
-				|| source instanceof TextElement) {
-			doSave();
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
 		}
 	}
 	
-	private void doSave() {
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (nameEl == source || presentationEl == source || source == withOthersEl || source == obligationEl
+				|| source instanceof TextElement) {
+			doSave(ureq);
+		}
+	}
+	
+	private void doSave(UserRequest ureq) {
 		doSaveMultipleChoice();
+		fireEvent(ureq, new ChangePartEvent(multipleChoice));
 	}
 	
 	private void doSaveMultipleChoice() {

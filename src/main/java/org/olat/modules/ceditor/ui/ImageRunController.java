@@ -159,7 +159,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	 * @param ureq The user request
 	 * @param storedData To be extended 
 	 */
-	protected void  initMetadata(UserRequest ureq, StoredData storedData) {
+	protected void initMetadata(UserRequest ureq, StoredData storedData) {
 		//
 	}
 

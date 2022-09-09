@@ -34,6 +34,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
 
@@ -93,14 +94,22 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 	}
 	
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (nameEl == source || presentationEl == source || obligationEl == source || source instanceof TextElement) {
-			doSave();
+			doSave(ureq);
 		}
 	}
 
-	private void doSave() {
+	private void doSave(UserRequest ureq) {
 		doSaveSingleChoice();
+		fireEvent(ureq, new ChangePartEvent(singleChoice));
 	}
 
 	private void doSaveSingleChoice() {

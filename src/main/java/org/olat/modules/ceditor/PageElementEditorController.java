@@ -29,16 +29,6 @@ import org.olat.core.gui.control.Controller;
  */
 public interface PageElementEditorController extends Controller {
 	
-	/**
-	 *
-	 * @return True if the table is in editing mode
-	 */
-	public boolean isEditMode();
-
-	/**
-	 * Set a visual change but do not change anything on the model
-	 * @param editMode
-	 */
-	public void setEditMode(boolean editMode);
+	//
 
 }

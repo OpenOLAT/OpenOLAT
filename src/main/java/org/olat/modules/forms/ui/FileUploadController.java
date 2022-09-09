@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
@@ -43,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -64,7 +66,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 
 	private FileElement fileEl;
 	
-	private final FileUpload fileUpload;
+	private FileUpload fileUpload;
 	private EvaluationFormResponse response;
 	private boolean validationEnabled = true;
 	private boolean newFileUploaded = false;
@@ -132,6 +134,17 @@ public class FileUploadController extends FormBasicController implements Evaluat
 	@Override
 	public void setValidationEnabled(boolean enabled) {
 		this.validationEnabled = enabled;
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.isElement(fileUpload)) {
+				fileUpload = (FileUpload)cpe.getElement();
+				updateUI(ureq);
+			}
+		}
 	}
 
 	@Override

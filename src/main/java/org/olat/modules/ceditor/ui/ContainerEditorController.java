@@ -50,7 +50,6 @@ public class ContainerEditorController extends FormBasicController implements Pa
 	private CloseableCalloutWindowController calloutCtrl;
 	private Controller ruleLinkController;
 	
-	private boolean editMode = false;
 	private ContainerElement container;
 	private final PageElementStore<ContainerElement> store;
 	
@@ -65,18 +64,6 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		}
 		
 		initForm(ureq);
-		setEditMode(editMode);
-	}
-	
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override

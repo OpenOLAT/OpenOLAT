@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorModule;
@@ -145,6 +146,17 @@ public class TableInspectorController extends FormBasicController implements Pag
 			styleEl.select(styles[0], true);
 		}
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof TableEditorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.isElement(table)) {
+				table = (TableElement)cpe.getElement();
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -162,7 +174,9 @@ public class TableInspectorController extends FormBasicController implements Pag
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		//
+		if(!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
 	}
 	
 	private void doSaveSettings(UserRequest ureq) {
@@ -196,7 +210,6 @@ public class TableInspectorController extends FormBasicController implements Pag
 		table.setContent(contentXml);
 		table = store.savePageElement(table);
 		dbInstance.commit();
-		flc.contextPut("settings", settings); // live preview
 		fireEvent(ureq, new ChangePartEvent(table));	
 	}
 }

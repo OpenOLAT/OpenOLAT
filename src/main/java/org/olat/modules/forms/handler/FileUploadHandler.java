@@ -39,7 +39,7 @@ import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.ui.FileUploadController;
-import org.olat.modules.forms.ui.FileUploadEditorController;
+import org.olat.modules.forms.ui.FileUploadInspectorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -86,15 +86,15 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof FileUpload) {
-			FileUpload fileUpload = (FileUpload) element;
-			return new FileUploadEditorController(ureq, wControl, fileUpload, restrictedEdit);
-		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof FileUpload) {
+			FileUpload fileUpload = (FileUpload) element;
+			return new FileUploadInspectorController(ureq, wControl, fileUpload, restrictedEdit);
+		}
 		return null;
 	}
 

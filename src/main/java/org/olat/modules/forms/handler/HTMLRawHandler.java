@@ -20,8 +20,8 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -36,7 +36,7 @@ import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.HTMLRawInspectorController;
-import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.TextRunComponent;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -71,8 +71,8 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
-		Component cmp = getComponent(element);
-		return new PageRunComponent(cmp);
+		TextComponent cmp = getComponent(element);
+		return new TextRunComponent(cmp);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 		return null;
 	}
 
-	private Component getComponent(PageElement element) {
+	private TextComponent getComponent(PageElement element) {
 		if(element instanceof HTMLRaw) {
 			return ComponentsFactory.getContent((HTMLRaw)element);
 		}

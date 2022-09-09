@@ -37,7 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.forms.model.xml.TextInput;
@@ -48,8 +48,7 @@ import org.olat.modules.forms.model.xml.TextInput;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-//TODO editor delete
-public class TextInputEditorController extends FormBasicController implements PageElementEditorController {
+public class TextInputInspectorController extends FormBasicController implements PageElementInspectorController {
 	
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
@@ -79,21 +78,26 @@ public class TextInputEditorController extends FormBasicController implements Pa
 	private final TextInput textInput;
 	private boolean restrictedEdit;
 	
-	public TextInputEditorController(UserRequest ureq, WindowControl wControl, TextInput textInput, boolean restrictedEdit) {
+	public TextInputInspectorController(UserRequest ureq, WindowControl wControl, TextInput textInput, boolean restrictedEdit) {
 		super(ureq, wControl, "textinput_editor");
 		this.textInput = textInput;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
+	
+	@Override
+	public String getTitle() {
+		return translate("inspector.formtextinput");
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("textinput_cont_" + CodeHelper.getRAMUniqueID(), getTranslator());
+		FormLayoutContainer settingsCont = FormLayoutContainer.createVerticalFormLayout("textinput_cont_" + CodeHelper.getRAMUniqueID(), getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
 		
-		inputTypeEl = uifactory.addRadiosHorizontal("textinput_num_" + CodeHelper.getRAMUniqueID(),
+		inputTypeEl = uifactory.addRadiosVertical("textinput_num_" + CodeHelper.getRAMUniqueID(),
 				"textinput.numeric", settingsCont, NUMERIC_KEYS, translateAll(getTranslator(), NUMERIC_KEYS));
 		if (textInput.isNumeric()) {
 			inputTypeEl.select(INPUT_TYPE_NUMERIC_KEY, true);
@@ -105,7 +109,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		inputTypeEl.addActionListener(FormEvent.ONCHANGE);
 		inputTypeEl.setEnabled(!restrictedEdit);
 		
-		singleRowEl = uifactory.addRadiosHorizontal("textinput_row_" + CodeHelper.getRAMUniqueID(),
+		singleRowEl = uifactory.addRadiosVertical("textinput_row_" + CodeHelper.getRAMUniqueID(),
 				"textinput.rows.mode", settingsCont, ROW_OPTIONS, translateAll(getTranslator(), ROW_OPTIONS));
 		String selectedRowsKey = textInput.isSingleRow()? SINGLE_ROW_KEY: MULTIPLE_ROWS_KEY;
 		singleRowEl.select(selectedRowsKey, true);
@@ -131,7 +135,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
 				obligationKV.keys(), obligationKV.values());
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, textInput.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !textInput.isMandatory());
@@ -198,10 +202,9 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (inputTypeEl == source) {
+		if (inputTypeEl == source || singleRowEl == source) {
 			updateUI();
-		} else if (singleRowEl == source) {
-			updateUI();
+			doSave(ureq);
 		} else if (saveButton == source) {
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
@@ -212,6 +215,11 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		doSave(ureq);
+		fireEvent(ureq, new ClosePartEvent(textInput));
+	}
+	
+	private void doSave(UserRequest ureq) {
 		boolean numeric = INPUT_TYPE_NUMERIC_KEY.equals(inputTypeEl.getSelectedKey());
 		textInput.setNumeric(numeric);
 		
@@ -252,8 +260,6 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		textInput.setMandatory(mandatory);
-
 		fireEvent(ureq, new ChangePartEvent(textInput));
-		fireEvent(ureq, new ClosePartEvent(textInput));
 	}
 }

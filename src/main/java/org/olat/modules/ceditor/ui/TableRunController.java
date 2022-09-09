@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -33,6 +34,7 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableElement;
 import org.olat.modules.ceditor.model.TableSettings;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
  * 
@@ -42,13 +44,15 @@ import org.olat.modules.ceditor.model.TableSettings;
  */
 public class TableRunController extends BasicController implements PageRunElement {
 	
+	private TableElement table;
 	private final VelocityContainer mainVC;
 	
 	public TableRunController(UserRequest ureq, WindowControl wControl, TableElement table) {
 		super(ureq, wControl);
+		this.table = table;
 		mainVC = createVelocityContainer("table_run");
 		putInitialPanel(mainVC);
-		loadModel(table);
+		loadModel();
 	}
 
 	@Override
@@ -60,13 +64,24 @@ public class TableRunController extends BasicController implements PageRunElemen
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
 		return false;
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.isElement(table)) {
+				table = (TableElement)cpe.getElement();
+				loadModel();
+			}
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 	
-	protected void loadModel(TableElement table) {
+	protected void loadModel() {
 		TableSettings settings = table.getTableSettings();
 		mainVC.contextPut("settings", settings);
 		TableContent content = table.getTableContent();

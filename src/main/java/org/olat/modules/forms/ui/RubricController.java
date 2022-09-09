@@ -34,9 +34,11 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -66,7 +68,6 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private List<SliderWrapper> sliderWrappers;
 	private Map<String, EvaluationFormResponse> rubricResponses = new HashMap<>();
 	private boolean validationEnabled = true;
-	private boolean propagateDirtiness = true;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -88,7 +89,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		updateForm();
 	}
 	
-	protected void updateForm() {
+	public void updateForm() {
 		RubricWrapper wrapper = new RubricWrapper(rubric);
 		List<Slider> sliders = rubric.getSliders();
 		sliderWrappers = new ArrayList<>(sliders.size());
@@ -246,10 +247,11 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		if(propagateDirtiness) {
-			super.propagateDirtinessToContainer(fiSrc, fe);
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			updateForm();
 		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -278,14 +280,6 @@ public class RubricController extends FormBasicController implements EvaluationF
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	protected boolean isPropagateDirtiness() {
-		return propagateDirtiness;
-	}
-
-	protected void setPropagateDirtiness(boolean propagateDirtiness) {
-		this.propagateDirtiness = propagateDirtiness;
 	}
 
 	@Override

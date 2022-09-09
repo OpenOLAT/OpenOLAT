@@ -39,7 +39,7 @@ import org.olat.modules.ceditor.model.ParagraphElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.HTMLRawInspectorController;
-import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.TextRunComponent;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.ParagraphPart;
 
@@ -73,7 +73,7 @@ public class ParagraphPageElementHandler implements PageElementHandler, PageElem
 		if(element instanceof ParagraphPart) {
 			cmp = ComponentsFactory.getContent((ParagraphPart)element);
 		}
-		return new PageRunComponent(cmp);
+		return new TextRunComponent(cmp);
 	}
 
 	@Override

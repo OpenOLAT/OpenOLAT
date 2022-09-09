@@ -165,10 +165,10 @@ public class ContentEditorPage extends ContentViewPage {
 	 * @return Itself
 	 */
 	public ContentEditorPage closeEditFragment() {
-		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_content_editor')]/div[1]/div[contains(@class,'o_page_container_tools')]");
+		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_content_editor')]/div[1]/div[contains(@class,'o_page_container_tools')]//span[contains(@class,'o_container_name')]");
 		// Move the focus, important
 		new Actions(browser)
-			.moveToElement(browser.findElement(toolbarContainerBy), 5, 5)
+			.moveToElement(browser.findElement(toolbarContainerBy), -50, 0)
 			.click().perform();
 		
 		OOGraphene.waitBusy(browser);

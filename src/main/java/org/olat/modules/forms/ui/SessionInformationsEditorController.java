@@ -50,13 +50,11 @@ import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
  */
 public class SessionInformationsEditorController extends FormBasicController implements PageElementEditorController {
 	
-	private SessionInformationsController sessionInforamtionsCtrl;
 	private SingleSelection obligationEl;
 	private MultipleSelectionElement informationsEl;
 	
 	private final SessionInformations sessionInformations;
 	private final boolean restrictedEdit;
-	private boolean editMode = false;
 	
 	public SessionInformationsEditorController(UserRequest ureq, WindowControl wControl,
 			SessionInformations sessionInformations, boolean restrictedEdit) {
@@ -69,9 +67,6 @@ public class SessionInformationsEditorController extends FormBasicController imp
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		sessionInforamtionsCtrl = new SessionInformationsController(ureq, getWindowControl(), sessionInformations);
-		formLayout.add("preview", sessionInforamtionsCtrl.getInitialFormItem());
-
 		// settings
 		long postfix = CodeHelper.getRAMUniqueID();
 		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("gi_settings_cont_" + postfix,
@@ -106,24 +101,12 @@ public class SessionInformationsEditorController extends FormBasicController imp
 	}
 	
 	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == obligationEl) {
 			doSetObligation();
 		} else if (source == informationsEl) {
 			doEnableInformations();
 		}
-		sessionInforamtionsCtrl.update();
 		fireEvent(ureq, new ChangePartEvent(sessionInformations));
 		super.formInnerEvent(ureq, source, event);
 	}

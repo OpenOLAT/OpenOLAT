@@ -129,8 +129,10 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
 		}
 		
-		sb.append(" for=\"").append(formDispatchId).append("\">")
-		  .append("<input id='").append(formDispatchId).append("' ")
+		sb.append(" for=\"").append(formDispatchId).append("\"")
+		  .append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"")
+		  .append(">");
+		sb.append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
 		  .append(" value='").append(key).append("' ")
 		  .append(" checked='checked' ", selected)
@@ -139,6 +141,8 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		if(source.isEnabled()){
 			// use the selection elements formDispId instead of the one of this element.
 			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
+			//TODO editor force focus to move on
+			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"");
 		} else {
 			//mark as disabled and do not add javascript
 			sb.append(" disabled='disabled' ");

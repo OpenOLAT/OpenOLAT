@@ -66,15 +66,34 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
 		  .append(" class='o_page_part")
 		  .append("'>");
-
-		Component subCmp = cmp.getPageElementComponent();
-		subCmp.getHTMLRendererSingleton().render(fr, sb, subCmp, fragmentUbu, translator, renderResult, args);
-		subCmp.setDirty(false);
+		Component editorCmp = cmp.getEditorPageElementComponent();
+		Component viewCmp = cmp.getViewPageElementComponent();
+		if(editorCmp != null) {
+			renderPartComponent(renderer, sb, editorCmp, true, fragmentUbu, translator, renderResult, args);
+			renderPartComponent(renderer, sb, viewCmp, false, fragmentUbu, translator, renderResult, args);
+		} else if(viewCmp != null) {
+			renderPartComponent(renderer, sb, viewCmp, true, fragmentUbu, translator, renderResult, args);
+		}
 		sb.append("</div>");
-		
+
 		renderInspector(renderer, sb, cmp.getInspectorComponent(), fragmentUbu, translator, renderResult, args);
 
 		sb.append("</div>");
+	}
+	
+	private void renderPartComponent(Renderer renderer, StringOutput sb, Component cmp, boolean visible,
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		if(cmp == null) return;
+		
+		cmp.setVisible(visible);
+		if(visible) {
+			// Takes control of the wrapper markup
+			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+		} else {
+			// Reuse the code to mark the element as invisible
+			renderer.render(sb, cmp, args);
+		}
+		cmp.setDirty(false);
 	}
 	
 	private void renderTools(StringOutput sb, ContentEditorFragmentComponent cmp, URLBuilder fragmentUbu, Translator translator) {
@@ -99,9 +118,15 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
 		  .append(" class='o_page_part o_page_part_view o_page_drop'>");
-		Component subCmp = cmp.getPageElementComponent();
-		subCmp.getHTMLRendererSingleton().render(fr, sb, subCmp, fragmentUbu, translator, renderResult, args);
-		subCmp.setDirty(false);
+		
+		Component editorCmp = cmp.getEditorPageElementComponent();
+		Component viewCmp = cmp.getViewPageElementComponent();
+		if(viewCmp != null) {
+			renderPartComponent(renderer, sb, viewCmp, true, fragmentUbu, translator, renderResult, args);
+			renderPartComponent(renderer, sb, editorCmp, false, fragmentUbu, translator, renderResult, args);
+		} else if(editorCmp != null) {
+			renderPartComponent(renderer, sb, editorCmp, true, fragmentUbu, translator, renderResult, args);
+		}
 		sb.append("</div>");
 	}
 }

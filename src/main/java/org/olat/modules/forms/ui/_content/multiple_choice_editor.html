@@ -1,10 +1,6 @@
-#if($editMode)
-	<div class="o_evaluation_editor_form">
-		$r.render("choices")
-		#if($r.available("choice.add") && $r.visible("choice.add"))
-			<div class="o_button_group">$r.render("choice.add")</div>
-		#end
-	</div>
-#else
-	$r.render("preview")
-#end
+<div class="o_evaluation_editor_form">
+	$r.render("choices")
+	#if($r.available("choice.add") && $r.visible("choice.add"))
+		<div class="o_button_group">$r.render("choice.add")</div>
+	#end
+</div>

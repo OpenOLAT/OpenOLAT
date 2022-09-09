@@ -45,14 +45,12 @@ import org.olat.modules.forms.model.xml.Disclaimer;
  */
 public class DisclaimerEditorController extends FormBasicController implements PageElementEditorController {
 
-	private DisclaimerController disclaimerCtrl;
 	private TextAreaElement textEl;
 	private TextElement agreementEl;
 	private FormLink saveButton;
 
 	private Disclaimer disclaimer;
 	private final boolean restrictedEdit;
-	private boolean editMode = false;
 	
 	public DisclaimerEditorController(UserRequest ureq, WindowControl wControl, Disclaimer disclaimer,
 			boolean restrictedEdit) {
@@ -65,12 +63,9 @@ public class DisclaimerEditorController extends FormBasicController implements P
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		disclaimerCtrl = new DisclaimerController(ureq, getWindowControl(), disclaimer);
-		formLayout.add("preview", disclaimerCtrl.getInitialFormItem());
-
 		// settings
 		long postfix = CodeHelper.getRAMUniqueID();
-		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("sc_settings_cont_" + postfix,
+		FormLayoutContainer settingsCont = FormLayoutContainer.createVerticalFormLayout("sc_settings_cont_" + postfix,
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
@@ -86,17 +81,6 @@ public class DisclaimerEditorController extends FormBasicController implements P
 		
 		saveButton = uifactory.addFormLink("save_" + prefix, "save", null, settingsCont, Link.BUTTON);
 		saveButton.setVisible(!restrictedEdit);
-	}
-	
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override
@@ -115,7 +99,6 @@ public class DisclaimerEditorController extends FormBasicController implements P
 		disclaimer.setText(text);
 		String agreement = agreementEl.getValue();
 		disclaimer.setAgreement(agreement);
-		disclaimerCtrl.update();
 
 		fireEvent(ureq, new ChangePartEvent(disclaimer));
 		fireEvent(ureq, new ClosePartEvent(disclaimer));

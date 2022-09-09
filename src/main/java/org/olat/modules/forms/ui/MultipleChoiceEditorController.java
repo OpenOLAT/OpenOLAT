@@ -23,7 +23,9 @@ import static org.olat.core.gui.components.updown.UpDown.Layout.LINK_HORIZONTAL;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,8 +49,8 @@ import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
@@ -66,11 +68,8 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	private FormLink addChoiceEl;
 	private FlexiTableElement tableEl;
 	private ChoiceDataModel dataModel;
-
-	private MultipleChoiceController multipleChoiceCtrl;
 	
 	private final MultipleChoice multipleChoice;
-	private boolean editMode = false;
 	private final boolean restrictedEdit;
 	
 	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice, boolean restrictedEdit) {
@@ -78,25 +77,10 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		this.multipleChoice = multipleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
-		setEditMode(editMode);
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		multipleChoiceCtrl = new MultipleChoiceController(ureq, getWindowControl(), multipleChoice);
-		formLayout.add("preview", multipleChoiceCtrl.getInitialFormItem());
-
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
@@ -120,27 +104,35 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	private void loadModel() {
 		List<Choice> choices = multipleChoice.getChoices().asList();
+		Map<String, ChoiceRow> rowsMap = dataModel.getObjects().stream()
+				.collect(Collectors.toMap(ChoiceRow::getChoiceId, row -> row));
+		
 		List<ChoiceRow> rows = new ArrayList<>(choices.size());
 		for (int i = 0; i < choices.size(); i++) {
 			Choice choice = choices.get(i);
+			String choiceId = choice.getId();
+			ChoiceRow choiceRow = rowsMap.get(choice.getId());
+			if(choiceRow == null) {
+				// move
+				UpDown upDown = UpDownFactory.createUpDown("ud_" + choiceId, LINK_HORIZONTAL,
+						flc.getFormItemComponent(), this);
+				upDown.setUserObject(choice);
+				if (i == 0) {
+					upDown.setTopmost(true);
+				}
+				if (i == choices.size() - 1) {
+					upDown.setLowermost(true);
+				}
+	
+				// value
+				TextElement valueEl = uifactory.addTextElement("o_value_" + choiceId, null, 255, null, flc);
+				valueEl.setValue(choice.getValue());
+				valueEl.addActionListener(FormEvent.ONCHANGE);
 
-			// move
-			UpDown upDown = UpDownFactory.createUpDown("ud_" + CodeHelper.getRAMUniqueID(), LINK_HORIZONTAL,
-					flc.getFormItemComponent(), this);
-			upDown.setUserObject(choice);
-			if (i == 0) {
-				upDown.setTopmost(true);
+				choiceRow = new ChoiceRow(choice, upDown, valueEl);
+			} else {
+				choiceRow.getValueEl().setFocus(false);
 			}
-			if (i == choices.size() - 1) {
-				upDown.setLowermost(true);
-			}
-
-			// value
-			TextElement valueEl = uifactory.addTextElement("o_value_" + CodeHelper.getRAMUniqueID(), null, 255, null, flc);
-			valueEl.setValue(choice.getValue());
-			valueEl.addActionListener(FormEvent.ONCHANGE);
-
-			ChoiceRow choiceRow = new ChoiceRow(choice, upDown, valueEl);
 			rows.add(choiceRow);
 		}
 		dataModel.setObjects(rows);
@@ -148,11 +140,19 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 	
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof TextElement) {
-			doSave();
+			doSave(ureq);
 		} else if (addChoiceEl == source) {
 			doAddChoice();
+			doSave(ureq);
 		}  else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -160,9 +160,9 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 				int index = se.getIndex();
 				if (CMD_DELETE.equals(cmd)) {
 					doDelete(index);
+					doSave(ureq);
 				}
 			}
-			multipleChoiceCtrl.updateForm();
 		}
 	}
 	
@@ -171,14 +171,14 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		if (event instanceof UpDownEvent) {
 			UpDownEvent ude = (UpDownEvent) event;
 			doMove((Choice)ude.getUserObject(), ude.getDirection());
-			multipleChoiceCtrl.updateForm();
+			doSave(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private void doSave() {
+	private void doSave(UserRequest ureq) {
 		doSaveChoices();
-		multipleChoiceCtrl.updateForm();
+		fireEvent(ureq, new ChangePartEvent(multipleChoice));
 	}
 	
 	private void doSaveChoices() {
@@ -195,7 +195,6 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		choice.setValue(translate("choice.example"));
 		multipleChoice.getChoices().addNotPresent(choice);
 		loadModel();
-		multipleChoiceCtrl.updateForm();
 	}
 
 	private void doMove(Choice choice, Direction direction) {

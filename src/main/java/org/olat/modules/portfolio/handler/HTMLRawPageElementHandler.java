@@ -38,7 +38,7 @@ import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
-import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.TextRunComponent;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
 
@@ -72,7 +72,7 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 		if(element instanceof HTMLPart) {
 			cmp = ComponentsFactory.getContent((HTMLPart)element);
 		}
-		return new PageRunComponent(cmp);
+		return new TextRunComponent(cmp);
 	}
 
 	@Override

@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
@@ -69,10 +70,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	private FlexiTableElement tableEl;
 	private ChoiceDataModel dataModel;
 
-	private SingleChoiceController singleChoiceCtrl;
-	
-	private final SingleChoice singleChoice;
-	private boolean editMode = false;
+	private SingleChoice singleChoice;
 	private boolean restrictedEdit;
 	
 	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, boolean restrictedEdit) {
@@ -80,25 +78,10 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		this.singleChoice = singleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
-		setEditMode(editMode);
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		singleChoiceCtrl = new SingleChoiceController(ureq, getWindowControl(), singleChoice);
-		formLayout.add("preview", singleChoiceCtrl.getInitialFormItem());
-
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
@@ -150,9 +133,16 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 	
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof TextElement) {
-			doSave();
+			doSave(ureq);
 		} else if (addChoiceEl == source) {
 			doAddChoice();
 		} else if(tableEl == source) {
@@ -162,10 +152,22 @@ public class SingleChoiceEditorController extends FormBasicController implements
 				int index = se.getIndex();
 				if (CMD_DELETE.equals(cmd)) {
 					doDelete(index);
+					doSave(ureq);
 				}
 			}
-			singleChoiceCtrl.updateForm();
 		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof RubricInspectorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.isElement(singleChoice)) {
+				singleChoice = (SingleChoice)cpe.getElement();
+				
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -173,14 +175,14 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		if (event instanceof UpDownEvent) {
 			UpDownEvent ude = (UpDownEvent) event;
 			doMove((Choice)ude.getUserObject(), ude.getDirection());
-			singleChoiceCtrl.updateForm();
+			doSave(ureq);
 		} 
 		super.event(ureq, source, event);
 	}
 	
-	private void doSave() {
+	private void doSave(UserRequest ureq) {
 		doSaveChoices();
-		singleChoiceCtrl.updateForm();
+		fireEvent(ureq, new ChangePartEvent(singleChoice));
 	}
 	
 	private void doSaveChoices() {
@@ -197,7 +199,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		choice.setValue(translate("choice.example"));
 		singleChoice.getChoices().addNotPresent(choice);
 		loadModel();
-		singleChoiceCtrl.updateForm();
 	}
 
 	private void doMove(Choice choice, Direction direction) {

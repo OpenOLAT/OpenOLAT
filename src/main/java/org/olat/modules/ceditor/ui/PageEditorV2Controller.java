@@ -50,6 +50,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
@@ -74,6 +75,7 @@ import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
 import org.olat.modules.forms.model.xml.Container;
+import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 
 /**
  * 
@@ -140,13 +142,13 @@ public class PageEditorV2Controller extends BasicController {
 		loadModel(ureq);
 		putInitialPanel(mainVC);
 		
-		wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_ceditor");
+		// wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_ceditor");
 	}
 	
 	@Override
 	protected void doDispose() {
 		super.doDispose();
-		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_ceditor");
+		//getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_ceditor");
 	}
 
 	public void loadModel(UserRequest ureq) {
@@ -764,8 +766,12 @@ public class PageEditorV2Controller extends BasicController {
 			logError("Cannot find an handler of type: " + element.getType(), null);
 			return null;
 		}
+		
+		PageRunElement viewPart = handler.getContent(ureq, getWindowControl(), element, new StandardMediaRenderingHints());
 		Controller editorPart = handler.getEditor(ureq, getWindowControl(), element);
-		listenTo(editorPart);
+		if(editorPart != null) {
+			listenTo(editorPart);
+		}
 		String cmpId = "frag-" + (++counter);
 		
 		PageElementInspectorController inspectorPart = handler.getInspector(ureq, getWindowControl(), element);
@@ -778,11 +784,20 @@ public class PageEditorV2Controller extends BasicController {
 			listenTo(inspectorPart);
 		}
 		
+		if(viewPart instanceof ControllerEventListener) {
+			if(editorPart != null) {
+				editorPart.addControllerListener((ControllerEventListener)viewPart);
+			}
+			if(inspectorPart != null) {
+				inspectorPart.addControllerListener((ControllerEventListener)viewPart);
+			}
+		}
+		
 		ContentEditorFragment cmp;
 		if(element instanceof ContainerElement) {
 			cmp = new ContentEditorContainerComponent(cmpId, (ContainerEditorController)editorPart, inspectorPart);
 		} else {
-			cmp = new ContentEditorFragmentComponent(cmpId, element, editorPart, inspectorPart);
+			cmp = new ContentEditorFragmentComponent(cmpId, element, viewPart, editorPart, inspectorPart);
 		}
 		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());

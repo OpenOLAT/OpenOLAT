@@ -32,9 +32,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
@@ -57,7 +59,7 @@ public class SessionInformationsController extends FormBasicController implement
 	private List<SessionInformationWrapper> sessionInformationWrappers = new ArrayList<>();
 	private FormLink fillInButton;
 	
-	private final SessionInformations sessionInformations;
+	private SessionInformations sessionInformations;
 	private final ExecutionIdentity executionIdentity;
 	private boolean validationEnabled = true;
 
@@ -118,6 +120,15 @@ public class SessionInformationsController extends FormBasicController implement
 		informationEl.setMandatory(isMandatory());
 		informationEl.setEnabled(isNotAutoFill());
 		return new SessionInformationWrapper(informationType, name, informationEl);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			sessionInformations = (SessionInformations)cpe.getElement();
+			update();
+		}
 	}
 
 	@Override

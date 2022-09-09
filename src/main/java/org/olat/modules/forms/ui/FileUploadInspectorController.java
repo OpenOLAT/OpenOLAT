@@ -35,7 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
-import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
@@ -47,8 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-//TODO editor to delete
-public class FileUploadEditorController extends FormBasicController implements PageElementEditorController {
+public class FileUploadInspectorController extends FormBasicController implements PageElementInspectorController {
 	
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
@@ -63,7 +62,7 @@ public class FileUploadEditorController extends FormBasicController implements P
 	@Autowired
 	private EvaluationFormsModule evaluationFormsModule;
 
-	public FileUploadEditorController(UserRequest ureq, WindowControl wControl, FileUpload fileUpload, boolean restrictedEdit) {
+	public FileUploadInspectorController(UserRequest ureq, WindowControl wControl, FileUpload fileUpload, boolean restrictedEdit) {
 		super(ureq, wControl, "file_upload_editor");
 		this.fileUpload = fileUpload;
 		this.restrictedEdit = restrictedEdit;
@@ -71,10 +70,15 @@ public class FileUploadEditorController extends FormBasicController implements P
 	}
 
 	@Override
+	public String getTitle() {
+		return translate("inspector.formfileupload");
+	}
+
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// settings
 		long postfix = CodeHelper.getRAMUniqueID();
-		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("file_upload_cont_" + postfix,
+		FormLayoutContainer settingsCont = FormLayoutContainer.createVerticalFormLayout("file_upload_cont_" + postfix,
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
@@ -83,7 +87,7 @@ public class FileUploadEditorController extends FormBasicController implements P
 				.toArray(String[]::new);
 		String[] values = evaluationFormsModule.getOrderedFileUploadLimitsKB().stream().map(Formatter::formatKBytes)
 				.toArray(String[]::new);
-		fileLimitEl = uifactory.addRadiosHorizontal("upload_limit_" + postfix, "file.upload.limit", settingsCont, keys,
+		fileLimitEl = uifactory.addRadiosVertical("upload_limit_" + postfix, "file.upload.limit", settingsCont, keys,
 				values);
 		fileLimitEl.select(getInitialMaxFileUploadLimitKey(keys), true);
 		fileLimitEl.addActionListener(FormEvent.ONCHANGE);
@@ -97,7 +101,7 @@ public class FileUploadEditorController extends FormBasicController implements P
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
 				obligationKV.keys(), obligationKV.values());
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, fileUpload.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !fileUpload.isMandatory());

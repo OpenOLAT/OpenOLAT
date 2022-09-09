@@ -31,10 +31,12 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -56,7 +58,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	private TextAreaElement multiRowEl;
 	private DateChooser dateEl;
 	
-	private final TextInput textInput;
+	private TextInput textInput;
 	private final boolean editor;
 	private boolean singleRow;
 	private boolean isDate;
@@ -107,6 +109,16 @@ public class TextInputController extends FormBasicController implements Evaluati
 		singleRowEl.setVisible(singleRow);
 		multiRowEl.setVisible(!singleRow && !isDate);
 		dateEl.setVisible(isDate);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			textInput = (TextInput)cpe.getElement();
+			update();
+			flc.setDirty(true);
+		}
 	}
 
 	@Override

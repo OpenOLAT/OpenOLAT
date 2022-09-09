@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
 import org.olat.modules.ceditor.PageRunElement;
 
 /**
@@ -31,7 +34,7 @@ import org.olat.modules.ceditor.PageRunElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRunComponent implements PageRunElement {
+public class PageRunComponent implements PageRunElement, ControllerEventListener {
 	
 	private final Component component;
 	
@@ -47,5 +50,10 @@ public class PageRunComponent implements PageRunElement {
 	@Override
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
 		return true;
+	}
+
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		//
 	}
 }

@@ -36,25 +36,11 @@ import org.olat.modules.ceditor.PageElementEditorController;
  *
  */
 public class SpacerEditorController extends FormBasicController implements PageElementEditorController {
-	
-	private boolean editMode = false;
 
 	public SpacerEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "spacer_editor");
 
 		initForm(ureq);
-		setEditMode(editMode);
-	}
-
-	@Override
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	@Override
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override

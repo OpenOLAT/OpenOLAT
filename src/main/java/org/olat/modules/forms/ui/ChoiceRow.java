@@ -42,6 +42,10 @@ public class ChoiceRow {
 		this.upDown = upDown;
 	}
 	
+	public String getChoiceId() {
+		return choice.getId();
+	}
+	
 	public Choice getChoice() {
 		return choice;
 	}
