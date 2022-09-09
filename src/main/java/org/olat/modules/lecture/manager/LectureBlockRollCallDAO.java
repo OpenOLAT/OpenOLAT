@@ -372,8 +372,8 @@ public class LectureBlockRollCallDAO {
 		return coaches;
 	}
 	
-	private Map<Long,String> getCoaches(Set<Long> blockKeys, String teacherSeaparator) {
-		if(blockKeys == null || blockKeys.isEmpty()) {
+	protected Map<Long,String> getCoaches(Set<Long> blockKeysSet, String teacherSeaparator) {
+		if(blockKeysSet == null || blockKeysSet.isEmpty()) {
 			return Collections.emptyMap();
 		}
 		
@@ -388,20 +388,33 @@ public class LectureBlockRollCallDAO {
 		  .append(" where membership.role='").append("teacher").append("' and block.key in (:blockKeys)");
 		
 		//get all, it's quick
-		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
-				.createQuery(sc.toString(), Object[].class)
-				.setParameter("blockKeys", new ArrayList<>(blockKeys))
-				.getResultList();
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class);
+		
+		int count = 0;
+		int batch = 5000;
+		List<Long> blockKeys = new ArrayList<>(blockKeysSet);
 		Map<Long,String> coaches = new HashMap<>();
-		for(Object[] rawCoach:rawCoachs) {
-			Long blockKey = (Long)rawCoach[0];
-			Identity coach = (Identity)rawCoach[1];
-			String fullname = userManager.getUserDisplayName(coach);
-			if(coaches.containsKey(blockKey)) {
-				fullname = coaches.get(blockKey) + " " + teacherSeaparator + " " + fullname;
+		do {
+			int toIndex = Math.min(count + batch, blockKeys.size());
+			List<Long> toLoad = blockKeys.subList(count, toIndex);
+			List<Object[]> rawCoachs = query
+				.setParameter("blockKeys", toLoad)
+				.getResultList();
+			
+			for(Object[] rawCoach:rawCoachs) {
+				Long blockKey = (Long)rawCoach[0];
+				Identity coach = (Identity)rawCoach[1];
+				String fullname = userManager.getUserDisplayName(coach);
+				if(coaches.containsKey(blockKey)) {
+					fullname = coaches.get(blockKey) + " " + teacherSeaparator + " " + fullname;
+				}
+				coaches.put(blockKey, fullname);
 			}
-			coaches.put(blockKey, fullname);
-		}
+			
+			count += batch;
+		} while(count < blockKeys.size());
+		
 		return coaches;
 	}
 	

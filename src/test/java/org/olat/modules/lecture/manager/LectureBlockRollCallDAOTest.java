@@ -22,7 +22,10 @@ package org.olat.modules.lecture.manager;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
@@ -39,6 +42,7 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -60,6 +64,8 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
@@ -539,6 +545,22 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		Assert.assertEquals(4l, userStats.getTotalAttendedLectures());
 		Assert.assertEquals(4l, userStats.getTotalEffectiveLectures());
 		Assert.assertEquals(4l, userStats.getTotalPersonalPlannedLectures());
+	}
+	
+	@Test
+	public void getCoaches() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-15");
+		LectureBlock lectureBlock = createMinimalLectureBlock(3);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		Set<Long> blockKeys = new HashSet<>();
+		blockKeys.add(lectureBlock.getKey());
+		Map<Long,String> coaches = lectureBlockRollCallDao.getCoaches(blockKeys, ",");
+		Assert.assertEquals(1, coaches.size());
+		String teacherName = coaches.values().iterator().next();
+		System.out.println(teacherName);
+		Assert.assertEquals(teacher.getUser().getLastName() + ", " + teacher.getUser().getFirstName(), teacherName);
 	}
 
 	private LectureBlock createMinimalLectureBlock(int numOfLectures) {
