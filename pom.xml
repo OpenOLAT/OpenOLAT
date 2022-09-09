@@ -1329,18 +1329,6 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>openolat-plugin-repo</id>
-			<name>OpenOLAT Public Maven Repository Group</name>
-			<url>https://nexus.openolat.org/nexus/content/groups/public</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-		</pluginRepository>
-	</pluginRepositories>
 	<build>
 		<!-- Useful maven commands: o mvn dependency:tree - check to see what other 
 			dependencies get downloaded by an artifact o Maven lifecycle: Each phase 
