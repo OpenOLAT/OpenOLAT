@@ -1827,7 +1827,7 @@
 		<dependency>
 			<groupId>org.openolat.jamwiki</groupId>
 			<artifactId>jamwiki-core</artifactId>
-			<version>1.0.4</version>
+			<version>1.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
