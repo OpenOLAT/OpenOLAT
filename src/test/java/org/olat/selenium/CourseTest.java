@@ -38,7 +38,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
@@ -554,19 +553,18 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void catalogRoundTrip(@Drone @Administrator WebDriver adminBrowser,
-			@Drone @User WebDriver userBrowser)
+	public void catalogRoundTrip()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		//administrator create the categories in the catalog
-		LoginPage adminLogin = LoginPage.load(adminBrowser, deploymentUrl);
+		LoginPage adminLogin = LoginPage.load(browser, deploymentUrl);
 		adminLogin
 			.loginAs("administrator", "openolat")
 			.resume();
-		NavigationPage adminNavBar = NavigationPage.load(adminBrowser);
+		NavigationPage adminNavBar = NavigationPage.load(browser);
 		
 		String node1 = "First level " + UUID.randomUUID();
 		String node2_1 = "Second level first element " + UUID.randomUUID();
@@ -608,12 +606,12 @@ public class CourseTest extends Deployments {
 		
 		//User logs in, go to "My courses", navigate the catalog and start
 		//the course
-		LoginPage userLogin = LoginPage.load(userBrowser, deploymentUrl);
+		LoginPage userLogin = LoginPage.load(browser, deploymentUrl);
 		userLogin
 			.loginAs(user.getLogin(), user.getPassword())
 			.resume();
 
-		NavigationPage userNavBar = NavigationPage.load(userBrowser);
+		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
 			.openCatalog()
@@ -623,8 +621,8 @@ public class CourseTest extends Deployments {
 			.start();
 		
 		By courseTitleBy = By.cssSelector("div.o_course_run h2");
-		OOGraphene.waitElement(courseTitleBy, userBrowser);
-		WebElement courseTitleEl = userBrowser.findElement(courseTitleBy);
+		OOGraphene.waitElement(courseTitleBy, browser);
+		WebElement courseTitleEl = browser.findElement(courseTitleBy);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
 	}
 	
@@ -1216,8 +1214,7 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void coursePassword(@Drone @Participant WebDriver kanuBrowser,
-			@Drone @User WebDriver ryomouBrowser)
+	public void coursePassword(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1283,12 +1280,12 @@ public class CourseTest extends Deployments {
 			.assertOnTitle(infoTitle);
 		
 		//First user go to the course
-		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
+		LoginPage kanuLoginPage = LoginPage.load(browser, deploymentUrl);
 		kanuLoginPage
 			.loginAs(kanu.getLogin(), kanu.getPassword())
 			.resume();
 
-		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
+		NavigationPage kanuNavBar = NavigationPage.load(browser);
 		kanuNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1297,7 +1294,7 @@ public class CourseTest extends Deployments {
 			.start();
 		
 		//go to the structure, give the password
-		CoursePageFragment kanuCourse = new CoursePageFragment(kanuBrowser);
+		CoursePageFragment kanuCourse = new CoursePageFragment(browser);
 		MenuTreePageFragment kanuTree = kanuCourse
 			.tree()
 			.selectWithTitle(structureTitle.substring(0, 20));
@@ -1558,8 +1555,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void confirmMembershipForCourse(@Drone @Author WebDriver authorBrowser,
-			@Drone @Participant WebDriver participantBrowser,
-			@Drone @Student WebDriver reiBrowser)
+			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1633,12 +1629,12 @@ public class CourseTest extends Deployments {
 		String courseUrl = authorBrowser.getCurrentUrl();
 
 		//rest url -> login -> accept membership
-		reiBrowser.get(courseUrl);
-		new LoginPage(reiBrowser)
+		participantBrowser.get(courseUrl);
+		new LoginPage(participantBrowser)
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.assertOnMembershipConfirmation()
 			.confirmMembership();
-		new CoursePageFragment(reiBrowser)
+		new CoursePageFragment(participantBrowser)
 			.assertOnCoursePage()
 			.assertOnTitle(courseTitle);
 		
@@ -1674,7 +1670,7 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createContentPackage(@Drone @User WebDriver ryomouBrowser)
+	public void createContentPackage()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1733,11 +1729,11 @@ public class CourseTest extends Deployments {
 			.publish();
 		
 		//a user search the content package
-		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1745,7 +1741,7 @@ public class CourseTest extends Deployments {
 			.select(cpTitle)
 			.start();
 		
-		CPPage ryomouPage = new CPPage(ryomouBrowser);
+		CPPage ryomouPage = new CPPage(browser);
 		ryomouPage
 			.assertPageDeleted(deletedPage)
 			.assertInIFrame(By.xpath("//h1[text()[contains(.,'Small HTML page')]]"))

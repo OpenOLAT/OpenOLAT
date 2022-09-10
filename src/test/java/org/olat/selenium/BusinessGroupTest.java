@@ -281,8 +281,7 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createGroupWithWaitingList(@Drone @Participant WebDriver participantBrowser,
-			@Drone @Student WebDriver studentBrowser)
+	public void createGroupWithWaitingList(@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -340,20 +339,20 @@ public class BusinessGroupTest extends Deployments {
 		
 		
 		//student search published groups
-		LoginPage studentLoginPage = LoginPage.load(studentBrowser, deploymentUrl);
+		LoginPage studentLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		//tools
 		studentLoginPage
 			.loginAs(student.getLogin(), student.getPassword())
 			.resume();
 		//groups
-		NavigationPage studentNavBar = NavigationPage.load(studentBrowser);
+		NavigationPage studentNavBar = NavigationPage.load(participantBrowser);
 		studentNavBar
-				.openGroups(studentBrowser)
+				.openGroups(participantBrowser)
 				.publishedGroups()
 				.bookGroup(groupName)
 				.bookToken(token);
 		//are we that we are in the right group?
-		GroupPage.getGroup(studentBrowser)
+		GroupPage.getGroup(participantBrowser)
 			.assertOnWaitingList(groupName);
 		
 		group = GroupPage.getGroup(browser)
@@ -823,7 +822,7 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void enrollmentWithMultiEnrollment(@Drone @User WebDriver ryomouBrowser)
+	public void enrollmentWithMultiEnrollment()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -876,11 +875,11 @@ public class BusinessGroupTest extends Deployments {
 		}
 				
 		//Ryomou open the course	
-		LoginPage.load(ryomouBrowser, deploymentUrl)
+		LoginPage.load(browser, deploymentUrl)
 			.loginAs(ryomou)
 			.resume();
 		
-		NavigationPage participantNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
 			.openMyCourses()
 			.openSearch()
@@ -888,15 +887,15 @@ public class BusinessGroupTest extends Deployments {
 			.select(courseTitle)
 			.start();
 		
-		OOGraphene.waitBusy(ryomouBrowser);
+		OOGraphene.waitBusy(browser);
 		
 		//go to the enrollment
-		CoursePageFragment participantCourse = new CoursePageFragment(ryomouBrowser);
+		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		participantCourse
 			.tree()
 			.selectWithTitle(enNodeTitle);
 		
-		EnrollmentPage enrollmentPage = new EnrollmentPage(ryomouBrowser);
+		EnrollmentPage enrollmentPage = new EnrollmentPage(browser);
 		enrollmentPage
 			.assertOnEnrolmentPage()
 			.multiEnroll(2);

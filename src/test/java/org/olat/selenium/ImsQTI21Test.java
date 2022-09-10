@@ -437,7 +437,7 @@ public class ImsQTI21Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21Course_dateTest(@Drone @Participant WebDriver participantBrowser)
+	public void qti21Course_dateTest()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -502,11 +502,11 @@ public class ImsQTI21Test extends Deployments {
 			.quickPublish();
 		
 		//a user search the course and make the test
-		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
 			.loginAs(participant.getLogin(), participant.getPassword())
 			.resume();
-		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -514,12 +514,12 @@ public class ImsQTI21Test extends Deployments {
 			.select(courseTitle);
 		
 		// open the course and see the test
-		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);		
+		CoursePageFragment participantCourse = CoursePageFragment.getCourse(browser);		
 		participantCourse
 			.tree()
 			.selectWithTitle(testNodeTitle);
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(participantBrowser);
+				.getQTI21Page(browser);
 		qtiPage
 			.assertOnStart()
 			.start()
@@ -547,7 +547,7 @@ public class ImsQTI21Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21TestFlow_suspend(@Drone @User WebDriver ryomouBrowser)
+	public void qti21TestFlow_suspend()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -587,11 +587,11 @@ public class ImsQTI21Test extends Deployments {
 			.assertOnAssessmentItem("Single choice");
 		
 		//a user search the test
-		LoginPage userLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -600,12 +600,12 @@ public class ImsQTI21Test extends Deployments {
 			.start();
 		
 		QTI21Page userQtiPage = QTI21Page
-				.getQTI21Page(ryomouBrowser);
+				.getQTI21Page(browser);
 		userQtiPage
 			.assertOnAssessmentItem("Single choice")
 			.suspendTest();
 		//log out
-		new UserToolsPage(ryomouBrowser)
+		new UserToolsPage(browser)
 			.logout();
 		
 		//log in and resume test
@@ -613,7 +613,7 @@ public class ImsQTI21Test extends Deployments {
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		userQtiPage = QTI21Page
-				.getQTI21Page(ryomouBrowser);
+				.getQTI21Page(browser);
 		userQtiPage
 			.assertOnAssessmentItem("Single choice")
 			.answerSingleChoiceWithParagraph("Correct")
@@ -627,7 +627,7 @@ public class ImsQTI21Test extends Deployments {
 			.suspendTest();
 		
 		//second log out
-		new UserToolsPage(ryomouBrowser)
+		new UserToolsPage(browser)
 			.logout();
 		
 		//log in and resume test
@@ -635,7 +635,7 @@ public class ImsQTI21Test extends Deployments {
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		userQtiPage = QTI21Page
-				.getQTI21Page(ryomouBrowser);
+				.getQTI21Page(browser);
 		userQtiPage
 			.assertOnAssessmentItem("Numerical input")
 			.answerGapText("42", "_RESPONSE_1")
