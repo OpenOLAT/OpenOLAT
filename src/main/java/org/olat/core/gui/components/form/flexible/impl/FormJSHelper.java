@@ -106,7 +106,7 @@ public class FormJSHelper {
 
 	public static String getJSFnCallFor(Form form, String id, int actionIndex, boolean newWindow, String tmpCommand) {
 		StringBuilder sb = new StringBuilder(64);
-		sb.append("o_ffEvent('")
+		sb.append("o_ffEvent(event,'")
 		  .append(form.getFormName()).append("','")
 		  .append(form.getDispatchFieldId()).append("','")
 		  .append(id).append("','")

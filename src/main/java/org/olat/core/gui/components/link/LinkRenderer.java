@@ -429,7 +429,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		} else {
 			boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
 			String href = hasUrl ? link.getUrl() : "javascript:;";
-			sb.append("href=\"").append(href).append("\" onclick=\"")
+			// Prevent 2 submits by onchange and click (button or submit) events
+			sb.append("href=\"").append(href).append("\" onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"")
 			  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
 			  .append("; ").append(" return false;", hasUrl).append("\" ");
 		}

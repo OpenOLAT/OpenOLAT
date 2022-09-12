@@ -1346,7 +1346,14 @@ function showerror(e) {
 // parameter submitted is the action value triggering the submit.
 // A 'submit' is not the same as 'submit and validate'. if the form should validate
 // is defined by the triggered component.
-function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt, newWindow, tcid) {
+function o_ffEvent(event, formNam, dispIdField, dispId, eventIdField, eventInt, newWindow, tcid) {
+	// Prevent 2 submits by onchange and click (button or submit) events
+	if(o_info.preventOnchange && event.type === "change") {
+		event.preventDefault();
+		event.stopPropagation();
+		return;
+	}
+	
 	//set hidden fields and submit form
 	var dispIdEl = document.getElementById(dispIdField);
 	var defDispId = dispIdEl.value;
@@ -1418,6 +1425,7 @@ function o_XHRSubmit(formNam) {
 	}
 	
 	o_info.submit=null;
+	o_info.preventOnchange=false;
 	var newWindow = o_info.newWindow;
 	o_info.newWindow = null;
 	if(o_info.linkbusy) {
@@ -2026,7 +2034,7 @@ function addFormDirtyExclusion(elementId) {
 
 function o_submitByEnter(event) {
 	if(event.which == 13) {
-		o_info.submit="submit"
+		o_info.submit="submit";
 	} else {
 		o_info.submit=null;
 	}

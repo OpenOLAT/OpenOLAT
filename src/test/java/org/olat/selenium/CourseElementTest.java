@@ -33,7 +33,6 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.course.learningpath.FullyAssessedTrigger;
@@ -2040,7 +2039,6 @@ public class CourseElementTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	@Ignore
 	@RunAsClient
 	public void survey()
 	throws IOException, URISyntaxException {
