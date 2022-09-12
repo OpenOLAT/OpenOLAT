@@ -23,10 +23,12 @@ import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.help.ui.HelpAdminController;
@@ -192,6 +194,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private Controller toolsCtrl;
 	private CloseableModalController cmc;
 	private SendMailController sendMailCtrl;
+	private ModifyStatusController modifyStatusCtrl;
 	private StepsMainRunController wizardCtrl;
 	private StepsMainRunController modifyOwnersWizardCtrl;
 	private UserSearchController userSearchCtr;
@@ -222,6 +225,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
+	private FormLink modifyStatusButton;
 	private FormLink modifyOwnersButton;
 	private FormLink deletePermanentlyButton;
 
@@ -769,6 +773,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(hasAuthorRight && !configuration.isSelectRepositoryEntries()) {			
 			sendMailButton = uifactory.addFormLink("tools.send.mail", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(sendMailButton);
+			modifyStatusButton = uifactory.addFormLink("tools.modify.status", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(modifyStatusButton);
 			modifyOwnersButton = uifactory.addFormLink("tools.modify.owners", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(modifyOwnersButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
@@ -905,6 +911,12 @@ public class AuthorListController extends FormBasicController implements Activat
 				cleanUp();
 				launchEditDescription(ureq, newEntry);
 			}
+		} else if(modifyStatusCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				reloadRows();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(modifyOwnersWizardCtrl == source) {
 			if (event.equals(Event.CHANGED_EVENT) ) {
 				getWindowControl().pop();
@@ -993,6 +1005,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(modifyOwnersWizardCtrl);
 		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(modifyStatusCtrl);
 		removeAsListenerAndDispose(copyWrapperCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
 		removeAsListenerAndDispose(importUrlCtrl);
@@ -1008,6 +1021,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		modifyOwnersWizardCtrl = null;
 		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
+		modifyStatusCtrl = null;
 		copyWrapperCtrl = null;
 		userSearchCtr = null;
 		importUrlCtrl = null;
@@ -1028,7 +1042,14 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(modifyOwnersButton == source) {
+		if(modifyStatusButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if(!rows.isEmpty()) {
+				doModifyStatus(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
+			}
+		} else if(modifyOwnersButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doModifyOwners(ureq, rows);
@@ -1360,6 +1381,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(sendMailButton != null) {
 			sendMailButton.setVisible(deletedTab != tab);
 		}
+		if(modifyStatusButton != null) {
+			modifyStatusButton.setVisible(deletedTab != tab);
+		}
 		if(modifyOwnersButton != null) {
 			modifyOwnersButton.setVisible(deletedTab != tab);
 		}
@@ -1388,6 +1412,27 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doModifyStatus(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		if(guardModalController(modifyStatusCtrl)) return;
+		
+		Collection<Long> rowKeys = rows.stream().map(AuthoringEntryRow::getKey).collect(Collectors.toSet());
+		List<RepositoryEntry> entries = repositoryManager.lookupRepositoryEntries(rowKeys);
+		if(entries.isEmpty()) {
+			showWarning("bulk.update.nothing.applicable.selected");
+		} else {
+			removeAsListenerAndDispose(modifyStatusCtrl);
+			removeAsListenerAndDispose(cmc);
+			
+			modifyStatusCtrl = new ModifyStatusController(ureq, getWindowControl(), entries);
+			listenTo(modifyStatusCtrl);
+			
+			String title = translate("tools.modify.status");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), modifyStatusCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doModifyOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
