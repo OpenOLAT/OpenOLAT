@@ -21,7 +21,6 @@ package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -43,13 +42,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -95,7 +94,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private FormLink showMicrositeLinks;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
-	private MultipleSelectionElement organisationsEl;
+	private MultiSelectionFilterElement organisationsEl;
 	private SelectionElement authorCanEl;
 	
 	private final boolean status;
@@ -386,23 +385,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			}
 		}
 		
-		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
-		
-		List<String> keyList = new ArrayList<>();
-		List<String> valueList = new ArrayList<>();
-		for(Organisation organisation:organisationList) {
-			keyList.add(organisation.getKey().toString());
-			valueList.add(organisation.getDisplayName());
-		}
-		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
-				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]),
-				null, null);
-		organisationsEl.setEnabled(!RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.organisations) && !readOnly);
-		for(Organisation reOrganisation:reOrganisations) {
-			if(keyList.contains(reOrganisation.getKey().toString())) {
-				organisationsEl.select(reOrganisation.getKey().toString(), true);
-			}
-		}
+		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisations);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "cif.organisations", formLayout, getWindowControl(), organisationSV);
+		reOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
 	public void validateOfferAvailable() {
@@ -462,7 +447,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
-			if(organisationsEl.isVisible() && !organisationsEl.isAtLeastSelected(1)) {
+			if(organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
 				organisationsEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}

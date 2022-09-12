@@ -40,12 +40,15 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.OrganisationUIFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,7 +80,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private static final String formIdentifyer = UsermanagerUserSearchForm.class.getCanonicalName();
 	
 	private MultipleSelectionElement roles;
-	private MultipleSelectionElement organisations;
+	private MultiSelectionFilterElement organisations;
 	private MultipleSelectionElement status;
 	private MultipleSelectionElement extraSearch;
 	private SelectionElement auth;
@@ -92,8 +95,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private String[] statusValues;
 	private List<String> roleKeys;
 	private List<String> roleValues;
-	private String[] organisationKeys;
-	private String[] organisationValues;
+	private SelectionValues organisationSV;
 	private String[] authKeys;
 	private String[] authValues;
 	private String[] extraSearchKeys;
@@ -112,7 +114,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private WebDAVModule webDAVModule;
 	@Autowired
 	private OAuthLoginModule oauthLoginModule;
-	
+
 	/**
 	 * @param binderName
 	 * @param cancelbutton
@@ -150,14 +152,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		extraSearchKeys = new String[] { "no-resources", "no-eff-statements" };
 		extraSearchValues = new String[] { translate("no.resource"), translate("no.eff.statement") };
 		
-		List<String> organisationKeyList = new ArrayList<>();
-		List<String> organisationValueList = new ArrayList<>();
-		for(Organisation organisation:manageableOrganisations) {
-			organisationKeyList.add(organisation.getKey().toString());
-			organisationValueList.add(organisation.getDisplayName());
-		}
-		organisationKeys = organisationKeyList.toArray(new String[organisationKeyList.size()]);
-		organisationValues = organisationValueList.toArray(new String[organisationValueList.size()]);
+		organisationSV = OrganisationUIFactory.createSelectionValues(manageableOrganisations);
 		
 		// take all providers from the config file
 		// convention is that a translation key "search.form.constraint.auth." +
@@ -408,8 +403,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 		uifactory.addSpacerElement("space1", formLayout, false);
 		
-		organisations = uifactory.addCheckboxesDropdown("organisations", "search.form.title.organisations",
-				formLayout, organisationKeys, organisationValues);
+		organisations = uifactory.addCheckboxesFilterDropdown("organisations", "search.form.title.organisations",
+				formLayout, getWindowControl(), organisationSV);
 		
 		roles = uifactory.addCheckboxesDropdown("roles", "search.form.title.roles", formLayout,
 				roleKeys.toArray(new String[roleKeys.size()]), roleValues.toArray(new String[roleValues.size()]));

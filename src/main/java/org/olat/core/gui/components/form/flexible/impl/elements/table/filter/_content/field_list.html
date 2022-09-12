@@ -9,4 +9,11 @@ $r.render("list")
 #if($f.hasError("list"))
 	<br>$r.render("list_ERROR")
 #end
-<div class="o_block">$r.render("update") $r.render("clear")</div>
+<div class="o_block">
+	#if($r.available("update"))
+		$r.render("update")
+	#end
+	#if($r.available("clear"))
+		$r.render("clear")
+	#end
+</div>

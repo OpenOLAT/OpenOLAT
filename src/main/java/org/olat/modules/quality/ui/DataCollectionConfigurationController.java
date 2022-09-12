@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -93,7 +94,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private FormLink evaFormEditLink;
 	private DateChooser startEl;
 	private DateChooser deadlineEl;
-	private MultipleSelectionElement organisationsEl;
+	private MultiSelectionFilterElement organisationsEl;
 	private SingleSelection topicTypeEl;
 	private TextElement topicCustomTextEl;
 	private StaticTextElement topicIdentityNameEl;
@@ -183,11 +184,11 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				"btn btn-default o_xsmall");
 		evaFormEditLink = uifactory.addFormLink("data.collection.form.edit", formCont, "btn btn-default o_xsmall");
 		
-		organisationsEl = uifactory.addCheckboxesDropdown("data.collection.organisations", formLayout);
-		if (organisationModule.isEnabled()) {
-			QualityUIFactory.initOrganisations(ureq.getUserSession(), organisationsEl, currentOrganisations);
-			organisationsEl.addActionListener(FormEvent.ONCLICK);
-		}
+		SelectionValues organisationSV = QualityUIFactory.getOrganisationSV(ureq.getUserSession(), currentOrganisations);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("data.collection.organisations",
+				"data.collection.organisations", formLayout, getWindowControl(), organisationSV);
+		currentOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		organisationsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// topic
 		QualityDataCollectionTopicType actual = dataCollection.getTopicType();
@@ -474,7 +475,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 			}
 		}
 		
-		if (organisationsEl.isVisible() && !organisationsEl.isAtLeastSelected(1)) {
+		if (organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
 			organisationsEl.setErrorKey("form.mandatory.hover", null);
 			allOk = false;
 		}

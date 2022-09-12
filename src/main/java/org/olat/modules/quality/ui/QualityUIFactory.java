@@ -24,7 +24,6 @@ import static org.olat.modules.quality.QualityDataCollectionTopicType.CUSTOM;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -40,15 +39,16 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -401,8 +401,7 @@ public class QualityUIFactory {
 		return null;
 	}
 	
-	public static void initOrganisations(UserSession usess, MultipleSelectionElement organisationsEl,
-			List<Organisation> currentOrganisations) {
+	public static SelectionValues getOrganisationSV(UserSession usess, List<Organisation> currentOrganisations) {
 		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		
 		// Get all organisations of the user
@@ -417,35 +416,16 @@ public class QualityUIFactory {
 			}
 		}
 		
-		// Sort the organisations
-		Collections.sort(allOrganisations, new OrganisationNameComparator(usess.getLocale()));
-		
-		// Make the keys and values for the form element
-		List<String> keyList = new ArrayList<>();
-		List<String> valueList = new ArrayList<>();
-		for(Organisation elOrganisation:allOrganisations) {
-			keyList.add(getOrganisationKey(elOrganisation));
-			valueList.add(elOrganisation.getDisplayName());
-		}
-		
-		// Update the for element and select the active organisations.
-		organisationsEl.setKeysAndValues(keyList.toArray(new String[keyList.size()]),
-				valueList.toArray(new String[valueList.size()]));
-		for(Organisation reOrganisation:currentOrganisations) {
-			String organisationKey = getOrganisationKey(reOrganisation);
-			if(keyList.contains(organisationKey)) {
-				organisationsEl.select(organisationKey, true);
-			}
-		}
+		return OrganisationUIFactory.createSelectionValues(allOrganisations);
 	}
 	
-	public static List<OrganisationRef> getSelectedOrganisationRefs(MultipleSelectionElement organisationsEl) {
+	public static List<OrganisationRef> getSelectedOrganisationRefs(MultiSelectionFilterElement organisationsEl) {
 		return organisationsEl.getSelectedKeys().stream()
 				.map(QualityUIFactory::getOrganisationRef)
 				.collect(Collectors.toList());
 	}
 	
-	public static List<Organisation> getSelectedOrganisations(MultipleSelectionElement organisationsEl,
+	public static List<Organisation> getSelectedOrganisations(MultiSelectionFilterElement organisationsEl,
 			List<Organisation> currentOrganisations) {
 		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 
@@ -695,6 +675,18 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (!el.isAtLeastSelected(1)) {
+				el.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+
+	public static boolean validateIsMandatory(MultiSelectionFilterElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			if (el.getSelectedKeys().isEmpty()) {
 				el.setErrorKey("form.mandatory.hover", null);
 				allOk = false;
 			}

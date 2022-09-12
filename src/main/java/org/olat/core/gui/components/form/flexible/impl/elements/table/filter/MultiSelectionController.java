@@ -19,38 +19,52 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
- * Initial date: 14 juil. 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 12 Sep 2022<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiFilterMultiSelectionController extends AbstractMultiSelectionController {
-	
-	private final FlexiTableMultiSelectionFilter filter;
+public class MultiSelectionController extends AbstractMultiSelectionController {
 
-	public FlexiFilterMultiSelectionController(UserRequest ureq, WindowControl wControl,
-			FlexiTableMultiSelectionFilter filter, List<String> preselectedKeys) {
-		super(ureq, wControl, filter.getSelectionValues(), preselectedKeys);
-		this.filter = filter;
+	public MultiSelectionController(UserRequest ureq, WindowControl wControl, SelectionValues availableValues,
+			Collection<String> preselectedKeys) {
+		super(ureq, wControl, availableValues, preselectedKeys);
 	}
 
 	@Override
 	protected boolean isClearLink() {
-		return true;
+		return false;
 	}
-	
+
 	@Override
 	protected Event createChangedEvent(Set<String> selectedKeys) {
-		return new ChangeValueEvent(filter, new ArrayList<>(selectedKeys));
+		return new KeysSelectedEvent(selectedKeys);
+	}
+	
+	public static final class KeysSelectedEvent extends Event {
+
+		private static final long serialVersionUID = 2195120197173429621L;
+		
+		private final Set<String> selectedKeys;
+
+		public KeysSelectedEvent(Set<String> selectedKeys) {
+			super("keys-selected");
+			this.selectedKeys = selectedKeys;
+		}
+
+		public Set<String> getSelectedKeys() {
+			return selectedKeys;
+		}
+		
 	}
 
 }

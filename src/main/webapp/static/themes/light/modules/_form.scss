@@ -641,3 +641,22 @@
 		padding-left: 5em;
 	}
 }
+
+/* Multi selection filter element */ 
+.o_msf_button {
+	text-align: left;
+	display: flex;
+	&>span {
+		width: 100%;
+	}
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-height: $input-height-base;
+	}
+}
+
+

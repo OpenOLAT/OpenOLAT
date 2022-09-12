@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MemoryElement;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -78,6 +79,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionFilterElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionTreeImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
@@ -332,6 +334,14 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
 		return mse;
+	}
+	
+	public MultiSelectionFilterElement addCheckboxesFilterDropdown(String name, String i18nLabel, FormItemContainer formLayout,
+			WindowControl wControl, SelectionValues availableValues) {
+		MultiSelectionFilterElement msfw = new MultiSelectionFilterElementImpl(wControl, name, availableValues);
+		setLabelIfNotNull(i18nLabel, msfw);
+		formLayout.add(msfw);
+		return msfw;
 	}
 	
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name, 

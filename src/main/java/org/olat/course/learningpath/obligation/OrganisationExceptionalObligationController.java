@@ -27,14 +27,15 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.OrganisationNameComparator;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
@@ -49,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OrganisationExceptionalObligationController extends FormBasicController
 		implements ExceptionalObligationController {
 	
-	private MultipleSelectionElement organisationsEl;
+	private MultiSelectionFilterElement organisationsEl;
 	
 	@Autowired
 	private OrganisationService organisationService;
@@ -78,17 +79,11 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		SelectionValues organisationKV = new SelectionValues();
-		organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author)
-		 	.stream()
-			.sorted(new OrganisationNameComparator(getLocale()))
-			.forEach(organisation -> organisationKV.add(
-					SelectionValues.entry(organisation.getKey().toString(),
-					organisation.getDisplayName())));
-		
-		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "config.exceptional.obligation.organisations", formLayout,
-				organisationKV.keys(), organisationKV.values());
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisations);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations",
+				"config.exceptional.obligation.organisations", formLayout, getWindowControl(), organisationSV);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setElementCssClass("o_button_group_right o_block_top");

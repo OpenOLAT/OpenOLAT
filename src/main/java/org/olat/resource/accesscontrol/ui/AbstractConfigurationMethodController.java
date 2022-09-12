@@ -20,10 +20,7 @@
 
 package org.olat.resource.accesscontrol.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -40,13 +38,13 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
@@ -71,7 +69,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private TextElement descEl;
 	private SingleSelection periodEl;
 	private DateChooser datesEl;
-	private MultipleSelectionElement organisationsEl;
+	private MultiSelectionFilterElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
 	private MultipleSelectionElement confirmationEmailEl;
 
@@ -182,18 +180,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			}
 		}
 		
-		Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
-		
-		SelectionValues orgSV = new SelectionValues();
-		organisations.forEach(org -> orgSV.add(entry(org.getKey().toString(), org.getDisplayName())));
-		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "offer.organisations", formLayout,
-				orgSV.keys(), orgSV.values(), null, null);
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.organisations", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
-		for (Organisation offerOrganisation : offerOrganisations) {
-			if (organisationsEl.getKeys().contains(offerOrganisation.getKey().toString())) {
-				organisationsEl.select(offerOrganisation.getKey().toString(), true);
-			}
-		}
+		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
 	protected abstract void initCustomFormElements(FormItemContainer formLayout);
