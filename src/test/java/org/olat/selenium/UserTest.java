@@ -35,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -703,7 +702,7 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createUser(@Drone @User WebDriver userBrowser)
+	public void createUser()
 	throws IOException, URISyntaxException {
 		
 		//login
@@ -733,7 +732,7 @@ public class UserTest extends Deployments {
 			.assertOnUserEditView(username);
 		
 		//user log in
-		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		userLoginPage
 			.loginAs(username, password)
@@ -800,7 +799,7 @@ public class UserTest extends Deployments {
 			.loginDenied(username, password);
 		//assert on error message
 		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
-		OOGraphene.waitElement(errorMessageby, 2, userBrowser);
+		OOGraphene.waitElement(errorMessageby, userBrowser);
 
 		// administrator search the deleted user
 		userAdminPage
@@ -819,7 +818,7 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void importUsers(@Drone @User WebDriver userBrowser)
+	public void importUsers()
 	throws IOException, URISyntaxException {
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -853,7 +852,7 @@ public class UserTest extends Deployments {
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//user log in
-		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		userLoginPage
 			.loginAs(username1, "rosario01")
@@ -872,8 +871,7 @@ public class UserTest extends Deployments {
 	 */
 	@Test 
 	@RunAsClient
-	public void importExistingUsers(@Drone @User WebDriver existingUserBrowser,
-			@Drone @Student WebDriver newUserBrowser)
+	public void importExistingUsers()
 	throws IOException, URISyntaxException {
 
 		UserVO user1 = new UserRestClient(deploymentUrl)
@@ -915,7 +913,7 @@ public class UserTest extends Deployments {
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//existing user log in with its new password and check if its name was updated
-		LoginPage userLoginPage = LoginPage.load(existingUserBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		userLoginPage
 			.loginAs(user1.getLogin(), password2)
@@ -923,7 +921,7 @@ public class UserTest extends Deployments {
 			.assertLoggedInByLastName("Aono");
 		
 		//new user log in
-		LoginPage newLoginPage = LoginPage.load(newUserBrowser, deploymentUrl);
+		LoginPage newLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		newLoginPage
 			.loginAs(newUser.getLogin(), password1)

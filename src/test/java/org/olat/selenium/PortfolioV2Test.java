@@ -133,7 +133,7 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createTemplate(@Drone @User WebDriver ryomouBrowser)
+	public void createTemplate()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
@@ -194,22 +194,22 @@ public class PortfolioV2Test extends Deployments {
 		
 		//Participant log in
 		LoginPage
-			.load(ryomouBrowser, deploymentUrl)
+			.load(browser, deploymentUrl)
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the portfolio course element
-		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
+		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
 			.tree()
 			.selectWithTitle(portfolioNodeTitle);
-		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(ryomouBrowser);
+		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(browser);
 		BinderPage binder = portfolioCourseEl
 				.pickPortfolio()
 				.goToPortfolioV2();
@@ -432,7 +432,7 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void collectEfficiencyStatement(@Drone @User WebDriver ryomouBrowser)
+	public void collectEfficiencyStatement()
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -499,7 +499,7 @@ public class PortfolioV2Test extends Deployments {
 		
 		//Ryomou login
 		LoginPage
-			.load(ryomouBrowser, deploymentUrl)
+			.load(browser, deploymentUrl)
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		
@@ -507,7 +507,7 @@ public class PortfolioV2Test extends Deployments {
 		String mediaTitle = "My efficiency";
 		String mediaDesc = "My efficiency statement " + UUID.randomUUID();
 		
-		UserToolsPage ryomouUserTools = new UserToolsPage(ryomouBrowser);
+		UserToolsPage ryomouUserTools = new UserToolsPage(browser);
 		ryomouUserTools
 			.openUserToolsMenu()
 			.openMyEfficiencyStatement()

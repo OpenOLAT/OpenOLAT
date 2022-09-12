@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -75,7 +74,7 @@ public class CourseLearnPathTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void learnPathConfirmationAndVisitedFlow(@Drone @User WebDriver participantBrowser)
+	public void learnPathConfirmationAndVisitedFlow()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -142,19 +141,19 @@ public class CourseLearnPathTest extends Deployments {
 			.finish();
 		
 		//Participant log in
-		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant)
 			.resume();
 		
 		//open the course
-		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		MenuTreePageFragment menuTree = participantCourse
 			.tree()
 			.selectWithTitle(firstNodeTitle);
@@ -203,7 +202,7 @@ public class CourseLearnPathTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskLearnPathSolutionsOnly(@Drone @User WebDriver participantBrowser)
+	public void taskLearnPathSolutionsOnly()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -266,24 +265,24 @@ public class CourseLearnPathTest extends Deployments {
 			.finish();
 		
 		//Participant log in
-		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant)
 			.resume();
 		
 		//open the course
-		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
 		//go to the group task
-		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		participantCourse
 			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
-		GroupTaskPage participantTask = new GroupTaskPage(participantBrowser);
+		GroupTaskPage participantTask = new GroupTaskPage(browser);
 		participantTask
 			.openSolutions()
 			.assertSolution("solution_1.txt");
