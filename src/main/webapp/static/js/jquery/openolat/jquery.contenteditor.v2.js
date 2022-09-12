@@ -171,6 +171,7 @@
 						|| jTarget.closest(".tox-dialog-wrap__backdrop").length > 0
 						|| jTarget.closest(".ML__keyboard").length > 0
 						|| jTarget.closest(".o_ceditor_inspector").length > 0
+						|| jTarget.closest("a").length > 0 || jTarget.closest("button").length > 0
 						|| e.target.nodeName == 'BODY';
 					
 					if(!excludedEls) {

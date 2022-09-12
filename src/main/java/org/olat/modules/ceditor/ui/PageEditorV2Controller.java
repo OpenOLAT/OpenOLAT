@@ -62,6 +62,7 @@ import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
+import org.olat.modules.ceditor.ui.event.CloseInspectorEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
@@ -222,6 +223,9 @@ public class PageEditorV2Controller extends BasicController {
 		} else if(event instanceof ClosePartEvent) {
 			ClosePartEvent cpe = (ClosePartEvent)event;
 			doCloseEditor(ureq, cpe.getElement());
+		} else if(event instanceof CloseInspectorEvent) {
+			CloseInspectorEvent cpe = (CloseInspectorEvent)event;
+			doCloseInspector(ureq, cpe.getElementId());
 		}
 		super.event(ureq, source, event);
 	}
@@ -316,6 +320,18 @@ public class PageEditorV2Controller extends BasicController {
 				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
 				if(elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
+				}
+			}
+			return true;
+		}, editorCmp, false).visitAll(ureq);
+	}
+	
+	private void doCloseInspector(UserRequest ureq, String elementId) {
+		new ComponentTraverser((comp, uureq) -> {
+			if(comp instanceof ContentEditorFragment) {
+				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
+				if(elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
+					elementCmp.setInspectorVisible(false);
 				}
 			}
 			return true;

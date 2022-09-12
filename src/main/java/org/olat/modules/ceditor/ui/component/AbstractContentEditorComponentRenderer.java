@@ -40,10 +40,13 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	protected void renderInspector(Renderer renderer, StringOutput sb, Component cmp, URLBuilder containerUbu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		if(cmp != null) {
-			sb.append("<div id='o_c").append(cmp.getDispatchID()).append("_inspector' class='o_page_inspector'>");
-			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, containerUbu, translator, renderResult, args);
-			sb.append("</div>");
-
+			if(cmp.isVisible()) {
+				sb.append("<div id='o_c").append(cmp.getDispatchID()).append("_inspector' class='o_page_inspector'>");
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, containerUbu, translator, renderResult, args);
+				sb.append("</div>");
+			} else {
+				sb.append("<span id='o_c").append(cmp.getDispatchID()).append("_inspector'></span>");
+			}
 			cmp.setDirty(false);
 		}
 	}

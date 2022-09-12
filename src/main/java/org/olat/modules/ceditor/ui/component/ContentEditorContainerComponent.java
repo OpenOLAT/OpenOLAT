@@ -193,6 +193,24 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	public void setEditMode(boolean editMode) {
 		if(this.editMode != editMode) {
 			this.editMode = editMode;
+			if(this.editMode) {
+				setInspectorVisible(true);
+			}
+			setDirty(true);
+		} else if(this.editMode && !isInspectorVisible()) {
+			setInspectorVisible(true);
+		}
+	}
+
+	@Override
+	public boolean isInspectorVisible() {
+		return inspectorPart != null && inspectorPart.getInitialComponent().isVisible();
+	}
+
+	@Override
+	public void setInspectorVisible(boolean inspectorVisible) {
+		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
+			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
 			setDirty(true);
 		}
 	}

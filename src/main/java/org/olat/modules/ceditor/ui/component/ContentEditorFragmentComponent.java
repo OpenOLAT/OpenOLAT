@@ -89,6 +89,19 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	}
 
 	@Override
+	public boolean isInspectorVisible() {
+		return inspectorPart != null && inspectorPart.getInitialComponent().isVisible();
+	}
+
+	@Override
+	public void setInspectorVisible(boolean inspectorVisible) {
+		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
+			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
+			setDirty(true);
+		}
+	}
+
+	@Override
 	public boolean isCloneable() {
 		return cloneable;
 	}
@@ -207,8 +220,11 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		if(changed) {
 			setDirty(true);
 			if(editMode) {
+				setInspectorVisible(true);
 				fireEvent(ureq, new EditPageElementEvent(this));
 			}
+		} else if(this.editMode && !isInspectorVisible()) {
+			setInspectorVisible(true);
 		}
 	}
 	

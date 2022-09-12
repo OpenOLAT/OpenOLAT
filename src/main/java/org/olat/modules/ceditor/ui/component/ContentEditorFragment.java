@@ -38,6 +38,10 @@ public interface ContentEditorFragment extends ComponentCollection {
 	
 	public void setEditMode(boolean editMode);
 	
+	public boolean isInspectorVisible();
+	
+	public void setInspectorVisible(boolean visible);
+	
 	public boolean isCloneable();
 	
 	public void setCloneable(boolean cloneable);
