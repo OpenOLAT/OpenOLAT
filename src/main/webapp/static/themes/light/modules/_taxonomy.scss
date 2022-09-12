@@ -124,6 +124,9 @@
 	max-width: 100%;
 	display: flex;
 	flex-direction: column;
+	small {
+		line-hight: 1em;
+	}
 }
 .o_tax_ls_expand {
 	border-top: 1px solid #e7e7e7;

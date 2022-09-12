@@ -87,6 +87,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		
 		initForm(ureq);
 		loadModel();
+		openFirstLevels();
 	}
 
 	@Override
@@ -179,6 +180,17 @@ public class CompetenceBrowserController extends FormBasicController {
 		tableModel.setObjects(rows);
 		tableEl.setRootCrumb(rootCrumb);
 		tableEl.reset(true, true, true);
+	}
+	
+	private void openFirstLevels() {
+		tableModel.closeAll();
+		for (int rowIndex = 0; rowIndex < tableModel.getRowCount(); rowIndex ++) {
+			CompetenceBrowserTableRow row = tableModel.getObject(rowIndex);
+			boolean open = row.getParent() == null;
+			if (open) {
+				tableModel.open(rowIndex);
+			}
+		}
 	}
 	
 	@Override

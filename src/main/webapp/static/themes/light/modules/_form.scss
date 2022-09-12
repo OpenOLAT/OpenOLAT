@@ -558,6 +558,9 @@
 .o_checkbox_h_aligned {
 	display: flex;
 	align-items: center;
+	input[type="checkbox"] {
+		margin-top: 0;
+	}
 }
 
 /* choice element */

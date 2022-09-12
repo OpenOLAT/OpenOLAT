@@ -181,7 +181,6 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		Collections.reverse(taxonomyLevels);
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("/ ");
 		if (taxonomyLevels.size() == 1) {
 			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevels.get(0)));
 			sb.append(" /");
