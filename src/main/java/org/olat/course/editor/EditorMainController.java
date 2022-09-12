@@ -318,7 +318,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 				overviewLink = LinkFactory.createToolLink(CMD_OVERVIEW, translate(NLS_OVERVIEW), this,
 						"o_icon_description");
+				
 				previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
+				previewLink.setVisible(nodeAccessService.isEditPreviewSupported(NodeAccessType.of(course)));
+				
 				publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
 				publishLink.setElementCssClass("o_sel_course_editor_publish");
 				

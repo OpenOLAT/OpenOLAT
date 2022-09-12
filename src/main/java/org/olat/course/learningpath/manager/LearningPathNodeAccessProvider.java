@@ -106,6 +106,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 	
 	@Override
+	public boolean isEditPreviewSupported() {
+		return false;
+	}
+	
+	@Override
 	public boolean isUpdateEvaluationOnPublish() {
 		return true;
 	}

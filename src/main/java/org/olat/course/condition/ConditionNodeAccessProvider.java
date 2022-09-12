@@ -91,6 +91,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 	
 	@Override
+	public boolean isEditPreviewSupported() {
+		return true;
+	}
+	
+	@Override
 	public boolean isUpdateEvaluationOnPublish() {
 		return false;
 	}

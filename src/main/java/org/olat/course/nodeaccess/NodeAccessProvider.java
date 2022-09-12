@@ -46,6 +46,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public boolean isConditionExpressionSupported();
 	
 	public boolean isScoreCalculatorSupported();
+	
+	public boolean isEditPreviewSupported();
 
 	public boolean isUpdateEvaluationOnPublish();
 

@@ -104,6 +104,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 	
 	@Override
+	public boolean isEditPreviewSupported(NodeAccessType type) {
+		return getNodeAccessProvider(type).isEditPreviewSupported();
+	}
+	
+	@Override
 	public boolean isUpdateEvaluationOnPublish(NodeAccessType type) {
 		return getNodeAccessProvider(type).isUpdateEvaluationOnPublish();
 	}

@@ -59,6 +59,8 @@ public interface NodeAccessService {
 	public boolean isConditionExpressionSupported(NodeAccessType type);
 	
 	public boolean isScoreCalculatorSupported(NodeAccessType type);
+	
+	public boolean isEditPreviewSupported(NodeAccessType type);
 
 	/**
 	 * Returns whether the evaluation after the course has published has to update
