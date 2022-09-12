@@ -243,10 +243,6 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 	-ms-user-select: none;
 }
 
-.o_page_drop {
-	@extend %o_dragable;
-}
-
 .o_page_part.oo-accepted,
 .o_page_part.oo-accepted-top,
 .o_page_container_edit.o_page_drop.oo-accepted,

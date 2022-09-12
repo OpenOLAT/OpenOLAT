@@ -12,26 +12,29 @@ jQuery(function() {
 		
 		var jInspector = jQuery(".o_page_inspector");
 		var inspectorWidth = jInspector.width();
-
-		var fragmentRect = jInspector.closest(".o_page_fragment_edit").get(0).getBoundingClientRect();
-		var mainRect = jMain.get(0).getBoundingClientRect();
-	
-		var margin = mainRect.right - mainRect.width;
-		var marginToContainer = mainRect.right - fragmentRect.right;
-		var positionX = marginToContainer + inspectorWidth;
-		if(margin < 0) {
-			positionX -= inspectorWidth;
-		} else if(margin < inspectorWidth) {
-			positionX -= (inspectorWidth - margin) + 15;
-		}
-		jInspector.css('margin-right', '-' + positionX + 'px');
 		
-		var containerEls = jInspector.parents(".o_page_container_edit");
-		if(containerEls.length > 0) {
-			var topContainerEl = containerEls.get(containerEls.length - 1);
-			var topContainerRect = topContainerEl.getBoundingClientRect();
-			var positionY = fragmentRect.top - topContainerRect.top;
-			jInspector.css('margin-top', '-' + positionY + 'px');
+		var editedFragment = jInspector.closest(".o_page_fragment_edit");
+		if(editedFragment.length > 0) {
+			var fragmentRect = editedFragment.get(0).getBoundingClientRect();
+			var mainRect = jMain.get(0).getBoundingClientRect();
+		
+			var margin = mainRect.right - mainRect.width;
+			var marginToContainer = mainRect.right - fragmentRect.right;
+			var positionX = marginToContainer + inspectorWidth;
+			if(margin < 0) {
+				positionX -= inspectorWidth;
+			} else if(margin < inspectorWidth) {
+				positionX -= (inspectorWidth - margin) + 15;
+			}
+			jInspector.css('margin-right', '-' + positionX + 'px');
+			
+			var containerEls = jInspector.parents(".o_page_container_edit");
+			if(containerEls.length > 0) {
+				var topContainerEl = containerEls.get(containerEls.length - 1);
+				var topContainerRect = topContainerEl.getBoundingClientRect();
+				var positionY = fragmentRect.top - topContainerRect.top - 25;
+				jInspector.css('margin-top', '-' + positionY + 'px');
+			}
 		}
 	};
 	

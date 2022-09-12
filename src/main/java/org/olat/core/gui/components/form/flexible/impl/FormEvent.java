@@ -44,9 +44,10 @@ public class FormEvent extends Event {
 	// been clicked. 
 	public static final int ONCHANGE = 4;
 	public static final int ONKEYUP = 8;
+	public static final int ONBLUR = 16;
 		
 	//sorted x0 > x1 > x2 .. > xn 
-	protected static final int[] ON_DOTDOTDOT = new int[]{ONDBLCLICK, ONCLICK, ONCHANGE, ONKEYUP};
+	protected static final int[] ON_DOTDOTDOT = new int[]{ONDBLCLICK, ONCLICK, ONCHANGE, ONKEYUP, ONBLUR};
 	public static final FormEvent RESET = new FormEvent("reset",null);
 
 	private final int trigger;

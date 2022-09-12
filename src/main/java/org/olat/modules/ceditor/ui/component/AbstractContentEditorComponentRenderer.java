@@ -122,7 +122,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		// More button
-		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
+		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
 		  .append("<i class='o_icon o_icon_commands'> </i>")
 		  .append("</button>");
 		// Menu

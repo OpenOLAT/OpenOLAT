@@ -96,8 +96,6 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			renderName(sb, cmp, translator);
 		}
 
-		renderDelete(sb, cmp, containerUbu, translator);
-		
 		renderEdit(sb, cmp, containerUbu, translator);
 		
 		renderDuplicate(sb, cmp, containerUbu, translator);

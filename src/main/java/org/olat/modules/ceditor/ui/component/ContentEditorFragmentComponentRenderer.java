@@ -99,7 +99,6 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 	private void renderTools(StringOutput sb, ContentEditorFragmentComponent cmp, URLBuilder fragmentUbu, Translator translator) {
 		sb.append("<div class='o_page_element_tools'>");
 
-		renderDelete(sb, cmp, fragmentUbu, translator);
 		renderEdit(sb, cmp, fragmentUbu, translator);
 		renderDuplicate(sb, cmp, fragmentUbu, translator);
 		renderMoreMenu(sb, cmp, fragmentUbu, translator);

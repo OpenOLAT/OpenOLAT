@@ -180,11 +180,12 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source instanceof ImageInspectorController && event instanceof ChangePartEvent) {
+		if(source instanceof ModalInspectorController && event instanceof ChangePartEvent) {
 			ChangePartEvent cpe = (ChangePartEvent)event;
 			PageElement media = cpe.getElement();
 			if(media instanceof ImageElement) {
 				doUpdate((ImageElement) media);
+				mainVC.setDirty(true);
 			}
 		}
 		super.event(ureq, source, event);

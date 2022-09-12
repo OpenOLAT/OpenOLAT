@@ -606,6 +606,10 @@ public abstract class FormItemImpl implements InlineElement {
 			case FormEvent.ONKEYUP:
 				getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONKEYUP));
 				break;
+			case FormEvent.ONBLUR:
+				getRootForm().fireFormEvent(ureq, new FormEvent("ONBLUR", this, FormEvent.ONBLUR));
+				break;
+				
 			default:
 				//nothing to do, default is handled
 		}
