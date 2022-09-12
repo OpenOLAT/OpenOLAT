@@ -36,8 +36,6 @@ import org.openqa.selenium.support.ui.Select;
  */
 public class ContentEditorPage extends ContentViewPage {
 
-	public final By editFragmentBy = By.cssSelector("div.o_page_fragment_edit");
-
 	private final boolean form;
 	
 	public ContentEditorPage(WebDriver browser, boolean form) {
@@ -165,7 +163,7 @@ public class ContentEditorPage extends ContentViewPage {
 	 * @return Itself
 	 */
 	public ContentEditorPage closeEditFragment() {
-		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_content_editor')]/div[1]/div[contains(@class,'o_page_container_tools')]//span[contains(@class,'o_container_name')]");
+		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_content_editor')]/div[1]/div[contains(@class,'o_page_container_tools')]");
 		// Move the focus, important
 		new Actions(browser)
 			.moveToElement(browser.findElement(toolbarContainerBy), -50, 0)
