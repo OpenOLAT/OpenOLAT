@@ -27,14 +27,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,7 +40,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.crypto.X509CertificatePrivateKeyPair;
 import org.olat.ims.qti21.QTI21Module;
-import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,14 +56,10 @@ public class QTI21AdminController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
-	private static final String KEY_VISIBLE = "visible";
-	private static final String KEY_HIDDEN = "hidden";
 	
 	private FormLink validationButton;
 	private MultipleSelectionElement mathExtensionEl;
 	private MultipleSelectionElement digitalSignatureEl;
-	private MultipleSelectionElement anonymCorrectionWorkflowEl;
-	private SingleSelection resultsVisibilityAfterCorrectionEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
 	
@@ -78,19 +70,22 @@ public class QTI21AdminController extends FormBasicController {
 	private QTI21Module qti21Module;
 	
 	public QTI21AdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.title");
+		FormLayoutContainer signatureCont = FormLayoutContainer.createDefaultFormLayout("signature", getTranslator());
+		signatureCont.setFormTitle(translate("admin.signature.title"));
+		signatureCont.setRootForm(mainForm);
+		formLayout.add(signatureCont);
 
-		validationButton = uifactory.addFormLink("validate.xml.signature", formLayout, Link.BUTTON);
+		validationButton = uifactory.addFormLink("validate.xml.signature", signatureCont, Link.BUTTON);
 		validationButton.setCustomEnabledLinkCSS("btn btn-default pull-right");
 		validationButton.getComponent().setSuppressDirtyFormWarning(true);
 		
-		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", formLayout,
+		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", signatureCont,
 				onKeys, onValues);
 		if(qti21Module.isDigitalSignatureEnabled()) {
 			digitalSignatureEl.select(onKeys[0], true);
@@ -98,7 +93,7 @@ public class QTI21AdminController extends FormBasicController {
 		digitalSignatureEl.setExampleKey("digital.signature.text", null);
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
 		
-		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "digital.signature.certificate", "digital.signature.certificate", formLayout);
+		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "digital.signature.certificate", "digital.signature.certificate", signatureCont);
 		certificateEl.setExampleKey("digital.signature.certificate.example", null);
 		certificateEl.setHelpText(translate("digital.signature.certificate.hint"));
 		if(StringHelper.containsNonWhitespace(qti21Module.getDigitalSignatureCertificate())) {
@@ -109,27 +104,15 @@ public class QTI21AdminController extends FormBasicController {
 		String certificatePassword = qti21Module.getDigitalSignatureCertificatePassword();
 		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PLACEHOLDER : "";
 		certificatePasswordEl = uifactory.addPasswordElement("digital.signature.certificate.password", "digital.signature.certificate.password",
-				256, password, formLayout);
+				256, password, signatureCont);
 		certificatePasswordEl.setAutocomplete("new-password");
 		
-		anonymCorrectionWorkflowEl = uifactory.addCheckboxesHorizontal("correction.workflow", "correction.workflow", formLayout,
-				onKeys, new String[] { translate("correction.workflow.anonymous") });
-		if(qti21Module.getCorrectionWorkflow() == CorrectionWorkflow.anonymous) {
-			anonymCorrectionWorkflowEl.select(onKeys[0], true);
-		}
+		FormLayoutContainer extensionsCont = FormLayoutContainer.createDefaultFormLayout("extensions", getTranslator());
+		extensionsCont.setFormTitle(translate("admin.extensions.title"));
+		extensionsCont.setRootForm(mainForm);
+		formLayout.add(extensionsCont);
 		
-		SelectionValues visibilitySV = new SelectionValues();
-		visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("results.user.visibility.hidden"), translate("results.user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
-		visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("results.user.visibility.visible"), translate("results.user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
-		resultsVisibilityAfterCorrectionEl = uifactory.addCardSingleSelectHorizontal("results.user.visibility",
-				formLayout, visibilitySV.keys(), visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
-		if(qti21Module.isResultsVisibleAfterCorrectionWorkflow()) {
-			resultsVisibilityAfterCorrectionEl.select(KEY_VISIBLE, true);
-		} else {
-			resultsVisibilityAfterCorrectionEl.select(KEY_HIDDEN, true);
-		}
-		
-		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", formLayout,
+		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", extensionsCont,
 				onKeys, onValues);
 		if(qti21Module.isMathAssessExtensionEnabled()) {
 			mathExtensionEl.select(onKeys[0], true);
@@ -138,7 +121,7 @@ public class QTI21AdminController extends FormBasicController {
 		mathExtensionEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		extensionsCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
@@ -161,12 +144,6 @@ public class QTI21AdminController extends FormBasicController {
 			if(!PLACEHOLDER.equals(credential) && certificateEl.getInitialFile() != null) {
 				allOk &= validateCertificatePassword(certificateEl.getInitialFile());
 			}
-		}
-		
-		resultsVisibilityAfterCorrectionEl.clearError();
-		if(!resultsVisibilityAfterCorrectionEl.isOneSelected()) {
-			resultsVisibilityAfterCorrectionEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
 		}
 		
 		return allOk;
@@ -230,10 +207,6 @@ public class QTI21AdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		CorrectionWorkflow correctionWf = anonymCorrectionWorkflowEl.isAtLeastSelected(1)
-				? CorrectionWorkflow.anonymous : CorrectionWorkflow.named;
-		qti21Module.setCorrectionWorkflow(correctionWf);
-		qti21Module.setResultsVisibleAfterCorrectionWorkflow(resultsVisibilityAfterCorrectionEl.isKeySelected(KEY_VISIBLE));
 		qti21Module.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
 		qti21Module.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
 		if(digitalSignatureEl.isSelected(0)) {

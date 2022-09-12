@@ -398,7 +398,7 @@
 				
 				<entry key="org.olat.modules.grading.ui.GradersListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="List of graders of the grading tool" />
+						<property name="description" value="List of correctors of the correction tool" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />
@@ -423,7 +423,7 @@
 				
 				<entry key="org.olat.modules.grading.ui.GradingAssignmentsListController_assessed">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="List of assessed users of the grading tool" />
+						<property name="description" value="List of assessed users of the correction tool" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />

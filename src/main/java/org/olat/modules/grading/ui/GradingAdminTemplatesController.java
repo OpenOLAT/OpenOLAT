@@ -57,6 +57,8 @@ public class GradingAdminTemplatesController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("admin.email.title");
+		
 		// new grader
 		initForm("mail.to.grader.subject", "mail.grader.to.entry.subject", false, formLayout);
 		initForm("mail.to.grader.body", "mail.grader.to.entry.body", true, formLayout);

@@ -117,6 +117,9 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("admin.title");
+		setFormContextHelp("manual_admin/administration/e-Assessment_Administration");
+		setFormDescription("admin.desc");
 		formLayout.setElementCssClass("o_sel_repo_grading_settings_form");
 
 		String[] onValues = new String[] { translate("on") };

@@ -64,7 +64,9 @@ public class GradingAdminConfigurationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
-
+		setFormContextHelp("manual_admin/administration/e-Assessment_Administration");
+		setFormDescription("admin.desc");
+		
 		String[] onValues = new String[]{ translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("grading.enabled", "grading.enabled", formLayout, onKeys, onValues);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
