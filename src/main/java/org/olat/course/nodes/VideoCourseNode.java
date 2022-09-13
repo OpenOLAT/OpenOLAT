@@ -178,7 +178,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, true);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, false);			
 		} else if (version == 2) {
-			if (config.getBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS) || config.getBooleanEntry(VideoEditController.CONFIG_KEY_RATING)) {
+			if (config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS) || config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING)) {
 				// check if any comment or rating actually exist. 
 				// If yes, mark to use old storage strategy (on video)
 				// In no, use new storage strategy (on course)
