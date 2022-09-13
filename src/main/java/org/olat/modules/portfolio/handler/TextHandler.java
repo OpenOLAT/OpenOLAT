@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
@@ -105,12 +106,12 @@ public class TextHandler extends AbstractMediaHandler {
 	}
 	
 	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		return null;
+	}
+	
+	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		super.exportContent(media, null, null, mediaArchiveDirectory, locale);
 	}
-
-	/*@Override
-	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectTextMediaController(ureq, wControl);
-	}*/
 }

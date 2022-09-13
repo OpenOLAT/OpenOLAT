@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -148,6 +149,11 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
+	}
+	
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		return null;
 	}
 	
 	@Override

@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.WikiResource;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
@@ -116,6 +117,11 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
+	}
+	
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		return null;
 	}
 
 	@Override

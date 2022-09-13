@@ -245,6 +245,11 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		this.moveable = enable;
 	}
 	
+	@Override
+	public boolean isEditable() {
+		return true;
+	}
+
 	public void setElementAt(ContentEditorFragment component, int column, String sibling) {
 		if(!checkAdd(component)) return;
 

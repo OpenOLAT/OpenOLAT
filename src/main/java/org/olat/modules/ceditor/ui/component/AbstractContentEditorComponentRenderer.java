@@ -82,7 +82,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	}
 	
 	protected void renderEdit(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
-		if(cmp.isDeleteable()) {
+		if(cmp.isEditable()) {
 			sb.append("<a id='o_ccedit_").append(cmp.getDispatchID()).append("' ")
 				  .append("href='javascript:;' onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,

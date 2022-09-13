@@ -130,6 +130,11 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	public void setMoveable(boolean enable) {
 		this.moveable = enable;
 	}
+	
+	@Override
+	public boolean isEditable() {
+		return editorPart != null || inspectorPart != null;
+	}
 
 	@Override
 	public String getElementId() {

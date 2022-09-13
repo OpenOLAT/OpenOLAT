@@ -27,14 +27,7 @@ jQuery(function() {
 				positionX -= (inspectorWidth - margin) + 15;
 			}
 			jInspector.css('margin-right', '-' + positionX + 'px');
-			
-			var containerEls = jInspector.parents(".o_page_container_edit");
-			if(containerEls.length > 0) {
-				var topContainerEl = containerEls.get(containerEls.length - 1);
-				var topContainerRect = topContainerEl.getBoundingClientRect();
-				var positionY = fragmentRect.top - topContainerRect.top - 25;
-				jInspector.css('margin-top', '-' + positionY + 'px');
-			}
+			jInspector.css('margin-top', '-2px');
 		}
 	};
 	

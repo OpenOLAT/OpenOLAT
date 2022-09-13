@@ -54,4 +54,6 @@ public interface ContentEditorFragment extends ComponentCollection {
 	
 	public void  setMoveable(boolean enable);
 	
+	public boolean isEditable();
+	
 }
