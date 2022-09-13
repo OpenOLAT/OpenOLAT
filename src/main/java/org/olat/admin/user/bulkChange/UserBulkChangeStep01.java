@@ -214,6 +214,11 @@ class UserBulkChangeStep01 extends BasicStep {
 							keys, orgKeyValues.values());
 					organisationEl.select(keys[0], true);
 				}
+			} else {
+				Organisation organisation = organisationService.getOrganisation(userBulkChanges.getOrganisation());
+				if(organisation != null) {
+					uifactory.addStaticTextElement("organisations", organisation.getDisplayName(), innerFormLayout);
+				}
 			}
 
 			// check user rights:
