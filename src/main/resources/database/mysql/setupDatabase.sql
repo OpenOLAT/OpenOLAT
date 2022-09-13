@@ -76,6 +76,7 @@ create table if not exists o_gp_business (
    creationdate datetime,
    lastusage datetime,
    status varchar(32) default 'active',
+   excludeautolifecycle bool default false not null,
    inactivationdate datetime,
    inactivationemaildate datetime,
    reactivationdate datetime,

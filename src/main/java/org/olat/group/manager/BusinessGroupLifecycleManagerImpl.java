@@ -463,8 +463,12 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public List<BusinessGroup> getReadyToInactivateBusinessGroups(Date usageDate, Date reactivationDateLimit) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
-		  .where().append("bgi.status=:status and ((bgi.lastUsage = null and bgi.creationDate < :lastUsage) or bgi.lastUsage < :lastUsage)")
-		  .and().append("bgi.inactivationEmailDate is null and (bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
+		  .where()
+		  .append("bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
+		  .and()
+		  .append("((bgi.lastUsage = null and bgi.creationDate < :lastUsage) or bgi.lastUsage < :lastUsage)")
+		  .and()
+		  .append("bgi.inactivationEmailDate is null and (bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
 		appendBusinessGroupTypesRestrictions(sb);
 		
 		return dbInstance.getCurrentEntityManager()
@@ -489,7 +493,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
 		  .where()
-		  .append(" bgi.status=:status")
+		  .append(" bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
 		  .and(); 
 		if(emailBeforeDate != null) {
 			sb.append("(bgi.inactivationEmailDate<:emailDate)");	
@@ -702,7 +706,10 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public List<BusinessGroup> getReadyToSoftDeleteBusinessGroups(Date usageDate) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
-		  .where().append("bgi.status=:status and bgi.inactivationDate<:lastUsage and bgi.softDeleteEmailDate is null");
+		  .where()
+		  .append("bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
+		  .and()
+		  .append("bgi.inactivationDate<:lastUsage and bgi.softDeleteEmailDate is null");
 		appendBusinessGroupTypesRestrictions(sb);
 		
 		return dbInstance.getCurrentEntityManager()
@@ -715,7 +722,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public List<BusinessGroup> getBusinessGroupsToSoftDelete(Date usageDate, Date emailBeforeDate) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
-		  .where().append(" bgi.status=:status");
+		  .where().append(" bgi.status=:status and bgi.excludeFromAutoLifecycle=false");
 		if(emailBeforeDate != null) {
 			sb.and().append(" bgi.softDeleteEmailDate<:emailDate");	
 		} else {
@@ -737,7 +744,10 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public List<BusinessGroup> getBusinessGroupsToDefinitivelyDelete(Date usageDate) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
-		  .where().append(" bgi.status=:status and bgi.softDeleteDate<:lastUsage");
+		  .where()
+		  .append(" bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
+		  .and()
+		  .append("bgi.softDeleteDate<:lastUsage");
 
 		appendBusinessGroupTypesRestrictions(sb);
 

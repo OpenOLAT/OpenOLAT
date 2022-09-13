@@ -106,6 +106,7 @@ public class BusinessGroupDAO {
 		businessgroup.setDescription(description);
 		
 		businessgroup.setGroupStatus(BusinessGroupStatusEnum.active);
+		businessgroup.setExcludeFromAutoLifecycle(false);
 		if(minParticipants != null && minParticipants.intValue() >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}

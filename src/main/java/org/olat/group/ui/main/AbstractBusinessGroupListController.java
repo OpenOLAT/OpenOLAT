@@ -96,6 +96,7 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticMethod;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -147,6 +148,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected static final String TABLE_ACTION_START_INACTIVATE = "bgTblStartInactivate";
 	protected static final String TABLE_ACTION_CANCEL_INACTIVATE = "bgTblCancelInactivate";
 	protected static final String TABLE_ACTION_SELECT = "bgTblSelect";
+	protected static final String TABLE_ACTION_TOOLS = "bgTblTools";
 	
 	protected static final BusinessGroupMembershipComparator MEMBERSHIP_COMPARATOR = new BusinessGroupMembershipComparator();
 
@@ -431,7 +433,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if(se.getIndex() >= 0 && se.getIndex() < groupTableModel.getRowCount()) {
-					BusinessGroupRef item = groupTableModel.getObject(se.getIndex());
+					BGTableItem item = groupTableModel.getObject(se.getIndex());
 					Long businessGroupKey = item.getKey();
 					BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(businessGroupKey);
 					//prevent rs after a group is deleted by someone else
@@ -456,10 +458,12 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 						doEdit(ureq, businessGroup);
 					} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
 						doConfirmLeaving(ureq, businessGroup);
-					} else if (TABLE_ACTION_ACCESS.equals(cmd)) {
+					} else if(TABLE_ACTION_ACCESS.equals(cmd)) {
 						doAccess(ureq, businessGroup);
-					} else if (TABLE_ACTION_SELECT.equals(cmd)) {
+					} else if(TABLE_ACTION_SELECT.equals(cmd)) {
 						doSelect(ureq, businessGroup);
+					} else if(TABLE_ACTION_TOOLS.equals(cmd)) {
+						doOpenTools(ureq, item, businessGroup);
 					}
 				}
 			} else if(event instanceof FlexiTableFilterTabEvent) {
@@ -1033,6 +1037,11 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		fireEvent(ureq, new BusinessGroupSelectionEvent(selection));
 	}
 	
+	@SuppressWarnings("unused")
+	protected void doOpenTools(UserRequest ureq, BGTableItem item, BusinessGroup businessGroup) {
+		//
+	}
+	
 	/**
 	 * 
 	 * @param ureq
@@ -1222,7 +1231,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 
-	private void confirmChangeStatus(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems, BusinessGroupStatusEnum newStatus) {
+	protected final void confirmChangeStatus(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems, BusinessGroupStatusEnum newStatus) {
 		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
@@ -1430,6 +1439,14 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 					params.setLifecycleStatusReference(null);
 				}
 				break;
+			case LIFECYCLE_METHOD:
+				String lifecycleMethod = tableFilter.getValue();
+				if(StringHelper.containsNonWhitespace(lifecycleMethod)) {
+					params.setLifecycleMethod(LifecycleSyntheticMethod.valueOf(lifecycleMethod));
+				} else {
+					params.setLifecycleMethod(null);
+				}
+				break;
 			default:
 				break;
 		}
@@ -1465,7 +1482,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		HEADLESS,
 		LASTVISIT,
 		STATUS,
-		LIFECYCLE;
+		LIFECYCLE,
+		LIFECYCLE_METHOD;
 		
 		public Boolean yesNoTo(FlexiTableFilter tableFilter) {
 			if("yes".equals(tableFilter.getValue())) {

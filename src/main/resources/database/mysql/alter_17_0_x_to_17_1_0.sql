@@ -16,3 +16,7 @@ alter table o_ca_launcher_to_organisation add constraint rel_lto_org_idx foreign
 
 -- External user
 alter table o_bs_invitation add column i_status varchar(32) default 'active';
+
+
+-- Business group
+alter table o_gp_business add column excludeautolifecycle bool default false not null;

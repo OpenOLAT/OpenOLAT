@@ -80,6 +80,8 @@ public class BusinessGroupToSearch implements Persistable {
 	
 	@Column(name="status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Column(name="excludeautolifecycle", nullable=false, insertable=true, updatable=true)
+	private boolean excludeFromAutoLifecycle;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="inactivationdate", nullable=true, insertable=true, updatable=true)
@@ -146,6 +148,10 @@ public class BusinessGroupToSearch implements Persistable {
 	
 	public BusinessGroupStatusEnum getGroupStatus() {
 		return BusinessGroupStatusEnum.valueOf(getStatus());
+	}
+
+	public boolean isExcludeFromAutoLifecycle() {
+		return excludeFromAutoLifecycle;
 	}
 
 	public String getTechnicalType() {

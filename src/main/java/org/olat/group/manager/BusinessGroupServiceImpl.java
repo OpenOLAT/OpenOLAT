@@ -309,6 +309,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		dbInstance.commit();
 		return mergedGroup;
 	}
+	
+	@Override
+	public BusinessGroup updateExcludeFromAutoLifecycle(BusinessGroup group, boolean exclude) {
+		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group);
+		BusinessGroup mergedGroup = null;
+		if(reloadedBusinessGroup != null) {
+			reloadedBusinessGroup.setExcludeFromAutoLifecycle(exclude);
+			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
+			//prevent lazy loading issues
+			mergedGroup.getBaseGroup().getKey();
+		}
+		dbInstance.commit();
+		return mergedGroup;
+	}
 
 	@Override
 	public BusinessGroupMembershipInfos getMembershipInfos(BusinessGroup businessGroup, IdentityRef identity) {

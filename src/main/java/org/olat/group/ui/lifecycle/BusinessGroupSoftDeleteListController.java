@@ -84,6 +84,10 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedDeletionDate, new DateFlexiCellRenderer(getLocale()));
 		plannedCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(plannedCol);
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.method,
+				new BusinessGroupLifecycleMethodRenderer(getTranslator(),
+						groupModule.isAutomaticGroupDefinitivelyDeleteEnabled(), null)));
 	}
 
 	@Override

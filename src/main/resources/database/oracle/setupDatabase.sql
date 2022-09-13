@@ -78,6 +78,7 @@ CREATE TABLE o_gp_business (
   creationdate date,
   lastusage date,
   status varchar(32) default 'active',
+  excludeautolifecycle number default 0 not null,
   inactivationdate timestamp,
   inactivationemaildate timestamp,
   reactivationdate timestamp,

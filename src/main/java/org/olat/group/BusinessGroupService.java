@@ -130,6 +130,8 @@ public interface BusinessGroupService {
 	
 	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allowLeaving);
 	
+	public BusinessGroup updateExcludeFromAutoLifecycle(BusinessGroup group, boolean exclude);
+	
 	/**
 	 * 
 	 * @param businessGroup The business group

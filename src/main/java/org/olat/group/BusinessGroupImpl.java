@@ -97,6 +97,8 @@ public class BusinessGroupImpl implements BusinessGroup {
 	
 	@Column(name="status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Column(name="excludeautolifecycle", nullable=false, insertable=true, updatable=true)
+	private boolean excludeFromAutoLifecycle;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="inactivationdate", nullable=true, insertable=true, updatable=true)
@@ -248,6 +250,15 @@ public class BusinessGroupImpl implements BusinessGroup {
 	@Override
 	public void setGroupStatus(BusinessGroupStatusEnum status) {
 		setStatus(status.name());
+	}
+
+	@Override
+	public boolean isExcludeFromAutoLifecycle() {
+		return excludeFromAutoLifecycle;
+	}
+
+	public void setExcludeFromAutoLifecycle(boolean excludeFromAutoLifecycle) {
+		this.excludeFromAutoLifecycle = excludeFromAutoLifecycle;
 	}
 
 	@Override

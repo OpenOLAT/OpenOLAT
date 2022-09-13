@@ -31,6 +31,8 @@ public interface BusinessGroupLifecycle {
 	
 	public BusinessGroupStatusEnum getGroupStatus();
 	
+	public boolean isExcludeFromAutoLifecycle();
+	
 	public Date getLastUsage();
 	
 	/**

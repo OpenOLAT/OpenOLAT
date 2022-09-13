@@ -43,6 +43,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticMethod;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
@@ -192,6 +193,13 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 		if(groupModule.getGroupLifecycleTypeEnum() == BusinessGroupLifecycleTypeEnum.all) {
 			filters.add(new FlexiTableSingleSelectionFilter(translate("search.resources"), BGSearchFilter.RESOURCES.name(), yesNoValues, true));
 		}
+		
+		// methods
+		SelectionValues lifecycleMethodValues = new SelectionValues();
+		lifecycleMethodValues.add(SelectionValues.entry(LifecycleSyntheticMethod.all.name(), translate("search.all")));
+		lifecycleMethodValues.add(SelectionValues.entry(LifecycleSyntheticMethod.automatic.name(), translate("search.automatic.lifecycle")));
+		lifecycleMethodValues.add(SelectionValues.entry(LifecycleSyntheticMethod.manual.name(), translate("search.manual.lifecycle")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("search.lifecycle.method"), BGSearchFilter.LIFECYCLE_METHOD.name(), lifecycleMethodValues, true));
 		
 		// orphans
 		SelectionValues headlessValues = new SelectionValues();

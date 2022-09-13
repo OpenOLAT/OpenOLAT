@@ -52,6 +52,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	private final BusinessGroupManagedFlag[] managedFlags;
 	
 	private final BusinessGroupStatusEnum status;
+	private final boolean excludeFromAutoLifecycle;
 	private final Date inactivationDate;
 	private final Date inactivationEmailDate;
 	private final Date reactivationDate;
@@ -82,6 +83,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		
 		// life cycle
 		status = businessGroup.getGroupStatus();
+		excludeFromAutoLifecycle = businessGroup.isExcludeFromAutoLifecycle();
 		inactivationDate = businessGroup.getInactivationDate();
 		inactivationEmailDate = businessGroup.getInactivationEmailDate();
 		reactivationDate = businessGroup.getReactivationDate();
@@ -107,6 +109,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		
 		// life cycle
 		status = businessGroup.getGroupStatus();
+		excludeFromAutoLifecycle = businessGroup.isExcludeFromAutoLifecycle();
 		inactivationDate = businessGroup.getInactivationDate();
 		inactivationEmailDate = businessGroup.getInactivationEmailDate();
 		reactivationDate = businessGroup.getReactivationDate();
@@ -165,6 +168,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		return description;
 	}
 
+	@Override
 	public Date getLastUsage() {
 		return lastUsage;
 	}
@@ -213,6 +217,11 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	@Override
 	public BusinessGroupStatusEnum getGroupStatus() {
 		return status;
+	}
+	
+	@Override
+	public boolean isExcludeFromAutoLifecycle() {
+		return excludeFromAutoLifecycle;
 	}
 
 	@Override

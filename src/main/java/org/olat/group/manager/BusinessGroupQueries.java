@@ -42,6 +42,7 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticMethod;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.BusinessGroupToSearch;
@@ -587,11 +588,54 @@ public class BusinessGroupQueries {
 			filterSoftDeleteBusinessGroupLifecycleToSearch(sb, params.getLifecycleStatus(), params.getLifecycleStatusReference(), lifecycleParams);
 		}
 		
+		if(params.getLifecycleMethod() != null) {
+			filterLifecycleMethod(sb, params.getLifecycleMethod());
+		}
+		
 		if(params.getLastUsageBefore() != null) {
 			sb.and().append(" bgi.lastUsage <= :lastUsageBefore");
 		}
 	}
 	
+	private void filterLifecycleMethod(QueryBuilder sb, LifecycleSyntheticMethod method) {
+		if(method == LifecycleSyntheticMethod.automatic) {
+			List<BusinessGroupStatusEnum> status = new ArrayList<>();
+			if(businessGroupModule.isAutomaticGroupInactivationEnabled()) {
+				status.add(BusinessGroupStatusEnum.active);
+			}
+			if(businessGroupModule.isAutomaticGroupSoftDeleteEnabled()) {
+				status.add(BusinessGroupStatusEnum.inactive);
+			}
+			if(businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled()) {
+				status.add(BusinessGroupStatusEnum.trash);
+			}
+			
+			if(status.isEmpty()) {
+				sb.and().append("bgi.status is null");
+			} else {
+				sb.and().append("bgi.status").in(status.toArray(new BusinessGroupStatusEnum[status.size()]));
+			}
+			sb.and().append(" bgi.excludeFromAutoLifecycle=false");
+		} else if(method == LifecycleSyntheticMethod.manual) {
+			
+			List<BusinessGroupStatusEnum> status = new ArrayList<>();
+			if(!businessGroupModule.isAutomaticGroupInactivationEnabled()) {
+				status.add(BusinessGroupStatusEnum.active);
+			}
+			if(!businessGroupModule.isAutomaticGroupSoftDeleteEnabled()) {
+				status.add(BusinessGroupStatusEnum.inactive);
+			}
+			if(!businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled()) {
+				status.add(BusinessGroupStatusEnum.trash);
+			}
+			
+			sb.and().append("(");
+			if(!status.isEmpty()) {
+				sb.append("bgi.status").in(status.toArray(new BusinessGroupStatusEnum[status.size()])).append(" or ");
+			}
+			sb.append(" bgi.excludeFromAutoLifecycle=true)");
+		}
+	}
 	
 	// active            status=active, lastusage<date-30, inactivationEmailDate is null
 	// long not active   status=active, lastusage>date-30, inactivationEmailDate is null

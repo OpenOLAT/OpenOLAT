@@ -82,6 +82,8 @@ public interface BusinessGroup extends BusinessGroupShort, BusinessGroupLifecycl
 	public void setExternalId(String externalId);
 	
 	public void setGroupStatus(BusinessGroupStatusEnum status);
+
+	public void setExcludeFromAutoLifecycle(boolean exclude);
 	
 	/**
 	 * 

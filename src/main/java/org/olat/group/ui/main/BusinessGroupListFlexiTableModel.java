@@ -94,7 +94,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 				case allowDelete: {
 					Boolean allowed = wrapped.getAllowDelete();
 					if(allowed != null && allowed.booleanValue()
-							&&BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
+							&& BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
 						return Boolean.FALSE;
 					}
 					return allowed;
@@ -160,6 +160,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 				case plannedDeletionDate: return wrapped.getPlannedDeletionDate();
 				case inactivationDate: return wrapped.getInactivationDate();
 				case softDeleteDate: return wrapped.getSoftDeleteDate();
+				case method: return wrapped.isExcludeFromAutoLifecycle();
 				default: return "ERROR";
 			}
 		}
@@ -221,7 +222,9 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		plannedSoftDeleteDate("table.header.planned.soft.delete.date"),
 		plannedDeletionDate("table.header.planned.deletion.date"),
 		inactivationDate("table.header.inactivation.date"),
-		softDeleteDate("table.header.soft.delete.date");
+		softDeleteDate("table.header.soft.delete.date"),
+		tools("table.header.tools"),
+		method("table.header.method");
 		
 		private final String i18n;
 		

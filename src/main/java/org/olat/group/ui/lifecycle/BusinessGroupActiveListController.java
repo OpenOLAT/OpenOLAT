@@ -79,9 +79,15 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 	@Override
 	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
 		super.initStatusColumnModel(columnsModel);
-		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedInactivationDate, new DateFlexiCellRenderer(getLocale()));
+		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedInactivationDate,
+				new DateFlexiCellRenderer(getLocale()));
 		plannedCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(plannedCol);
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.method,
+				new BusinessGroupLifecycleMethodRenderer(getTranslator(),
+						groupModule.isAutomaticGroupInactivationEnabled(),
+						groupModule.getNumberOfDayBeforeDeactivationMail() > 0)));
 	}
 	
 	@Override

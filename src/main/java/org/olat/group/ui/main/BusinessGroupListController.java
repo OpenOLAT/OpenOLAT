@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
@@ -46,15 +48,24 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.StatisticsBusinessGroupRow;
+import org.olat.group.ui.lifecycle.BusinessGroupStatusCellRenderer;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
@@ -69,9 +80,12 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	private FlexiFiltersTab openGroupsTab;
 	
 	private DefaultFlexiColumnModel leaveCol;
-	private DefaultFlexiColumnModel deleteCol;
+	private DefaultFlexiColumnModel toolsCol;
 	private DefaultFlexiColumnModel freePlacesCol;
 	private DefaultFlexiColumnModel accessControlLaunchCol;
+	
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	public BusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
 		super(ureq, wControl, "group_list", false, prefsKey, false, null);
@@ -122,6 +136,8 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		//courses
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
 				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status,
+				new BusinessGroupStatusCellRenderer(getTranslator())));
 		//access
 		freePlacesCol = new DefaultFlexiColumnModel(Cols.freePlaces.i18nHeaderKey(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH,
 				true, Cols.freePlaces.name(), new TextFlexiCellRenderer(EscapeMode.none));
@@ -164,9 +180,12 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.leave"), TABLE_ACTION_LEAVE), null));
 		columnsModel.addFlexiColumnModel(leaveCol);
 		
-		deleteCol = new DefaultFlexiColumnModel(Cols.allowDelete.i18nHeaderKey(), Cols.allowDelete.ordinal(), TABLE_ACTION_SOFT_DELETE,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.delete"), TABLE_ACTION_SOFT_DELETE), null));
-		columnsModel.addFlexiColumnModel(deleteCol);
+		toolsCol = new DefaultFlexiColumnModel(Cols.tools.i18nHeaderKey(), Cols.allowDelete.ordinal(), TABLE_ACTION_TOOLS,
+				new BooleanCellRenderer(new ToolsCellRenderer(translate("table.header.tools"), TABLE_ACTION_TOOLS), null));
+		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
+		toolsCol.setColumnCssClass("o_col_sticky_right o_col_action");
+		toolsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		return columnsModel;
 	}
@@ -246,6 +265,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(BusinessGroupStatusEnum.active.name(), translate("status.active")));
 		statusValues.add(SelectionValues.entry(BusinessGroupStatusEnum.inactive.name(), translate("status.inactive")));
+		statusValues.add(SelectionValues.entry(BusinessGroupStatusEnum.trash.name(), translate("status.trash")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("search.status"), BGSearchFilter.STATUS.name(), statusValues, true));
 		
 		// published
@@ -304,8 +324,8 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		
 		leaveCol.setAlwaysVisible(!openTab);
 		tableEl.setColumnModelVisible(leaveCol, !openTab);
-		deleteCol.setAlwaysVisible(!openTab);
-		tableEl.setColumnModelVisible(deleteCol, !openTab);
+		toolsCol.setAlwaysVisible(!openTab);
+		tableEl.setColumnModelVisible(toolsCol, !openTab);
 	}
 
 	@Override
@@ -332,6 +352,11 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	}
 	
 	private void addAccessLink(BGTableItem item) {
+		BusinessGroupStatusEnum status = item.getGroupStatus();
+		if(status == BusinessGroupStatusEnum.deleted || status == BusinessGroupStatusEnum.trash) {
+			return;
+		}
+		
 		String action;
 		BusinessGroupMembership membership = item.getMembership();
 		if(membership != null && membership.isOwner()) {
@@ -376,6 +401,29 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUpPopups();
+			}
+		} else if(toolsCalloutCtrl == source) {
+			cleanUpPopups();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void cleanUpPopups() {
+		super.cleanUpPopups();
+		
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
+	}
+	
+	@Override
 	protected void doLaunch(UserRequest ureq, BusinessGroup group) {	
 		if(tableEl.getSelectedFilterTab() != openGroupsTab
 				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
@@ -387,5 +435,76 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 			String businessPath = "[GroupCard:" + group.getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} 
+	}
+			
+	@Override
+	protected void doOpenTools(UserRequest ureq, BGTableItem item, BusinessGroup businessGroup) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), item);
+		listenTo(toolsCtrl);
+		
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), "o-tools-" + businessGroup.getKey(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private class ToolsCellRenderer extends StaticFlexiCellRenderer {
+		
+		public ToolsCellRenderer(String label, String action) {
+			super(null, action, false, false, null, "o_icon o_icon_actions o_icon-fw o_icon-lg", label);
+		}
+
+		@Override
+		protected String getId(Object cellValue, int row, FlexiTableComponent source) {
+			BusinessGroupRow businessGroup = (BusinessGroupRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			return "o-tools-" + businessGroup.getKey();
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final VelocityContainer mainVC;
+		
+		private final BGTableItem item;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, BGTableItem item) {
+			super(ureq, wControl);
+			this.item = item;
+			
+			mainVC = createVelocityContainer("tools");
+			List<String> links = new ArrayList<>();
+			
+			Boolean allowed = item.getAllowDelete();
+			if((allowed == null || allowed.booleanValue())
+					&& !BusinessGroupManagedFlag.isManaged(item.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
+				addLink("table.header.delete", TABLE_ACTION_SOFT_DELETE, "o_icon o_icon_delete_item o_icon-fw", links);
+			}
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+		
+		private void addLink(String name, String cmd, String iconCSS, List<String> links) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			links.add(name);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				String cmd = link.getCommand();
+				if(TABLE_ACTION_SOFT_DELETE.equals(cmd)) {
+					confirmChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.trash);
+				}
+			}
+		}
 	}
 }

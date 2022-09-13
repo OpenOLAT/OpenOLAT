@@ -1228,6 +1228,16 @@ public class NodeRightServiceImplTest {
 		public BusinessGroupStatusEnum getGroupStatus() {
 			return BusinessGroupStatusEnum.active;
 		}
+		
+		@Override
+		public boolean isExcludeFromAutoLifecycle() {
+			return false;
+		}
+
+		@Override
+		public void setExcludeFromAutoLifecycle(boolean exclude) {
+			//
+		}
 
 		@Override
 		public void setGroupStatus(BusinessGroupStatusEnum status) {

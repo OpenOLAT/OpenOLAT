@@ -85,6 +85,11 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedSoftDeleteDate, new DateFlexiCellRenderer(getLocale()));
 		plannedCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(plannedCol);
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.method,
+				new BusinessGroupLifecycleMethodRenderer(getTranslator(),
+						groupModule.isAutomaticGroupSoftDeleteEnabled(),
+						groupModule.getNumberOfDayBeforeSoftDeleteMail() > 0)));
 	}
 
 	@Override
