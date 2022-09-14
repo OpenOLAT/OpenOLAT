@@ -150,6 +150,8 @@ public class CourseOverviewStep extends BasicStep {
 		private CourseNodeDatesListController courseNodeDatesListController;
 		
 		private final DueDateConfigFormatter dueDateConfigFormatter;
+		private final boolean canSwitchAllDates;
+		private final boolean hasNodeDates;
 		
 		public CourseOverviewStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -165,8 +167,15 @@ public class CourseOverviewStep extends BasicStep {
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
 			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl, context);
 			
+			this. canSwitchAllDates = ExecutionType.beginAndEnd != context.getExecutionType()
+					|| context.getSourceRepositoryEntry().getLifecycle() == null 
+					|| !context.getSourceRepositoryEntry().getLifecycle().isPrivateCycle();
+			
 			initForm(ureq);
 			updateDateWarningUI();
+			DateWithLabel earliestDate = getEarliestDate();
+			this.hasNodeDates = earliestDate != null && earliestDate.getDate() != null;
+			updateShiftAllDatesUI();
 		}
 
 		@Override
@@ -218,9 +227,6 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			boolean canSwitchAllDates = ExecutionType.beginAndEnd != context.getExecutionType()
-					|| context.getSourceRepositoryEntry().getLifecycle() == null 
-					|| !context.getSourceRepositoryEntry().getLifecycle().isPrivateCycle();
 			String dateWarningText = canSwitchAllDates
 					? translate("date.early.warning")
 					: translate("date.early.warning.period");
@@ -228,10 +234,9 @@ public class CourseOverviewStep extends BasicStep {
 			dateWarning.contextPut("warning", dateWarningText);
 			dateWarning.setVisible(false);
 			formLayout.add(dateWarning);
-			
+				
 			shiftAllDates = uifactory.addFormLink("shift.all.dates", formLayout, Link.BUTTON);
 			shiftAllDates.setElementCssClass("pull-right");
-			shiftAllDates.setVisible(canSwitchAllDates);
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			
@@ -268,6 +273,12 @@ public class CourseOverviewStep extends BasicStep {
 			tableEl.setDetailsRenderer(detailsVC, this);
 			
 			forgeRows(formLayout);
+		}
+		
+		private void updateShiftAllDatesUI() {
+			DateWithLabel earliestDate = getEarliestDate();
+			boolean visible = canSwitchAllDates && hasNodeDates && earliestDate != null && earliestDate.getDate() != null;
+			shiftAllDates.setVisible(visible);
 		}
 
 		@Override
@@ -524,6 +535,10 @@ public class CourseOverviewStep extends BasicStep {
 		}
 		
 		private void doOpenShiftAllDates(UserRequest ureq) {
+			// If user has removed all dates prevent shift of the dates.
+			updateShiftAllDatesUI();
+			if (!shiftAllDates.isVisible()) return;
+			
 			moveAllDatesController = new MoveAllDatesController(ureq, getWindowControl(), context, getEarliestDate());
 			listenTo(moveAllDatesController);
 			
@@ -563,6 +578,7 @@ public class CourseOverviewStep extends BasicStep {
 			}
 			
 			setRowEarliestDate(row, earliestDateWithLabel);
+			updateShiftAllDatesUI();
 		}
 
 		private void setRowEarliestDate(CopyCourseOverviewRow row, DateWithLabel earliestDateWithLabel) {
