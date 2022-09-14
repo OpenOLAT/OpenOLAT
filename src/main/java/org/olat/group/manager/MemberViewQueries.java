@@ -442,7 +442,7 @@ public class MemberViewQueries {
 	 * @param params
 	 * @return
 	 */
-	private void filterByRoles(Collection<MemberView> memberList, SearchMembersParams params) {
+	protected void filterByRoles(Collection<MemberView> memberList, SearchMembersParams params) {
 		List<MemberView> members = new ArrayList<>(memberList);
 
 		if(params.isRole(GroupRoles.owner)) {

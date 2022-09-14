@@ -45,9 +45,13 @@ public class SearchMembersParams extends Event {
 		super("search_members");
 	}
 	
-	public SearchMembersParams(boolean pending, GroupRoles... roles) {
+	/**
+	 * The flag pending is linked to the role waiting list.
+	 * 
+	 * @param roles List of possible roles
+	 */
+	public SearchMembersParams(GroupRoles... roles) {
 		this();
-		this.pending = pending;
 		this.roles = roles;
 	}
 	

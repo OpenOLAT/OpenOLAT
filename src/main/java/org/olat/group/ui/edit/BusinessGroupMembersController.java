@@ -120,7 +120,7 @@ public class BusinessGroupMembersController extends BasicController {
 		configForm.setMembershipConfiguration(businessGroup);
 		mainVC.put("configMembers", configForm.getInitialComponent());
 		
-		SearchMembersParams searchParams = new SearchMembersParams(true, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting);
+		SearchMembersParams searchParams = new SearchMembersParams(GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting);
 		MemberListSecurityCallback secCallback = MemberListSecurityCallbackFactory.getSecurityCallback(readOnly, !managed && !readOnly);
 		membersController = new MemberListController(ureq, getWindowControl(), toolbarPanel, businessGroup, searchParams, secCallback);
 		listenTo(membersController);

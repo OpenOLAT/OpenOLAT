@@ -973,6 +973,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.setSelectedFilterTab(ureq, tab);
 	}
 	
+	protected final boolean withPendingMembers() {
+		FlexiFiltersTab tab = membersTable.getSelectedFilterTab();
+		return tab != null;
+	}
+	
 	protected final GroupRoles[] getFilterRoles() {
 		List<FlexiTableFilter> filters = membersTable.getFilters();
 		FlexiTableFilter rolesFilter = FlexiTableFilter.getFilter(filters, FILTER_ROLE);
@@ -1021,6 +1026,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	public void reloadModel() {
 		SearchMembersParams params = getSearchParams();
 		params.setRoles(getFilterRoles());
+		params.setPending(params.isRole(GroupRoles.waiting));
 		params.setOrigins(getOrigins());
 		params.setUserTypes(getUserTypes());
 
