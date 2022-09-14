@@ -67,7 +67,7 @@ import io.jsonwebtoken.Jwts;
 /**
  *
  * Initial date: 2022-07-07<br>
- * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  *
  */
 @Service
@@ -224,6 +224,10 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         List<ZoomProfile> profiles = getProfiles();
         if (profiles.isEmpty()) {
             throw new OLATRuntimeException("No Zoom profiles available when trying to set default Zoom configuration");
+        }
+
+        if (user == null) {
+            return profiles.get(0);
         }
 
         String mailDomainForUser = getMailDomainForUser(user);

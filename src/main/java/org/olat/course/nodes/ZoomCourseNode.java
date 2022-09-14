@@ -26,6 +26,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.editor.CourseEditorEnv;
@@ -47,7 +48,7 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 /**
  *
  * Initial date: 2022-07-07<br>
- * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  *
  */
 public class ZoomCourseNode extends AbstractAccessableCourseNode {
@@ -148,7 +149,9 @@ public class ZoomCourseNode extends AbstractAccessableCourseNode {
         ZoomConfig sourceConfig = zoomManager.getConfig(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), sourceSubIdent, null);
         if (sourceConfig != null) {
             RepositoryEntry targetEntry = targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-            zoomManager.initializeConfig(targetEntry, targetSubIdent, null, ZoomManager.ApplicationType.courseElement, null, envMapper.getAuthor().getUser());
+            String clientId = getModuleConfiguration().getStringValue(CLIENT_ID);
+            User user = envMapper.getAuthor() != null ? envMapper.getAuthor().getUser() : null;
+            zoomManager.initializeConfig(targetEntry, targetSubIdent, null, ZoomManager.ApplicationType.courseElement, clientId, user);
             ZoomConfig targetConfig = zoomManager.getConfig(targetEntry, targetSubIdent, null);
             if (sourceConfig.getProfile() != targetConfig.getProfile()) {
                 zoomManager.recreateConfig(targetConfig, targetEntry, targetSubIdent, null, sourceConfig.getProfile());
