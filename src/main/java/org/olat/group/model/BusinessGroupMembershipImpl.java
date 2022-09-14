@@ -47,6 +47,7 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		this.groupKey = groupKey;
 	}
 
+	@Override
 	public Long getIdentityKey() {
 		return identityKey;
 	}
@@ -76,10 +77,12 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		}
 	}
 
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		if(lastModified == null) return;
 		if(this.lastModified == null || this.lastModified.compareTo(lastModified) > 0) {

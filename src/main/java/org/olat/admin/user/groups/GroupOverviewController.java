@@ -28,8 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
-import org.olat.admin.user.groups.BusinessGroupTableModelWithType.Cols;
-import org.olat.basesecurity.BaseSecurity;
+import org.olat.admin.user.groups.GroupOverviewTableModelWithType.Cols;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
@@ -91,7 +90,7 @@ public class GroupOverviewController extends FormBasicController {
 	private FormLink addGroups;
 	private FormLink leaveLink;
 	private FlexiTableElement tableEl;
-	private BusinessGroupTableModelWithType tableDataModel;
+	private GroupOverviewTableModelWithType tableDataModel;
 	
 	private CloseableModalController cmc;
 	private GroupSearchController groupsCtrl;
@@ -100,14 +99,10 @@ public class GroupOverviewController extends FormBasicController {
 	private GroupLeaveDialogBoxController removeFromGrpDlg;
 	private CloseableCalloutWindowController urlCalloutCtrl;
 	
-	private int counter = 0;
 	private final Identity identity;
 	private final boolean canEdit;
 	private final boolean canOpenGroup;
-	private final boolean isInvitee;
 
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupModule groupModule;
 	@Autowired
@@ -119,12 +114,11 @@ public class GroupOverviewController extends FormBasicController {
 
 	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity editedIdentity,
 			boolean canEdit, boolean canOpenGroup) {
-		super(ureq, control, "groupoverview", Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
+		super(ureq, control, "groupoverview", Util.createPackageTranslator(GroupOverviewTableModelWithType.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));	
 		this.identity = editedIdentity;
 		this.canEdit = canEdit;
 		this.canOpenGroup = canOpenGroup;
-		isInvitee = securityManager.getRoles(editedIdentity).isInvitee();
 
 		initForm(ureq);
 		updateModel();
@@ -139,12 +133,7 @@ public class GroupOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name, action, new BusinessGroupNameCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, new BGRoleCellRenderer(getLocale())));
-		
-		DefaultFlexiColumnModel invitationLinkCol = new DefaultFlexiColumnModel(isInvitee, Cols.invitationLink);
-		invitationLinkCol.setExportable(false);
-		invitationLinkCol.setAlwaysVisible(isInvitee);
-		columnsModel.addFlexiColumnModel(invitationLinkCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, new GroupRoleCellRenderer(getTranslator())));
 		
 		if(canEdit) {
 			DefaultFlexiColumnModel leaveCol = new DefaultFlexiColumnModel(Cols.allowLeave, TABLE_ACTION_UNSUBSCRIBE,
@@ -155,7 +144,7 @@ public class GroupOverviewController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(leaveCol);	
 		}
 		
-		tableDataModel = new BusinessGroupTableModelWithType(columnsModel, getLocale());
+		tableDataModel = new GroupOverviewTableModelWithType(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table.groups", tableDataModel, 25, false, getTranslator(), formLayout);
 		if(canEdit) {
 			tableEl.setMultiSelect(true);
@@ -204,24 +193,10 @@ public class GroupOverviewController extends FormBasicController {
 		for(BusinessGroup group:groups) {
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
 			Invitation invitation = groupToInvitations.get(group.getBaseGroup());
-			items.add(forgeRow(group, membership, invitation));
+			items.add(new GroupOverviewRow(group, membership, invitation, Boolean.TRUE));
 		}
 		tableDataModel.setObjects(items);
 		tableEl.reset(true, true, true);
-	}
-	
-	private GroupOverviewRow forgeRow(BusinessGroup group, BusinessGroupMembership membership, Invitation invitation) {
-		GroupOverviewRow row = new GroupOverviewRow(group, membership, invitation, Boolean.TRUE);
-		
-		if(invitation != null) {
-			FormLink invitationLink = uifactory.addFormLink("invitation_" + (++counter), "invitation", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-			invitationLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
-			invitationLink.setTitle(translate("invitation.link.long"));
-			row.setInvitationLink(invitationLink);
-			invitationLink.setUserObject(row);	
-		}
-		
-		return row;
 	}
 
 	@Override

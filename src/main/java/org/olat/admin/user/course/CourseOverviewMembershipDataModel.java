@@ -72,7 +72,6 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 			case firstTime: return view.getFirstTime();
 			case lastTime: return view.getLastTime();
 			case allowLeave: return view.isFullyManaged() ? Boolean.FALSE : Boolean.TRUE;
-			case invitationLink: return view.getInvitationLink();
 			default: return "ERROR";
 		}
 	}
@@ -86,8 +85,7 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 		role("table.header.role"),
 		lastTime("table.header.lastTime"),
 		firstTime("table.header.firstTime"),
-		allowLeave("table.header.leave"),
-		invitationLink("table.header.invitation");
+		allowLeave("table.header.leave");
 		
 		private final String i18n;
 		

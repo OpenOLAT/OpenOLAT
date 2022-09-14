@@ -41,14 +41,14 @@ import org.olat.group.BusinessGroupMembership;
  * @author gnaegi
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-class BusinessGroupTableModelWithType extends DefaultFlexiTableDataModel<GroupOverviewRow>
+class GroupOverviewTableModelWithType extends DefaultFlexiTableDataModel<GroupOverviewRow>
 implements SortableFlexiTableDataModel<GroupOverviewRow> {
 	
 	private static final Cols[] COLS = Cols.values(); 
 	
 	private final Locale locale;
 	
-	public BusinessGroupTableModelWithType(FlexiTableColumnModel columnsModel, Locale locale) {
+	public GroupOverviewTableModelWithType(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 	}
@@ -82,7 +82,7 @@ implements SortableFlexiTableDataModel<GroupOverviewRow> {
 				}
 				return allowed;
 			}
-			case role: return wrapped.getMembership();
+			case role: return wrapped;
 			case firstTime: {
 				BusinessGroupMembership membership = wrapped.getMembership();
 				return membership == null ? null : membership.getCreationDate();
@@ -91,7 +91,6 @@ implements SortableFlexiTableDataModel<GroupOverviewRow> {
 				BusinessGroupMembership membership = wrapped.getMembership();
 				return membership == null ? null : membership.getLastModified();
 			}
-			case invitationLink: return wrapped.getInvitationLink();
 			default: return "ERROR";
 		}
 	}
@@ -102,8 +101,7 @@ implements SortableFlexiTableDataModel<GroupOverviewRow> {
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),
-		allowLeave("table.header.leave"),
-		invitationLink("table.header.invitation");
+		allowLeave("table.header.leave");
 		
 		private final String i18nKey;
 		

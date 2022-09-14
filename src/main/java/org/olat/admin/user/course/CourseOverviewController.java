@@ -123,7 +123,6 @@ public class CourseOverviewController extends FormBasicController  {
 	private ReferencableEntriesSearchController repoSearchCtr;
 	private EditSingleMembershipController editSingleMemberCtrl;
 	
-	private int counter = 0;
 	private final boolean canModify;
 	private final boolean isInvitee;
 	private final Identity editedIdentity;
@@ -183,11 +182,6 @@ public class CourseOverviewController extends FormBasicController  {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.lastTime));
 		}
 		
-		DefaultFlexiColumnModel invitationLinkCol = new DefaultFlexiColumnModel(isInvitee, MSCols.invitationLink);
-		invitationLinkCol.setExportable(false);
-		invitationLinkCol.setAlwaysVisible(isInvitee);
-		columnsModel.addFlexiColumnModel(invitationLinkCol);
-		
 		if(canModify) {
 			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), TABLE_ACTION_EDIT);
 			editCol.setAlwaysVisible(true);
@@ -245,7 +239,7 @@ public class CourseOverviewController extends FormBasicController  {
 				invitation = repoEntryKeyToInvitations.get(membership.getRepositoryEntryKey());
 				membership.getMemberShip().setExternalUser(invitation != null);
 			}
-			CourseMemberView view = forgeRow(membership, invitation);
+			CourseMemberView view = new CourseMemberView(membership, invitation);
 			resourceToViewMap.put(membership.getOLATResource(), view);
 		}
 		
@@ -261,20 +255,6 @@ public class CourseOverviewController extends FormBasicController  {
 		List<CourseMemberView> views = new ArrayList<>(resourceToViewMap.values());
 		tableDataModel.setObjects(views);
 		tableEl.reset(true, true, true);
-	}
-	
-	private CourseMemberView forgeRow(MemberView membership, Invitation invitation) {
-		CourseMemberView row = new CourseMemberView(membership, invitation);
-		
-		if(invitation != null) {
-			FormLink invitationLink = uifactory.addFormLink("invitation_" + (++counter), "invitation", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-			invitationLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
-			invitationLink.setTitle(translate("invitation.link.long"));
-			row.setInvitationLink(invitationLink);
-			invitationLink.setUserObject(row);	
-		}
-		
-		return row;
 	}
 	
 	@Override
