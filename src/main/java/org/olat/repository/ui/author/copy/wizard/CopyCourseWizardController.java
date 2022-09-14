@@ -455,7 +455,7 @@ public class CopyCourseWizardController extends BasicController {
 	private boolean hasOwners(RepositoryEntry repositoryEntry) {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
-		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.owner);
+		SearchMembersParams params = new SearchMembersParams(GroupRoles.owner);
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(repositoryEntry, params, userPropertyHandlers, getLocale());
 		List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
 		
@@ -473,7 +473,7 @@ public class CopyCourseWizardController extends BasicController {
 	private boolean hasCoaches() {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
-		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
+		SearchMembersParams params = new SearchMembersParams(GroupRoles.coach);
 		params.setOrigins(EnumSet.of(Origin.repositoryEntry));
 		
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
@@ -484,7 +484,7 @@ public class CopyCourseWizardController extends BasicController {
 	private List<Identity> getCoaches(RepositoryEntry sourceEntry) {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
-		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
+		SearchMembersParams params = new SearchMembersParams(GroupRoles.coach);
 		params.setOrigins(EnumSet.of(Origin.repositoryEntry));
 		
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());

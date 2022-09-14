@@ -92,7 +92,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 						Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 
-		params = new SearchMembersParams(true, GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting);
+		params = new SearchMembersParams(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting);
 		reloadModel();
 	}
 

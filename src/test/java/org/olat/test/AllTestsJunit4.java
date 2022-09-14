@@ -561,6 +561,7 @@ import org.junit.runners.Suite;
 	de.bps.olat.user.ChangeEMailExecuteControllerTest.class,
 	de.bps.course.nodes.ChecklistCourseNodeTest.class,
 	org.olat.group.manager.BusinessGroupImportExportXStreamTest.class,
+	org.olat.group.manager.MemberViewQueriesTest.class,
 	org.olat.group.test.BusinessGroupImportExportTest.class,
 	org.olat.resource.accesscontrol.ACFrontendManagerTest.class,
 	org.olat.resource.accesscontrol.ACMethodDAOTest.class,

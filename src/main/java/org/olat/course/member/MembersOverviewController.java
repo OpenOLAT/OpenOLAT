@@ -404,7 +404,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_ALL_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(true, GroupRoles.owner, GroupRoles.coach, GroupRoles.participant);
+			SearchMembersParams searchParams = new SearchMembersParams(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant);
 			memberListCtrl = new CourseMemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, null);
 			listenTo(memberListCtrl);
 		}

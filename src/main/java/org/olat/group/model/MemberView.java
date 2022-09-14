@@ -64,7 +64,7 @@ public class MemberView extends UserPropertiesRow {
 		super(identity, userPropertyHandlers, locale);
 		this.creationDate = creationDate;
 		this.lastModified = lastModified;
-		identityStatus = identity.getStatus();
+		identityStatus = identity == null ? null : identity.getStatus();
 	}
 	
 	public Integer getIdentityStatus() {
