@@ -354,7 +354,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			LaunchRow otherUsersRow = new LaunchRow();
 			
 			otherUsersRow.setNumIdentities(memberStatistics.getNumOfNonMembers());
-			otherUsersRow.setNumLaunches(memberStatistics.getNumOfMembersLoggedIn());
+			otherUsersRow.setNumLaunches(memberStatistics.getNumOfNonMembersLoggedIn());
 			
 			String otherUsersText = translate("assessment.tool.num.other.users", Integer.toString(memberStatistics.getNumOfNonMembers()));
 			FormLink otherUsersLink = uifactory.addFormLink("num.other.users", CMD_NON_MEMBERS, null, null, null, Link.NONTRANSLATED);
