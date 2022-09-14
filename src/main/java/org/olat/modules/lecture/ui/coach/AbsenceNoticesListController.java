@@ -605,13 +605,17 @@ public class AbsenceNoticesListController extends FormBasicController {
 	
 	private void doConfirmDelete(UserRequest ureq, AbsenceNoticeRow row) {
 		AbsenceNotice notice = lectureService.getAbsenceNotice(row);
-		deleteNoticeCtrl = new ConfirmDeleteAbsenceNoticeController(ureq, getWindowControl(), notice);
-		listenTo(deleteNoticeCtrl);
-		
-		String title = translate("delete");
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteNoticeCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+		if(notice == null) {
+			showWarning("warning.notice.deleted");
+		} else {
+			deleteNoticeCtrl = new ConfirmDeleteAbsenceNoticeController(ureq, getWindowControl(), notice);
+			listenTo(deleteNoticeCtrl);
+			
+			String title = translate("delete");
+			cmc = new CloseableModalController(getWindowControl(), "close", deleteNoticeCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private class ToolsController extends BasicController {
