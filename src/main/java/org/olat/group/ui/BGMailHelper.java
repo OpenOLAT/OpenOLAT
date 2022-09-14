@@ -45,11 +45,13 @@ import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
@@ -79,7 +81,7 @@ public class BGMailHelper {
 	public static MailTemplate createAddParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.subject";
 		String bodyKey = "notification.mail.added.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -94,7 +96,7 @@ public class BGMailHelper {
 	public static MailTemplate createRemoveParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.subject";
 		String bodyKey = "notification.mail.removed.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -109,7 +111,7 @@ public class BGMailHelper {
 	public static MailTemplate createAddMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.self.subject";
 		String bodyKey = "notification.mail.added.self.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -124,7 +126,7 @@ public class BGMailHelper {
 	public static MailTemplate createRemoveMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.self.subject";
 		String bodyKey = "notification.mail.removed.self.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -139,7 +141,7 @@ public class BGMailHelper {
 	public static MailTemplate createAddWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.added.subject";
 		String bodyKey = "notification.mail.waitingList.added.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -154,7 +156,7 @@ public class BGMailHelper {
 	public static MailTemplate createRemoveWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.removed.subject";
 		String bodyKey = "notification.mail.waitingList.removed.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -170,13 +172,13 @@ public class BGMailHelper {
 	public static MailTemplate createWaitinglistTransferMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.transfer.subject";
 		String bodyKey = "notification.mail.waitingList.transfer.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 	
 	public static MailTemplate createInvitationMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.invitation.subject";
 		String bodyKey = "notification.mail.invitation.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey);
+		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -188,7 +190,7 @@ public class BGMailHelper {
 	 * @param bodyKey
 	 * @return
 	 */
-	public static MailTemplate createMailTemplate(BusinessGroupShort group, Identity recipient, String subjectKey, String bodyKey) {
+	public static MailTemplate createMailTemplate(BusinessGroupShort group, Identity recipient, Identity actor, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String lang = null;
 		if (recipient != null) {
@@ -196,16 +198,16 @@ public class BGMailHelper {
 		}
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
 		String[] bodyArgs = getBodyArgs(recipient, locale);
-		return createMailTemplate(group, null, bodyArgs, subjectKey, bodyKey, locale);
+		return createMailTemplate(group, null, actor, bodyArgs, subjectKey, bodyKey, locale);
 	}
 
-	public static MailTemplate createCopyMailTemplate(BusinessGroupShort group, Identity recipient, String subjectKey, String bodyKey, Locale locale) {
+	public static MailTemplate createCopyMailTemplate(BusinessGroupShort group, Identity recipient, Identity actor, String subjectKey, String bodyKey, Locale locale) {
 
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
 				Util.createPackageTranslator(BusinessGroupListController.class, locale));
 		
 		String[] bodyArgs = getBodyArgs(recipient, locale);
-		MailTemplate template = createMailTemplate(group, recipient, bodyArgs, subjectKey, bodyKey, locale);
+		MailTemplate template = createMailTemplate(group, recipient, actor, bodyArgs, subjectKey, bodyKey, locale);
 
 		String[] args = new String[] {
 			group.getName(),
@@ -240,7 +242,7 @@ public class BGMailHelper {
 		return names.toString();
 	}
 	
-	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity overrideIdentity, String[] args,
+	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity overrideIdentity, Identity actor, String[] args,
 			String subjectKey, String bodyKey, Locale locale) {
 	
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
@@ -266,7 +268,7 @@ public class BGMailHelper {
 			infos = new BGMailTemplateInfos("", "", "", "", "");
 		}
 		
-		return new BGMailTemplate(subject, body, overrideIdentity, infos, trans);
+		return new BGMailTemplate(subject, body, overrideIdentity, infos, actor, trans);
 	}
 	
 	public static BGMailTemplateInfos getTemplateInfos(BusinessGroupShort group, List<RepositoryEntryShort> repoEntries, Translator translator) {
@@ -376,6 +378,7 @@ public class BGMailHelper {
 		private final BGMailTemplateInfos infos;
 		private final Translator translator;
 		private final Identity overrideIdentity;
+		private final Identity actor;
 		
 		/**
 		 * 
@@ -385,9 +388,10 @@ public class BGMailHelper {
 		 * @param infos
 		 * @param translator
 		 */
-		public BGMailTemplate(String subject, String body, Identity overrideIdentity, BGMailTemplateInfos infos, Translator translator) {
+		public BGMailTemplate(String subject, String body, Identity overrideIdentity, BGMailTemplateInfos infos, Identity actor, Translator translator) {
 			super(subject, body, null);
 			this.infos = infos;
+			this.actor = actor;
 			this.translator = translator;
 			this.overrideIdentity = overrideIdentity;
 		}
@@ -425,14 +429,15 @@ public class BGMailHelper {
 
 		@Override
 		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-			Identity identityForVariables = overrideIdentity == null ? identity : overrideIdentity;
+			final Identity identityForVariables = overrideIdentity == null ? identity : overrideIdentity;
+			final Locale locale = translator.getLocale();
 			
-			fillContextWithStandardIdentityValues(context, identityForVariables, translator.getLocale());
+			fillContextWithStandardIdentityValues(context, identityForVariables, locale);
 
 			// Put user variables into velocity context
 			if(identityForVariables != null) {
 				//the email of the user, needs to stay named 'login'
-				context.put("login", identityForVariables.getUser().getProperty(UserConstants.EMAIL, null));
+				context.put("login", identityForVariables.getUser().getProperty(UserConstants.EMAIL, locale));
 			}
 			// Put variables from greater context
 			context.put(GROUP_NAME, infos.getGroupNameWithUrl());
@@ -449,6 +454,30 @@ public class BGMailHelper {
 			context.put(COURSE_LIST_EMPTY, translator.translate("notification.mail.no.ressource"));
 			context.put("reactiontime", infos.getReactionTime());
 			context.put("reactionTime", infos.getReactionTime());
+			
+			if(actor != null) {
+				User actorUser = actor.getUser();
+				putActorVariables(context, actorUser.getProperty(UserConstants.FIRSTNAME, locale),
+						actorUser.getProperty(UserConstants.LASTNAME, locale),
+						UserManager.getInstance().getUserDisplayEmail(actor, locale),
+						UserManager.getInstance().getUserDisplayName(actor));
+			} else {
+				putActorVariables(context, "Open", "Olat", WebappHelper.getMailConfig("mailSupport"), "OpenOlat");
+			}
+		}
+		
+		private void putActorVariables(VelocityContext context, String firstName, String lastName, String email, String fullName) {
+			context.put("actor", fullName);
+			context.put("actorFirst", firstName);
+			context.put("actorFirstname", firstName);
+			context.put("actorFirstName", firstName);
+			context.put("actorfirstname", firstName);
+			context.put("actorLast", lastName);
+			context.put("actorLastname", lastName);
+			context.put("actorLastName", lastName);
+			context.put("actorlastname", lastName);
+			context.put("actorEmail", email);
+			context.put("actoremail", email);	
 		}
 	}
 }

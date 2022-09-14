@@ -108,9 +108,9 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 					|| businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.coach.name());
 			if (ow) {
 				if(nextStatus == BusinessGroupStatusEnum.inactive) {
-					businessGroupLifecycleManager.sendInactivationEmail(businessGroup);
+					businessGroupLifecycleManager.sendInactivationEmail(businessGroup, getIdentity());
 				} else if(nextStatus == BusinessGroupStatusEnum.trash) {
-					businessGroupLifecycleManager.sendDeleteSoftlyEmail(businessGroup);
+					businessGroupLifecycleManager.sendDeleteSoftlyEmail(businessGroup, getIdentity());
 				}
 			}
 		}

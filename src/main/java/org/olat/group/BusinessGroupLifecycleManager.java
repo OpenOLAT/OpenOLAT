@@ -88,24 +88,27 @@ public interface BusinessGroupLifecycleManager {
 	/**
 	 * 
 	 * @param businessGroup The business group
+	 * @param doer The user which performs the action
 	 * @return The merged business group
 	 */
-	public BusinessGroup sendInactivationEmail(BusinessGroup businessGroup);
+	public BusinessGroup sendInactivationEmail(BusinessGroup businessGroup, Identity doer);
 	
 	/**
 	 * Change the status to active after the business group was inactivated or soft deleted.
 	 * 
 	 * @param businessGroup The business group
+	 * @param doer The user which performs the action
 	 * @return The merged business group
 	 */
 	public BusinessGroup reactivateBusinessGroup(BusinessGroup businessGroup, Identity doer, boolean asGroupOwner);
 	
 	/**
 	 * 
-	 * @param businessGroup
-	 * @return
+	 * @param businessGroup The business group to mark as deleted
+	 * @param doer The user which performs the action
+	 * @return The merged business Group
 	 */
-	public BusinessGroup sendDeleteSoftlyEmail(BusinessGroup businessGroup);
+	public BusinessGroup sendDeleteSoftlyEmail(BusinessGroup businessGroup, Identity doer);
 	
 	/**
 	 * Change the status of the business group to deleted. Add an entry in log table.
