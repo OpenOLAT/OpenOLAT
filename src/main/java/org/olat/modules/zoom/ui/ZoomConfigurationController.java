@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,20 +56,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  *
  * Initial date: 2022-07-07<br>
- * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  *
  */
 public class ZoomConfigurationController extends FormBasicController {
 
     private static final String CMD_TOOLS = "tools";
 
-	private static final String[] ENABLE_FOR_KEYS = { "courseElement", "courseTool", "groupTool" };
-
-    private static final String[] enabledKeys = new String[]{"on"};
-    private final String[] enabledValues;
+    private final SelectionValues moduleEnabledKV = new SelectionValues();
+    private final SelectionValues enableForKV = new SelectionValues();
+    private final SelectionValues enableCalendarEntriesKV = new SelectionValues();
 
     private MultipleSelectionElement moduleEnabledEl;
 	private MultipleSelectionElement enableForEl;
+    private MultipleSelectionElement enableCalendarEntriesEl;
 
     private FlexiTableElement profilesTableEl;
     private ZoomProfilesTableModel profilesTableModel;
@@ -91,7 +92,11 @@ public class ZoomConfigurationController extends FormBasicController {
 
     public ZoomConfigurationController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl);
-        enabledValues = new String[]{translate("enabled")};
+        moduleEnabledKV.add(SelectionValues.entry("on", translate("enabled")));
+        enableForKV.add(SelectionValues.entry(ZoomManager.ApplicationType.courseElement.name(), translate("zoom.module.enable.for.courseElement")));
+        enableForKV.add(SelectionValues.entry(ZoomManager.ApplicationType.courseTool.name(), translate("zoom.module.enable.for.courseTool")));
+        enableForKV.add(SelectionValues.entry(ZoomManager.ApplicationType.groupTool.name(), translate("zoom.module.enable.for.groupTool")));
+        enableCalendarEntriesKV.add(SelectionValues.entry("on", translate("enabled")));
         initForm(ureq);
         updateUI();
         loadModel();
@@ -103,19 +108,19 @@ public class ZoomConfigurationController extends FormBasicController {
         setFormInfo("zoom.info");
         setFormContextHelp("manual_admin/administration/Zoom/");
 
-        moduleEnabledEl = uifactory.addCheckboxesHorizontal("zoom.module.enabled", formLayout, enabledKeys, enabledValues);
-        moduleEnabledEl.select(enabledKeys[0], zoomModule.isEnabled());
+        moduleEnabledEl = uifactory.addCheckboxesHorizontal("zoom.module.enabled", formLayout, moduleEnabledKV.keys(), moduleEnabledKV.values());
+        moduleEnabledEl.select(moduleEnabledKV.keys()[0], zoomModule.isEnabled());
         moduleEnabledEl.addActionListener(FormEvent.ONCHANGE);
-        
-        String[] enableForValues = new String[] {
-                translate("zoom.module.enable.for.courseElement"),
-                translate("zoom.module.enable.for.courseTool"),
-            	translate("zoom.module.enable.for.groupTool")
-        };
-        enableForEl = uifactory.addCheckboxesVertical("zoom.module.enable.for", formLayout, ENABLE_FOR_KEYS, enableForValues, 1);
-        enableForEl.select(ENABLE_FOR_KEYS[0], zoomModule.isEnabledForCourseElement());
-        enableForEl.select(ENABLE_FOR_KEYS[1], zoomModule.isEnabledForCourseTool());
-        enableForEl.select(ENABLE_FOR_KEYS[2], zoomModule.isEnabledForGroupTool());
+
+        enableForEl = uifactory.addCheckboxesVertical("zoom.module.enable.for", formLayout, enableForKV.keys(), enableForKV.values(), 1);
+        enableForEl.select(enableForKV.keys()[0], zoomModule.isEnabledForCourseElement());
+        enableForEl.select(enableForKV.keys()[1], zoomModule.isEnabledForCourseTool());
+        enableForEl.select(enableForKV.keys()[2], zoomModule.isEnabledForGroupTool());
+        enableForEl.addActionListener(FormEvent.ONCHANGE);
+
+        enableCalendarEntriesEl = uifactory.addCheckboxesHorizontal("zoom.module.zoomCanSetCalendarEntries", formLayout, enableCalendarEntriesKV.keys(), enableCalendarEntriesKV.values());
+        enableCalendarEntriesEl.select(enableCalendarEntriesKV.keys()[0], zoomModule.isCalendarEntriesEnabled());
+        enableCalendarEntriesEl.addActionListener(FormEvent.ONCHANGE);
 
         FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ZoomProfileCols.name));
@@ -165,13 +170,16 @@ public class ZoomConfigurationController extends FormBasicController {
 
     @Override
     protected void formOK(UserRequest ureq) {
-        boolean enabled = moduleEnabledEl.isSelected(0);
+        final boolean enabled = moduleEnabledEl.isSelected(0);
         zoomModule.setEnabled(enabled);
 
         if (enabled) {
             zoomModule.setEnabledForCourseElement(enableForEl.isSelected(0));
             zoomModule.setEnabledForCourseTool(enableForEl.isSelected(1));
             zoomModule.setEnabledForGroupTool(enableForEl.isSelected(2));
+
+            final boolean enableCalendarEntries = enableCalendarEntriesEl.isSelected(0);
+            zoomModule.setCalendarEntriesEnabled(enableCalendarEntries);
         }
         CollaborationToolsFactory.getInstance().initAvailableTools();
     }
@@ -258,15 +266,19 @@ public class ZoomConfigurationController extends FormBasicController {
     }
 
     private void reloadModuleState() {
-        moduleEnabledEl.select(enabledKeys[0], zoomModule.isEnabled());
+        moduleEnabledEl.select(moduleEnabledKV.keys()[0], zoomModule.isEnabled());
     }
 
     private void updateUI() {
         boolean enabled = moduleEnabledEl.isAtLeastSelected(1);
         enableForEl.setVisible(enabled);
-        enableForEl.select(ENABLE_FOR_KEYS[0], zoomModule.isEnabledForCourseElement());
-        enableForEl.select(ENABLE_FOR_KEYS[1], zoomModule.isEnabledForCourseTool());
-        enableForEl.select(ENABLE_FOR_KEYS[2], zoomModule.isEnabledForGroupTool());
+        enableForEl.select(enableForKV.keys()[0], zoomModule.isEnabledForCourseElement());
+        enableForEl.select(enableForKV.keys()[1], zoomModule.isEnabledForCourseTool());
+        enableForEl.select(enableForKV.keys()[2], zoomModule.isEnabledForGroupTool());
+
+        enableCalendarEntriesEl.setVisible(enabled);
+        enableCalendarEntriesEl.select(enableCalendarEntriesKV.keys()[0], zoomModule.isCalendarEntriesEnabled());
+        enableCalendarEntriesEl.setHelpTextKey("zoom.module.zoomCanSetCalendarEntries.help", null);
 
         profilesTableEl.setVisible(enabled);
         addProfileButton.setVisible(enabled);

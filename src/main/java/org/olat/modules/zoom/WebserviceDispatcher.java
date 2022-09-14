@@ -50,7 +50,7 @@ import java.util.*;
  * scheduled meetings.
  *
  * Initial date: 2022-07-07<br>
- * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  *
  */
 @Service(value="webservicedispatcherbean")
@@ -64,6 +64,8 @@ public class WebserviceDispatcher implements Dispatcher {
     private CalendarManager calendarManager;
     @Autowired
     private ZoomManager zoomManager;
+    @Autowired
+    private ZoomModule zoomModule;
 
     static class ZoomCalendarPayload {
         String token;
@@ -105,6 +107,11 @@ public class WebserviceDispatcher implements Dispatcher {
     }
 
     private void processEvent(ZoomCalendarEvent event, String token) {
+        if (!zoomModule.isCalendarEntriesEnabled()) {
+            log.debug("Not processing Zoom calendar event for meeting " + event.getMeetingId() + ". Setting calendar entries by Zoom is disabled.");
+            return;
+        }
+
         Optional<ZoomConfig> optionalZoomConfig = zoomManager.getConfig(event.contextId);
         if (optionalZoomConfig.isPresent()) {
             ZoomConfig zoomConfig = optionalZoomConfig.get();
