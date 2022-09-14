@@ -219,6 +219,24 @@ public class InvitationDAO {
 				  .getResultList();
 	}
 	
+	public List<Invitation> findInvitations(InvitationTypeEnum type, String email, Group group) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select invitation from binvitation as invitation ")
+		  .append(" inner join fetch invitation.baseGroup baseGroup")
+		  .append(" left join fetch invitation.identity ident")
+		  .append(" left join fetch ident.user as identUser")
+		  .where().append("baseGroup.key=:groupKey")
+		  .and().append("invitation.type=:type")
+		  .and().append("lower(invitation.mail)=:email");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Invitation.class)
+				.setParameter("groupKey", group.getKey())
+				.setParameter("email", email.toLowerCase())
+				.setParameter("type", type)
+				.getResultList();
+	}
+	
 	public List<InvitationWithRepositoryEntry> findInvitationsWithRepositoryEntries(SearchInvitationParameters searchParams, boolean followToBusinessGroups) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select invitation, v from binvitation as invitation")

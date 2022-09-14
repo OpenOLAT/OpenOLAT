@@ -210,7 +210,12 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			return StepsMainRunController.DONE_UNCHANGED;
 		}
 		
-		invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
+		Invitation similarInvitation = invitationService.findSimilarInvitation(type, transientInvitation.getEmail(), roles, group);
+		if(similarInvitation == null) {
+			invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
+		} else {
+			invitation = similarInvitation;
+		}
 		
 		ContactList contactList = new ContactList("Invitation");
 		contactList.add(transientInvitation.getEmail());

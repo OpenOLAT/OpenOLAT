@@ -126,7 +126,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	}
 	
 	@Override
-	public Identity  getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale, Identity doer) {
+	public Identity getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale, Identity doer) {
 		// create identity only if such a user does not already exist
 		
 		Date expirationDate = null;
@@ -233,6 +233,18 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	@Override
 	public List<Invitation> findInvitations(BusinessGroupRef businessGroup, SearchInvitationParameters searchParams) {
 		return invitationDao.findInvitations(businessGroup, searchParams);
+	}
+
+	@Override
+	public Invitation findSimilarInvitation(InvitationTypeEnum type, String email, List<String> roles, Group group) {
+		List<Invitation> invitations = invitationDao.findInvitations(type, email, group);
+		for(Invitation invitation:invitations) {
+			List<String> invitationRoles = invitation.getRoleList();
+			if(invitationRoles.containsAll(roles) && roles.containsAll(invitationRoles)) {
+				return invitation;
+			}	
+		}
+		return null;
 	}
 
 	@Override

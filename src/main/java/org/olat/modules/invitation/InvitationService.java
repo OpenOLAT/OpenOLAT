@@ -83,6 +83,16 @@ public interface InvitationService {
 	
 	public List<Invitation> findInvitations(BusinessGroupRef businessGroup, SearchInvitationParameters searchParams);
 	
+	/**
+	 * Find an invitation for the same resource, same invitee and same list of roles.
+	 * 
+	 * @param email The email of the invitee
+	 * @param roles The roles for invitation
+	 * @param group The security group
+	 * @return An invitation if found or null
+	 */
+	public Invitation findSimilarInvitation(InvitationTypeEnum type, String email, List<String> roles, Group group);
+	
 	public Identity getOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale, Identity doer);
 	
 	public Invitation update(Invitation invitation, String firstName, String lastName, String email);

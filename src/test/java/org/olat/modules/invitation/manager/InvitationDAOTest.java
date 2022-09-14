@@ -162,6 +162,22 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findSimilarInvitations() {
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-3");
+		Invitation invitation = createDummyInvitation();
+		((InvitationImpl)invitation).setMail(invitee.getUser().getEmail());
+		invitation = invitationDao.update(invitation);
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		List<Invitation> foundInvitations = invitationDao.findInvitations(invitation.getType(),
+				invitee.getUser().getEmail().toUpperCase(), invitation.getBaseGroup());
+		assertThat(foundInvitations)
+			.isNotNull()
+			.containsExactlyInAnyOrder(invitation);
+	}
+	
+	@Test
 	public void findInvitations_businessGroup() {
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "Invitations", "Group for invitations",
 				BusinessGroup.BUSINESS_TYPE, null, null, 0, 10, false, false, null);
