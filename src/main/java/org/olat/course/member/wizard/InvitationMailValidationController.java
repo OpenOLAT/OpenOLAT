@@ -24,9 +24,11 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
@@ -252,6 +254,7 @@ public class InvitationMailValidationController extends StepFormBasicController 
 	private void doImportUsersData(UserRequest ureq) {
 		context.clearInvitations();
 		
+		Set<String> deduplicatesEmail = new HashSet<>();
 		List<String[]> lines = getLines(namesEl.getValue());
 		Map<String,List<Identity>> emailToIdentities = getSharedIdentities(lines);
 		for(String[] line:lines) {
@@ -260,13 +263,17 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			}
 			
 			String mail = line[0];
-			List<Identity> identities = emailToIdentities.get(mail);
-			if(identities == null || identities.isEmpty()) {
-				context.addInvitation(mail, line[1], line[2]);
-			} else {
-				for(Identity invitee:identities) {
-					boolean inviteeOnly = securityManager.getRoles(invitee).isInviteeOnly();
-					context.addInvitation(mail, invitee, inviteeOnly);
+			String lcMail = mail.toLowerCase();
+			if(!deduplicatesEmail.contains(lcMail)) {
+				deduplicatesEmail.add(lcMail);
+				List<Identity> identities = emailToIdentities.get(mail);
+				if(identities == null || identities.isEmpty()) {
+					context.addInvitation(mail, line[1], line[2]);
+				} else {
+					for(Identity invitee:identities) {
+						boolean inviteeOnly = securityManager.getRoles(invitee).isInviteeOnly();
+						context.addInvitation(mail, invitee, inviteeOnly);
+					}
 				}
 			}
 		}
