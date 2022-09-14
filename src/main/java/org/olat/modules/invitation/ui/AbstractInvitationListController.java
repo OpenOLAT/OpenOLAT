@@ -100,7 +100,6 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	public static final String FILTER_STATUS = "status";
 	
 	protected FormLink activateBatchButton;
-	protected FormLink inactivateBatchButton;
 	protected FlexiTableElement tableEl;
 	protected InvitationListTableModel tableModel;
 	
@@ -161,9 +160,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		
 		if(!readOnly) {
 			activateBatchButton = uifactory.addFormLink("activate", "activate", "activate", null, formLayout, Link.BUTTON);
-			inactivateBatchButton = uifactory.addFormLink("inactivate", "inactivate", "inactivate", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(activateBatchButton);
-			tableEl.addBatchButton(inactivateBatchButton);
 		}
 		
 		if(defaultSortKey != null) {
@@ -228,12 +225,17 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		FormLink urlLink = uifactory.addFormLink("url_" + (++counter), "url", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		urlLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = null;
+		if(invitation.getStatus() == InvitationStatusEnum.inactive) {
+			toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		}
 		
 		InvitationRow row = new InvitationRow(invitation, entry, businessGroup, urlLink, toolsLink);
 		urlLink.setUserObject(row);
-		toolsLink.setUserObject(row);
+		if(toolsLink != null) {
+			toolsLink.setUserObject(row);
+		}
 		return row;
 	}
 	
@@ -287,8 +289,6 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(activateBatchButton == source) {
 			doBatchInvitationStatus(InvitationStatusEnum.active);
-		} else if(inactivateBatchButton == source) {
-			doBatchInvitationStatus(InvitationStatusEnum.inactive);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("url".equals(link.getCmd()) && link.getUserObject() instanceof InvitationRow) {
@@ -412,7 +412,6 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	private class ToolsController extends BasicController {
 
 		private Link activateLink;
-		private Link inactivateLink;
 		private final VelocityContainer mainVC;
 		
 		private final InvitationRow row;
@@ -425,9 +424,6 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			if(row.getInvitationStatus() == InvitationStatusEnum.inactive) {
 				activateLink = LinkFactory.createLink("activate", "activate", getTranslator(), mainVC, this, Link.LINK);
 				mainVC.put("activate", activateLink);
-			} else if(row.getInvitationStatus() == InvitationStatusEnum.active) {
-				inactivateLink = LinkFactory.createLink("inactivate", "inactivate", getTranslator(), mainVC, this, Link.LINK);
-				mainVC.put("inactivate", inactivateLink);
 			}
 			
 			putInitialPanel(mainVC);
@@ -438,11 +434,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			if(activateLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doInvitationStatus(row, InvitationStatusEnum.active);
-			} else if(inactivateLink == source) {
-				fireEvent(ureq, Event.CLOSE_EVENT);
-				doInvitationStatus(row, InvitationStatusEnum.inactive);
 			}
 		}
 	}
-
 }
