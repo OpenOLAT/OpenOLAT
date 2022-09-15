@@ -71,6 +71,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
 import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -256,7 +257,7 @@ public class AuthHelper {
 		UserManager um = UserManager.getInstance();
 		GroupDAO groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
 		Invitation invitation = invitationService.findInvitation(invitationToken);
-		if(invitation == null) {
+		if(invitation == null || invitation.getStatus() != InvitationStatusEnum.active) {
 			return LOGIN_DENIED;
 		}
 		UserSession usess = ureq.getUserSession();

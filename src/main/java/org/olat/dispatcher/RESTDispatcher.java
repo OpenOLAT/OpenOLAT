@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Invitation;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -54,6 +56,8 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.LoginModule;
 import org.olat.modules.invitation.InvitationModule;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,11 +88,15 @@ public class RESTDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(RESTDispatcher.class);
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private LoginModule loginModule;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private InvitationModule invitationModule;
+	@Autowired
+	private InvitationService invitationService;
 	@Autowired
 	private RestSecurityBean restSecurityBean;
 	@Autowired
@@ -203,6 +211,16 @@ public class RESTDispatcher implements Dispatcher {
 		
 		boolean auth = usess.isAuthenticated();
 		if (auth) {
+			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
+			if (invitationAccess != null && invitationModule.isInvitationEnabled()) {
+				Identity identity = usess.getIdentity();
+				Invitation invitation = invitationService.findInvitation(invitationAccess);
+				if(invitation != null && invitation.getStatus() == InvitationStatusEnum.active
+						&& identity != null && identity.equals(invitation.getIdentity())) {
+					invitationService.acceptInvitation(invitation, usess.getIdentity());
+					dbInstance.commit();// Make sure membership is saved before redirect
+				}
+			}
 			redirectAuthenticatedTo(usess, ureq, encodedRestPart);
 		} else {
 			//prepare for redirect
@@ -254,7 +272,7 @@ public class RESTDispatcher implements Dispatcher {
 		if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
 			url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 		}
-		DispatcherModule.redirectTo(ureq.getHttpResp(), url);
+		DispatcherModule.redirectTo(ureq.getHttpResp(), url + "?invitation=3142d595-02ed-4085-a1e6-78f681136a66");
 	}
 	
 	private void redirectRegister(HttpServletResponse response) {

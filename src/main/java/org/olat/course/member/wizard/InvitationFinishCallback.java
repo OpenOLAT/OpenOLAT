@@ -51,6 +51,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
@@ -214,6 +215,10 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		if(similarInvitation == null) {
 			invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
 		} else {
+			if(similarInvitation.getStatus() != InvitationStatusEnum.active) {
+				similarInvitation.setStatus(InvitationStatusEnum.active);
+				similarInvitation = invitationService.update(similarInvitation);
+			}
 			invitation = similarInvitation;
 		}
 		
