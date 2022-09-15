@@ -488,7 +488,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		AbsenceNotice notice = lectureService.getAbsenceNotice(row.getAbsenceNotice());
 		if(notice == null) {
 			tableEl.reloadData();
-			showWarning("warning.absence.notice.not.existing");
+			showWarning("warning.notice.deleted");
 		} else {
 			toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
 			listenTo(toolsCtrl);
