@@ -89,12 +89,19 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 			saveConfigTo(course, retVal);
 		} else {
 			//file exists, load it with XStream, resolve version
-			Object tmp = XStreamHelper.readObject(xstream, configFile);
-			if (tmp instanceof CourseConfig) {
-				retVal = (CourseConfig) tmp;
-				if (retVal.resolveVersionIssues()) {
-					saveConfigTo(course, retVal);
+			try {
+				Object tmp = XStreamHelper.readObject(xstream, configFile);
+				if (tmp instanceof CourseConfig) {
+					retVal = (CourseConfig) tmp;
+					if (retVal.resolveVersionIssues()) {
+						saveConfigTo(course, retVal);
+					}
 				}
+			} catch (Exception e) {
+				log.error("", e);
+				
+				retVal = new CourseConfig();
+				retVal.initDefaults();
 			}
 		}
 		return retVal;
