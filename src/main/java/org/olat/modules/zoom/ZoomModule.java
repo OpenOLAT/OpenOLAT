@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 /**
  *
  * Initial date: 2022-07-07<br>
- * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  *
  */
 @Service
@@ -40,6 +40,7 @@ public class ZoomModule extends AbstractSpringModule implements ConfigOnOff {
     private static final String ZOOM_ENABLED_FOR_COURSE_ELEMENT = "zoom.enabledForCourseElement";
     private static final String ZOOM_ENABLED_FOR_COURSE_TOOL = "zoom.enabledForCourseTool";
     private static final String ZOOM_ENABLED_FOR_GROUP_TOOL = "zoom.enabledForGroupTool";
+    private static final String ZOOM_CALENDAR_ENTRIES_ENABLED = "zoom.calendarEntriesEnabled";
 
     @Value("${zoom.enabled:false}")
     private boolean enabled;
@@ -52,6 +53,9 @@ public class ZoomModule extends AbstractSpringModule implements ConfigOnOff {
 
     @Value("${zoom.enabledForGroupTool:true}")
     private String enabledForGroupTool;
+
+    @Value("${zoom.calendarEntriesEnabled:true}")
+    private String calendarEntriesEnabled;
 
     @Autowired
     public ZoomModule(CoordinatorManager coordinatorManager) {
@@ -78,6 +82,11 @@ public class ZoomModule extends AbstractSpringModule implements ConfigOnOff {
         String enabledForGroupToolObj = getStringPropertyValue(ZOOM_ENABLED_FOR_GROUP_TOOL, true);
         if (StringHelper.containsNonWhitespace(enabledForGroupToolObj)) {
             enabledForGroupTool = enabledForGroupToolObj;
+        }
+
+        String calendarEntriesEnabledObj = getStringPropertyValue(ZOOM_CALENDAR_ENTRIES_ENABLED, true);
+        if (StringHelper.containsNonWhitespace(calendarEntriesEnabledObj)) {
+            calendarEntriesEnabled = calendarEntriesEnabledObj;
         }
     }
 
@@ -121,5 +130,14 @@ public class ZoomModule extends AbstractSpringModule implements ConfigOnOff {
     public void setEnabledForGroupTool(boolean enabled) {
     	enabledForGroupTool = enabled ? "true" : "false";
     	setStringProperty(ZOOM_ENABLED_FOR_GROUP_TOOL, enabledForGroupTool, true);
+    }
+
+    public boolean isCalendarEntriesEnabled() {
+        return "true".equals(calendarEntriesEnabled);
+    }
+
+    public void setCalendarEntriesEnabled(boolean enabled) {
+        calendarEntriesEnabled = enabled ? "true" : "false";
+        setStringProperty(ZOOM_CALENDAR_ENTRIES_ENABLED, calendarEntriesEnabled, true);
     }
 }
