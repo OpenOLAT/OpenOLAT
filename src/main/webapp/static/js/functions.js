@@ -501,7 +501,7 @@ function o_ainvoke(r) {
 	}
 	
 	var scrollTop = false;
-	var focus = { formName: null, formItemId: null };
+	var focusArray = [];
 	
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
@@ -675,8 +675,7 @@ function o_ainvoke(r) {
 					case 10: // dirty form, executed in o_afterserver
 						break;
 					case 11:
-						focus.formName = cda.formName;
-						focus.formItemId = cda.formItemId;
+						focusArray.push({ formName: cda.formName, formItemId: cda.formItemId });
 						break;
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
@@ -705,12 +704,12 @@ function o_ainvoke(r) {
 	}
 	
 	// Scroll or focus, but not both to prevent jumping up and down
-	if(scrollTop && focus.formName != null) {
-		o_scrollTopAndFocus(focus.formName, focus.formItemId);
+	if(scrollTop && focusArray.length > 0) {
+		o_scrollTopAndFocus(focusArray);
 	} else if(scrollTop) {
 		o_scrollTop();
-	} else if(focus.formName != null) {
- 		o_ffSetFocus(focus.formName, focus.formItemId);
+	} else if(focusArray.length > 0) {
+ 		o_ffSetFocusArray(focusArray);
 	}
 /* minimalistic debugger / profiler	
 	BDebugger.logDOMCount();
@@ -1135,10 +1134,10 @@ function o_scrollTop() {
 	}
 }
 
-function o_scrollTopAndFocus(formName, formItemId) {
+function o_scrollTopAndFocus(focusArray) {
 	try {
 		jQuery('html, body').animate({ scrollTop : 0 }, 300, "swing", function() {
-			o_ffSetFocus(formName, formItemId);
+			o_ffSetFocusArray(focusArray);
 		});
 	} catch (e) {
 		//console.log(e);
@@ -2044,6 +2043,16 @@ function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }
 
+function o_ffSetFocusArray(focusArray) {
+	if(focusArray) {
+		for(var i=0;i<focusArray.length; i++) {
+			var f = focusArray[i];
+			if(o_ffSetFocus(f.formName, f.formItemId)) {
+				return;
+			}
+		}
+	}
+}
 
 // Set the focus in a flexi form to a specific form item, the first error 
 // in the form or the last element focused by a user action 
@@ -2052,48 +2061,83 @@ function o_ffSetFocus(formId, formItemId) {
 	var applyFocus = function(el) {
 		var jLastEl = jQuery(el);
 		var tagName = el.tagName;
+		var focusApplied = false;
 		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
 			if(jLastEl.hasClass('hasDatepicker')) {
 				jLastEl.datepicker('option', 'showOn', '');
 				jLastEl.focus();
 				jLastEl.datepicker('option', 'showOn', 'focus');
+				focusApplied = true;
 			} else {
-				jLastEl.focus();
+				setTimeout(function(){
+					jLastEl.focus();
+				},0);
+				focusApplied = true;
 			}
 		} else {
 			o_info.lastFormFocusEl = 0;
 		}
+		return focusApplied;
+	}
+	
+	var isInForm = function(formElementId, elementId) {
+		return jQuery("#" + elementId).parents("#" + formElementId).length > 0;
+	}
+	
+	var isElementVisible = function(elementId) {
+		if(elementId == null || elementId === "") return false;
+		
+		var hidden = false;
+		jQuery("#" + elementId).parents().each(function(index, el) {
+			var jEl = jQuery(el);
+			var disp = jEl.css('display') === "none" && !jEl.hasClass("modal") && !jEl.hasClass("popover");
+			hidden |= disp;
+		});
+		return !hidden;
 	}
 	
 	// 1) Focus on element stored in 
 	// o_info.lastFormFocusEl
 
-	// 2) Override focus on specific form item if provided
-	if (formItemId) {
-		o_info.lastFormFocusEl = formItemId;
-	}
-	// 3) Override focus on first error in form 
-	var errItem = jQuery('#' + formId + ' .has-error .form-control'); 
+	// 2) Override focus on specific form item if provided. Priority is:
+	//    - Focus on a field with an error
+	//    - Wanted element
+	//    - last focused element
+	//    - element with autofocus 
+	
+	var autofocusEl = jQuery("#" + formId + " input[autofocus]");
+	var errItem = jQuery('#' + formId + ' .has-error .form-control');
+	
+	var candidateFormItemId = "";
 	if (errItem.length > 0) { 
-		o_info.lastFormFocusEl = errItem[0].getAttribute('id');
+		candidateFormItemId = errItem[0].getAttribute("id");
+	} else if (formItemId) {
+		candidateFormItemId = formItemId;
+	} else if(isInForm(formId, o_info.lastFormFocusEl)) {
+		candidateFormItemId = o_info.lastFormFocusEl;
+	} else if(autofocusEl.length == 1) {
+		candidateFormItemId = autofocusEl[0].getAttribute("id");
 	}
-	// 4) Now set focus
-	if (o_info.lastFormFocusEl) {
-		var lastEl = jQuery('#' + o_info.lastFormFocusEl);
-		if (lastEl.length > 0) {
-			applyFocus(lastEl[0]);
-		} else {
-			o_info.lastFormFocusEl = 0;
-		}
-	} else if(formId) {
-		var inputEl = jQuery('#' + formId + " input[autofocus]");
-		if (inputEl.length > 0) {
-			applyFocus(inputEl[0]);
-			o_info.lastFormFocusEl = inputEl[0].getAttribute('id');
-		}
-	}
-}
 
+	// 4) Now set focus
+	var focused = false;
+	if (candidateFormItemId != "" && isElementVisible(candidateFormItemId)) {
+		var candidateEl = jQuery("#" + candidateFormItemId);
+		var numOfModals = jQuery(".modal.show").length + jQuery(".popover").length;
+		var numOfClosest = candidateEl.parents('.modal.show').length + candidateEl.parents('.popover').length;
+		if(numOfModals > 0 && numOfClosest == 0) {
+			// Modal dialog opens, but try to focus under it
+			focused = false;
+		} else {
+			focused = applyFocus(candidateEl[0]);
+		}
+	}
+	
+	if (focused) {
+		o_info.lastFormFocusEl = candidateFormItemId;
+	}
+	return focused;
+}
 
 function dismissInfoBox(uuid) {
 	jQuery('#' + uuid).remove();

@@ -40,13 +40,11 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -103,6 +101,7 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		quickSearchEl.setElementCssClass("o_quick_search");
 		quickSearchEl.setDomReplacementWrapperRequired(false);
 		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
+		quickSearchEl.setFocus(true);
 
 		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout,
 				Link.BUTTON | Link.NONTRANSLATED);
@@ -152,9 +151,11 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		selectButton = uifactory.addFormLink("taxonomy.level.selection.select", formLayout, Link.BUTTON_SMALL);
 		selectButton.setPrimary(true);
 
+		/*
 		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(),
 				quickSearchEl.getFormDispatchId());
 		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+		*/
 	}
 
 	private SelectionValues createTaxonomyLevelSV(Collection<TaxonomyLevel> taxonomyLevels) {
