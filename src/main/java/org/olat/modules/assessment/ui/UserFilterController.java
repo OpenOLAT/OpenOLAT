@@ -19,14 +19,10 @@
  */
 package org.olat.modules.assessment.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -40,13 +36,11 @@ import org.olat.modules.assessment.ui.event.UserFilterEvent;
  *
  */
 public class UserFilterController extends FormBasicController {
-
-	private static final String MEMBERS = "members";
-	private static final String OTHER_USER = "other.users";
-	private static final String FAKE_PARTICIPANTS = "fake.participants";
-	private static final String ANONYMOUS = "anonymousUsers";
 	
-	private MultipleSelectionElement restrictionEl;
+	private FormToggle membersToggle;
+	private FormToggle nonMembersToggle;
+	private FormToggle fakeParticipantsToggle;
+	private FormToggle anonymousToggle;
 	
 	private final boolean canMembers;
 	private final boolean canOtherUsers;
@@ -74,39 +68,33 @@ public class UserFilterController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<String> allowKeyList = new ArrayList<>(3);
-		if(canMembers) {
-			allowKeyList.add(MEMBERS);
+		if (canMembers) {
+			membersToggle = uifactory.addToggleButton("members", "&nbsp;", formLayout, null, null);
+			membersToggle.addActionListener(FormEvent.ONCHANGE);
+			if (initialMembers) {
+				membersToggle.toggleOn();
+			}
 		}
-		if(canOtherUsers) {
-			allowKeyList.add(OTHER_USER);
+		if (canOtherUsers) {
+			nonMembersToggle = uifactory.addToggleButton("non.members", "&nbsp;", formLayout, null, null);
+			nonMembersToggle.addActionListener(FormEvent.ONCHANGE);
+			if (initialOtherUser) {
+				nonMembersToggle.toggleOn();
+			}
 		}
-		if(canFakeParticipants) {
-			allowKeyList.add(FAKE_PARTICIPANTS);
+		if (canFakeParticipants) {
+			fakeParticipantsToggle = uifactory.addToggleButton("fake.participants", "&nbsp;", formLayout, null, null);
+			fakeParticipantsToggle.addActionListener(FormEvent.ONCHANGE);
+			if (initialFakeParticipants) {
+				fakeParticipantsToggle.toggleOn();
+			}
 		}
-		if(canAnonymous) {
-			allowKeyList.add(ANONYMOUS);
-		}
-
-		String[] allowKeys = allowKeyList.toArray(new String[allowKeyList.size()]);
-		String[] allowValues = new String[allowKeys.length];
-		for(int i=allowKeys.length; i-->0 ; ) {
-			allowValues[i] = translate("filter.".concat(allowKeys[i]));
-		}
-		restrictionEl = uifactory.addCheckboxesHorizontal("user.restrictions", null, formLayout, allowKeys, allowValues);
-		restrictionEl.setDomReplacementWrapperRequired(false);
-		restrictionEl.addActionListener(FormEvent.ONCHANGE);
-		if(initialMembers && allowKeyList.contains(MEMBERS)) {
-			restrictionEl.select(MEMBERS, true);
-		}
-		if(initialOtherUser && allowKeyList.contains(OTHER_USER)) {
-			restrictionEl.select(OTHER_USER, true);
-		}
-		if(initialFakeParticipants && allowKeyList.contains(FAKE_PARTICIPANTS)) {
-			restrictionEl.select(FAKE_PARTICIPANTS, true);
-		}
-		if(initialAnonymous && allowKeyList.contains(ANONYMOUS)) {
-			restrictionEl.select(ANONYMOUS, true);
+		if (canAnonymous) {
+			anonymousToggle = uifactory.addToggleButton("anonymous", "&nbsp;", formLayout, null, null);
+			anonymousToggle.addActionListener(FormEvent.ONCHANGE);
+			if (initialAnonymous) {
+				anonymousToggle.toggleOn();
+			}
 		}
 	}
 	
@@ -117,12 +105,11 @@ public class UserFilterController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(restrictionEl == source) {
-			Collection<String> selectedKeys = restrictionEl.getSelectedKeys();
-			boolean withMembers = selectedKeys.contains(MEMBERS);
-			boolean withOtherUsers = selectedKeys.contains(OTHER_USER);
-			boolean withFakeParticipants = selectedKeys.contains(FAKE_PARTICIPANTS);
-			boolean withAnonymousUsers = selectedKeys.contains(ANONYMOUS);
+		if(membersToggle == source || nonMembersToggle == source || fakeParticipantsToggle == source || anonymousToggle == source) {
+			boolean withMembers = membersToggle != null && membersToggle.isOn();
+			boolean withOtherUsers = nonMembersToggle != null && nonMembersToggle.isOn();
+			boolean withFakeParticipants = fakeParticipantsToggle != null && fakeParticipantsToggle.isOn();
+			boolean withAnonymousUsers = anonymousToggle != null && anonymousToggle.isOn();
 			fireEvent(ureq, new UserFilterEvent(withMembers, withOtherUsers, withFakeParticipants, withAnonymousUsers));
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -603,7 +603,7 @@
 	@extend %o_undecorated;
 	
 	i {
-		color: $o-toggle-off-color;
+		color: $o-toggle-color;
 		text-shadow: 1px 0 2px rgba(0,0,0,.25);		
 	}	
 	span {
@@ -616,10 +616,15 @@
 	&.o_on {
 		text-align: right;
 		padding: 0 1px 0 0.5em;
+		background: $o-toggle-on-bg;
+		border-color: $o-toggle-on-border-color;
 		i {
 			color: $o-toggle-on-color;
 			text-shadow: -1px 0 2px rgba(0,0,0,.25);
-		}	
+		}
+		span {
+			color: $o-toggle-on-text-color;
+		}
 	}
 }
 

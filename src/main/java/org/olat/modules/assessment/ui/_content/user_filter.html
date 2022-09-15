@@ -1,1 +1,15 @@
-<div class="o_assessment_user_type_filter"><i class="o_icon o_icon-lg o_icon_filter"> </i> $r.translate("user.restrictions.participants") $r.render("user.restrictions")</div>
+<div class="o_assessment_user_type_filter o_block_small_bottom">
+	<i class="o_icon o_icon-lg o_icon_filter"> </i> $r.translate("user.restrictions.participants") 
+	#if($r.available("members"))
+		$r.render("members")$r.translate("filter.members")
+	#end
+	#if($r.available("non.members"))
+		$r.render("non.members")$r.translate("filter.other.users")
+	#end
+	#if($r.available("fake.participants"))
+		$r.render("fake.participants")$r.translate("filter.fake.participants")
+	#end
+	#if($r.available("anonymous"))
+		$r.render("anonymous")$r.translate("filter.anonymousUsers")
+	#end
+</div>

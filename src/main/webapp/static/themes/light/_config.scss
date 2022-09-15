@@ -318,9 +318,12 @@ $o-d3chart-dark 				: darken($brand-primary, 15%) !default;
 $o-toggle-size					: 16px !default;
 $o-toggle-border-color			: $gray-light !default;
 $o-toggle-bg					: $gray-lighter !default;
-$o-toggle-off-color				: $gray-light !default;
-$o-toggle-on-color				: $brand-primary !default;
 $o-toggle-text-color			: $text-muted !default;
+$o-toggle-color					: $gray-light !default;
+$o-toggle-on-color				: $gray-lighter !default;
+$o-toggle-on-bg					: $brand-primary !default;
+$o-toggle-on-border-color		: $brand-primary !default;
+$o-toggle-on-text-color			: $gray-lighter !default;
 
 /* Dirty button */
 $o-button-dirty-color			: $btn-warning-color !default;

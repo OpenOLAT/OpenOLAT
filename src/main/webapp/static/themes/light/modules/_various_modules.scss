@@ -578,17 +578,16 @@ ul.o_certificates li {
 
 /* Assessment */
 div.o_assessment_user_type_filter {
-	display: inline-block;
 	padding: 0.5em;
 	border: 1px solid $gray-lighter;
 	border-radius: $panel-border-radius;
 	
-	div.form-inline {
-		margin-left: 5px;
-		display: inline-block;
-		.checkbox-inline {
-			vertical-align: unset;
-		}
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	
+	a {
+		margin: 0 4px 0 10px;
 	}
 }
 
