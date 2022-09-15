@@ -42,6 +42,7 @@ public class CheckListAssessmentRow {
 	private List<Long> groupKeys;
 	private List<Long> curriculumElementKeys;
 	private AssessmentObligation assessmentObligation;
+	private boolean fakeParticipant;
 	private final Long identityKey;
 	private final String identityName;
 	private final String[] identityProps;
@@ -94,6 +95,14 @@ public class CheckListAssessmentRow {
 
 	public void setAssessmentObligation(AssessmentObligation assessmentObligation) {
 		this.assessmentObligation = assessmentObligation;
+	}
+
+	public boolean isFakeParticipant() {
+		return fakeParticipant;
+	}
+
+	public void setFakeParticipant(boolean fakeParticipant) {
+		this.fakeParticipant = fakeParticipant;
 	}
 
 	public String getIdentityProp(int index) {

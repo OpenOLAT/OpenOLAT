@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -55,9 +56,11 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 
 /**
  * 
@@ -126,6 +129,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		setObjects(backupRows);
 		
 		List<AssessmentObligation> obligations = null;
+		Set<Particpant> participants = null;
 		List<Long> businessGroupKeys = null;
 		List<Long> curriculumElementKeys = null;
 		if (filters != null && !filters.isEmpty()) {
@@ -136,6 +140,16 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 					obligations = filterValues.stream()
 							.map(AssessmentObligation::valueOf)
 							.collect(Collectors.toList());
+				}
+			}
+			
+			FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+			if(membersFilter != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+				if (filterValues != null && !filterValues.isEmpty()) {
+					participants = filterValues.stream()
+							.map(Particpant::valueOf)
+							.collect(Collectors.toSet());
 				}
 			}
 			
@@ -159,12 +173,12 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		}
 		
 		
-		if(obligations != null || businessGroupKeys != null || curriculumElementKeys != null) {
+		if(obligations != null || participants != null ||  businessGroupKeys != null || curriculumElementKeys != null) {
 			List<CheckListAssessmentRow> filteredViews = new ArrayList<>();
 			int numOfRows = getRowCount();
 			for(int i=0; i<numOfRows; i++) {
 				CheckListAssessmentRow view = getObject(i);
-				if(accept(view, obligations, businessGroupKeys, curriculumElementKeys)) {
+				if(accept(view, obligations, participants, businessGroupKeys, curriculumElementKeys)) {
 					filteredViews.add(view);
 				}
 			}
@@ -173,13 +187,22 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	}
 	
 	private boolean accept(CheckListAssessmentRow view, List<AssessmentObligation> obligations,
-			List<Long> businessGroupKeys, List<Long> curriculumElementKeys) {
+			Set<Particpant> participants, List<Long> businessGroupKeys, List<Long> curriculumElementKeys) {
 		if (obligations != null && !obligations.isEmpty()) {
 			if (view.getAssessmentObligation() != null && !obligations.contains(view.getAssessmentObligation())) {
 				return false;
 			} else if (view.getAssessmentObligation() == null && !obligations.contains(AssessmentObligation.mandatory)) {
 				return false;
 			} 
+		}
+		
+		if (participants != null) {
+			if (view.isFakeParticipant() && !participants.contains(Particpant.fakeParticipant)) {
+				return false;
+			}
+			if (!view.isFakeParticipant() && !participants.contains(Particpant.member)) {
+				return false;
+			}
 		}
 		
 		if (businessGroupKeys != null && !businessGroupKeys.isEmpty()) {

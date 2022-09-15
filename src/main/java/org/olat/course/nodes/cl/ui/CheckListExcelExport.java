@@ -105,7 +105,7 @@ public class CheckListExcelExport {
 	
 	public void exportAll(String filename, ZipOutputStream exportStream) {
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(course, courseNode.getIdent(), courseEntry, null, true);
+		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(course, courseNode.getIdent(), courseEntry, null, true, null);
 		try(OutputStream out = new ShieldOutputStream(exportStream)) {
 			exportStream.putNextEntry(new ZipEntry(filename + ".xlsx"));
 			exportWorkbook(dataList, out);

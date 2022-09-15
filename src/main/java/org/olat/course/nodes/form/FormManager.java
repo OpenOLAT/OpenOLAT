@@ -89,8 +89,7 @@ public interface FormManager {
 
 	public void onExecutionFinished(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 	
-	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey,
-			UserCourseEnvironment userCourseEnv, FormParticipationSearchParams searchParams);
+	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey, FormParticipationSearchParams searchParams);
 
 	public Long getSessionsCount(SessionFilter filter);
 	

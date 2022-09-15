@@ -228,8 +228,11 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			if (assessmentCallback.canAssessFakeParticipants()) {
 				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
-					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true));
+			if (membersValues.size() > 1) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true));
+				
+			}
 		}
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {

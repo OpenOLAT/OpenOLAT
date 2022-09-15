@@ -289,7 +289,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the check
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, entry, null, true);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, entry, null, true, null);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(3, loadedChecks.size());
 		
@@ -324,7 +324,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load and check the check
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, coach, false);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, coach, false, null);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(1, loadedChecks.size());
 		AssessmentData data = loadedChecks.get(0);
@@ -352,7 +352,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheck check = checkboxManager.createCheck(checkbox, id, null, Boolean.TRUE);
 		dbInstance.commitAndCloseSession();
 		
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, coach, true);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, coach, true, null);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(1, loadedChecks.size());
 		AssessmentData data = loadedChecks.get(0);
@@ -393,7 +393,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheck checkNotVisible2 = checkboxManager.createCheck(checkbox, courseOwner, null, Boolean.FALSE);
 		dbInstance.commitAndCloseSession();
 		
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, null, true);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, null, true, null);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(2, loadedChecks.size());
 		

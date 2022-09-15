@@ -87,7 +87,7 @@ public interface AssessmentService {
 	 * @param subIdent The sub-identifier (ex. course node identifier)
 	 * @return Assessment entries
 	 */
-	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
+	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntryRef entry, String subIdent);
 	
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithStatus(RepositoryEntry entry, String subIdent,
 			AssessmentEntryStatus status, boolean excludeZeroScore, boolean userVisibleOnly);

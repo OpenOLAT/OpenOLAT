@@ -365,7 +365,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			rows.add(otherUsersRow);
 		}
 		
-		if (assessmentCallback.canAssessNonMembers() && (params.isParticipantAll() || params.isParticipantFakeParticipants())) {
+		if (assessmentCallback.canAssessNonMembers() && ((params.isParticipantAll() && params.hasFakeParticipants()) || params.isParticipantFakeParticipants())) {
 			LaunchRow row = new LaunchRow();
 			
 			row.setNumIdentities(memberStatistics.getNumOfFakeParticipants());

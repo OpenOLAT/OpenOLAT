@@ -207,10 +207,12 @@ public class PracticeCoachController extends FormBasicController implements Acti
 			if (assessmentCallback.canAssessFakeParticipants()) {
 				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
-			FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
-					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			filter.setValues(List.of(Particpant.member.name()));
-			filters.add(filter);
+			if (membersValues.size() > 1) {
+				FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+				filter.setValues(List.of(Particpant.member.name()));
+				filters.add(filter);
+			}
 		}
 
 		tableEl.setFilters(true, filters, false, false);

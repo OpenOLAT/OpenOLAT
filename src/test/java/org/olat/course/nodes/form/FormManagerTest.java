@@ -19,22 +19,19 @@
  */
 package org.olat.course.nodes.form;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
+import java.util.Set;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -66,94 +63,14 @@ public class FormManagerTest extends OlatTestCase {
 	private FormManager sut;
 	
 	@Test
-	public void shouldGetFormParticipationsOfOwner() {
+	public void shouldGetFormParticipationsFilterByParticipants() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
-		Identity memberParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		Identity memberNotParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		Identity notMemeberParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		Identity notMemeberNotParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		dbInstance.commitAndCloseSession();
-		
-		repositoryService.addRole(owner, courseEntry, GroupRoles.owner.name());
-		repositoryService.addRole(memberParticipated, courseEntry, GroupRoles.participant.name());
-		repositoryService.addRole(memberNotParticipated, courseEntry, GroupRoles.participant.name());
-		
-		CourseNode courseNode = new FormCourseNode();
-		EvaluationFormSurveyIdentifier surveyIdent = sut.getSurveyIdentifier(courseNode, courseEntry);
-		EvaluationFormSurvey survey = sut.createSurvey(surveyIdent, courseEntry);
-		dbInstance.commitAndCloseSession();
-		
-		// Member has participated
-		EvaluationFormParticipation participation1 = evaluationFormManager.createParticipation(survey, memberParticipated);
-		EvaluationFormSession session1 = evaluationFormManager.createSession(participation1);
-		evaluationFormManager.finishSession(session1);
-		
-		// Non member has participated
-		EvaluationFormParticipation participation2 = evaluationFormManager.createParticipation(survey, notMemeberParticipated);
-		EvaluationFormSession session2 = evaluationFormManager.createSession(participation2);
-		evaluationFormManager.finishSession(session2);
-		dbInstance.commitAndCloseSession();
-		
-		
-		UserCourseEnvironment ownerCourseEnv = createUserCourseEnvironment(courseEntry, owner);
-		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, ownerCourseEnv, new FormParticipationSearchParams());
-		
-		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(formParticipations).as("Owner should see members and not members").hasSize(3);
-		
-		FormParticipation memberParticipation = getFormParticipation(formParticipations, memberParticipated);
-		softly.assertThat(memberParticipation)
-				.as("Participating member has to be present").isNotNull();
-		if (memberParticipation != null) {
-			softly.assertThat(memberParticipation.getEvaluationFormParticipationRef())
-					.as("Participating member has EvaluationFormParticipationRef").isNotNull();
-			softly.assertThat(memberParticipation.getParticipationStatus())
-					.as("Participating member has status done").isEqualTo(EvaluationFormParticipationStatus.done);
-			softly.assertThat(memberParticipation.getSubmissionDate())
-					.as("Participating member has submission date").isNotNull();
-		}
-		
-		FormParticipation memberNotParticipatedParticipation = getFormParticipation(formParticipations, memberNotParticipated);
-		softly.assertThat(memberNotParticipatedParticipation)
-				.as("Participating not member has to be present").isNotNull();
-		if (memberNotParticipatedParticipation != null) {
-			softly.assertThat(memberNotParticipatedParticipation.getEvaluationFormParticipationRef())
-					.as("Not participating member has no EvaluationFormParticipationRef").isNull();
-			softly.assertThat(memberNotParticipatedParticipation.getParticipationStatus())
-					.as("Not participating has no status").isNull();
-			softly.assertThat(memberNotParticipatedParticipation.getSubmissionDate())
-					.as("Not participating has no submission date").isNull();
-		}
-		
-		FormParticipation notMemberParticipation = getFormParticipation(formParticipations, notMemeberParticipated);
-		softly.assertThat(notMemberParticipation)
-				.as("Participating not member has to be present").isNotNull();
-		if (notMemberParticipation != null) {
-			softly.assertThat(notMemberParticipation.getEvaluationFormParticipationRef())
-					.as("Participating not member has EvaluationFormParticipationRef").isNotNull();
-			softly.assertThat(notMemberParticipation.getParticipationStatus())
-					.as("Participating not member has status done").isEqualTo(EvaluationFormParticipationStatus.done);
-			softly.assertThat(notMemberParticipation.getSubmissionDate())
-					.as("Participating not member has submission date").isNotNull();
-		}
-		
-		FormParticipation notMemberNotParticipatedParticipation = getFormParticipation(formParticipations, notMemeberNotParticipated);
-		softly.assertThat(notMemberNotParticipatedParticipation)
-				.as("Not participating not member must not be present").isNull();
-		
-		softly.assertAll();
-	}
-	
-	@Test
-	public void shouldGetFormParticipationsOfCoach() {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		RepositoryEntry courseEntry = JunitTestHelper.createRandomRepositoryEntry(owner);
 		Identity memberParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Identity memberNotParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		Identity notMemeberParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		Identity notMemeberNotParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity notMemberParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity fakeParticipant = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		dbInstance.commitAndCloseSession();
 		
 		repositoryService.addRole(owner, courseEntry, GroupRoles.owner.name());
@@ -172,26 +89,91 @@ public class FormManagerTest extends OlatTestCase {
 		evaluationFormManager.finishSession(session1);
 		
 		// Non member has participated
-		EvaluationFormParticipation participation2 = evaluationFormManager.createParticipation(survey, notMemeberParticipated);
+		EvaluationFormParticipation participation2 = evaluationFormManager.createParticipation(survey, notMemberParticipated);
 		EvaluationFormSession session2 = evaluationFormManager.createSession(participation2);
 		evaluationFormManager.finishSession(session2);
 		dbInstance.commitAndCloseSession();
 		
+		// Fake participant has participated
+		EvaluationFormParticipation participation3 = evaluationFormManager.createParticipation(survey, fakeParticipant);
+		EvaluationFormSession session3 = evaluationFormManager.createSession(participation3);
+		evaluationFormManager.finishSession(session3);
+		dbInstance.commitAndCloseSession();
 		
-		UserCourseEnvironment coachCourseEnv = createUserCourseEnvironment(courseEntry, coach);
-		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, coachCourseEnv, new FormParticipationSearchParams());
+		FormParticipationSearchParams searchParams = new FormParticipationSearchParams();
+		searchParams.setCourseEntry(courseEntry);
+		searchParams.setFakeParticipants(Set.of(fakeParticipant));
 		
-		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(formParticipations).as("Coach should see members").hasSize(2);
-		softly.assertThat(getFormParticipation(formParticipations, memberParticipated))
-				.as("Participating member has to be present").isNotNull();
-		softly.assertThat(getFormParticipation(formParticipations, memberNotParticipated))
-				.as("Participating not member has to be present").isNotNull();
-		softly.assertThat(getFormParticipation(formParticipations, notMemeberParticipated))
-				.as("Participating not member must not be present").isNull();
-		softly.assertThat(getFormParticipation(formParticipations, notMemeberNotParticipated))
-				.as("Not participating not member must not be present").isNull();
-		softly.assertAll();
+		// Owner all
+		searchParams.setIdentity(owner);
+		searchParams.setAdmin(true);
+		searchParams.setCoach(false);
+		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, searchParams);
+		
+		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+				.containsExactlyInAnyOrder(
+						memberParticipated,
+						memberNotParticipated,
+						notMemberParticipated,
+						fakeParticipant);
+		
+		FormParticipation memberParticipation = getFormParticipation(formParticipations, memberParticipated);
+			assertThat(memberParticipation.getEvaluationFormParticipationRef())
+					.as("Participating member has EvaluationFormParticipationRef").isNotNull();
+			assertThat(memberParticipation.getParticipationStatus())
+					.as("Participating member has status done").isEqualTo(EvaluationFormParticipationStatus.done);
+			assertThat(memberParticipation.getSubmissionDate())
+					.as("Participating member has submission date").isNotNull();
+		
+		FormParticipation memberNotParticipatedParticipation = getFormParticipation(formParticipations, memberNotParticipated);
+			assertThat(memberNotParticipatedParticipation.getEvaluationFormParticipationRef())
+					.as("Not participating member has no EvaluationFormParticipationRef").isNull();
+			assertThat(memberNotParticipatedParticipation.getParticipationStatus())
+					.as("Not participating has no status").isNull();
+			assertThat(memberNotParticipatedParticipation.getSubmissionDate())
+					.as("Not participating has no submission date").isNull();
+		
+		FormParticipation notMemberParticipation = getFormParticipation(formParticipations, notMemberParticipated);
+			assertThat(notMemberParticipation.getEvaluationFormParticipationRef())
+					.as("Participating not member has EvaluationFormParticipationRef").isNotNull();
+			assertThat(notMemberParticipation.getParticipationStatus())
+					.as("Participating not member has status done").isEqualTo(EvaluationFormParticipationStatus.done);
+			assertThat(notMemberParticipation.getSubmissionDate())
+					.as("Participating not member has submission date").isNotNull();
+		
+		// Owner, filtered by members
+		searchParams.setIdentity(owner);
+		searchParams.setAdmin(true);
+		searchParams.setCoach(false);
+		searchParams.setParticipants(Set.of(Particpant.member));
+		formParticipations = sut.getFormParticipations(survey, searchParams);
+		
+		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+				.containsExactlyInAnyOrder(
+						memberParticipated,
+						memberNotParticipated);
+		
+		// Owner, filtered by non members
+		searchParams.setIdentity(owner);
+		searchParams.setAdmin(true);
+		searchParams.setCoach(false);
+		searchParams.setParticipants(Set.of(Particpant.nonMember));
+		formParticipations = sut.getFormParticipations(survey, searchParams);
+		
+		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+				.containsExactlyInAnyOrder(
+						notMemberParticipated);
+						
+		// Owner, filtered by fake participant
+		searchParams.setIdentity(owner);
+		searchParams.setAdmin(true);
+		searchParams.setCoach(false);
+		searchParams.setParticipants(Set.of(Particpant.fakeParticipant));
+		formParticipations = sut.getFormParticipations(survey, searchParams);
+		
+		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+				.containsExactlyInAnyOrder(
+						fakeParticipant);
 	}
 	
 	private FormParticipation getFormParticipation(List<FormParticipation> formParticipations,
@@ -202,13 +184,6 @@ public class FormManagerTest extends OlatTestCase {
 			}
 		}
 		return null;
-	}
-	
-	private UserCourseEnvironment createUserCourseEnvironment(RepositoryEntry courseEntry, Identity identity) {
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		IdentityEnvironment ienv = new IdentityEnvironment(); 
-		ienv.setIdentity(identity);
-		return new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 	}
 	
 }

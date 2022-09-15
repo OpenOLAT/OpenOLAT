@@ -21,7 +21,10 @@ package org.olat.course.nodes.form;
 
 import java.util.Collection;
 
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -33,8 +36,46 @@ public class FormParticipationSearchParams {
 	
 	public enum Status { notStarted, inProgress, done }
 	
+	private Identity identity;
+	private boolean admin;
+	private boolean coach;
+	private RepositoryEntryRef courseEntry;
 	private Collection<AssessmentObligation> obligations;
 	private Collection<Status> status;
+	private Collection<Particpant> participants;
+	private Collection<Identity> fakeParticipants;
+
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
+	}
+
+	public boolean isCoach() {
+		return coach;
+	}
+
+	public void setCoach(boolean coach) {
+		this.coach = coach;
+	}
+
+	public RepositoryEntryRef getCourseEntry() {
+		return courseEntry;
+	}
+
+	public void setCourseEntry(RepositoryEntryRef courseEntry) {
+		this.courseEntry = courseEntry;
+	}
 
 	public Collection<AssessmentObligation> getObligations() {
 		return obligations;
@@ -50,6 +91,22 @@ public class FormParticipationSearchParams {
 
 	public void setStatus(Collection<Status> status) {
 		this.status = status;
+	}
+
+	public Collection<Particpant> getParticipants() {
+		return participants;
+	}
+
+	public void setParticipants(Collection<Particpant> participants) {
+		this.participants = participants;
+	}
+
+	public Collection<Identity> getFakeParticipants() {
+		return fakeParticipants;
+	}
+
+	public void setFakeParticipants(Collection<Identity> fakeParticipants) {
+		this.fakeParticipants = fakeParticipants;
 	}
 
 }

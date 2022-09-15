@@ -435,8 +435,6 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		return numOfChecks == null ? 0.0f : numOfChecks.floatValue();
 	}
 	
-	
-	
 	@Override
 	public List<AssessedIdentity> getAssessedIdentities(RepositoryEntryRef re, IdentityRef coach, boolean admin) {
 
@@ -495,7 +493,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 
 	@Override
 	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re,
-			IdentityRef coach, boolean admin) {
+			IdentityRef coach, boolean admin, Set<Long> fakeParticipantKeys) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select check from clcheck check")
 		  .append(" inner join fetch check.checkbox box")
@@ -506,7 +504,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			sb.append(" and box.resSubPath=:resSubPath");
 		}
 
-		sb.append(" and ident.key in ");
+		sb.append(" and (ident.key in ");
 		if(admin) {
 			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey")
@@ -519,6 +517,12 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	          .append("    and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
 	          .append(" )");
 		}
+		if (fakeParticipantKeys != null && !fakeParticipantKeys.isEmpty()) {
+			sb.append(" or ");
+			sb.append("ident.key in :fakeParticipantKeys");
+		}
+		
+		sb.append(")");
 
 		TypedQuery<DBCheck> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), DBCheck.class)
@@ -528,9 +532,11 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			query.setParameter("resSubPath", resSubPath);
 		}
-
 		if(!admin) {
 			query.setParameter("coachKey", coach.getKey());
+		}
+		if (fakeParticipantKeys != null && !fakeParticipantKeys.isEmpty()) {
+			query.setParameter("fakeParticipantKeys", fakeParticipantKeys);
 		}
 		
 		List<DBCheck> checks = query.getResultList();

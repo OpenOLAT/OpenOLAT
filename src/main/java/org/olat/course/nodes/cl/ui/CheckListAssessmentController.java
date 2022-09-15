@@ -35,6 +35,7 @@ import javax.xml.transform.TransformerException;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -74,9 +75,13 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -133,6 +138,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean learningPath;
+	private final Set<Long> fakeParticipantKeys;
 
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
@@ -156,6 +162,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private CheckboxManager checkboxManager;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -168,6 +176,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			OLATResourceable courseOres, CheckListCourseNode courseNode) {
 		super(ureq, wControl, "assessment_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
@@ -196,6 +205,13 @@ public class CheckListAssessmentController extends FormBasicController implement
 		withScore = (hasScore == null || hasScore.booleanValue());	
 		
 		maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		
+		fakeParticipantKeys = assessmentToolManager
+				.getFakeParticipants(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						getIdentity(), coachCourseEnv.isAdmin(), coachCourseEnv.isCoach())
+				.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toSet());
 
 		initForm(ureq);
 		reloadTable();
@@ -300,6 +316,16 @@ public class CheckListAssessmentController extends FormBasicController implement
 			filters.add(obligationFilter);
 		}
 		
+		if (!fakeParticipantKeys.isEmpty()) {
+			SelectionValues membersValues = new SelectionValues();
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			filters.add(membersFilter);
+		}
+		
 		SelectionValues groupValues = new SelectionValues();
 		
 		List<BusinessGroup> coachedGroups = coachCourseEnv.isAdmin()
@@ -341,7 +367,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		RepositoryEntry courseEntry = cgm.getCourseEntry();
 
 		List<AssessmentData> dataList = checkboxManager
-				.getAssessmentDatas(courseOres, courseNode.getIdent(), cgm.getCourseEntry(), getIdentity(), coachCourseEnv.isAdmin());
+				.getAssessmentDatas(courseOres, courseNode.getIdent(), cgm.getCourseEntry(), getIdentity(), coachCourseEnv.isAdmin(), fakeParticipantKeys);
 		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
 		Map<Long,CheckListAssessmentRow> identityToView = boxList.stream()
 				.collect(Collectors.toMap(CheckListAssessmentRow::getIdentityKey, row -> row, (row1, row2) -> row1));
@@ -359,6 +385,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		List<AssessedIdentity> identityList = checkboxManager
 				.getAssessedIdentities(courseEntry, getIdentity(), coachCourseEnv.isAdmin());
+		List<AssessedIdentity> fakeParticipants = securityManager.loadIdentityByKeys(fakeParticipantKeys).stream()
+				.map(AssessedIdentity::new)
+				.collect(Collectors.toList());
+		identityList.addAll(fakeParticipants);
 		for(AssessedIdentity identity:identityList) {
 			CheckListAssessmentRow row = identityToView.computeIfAbsent(identity.getIdentity().getKey(), id -> {
 				Boolean[] checked = new Boolean[numOfCheckbox];
@@ -376,6 +406,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			}
 			
 			row.setAssessmentObligation(identityKeyToObligation.get(identity.getIdentity().getKey()));
+			row.setFakeParticipant(fakeParticipantKeys != null && fakeParticipantKeys.contains(identity.getIdentity().getKey()));
 		}
 		
 		List<CheckListAssessmentRow> views = new ArrayList<>();
@@ -463,7 +494,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				model.filter(table.getFilters());
-				table.reset(false, false, true);
+				table.reset(false, true, true);
 			}
 		} else if(pdfExportButton == source) {
 			doExportPDF(ureq);

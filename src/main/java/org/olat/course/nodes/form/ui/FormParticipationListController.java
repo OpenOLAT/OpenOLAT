@@ -20,11 +20,14 @@
 package org.olat.course.nodes.form.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -62,8 +65,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.FormCourseNode;
@@ -119,6 +127,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	private final FormSecurityCallback secCallback;
 	private final RepositoryEntry courseEntry;
 	private final EvaluationFormSurvey survey;
+	private final Collection<Identity> fakeParticipants;
 	private int counter = 0;
 
 	@Autowired
@@ -129,12 +138,15 @@ public class FormParticipationListController extends FormBasicController impleme
 	private BaseSecurityModule securityModule;
 	@Autowired
 	protected BaseSecurity securityManager;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	
 	
 	public FormParticipationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			FormCourseNode courseNode, UserCourseEnvironment coachCourseEnv, FormSecurityCallback secCallback) {
 		super(ureq, wControl, "participation_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
@@ -146,6 +158,11 @@ public class FormParticipationListController extends FormBasicController impleme
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
+		
+		Set<IdentityRef> fakeParticipantRefs = assessmentToolManager
+				.getFakeParticipants(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						getIdentity(), coachCourseEnv.isAdmin(), coachCourseEnv.isCoach());
+		fakeParticipants = securityManager.loadIdentityByRefs(fakeParticipantRefs);
 		
 		initForm(ureq);
 		reload();
@@ -212,6 +229,21 @@ public class FormParticipationListController extends FormBasicController impleme
 			filters.add(obligationFilter);
 		}
 		
+		SelectionValues membersValues = new SelectionValues();
+		membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+		if (coachCourseEnv.isAdmin()) {
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.nonMember.name(), translate("filter.other.users")));
+		}
+		if (!fakeParticipants.isEmpty()) {
+			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+		}
+		if (membersValues.size() > 1) {
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			filters.add(membersFilter);
+		}
+		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(FormParticipationSearchParams.Status.notStarted.name(), translate("participation.status.notStart")));
 		statusValues.add(SelectionValues.entry(FormParticipationSearchParams.Status.inProgress.name(), translate("participation.status.inProgress")));
@@ -240,7 +272,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 
 	public void reload() {
-		List<FormParticipation> formParticipations = formManager.getFormParticipations(survey, coachCourseEnv, getSearchParameters());
+		List<FormParticipation> formParticipations = formManager.getFormParticipations(survey, getSearchParameters());
 		
 		List<FormParticipationRow> rows = new ArrayList<>(formParticipations.size());
 		for (FormParticipation formParticipation: formParticipations) {
@@ -266,6 +298,10 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private FormParticipationSearchParams getSearchParameters() {
 		FormParticipationSearchParams params = new FormParticipationSearchParams();
+		params.setIdentity(coachCourseEnv.getIdentityEnvironment().getIdentity());
+		params.setAdmin(coachCourseEnv.isAdmin());
+		params.setCoach(coachCourseEnv.isCoach());
+		params.setCourseEntry(courseEntry);
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
@@ -279,6 +315,20 @@ public class FormParticipationListController extends FormBasicController impleme
 			} else {
 				params.setObligations(null);
 				
+			}
+		}
+		
+		params.setFakeParticipants(fakeParticipants);
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				Set<Particpant> participants = filterValues.stream()
+						.map(Particpant::valueOf)
+						.collect(Collectors.toSet());
+				params.setParticipants(participants);
+			} else {
+				params.setParticipants(null);
 			}
 		}
 		

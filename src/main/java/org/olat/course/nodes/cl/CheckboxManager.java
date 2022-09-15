@@ -21,6 +21,7 @@ package org.olat.course.nodes.cl;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -91,10 +92,12 @@ public interface CheckboxManager {
 	 * @param ores
 	 * @param resSubPath
 	 * @param re
-	 * @param groups
+	 * @param coach
+	 * @param admin
+	 * @param fakeParticipantKeys 
 	 * @return
 	 */
-	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re, IdentityRef coach, boolean admin);
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re, IdentityRef coach, boolean admin, Set<Long> fakeParticipantKeys);
 	
 	public List<AssessedIdentity> getAssessedIdentities(RepositoryEntryRef re, IdentityRef coach, boolean admin);
 	

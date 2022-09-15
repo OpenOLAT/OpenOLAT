@@ -42,6 +42,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.nodes.CourseNode;
@@ -275,15 +276,28 @@ public class FormManagerImpl implements FormManager {
 
 	@Override
 	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey,
-			UserCourseEnvironment userCourseEnv, FormParticipationSearchParams searchParams) {
-		List<EvaluationFormParticipation> participations = getParticipations(survey, null, userCourseEnv.isAdmin());
+			FormParticipationSearchParams searchParams) {
+		List<EvaluationFormParticipation> participations = getParticipations(survey, null, searchParams.isAdmin());
 		
-		List<Identity> coachedIdentities = getCoachedIdentities(userCourseEnv);
-		Set<Identity> allIdentities = new HashSet<>(coachedIdentities);
-		if (userCourseEnv.isAdmin()) {
-			// User who are not members but have participated as well (e.g. if course has open access)
+		List<Identity> coachedIdentities = getCoachedIdentities(searchParams);
+		Set<Identity> allIdentities = new HashSet<>();
+		boolean allParticipants = searchParams.getParticipants() == null || searchParams.getParticipants().isEmpty();
+		if (allParticipants || searchParams.getParticipants().contains(Particpant.member)) {
+			allIdentities.addAll(coachedIdentities);
+		}
+		if (allParticipants || searchParams.getParticipants().contains(Particpant.nonMember)) {
 			List<Identity> executors = participations.stream().map(EvaluationFormParticipation::getExecutor).collect(Collectors.toList());
+			executors.removeAll(coachedIdentities);
+			Set<Long> fakeParticipantKeys = searchParams.getFakeParticipants() != null
+					? searchParams.getFakeParticipants().stream().map(Identity::getKey).collect(Collectors.toSet())
+					: Collections.emptySet();
+			executors.removeIf(identity -> fakeParticipantKeys.contains(identity.getKey()));
 			allIdentities.addAll(executors);
+		}
+		if (allParticipants || searchParams.getParticipants().contains(Particpant.fakeParticipant)) {
+			if (searchParams.getFakeParticipants() != null) {
+				allIdentities.addAll(searchParams.getFakeParticipants());
+			}
 		}
 		
 		Map<Long, EvaluationFormParticipation> identityKeyToParticipations = participations
@@ -299,9 +313,8 @@ public class FormManagerImpl implements FormManager {
 						EvaluationFormSession::getSubmissionDate));
 		
 		Map<Long, AssessmentObligation> identityKeyToObligation = searchParams.getObligations() != null && !searchParams.getObligations().isEmpty()
-				? assessmentService.loadAssessmentEntriesBySubIdent(
-								userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-								survey.getIdentifier().getSubident()).stream()
+				? assessmentService.loadAssessmentEntriesBySubIdent( searchParams.getCourseEntry(), survey.getIdentifier().getSubident())
+						.stream()
 						.collect(Collectors.toMap(ae -> ae.getIdentity().getKey(), this::extractObligation))
 				: Collections.emptyMap();
 		
@@ -361,14 +374,13 @@ public class FormManagerImpl implements FormManager {
 		return false;
 	}
 	
-	private List<Identity> getCoachedIdentities(UserCourseEnvironment userCourseEnv) {
-		if (userCourseEnv.isAdmin()) {
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			return repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
-		} else if (userCourseEnv.isCoach()) {
+	private List<Identity> getCoachedIdentities(FormParticipationSearchParams searchParams) {
+		if (searchParams.isAdmin()) {
+			return repositoryService.getMembers(searchParams.getCourseEntry(), RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		} else if (searchParams.isCoach()) {
 			return repositoryService.getCoachedParticipants(
-					userCourseEnv.getIdentityEnvironment().getIdentity(),
-					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+					searchParams.getIdentity(),
+					searchParams.getCourseEntry());
 		}
 		return Collections.emptyList();
 	}

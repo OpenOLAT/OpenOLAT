@@ -441,7 +441,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
 			});
 		}
-		if (assessmentCallback.canAssessNonMembers()) {
+		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			tabs.forEach(tab -> {
 				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, Particpant.member));
 			});
@@ -503,8 +503,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if (assessmentCallback.canAssessFakeParticipants()) {
 				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
-					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true));
+			if (membersValues.size() > 1) {
+				FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+				membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+				filters.add(membersFilter);
+			}
 		}
 
 		// groups
