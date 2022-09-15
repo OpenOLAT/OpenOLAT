@@ -256,6 +256,7 @@ public class InvitationMailValidationController extends StepFormBasicController 
 		
 		Set<String> deduplicatesEmail = new HashSet<>();
 		List<String[]> lines = getLines(namesEl.getValue());
+		// E-mails of the map keys is lower case
 		Map<String,List<Identity>> emailToIdentities = getSharedIdentities(lines);
 		for(String[] line:lines) {
 			if(line.length <= 2 || !StringHelper.containsNonWhitespace(line[0])) {
@@ -266,7 +267,7 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			String lcMail = mail.toLowerCase();
 			if(!deduplicatesEmail.contains(lcMail)) {
 				deduplicatesEmail.add(lcMail);
-				List<Identity> identities = emailToIdentities.get(mail);
+				List<Identity> identities = emailToIdentities.get(lcMail);
 				if(identities == null || identities.isEmpty()) {
 					context.addInvitation(mail, line[1], line[2]);
 				} else {
@@ -286,6 +287,10 @@ public class InvitationMailValidationController extends StepFormBasicController 
 		//
 	}
 	
+	/**
+	 * @param lines The lines
+	 * @return Map with the E-mail lowered cased and the identities found if any
+	 */
 	private Map<String,List<Identity>> getSharedIdentities(List<String[]> lines) {
 		List<String> emails = new ArrayList<>(lines.size());
 		for(String[] line:lines) {
@@ -300,14 +305,14 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			String email = shareWithIdentity.getUser().getEmail();
 			if(StringHelper.containsNonWhitespace(email)) {
 				emailToIdentities
-					.computeIfAbsent(email, m -> new ArrayList<>())
+					.computeIfAbsent(email.toLowerCase(), m -> new ArrayList<>())
 					.add(shareWithIdentity);
 			}
 			
 			String institutionalEmail = shareWithIdentity.getUser().getInstitutionalEmail();
 			if(StringHelper.containsNonWhitespace(institutionalEmail)) {
 				emailToIdentities
-					.computeIfAbsent(institutionalEmail, m -> new ArrayList<>())
+					.computeIfAbsent(institutionalEmail.toLowerCase(), m -> new ArrayList<>())
 					.add(shareWithIdentity);
 			}
 		}
@@ -326,7 +331,7 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			
 			String [] nextLine;
 			while ((nextLine = reader.readNext()) != null) {
-				if(nextLine.length > 1) {
+				if(nextLine.length > 0) {
 					lines.add(nextLine);
 				}
 			}
