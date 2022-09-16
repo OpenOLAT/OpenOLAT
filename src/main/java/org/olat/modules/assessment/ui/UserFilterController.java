@@ -98,6 +98,37 @@ public class UserFilterController extends FormBasicController {
 		}
 	}
 	
+	public void select(boolean members, boolean nonMembers, boolean fakeParticipants, boolean anonymous) {
+		if (membersToggle != null) {
+			if (members) {
+				membersToggle.toggleOn();
+			} else {
+				membersToggle.toggleOff();
+			}
+		}
+		if (nonMembersToggle != null) {
+			if (nonMembers) {
+				nonMembersToggle.toggleOn();
+			} else {
+				nonMembersToggle.toggleOff();
+			}
+		}
+		if (fakeParticipantsToggle != null) {
+			if (fakeParticipants) {
+				fakeParticipantsToggle.toggleOn();
+			} else {
+				fakeParticipantsToggle.toggleOff();
+			}
+		}
+		if (anonymousToggle != null) {
+			if (anonymous) {
+				anonymousToggle.toggleOn();
+			} else {
+				anonymousToggle.toggleOff();
+			}
+		}
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

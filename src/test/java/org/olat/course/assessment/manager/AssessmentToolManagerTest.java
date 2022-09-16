@@ -51,7 +51,6 @@ import org.olat.course.assessment.model.AssessedCurriculumElement;
 import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.manager.CourseElementDAO;
 import org.olat.course.nodes.CourseNode;
@@ -62,6 +61,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ObligationOverridable;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
@@ -206,7 +206,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 				true, false, coachedGroups, singleton(coach));
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
-		params.setParticipants(Collections.singleton(Particpant.member));
+		params.setParticipantTypes(Collections.singleton(ParticipantType.member));
 
 		// Test with the coached members
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(coach, params);
@@ -231,7 +231,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, assessmentEntries.size());
 		
 		// Not, let's get infos for fake participants as well
-		params.setParticipants(null);
+		params.setParticipantTypes(null);
 		
 		statistics = assessmentToolManager.getStatistics(coach, params);
 		Assert.assertEquals(5.5d, statistics.getAverageScore().doubleValue(), 0.0001);
@@ -368,7 +368,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// administrator with full access
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Set.of(admin, coach));
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
-		params.setParticipants(Set.of(Particpant.member, Particpant.nonMember));
+		params.setParticipantTypes(Set.of(ParticipantType.member, ParticipantType.nonMember));
 		
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(coach, params);
 		Assert.assertEquals(5.28571d, statistics.getAverageScore().doubleValue(), 0.0001);
@@ -400,7 +400,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 				);
 		
 		// Check the participant filter: No Filter
-		params.setParticipants(null);
+		params.setParticipantTypes(null);
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(11, assessedIdentities.size());
 		
@@ -410,7 +410,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: Members
-		params.setParticipants(Set.of(Particpant.member));
+		params.setParticipantTypes(Set.of(ParticipantType.member));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(3, assessedIdentities.size());
 		
@@ -420,7 +420,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: Not member
-		params.setParticipants(Set.of(Particpant.nonMember));
+		params.setParticipantTypes(Set.of(ParticipantType.nonMember));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(6, assessedIdentities.size());
 		
@@ -430,7 +430,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: Member or not member
-		params.setParticipants(Set.of(Particpant.member, Particpant.nonMember));
+		params.setParticipantTypes(Set.of(ParticipantType.member, ParticipantType.nonMember));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(9, assessedIdentities.size());
 		
@@ -440,7 +440,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: fake participants
-		params.setParticipants(Set.of(Particpant.fakeParticipant));
+		params.setParticipantTypes(Set.of(ParticipantType.fakeParticipant));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(2, assessedIdentities.size());
 		
@@ -450,7 +450,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: Not member and group member
-		params.setParticipants(Set.of(Particpant.nonMember));
+		params.setParticipantTypes(Set.of(ParticipantType.nonMember));
 		params.setBusinessGroupKeys(List.of(group1.getKey()));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(0, assessedIdentities.size());
@@ -461,7 +461,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: (Member of not member) and group member
-		params.setParticipants(Set.of(Particpant.member, Particpant.nonMember));
+		params.setParticipantTypes(Set.of(ParticipantType.member, ParticipantType.nonMember));
 		params.setBusinessGroupKeys(List.of(group1.getKey()));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertEquals(2, assessedIdentities.size());

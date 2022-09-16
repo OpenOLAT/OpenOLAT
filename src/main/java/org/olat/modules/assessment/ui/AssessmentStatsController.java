@@ -137,7 +137,6 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		}
 
 		initForm(ureq);
-		reload();
 	}
 	
 	@Override

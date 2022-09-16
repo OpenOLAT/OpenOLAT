@@ -42,7 +42,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.nodes.CourseNode;
@@ -56,6 +55,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -282,10 +282,10 @@ public class FormManagerImpl implements FormManager {
 		List<Identity> coachedIdentities = getCoachedIdentities(searchParams);
 		Set<Identity> allIdentities = new HashSet<>();
 		boolean allParticipants = searchParams.getParticipants() == null || searchParams.getParticipants().isEmpty();
-		if (allParticipants || searchParams.getParticipants().contains(Particpant.member)) {
+		if (allParticipants || searchParams.getParticipants().contains(ParticipantType.member)) {
 			allIdentities.addAll(coachedIdentities);
 		}
-		if (allParticipants || searchParams.getParticipants().contains(Particpant.nonMember)) {
+		if (allParticipants || searchParams.getParticipants().contains(ParticipantType.nonMember)) {
 			List<Identity> executors = participations.stream().map(EvaluationFormParticipation::getExecutor).collect(Collectors.toList());
 			executors.removeAll(coachedIdentities);
 			Set<Long> fakeParticipantKeys = searchParams.getFakeParticipants() != null
@@ -294,7 +294,7 @@ public class FormManagerImpl implements FormManager {
 			executors.removeIf(identity -> fakeParticipantKeys.contains(identity.getKey()));
 			allIdentities.addAll(executors);
 		}
-		if (allParticipants || searchParams.getParticipants().contains(Particpant.fakeParticipant)) {
+		if (allParticipants || searchParams.getParticipants().contains(ParticipantType.fakeParticipant)) {
 			if (searchParams.getFakeParticipants() != null) {
 				allIdentities.addAll(searchParams.getFakeParticipants());
 			}

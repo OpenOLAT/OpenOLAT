@@ -67,6 +67,7 @@ public class AssessmentOverviewController extends BasicController {
 		}
 		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, percentStat, scoreStat, true, false, true);
 		statisticCtrl.setExpanded(true);
+		statisticCtrl.reload();
 		listenTo(statisticCtrl);
 		mainVC.put("statistics", statisticCtrl.getInitialComponent());
 		

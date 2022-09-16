@@ -19,9 +19,9 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -29,8 +29,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -78,9 +78,9 @@ public class CourseNodeToReviewSmallController extends CourseNodeToReviewAbstrac
 	}
 
 	@Override
-	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Set<Particpant> participants) {
+	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Collection<ParticipantType> participants) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
-		params.setParticipants(participants);
+		params.setParticipantTypes(participants);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		return assessmentToolManager.getAssessmentEntries(getIdentity(), params, AssessmentEntryStatus.inReview).stream()
 				.collect(Collectors.groupingBy(AssessmentEntry::getSubIdent));

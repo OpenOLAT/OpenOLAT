@@ -20,7 +20,6 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +45,6 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
@@ -56,12 +54,14 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.PercentStat;
 import org.olat.modules.assessment.ui.ScoreStat;
 import org.olat.modules.assessment.ui.UserFilterController;
+import org.olat.modules.assessment.ui.event.ParticipantTypeFilterEvent;
 import org.olat.modules.assessment.ui.event.UserFilterEvent;
 import org.olat.modules.grade.GradeModule;
 import org.olat.repository.RepositoryEntry;
@@ -134,7 +134,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 			userFilterCtrl = new UserFilterController(ureq, wControl, true, params.isNonMembers(), params.hasFakeParticipants(), false, true, false, false, false);
 			listenTo(userFilterCtrl);
 			mainVC.put("user.filter", userFilterCtrl.getInitialComponent());
-			params.setParticipants(Set.of(Particpant.member));
+			params.setParticipantTypes(Set.of(ParticipantType.member));
 		}
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, rootNode);
@@ -152,6 +152,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 		
 		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params, percentStat, scoreStat);
+		statisticCtrl.reload();
 		listenTo(statisticCtrl);
 		mainVC.put("statistic", statisticCtrl.getInitialComponent());
 		
@@ -183,8 +184,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
 			mainVC.put("assessmentModes", assessmentModeListCtrl.getInitialComponent());
 		}
-
-		reloadToDos();
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -203,18 +203,30 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 	}
 	
-	public void reload() {
+	public void reload(List<ParticipantType> participantTypes) {
+		params.setParticipantTypes(participantTypes);
+		if (userFilterCtrl != null && participantTypes != null) {
+			userFilterCtrl.select(
+					participantTypes.contains(ParticipantType.member),
+					participantTypes.contains(ParticipantType.nonMember),
+					participantTypes.contains(ParticipantType.fakeParticipant),
+					false);
+		}
+		reload();
+	}
+
+	void reload() {
 		statisticCtrl.reload();
 		reloadToDos();
 	}
 
 	private void reloadToDos() {
-		toReviewCtrl.loadModel(params.getParticipants());
+		toReviewCtrl.loadModel(params.getParticipantTypes());
 		if (toReleaseCtrl instanceof CourseNodeToReleaseSmallController) {
-			((CourseNodeToReleaseSmallController)toReleaseCtrl).loadModel(params.getParticipants());
+			((CourseNodeToReleaseSmallController)toReleaseCtrl).loadModel(params.getParticipantTypes());
 		}
 		if (toApplyGradeCtrl != null) {
-			toApplyGradeCtrl.loadModel(params.getParticipants());
+			toApplyGradeCtrl.loadModel(params.getParticipantTypes());
 		}
 	}
 	
@@ -227,18 +239,19 @@ public class AssessmentCourseOverviewController extends BasicController {
 		if (source == userFilterCtrl) {
 			if (event instanceof UserFilterEvent) {
 				UserFilterEvent ufe = (UserFilterEvent)event;
-				Set<Particpant> participants = new HashSet<>(2);
+				List<ParticipantType> participantTypes = new ArrayList<>(3);
 				if (ufe.isWithMembers()) {
-					participants.add(Particpant.member);
+					participantTypes.add(ParticipantType.member);
 				}
 				if (ufe.isWithNonParticipantUsers()) {
-					participants.add(Particpant.nonMember);
+					participantTypes.add(ParticipantType.nonMember);
 				}
 				if (ufe.isWithFakeParticipants()) {
-					participants.add(Particpant.fakeParticipant);
+					participantTypes.add(ParticipantType.fakeParticipant);
 				}
-				params.setParticipants(participants);
+				params.setParticipantTypes(participantTypes);
 				reload();
+				fireEvent(ureq, new ParticipantTypeFilterEvent(participantTypes));
 			}
 		} else if(toReviewCtrl == source) {
 			if(event instanceof CourseNodeIdentityEvent) {

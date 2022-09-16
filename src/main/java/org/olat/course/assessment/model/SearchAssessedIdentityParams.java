@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -40,19 +41,13 @@ import org.olat.repository.RepositoryEntry;
  */
 public class SearchAssessedIdentityParams {
 	
-	public static final int PARTICIPANT_SIZE = Particpant.values().length;
+	public static final int PARTICIPANT_TYPE_SIZE = ParticipantType.values().length;
 	
 	public enum Passed {
 		passed,
 		failed,
 		notGraded;
 	}
-	public enum Particpant {
-		member,
-		nonMember,
-		fakeParticipant
-	}
-	
 	private final RepositoryEntry entry;
 	private final RepositoryEntry referenceEntry;
 	private final String subIdent;
@@ -66,7 +61,7 @@ public class SearchAssessedIdentityParams {
 	private List<AssessmentEntryStatus> assessmentStatus;
 	private List<Passed> passed;
 	private Boolean userVisibility;
-	private Set<Particpant> participants;
+	private Collection<ParticipantType> participantTypes;
 	private Collection<AssessmentObligation> assessmentObligations;
 	
 	private String searchString;
@@ -167,12 +162,12 @@ public class SearchAssessedIdentityParams {
 		return assessmentObligations;
 	}
 
-	public Set<Particpant> getParticipants() {
-		return participants;
+	public Collection<ParticipantType> getParticipantTypes() {
+		return participantTypes;
 	}
 
-	public void setParticipants(Set<Particpant> participants) {
-		this.participants = participants;
+	public void setParticipantTypes(Collection<ParticipantType> participantTypes) {
+		this.participantTypes = participantTypes;
 	}
 
 	public void setAssessmentObligations(Collection<AssessmentObligation> assessmentObligations) {
@@ -225,12 +220,12 @@ public class SearchAssessedIdentityParams {
 	
 	public boolean isParticipantAll() {
 		if (isAdmin()) {
-			if (getParticipants() == null || getParticipants().isEmpty()) {
+			if (getParticipantTypes() == null || getParticipantTypes().isEmpty()) {
 				return true;
 			}
 			
-			int numParticipantFilter = hasFakeParticipants() ? PARTICIPANT_SIZE: PARTICIPANT_SIZE-1;
-			if (numParticipantFilter == getParticipants().size()) {
+			int numParticipantFilter = hasFakeParticipants() ? PARTICIPANT_TYPE_SIZE: PARTICIPANT_TYPE_SIZE-1;
+			if (numParticipantFilter == getParticipantTypes().size()) {
 				return true;
 			}
 		}
@@ -239,31 +234,31 @@ public class SearchAssessedIdentityParams {
 
 	public boolean isParticipantCoachedMembers() {
 		if (isCoach()) {
-			return getParticipants() == null || getParticipants().isEmpty() || getParticipants().contains(Particpant.member);
+			return getParticipantTypes() == null || getParticipantTypes().isEmpty() || getParticipantTypes().contains(ParticipantType.member);
 		}
 		return false;
 	}
 
 	public boolean isParticipantFakeParticipants() {
 		if (isCoach()) {
-			return getParticipants() == null || getParticipants().isEmpty() || (hasFakeParticipants() && getParticipants().contains(Particpant.fakeParticipant));
+			return getParticipantTypes() == null || getParticipantTypes().isEmpty() || (hasFakeParticipants() && getParticipantTypes().contains(ParticipantType.fakeParticipant));
 		}
 		if (isAdmin()) {
-			return getParticipants() != null && hasFakeParticipants() && getParticipants().contains(Particpant.fakeParticipant);
+			return getParticipantTypes() != null && hasFakeParticipants() && getParticipantTypes().contains(ParticipantType.fakeParticipant);
 		}
 		return false;
 	}
 
 	public boolean isParticipantNonMembers() {
 		if (isAdmin()) {
-			return getParticipants() != null && getParticipants().contains(Particpant.nonMember);
+			return getParticipantTypes() != null && getParticipantTypes().contains(ParticipantType.nonMember);
 		}
 		return false;
 	}
 	
 	public boolean isParticipantAllMembers() {
 		if (isAdmin()) {
-			return getParticipants() != null && getParticipants().contains(Particpant.member);
+			return getParticipantTypes() != null && getParticipantTypes().contains(ParticipantType.member);
 		}
 		return false;
 	}

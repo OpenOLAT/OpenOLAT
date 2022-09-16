@@ -19,18 +19,18 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -80,7 +80,7 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 	}
 
 	@Override
-	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Set<Particpant> participants) {
+	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Collection<ParticipantType> participants) {
 		Map<String, List<AssessmentEntry>> nodeIdentToEntries = new HashMap<>(manualGradeSubIdents.size());
 		for (String subIdent : manualGradeSubIdents) {
 			nodeIdentToEntries.put(subIdent, loadAssessmentEntries(subIdent, participants));
@@ -88,9 +88,9 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 		return nodeIdentToEntries;
 	}
 	
-	private List<AssessmentEntry> loadAssessmentEntries(String subIdent, Set<Particpant> participants) {
+	private List<AssessmentEntry> loadAssessmentEntries(String subIdent, Collection<ParticipantType> participants) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, subIdent, null, assessmentCallback);
-		params.setParticipants(participants);
+		params.setParticipantTypes(participants);
 		params.setScoreNull(Boolean.FALSE);
 		params.setGradeNull(Boolean.TRUE);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);

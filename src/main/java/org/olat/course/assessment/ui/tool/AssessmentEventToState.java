@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.event.BusinessGroupEvent;
 import org.olat.course.assessment.ui.tool.event.CurriculumElementEvent;
 import org.olat.course.assessment.ui.tool.event.SelectionEvents;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 
@@ -77,7 +77,7 @@ public class AssessmentEventToState {
 	
 	public AssessedIdentityListState getState(Event event) {
 		if (event == SelectionEvents.USERS_EVENT) {
-			return null;
+			return new AssessedIdentityListState(null, null, null, null, null, null, null, false);
 		} else if (event == SelectionEvents.PASSED_EVENT) {
 			return new AssessedIdentityListState(null, Collections.singletonList("passed"), null, null, null, null, "Passed", false);
 		} else if (event == SelectionEvents.FAILED_EVENT) {
@@ -93,11 +93,11 @@ public class AssessmentEventToState {
 							AssessmentEntryStatus.inProgress.name(), AssessmentEntryStatus.inReview.name()),
 					null, null, null, null, null, null, false);
 		} else if (event == SelectionEvents.MEMBERS_EVENT) {
-			return new AssessedIdentityListState(null, null, null, Collections.singletonList(Particpant.member.name()), null, null, null, false);
+			return new AssessedIdentityListState(null, null, null, Collections.singletonList(ParticipantType.member.name()), null, null, null, false);
 		} else if (event == SelectionEvents.NON_MEMBERS_EVENT) {
-			return new AssessedIdentityListState(null, null, null, Collections.singletonList(Particpant.nonMember.name()), null, null, null, false);
+			return new AssessedIdentityListState(null, null, null, Collections.singletonList(ParticipantType.nonMember.name()), null, null, null, false);
 		} else if (event == SelectionEvents.FAKE_PARTICIPANTS_EVENT) {
-			return new AssessedIdentityListState(null, null, null, Collections.singletonList(Particpant.fakeParticipant.name()), null, null, null, false);
+			return new AssessedIdentityListState(null, null, null, Collections.singletonList(ParticipantType.fakeParticipant.name()), null, null, null, false);
 		} else if (event instanceof BusinessGroupEvent) {
 			BusinessGroupEvent bge = (BusinessGroupEvent)event;
 			List<String> groupKeys = bge.getKeys().stream().map(key -> "businessgroup-" + key).collect(Collectors.toList());

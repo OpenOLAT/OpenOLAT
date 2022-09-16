@@ -17,23 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment.ui.event;
 
 import java.util.List;
 
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.modules.assessment.ParticipantType;
 
 /**
  * 
- * Initial date: 28 Jan 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
+ * Initial date: 15 Sep 2022<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentCourseNodeOverviewController extends Controller {
+public class ParticipantTypeFilterEvent extends Event {
 
-	void reload();
+	private static final long serialVersionUID = 6865017551665996933L;
 	
-	void reload(List<ParticipantType> participantTypes);
-	
+	private final List<ParticipantType> participantTypes;
+
+	public ParticipantTypeFilterEvent(List<ParticipantType> participantTypes) {
+		super("participant-type-filter");
+		this.participantTypes = participantTypes;
+	}
+
+	public List<ParticipantType> getParticipantTypes() {
+		return participantTypes;
+	}
+
 }

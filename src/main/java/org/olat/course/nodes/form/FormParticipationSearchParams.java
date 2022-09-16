@@ -22,7 +22,7 @@ package org.olat.course.nodes.form;
 import java.util.Collection;
 
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -42,7 +42,7 @@ public class FormParticipationSearchParams {
 	private RepositoryEntryRef courseEntry;
 	private Collection<AssessmentObligation> obligations;
 	private Collection<Status> status;
-	private Collection<Particpant> participants;
+	private Collection<ParticipantType> participants;
 	private Collection<Identity> fakeParticipants;
 
 	public Identity getIdentity() {
@@ -93,11 +93,11 @@ public class FormParticipationSearchParams {
 		this.status = status;
 	}
 
-	public Collection<Particpant> getParticipants() {
+	public Collection<ParticipantType> getParticipants() {
 		return participants;
 	}
 
-	public void setParticipants(Collection<Particpant> participants) {
+	public void setParticipants(Collection<ParticipantType> participants) {
 		this.participants = participants;
 	}
 

@@ -17,23 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment;
 
-import java.util.List;
-
-import org.olat.core.gui.control.Controller;
-import org.olat.modules.assessment.ParticipantType;
-
-/**
- * 
- * Initial date: 28 Jan 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
- *
- */
-public interface AssessmentCourseNodeOverviewController extends Controller {
-
-	void reload();
-	
-	void reload(List<ParticipantType> participantTypes);
-	
+public enum ParticipantType {
+	member,
+	nonMember,
+	fakeParticipant
 }

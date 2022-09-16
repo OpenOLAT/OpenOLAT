@@ -56,9 +56,9 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 
@@ -129,7 +129,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		setObjects(backupRows);
 		
 		List<AssessmentObligation> obligations = null;
-		Set<Particpant> participants = null;
+		Set<ParticipantType> participants = null;
 		List<Long> businessGroupKeys = null;
 		List<Long> curriculumElementKeys = null;
 		if (filters != null && !filters.isEmpty()) {
@@ -148,7 +148,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 				List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
 				if (filterValues != null && !filterValues.isEmpty()) {
 					participants = filterValues.stream()
-							.map(Particpant::valueOf)
+							.map(ParticipantType::valueOf)
 							.collect(Collectors.toSet());
 				}
 			}
@@ -187,7 +187,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	}
 	
 	private boolean accept(CheckListAssessmentRow view, List<AssessmentObligation> obligations,
-			Set<Particpant> participants, List<Long> businessGroupKeys, List<Long> curriculumElementKeys) {
+			Set<ParticipantType> participants, List<Long> businessGroupKeys, List<Long> curriculumElementKeys) {
 		if (obligations != null && !obligations.isEmpty()) {
 			if (view.getAssessmentObligation() != null && !obligations.contains(view.getAssessmentObligation())) {
 				return false;
@@ -197,10 +197,10 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		}
 		
 		if (participants != null) {
-			if (view.isFakeParticipant() && !participants.contains(Particpant.fakeParticipant)) {
+			if (view.isFakeParticipant() && !participants.contains(ParticipantType.fakeParticipant)) {
 				return false;
 			}
-			if (!view.isFakeParticipant() && !participants.contains(Particpant.member)) {
+			if (!view.isFakeParticipant() && !participants.contains(ParticipantType.member)) {
 				return false;
 			}
 		}

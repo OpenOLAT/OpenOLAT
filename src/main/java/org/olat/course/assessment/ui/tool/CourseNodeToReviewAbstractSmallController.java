@@ -20,10 +20,10 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -54,11 +54,11 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.IndentedNodeRenderer;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.CourseNodeToReviewTableModel.ToReviewCols;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -94,7 +94,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 	protected abstract String getTitleI18nKey();
 	protected abstract String getTitleNumberI18nKey();
 	protected abstract String getTableEmptyI18nKey();
-	protected abstract Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Set<Particpant> participants);
+	protected abstract Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Collection<ParticipantType> participants);
 	protected abstract Supplier<AssessedIdentityListState> getIdentityFilter();
 	
 	protected CourseNodeToReviewAbstractSmallController(UserRequest ureq, WindowControl wControl,
@@ -143,7 +143,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		tableEl.setEmptyTableSettings(getTableEmptyI18nKey(), null, getIconCssClass());
 	}
 	
-	public void loadModel(Set<Particpant> participants) {
+	public void loadModel(Collection<ParticipantType> participants) {
 		Map<String, List<AssessmentEntry>> nodeIdentToEntries = loadNodeIdentToEntries(participants);
 		
 		List<CourseNodeToReviewRow> rows = new ArrayList<>(nodeIdentToEntries.size());

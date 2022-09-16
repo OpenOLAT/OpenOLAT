@@ -106,7 +106,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
-		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, false);
+		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, false, false);
 		listenTo(overviewCtrl);
 		assessmentEventToState = new AssessmentEventToState(overviewCtrl);
 		

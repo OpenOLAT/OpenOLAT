@@ -80,7 +80,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -100,6 +99,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -318,11 +318,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		if (!fakeParticipantKeys.isEmpty()) {
 			SelectionValues membersValues = new SelectionValues();
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			membersFilter.setValues(List.of(ParticipantType.member.name()));
 			filters.add(membersFilter);
 		}
 		

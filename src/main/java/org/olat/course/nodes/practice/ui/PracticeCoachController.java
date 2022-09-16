@@ -57,7 +57,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
@@ -70,6 +69,7 @@ import org.olat.course.nodes.practice.ui.renders.PracticeChallengeCellRenderer;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -200,17 +200,17 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		// members
 		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			SelectionValues membersValues = new SelectionValues();
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
 			if (assessmentCallback.canAssessNonMembers()) {
-				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.nonMember.name(), translate("filter.other.users")));
+				membersValues.add(SelectionValues.entry(ParticipantType.nonMember.name(), translate("filter.other.users")));
 			}
 			if (assessmentCallback.canAssessFakeParticipants()) {
-				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+				membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
 			if (membersValues.size() > 1) {
 				FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-				filter.setValues(List.of(Particpant.member.name()));
+				filter.setValues(List.of(ParticipantType.member.name()));
 				filters.add(filter);
 			}
 		}
@@ -300,10 +300,10 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		if(membersFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
-				Set<Particpant> participants = filterValues.stream()
-						.map(Particpant::valueOf)
+				Set<ParticipantType> participants = filterValues.stream()
+						.map(ParticipantType::valueOf)
 						.collect(Collectors.toSet());
-				params.setParticipants(participants);
+				params.setParticipantTypes(participants);
 			}
 		}
 		

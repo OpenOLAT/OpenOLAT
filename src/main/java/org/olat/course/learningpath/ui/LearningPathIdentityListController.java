@@ -58,14 +58,13 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
@@ -181,11 +180,11 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	private void initFilters() {
 		if (!fakeParticipantKeys.isEmpty()) {
 			SelectionValues membersValues = new SelectionValues();
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			membersFilter.setValues(List.of(ParticipantType.member.name()));
 			tableEl.setFilters(true, List.of(membersFilter), false, true);
 		}
 	}
@@ -208,7 +207,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	}
 
 	private void loadModel() {
-		Set<Particpant> filterParticipants = getFilterParticipants();
+		Set<ParticipantType> filterParticipants = getFilterParticipants();
 		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		RepositoryEntry re = cgm.getCourseEntry();
 		String subIdent = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getIdent();
@@ -235,23 +234,23 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		tableEl.reset(true, true, true);
 	}
 	
-	private Set<SearchAssessedIdentityParams.Particpant> getFilterParticipants() {
+	private Set<ParticipantType> getFilterParticipants() {
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
 		if(membersFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
 				return filterValues.stream()
-						.map(Particpant::valueOf)
+						.map(ParticipantType::valueOf)
 						.collect(Collectors.toSet());
 			}
 		}
 		return null;
 	}
 	
-	private boolean isExcludedByParticipant(Set<Particpant> filterParticipants, Identity identity) {
+	private boolean isExcludedByParticipant(Set<ParticipantType> filterParticipants, Identity identity) {
 		if (filterParticipants != null && filterParticipants.size() == 1) {
-			if (filterParticipants.contains(Particpant.fakeParticipant)) {
+			if (filterParticipants.contains(ParticipantType.fakeParticipant)) {
 				return !fakeParticipantKeys.contains(identity.getKey());
 			}
 			return fakeParticipantKeys.contains(identity.getKey());

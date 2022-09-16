@@ -69,8 +69,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -81,6 +79,7 @@ import org.olat.course.nodes.form.FormParticipationSearchParams;
 import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -230,17 +229,17 @@ public class FormParticipationListController extends FormBasicController impleme
 		}
 		
 		SelectionValues membersValues = new SelectionValues();
-		membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+		membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
 		if (coachCourseEnv.isAdmin()) {
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.nonMember.name(), translate("filter.other.users")));
+			membersValues.add(SelectionValues.entry(ParticipantType.nonMember.name(), translate("filter.other.users")));
 		}
 		if (!fakeParticipants.isEmpty()) {
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 		}
 		if (membersValues.size() > 1) {
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			membersFilter.setValues(List.of(ParticipantType.member.name()));
 			filters.add(membersFilter);
 		}
 		
@@ -323,8 +322,8 @@ public class FormParticipationListController extends FormBasicController impleme
 		if(membersFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
-				Set<Particpant> participants = filterValues.stream()
-						.map(Particpant::valueOf)
+				Set<ParticipantType> participants = filterValues.stream()
+						.map(ParticipantType::valueOf)
 						.collect(Collectors.toSet());
 				params.setParticipants(participants);
 			} else {

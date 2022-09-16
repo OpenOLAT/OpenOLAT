@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -56,8 +57,11 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ParticipantType;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.event.ParticipantTypeFilterEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,6 +92,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final AssessmentToolContainer toolContainer;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final String rootCourseNodeIdent;
+	private List<ParticipantType> participantTypeFilter = List.of(ParticipantType.member);
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -178,6 +183,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				if(courseNode != null) {
 					AssessmentCourseNodeController ctrl = doOpenParticipants(ureq, treeNode, courseNode);
 					if(ctrl != null) {
+						syncParticipantTypes(state);
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						ctrl.activate(ureq, subEntries, state);
 					}
@@ -196,6 +202,19 @@ public class AssessmentCourseTreeController extends BasicController implements A
 			}
 		} else {
 			doOpenOverview(ureq);
+		}
+	}
+
+	private void syncParticipantTypes(StateEntry state) {
+		if (state instanceof AssessedIdentityListState) {
+			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			List<String> members = listState.getMembers();
+			if (members == null) {
+				members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
+				listState.setMembers(members);
+			} else {
+				participantTypeFilter = members.stream().map(ParticipantType::valueOf).collect(Collectors.toList());
+			}
 		}
 	}
 
@@ -247,13 +266,32 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				doOpenParticipants(ureq, selectedTreeNode, (CourseNode)uo).activate(ureq, null, assessmentEventToState.getState(event));
 			}
 		} else if (source == overviewCtrl) {
-			fireEvent(ureq, event);
+			if (event instanceof ParticipantTypeFilterEvent) {
+				participantTypeFilter = ((ParticipantTypeFilterEvent)event).getParticipantTypes();
+			} else {
+				fireEvent(ureq, event);
+			}
+		} else if (source == courseNodeOverviewCtrl) {
+			if (event instanceof ParticipantTypeFilterEvent) {
+				participantTypeFilter = ((ParticipantTypeFilterEvent)event).getParticipantTypes();
+			}
+		} else if (source == identityListCtrl) {
+			if (event instanceof ParticipantTypeFilterEvent) {
+				participantTypeFilter = ((ParticipantTypeFilterEvent)event).getParticipantTypes();
+			}
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void processSelectCourseNodeWithMemory(UserRequest ureq, TreeNode tn, CourseNode cn) {
-		StateEntry listState = identityListCtrl != null? identityListCtrl.getListState(): null;
+		StateEntry listState;
+		if (identityListCtrl != null) {
+			listState = identityListCtrl.getListState();
+		} else {
+			List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
+			listState = new AssessedIdentityListState(null, null, null, members, null, null, null, true);
+		}
+		
 		AssessmentCourseNodeController ctrl = doOpenParticipants(ureq, tn, cn);
 		if(ctrl != null) {
 			ctrl.activate(ureq, null, listState);
@@ -303,7 +341,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, getWindowControl());
 		boolean courseInfoLaunch = rootCourseNodeIdent.equals(courseNode.getIdent());
 		courseNodeOverviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, bwControl, courseNode,
-				coachCourseEnv, courseInfoLaunch, false);
+				coachCourseEnv, courseInfoLaunch, false, false);
+		courseNodeOverviewCtrl.reload(participantTypeFilter);
 		listenTo(courseNodeOverviewCtrl);
 		assessmentEventToState = new AssessmentEventToState(courseNodeOverviewCtrl);
 		addToHistory(ureq, courseNodeOverviewCtrl);
@@ -320,10 +359,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		stackPanel.changeDisplayname(translate("assessment.tool.overview"), "o_icon o_icon_assessment_tool", this);
 		
 		removeAsListenerAndDispose(overviewCtrl);
-		
+	
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Overview", Long.valueOf(0));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, getWindowControl());
 		overviewCtrl = new AssessmentCourseOverviewController(ureq, bwControl, courseEntry, coachCourseEnv, assessmentCallback);
+		overviewCtrl.reload(participantTypeFilter);
 		listenTo(overviewCtrl);
 		addToHistory(ureq, overviewCtrl);
 		mainVC.put("overview", overviewCtrl.getInitialComponent());

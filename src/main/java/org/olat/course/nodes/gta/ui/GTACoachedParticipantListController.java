@@ -78,8 +78,6 @@ import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
@@ -108,6 +106,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -354,11 +353,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		if (!fakeParticipantKeys.isEmpty()) {
 			SelectionValues membersValues = new SelectionValues();
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+			membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+			membersFilter.setValues(List.of(ParticipantType.member.name()));
 			filters.add(membersFilter);
 		}
 		
@@ -369,7 +368,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	protected void updateModel(UserRequest ureq) {
 		List<AssessmentObligation> filterObligations = getFilterObligations();
-		Set<Particpant> filterParticipants = getFilterParticipants();
+		Set<ParticipantType> filterParticipants = getFilterParticipants();
 		
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
@@ -491,23 +490,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		return false;
 	}
 	
-	private Set<SearchAssessedIdentityParams.Particpant> getFilterParticipants() {
+	private Set<ParticipantType> getFilterParticipants() {
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
 		if(membersFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
 				return filterValues.stream()
-						.map(Particpant::valueOf)
+						.map(ParticipantType::valueOf)
 						.collect(Collectors.toSet());
 			}
 		}
 		return null;
 	}
 	
-	private boolean isExcludedByParticipant(Set<Particpant> filterParticipants, UserPropertiesRow assessableIdentity) {
+	private boolean isExcludedByParticipant(Set<ParticipantType> filterParticipants, UserPropertiesRow assessableIdentity) {
 		if (filterParticipants != null && filterParticipants.size() == 1) {
-			if (filterParticipants.contains(Particpant.fakeParticipant)) {
+			if (filterParticipants.contains(ParticipantType.fakeParticipant)) {
 				return !fakeParticipantKeys.contains(assessableIdentity.getIdentityKey());
 			}
 			return fakeParticipantKeys.contains(assessableIdentity.getIdentityKey());

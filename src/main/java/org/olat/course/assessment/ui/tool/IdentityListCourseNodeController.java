@@ -105,7 +105,6 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
@@ -122,6 +121,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -138,6 +138,7 @@ import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
+import org.olat.modules.assessment.ui.event.ParticipantTypeFilterEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
@@ -443,7 +444,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			tabs.forEach(tab -> {
-				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, Particpant.member));
+				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
 			});
 		}
 		
@@ -496,17 +497,17 @@ public class IdentityListCourseNodeController extends FormBasicController
 		// members
 		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			SelectionValues membersValues = new SelectionValues();
-			membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.member.name(), translate("filter.members")));
+			membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
 			if (assessmentCallback.canAssessNonMembers()) {
-				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.nonMember.name(), translate("filter.other.users")));
+				membersValues.add(SelectionValues.entry(ParticipantType.nonMember.name(), translate("filter.other.users")));
 			}
 			if (assessmentCallback.canAssessFakeParticipants()) {
-				membersValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Particpant.fakeParticipant.name(), translate("filter.fake.participants")));
+				membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
 			if (membersValues.size() > 1) {
 				FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-				membersFilter.setValues(List.of(SearchAssessedIdentityParams.Particpant.member.name()));
+				membersFilter.setValues(List.of(ParticipantType.member.name()));
 				filters.add(membersFilter);
 			}
 		}
@@ -861,16 +862,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		}
 		
-		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
-		if(membersFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
-			if (filterValues != null && !filterValues.isEmpty()) {
-				Set<Particpant> participants = filterValues.stream()
-						.map(Particpant::valueOf)
-						.collect(Collectors.toSet());
-				params.setParticipants(participants);
-			}
-		}
+		params.setParticipantTypes(getParticipantTypeFilter(filters));
 		
 		FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_OBLIGATION);
 		if (obligationFilter != null) {
@@ -923,6 +915,21 @@ public class IdentityListCourseNodeController extends FormBasicController
 		params.setSearchString(tableEl.getQuickSearchString());
 		params.setUserProperties(userProps);
 		return params;
+	}
+
+
+	private List<ParticipantType> getParticipantTypeFilter(List<FlexiTableFilter> filters) {
+		List<ParticipantType> participantTypes = null;
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				participantTypes = filterValues.stream()
+						.map(ParticipantType::valueOf)
+						.collect(Collectors.toList());
+			}
+		}
+		return participantTypes;
 	}
 	
 	protected AssessmentToolOptions getOptions() {
@@ -1122,6 +1129,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 				}
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				reload(ureq);
+				List<ParticipantType> participantTypes = getParticipantTypeFilter(tableEl.getFilters());
+				fireEvent(ureq, new ParticipantTypeFilterEvent(participantTypes));
 			}
 		} else if(gradeScaleButton == source) {
 			doEditGradeScale(ureq);

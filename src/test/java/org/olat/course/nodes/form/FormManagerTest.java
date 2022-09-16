@@ -29,9 +29,9 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams.Particpant;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -145,7 +145,7 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setIdentity(owner);
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
-		searchParams.setParticipants(Set.of(Particpant.member));
+		searchParams.setParticipants(Set.of(ParticipantType.member));
 		formParticipations = sut.getFormParticipations(survey, searchParams);
 		
 		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
@@ -157,7 +157,7 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setIdentity(owner);
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
-		searchParams.setParticipants(Set.of(Particpant.nonMember));
+		searchParams.setParticipants(Set.of(ParticipantType.nonMember));
 		formParticipations = sut.getFormParticipations(survey, searchParams);
 		
 		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
@@ -168,7 +168,7 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setIdentity(owner);
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
-		searchParams.setParticipants(Set.of(Particpant.fakeParticipant));
+		searchParams.setParticipants(Set.of(ParticipantType.fakeParticipant));
 		formParticipations = sut.getFormParticipations(survey, searchParams);
 		
 		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
