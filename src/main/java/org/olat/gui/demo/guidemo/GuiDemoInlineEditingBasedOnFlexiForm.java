@@ -53,7 +53,7 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 			msg += elements[i].getValue()+" | ";
 		}
 		msg +="CustomLabel is named: "+inlineLabel.getValue();
-		showInfo("placeholder",msg);
+		showInfo("noTransOnlyParam",msg);
 	}
 
 	@Override

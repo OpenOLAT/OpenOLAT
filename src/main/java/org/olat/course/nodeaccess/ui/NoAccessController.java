@@ -88,10 +88,10 @@ public class NoAccessController extends BasicController {
 		emptyState = EmptyStateFactory.create("no.access", mainVC, this);
 		emptyState.setIndicatorIconCss("o_no_icon");
 		emptyState.setIconCss("o_icon_status_not_ready");
-		emptyState.setMessageI18nKey("placeholder");
+		emptyState.setMessageI18nKey("noTransOnlyParam");
 		String message = translate("no.access.course.node", new String[] {courseNode.getLongTitle()});
 		emptyState.setMessageI18nArgs(new String[] {message});
-		emptyState.setHintI18nKey("placeholder");
+		emptyState.setHintI18nKey("noTransOnlyParam");
 		emptyState.setHintI18nArgs(new String[] {NoAccessResolver.translate(getTranslator(), noAccessMessage, false)});
 		if (StringHelper.containsNonWhitespace(noAccessMessage.getGoToNodeIdent())) {
 			emptyState.setButtonI18nKey("no.access.goto.node");

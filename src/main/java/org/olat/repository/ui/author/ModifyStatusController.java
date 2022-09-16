@@ -72,11 +72,11 @@ public class ModifyStatusController extends FormBasicController {
 		statusSV.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
 		statusSV.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
 		statusSV.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("cif.status.closed")));
-		statusEl = uifactory.addDropdownSingleselect("status", "placeholder", formLayout, statusSV.keys(), statusSV.values(), null);
+		statusEl = uifactory.addDropdownSingleselect("status", "noTransOnlyParam", formLayout, statusSV.keys(), statusSV.values(), null);
 		String label = entries.size() == 1
 				? translate("tools.modify.status.entry", entries.get(0).getDisplayname())
 				: translate("tools.modify.status.entries", String.valueOf(entries.size()));
-		statusEl.setLabel("placeholder", new String[] {label});
+		statusEl.setLabel("noTransOnlyParam", new String[] {label});
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

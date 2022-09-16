@@ -146,7 +146,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (StringHelper.containsNonWhitespace(translatedDescription)) {
-			setFormDescription("placeholder", new String[] {translatedDescription});
+			setFormDescription("noTransOnlyParam", new String[] {translatedDescription});
 		}
 		
 		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
