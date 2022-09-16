@@ -208,7 +208,7 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		Map<Long, String> keyToDisplayName = levels.stream()
 				.collect(Collectors.toMap(
 						TaxonomyLevel::getKey,
-						taxonomyLevel -> StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel))));
+						taxonomyLevel -> StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel, ()->"-"))));
 		for(TaxonomyLevel level:levels) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 			if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel, mergeTo)) {

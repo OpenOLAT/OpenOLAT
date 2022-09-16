@@ -206,47 +206,51 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo) {
 		// save the documents
 		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
-		if(mergeTo != null) {
-			TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
-			merge(reloadedTaxonomyLevel, reloadedMergeTo);
-		} else {
-			VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
-			if(library != null) {
-				Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
-				VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
-				String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
-				dir += "_" + taxonomyLevel.getKey();
-				VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
-				if(lastStorage == null) {
-					VFSItem storageItem = lostAndFound.resolve(dir);
-					if(storageItem instanceof VFSContainer) {
-						lastStorage = (VFSContainer)storageItem;
-					} else {
-						lastStorage = lostAndFound.createChildContainer(UUID.randomUUID().toString());
+		if (taxonomyLevelDao.canDelete(reloadedTaxonomyLevel)) {
+			if(mergeTo != null) {
+				TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
+				merge(reloadedTaxonomyLevel, reloadedMergeTo);
+			} else {
+				VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
+				if(library != null) {
+					Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
+					VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
+					String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
+					dir += "_" + taxonomyLevel.getKey();
+					VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
+					if(lastStorage == null) {
+						VFSItem storageItem = lostAndFound.resolve(dir);
+						if(storageItem instanceof VFSContainer) {
+							lastStorage = (VFSContainer)storageItem;
+						} else {
+							lastStorage = lostAndFound.createChildContainer(UUID.randomUUID().toString());
+						}
 					}
-				}
-				
-				VFSManager.copyContent(library, lastStorage);
-			}
-			//delete the competences
-			taxonomyCompetenceDao.deleteCompetences(taxonomyLevel);
-			//questions
-			taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
-		}
-		
-		// Delete translations
-		String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + reloadedTaxonomyLevel.getI18nSuffix();
-		String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + reloadedTaxonomyLevel.getI18nSuffix();
-		for (Locale overlayLocale : i18nModule.getOverlayLocales().values()) {
-			I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, displayNameKey, overlayLocale);
-			i18nManager.saveOrUpdateI18nItem(displayNameItem, null);
-			I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, descriptionKey, overlayLocale);
-			i18nManager.saveOrUpdateI18nItem(descriptionItem, null);
-		}
-		
-		repositoryEntryToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
 
-		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
+					VFSManager.copyContent(library, lastStorage);
+				}
+				//delete the competences
+				taxonomyCompetenceDao.deleteCompetences(taxonomyLevel);
+				//questions
+				taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
+			}
+
+			// Delete translations
+			String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + reloadedTaxonomyLevel.getI18nSuffix();
+			String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + reloadedTaxonomyLevel.getI18nSuffix();
+			for (Locale overlayLocale : i18nModule.getOverlayLocales().values()) {
+				I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, displayNameKey, overlayLocale);
+				i18nManager.saveOrUpdateI18nItem(displayNameItem, null);
+				I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, descriptionKey, overlayLocale);
+				i18nManager.saveOrUpdateI18nItem(descriptionItem, null);
+			}
+
+			repositoryEntryToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
+
+			return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
+		}
+
+		return false;
 	}
 
 	private void merge(TaxonomyLevel taxonomyLevel, TaxonomyLevel mergeTo) {
