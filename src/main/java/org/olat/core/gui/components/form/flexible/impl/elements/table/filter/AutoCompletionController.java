@@ -33,14 +33,12 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -86,6 +84,7 @@ public class AutoCompletionController extends FormBasicController {
 		quickSearchButton.setDomReplacementWrapperRequired(false);
 		
 		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
+		quickSearchEl.setFocus(true);
 		quickSearchEl.setElementCssClass("o_quick_search");
 		quickSearchEl.setDomReplacementWrapperRequired(false);
 		quickSearchEl.setPlaceholderText(searchPlaceholder);
@@ -120,9 +119,6 @@ public class AutoCompletionController extends FormBasicController {
 		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
 		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
 		clearButton.setElementCssClass("o_filter_clear");
-		
-		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getFormDispatchId());
-		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
 	@Override
