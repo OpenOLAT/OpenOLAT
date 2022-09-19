@@ -49,8 +49,10 @@ public class CLLearningPathNodeHandler implements LearningPathNodeHandler {
 			.enableScore()
 			.enablePassed()
 			.enableStatusDone()
+			.enableNodeCompleted()
 			.withTranslations(CheckListEditController.class)
 				.withTriggerStatusDone("fully.assessed.trigger.status.done")
+				.withTriggerNodeCompleted("fully.assessed.trigger.node.completed")
 				.buildTranslations()
 			.build();
 

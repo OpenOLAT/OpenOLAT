@@ -312,6 +312,12 @@ public class OverviewListController extends FormBasicController implements Flexi
 					? translations.getTriggerStatusDone(getLocale())
 					: translate("config.trigger.status.done");
 		}
+		case nodeCompleted: {
+			LearningPathTranslations translations = learningPathService.getEditConfigs(courseNode).getTranslations();
+			return translations.getTriggerNodeCompleted(getLocale()) != null
+					? translations.getTriggerNodeCompleted(getLocale())
+					: translate("config.trigger.node.completed");
+		}
 		default:
 			// nothing
 		}

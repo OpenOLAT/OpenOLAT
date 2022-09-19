@@ -32,6 +32,8 @@ public enum FullyAssessedTrigger {
 	statusDone,
 	statusInReview,
 	score,
-	passed;
+	passed,
+	// May be individually used by course nodes
+	nodeCompleted;
 
 }

@@ -33,6 +33,8 @@ public interface LearningPathTranslations {
 	
 	public String getTriggerStatusDone(Locale locale);
 	
+	public String getTriggerNodeCompleted(Locale locale);
+	
 	public static LearningPathTranslations untranslated() {
 		return LearningPathTranslationsBuilder.UNTRANSLATED;
 	}

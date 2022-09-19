@@ -92,6 +92,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW = FullyAssessedTrigger.statusInReview.name();
 	public static final String CONFIG_VALUE_TRIGGER_SCORE = FullyAssessedTrigger.score.name();
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = FullyAssessedTrigger.passed.name();
+	public static final String CONFIG_VALUE_TRIGGER_NODE_COMPLETED = FullyAssessedTrigger.nodeCompleted.name();
 
 	private static final String[] EXCEPTIONAL_OBLIGATION_KEYS = { "on" };
 	private static final String[] EXCEPTIONAL_OBLIGATION_VALUES = { "" };
@@ -285,6 +286,13 @@ public class LearningPathNodeConfigController extends FormBasicController {
 					? translations.getTriggerStatusDone(getLocale())
 					: translate("config.trigger.status.done");
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_DONE, translation));
+		}
+		
+		if (editConfigs.isTriggerNodeCompleted()) {
+			String translation = translations.getTriggerNodeCompleted(getLocale()) != null
+					? translations.getTriggerNodeCompleted(getLocale())
+					: translate("config.trigger.node.completed");
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NODE_COMPLETED, translation));
 		}
 		return triggerKV;
 	}
