@@ -595,7 +595,7 @@
 	background: $o-toggle-bg;
 	display: inline-block;
 	height: $o-toggle-size + 2px;
-	line-height: $o-toggle-size;
+	line-height: $o-toggle-size - 1px;
 	font-size: $o-toggle-size;
 	text-align: left;
 	padding: 0 0.5em 0 1px;

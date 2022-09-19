@@ -287,6 +287,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		StateEntry listState;
 		if (identityListCtrl != null) {
 			listState = identityListCtrl.getListState();
+			if (listState instanceof AssessedIdentityListState) {
+				List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
+				((AssessedIdentityListState)listState).setMembers(members);
+			}
 		} else {
 			List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
 			listState = new AssessedIdentityListState(null, null, null, members, null, null, null, true);
