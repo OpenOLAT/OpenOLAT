@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -53,6 +54,19 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 			List<CoachedIdentityRow> views = new CoachParticipantsModelSort(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
+	}
+	
+	public int indexOf(IdentityRef identity) {
+		if(identity == null) return -1;
+		
+		for(int i=getRowCount(); i-->0; ) {
+			CoachedIdentityRow row = getObject(i);
+			if(row.getIdentityKey().equals(identity.getKey())) {
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 
 	@Override

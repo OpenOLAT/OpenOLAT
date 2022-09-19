@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -167,7 +168,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		assignedTask = super.stepAssignment(ureq, assignedTask);
 		
 		if(TaskHelper.inOrNull(assignedTask, TaskProcess.assignment)) {
-			mainVC.contextPut("assignmentCssClass", "o_active");
+			setActiveStatusAndCssClass("assignment");
+			
 			if(stepPreferences != null) {
 				//assignment is very important, open it always
 				stepPreferences.setAssignement(Boolean.TRUE);
@@ -183,6 +185,13 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0) {
 				//assignment is closed
 				mainVC.contextPut("assignmentClosed", Boolean.TRUE);
+				boolean hasAssignment = assignedTask != null && StringHelper.containsNonWhitespace(assignedTask.getTaskName());
+				mainVC.contextPut("assignmentClosedWithAssignment", Boolean.valueOf(hasAssignment));
+				if(hasAssignment) {
+					setDoneStatusAndCssClass("assignment");
+				} else {
+					setExpiredStatusAndCssClass("assignment");
+				}
 			} else if(userCourseEnv.isCourseReadOnly()) {
 				showAssignedTask(ureq, assignedTask);
 			} else {
@@ -208,7 +217,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				}
 			}	
 		} else {
-			mainVC.contextPut("assignmentCssClass", "o_done");
+			setDoneStatusAndCssClass("assignment");
 			showAssignedTask(ureq, assignedTask);
 		}
 		return assignedTask;
@@ -270,27 +279,27 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		//calculate state
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
-				mainVC.contextPut("submitCssClass", "");
+				setNotAvailableStatusAndCssClass("submit");
 			} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-				mainVC.contextPut("submitCssClass", "o_active");
+				setActiveStatusAndCssClass("submit");
 				if(userCourseEnv.isCourseReadOnly()) {
 					setSubmittedDocumentsController(ureq);
 				} else {
 					setSubmitController(ureq, assignedTask);
 				}
 			} else {
-				mainVC.contextPut("submitCssClass", "o_done");
+				setDoneStatusAndCssClass("submit");
 				setSubmittedDocumentsController(ureq);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-			mainVC.contextPut("submitCssClass", "o_active");
+			setActiveStatusAndCssClass("submit");
 			if(userCourseEnv.isCourseReadOnly()) {
 				setSubmittedDocumentsController(ureq);
 			} else {
 				setSubmitController(ureq, assignedTask);
 			}
 		} else {
-			mainVC.contextPut("submitCssClass", "o_done");
+			setDoneStatusAndCssClass("submit");
 			setSubmittedDocumentsController(ureq);
 		}
 		
@@ -458,19 +467,19 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit) {
-				mainVC.contextPut("reviewCssClass", "");
+				setNotAvailableStatusAndCssClass("review");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
-				mainVC.contextPut("reviewCssClass", "o_active");
+				setReviewStatusAndCssClass("review");
 				setReviews(ureq, taskRevisions, true, false);
 			} else {
-				mainVC.contextPut("reviewCssClass", "o_done");
+				setDoneStatusAndCssClass("review");
 				setReviews(ureq, taskRevisions, false, (assignedTask.getRevisionLoop() > 0));
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-			mainVC.contextPut("reviewCssClass", "o_active");
+			setReviewStatusAndCssClass("review");
 			setReviews(ureq, taskRevisions, true, false);
 		} else {
-			mainVC.contextPut("reviewCssClass", "o_done");
+			setDoneStatusAndCssClass("review");
 			setReviews(ureq, taskRevisions, false, false);
 		}
 		
@@ -511,7 +520,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				mainVC.contextPut("correctionMessage", taskRevision.getComment());
 				String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
 				String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
-				String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+				String infos = translate("run.corrections.comment.infos", commentDate, commentator);
 				mainVC.contextPut("correctionMessageInfos", infos);
 			}
 		}
@@ -527,19 +536,22 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review) {
-				mainVC.contextPut("revisionCssClass", "");
-			} else if(assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.correction) {
-				mainVC.contextPut("revisionCssClass", "o_active");
+				setNotAvailableStatusAndCssClass("revision");
+			} else if(assignedTask.getTaskStatus() == TaskProcess.correction) {
+				setReviewStatusAndCssClass("revision");
+				setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
+			} else if(assignedTask.getTaskStatus() == TaskProcess.revision) {
+				setActiveStatusAndCssClass("revision");
 				setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 			} else {
-				mainVC.contextPut("revisionCssClass", "o_done");
+				setDoneStatusAndCssClass("revision");
 				setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.correction) {
-			mainVC.contextPut("revisionCssClass", "o_active");
+			setActiveStatusAndCssClass("revision");
 			setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 		} else {
-			mainVC.contextPut("revisionCssClass", "o_done");
+			setDoneStatusAndCssClass("revision");
 			setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 		}
 		
@@ -584,36 +596,48 @@ public class GTAParticipantController extends GTAAbstractController implements A
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
 					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
 				if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {
+					setActiveStatusAndCssClass("solution");
 					setSolutions(ureq, assignedTask);
 				} else {
-					mainVC.contextPut("solutionCssClass", "");
+					setNotAvailableStatusAndCssClass("solution");
 				}
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
-				mainVC.contextPut("solutionCssClass", "o_active");
-				setSolutions(ureq, assignedTask);
+				if(setSolutions(ureq, assignedTask)) {
+					setActiveStatusAndCssClass("solution");
+				} else {
+					setNotAvailableStatusAndCssClass("solution");
+				}
 			} else {
-				mainVC.contextPut("solutionCssClass", "o_done");
+				setDoneStatusAndCssClass("solution");
 				setSolutions(ureq, assignedTask);
 			}	
-		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution){
-			mainVC.contextPut("solutionCssClass", "o_active");
-			setSolutions(ureq, assignedTask);
+		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution) {
+			if(setSolutions(ureq, assignedTask)) {
+				setActiveStatusAndCssClass("solution");
+			} else {
+				setNotAvailableStatusAndCssClass("solution");
+			}
 		} else {
-			mainVC.contextPut("solutionCssClass", "o_done");
+			setDoneStatusAndCssClass("solution");
 			setSolutions(ureq, assignedTask);
 		}
 		
 		return assignedTask;
 	}
 	
-	private void setSolutions(UserRequest ureq, Task assignedTask) {
-		DueDate availableDate = getSolutionDueDate(assignedTask);
-		boolean visible = availableDate == null || 
-				(availableDate.getDueDate() != null && availableDate.getDueDate().compareTo(new Date()) <= 0);
-
-		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
-		if(visible && TaskHelper.hasDocuments(documentsDir)) {
+	/**
+	 * Set the solutions if the date permissions are meet.
+	 * 
+	 * @param ureq The user request
+	 * @param assignedTask The task
+	 * @return true if the solutions are visible
+	 */
+	private boolean setSolutions(UserRequest ureq, Task assignedTask) {
+		boolean visible = isSolutionVisible(ureq, assignedTask);
+		if(visible) {
+			DueDate availableDate = getSolutionDueDate(assignedTask);
 			if(showSolutions(availableDate)) {
+				File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 				VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
@@ -631,43 +655,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			VelocityContainer waitVC = createVelocityContainer("wait_for_solutions");
 			mainVC.put("solutions", waitVC);
 		}
-	}
-	
-	/**
-	 * If the due date is not defined, the solutions are show the users with an uploaded
-	 * solution or if the configuration is set to visible to all. If the due date is set
-	 * but is not a relative date, the solution is shown to the users which uploaded a
-	 * solution or if the configuration is set to visible to all.
-	 * 
-	 * @param availableDate The due date of the solutions (can be null)
-	 * @return If the solutions are visible to the user
-	 */
-	private boolean showSolutions(DueDate availableDate) {
-		boolean show = false;
-		boolean optional = gtaNode.isOptional(courseEnv, userCourseEnv);
-		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
-			File submitDirectory;
-			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
-			} else {
-				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
-			}
-			
-			if(availableDate == null && !optional) {
-				show = true;
-			} else if(availableDate == null && optional
-					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
-				show = true;
-			} else if(availableDate != null && (optional || !availableDate.isRelative())
-					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
-				show = true;
-			}
-		} else if(optional) {
-			show = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
-		} else {
-			show = true;
-		}
-		return show;
+		return visible;
 	}
 
 	@Override
@@ -692,7 +680,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
 					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.solution) {
-				mainVC.contextPut("gradingCssClass", "");
+				setNotAvailableStatusAndCssClass("grading");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading) {
 				showGrading = true;
 			}	
@@ -704,9 +692,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			gradingCtrl = msCtrl;
 			listenTo(gradingCtrl);
 			if (assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded) {
-				mainVC.contextPut("gradingCssClass", "o_done");
+				setDoneStatusAndCssClass("grading");
 			} else {
-				mainVC.contextPut("gradingCssClass", "o_active");
+				setActiveStatusAndCssClass("grading");
 			}
 			
 			mainVC.put("grading", gradingCtrl.getInitialComponent());
@@ -788,6 +776,40 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	private void setMultiGroupsSelection() {
 		changeGroupLink = LinkFactory.createLink("change.group", mainVC, this);
+	}
+	
+	@Override
+	protected String formatDueDateNew(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
+		Date date = dueDate.getDueDate();
+		Date dateForDiff = date;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		
+		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+		if(dateOnly && userDeadLine) {
+			cal.add(Calendar.DATE, -1);
+			date = cal.getTime();
+		}
+	
+		long timeDiff = Math.abs(dateForDiff.getTime() - now.getTime());
+		String[] args = formatDueDateArguments(dueDate, now, userDeadLine);
+		
+		String i18nKey;
+		if(now.before(date)) {
+			if(done) {
+				i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
+			} else if(timeDiff > TWO_DAYS_IN_MILLISEC) {// 2 days
+				i18nKey = dateOnly ? "msg.end.dateonly.within.days" : "msg.end.within.days";
+			} else if(timeDiff > ONE_DAY_IN_MILLISEC) {
+				i18nKey = dateOnly ? "msg.end.dateonly.within.day" : "msg.end.within.day";
+			} else {
+				// some hours left
+				i18nKey = dateOnly ? "msg.end.dateonly.within.hours" : "msg.end.within.hours";
+			}
+		} else {
+			i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
+		}
+		return translate(i18nKey, args);
 	}
 
 	@Override

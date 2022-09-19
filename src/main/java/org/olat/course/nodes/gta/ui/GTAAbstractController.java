@@ -36,6 +36,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -51,6 +52,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskRevision;
@@ -74,6 +76,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class GTAAbstractController extends BasicController implements GenericEventListener {
+	
+	protected static final long TWO_DAYS_IN_MILLISEC = 2l * 24l * 60l * 60l * 1000l;
+	protected static final long ONE_DAY_IN_MILLISEC = 24l * 60l * 60l * 1000l;
+	protected static final long ONE_HOUR_IN_MILLISEC = 60l * 60l * 1000l;
 	
 	protected VelocityContainer mainVC;
 
@@ -304,13 +310,16 @@ public abstract class GTAAbstractController extends BasicController implements G
 		mainVC.contextPut("collapse_grading", Boolean.valueOf(grading));
 	}
 	
-	protected Task stepAssignment(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
+	protected Task stepAssignment(UserRequest ureq, Task assignedTask) {
 		DueDate dueDate = getAssignementDueDate(assignedTask);
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
 				String dateAsString = formatDueDate(dueDate, true);
 				mainVC.contextPut("assignmentDueDate", dateAsString);
+				String dateAsStringNew = formatDueDateNew(dueDate, ureq.getRequestTimestamp(), false, true);
+				mainVC.contextPut("assignmentDueDateNew", dateAsStringNew);
+				
 				mainVC.contextRemove("assignmentDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && StringHelper.containsNonWhitespace(assignedTask.getTaskName())
@@ -323,7 +332,45 @@ public abstract class GTAAbstractController extends BasicController implements G
 				mainVC.contextRemove("assignmentDueDate");
 			}
 		}
+		
+		if(assignedTask != null && assignedTask.getAssignmentDate() != null) {
+			String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getAssignmentDate());
+			mainVC.contextPut("assignmentDate", translate("msg.assignment.date", date));
+		} else {
+			mainVC.contextRemove("assignmentDate");
+		}
+		
 		return assignedTask;
+	}
+	
+	protected final void setDoneStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_done", "o_process_status_done", "msg.status.done");
+	}
+	
+	protected final void setActiveStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_active", "msg.status.active");
+	}
+	
+	protected final void setNotAvailableStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_notavailable", "o_process_status_notavailable", "msg.status.not.available");
+	}
+	
+	protected final void setExpiredStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_expired", "o_process_status_expired", "msg.status.expired");
+	}
+
+	protected final void setWaitingStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_waiting", "msg.status.waiting");
+	}
+	
+	protected final void setReviewStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_review", "msg.status.review");
+	}
+	
+	protected final void setStatusAndCssClass(String stepPrefix, String stepCssClass, String statusCssClass, String statusI18nKey) {
+		mainVC.contextPut(stepPrefix.concat("CssClass"), stepCssClass);
+		mainVC.contextPut(stepPrefix.concat("CssStatus"), statusCssClass);
+		mainVC.contextPut(stepPrefix.concat("Status"), translate(statusI18nKey));
 	}
 	
 	/**
@@ -351,6 +398,36 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return formattedDate;
 	}
 	
+	protected abstract String formatDueDateNew(DueDate dueDate, Date now, boolean done, boolean userDeadLine);
+	
+	protected String[] formatDueDateArguments(DueDate dueDate, Date now, boolean userDeadLine) {
+		Date date = dueDate.getDueDate();
+		Date dateForDiff = date;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		
+		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+		if(dateOnly && userDeadLine) {
+			cal.add(Calendar.DATE, -1);
+			date = cal.getTime();
+		}
+
+		long timeDiff = Math.abs(dateForDiff.getTime() - now.getTime());
+		long days = Math.abs(DateUtils.countDays(dateForDiff, now)) - 1;
+		long hours = ((timeDiff - (days * ONE_DAY_IN_MILLISEC)) / ONE_HOUR_IN_MILLISEC) % 24;
+		long minutes = ((timeDiff - (days * ONE_DAY_IN_MILLISEC) - (hours * ONE_HOUR_IN_MILLISEC)) / (60l * 1000l)) % 60;
+
+		Formatter formatter = Formatter.getInstance(getLocale());
+		return new String[] {
+			Long.toString(days),				// 0 Number of days
+			Long.toString(hours),				// 1 Number of hours
+			Long.toString(minutes),				// 2 Number of minutes
+			formatter.dayOfWeekName(date),		// 3 End day
+			formatter.formatDate(date),			// 4 Date
+			formatter.formatTimeShort(date)		// 5 Time
+		};
+	}
+	
 	protected void resetDueDates() {
 		assignmentDueDate = null;
 		submissionDueDate = null;
@@ -371,6 +448,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 				Date date = dueDate.getDueDate();
 				String dateAsString = formatDueDate(dueDate, true);
 				mainVC.contextPut("submitDueDate", dateAsString);
+				String dateAsStringNew = formatDueDateNew(dueDate, ureq.getRequestTimestamp(), true, true);
+				mainVC.contextPut("submitDueDateNew", dateAsStringNew);
 				mainVC.contextRemove("submitDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
@@ -387,7 +466,15 @@ public abstract class GTAAbstractController extends BasicController implements G
 			} else if(dueDate.getMessageKey() != null) {
 				mainVC.contextPut("submitDueDateMsg", translate(dueDate.getMessageKey(), dueDate.getMessageArg()));
 				mainVC.contextRemove("submitDueDate");
+				mainVC.contextRemove("submitDueDateNew");
 			}
+		}
+		
+		if(assignedTask != null && assignedTask.getSubmissionDate() != null) {
+			String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
+			mainVC.contextPut("submissionDate", translate("msg.submission.date", date));
+		} else {
+			mainVC.contextRemove("submissionDate");
 		}
 		
 		return assignedTask;
@@ -423,8 +510,12 @@ public abstract class GTAAbstractController extends BasicController implements G
 		// need an instantiated to go further (import for optional tasks)
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
-			String dateAsString = formatDueDate(new DueDate(false, date), true);
-			mainVC.contextPut("revisionDueDate", dateAsString);	
+			DueDate dueDate = new DueDate(false, date);
+			String dateAsString = formatDueDate(dueDate, true);
+			mainVC.contextPut("revisionDueDate", dateAsString);
+			String newDateAsString = formatDueDateNew(dueDate, ureq.getRequestTimestamp(), true, true);
+			mainVC.contextPut("revisionDueDateNew", newDateAsString);
+			
 			if(assignedTask.getTaskStatus() == TaskProcess.revision
 					&& date.compareTo(new Date()) < 0) {
 				//push to the next step
@@ -432,6 +523,14 @@ public abstract class GTAAbstractController extends BasicController implements G
 				assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, null, Role.auto);
 			}
 		}
+		
+		if(assignedTask != null && assignedTask.getSubmissionRevisionsDate() != null) {
+			String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionRevisionsDate());
+			mainVC.contextPut("submissionRevisionDate", translate("msg.revision.date", date));
+		} else {
+			mainVC.contextRemove("submissionRevisionDate");
+		}
+		
 		return assignedTask;
 	}
 	
@@ -454,6 +553,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(availableDate.getDueDate() != null) {
 				String date = formatDueDate(availableDate, false);
 				mainVC.contextPut("solutionAvailableDate", date);
+				String dateNew = formatSolutionDueDate(availableDate, ureq.getRequestTimestamp());
+				mainVC.contextPut("solutionAvailableDateNew", dateNew);
 				mainVC.contextRemove("solutionAvailableDateMsg");
 			} else if(availableDate.getMessageKey() != null) {
 				mainVC.contextPut("solutionAvailableDateMsg", translate(availableDate.getMessageKey(), availableDate.getMessageArg()));
@@ -468,6 +569,69 @@ public abstract class GTAAbstractController extends BasicController implements G
 			solutionDueDate = gtaManager.getSolutionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		}
 		return solutionDueDate;
+	}
+	
+	protected final boolean isSolutionVisible(UserRequest ureq, Task assignedTask) {
+		DueDate availableDate = getSolutionDueDate(assignedTask);
+		boolean visible = availableDate == null || 
+				(availableDate.getDueDate() != null && availableDate.getDueDate().compareTo(ureq.getRequestTimestamp()) <= 0);
+
+		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+		return visible && TaskHelper.hasDocuments(documentsDir);
+	}
+	
+	/**
+	 * If the due date is not defined, the solutions are show the users with an uploaded
+	 * solution or if the configuration is set to visible to all. If the due date is set
+	 * but is not a relative date, the solution is shown to the users which uploaded a
+	 * solution or if the configuration is set to visible to all.
+	 * 
+	 * @param availableDate The due date of the solutions (can be null)
+	 * @return If the solutions are visible to the user
+	 */
+	protected final boolean showSolutions(DueDate availableDate) {
+		boolean show = false;
+		boolean optional = gtaNode.isOptional(courseEnv, userCourseEnv);
+		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			File submitDirectory;
+			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			} else {
+				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+			}
+			
+			if(availableDate == null && !optional) {
+				show = true;
+			} else if(availableDate == null && optional
+					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
+				show = true;
+			} else if(availableDate != null && (optional || !availableDate.isRelative())
+					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
+				show = true;
+			}
+		} else if(optional) {
+			show = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
+		} else {
+			show = true;
+		}
+		return show;
+	}
+	
+	protected String formatSolutionDueDate(DueDate dueDate, Date now) {
+		Date date = dueDate.getDueDate();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		
+		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+		String[] args = formatDueDateArguments(dueDate, now, false);
+		
+		String i18nKey;
+		if(now.before(date)) {
+			i18nKey = dateOnly ? "msg.solution.from.dateonly" : "msg.solution.from";
+		} else {
+			i18nKey = dateOnly ? "msg.solution.view.dateonly" : "msg.solution.view";
+		}
+		return translate(i18nKey, args);
 	}
 	
 	protected Task stepGrading(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
@@ -534,12 +698,30 @@ public abstract class GTAAbstractController extends BasicController implements G
 	private void doSaveStepPreferences(UserRequest ureq, String step, Boolean showHide) {
 		if(step == null) return;
 		switch(step) {
-			case "assignment": stepPreferences.setAssignement(showHide); break;
-			case "submit": stepPreferences.setSubmit(showHide); break;
-			case "reviewAndCorrection": stepPreferences.setReviewAndCorrection(showHide); break;
-			case "revision": stepPreferences.setRevision(showHide); break;
-			case "solution": stepPreferences.setSolution(showHide); break;
-			case "grading": stepPreferences.setGrading(showHide); break;
+			case "assignment":
+				stepPreferences.setAssignement(showHide);
+				mainVC.contextPut("collapse_assignement", showHide);
+				break;
+			case "submit":
+				stepPreferences.setSubmit(showHide);
+				mainVC.contextPut("collapse_submit", showHide);
+				break;
+			case "reviewAndCorrection":
+				stepPreferences.setReviewAndCorrection(showHide);
+				mainVC.contextPut("collapse_reviewAndCorrection", showHide);
+				break;
+			case "revision":
+				stepPreferences.setRevision(showHide);
+				mainVC.contextPut("collapse_revision", showHide);
+				break;
+			case "solution":
+				stepPreferences.setSolution(showHide);
+				mainVC.contextPut("collapse_solution", showHide);
+				break;
+			case "grading":
+				stepPreferences.setGrading(showHide);
+				mainVC.contextPut("collapse_grading", showHide);
+				break;
 			default: {}
 		}
 		

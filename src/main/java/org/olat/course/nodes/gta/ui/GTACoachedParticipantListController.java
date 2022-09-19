@@ -607,6 +607,19 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		return rows;
 	}
 	
+	public int indexOfIdentity(IdentityRef id) {
+		return tableModel.indexOf(id);
+	}
+	
+	public int numOfIdentities() {
+		return tableModel.getRowCount();
+	}
+	
+	public IdentityRef getIdentity(int index) {
+		CoachedIdentityRow row = tableModel.getObject(index);
+		return new IdentityRefImpl(row.getIdentityKey());
+	}
+	
 	public List<Identity> getSelectedIdentities(Predicate<CoachedIdentityRow> filter) {
 		List<CoachedIdentityRow> selectedRows = getSelectedRows(filter);
 		List<IdentityRef> refs = new ArrayList<>(selectedRows.size());

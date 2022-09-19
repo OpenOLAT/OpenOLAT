@@ -184,11 +184,11 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage openSolutions() {
-		By solutionLinkBy = By.cssSelector("#o_step_solution_content li.o_gta_document h5>a");
+		By solutionLinkBy = By.cssSelector("div.o_step_solution li.o_gta_document h5>a");
 		List<WebElement> buttons = browser.findElements(solutionLinkBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//a[@href='#o_step_solution_content']");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_solution')]//a[contains(@class,'o_button_details')]");
 			browser.findElement(collpaseBy).click();
 		}
 		OOGraphene.waitElement(solutionLinkBy, browser);

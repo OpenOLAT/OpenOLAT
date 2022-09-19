@@ -3,18 +3,11 @@
 	<div class="o_warning">$r.xssScan($multipleGroupsWarning)</div>
 #end
 #if($r.available("selection"))
-	#if($r.available("backLink") || $r.available("contextualSubscription"))
-		<div class="clearfix o_gta_coach_selection_bar">
-		#if($r.available("backLink"))
-			$r.render("backLink")
-		#end
-		#if($r.available("contextualSubscription"))
-			$r.render("contextualSubscription")
-		#end
-		</div>
-	#end
-	
 	$r.render("selection")
+
+#elseif($r.available("selectionStack"))
+	$r.render("selectionStack")
+
 #elseif($r.available("list"))
 	#if($r.available("contextualSubscription") || $r.available("bulk.download.title"))
 	<div class="o_button_group o_button_group_right">

@@ -143,7 +143,7 @@ public class GroupTaskToCoachPage {
 		List<WebElement> buttons = browser.findElements(uploadButtonBs);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//a[@href='#o_step_review_content']");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_review')]//a[contains(@class,'o_button_details')]");
 			OOGraphene.click(collpaseBy, browser);
 			OOGraphene.waitElement(uploadButtonBs, browser);
 		}
@@ -170,11 +170,11 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage openIndividualAssessment() {
-		By assessmentButtonBy = By.cssSelector("#o_step_grading_content .o_sel_course_gta_assessment_button");
+		By assessmentButtonBy = By.cssSelector("div.o_step_grading .o_sel_course_gta_assessment_button");
 		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//a[@href='#o_step_grading_content']");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//a[contains(@class,'o_button_details')]");
 			OOGraphene.click(collpaseBy, browser);
 			OOGraphene.waitElement(assessmentButtonBy, browser);
 		}
@@ -202,11 +202,11 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage openGroupAssessment() {
-		By assessmentButtonBy = By.cssSelector("#o_step_grading_content .o_sel_course_gta_assessment_button");
+		By assessmentButtonBy = By.cssSelector("div.o_step_grading .o_sel_course_gta_assessment_button");
 		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//a[@href='#o_step_grading_content']");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//a[contains(@class,'o_button_details')]");
 			browser.findElement(collpaseBy).click();
 			OOGraphene.waitElement(assessmentButtonBy, browser);
 			browser.findElement(assessmentButtonBy).click();

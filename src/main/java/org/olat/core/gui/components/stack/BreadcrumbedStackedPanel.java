@@ -453,7 +453,12 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			//set the root controller
 			Link rootLink = stack.get(0);
 			BreadCrumb rootCrumb  = (BreadCrumb)rootLink.getUserObject();
-			setContent(rootCrumb.getController()); 
+			if(rootCrumb.getController() != null) {
+				setContent(rootCrumb.getController());
+			} else {
+				setContent((Component)null);
+			}
+			
 			updateCloseLinkTitle();
 			fireEvent(ureq, new PopEvent(rootCrumb.getController(), false));
 		}

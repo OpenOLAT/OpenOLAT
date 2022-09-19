@@ -3,13 +3,35 @@
 .o_process {
 	position: relative;
 	padding-left: 25px;
+	overflow-y: hidden;
 	
 	.o_step {
 		position: relative;
 		height: auto;
 		padding-top: $o-step-padding-top;
 		padding-left: $o-step-padding-left;
-		padding-bottom: $o-step-padding-bottom;
+		
+		.o_step_block {
+			border: $o-step-border;
+			border-radius: $o-cn-style-border-radius;
+		}
+		
+		.o_header {
+			padding: $o-border-header-padding;
+		}
+		
+		.o_content {
+			border-top: $o-step-border;
+			padding: $o-border-content-padding;
+			
+			.o_button_group {
+				margin-top: 1em;
+			}
+		}
+		
+		>.o_button_group {
+			margin-bottom: 0;
+		}
 	}
 
 	.o_bar {
@@ -17,77 +39,165 @@
 		top: $o-step-padding-top;
 		left: floor($o-step-milestone-size * 0.5);
 		height: 100%;
-		border-left: $o-step-border-width solid $o-step-color;
 		
 		&:after {
 			position: absolute;
-			top: 0;
-			left: floor(math.div($o-step-milestone-size, -2) - $o-step-border-width*0.5);
+			top: 16px;
+			left: floor(math.div($o-step-milestone-size, -2) - $o-step-border-width);
 			height: $o-step-milestone-size;
 			width: $o-step-milestone-size;
-			border: $o-step-border-width solid $o-step-color;
-			border-radius: $o-step-milestone-size;
-			background: #fff;
-			content : " ";
+			font-size: $o-step-bubble-font-size;
+			@include o-make-icon();
 		}
-	}
-
-	.o_title {
-		margin-top: round($headings-line-height*0.5) * -1 + px;	
-		color: $o-step-color !important;
+		
 		&:before {
-			/* ok or hand icon */
-			@include fa-icon();
+			content: ' ';
 			position: absolute;
-			left: floor($o-step-milestone-size * -1.5);
-		}
-		a {
-			&:before {
-				/* toggle icon */
-				@include fa-icon();
-				content: $fa-var-caret-down;
-				width: 1em;
-			}
-	
-			&.collapsed {
-				&:before {
-					/* toggle icon */
-					content: $fa-var-caret-right;			
-				}
-			}
+			top: 16px + $o-step-bubble-font-size - 2;
+			left: floor(math.div($o-step-milestone-size, -2) + 2);
+			height: calc(100% - 15px);
+			width: 2px;
+			border: 2px solid $o-step-color;
+			font-size: $o-step-bubble-font-size;
+			margin-bottom: 16px;
 		}
 	}
-
+	
+	.o_step:last-child .o_bar:before {
+		display: none;
+	}
+	
 	.o_step.o_active {
 		.o_bar,
 		.o_bar:after {
-			border-color: $o-step-active-color;
-		}
-		.o_title {
+			content : $fa-var-dot-circle-o;
 			color: $o-step-active-color !important;
-			&:before {
-				content: $fa-var-hand-o-right;			
-				color: $o-step-active-marker-color;
-			}			
+			border: unset;
+			background-color: unset;
+		}
+		
+		.o_bar:before {
+			border-color: $o-step-active-marker-color !important;
+			border-style: dashed;
 		}
 	}
-	.o_step.o_done {
+	
+	.o_step.o_notavailable {
 		.o_bar,
 		.o_bar:after {
-			border-color: $o-step-done-color;
+			content : $fa-var-circle-o;
+			color: $o-step-notavailable-color !important;
+			border: unset;
+			background-color: unset;
 		}
-		.o_title {
-			color: $o-step-done-color !important;
-			&:before {
-				content: $fa-var-check;			
-				color: $o-step-done-marker-color;
-			}
+		
+		.o_bar:before {
+			border-color: $o-step-notavailable-marker-color !important;
+			border-style: dashed;
 		}
 	}
+	
+	.o_step.o_expired  {
+		.o_bar,
+		.o_bar:after {
+			content : $fa-var-dot-circle-o;
+			color: $o-step-expired-color !important;
+			border: unset;
+			background-color: unset;
+		}
+		
+		.o_bar:before {
+			left: floor(math.div($o-step-milestone-size, -2) + 3);
+			height: calc(100% - 16px);
+			border: none;
+			outline-color: $o-step-expired-marker-color !important;
+			outline-style: dashed;
+			outline-width: 2px;
+			outline-offset: 0px;
+		}
+	}
+	
+	.o_step.o_expired ~ .o_step.o_notavailable  {
+		.o_bar:before {
+			left: floor(math.div($o-step-milestone-size, -2) + 3);
+			height: calc(100% - 16px);
+			border: none;
+			outline-color: $o-step-expired-marker-color !important;
+			outline-style: dashed;
+			outline-width: 2px;
+			outline-offset: 0px;
+		}
+	}
+	
+	.o_step.o_done {
+		.o_bar {
+			border-color: $o-step-done-color !important;
+		}
+		.o_bar:after {
+			content : $fa-var-check-circle;
+			color: $o-step-done-color !important;
+			border: unset;
+			background-color: unset;
+		}
+		.o_bar:before {
+			border-color: $o-step-done-marker-color !important;
+		}
+	}
+	
+	.o_step_grading.o_step.o_active {
+		.o_bar,
+		.o_bar:after {
+			content : $fa-var-circle-o;
+		}
+	}
+	
+	h4.o_title {
+		margin-top: 0;	
+	}
+
 	.o_meta {
 		color: $o-step-meta-color;
 		font-size: $o-step-meta-size;
 		margin-top: -0.5em;
 	}
+	
+	.o_expired_warning {
+		color: darken($o-step-status-expired-color, 20%);
+	}
 }
+
+.o_process_status_badge {
+	float: right;
+	display: inline-block;
+	padding: 1px 25px;
+	border-radius: $border-radius-small;
+	
+	&.o_process_status_done {
+	    background-color: 	$o-step-status-done-color;
+	    color: 				#fff;
+	}
+	&.o_process_status_waiting {
+	    background-color: 	$o-step-status-waiting-color;
+	    color: 				#fff;
+	}
+	&.o_process_status_review {
+	    background-color: 	$o-step-status-review-color;
+	    color: 				#fff;
+	}
+	&.o_process_status_notavailable {
+	    background-color: 	$o-step-status-notavailable-color;
+	    color: 				#fff;
+	}
+	&.o_process_status_active {
+	    background-color: 	$o-step-status-active-color;
+	    color: 				#fff;
+	}
+	&.o_process_status_expired {
+	    background-color: 	$o-step-status-expired-color;
+	    color: 				#fff;
+	}
+	
+}
+
+
 

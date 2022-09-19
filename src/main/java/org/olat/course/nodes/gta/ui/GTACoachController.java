@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
 import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
@@ -75,7 +77,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.co.ContactFormController;
 import org.olat.resource.OLATResource;
-import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,7 +97,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
 	private ConfirmRevisionsController confirmRevisionsCtrl;
-	private DialogBoxController confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl, confirmResetTaskCtrl;
+	private DialogBoxController confirmReviewDocumentCtrl;
+	private DialogBoxController confirmCollectCtrl;
+	private DialogBoxController confirmBackToSubmissionCtrl;
+	private DialogBoxController confirmResetTaskCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 
@@ -160,12 +164,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				emailLink = LinkFactory.createButtonXSmall("mailto.group", mainVC, this);
 				emailLink.setIconLeftCSS("o_icon o_icon_mail");				
 			} else if(assessedIdentity != null) {
-				mainVC.contextPut("identityFullName", userManager.getUserDisplayName(assessedIdentity));
-				Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), assessedIdentity, false, true, true, true);
-				listenTo(dpc); // auto dispose, no need to keep local reference
-				mainVC.put("image", dpc.getInitialComponent());
-				emailLink = LinkFactory.createButtonXSmall("mailto.user", mainVC, this);
-				emailLink.setIconLeftCSS("o_icon o_icon_mail");
+				AssessedIdentityLargeInfosController userInfosCtrl = new AssessedIdentityLargeInfosController(ureq, getWindowControl(),
+						assessedIdentity, coachCourseEnv.getCourseEnvironment(), gtaNode);
+				listenTo(userInfosCtrl);
+				mainVC.put("userInfos", userInfosCtrl.getInitialComponent());
 			}
 		}
 		
@@ -183,10 +185,22 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		assignedTask = super.stepAssignment(ureq, assignedTask);
 		
 		if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
-			mainVC.contextPut("assignmentCssClass", "o_active");
-		} else {
-			mainVC.contextPut("assignmentCssClass", "o_done");
+			setWaitingStatusAndCssClass("assignment");
 			
+			//assignment open?
+			DueDate dueDate = getAssignementDueDate(assignedTask);
+			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0) {
+				//assignment is closed
+				mainVC.contextPut("assignmentClosed", Boolean.TRUE);
+				boolean hasAssignment = assignedTask != null && StringHelper.containsNonWhitespace(assignedTask.getTaskName());
+				mainVC.contextPut("assignmentClosedWithAssignment", Boolean.valueOf(hasAssignment));
+				if(!hasAssignment) {
+					setExpiredStatusAndCssClass("assignment");
+				}
+			}
+		} else {
+			setDoneStatusAndCssClass("assignment");
+
 			TaskDefinition taskDef = getTaskDefinition(assignedTask);
 			assignedTaskCtrl = new GTAAssignedTaskController(ureq, getWindowControl(), assignedTask,
 					taskDef, courseEnv, gtaNode,
@@ -212,19 +226,19 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		boolean viewSubmittedDocument = false;
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
-				mainVC.contextPut("submitCssClass", "");
+				setNotAvailableStatusAndCssClass("submit");
 			} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-				mainVC.contextPut("submitCssClass", "o_active");
+				setWaitingStatusAndCssClass("submit");
 				collect(assignedTask);
 			} else {
-				mainVC.contextPut("submitCssClass", "o_done");
+				setDoneStatusAndCssClass("submit");
 				viewSubmittedDocument = true;
 			}	
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-			mainVC.contextPut("submitCssClass", "o_active");
+			setActiveStatusAndCssClass("submit");
 			collect(assignedTask);
 		} else {
-			mainVC.contextPut("submitCssClass", "o_done");
+			setDoneStatusAndCssClass("submit");
 			viewSubmittedDocument = true;
 		}
 		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit)) {
@@ -302,19 +316,19 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit) {
-				mainVC.contextPut("reviewCssClass", "");
+				setNotAvailableStatusAndCssClass("review");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
-				mainVC.contextPut("reviewCssClass", "o_active");
+				setActiveStatusAndCssClass("review");
 				setUploadCorrections(ureq, assignedTask, taskRevisions);
 			} else {
-				mainVC.contextPut("reviewCssClass", "o_done");
+				setDoneStatusAndCssClass("review");
 				setCorrections(ureq, (assignedTask.getRevisionLoop() > 0), taskRevisions);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-			mainVC.contextPut("reviewCssClass", "o_active");
+			setActiveStatusAndCssClass("review");
 			setUploadCorrections(ureq, assignedTask, taskRevisions);
 		} else {
-			mainVC.contextPut("reviewCssClass", "o_done");
+			setDoneStatusAndCssClass("review");
 			setCorrections(ureq, false, taskRevisions);
 		}
 		return assignedTask;
@@ -371,7 +385,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
 			String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
 			String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
-			String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+			String infos = translate("run.corrections.comment.infos", commentDate, commentator);
 			mainVC.contextPut("correctionMessage", taskRevision.getComment());
 			mainVC.contextPut("correctionMessageInfos", infos);
 		}
@@ -389,22 +403,25 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review) {
-				mainVC.contextPut("revisionCssClass", "");
-			} else if(assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.correction) {
-				mainVC.contextPut("revisionCssClass", "o_active");
+				setNotAvailableStatusAndCssClass("revision");
+			} else if(assignedTask.getTaskStatus() == TaskProcess.correction) {
+				setActiveStatusAndCssClass("revision");
+				revisions = true;
+			} else if(assignedTask.getTaskStatus() == TaskProcess.revision) {
+				setWaitingStatusAndCssClass("revision");
 				revisions = true;
 			} else if (assignedTask.getRevisionLoop() == 0) {
 				mainVC.contextPut("skipRevisions", Boolean.TRUE);
 				revisions = false;
 			} else {
-				mainVC.contextPut("revisionCssClass", "o_done");
+				setDoneStatusAndCssClass("revision");
 				revisions = true;
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.correction) {
-			mainVC.contextPut("revisionCssClass", "o_active");
+			setActiveStatusAndCssClass("revision");
 			revisions = true;
 		} else {
-			mainVC.contextPut("revisionCssClass", "o_done");
+			setDoneStatusAndCssClass("revision");
 			revisions = true;
 		}
 		
@@ -426,7 +443,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	@Override
 	protected Task stepSolution(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepSolution(ureq, assignedTask);
-
+		
+		DueDate availableDate = getSolutionDueDate(assignedTask);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
@@ -435,16 +453,24 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
 					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
-				mainVC.contextPut("solutionCssClass", "");
+				setNotAvailableStatusAndCssClass("solution");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
-				mainVC.contextPut("solutionCssClass", "o_active");
+				if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
+					setActiveStatusAndCssClass("solution");
+				} else {
+					setNotAvailableStatusAndCssClass("solution");
+				}
 			} else {
-				mainVC.contextPut("solutionCssClass", "o_done");
+				setDoneStatusAndCssClass("solution");
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution) {
-			mainVC.contextPut("solutionCssClass", "o_active");
+			if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
+				setActiveStatusAndCssClass("solution");
+			} else {
+				setNotAvailableStatusAndCssClass("solution");
+			}
 		} else {
-			mainVC.contextPut("solutionCssClass", "o_done");
+			setDoneStatusAndCssClass("solution");
 		}
 		
 		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
@@ -461,9 +487,9 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		assignedTask = super.stepGrading(ureq, assignedTask);
 		if(withGrading) {
 			if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded) {
-				mainVC.contextPut("gradingCssClass", "o_done");
+				setDoneStatusAndCssClass("grading");
 			} else {
-				mainVC.contextPut("gradingCssClass", "o_active");
+				setActiveStatusAndCssClass("grading");
 			}
 			setGrading(ureq, assignedTask);
 		} else {
@@ -534,6 +560,29 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			cleanUpProcess();
 			process(ureq);
 		}
+	}
+	
+	@Override
+	protected String formatDueDateNew(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
+		Date date = dueDate.getDueDate();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		
+		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+		if(dateOnly && userDeadLine) {
+			cal.add(Calendar.DATE, -1);
+			date = cal.getTime();
+		}
+
+		String[] args = formatDueDateArguments(dueDate, now, userDeadLine);
+		
+		String i18nKey;
+		if(now.before(date)) {
+			i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
+		} else {
+			i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
+		}
+		return translate(i18nKey, args);
 	}
 	
 	@Override
@@ -728,7 +777,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			showWarning("warning.submit.documents.edited", new String[]{ lockedBy.getLockedBy(), lockedBy.getLockedFiles() });
 		} else {
 			String title = translate("coach.collect.confirm.title");
-			String text = translate("coach.collect.confirm.text", new String[]{ toName });
+			String text = translate("coach.collect.confirm.text", toName);
 			text = "<div class='o_warning'>" + text + "</div>";
 			confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
 			confirmCollectCtrl.setUserObject(assignedTask);
@@ -775,7 +824,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		}
 		
 		String title = translate("coach.back.to.submission.confirm.title");
-		String text = translate("coach.back.to.submission.confirm.text", new String[]{ toName });
+		String text = translate("coach.back.to.submission.confirm.text", toName);
 		text = "<div class='o_warning'>" + text + "</div>";
 		confirmBackToSubmissionCtrl = activateOkCancelDialog(ureq, title, text, confirmBackToSubmissionCtrl);
 		confirmBackToSubmissionCtrl.setUserObject(assignedTask);
@@ -804,7 +853,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		}
 		
 		String title = translate("coach.reset.task.confirm.title");
-		String text = translate("coach.reset.task.confirm.text", new String[]{ toName });
+		String text = translate("coach.reset.task.confirm.text", toName);
 		confirmResetTaskCtrl = activateOkCancelDialog(ureq, title, text, confirmResetTaskCtrl);
 		confirmResetTaskCtrl.setUserObject(assignedTask);
 		listenTo(confirmResetTaskCtrl);

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -33,6 +34,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,6 +49,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.archiver.ArchiveResource;
+import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.GTACourseNode;
@@ -59,6 +64,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,13 +75,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTACoachSelectionController extends BasicController implements Activateable2 {
 
-	private GTACoachController coachingCtrl;
+	private Controller coachingCtrl;
 	private GTACoachedGroupListController groupListCtrl;
 	private GTACoachedParticipantListController participantListCtrl;
+	private final ContextualSubscriptionController contextualSubscriptionCtr;
 	
 	private final Link backLink;
 	private final Link downloadButton;
+	private final Link nextIdentityLink;
+	private final Link previousIdentityLink;
 	private final VelocityContainer mainVC;
+	private final TooledStackedPanel assessedIdentityStackPanel;
 
 	private final String solutionMapperUri;
 	private final DisplayOrDownloadComponent solutionDownloadCmp;
@@ -87,6 +97,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -110,9 +122,22 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		downloadButton.setTranslator(getTranslator());
 		downloadButton.setVisible(isDownloadAvailable());
 		
+		assessedIdentityStackPanel = new TooledStackedPanel("gta-assessed-identity-stack", getTranslator(), this);
+		assessedIdentityStackPanel.setNeverDisposeRootController(true);
+		assessedIdentityStackPanel.setInvisibleCrumb(0);
+		assessedIdentityStackPanel.setShowCloseLink(true, false);
+		assessedIdentityStackPanel.pushController(translate("root.participant"), null, new Object());
+		
+		previousIdentityLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
+		previousIdentityLink.setTitle(translate("command.previous"));
+		assessedIdentityStackPanel.addTool(previousIdentityLink, Align.rightEdge, true, "o_tool_previous");
+		nextIdentityLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
+		nextIdentityLink.setTitle(translate("command.next"));
+		assessedIdentityStackPanel.addTool(nextIdentityLink, Align.rightEdge, true, "o_tool_next");
+
 		PublisherData publisherData = gtaManager.getPublisherData(courseEnv, gtaNode, markedOnly);
 		SubscriptionContext subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode, markedOnly);
-		ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
+		contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
 		listenTo(contextualSubscriptionCtr);
 		mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 		
@@ -194,7 +219,6 @@ public class GTACoachSelectionController extends BasicController implements Acti
 				doSelectParticipant(ureq, selectedIdentity);
 				backLink.setVisible(true);
 			}
-			
 		}
 		
 		super.event(ureq, source, event);
@@ -206,6 +230,14 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			back(ureq);
 		} else if(downloadButton == source) {
 			doBulkDownload(ureq);
+		} else if(nextIdentityLink == source) {
+			doNextIdentity(ureq);
+		} else if(previousIdentityLink == source) {
+			doPreviousIdentity(ureq);
+		} else if(assessedIdentityStackPanel == source) {
+			if(event instanceof PopEvent) {
+				back(ureq);
+			}
 		}
 	}
 	
@@ -220,6 +252,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	
 	private void back(UserRequest ureq) {
 		if(coachingCtrl != null) {
+			mainVC.remove("selectionStack");
 			mainVC.remove(coachingCtrl.getInitialComponent());
 			removeAsListenerAndDispose(coachingCtrl);
 			coachingCtrl = null;
@@ -246,6 +279,42 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
 	}
+	
+	private void doNextIdentity(UserRequest ureq) {
+		assessedIdentityStackPanel.popController(coachingCtrl);
+		removeAsListenerAndDispose(coachingCtrl);
+		
+		if(coachingCtrl instanceof GTAAssessedIdentityController) {
+			Identity currentIdentity = ((GTAAssessedIdentityController)coachingCtrl).getAssessedIdentity();
+			int nextIndex = participantListCtrl.indexOfIdentity(currentIdentity) + 1;
+			int rowCount = participantListCtrl.numOfIdentities();
+			if(nextIndex >= 0 && nextIndex < rowCount) {
+				IdentityRef nextIdentity = participantListCtrl.getIdentity(nextIndex);
+				doSelectParticipant(ureq, nextIdentity);
+			} else if(rowCount > 0) {
+				IdentityRef nextIdentity = participantListCtrl.getIdentity(0);
+				doSelectParticipant(ureq, nextIdentity);
+			}
+		}
+	}
+	
+	private void doPreviousIdentity(UserRequest ureq) {
+		assessedIdentityStackPanel.popController(coachingCtrl);
+		removeAsListenerAndDispose(coachingCtrl);
+		
+		if(coachingCtrl instanceof GTAAssessedIdentityController) {
+			Identity currentIdentity = ((GTAAssessedIdentityController)coachingCtrl).getAssessedIdentity();
+			int previousIndex = participantListCtrl.indexOfIdentity(currentIdentity) - 1;
+			int rowCount = participantListCtrl.numOfIdentities();
+			if(previousIndex >= 0 && previousIndex < rowCount) {
+				IdentityRef nextIdentity = participantListCtrl.getIdentity(previousIndex);
+				doSelectParticipant(ureq, nextIdentity);
+			} else if(rowCount > 0) {
+				IdentityRef nextIdentity = participantListCtrl.getIdentity(rowCount - 1);
+				doSelectParticipant(ureq, nextIdentity);
+			}
+		}
+	}
 
 	private List<Identity> getIdentitesForBulkDownload(UserRequest ureq) {
 		List<Identity> identities = participantListCtrl.getAssessableIdentities();
@@ -267,15 +336,78 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, group, true, true, false, false);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
-		return coachingCtrl;
+		return (Activateable2)coachingCtrl;
+	}
+	
+	private Activateable2 doSelectParticipant(UserRequest ureq, IdentityRef identity) {
+		Identity id = securityManager.loadIdentityByKey(identity.getKey());
+		return doSelectParticipant(ureq, id);
 	}
 	
 	private Activateable2 doSelectParticipant(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(coachingCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Identity", identity.getKey()), null);
-		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, identity, true, true, false, false);
+		coachingCtrl = new GTAAssessedIdentityController(ureq, swControl, identity);
 		listenTo(coachingCtrl);
-		mainVC.put("selection", coachingCtrl.getInitialComponent());
-		return coachingCtrl;
+		
+		String fullName = userManager.getUserDisplayName(identity);
+		assessedIdentityStackPanel.pushController(fullName, coachingCtrl);
+		mainVC.put("selectionStack", assessedIdentityStackPanel);
+		
+		int index = participantListCtrl.indexOfIdentity(identity);
+		int numOfRows = participantListCtrl.numOfIdentities();
+		previousIdentityLink.setEnabled(index > 0);
+		nextIdentityLink.setEnabled(index + 1 < numOfRows);
+
+		return (Activateable2)coachingCtrl;
+	}
+	
+	/**
+	 * Little wrapper to pack user informations, subscription and coach view
+	 * of the task process.
+	 * 
+	 * Initial date: 16 sept. 2022<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private class GTAAssessedIdentityController extends BasicController implements Activateable2 {
+		
+		private final GTACoachController userTaskCtrl;
+		private final Identity assessedIdentity;
+		
+		public GTAAssessedIdentityController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
+			super(ureq, wControl);
+			this.assessedIdentity = assessedIdentity;
+			
+			VelocityContainer wrapperVC = createVelocityContainer("coach_wrapper");
+			
+			AssessedIdentityLargeInfosController userInfosCtrl = new AssessedIdentityLargeInfosController(ureq, getWindowControl(),
+					assessedIdentity, coachCourseEnv.getCourseEnvironment(), gtaNode);
+			listenTo(userInfosCtrl);
+			wrapperVC.put("userInfos", userInfosCtrl.getInitialComponent());
+			
+
+			wrapperVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
+			
+			userTaskCtrl = new GTACoachController(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, assessedIdentity, false, true, false, false);
+			listenTo(userTaskCtrl);
+			wrapperVC.put("selection", userTaskCtrl.getInitialComponent());
+			
+			putInitialPanel(wrapperVC);
+		}
+		
+		public Identity getAssessedIdentity() {
+			return assessedIdentity;
+		}
+
+		@Override
+		public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+			userTaskCtrl.activate(ureq, entries, state);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
+		}
 	}
 }
