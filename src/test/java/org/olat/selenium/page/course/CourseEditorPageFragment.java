@@ -207,7 +207,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitModalDialog(browser);
 		
 		By nodeBy = By.cssSelector("div.modal-dialog div#o_course_editor_choose_nodetype a.o_sel_course_editor_node-" + nodeAlias);
-		OOGraphene.moveAndClick(nodeBy, browser);
+		OOGraphene.click(nodeBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return assertOnNodeTitle();
 	}

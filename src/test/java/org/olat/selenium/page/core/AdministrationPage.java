@@ -139,16 +139,19 @@ public class AdministrationPage {
 	public AdministrationPage openGroupSettings() {
 		selectModules();
 		
-		WebElement groupLink = browser.findElement(By.cssSelector(".o_sel_group span.o_tree_level_label_leaf>a"));
-		groupLink.click();
-		OOGraphene.waitBusy(browser);
+		By groupBy = By.cssSelector(".o_sel_group span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(groupBy, browser);
+		browser.findElement(groupBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
+		By groupConfigBy = By.cssSelector("fieldset.o_sel_group_admin_dedup");
+		OOGraphene.waitElement(groupConfigBy, browser);
 		return this;
 	}
 	
 	public AdministrationPage setGroupConfirmationForUser(boolean mandatory) {
 		By userConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='user']");
-		OOGraphene.waitElement(userConfirmationCheckBy, browser);
-		OOGraphene.scrollTo(By.className("o_select_membership_confirmation"), browser);
+		OOGraphene.waitElementPresence(userConfirmationCheckBy, 5, browser);
+		OOGraphene.scrollTo(userConfirmationCheckBy, browser);
 		
 		WebElement userConfirmationCheckEl = browser.findElement(userConfirmationCheckBy);
 		OOGraphene.check(userConfirmationCheckEl, Boolean.valueOf(mandatory));
@@ -158,8 +161,8 @@ public class AdministrationPage {
 	
 	public AdministrationPage setGroupConfirmationForAuthor(boolean mandatory) {
 		By authorConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='author']");
-		OOGraphene.waitElement(authorConfirmationCheckBy, browser);
-		OOGraphene.scrollTo(By.className("o_select_membership_confirmation"), browser);
+		OOGraphene.waitElementPresence(authorConfirmationCheckBy, 5, browser);
+		OOGraphene.scrollTo(authorConfirmationCheckBy, browser);
 		
 		WebElement authorConfirmationCheckEl = browser.findElement(authorConfirmationCheckBy);
 		OOGraphene.check(authorConfirmationCheckEl, Boolean.valueOf(mandatory));
