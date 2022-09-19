@@ -33,6 +33,7 @@ public class LearningPathEditConfigsBuilder {
 	private boolean triggerPassed;
 	private boolean triggerStatusInReview;
 	private boolean triggerStatusDone;
+	private boolean triggerNodeCompleted;
 	private LearningPathTranslationsBuilder translationsBuilder;
 	
 	LearningPathEditConfigsBuilder() {
@@ -69,6 +70,11 @@ public class LearningPathEditConfigsBuilder {
 		return this;
 	}
 	
+	public LearningPathEditConfigsBuilder enableNodeCompleted() {
+		triggerNodeCompleted = true;
+		return this;
+	}
+	
 	public LearningPathTranslationsBuilder withTranslations(Class<?> translatorBaseClass) {
 		this.translationsBuilder = LearningPathTranslations.builder(this)
 				.withTranslatorBaseClass(translatorBaseClass);
@@ -87,6 +93,7 @@ public class LearningPathEditConfigsBuilder {
 		private final boolean triggerPassed;
 		private final boolean triggerStatusInReview;
 		private final boolean triggerStatusDone;
+		private final boolean triggerNodeCompleted;
 		private final LearningPathTranslations translations;
 
 		private LearningPathEditConfigsImpl(LearningPathEditConfigsBuilder builder) {
@@ -96,6 +103,7 @@ public class LearningPathEditConfigsBuilder {
 			this.triggerPassed = builder.triggerPassed;
 			this.triggerStatusInReview = builder.triggerStatusInReview;
 			this.triggerStatusDone = builder.triggerStatusDone;
+			this.triggerNodeCompleted = builder.triggerNodeCompleted;
 			this.translations = builder.translationsBuilder.build();
 		}
 
@@ -127,6 +135,11 @@ public class LearningPathEditConfigsBuilder {
 		@Override
 		public boolean isTriggerStatusDone() {
 			return triggerStatusDone;
+		}
+
+		@Override
+		public boolean isTriggerNodeCompleted() {
+			return triggerNodeCompleted;
 		}
 
 		@Override

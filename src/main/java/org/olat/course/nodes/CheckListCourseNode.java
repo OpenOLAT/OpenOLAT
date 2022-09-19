@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -73,6 +74,10 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cl.CLLearningPathNodeHandler;
@@ -80,6 +85,8 @@ import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.nodes.cl.model.DBCheck;
+import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.nodes.cl.ui.CheckListCoachRunController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
@@ -88,6 +95,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -97,6 +105,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -443,6 +452,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
 			am.updateLastModifications(this, assessedIdentity, assessedUserCourseEnv, by);
 		}
+		doUpdateFullyAssessedOnAllChecked(assessedUserCourseEnv);
 	}
 	
 	private void doUpdateAssessmentByGrade(Float maxScore, Identity identity,
@@ -564,6 +574,44 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				: scoreEval.getAssessmentStatus();
 	}
 	
+	private void doUpdateFullyAssessedOnAllChecked(UserCourseEnvironment assessedUserCourseEnv) {
+		if (LearningPathNodeAccessProvider.TYPE.equals(assessedUserCourseEnv.getCourseEnvironment().getCourseConfig().getNodeAccessType().getType())) {
+			AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
+			boolean isPartOfLearningPath = assessmentEvaluation.getObligation() == null
+					|| assessmentEvaluation.getObligation().getCurrent() == AssessmentObligation.mandatory
+					|| assessmentEvaluation.getObligation().getCurrent() == AssessmentObligation.optional;
+			boolean isNotFullyAssesseed = assessmentEvaluation.getFullyAssessed() == null || !assessmentEvaluation.getFullyAssessed().booleanValue();
+			if (isPartOfLearningPath && isNotFullyAssesseed) {
+				LearningPathConfigs configs = CoreSpringFactory.getImpl(LearningPathService.class).getConfigs(this);
+				FullyAssessedTrigger trigger = configs.getFullyAssessedTrigger();
+				if (FullyAssessedTrigger.nodeCompleted == trigger) {
+					CheckboxList configCheckboxList = (CheckboxList)getModuleConfiguration().get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+					if (configCheckboxList != null && configCheckboxList.getList() != null && !configCheckboxList.getList().isEmpty()) {
+						Set<String> configCheckboxIds = configCheckboxList.getList().stream()
+								.map(Checkbox::getCheckboxId)
+								.collect(Collectors.toSet());
+						
+						OLATResourceable courseOres = OresHelper
+								.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
+						CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+						Set<String> checkedIds = checkboxManager.loadCheck(assessedUserCourseEnv.getIdentityEnvironment().getIdentity(), courseOres, getIdent()).stream()
+								.filter(DBCheck::getChecked)
+								.map(DBCheck::getCheckbox)
+								.map(DBCheckbox::getCheckboxId)
+								.collect(Collectors.toSet());
+						
+						configCheckboxIds.removeAll(checkedIds);
+						boolean allChecked = configCheckboxIds.isEmpty();
+						if (allChecked) {
+							CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+							courseAssessmentService.updateFullyAssessed(this, assessedUserCourseEnv, Boolean.TRUE, assessmentEvaluation.getAssessmentStatus());
+						}
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		CheckListCourseNode cNode = (CheckListCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
@@ -755,14 +803,15 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				|| !Objects.equals(updateGradeSystemIdent, currentGradeSystemIdent)
 				|| !Objects.equals(updatePerformanceClassIdent, currentPerformanceClassIdent);
 		
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
+		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		if(needUpdate) {
 			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent,
 					updatePerformanceClassIdent, updatedPassed, null, null, null, null, null, null);
-			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
-			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			courseAssessmentService.saveScoreEvaluation(this, coachIdentity, scoreEval, uce, false, Role.coach);
 		}
+		doUpdateFullyAssessedOnAllChecked(uce);
 	}
 
 	/**

@@ -40,6 +40,7 @@ public class LearningPathTranslationsBuilder {
 	private Class<?> translatorBaseClass;
 	private String triggerStatusInReviewKey;
 	private String triggerStatusDoneKey;
+	private String triggerNodeCompletedKey;
 
 	LearningPathTranslationsBuilder(LearningPathEditConfigsBuilder editConfigsBuilder) {
 		this.editConfigsBuilder = editConfigsBuilder;
@@ -59,6 +60,11 @@ public class LearningPathTranslationsBuilder {
 		this.triggerStatusDoneKey = i18nKey;
 		return this;
 	}
+
+	public LearningPathTranslationsBuilder withTriggerNodeCompleted(String i18nKey) {
+		this.triggerNodeCompletedKey = i18nKey;
+		return this;
+	}
 	
 	public LearningPathEditConfigsBuilder buildTranslations() {
 		return editConfigsBuilder;
@@ -75,11 +81,13 @@ public class LearningPathTranslationsBuilder {
 		private final Class<?> translatorBaseClass;
 		private final String triggerStatusInReviewKey;
 		private final String triggerStatusDoneKey;
+		private final String triggerNodeCompletedKey;
 		
 		private LearningPathTranslationsImpl(LearningPathTranslationsBuilder builder) {
 			this.translatorBaseClass = builder.translatorBaseClass;
 			this.triggerStatusInReviewKey = builder.triggerStatusInReviewKey;
 			this.triggerStatusDoneKey = builder.triggerStatusDoneKey;
+			this.triggerNodeCompletedKey = builder.triggerNodeCompletedKey;
 		}
 
 		@Override
@@ -93,6 +101,13 @@ public class LearningPathTranslationsBuilder {
 		public String getTriggerStatusDone(Locale locale) {
 			return StringHelper.containsNonWhitespace(triggerStatusDoneKey)
 					? getTranslator(locale).translate(triggerStatusDoneKey)
+					: null;
+		}
+
+		@Override
+		public String getTriggerNodeCompleted(Locale locale) {
+			return StringHelper.containsNonWhitespace(triggerNodeCompletedKey)
+					? getTranslator(locale).translate(triggerNodeCompletedKey)
 					: null;
 		}
 
@@ -110,6 +125,11 @@ public class LearningPathTranslationsBuilder {
 
 		@Override
 		public String getTriggerStatusDone(Locale locale) {
+			return null;
+		}
+
+		@Override
+		public String getTriggerNodeCompleted(Locale locale) {
 			return null;
 		}
 		

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -306,6 +307,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			theOne = wrapper.getDbCheckbox();
 		}
 		
+		Boolean previousFullyAssessed = userCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode).getFullyAssessed();
 		if(theOne == null) {
 			//only warning because this happen in course preview
 			logWarn("A checkbox is missing: " + courseOres + " / " + courseNode.getIdent(), null);
@@ -328,7 +330,10 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		exposeUserDataToVC(ureq, flc);
-		return Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode();
+		Boolean currentFullyAssessed = userCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode).getFullyAssessed();
+		return Mode.none != assessmentConfig.getScoreMode() 
+				|| Mode.none != assessmentConfig.getPassedMode() 
+				|| !Objects.equals(previousFullyAssessed, currentFullyAssessed);
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {
