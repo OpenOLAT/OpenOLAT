@@ -80,15 +80,112 @@
 	}
 }
 
+.o_page_content_editor .o_page_layout {
+	&.o_container_block_2_cols {
+		>div:not(:last-child) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_3_cols {
+		>div:not(:last-child) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_4_cols {
+		>div:not(:last-child) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_5_cols {
+		>div:not(:last-child) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_6_cols {
+		>div:not(:last-child) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_3_rows {
+		>div:not(:last-child) {
+			border-bottom: $o-editor-layout-inner-h-border;
+		}
+	}
+	
+	&.o_container_block_2_1_rows {
+		>div:first-child {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+		
+		>div:not(:last-child) {
+			border-bottom: $o-editor-layout-inner-h-border;
+		}
+	}
+	
+	&.o_container_block_1_3_rows {
+		>div:first-child {
+			border-bottom: $o-editor-layout-inner-h-border;
+		}
+		>div:nth-child(2), >div:nth-child(3) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_1_1l_cols {
+		>div:first-child {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_1_2_rows {
+		>div:first-child {
+			border-bottom: $o-editor-layout-inner-h-border;
+		}
+		>div:nth-child(2) {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+	}
+	
+	&.o_container_block_1_2_cols {
+		>div:first-child {
+			border-right: $o-editor-layout-inner-v-border;
+		}
+		>div:nth-child(2) {
+			border-bottom: $o-editor-layout-inner-h-border;
+		}
+	}
+}
+
+.o_page_content_editor .o_fragment_edited .o_page_layout,
+.o_page_content_editor .o_page_container_edit:hover .o_page_layout {
+	>div {
+		border-color: $o-editor-selected-border-color;
+	}
+}
+
 .o_ceditor_inspector {
-	border: 1px solid $o-editor-inspector-border-color;;
+	border: 1px solid $o-editor-inspector-border-color;
 	background-color: white;
-	padding: 10px;
+	min-height: 300px;
 	
 	h4 {
 		margin: 0;
 		color: $o-editor-inspector-title-color;
-		margin-bottom: 15px;
+		margin-bottom: 5px;
+	}
+	
+	.o_ceditor_inspector_header {
+		border-bottom: 1px solid #d9d9d9;
+		padding: 10px;
+	}
+	
+	.o_ceditor_inspector_content {
+		padding: 10px;
 	}
 }
 

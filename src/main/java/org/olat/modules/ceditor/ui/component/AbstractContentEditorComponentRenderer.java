@@ -120,7 +120,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	protected void renderDragZone(StringOutput sb, ContentEditorFragment cmp, Translator translator) {
 		sb.append("<span id='o_ccclone_").append(cmp.getDispatchID()).append("' class='o_page_drag_handle'")
 		  .append(" title='").append(translator.translate("drag.element")).append("'>")
-		  .append("<i class='o_icon o_icon-fw o_icon_menuhandel o_icon-rotate-90'> </i></span></a>");
+		  .append("<i class='o_icon o_icon-fw o_icon_move'> </i></span></a>");
 	}
 	
 	protected void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {

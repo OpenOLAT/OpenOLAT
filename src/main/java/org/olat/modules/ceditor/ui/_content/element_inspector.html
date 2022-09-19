@@ -1,6 +1,6 @@
 <div class="o_ceditor_inspector">
-	$r.render("close")<h4>$title </h4>
-	$r.render("inspector")
+	<div class="o_ceditor_inspector_header">$r.render("close")<h4>$title </h4></div>
+	<div class="o_ceditor_inspector_content">$r.render("inspector")</div>
 </div>
 <script>
 "use strict";
@@ -27,7 +27,7 @@ jQuery(function() {
 				positionX -= (inspectorWidth - margin) + 15;
 			}
 			jInspector.css('margin-right', '-' + positionX + 'px');
-			jInspector.css('margin-top', '-2px');
+			jInspector.css('margin-top', '25px');
 		}
 	};
 	

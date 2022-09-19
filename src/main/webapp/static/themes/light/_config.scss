@@ -645,10 +645,15 @@ $o-editor-container-level-3-bg-color				: transparent !default;
 
 $o-editor-border-color								: #d9d9d9 !default;
 $o-editor-border-width								: 25px !default;
+$o-editor-selected-border-color						: $brand-primary !default;
 $o-editor-element-border-width						: 1px !default;
 $o-editor-inspector-border-width					: 1px;
-$o-editor-inspector-border-color					: grey;
+$o-editor-inspector-border-color					: $o-editor-border-color;
 $o-editor-inspector-title-color						: $brand-primary !default;
+$o-editor-inspector-box-shadow						: 0px 8px 16px rgba(0, 0, 0, 0.15);
+$o-editor-tools-box-shadow							: $o-editor-inspector-box-shadow;
+$o-editor-layout-inner-v-border						: 1px solid $o-editor-border-color;
+$o-editor-layout-inner-h-border						: 1px dashed $o-editor-border-color;
 $o-editor-layout-pseudo-icon-border-color			: grey;
 $o-editor-layout-pseudo-icon-bg-color				: #eeeeee;
 $o-editor-layout-pseudo-icon-bg-active-color		: $brand-primary;
@@ -850,7 +855,7 @@ $o-repo-access-denied-cross-fill		: $brand-primary  !default;
 $o-portlet-border				: $panel-default-border !default;
 $o-portlet-border-radius		: $panel-border-radius !default;
 $o-portlet-bg					: $panel-bg !default;
-$o-portlet-header-bg			: $panel-default-heading-bg !default;;
+$o-portlet-header-bg			: $panel-default-heading-bg !default;
 $o-portlet-edit-border			: $panel-warning-border !default;
 $o-portlet-edit-bg				: $panel-warning-heading-bg !default;
 

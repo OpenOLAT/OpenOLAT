@@ -50,6 +50,7 @@ import org.olat.modules.ceditor.ui.event.EditElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
+import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 
@@ -138,12 +139,12 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 					doDropFragment(ureq);
 					break;
 				case "add_element_above":
-					String aboveLinkId = "o_ccaab_".concat(getDispatchID());
-					fireEvent(ureq, new OpenAddElementEvent(aboveLinkId, this, PageElementTarget.above));
+					String aboveLinkId = "o_cmore_".concat(getDispatchID());
+					fireEvent(ureq, new OpenAddLayoutEvent(aboveLinkId, this, PageElementTarget.above));
 					break;
 				case "add_element_below":
-					String belowLinkId = "o_ccabe_".concat(getDispatchID());
-					fireEvent(ureq, new OpenAddElementEvent(belowLinkId, this, PageElementTarget.below));
+					String belowLinkId = "o_cmore_".concat(getDispatchID());
+					fireEvent(ureq, new OpenAddLayoutEvent(belowLinkId, this, PageElementTarget.below));
 					break;
 				case "change_name":
 					String nameLinkId = "o_cname_".concat(getElementId());

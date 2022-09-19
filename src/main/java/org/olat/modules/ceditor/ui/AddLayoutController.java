@@ -34,6 +34,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
 
 /**
@@ -46,11 +47,13 @@ public class AddLayoutController extends BasicController {
 	
 	private int count = 0;
 	private final PageElementTarget target;
+	private final ContentEditorFragment referenceComponent;
 	
 	public AddLayoutController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
-			PageElementTarget target, Translator fallbackTranslator) {
+			ContentEditorFragment referenceComponent, PageElementTarget target, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
 		this.target = target;
+		this.referenceComponent = referenceComponent;
 		initContainer(provider);
 	}
 	
@@ -82,7 +85,7 @@ public class AddLayoutController extends BasicController {
 		if(source instanceof Link && "select.layout".equals(((Link)source).getCommand())) {
 			Link layoutLink = (Link)source;
 			PageLayoutHandler handler = (PageLayoutHandler)layoutLink.getUserObject();
-			fireEvent(ureq, new AddElementEvent(null, null, handler, target, -1));
+			fireEvent(ureq, new AddElementEvent(null, referenceComponent, handler, target, -1));
 		}
 	}
 }

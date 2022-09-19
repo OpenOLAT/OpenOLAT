@@ -72,6 +72,7 @@ import org.olat.modules.ceditor.ui.event.ImportEvent;
 import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
+import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
@@ -262,6 +263,9 @@ public class PageEditorV2Controller extends BasicController {
 		} else if(event instanceof OpenAddElementEvent) {
 			OpenAddElementEvent aee = (OpenAddElementEvent)event;
 			openAddElementCallout(ureq, aee.getDispatchId(), aee.getComponent(), aee.getTarget(), aee.getColumn());
+		} else if(event instanceof OpenAddLayoutEvent) {
+			OpenAddLayoutEvent ale = (OpenAddLayoutEvent)event;
+			openAddLayoutCallout(ureq, ale.getDispatchId(), ale.getComponent(), ale.getTarget());
 		} else if(event instanceof CloneElementEvent) {
 			doCloneElement(ureq, ((CloneElementEvent)event).getComponent());
 		} else if(event instanceof DeleteElementEvent) {
@@ -379,11 +383,23 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void openAddLayoutCallout(UserRequest ureq) {
 		addLayoutCtrl = new AddLayoutController(ureq, getWindowControl(), provider,
-				PageElementTarget.atTheEnd, getTranslator());
+				null, PageElementTarget.atTheEnd, getTranslator());
 		listenTo(addLayoutCtrl);
 		
 		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				addLayoutCtrl.getInitialComponent(), addLayoutButton, "", true, "");
+		listenTo(addCalloutCtrl);
+		addCalloutCtrl.activate();
+	}
+	
+	private void openAddLayoutCallout(UserRequest ureq, String dispatchId, ContentEditorFragment referenceFragment,
+			PageElementTarget target) {
+		addLayoutCtrl = new AddLayoutController(ureq, getWindowControl(), provider,
+				referenceFragment, target, getTranslator());
+		listenTo(addLayoutCtrl);
+		
+		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				addLayoutCtrl.getInitialComponent(), dispatchId, "", true, "");
 		listenTo(addCalloutCtrl);
 		addCalloutCtrl.activate();
 	}

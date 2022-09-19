@@ -422,8 +422,7 @@
 	margin-top: 3em;
 }
 
-.o_pf_content,
-.gu-mirror {
+.o_pf_content {
 
 	.o_cit, .o_text, .o_file {
 		@extend %o_block_large;
@@ -457,8 +456,6 @@
 			margin-bottom: 0;
 		}
 	}
-	
-	
 }
 
 .o_pf_video_placeholder {
