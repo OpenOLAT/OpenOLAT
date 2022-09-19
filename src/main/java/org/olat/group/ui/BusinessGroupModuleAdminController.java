@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.main.DedupMembersConfirmationController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,19 +65,19 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	private ProgressController progressCtrl;
 	private DedupMembersConfirmationController dedupCtrl;
 	
-	private final BusinessGroupModule module;
-	private final BusinessGroupService businessGroupService;
 	private String[] onKeys = new String[]{"user","author"};
 	private String[] assignKeys = new String[]{"granted"};
 	private String[] allowLeavingKeys = new String[]{
 			"groupMadeByLearners", "groupMadeByAuthors", "groupOverride"
 	};
 	
+	@Autowired
+	private BusinessGroupModule module;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public BusinessGroupModuleAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bg_admin");
-		module = CoreSpringFactory.getImpl(BusinessGroupModule.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 
@@ -85,6 +86,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		FormLayoutContainer optionsContainer = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 		optionsContainer.setFormTitle(translate("module.admin.title"));
 		optionsContainer.setFormDescription(translate("module.admin.desc"));
+		optionsContainer.setElementCssClass("o_sel_group_admin_options");
 		formLayout.add(optionsContainer);
 		String[] values = new String[]{
 				translate("user.allow.create"),
@@ -113,6 +115,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		FormLayoutContainer privacyOptionsContainer = FormLayoutContainer.createDefaultFormLayout("privacy_options", getTranslator());
 		privacyOptionsContainer.setFormTitle(translate("module.privacy.title"));
 		privacyOptionsContainer.setFormDescription(translate("module.privacy.desc"));
+		privacyOptionsContainer.setElementCssClass("o_sel_group_admin_privacy");
 		formLayout.add(privacyOptionsContainer);
 
 		OrganisationRoles[] roles = BaseSecurityModule.getUserAllowedRoles();
@@ -157,6 +160,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
 		dedupCont.setFormTitle(translate("dedup.members"));
 		dedupCont.setFormDescription(translate("dedup.members.desc"));
+		dedupCont.setElementCssClass("o_sel_group_admin_dedup");
 		formLayout.add(dedupCont);
 		dedupLink = uifactory.addFormLink("dedup.members", dedupCont, Link.BUTTON);
 	}
