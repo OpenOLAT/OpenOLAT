@@ -875,7 +875,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		boolean done = assessmentEntry.getAssessmentStatus() != null &&  AssessmentEntryStatus.done == assessmentEntry.getAssessmentStatus();
 		boolean coachCanNotEdit = Role.coach == by
 				&& !courseEnv.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY)
-				&& !cgm.isIdentityAnyCourseAdministrator(coach);
+				&& !cgm.isIdentityCourseAdministrator(coach);
 		
 		Boolean initialUserVisibility = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode)
 				.getInitialUserVisibility(done, coachCanNotEdit);
