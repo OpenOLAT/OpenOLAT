@@ -142,14 +142,17 @@ public class GroupsPage {
 	}
 	
 	public GroupsPage deleteGroup(String name) {
-		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]//a[contains(@onclick,'bgTblSoftDelete')]");
+		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]//a[contains(@onclick,'bgTblT')]");
 		OOGraphene.waitElement(groupNameBy, browser);
 		browser.findElement(groupNameBy).click();
-		OOGraphene.waitBusy(browser);
-		
+		// wait tools callout
+		By toolsBy = By.xpath("//div[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]");
+		OOGraphene.waitElement(toolsBy, browser);
+		By deleteBy = By.xpath("//div[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]/li/a[i[contains(@class,'o_icon_delete_item')]]");
+		browser.findElement(deleteBy).click();
+
 		//wait confirm dialog
-		By popupBy = By.cssSelector("div.modal-dialog");
-		OOGraphene.waitElement(popupBy, browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By okBy = By.cssSelector("div.modal-dialog button.btn.btn-primary");
 		browser.findElement(okBy).click();
