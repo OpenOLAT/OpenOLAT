@@ -355,7 +355,6 @@ public class BusinessGroupStatusController extends FormBasicController {
 	
 	private void updateExcludeFromAutomaticMethodsEl(boolean isAutomatic) {
 		if(!isAutomatic) {
-			excludeFromAutomaticMethodsEl.select("exclude", true);
 			excludeFromAutomaticMethodsEl.setEnabled(false);
 		}
 	}

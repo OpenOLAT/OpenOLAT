@@ -72,10 +72,6 @@ public class BGRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer
 				and = and(sb, and);
 				sb.append(trans.translate("search.waiting"));
 			}
-			
-			//if(membership.isExternalUser()) {
-				sb.append(" ").append(trans.translate("role.external.user"));
-			//}
 		} else if (val instanceof GroupRoles) {
 			GroupRoles membership = (GroupRoles)val;
 			switch(membership) {

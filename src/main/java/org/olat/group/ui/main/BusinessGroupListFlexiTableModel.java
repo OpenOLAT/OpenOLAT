@@ -161,6 +161,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 				case inactivationDate: return wrapped.getInactivationDate();
 				case softDeleteDate: return wrapped.getSoftDeleteDate();
 				case method: return wrapped.isExcludeFromAutoLifecycle();
+				case tools:return wrapped.getAllowDelete();
 				default: return "ERROR";
 			}
 		}

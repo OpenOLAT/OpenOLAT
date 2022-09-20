@@ -335,7 +335,8 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		for(StatisticsBusinessGroupRow row:rows) {
 			BusinessGroupMembership membership = row.getMember();
 			boolean allowLeave =  membership != null;
-			boolean allowDelete = isAdmin() || (membership != null && membership.isOwner());
+			boolean allowDelete = (isAdmin() || (membership != null && membership.isOwner()))
+					&& (row.getGroupStatus() == BusinessGroupStatusEnum.active || row.getGroupStatus() == BusinessGroupStatusEnum.inactive) ;
 			
 			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
