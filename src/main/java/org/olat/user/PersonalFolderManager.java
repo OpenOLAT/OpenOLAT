@@ -83,6 +83,6 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements Us
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		VFSManager.olatRootContainer(getRootPathFor(identity), null).deleteSilently();// will delete meta and version informations
-		log.info(Tracing.M_AUDIT, "Personal-folder deleted for identity=" + identity.getKey());
+		log.info(Tracing.M_AUDIT, "Personal-folder deleted for identity={}", identity.getKey());
 	}
 }

@@ -820,9 +820,7 @@ public class PropertyManager implements UserDataDeletable {
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		deleteProperties(identity, null, null, null, null);
-		if(log.isDebugEnabled()) {
-			log.debug("All properties deleted for identity=" + identity);
-		}
+		log.debug("All properties deleted for identity={}", identity);
 	}
 
 	public Property createProperty() {

@@ -401,7 +401,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 			try {
 				Files.deleteIfExists(calendarFile.toPath());
 			} catch (IOException e) {
-				log.error("Cannot delete calendar: " + calendarFile);
+				log.error("Cannot delete calendar: {}", calendarFile);
 			}
 		}
 	}

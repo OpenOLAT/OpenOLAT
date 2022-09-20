@@ -445,7 +445,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		for (UserDataDeletable element : userDataDeletableResources) {
 			try {
 				log.info("UserDataDeletable-Loop for identity::{} and element::{}", identity.getKey(), element.getClass().getSimpleName());
-				element.deleteUserData(identity, anonymisedIdentityName);				
+				element.deleteUserData(identity, anonymisedIdentityName);
+				dbInstance.commitAndCloseSession();
 			} catch (Exception e) {
 				log.error("Error while deleting identity::{} data for and element::{}. Aboring delete process, user partially deleted, but not yet marked as deleted",
 						identity.getKey(), element.getClass().getSimpleName(), e);
