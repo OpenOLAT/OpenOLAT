@@ -437,6 +437,7 @@ public class UserAdminController extends BasicController implements Activateable
 		boolean isPrincipalOf = managerRoles.isManagerOf(OrganisationRoles.principal, editedRoles);
 		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
 		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
+		boolean hasAdminOrUserRoles = managerRoles.isAdministrator() || managerRoles.isRolesManager() || managerRoles.isUserManager();
 		
 		boolean isInvitee = editedRoles.isInviteeOnly();
 		boolean isGuest = editedRoles.isGuestOnly();
@@ -508,14 +509,14 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf || isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
-				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && hasAdminOrUserRoles);
 				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
 				listenTo(grpCtr);
 				return grpCtr.getInitialComponent();
 			});
 	
 			userTabP.addTab(ureq, translate(NLS_VIEW_COURSES), uureq -> {
-				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && !managerRoles.isPrincipal());
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && hasAdminOrUserRoles);
 				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();
