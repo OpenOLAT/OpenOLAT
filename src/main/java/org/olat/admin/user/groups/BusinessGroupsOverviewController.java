@@ -41,10 +41,10 @@ public class BusinessGroupsOverviewController extends BasicController {
 	private final IdentityInvitationListController invitationsCtrl;
 	
 	public BusinessGroupsOverviewController(UserRequest ureq, WindowControl wControl, Identity editedIdentity,
-			boolean canEdit, boolean canEditInvitation) {
+			boolean canEditInvitation) {
 		super(ureq, wControl);
 		
-		businessGroupsCtrl = new GroupOverviewController(ureq, wControl, editedIdentity, canEdit, true);
+		businessGroupsCtrl = new GroupOverviewController(ureq, wControl, editedIdentity, false, true);
 		listenTo(businessGroupsCtrl);
 		
 		invitationsCtrl = new IdentityInvitationListController(ureq, wControl, editedIdentity,

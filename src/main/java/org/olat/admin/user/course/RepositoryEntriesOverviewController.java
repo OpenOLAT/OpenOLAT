@@ -30,6 +30,7 @@ import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.ui.IdentityInvitationListController;
 
 /**
+ * Overview of learn resources for invitee.
  * 
  * Initial date: 5 sept. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -41,10 +42,10 @@ public class RepositoryEntriesOverviewController extends BasicController {
 	private final IdentityInvitationListController invitationsCtrl;
 	
 	public RepositoryEntriesOverviewController(UserRequest ureq, WindowControl wControl, Identity identity,
-			boolean canModify, boolean canModifyInvitation) {
+			boolean canModifyInvitation) {
 		super(ureq, wControl);
 		
-		coursesCtrl = new CourseOverviewController(ureq, wControl, identity, canModify);
+		coursesCtrl = new CourseOverviewController(ureq, wControl, identity, false);
 		listenTo(coursesCtrl);
 		
 		invitationsCtrl = new IdentityInvitationListController(ureq, wControl, identity, InvitationTypeEnum.repositoryEntry, !canModifyInvitation);

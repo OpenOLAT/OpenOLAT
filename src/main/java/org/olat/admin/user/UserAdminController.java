@@ -439,7 +439,6 @@ public class UserAdminController extends BasicController implements Activateable
 		boolean isPrincipalOf = managerRoles.isManagerOf(OrganisationRoles.principal, editedRoles);
 		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
 		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
-		boolean hasAdminOrUserRoles = managerRoles.isAdministrator() || managerRoles.isRolesManager() || managerRoles.isUserManager();
 		
 		boolean isInvitee = editedRoles.isInviteeOnly();
 		boolean isGuest = editedRoles.isGuestOnly();
@@ -511,11 +510,11 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf || isInvitee) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
-				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && hasAdminOrUserRoles);
 				if(isInvitee) {
 					boolean canModifyInvitation = managerRoles.isAdministrator() || managerRoles.isUserManager() || managerRoles.isRolesManager();
-					grpCtr = new BusinessGroupsOverviewController(uureq, getWindowControl(), identity, canModify, canModifyInvitation);
+					grpCtr = new BusinessGroupsOverviewController(uureq, getWindowControl(), identity, canModifyInvitation);
 				} else {
+					boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
 					grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
 				}
 				listenTo(grpCtr);
@@ -523,11 +522,11 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 	
 			userTabP.addTab(ureq, translate(NLS_VIEW_COURSES), uureq -> {
-				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf || (isInvitee && hasAdminOrUserRoles);
 				if(isInvitee) {
 					boolean canModifyInvitation = managerRoles.isAdministrator() || managerRoles.isUserManager() || managerRoles.isRolesManager();
-					courseCtr = new RepositoryEntriesOverviewController(uureq, getWindowControl(), identity, canModify, canModifyInvitation);
+					courseCtr = new RepositoryEntriesOverviewController(uureq, getWindowControl(), identity, canModifyInvitation);
 				} else {
+					boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
 					courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
 				}
 				listenTo(courseCtr);
