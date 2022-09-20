@@ -422,10 +422,14 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		if(StringHelper.containsNonWhitespace(mail.getMetaId()) && deleteMetaMail) {
 			List<DBMailLight> mails = getEmailsByMetaId(mail.getMetaId());
 			for(DBMailLight childMail:mails) {
+				childMail = getMessageByKey(childMail.getKey());
 				deleteMail(childMail, identity, false);
+				dbInstance.commitAndCloseSession();
 			}
 		} else {
+			mail = getMessageByKey(mail.getKey());
 			deleteMail(mail, identity, false);
+			dbInstance.commitAndCloseSession();
 		}
 	}
 

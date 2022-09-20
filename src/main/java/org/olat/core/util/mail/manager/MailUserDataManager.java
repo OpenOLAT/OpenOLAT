@@ -75,7 +75,7 @@ public class MailUserDataManager implements UserDataDeletable, UserDataExportabl
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		//set as deleted all recipients
-		log.info("Delete intern messages");
+		log.info("Delete intern messages for identity::{}", identity.getKey());
 		
 		Collection<DBMailLight> inbox = new HashSet<>(mailManager.getInbox(identity, null, Boolean.FALSE, null, 0, 0));
 		for(DBMailLight inMail:inbox) {
@@ -87,7 +87,7 @@ public class MailUserDataManager implements UserDataDeletable, UserDataExportabl
 			mailManager.delete(outMail, identity, true);
 		}
 		
-		log.info("Delete " + inbox.size() + " messages in INBOX and " + outbox.size() + " in OUTBOX");
+		log.info("Delete {} messages in INBOX and {} in OUTBOX for identity::{}", inbox.size(), outbox.size(), identity.getKey());
 	}
 
 	@Override
