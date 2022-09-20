@@ -28,13 +28,13 @@ package org.olat.course.archiver;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.action.ActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -95,9 +95,10 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 	private IArchiverCallback archiverCallback;
 	private MenuTree menuTree;
 	private VelocityContainer intro;
-	private Panel main;
+	private VelocityContainer mainVC;
 	private Controller resC;
 	private Controller contentCtr;
+	private AssistanceAccordionController assistanceCtrl;
 	
 	private OLATResourceable ores;
 	
@@ -120,11 +121,11 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 		this.archiverCallback = archiverCallback;
 		this.locale = ureq.getLocale();
 		
-		main = new Panel("archivermain");
-		
-		// Intro page, static
+		mainVC = createVelocityContainer("archiver_main");
+
+		// A static intro page
 		intro = createVelocityContainer("archiver_index");
-		main.setContent(intro);
+		setContent(intro, null);
 
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
@@ -133,7 +134,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
 				
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + ores.getResourceableId());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "course" + ores.getResourceableId());
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
@@ -168,7 +169,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 		ICourse course = CourseFactory.loadCourse(ores);
 		resC = ae.createController(ureq, getWindowControl(), course);
 		listenTo(resC);
-		main.setContent(resC.getInitialComponent());
+		setContent(resC.getInitialComponent(), null);
 	}
 	
 	/**
@@ -314,59 +315,89 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 	}
 
 	private void launchArchiveControllers(UserRequest ureq, String menuCommand) {
+		cleanUp();
 		if (menuCommand.equals(CMD_INDEX)) {
-			main.setContent(intro);
+			setContent(intro, null);
 		} else {
-			removeAsListenerAndDispose(contentCtr);
 			if (menuCommand.equals(CMD_QTISURVRESULTS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new IQSURVCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_SURVEY)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new SurveyCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_QTITESTRESULTS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, true, new IQTESTCourseNode(), new IQSELFCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+		        assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "iqtest.assistance.title");
+		        assistanceCtrl.addQuestionAnswer("iqtest.assistance.item1.title", "iqtest.assistance.item1.details", new Component[0]);
+		        assistanceCtrl.addQuestionAnswer("iqtest.assistance.item2.title", "iqtest.assistance.item2.details", new Component[0]);
+				setContent(contentCtr, assistanceCtrl);
 			} else if (menuCommand.equals(CMD_SCOREACCOUNTING)) {
-					contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores);
-					main.setContent(contentCtr.getInitialComponent());
+				contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores);
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_ARCHIVELOGFILES)) {
 				contentCtr = new CourseLogsArchiveController(ureq, getWindowControl(), ores);
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_HANDEDINTASKS)) { //TACourseNode
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new TACourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			}  else if (menuCommand.equals(CMD_GROUPTASKS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new GTACourseNode(), new GTACourseNode(GTACourseNode.TYPE_INDIVIDUAL));
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_PROJECTBROKER)) { 
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new ProjectBrokerCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_FORUMS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new FOCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_DIALOGS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new DialogCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_WIKIS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new WikiCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_SCORM)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new ScormCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_CHECKLIST)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new CheckListCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_PARTICIPANTFOLDER)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new PFCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_FORM)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new FormCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+				setContent(contentCtr);
 			}
-			
-			listenTo(contentCtr);
 		}		
+	}
+
+	private void setContent(Controller ctrl) {
+		listenTo(ctrl);
+		setContent(ctrl.getInitialComponent(), null);
+	}
+	
+	private void setContent(Controller ctrl, Controller helpCtrl) {
+		listenTo(ctrl);
+		listenTo(helpCtrl);
+		setContent(ctrl.getInitialComponent(), helpCtrl.getInitialComponent());
+	}
+	
+	private void setContent(Component mainCmp, Component helpCmp) {
+		mainVC.put("main", mainCmp);
+		if(helpCmp != null) {
+			mainVC.put("help", helpCmp);
+		} else {
+			mainVC.remove("help");
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(assistanceCtrl);
+		removeAsListenerAndDispose(contentCtr);
+		removeAsListenerAndDispose(resC);
+		assistanceCtrl = null;
+		contentCtr = null;
+		resC = null;
 	}
 	
 	@Override

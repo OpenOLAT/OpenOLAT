@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -62,7 +61,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.group.BusinessGroup;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -85,9 +83,6 @@ public class GenericArchiveController extends FormBasicController {
 	private final boolean withOptions;
 	private final OLATResourceable ores;
 	private final CourseNode[] nodeTypes;
-	
-	@Autowired
-	private PdfModule pdfModule;
 
 	/**
 	 * Constructor for the assessment tool controller.
@@ -304,7 +299,7 @@ public class GenericArchiveController extends FormBasicController {
 		options.setExportFormat(FormatConfigHelper.loadExportFormat(ureq));
 		options.setDoer(getIdentity());
 		options.setWindowControl(getWindowControl());
-		options.setWithPdfs(pdfModule.isEnabled());
+		options.setWithPdfs(false);
 		
 		ArchiveResource aResource = new ArchiveResource(nodes, ores, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(aResource);
