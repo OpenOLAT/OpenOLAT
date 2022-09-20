@@ -16,6 +16,9 @@ o_info.debug = true;
 // o_info.drake is supervised and linked to .o_drake DOM element
 o_info.drakes = new Array();
 
+// o_info.extraFormData is a storage location for appending extra form data to a form submit.
+o_info.extraFormData = new Object();
+
 /**
  * The BLoader object can be used to :
  * - dynamically load and unload CSS files
@@ -1415,6 +1418,26 @@ function o_TableMultiActionEvent(formNam, action){
 	mActionIdEl.val('');
 }
 
+function o_setExtraMultipartFormData(name, value) {
+	if (o_info && o_info.extraFormData) {
+		o_info.extraFormData[name] = value;
+	}
+}
+
+function o_getExtraMultipartFormData(name) {
+	if (o_info && o_info.extraFormData) {
+		return o_info.extraFormData[name];
+	}
+
+	return null;
+}
+
+function o_deleteExtraMultipartFormData(name) {
+	if (o_info && o_info.extraFormData && o_info.extraFormData[name]) {
+		delete o_info.extraFormData[name];
+	}
+}
+
 function o_XHRSubmit(formNam) {
 	if(o_info.submit == "submit" && jQuery('#' + formNam + " button.btn.o_new_window").length >= 1) {
 		if(typeof o_info.newWindow === "undefined" || o_info.newWindow == null) {
@@ -1443,9 +1466,25 @@ function o_XHRSubmit(formNam) {
 			if(typeof tinymce !== 'undefined') {
 				tinymce.triggerSave(true,true);
 			}
-	
+
+			var htmlForm = form[0];
+
 			// Send files via XHR and show upload progress
-			var formData = new FormData(form[0]);	
+			var formData = new FormData(htmlForm);
+
+			for (var i = 0; i < htmlForm.elements.length; i++) {
+				var formElement = htmlForm.elements[i];
+				if (formElement.attributes['data-extra-form-data']) {
+					var id = formElement.attributes['id'].value;
+					var name = formElement.attributes['name'].value;
+					var extraFormDataValue = o_getExtraMultipartFormData(name);
+					if (extraFormDataValue) {
+						formData.append(id, extraFormDataValue);
+						o_deleteExtraMultipartFormData(id);
+					}
+				}
+			}
+
 			var targetUrl = form.attr("action");
 			jQuery.ajax(targetUrl,{
 				xhr: function() {
