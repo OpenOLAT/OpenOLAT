@@ -143,6 +143,7 @@ This product uses software based on the MIT License
 * fabric.js (MIT License) [https://github.com/fabricjs/fabric.js]
 * CortexJS (MIT License) [https://cortexjs.io/]
 * Swiper (MIT License) [https://swiperjs.com/]
+* RecordRTC (MIT License) [https://github.com/muaz-khan/RecordRTC]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License

@@ -169,6 +169,7 @@
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
+										<exclude>**/recordrtc/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -211,6 +212,7 @@
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
+										<exclude>**/recordrtc/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -297,6 +299,7 @@
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
+										<exclude>**/recordrtc/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -344,6 +347,7 @@
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
+										<exclude>**/recordrtc/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
