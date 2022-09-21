@@ -55,11 +55,14 @@ public class VideoAudioPlayer implements DocEditor {
 	public static final String FORMAT_M4V = "m4v";
 	public static final String FORMAT_MPG = "mpg";
 	public static final String FORMAT_MOV = "mov";
+	public static final String FORMAT_WEBM = "webm";
 	// audio types
 	public static final String FORMAT_MP3 = "mp3";
 	public static final String FORMAT_M4A = "m4a";
 	public static final String FORMAT_WAV = "wav";
-	
+	public static final String FORMAT_OGG = "ogg";
+	public static final String FORMAT_WEBA = "weba";
+
 	@Override
 	public boolean isEnable() {
 		return true;
@@ -122,6 +125,9 @@ public class VideoAudioPlayer implements DocEditor {
 		if (FORMAT_MP3.equalsIgnoreCase(suffix)) return true;
 		if (FORMAT_M4A.equalsIgnoreCase(suffix)) return true;
 		if (FORMAT_WAV.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_WEBM.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_OGG.equalsIgnoreCase(suffix)) return true;
+		if (FORMAT_WEBA.equalsIgnoreCase(suffix)) return true;
 		return false;
 	}
 

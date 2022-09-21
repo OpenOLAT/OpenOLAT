@@ -1,0 +1,274 @@
+<style>
+    .o_av_recorder {
+        width: 100%;
+    }
+
+    .o_av_recorder .o_centered_panel {
+        position: relative;
+    }
+
+    .o_av_container {
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 640px;
+        height: 480px;
+        background-color: black;
+    }
+
+    #videoElement {
+        position: absolute;
+        width: 640px;
+        height: 480px;
+        transform: rotateY(180deg);
+    }
+
+    #audioElement {
+        position: absolute;
+        width: 100%;
+        height: auto;
+    }
+
+    .o_video_overlay {
+        position: relative;
+        float: right;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    .o_video_overlay .o_video_feed_dimensions {
+        position: absolute;
+        color: #fff;
+        opacity: 0.5;
+        font-size: 11px;
+        font-weight: bold;
+        height: 24px;
+        padding: 1em 1em 0;
+    }
+
+    .recording-container {
+        float: right;
+        margin-right: 0.5em;
+        margin-top: 0.5em;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5em;
+        background-color: black;
+        opacity: 0.5;
+        border-radius: 0.25em;
+    }
+
+    .recording-circle {
+        background-color: red;
+        width: 1em;
+        height: 1em;
+        border-radius: 50%;
+        animation: ease pulse 2s infinite;
+        margin-right: 0.25em;
+    }
+
+    @keyframes pulse {
+        0% {
+            background-color: red;
+        }
+        50% {
+            background-color: #f06c6c;
+        }
+        100% {
+            background-color: red;
+        }
+    }
+
+    .recording-text {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-size: 0.75em;
+        color: white;
+    }
+
+    .o_av_recorder .controls {
+        opacity: 0.5;
+    }
+
+    .o_av_recorder .o_commands {
+        position: relative;
+
+        height: 5em;
+    }
+
+    .o_av_recorder .o_commands .o_vertical_center {
+        position: absolute;
+
+        margin-top: 0;
+        margin-bottom: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .o_av_recorder .o_commands .o_right {
+        right: 0;
+    }
+
+    .o_av_recorder .one-button {
+        position: absolute;
+        cursor: pointer;
+
+        left: 50%;
+        width: 3em;
+        height: 3em;
+        margin-left: -1.5em;
+    }
+
+    .o_av_recorder .decoration {
+        fill: none;
+        stroke: black;
+    }
+
+    .o_av_recorder .strong-symbol {
+        fill: #ff0000;
+    }
+
+    .o_av_recorder .strong-symbol:hover {
+        fill: #ff4040;
+    }
+
+    .o_av_recorder .strong-symbol:active {
+        fill: #ff6060;
+    }
+
+    .o_av_recorder .symbol {
+        fill: #000000;
+    }
+
+    .o_av_recorder .symbol:hover {
+        fill: #202020;
+    }
+
+    .o_av_recorder .symbol:active {
+        fill: #404040;
+    }
+
+    .o_av_recorder .o_dialog {
+        position: absolute;
+        width: 80%;
+        height: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
+
+<div id="avRecorder" class="o_av_recorder">
+    <div class="o_centered_panel">
+        <div id="avContainer" class="o_av_container">
+            <video id="videoElement" autoplay playsinline></video>
+            <audio id="audioElement" autoplay></audio>
+            <div class="o_video_overlay">
+                <div class="o_video_feed_dimensions"></div>
+                <div id="recording-container" class="recording-container">
+                    <div class="recording-circle"></div>
+                    <div class="recording-text">$r.translate("recording")</div>
+                </div>
+                <div class="controls mejs__controls">
+                    <div id="time-container" class="mejs__time mejs__currenttime-container" role="timer" aria-live="off">
+                        <span id="current-time" class="mejs__currenttime">0:00</span>
+                        <span id="total-time">/0:00</span>
+                    </div>
+                    <div id="volume-button-container" class="mejs__button mejs__volume-button mejs__mute">
+                        <button id="volume-button" type="button" aria-controls="mep_15" tabindex="0"></button>
+                        <div id="volume-slider" class="mejs__volume-slider" aria-label="Volume Slider"
+                           aria-valuemin="0" aria-valuemax="100" role="slider" aria-orientation="vertical">
+                            <div class="mejs__volume-total">
+                                <div id="current-volume" class="mejs__volume-current" style="bottom: 0; height: 100%;"></div>
+                                <div id="volume-handle" class="mejs__volume-handle" style="bottom: 100%; margin-bottom: -3px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="time-rail" class="mejs__time-rail">
+                        <span id="time-slider" class="mejs__time-total mejs__time-slider">
+                            <span class="mejs__time-loaded"></span>
+                            <span id="current-time-rail" class="mejs__time-current"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="o_commands">
+            <div class="o_vertical_center" style="width: 15em;">
+                #if ($r.available("video.audio.quality"))
+                    $r.render("video.audio.quality")
+                #end
+            </div>
+            <div id="one-button" class="one-button record-button o_vertical_center"
+                 role="button" tabindex="0" aria-label="Record, play, stop">
+                <svg height="100%" width="100%" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="30" stroke-width="5" class="decoration"/>
+                    <circle id="record-symbol" cx="40" cy="40" r="15" class="strong-symbol"/>
+                    <rect id="stop-symbol" x="28" y="28" width="24" height="24" class="symbol"></rect>
+                    <polygon id="play-symbol" points="31,28 31,52 55,40" class="symbol"/>
+                </svg>
+            </div>
+            <div class="o_vertical_center o_right">
+                <div id="file-size" class="btn-group"></div>
+                <div class="btn-group">
+                    <button id="retry-button" type="button" name="retry-button" class="btn btn-default" style="margin-left: 1em;"
+                            role="button" tabindex="0" aria-label="Retry">
+                        <span>$r.translate("retryButton")</span>
+                    </button>
+                </div>
+                #if ($r.available("submitButton"))
+                <div class="btn-group">
+                    $r.render("submitButton")
+                </div>
+                #end
+            </div>
+        </div>
+        <div>
+            #if ($r.available("avRecording"))
+            $r.render("avRecording")
+            #end
+        </div>
+        <div id="yes-no-dialog" class="o_dialog" role="alertdialog">
+            <div class="modal-content">
+                <div class="modal-header" role="alert">
+                    <h4>$r.translate("dialog.retry.title")</h4>
+                </div>
+                <div class="modal-body" role="alert">
+                    <p>$r.translate("dialog.retry.text")</p>
+                </div>
+                <div class="modal-footer">
+                    <a id="yes-button" class="btn btn-default" role="button" tabindex="0" aria-label="Yes">Yes</a>
+                    <a id="no-button" class="btn btn-default" role="button" tabindex="0" aria-label="No">No</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var audioElement = document.querySelector('#audioElement');
+    jQuery(audioElement).hide();
+
+    var videoElement = document.querySelector('#videoElement');
+    jQuery(videoElement).hide();
+
+    #if ($isAudio)
+    var audioRecorder = new AudioRecorder(audioElement, {
+        firstName: '$firstName',
+        lastName: '$lastName',
+        compact: true
+    });
+    audioRecorder.stateInit();
+    #else
+    var videoRecorder = new VideoRecorder(videoElement, $qualities, {
+        firstName: '$firstName',
+        lastName: '$lastName',
+        compact: false,
+        generatePosterImage: $generatePosterImage
+    });
+    videoRecorder.stateInit();
+    #end
+</script>
