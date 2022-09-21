@@ -19,12 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -39,12 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -77,6 +66,12 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
+
 /**
  * 
  * Initial date: 24.02.2015<br>
@@ -87,12 +82,16 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	private FormLink addTaskLink;
 	private FormLink createTaskLink;
+
+	private FormLink recordVideoLink;
+	private FormLink recordAudioLink;
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private WarningFlexiCellRenderer fileExistsRenderer;
 	
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
+	private AVTaskController videoAudioTaskCtrl;
 	private EditTaskController addTaskCtrl;
 	private EditTaskController editTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
@@ -144,7 +143,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
 		createTaskLink.setIconLeftCSS("o_icon o_icon_edit");
 		createTaskLink.setVisible(!readOnly);
-		
+		recordVideoLink = uifactory.addFormLink("av.record.video", tasksCont, Link.BUTTON);
+		recordVideoLink.setElementCssClass("o_sel_course_gta_record_video");
+		recordVideoLink.setIconLeftCSS("o_icon o_icon_video_record");
+		recordVideoLink.setVisible(!readOnly);
+		recordAudioLink = uifactory.addFormLink("av.record.audio", tasksCont, Link.BUTTON);
+		recordAudioLink.setElementCssClass("o_sel_course_gta_record_audio");
+		recordAudioLink.setIconLeftCSS("o_icon o_icon_audio_record");
+		recordAudioLink.setVisible(!readOnly);
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
 		fileExistsRenderer = new WarningFlexiCellRenderer();
@@ -256,6 +263,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (videoAudioTaskCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				gtaManager.addTaskDefinition(videoAudioTaskCtrl.getTask(), courseEnv, gtaNode);
+				fireEvent(ureq, Event.DONE_EVENT);
+				updateModel(ureq);
+				gtaManager.markNews(courseEnv, gtaNode);
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -264,10 +280,12 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
+		removeAsListenerAndDispose(videoAudioTaskCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
+		videoAudioTaskCtrl = null;
 		cmc = null;
 	}
 
@@ -277,6 +295,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			doAddTask(ureq);
 		} else if(createTaskLink == source) {
 			doCreateTask(ureq);
+		} else if(recordVideoLink == source) {
+			doRecordVideo(ureq);
+		} else if(recordAudioLink == source) {
+			doRecordAudio(ureq);
 		} else if(taskDefTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -334,6 +356,28 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 		String title = translate("create.task");
 		cmc = new CloseableModalController(getWindowControl(), "close", newTaskCtrl.getInitialComponent(), true, title, false);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRecordVideo(UserRequest ureq) {
+		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		videoAudioTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, false);
+		listenTo(videoAudioTaskCtrl);
+
+		String title = translate("av.record.video");
+		cmc = new CloseableModalController(getWindowControl(), "close", videoAudioTaskCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRecordAudio(UserRequest ureq) {
+		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		videoAudioTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, true);
+		listenTo(videoAudioTaskCtrl);
+
+		String title = translate("av.record.audio");
+		cmc = new CloseableModalController(getWindowControl(), "close", videoAudioTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

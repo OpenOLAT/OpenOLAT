@@ -42,6 +42,25 @@
 		#if($buttons > 1)
 			</div>
 		#end
+		#set( $avButtons = 0 )
+		#if($r.visible("av.record.video"))
+			#set( $avButtons = $avButtons + 1 )
+		#end
+		#if($r.visible("av.record.audio"))
+			#set( $avButtons = $avButtons + 1 )
+		#end
+		#if($avButtons > 1)
+			<div class="btn-group">
+		#end
+		#if($r.visible("av.record.video"))
+			$r.render("av.record.video")
+		#end
+		#if($r.visible("av.record.audio"))
+			$r.render("av.record.audio")
+		#end
+		#if($avButtons > 1)
+			</div>
+		#end
 		</div>
 	</div>
 </div>

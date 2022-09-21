@@ -2,9 +2,15 @@
 	<legend>$r.translate("solution.list.title") $r.contextHelpWithWrapper("manual_user/task/Three_Steps_to_Your_Task/#configuration")</legend>
 	<div class="o_desc">$r.translate("solution.list.description")</div>
 	#if($r.visible("add.solution") || $r.visible("create.solution"))
-	<div class="o_button_group o_button_group_right"><div class="btn-group">
-		$r.render("add.solution") $r.render("create.solution")
-	</div></div>
+	<div class="o_button_group o_button_group_right">
+		<div class="btn-group">
+			$r.render("add.solution") $r.render("create.solution")
+		</div>
+		<div class="btn-group">
+			$r.render("av.record.video")
+			$r.render("av.record.audio")
+		</div>
+	</div>
 	#end
 	$r.render("table")
 </fieldset>

@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.SolutionTableModel.SolCols;
 import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -76,6 +77,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	
 	private FormLink addSolutionLink;
 	private FormLink createSolutionLink;
+	private FormLink recordVideoLink;
+	private FormLink recordAudioLink;
 	private SolutionTableModel solutionModel;
 	private FlexiTableElement solutionTable;
 	
@@ -83,7 +86,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private EditSolutionController addSolutionCtrl;
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
-	
+	private AVSampleSolutionController avSampleSolutionController;
+
 	private final File solutionDir;
 	private final boolean readOnly;
 	private final GTACourseNode gtaNode;
@@ -122,6 +126,14 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		createSolutionLink.setElementCssClass("o_sel_course_gta_create_solution");
 		createSolutionLink.setIconLeftCSS("o_icon o_icon_edit");
 		createSolutionLink.setVisible(!readOnly);
+		recordVideoLink = uifactory.addFormLink("av.record.video", formLayout, Link.BUTTON);
+		recordVideoLink.setElementCssClass("o_sel_course_gta_record_video");
+		recordVideoLink.setIconLeftCSS("o_icon o_icon_video_record");
+		recordVideoLink.setVisible(!readOnly);
+		recordAudioLink = uifactory.addFormLink("av.record.audio", formLayout, Link.BUTTON);
+		recordAudioLink.setElementCssClass("o_sel_course_gta_record_audio");
+		recordAudioLink.setIconLeftCSS("o_icon o_icon_audio_record");
+		recordAudioLink.setVisible(!readOnly);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));
@@ -205,6 +217,15 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			}
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (avSampleSolutionController == source) {
+			if (event == Event.DONE_EVENT) {
+				gtaManager.addSolution(avSampleSolutionController.getSolution(), courseEnv, gtaNode);
+				fireEvent(ureq, Event.DONE_EVENT);
+				updateModel(ureq);
+				gtaManager.markNews(courseEnv, gtaNode);
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -212,9 +233,11 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private void cleanUp() {
 		removeAsListenerAndDispose(editSolutionCtrl);
 		removeAsListenerAndDispose(addSolutionCtrl);
+		removeAsListenerAndDispose(avSampleSolutionController);
 		removeAsListenerAndDispose(cmc);
 		editSolutionCtrl = null;
 		addSolutionCtrl = null;
+		avSampleSolutionController = null;
 		cmc = null;
 	}
 
@@ -243,6 +266,10 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 					doDelete(ureq, row);
 				}
 			}
+		} else if (recordVideoLink == source) {
+			doRecordVideo(ureq);
+		} else if (recordAudioLink == source) {
+			doRecordAudio(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -303,5 +330,29 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		gtaManager.removeSolution(solution.getSolution(), courseEnv, gtaNode);
 		fireEvent(ureq, Event.DONE_EVENT);
 		updateModel(ureq);
+	}
+
+	private void doRecordAudio(UserRequest ureq) {
+		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionDir,
+				solutionContainer, true);
+		listenTo(avSampleSolutionController);
+
+		String title = translate("av.record.audio");
+		cmc = new CloseableModalController(getWindowControl(), "close", avSampleSolutionController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRecordVideo(UserRequest ureq) {
+		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionDir,
+				solutionContainer, false);
+		listenTo(avSampleSolutionController);
+
+		String title = translate("av.record.video");
+		cmc = new CloseableModalController(getWindowControl(), "close", avSampleSolutionController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

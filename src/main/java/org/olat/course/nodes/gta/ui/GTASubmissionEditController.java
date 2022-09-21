@@ -50,6 +50,8 @@ public class GTASubmissionEditController extends FormBasicController {
 	private MultipleSelectionElement externalEditorEl;
 	private MultipleSelectionElement embeddedEditorEl;
 	private MultipleSelectionElement submissionTemplateEl;
+	private MultipleSelectionElement allowVideoRecordingsEl;
+	private MultipleSelectionElement allowAudioRecordingsEl;
 	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
@@ -83,7 +85,15 @@ public class GTASubmissionEditController extends FormBasicController {
 		submissionTemplateEl = uifactory.addCheckboxesHorizontal("submission.template", "submission.template", configCont, enableKeys, enableValues);
 		boolean submissionTemplate = config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_TEMPLATE);
 		submissionTemplateEl.select(enableKeys[0], submissionTemplate);
-		
+
+		allowVideoRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.video.recordings", "av.allow.video.recordings", configCont, enableKeys, enableValues);
+		boolean allowVideoRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS);
+		allowVideoRecordingsEl.select(enableKeys[0], allowVideoRecordings);
+
+		allowAudioRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.audio.recordings", "av.allow.audio.recordings", configCont, enableKeys, enableValues);
+		boolean allowAudioRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS);
+		allowAudioRecordingsEl.select(enableKeys[0], allowAudioRecordings);
+
 		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		String minVal = "";
 		if(minDocs > 0) {
@@ -178,6 +188,11 @@ public class GTASubmissionEditController extends FormBasicController {
 		
 		boolean submissionTemplate = submissionTemplateEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_TEMPLATE, submissionTemplate);
+
+		boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
+		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS, allowVideoRecordings);
+		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
+		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS, allowAudioRecordings);
 
 		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
 		setNumberOfdocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);

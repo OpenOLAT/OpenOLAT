@@ -88,6 +88,8 @@ class SubmitDocumentsController extends FormBasicController {
 	private FormLink uploadDocButton;
 	private FormLink createDocButton;
 	private FormLink copyDocButton;
+	private FormLink recordVideoButton;
+	private FormLink recordAudioButton;
 
 	private CloseableModalController cmc;
 	private NewDocumentController newDocCtrl;
@@ -96,7 +98,8 @@ class SubmitDocumentsController extends FormBasicController {
 	private DocumentUploadController replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
-	
+	private AVSubmissionController avSubmissionController;
+
 	private final int minDocs;
 	private final int maxDocs;
 	private final String docI18nKey;
@@ -184,6 +187,20 @@ class SubmitDocumentsController extends FormBasicController {
 			copyDocButton.setElementCssClass("o_sel_course_gta_copy_file");
 			copyDocButton.setI18nKey(copyI18nKey);
 			copyDocButton.setVisible(!readOnly && canCopy(ureq));
+		}
+
+		if (config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS)) {
+			recordVideoButton = uifactory.addFormLink("av.record.video", formLayout, Link.BUTTON);
+			recordVideoButton.setIconLeftCSS("o_icon o_icon_video_record");
+			recordVideoButton.setElementCssClass("o_sel_course_gta_record_video");
+			recordVideoButton.setVisible(!readOnly);
+		}
+
+		if (config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS)) {
+			recordAudioButton = uifactory.addFormLink("av.record.audio", formLayout, Link.BUTTON);
+			recordAudioButton.setIconLeftCSS("o_icon o_icon_audio_record");
+			recordAudioButton.setElementCssClass("o_sel_course_gta_record_audio");
+			recordAudioButton.setVisible(!readOnly);
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -326,10 +343,20 @@ class SubmitDocumentsController extends FormBasicController {
 			cleanUp();
 			checkDeadline(ureq);
 		} else if(uploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if (event == Event.DONE_EVENT) {
 				String filename = uploadCtrl.getUploadedFilename();
 				doUpload(ureq, uploadCtrl.getUploadedFile(), filename);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, filename));
+				gtaManager.markNews(courseEnv, gtaNode);
+			}
+			cmc.deactivate();
+			cleanUp();
+			checkDeadline(ureq);
+		} else if (avSubmissionController == source) {
+			if (event == Event.DONE_EVENT) {
+				String fileName = avSubmissionController.getUserDefinedFileName();
+				doUpload(ureq, avSubmissionController.getRecordedFile(), fileName);
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, fileName));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
@@ -381,12 +408,14 @@ class SubmitDocumentsController extends FormBasicController {
 		removeAsListenerAndDispose(copyDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
+		removeAsListenerAndDispose(avSubmissionController);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		viewDocCtrl = null;
 		copyDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
+		avSubmissionController = null;
 		cmc = null;
 	}
 	
@@ -406,8 +435,16 @@ class SubmitDocumentsController extends FormBasicController {
 				doCreateDocument(ureq);
 			}
 		} else if(copyDocButton == source) {
-			if(checkOpen(ureq) && checkDeadline(ureq)) {
+			if (checkOpen(ureq) && checkDeadline(ureq)) {
 				doCopyDocument(ureq);
+			}
+		} else if (recordVideoButton == source) {
+			if (checkOpen(ureq) && checkDeadline(ureq)) {
+				doRecordVideo(ureq);
+			}
+		} else if (recordAudioButton == source) {
+			if (checkOpen(ureq) && checkDeadline(ureq)) {
+				doRecordAudio(ureq);
 			}
 		} else if(tableEl == source) {
 			if(checkOpen(ureq) && checkDeadline(ureq) && event instanceof SelectionEvent) {
@@ -532,7 +569,27 @@ class SubmitDocumentsController extends FormBasicController {
 			cmc.activate();
 		}
 	}
-	
+
+	private void doRecordVideo(UserRequest ureq) {
+		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, false);
+		listenTo(avSubmissionController);
+
+		String title = translate("av.record.video");
+		cmc = new CloseableModalController(getWindowControl(), "close", avSubmissionController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRecordAudio(UserRequest ureq) {
+		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, true);
+		listenTo(avSubmissionController);
+
+		String title = translate("av.record.audio");
+		cmc = new CloseableModalController(getWindowControl(), "close", avSubmissionController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doCreateDocument(UserRequest ureq) {
 		if(newDocCtrl != null) return;
 		
