@@ -457,12 +457,21 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		configuration.setAllowSpellCheck(allowSpellCheckEl.isKeySelected("true"));
 		configuration.setAllowZoomInOut(allowZoomEl.isKeySelected("true"));
 		
-		configuration.setUrlFilter(urlFilterEl.isKeySelected("true"));
-		configuration.setUrlContentFilter(urlContentFilterEl.isKeySelected("true"));
-		configuration.setAllowedUrlExpressions(allowedExpressionsEl.getValue());
-		configuration.setAllowedUrlRegex(allowedRegexEl.getValue());
-		configuration.setBlockedUrlExpressions(blockedExpressionsEl.getValue());
-		configuration.setBlockedUrlRegex(blockedRegexEl.getValue());
+		boolean urlFilter = urlFilterEl.isKeySelected("true");
+		configuration.setUrlFilter(urlFilter);
+		boolean urlContentFilter = urlFilter && urlContentFilterEl.isKeySelected("true");
+		configuration.setUrlContentFilter(urlContentFilter);
+		if(urlFilter) {
+			configuration.setAllowedUrlExpressions(allowedExpressionsEl.getValue());
+			configuration.setAllowedUrlRegex(allowedRegexEl.getValue());
+			configuration.setBlockedUrlExpressions(blockedExpressionsEl.getValue());
+			configuration.setBlockedUrlRegex(blockedRegexEl.getValue());
+		} else {
+			configuration.setAllowedUrlExpressions("");
+			configuration.setAllowedUrlRegex("");
+			configuration.setBlockedUrlExpressions("");
+			configuration.setBlockedUrlRegex("");
+		}
 	
 		return configuration;
 	}
