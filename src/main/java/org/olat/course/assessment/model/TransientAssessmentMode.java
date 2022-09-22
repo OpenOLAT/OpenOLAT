@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
@@ -66,6 +67,7 @@ public class TransientAssessmentMode implements Serializable {
 	private String safeExamBrowserConfigPList;
 	private String safeExamBrowserConfigPListKey;
 	private boolean safeExamBrowserConfigDownload;
+	private SafeExamBrowserConfiguration safeExamBrowserConfig;
 	
 	public TransientAssessmentMode(AssessmentMode mode) {
 		displayName = mode.getRepositoryEntry().getDisplayname();
@@ -100,6 +102,7 @@ public class TransientAssessmentMode implements Serializable {
 			safeExamBrowserConfigPList = mode.getSafeExamBrowserConfigPList();
 			safeExamBrowserConfigPListKey = mode.getSafeExamBrowserConfigPListKey();
 			safeExamBrowserConfigDownload = mode.isSafeExamBrowserConfigDownload();
+			safeExamBrowserConfig = mode.getSafeExamBrowserConfiguration();
 		}
 	}
 	
@@ -201,6 +204,24 @@ public class TransientAssessmentMode implements Serializable {
 	
 	public boolean isSafeExamBrowserConfigDownload() {
 		return safeExamBrowserConfigDownload;
+	}
+	
+	public SafeExamBrowserConfiguration getSafeExamBrowserConfig() {
+		return safeExamBrowserConfig;
+	}
+	
+	public boolean hasLinkToQuitSEB() {
+		return StringHelper.containsNonWhitespace(safeExamBrowserConfigPList)
+				&& safeExamBrowserConfig != null
+				&& StringHelper.containsNonWhitespace(safeExamBrowserConfig.getLinkToQuit());
+	}
+	
+	public String getLinkToQuitSEB() {
+		if(StringHelper.containsNonWhitespace(safeExamBrowserConfigPList) && safeExamBrowserConfig != null
+				&& StringHelper.containsNonWhitespace(safeExamBrowserConfig.getLinkToQuit())) {
+			return safeExamBrowserConfig.getLinkToQuit();
+		}
+		return null;
 	}
 
 	public String getStartElementKey() {
