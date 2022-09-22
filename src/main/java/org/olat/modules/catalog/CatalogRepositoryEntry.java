@@ -51,6 +51,8 @@ public interface CatalogRepositoryEntry {
 
 	String getAuthors();
 	
+	String getMainLanguage();
+	
 	String getLocation();
 
 	RepositoryEntryEducationalType getEducationalType();

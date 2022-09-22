@@ -42,13 +42,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
+import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,6 +72,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	private final CatalogRepositoryEntryState state;
 	private final MapperKey mapperThumbnailKey;
 
+	@Autowired
+	private CatalogV2Module catalogModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -94,21 +100,20 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		
 		List<LauncherItem> items = new ArrayList<>(entries.size());
 		for (CatalogRepositoryEntry entry : entries) {
-			LauncherItem item = new LauncherItem(entry);
+			LauncherItem item = new LauncherItem();
+			
+			appendRepositoryEntryData(item, entry);
 			
 			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if (image != null) {
 				item.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
 			}
 			
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), entry.getTaxonomyLevels());
-			item.setTaxonomyLevels(taxonomyLevels);
-			
-			String id = "o_llm_" + CodeHelper.getRAMUniqueID();
-			Link learnMoreLink = LinkFactory.createLink(id, id, "launcher.learn.more", "launcher.learn.more", getTranslator(), mainVC, this, Link.LINK);
-			learnMoreLink.setIconRightCSS("o_icon o_icon_start");
-			learnMoreLink.setUserObject(entry.getKey());
-			item.setLearnMoreLink(learnMoreLink);
+			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
+			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+			displayNameLink.setCustomDisplayText(entry.getDisplayname());
+			displayNameLink.setUserObject(entry.getKey());
+			item.setDisplayNameLink(displayNameLink);
 			
 			items.add(item);
 		}
@@ -126,6 +131,61 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		putInitialPanel(mainVC);
 	}
 
+	private void appendRepositoryEntryData(LauncherItem item, CatalogRepositoryEntry entry) {
+		item.setKey(entry.getKey());
+		item.setEducationalType(entry.getEducationalType());
+		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
+			item.setExternalRef(entry.getExternalRef());
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.teaserText)) {
+			item.setTeaser(entry.getTeaser());
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.taxonomyLevels)) {
+			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), entry.getTaxonomyLevels());
+			item.setTaxonomyLevels(taxonomyLevels);
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.educationalType)) {
+			if (entry.getEducationalType() != null) {
+				String educationalTypeName = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
+				item.setEducationalTypeName(educationalTypeName);
+			}
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.mainLanguage)) {
+			item.setLanguage(entry.getMainLanguage());
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.location)) {
+			item.setLocation(entry.getLocation());
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.executionPeriod)) {
+			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+			if (lifecycle != null) {
+				String executionPeriod = null;
+				if(lifecycle.isPrivateCycle()) {
+					if (lifecycle.getValidFrom() != null) {
+						executionPeriod = Formatter.getInstance(getLocale()).formatDate(lifecycle.getValidFrom());
+					}
+					if (lifecycle.getValidTo() != null) {
+						if (StringHelper.containsNonWhitespace(executionPeriod)) {
+							executionPeriod += " - ";
+						}
+						executionPeriod += Formatter.getInstance(getLocale()).formatDate(lifecycle.getValidTo());
+					}
+				} else if (StringHelper.containsNonWhitespace(lifecycle.getSoftKey())) {
+					executionPeriod = lifecycle.getSoftKey();
+				} else if (StringHelper.containsNonWhitespace(lifecycle.getLabel())) {
+					executionPeriod = lifecycle.getLabel();
+				}
+				item.setExecutionPeriod(executionPeriod);
+			}
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.authors)) {
+			item.setAuthors(entry.getAuthors());
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.expenditureOfWork)) {
+			item.setExpenditureOfWork(entry.getExpenditureOfWork());
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("select".equals(event.getCommand())) {
@@ -135,54 +195,118 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			fireEvent(ureq, new OpenSearchEvent(state, null));
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
-			if ("launcher.learn.more".equals(link.getCommand())) {
+			if ("open".equals(link.getCommand())) {
 				fireEvent(ureq, new OpenSearchEvent(state, (Long)link.getUserObject()));
 			}
 		}
 	}
 	
 	public static final class LauncherItem {
-		private final Long key;
-		private final String externalRef;
-		private final String displayName;
-		private final String teaser;
-		private final RepositoryEntryStatusEnum status;
-		private final RepositoryEntryEducationalType educationalType;
+		private Long key;
+		private String externalRef;
+		private String teaser;
+		private String language;
+		private String location;
+		private String executionPeriod;
+		private String authors;
+		private String expenditureOfWork;
+		private RepositoryEntryStatusEnum status;
+		private RepositoryEntryEducationalType educationalType;
+		private String educationalTypeName;
 		private String thumbnailRelPath;
 		private List<TaxonomyLevelNamePath> taxonomyLevels;
-		private Link learnMoreLink;
+		private Link displayNameLink;
 		
-		public LauncherItem(CatalogRepositoryEntry entry) {
-			this.key = entry.getKey();
-			this.externalRef = entry.getExternalRef();
-			this.displayName = entry.getDisplayname();
-			this.teaser = Formatter.truncate(entry.getTeaser(), 250);
-			this.status = entry.getStatus();
-			educationalType = entry.getEducationalType();
-		}
-
 		public Long getKey() {
 			return key;
+		}
+
+		public void setKey(Long key) {
+			this.key = key;
 		}
 
 		public String getExternalRef() {
 			return externalRef;
 		}
 
-		public String getDisplayName() {
-			return displayName;
+		public void setExternalRef(String externalRef) {
+			this.externalRef = externalRef;
 		}
 
 		public String getTeaser() {
 			return teaser;
 		}
-		
+
+		public void setTeaser(String teaser) {
+			this.teaser = teaser;
+		}
+
+		public String getLanguage() {
+			return language;
+		}
+
+		public void setLanguage(String language) {
+			this.language = language;
+		}
+
+		public String getLocation() {
+			return location;
+		}
+
+		public void setLocation(String location) {
+			this.location = location;
+		}
+
+		public String getExecutionPeriod() {
+			return executionPeriod;
+		}
+
+		public void setExecutionPeriod(String executionPeriod) {
+			this.executionPeriod = executionPeriod;
+		}
+
+		public String getAuthors() {
+			return authors;
+		}
+
+		public void setAuthors(String authors) {
+			this.authors = authors;
+		}
+
+		public String getExpenditureOfWork() {
+			return expenditureOfWork;
+		}
+
+		public void setExpenditureOfWork(String expenditureOfWork) {
+			this.expenditureOfWork = expenditureOfWork;
+		}
+
+		public RepositoryEntryStatusEnum getStatus() {
+			return status;
+		}
+
+		public void setStatus(RepositoryEntryStatusEnum status) {
+			this.status = status;
+		}
+
 		public boolean isClosed() {
 			return status.decommissioned();
 		}
 
 		public RepositoryEntryEducationalType getEducationalType() {
 			return educationalType;
+		}
+
+		public void setEducationalType(RepositoryEntryEducationalType educationalType) {
+			this.educationalType = educationalType;
+		}
+
+		public String getEducationalTypeName() {
+			return educationalTypeName;
+		}
+
+		public void setEducationalTypeName(String educationalTypeName) {
+			this.educationalTypeName = educationalTypeName;
 		}
 
 		public String getThumbnailRelPath() {
@@ -205,16 +329,16 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			this.taxonomyLevels = taxonomyLevels;
 		}
 
-		public Link getLearnMoreLink() {
-			return learnMoreLink;
+		public Link getDisplayNameLink() {
+			return displayNameLink;
 		}
 
-		public void setLearnMoreLink(Link learnMoreLink) {
-			this.learnMoreLink = learnMoreLink;
+		public void setDisplayNameLink(Link displayNameLink) {
+			this.displayNameLink = displayNameLink;
 		}
 		
-		public String getLearnMoreLinkName() {
-			return learnMoreLink.getComponentName();
+		public String getDisplayNameLinkName() {
+			return displayNameLink.getComponentName();
 		}
 		
 	}

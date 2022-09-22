@@ -22,7 +22,10 @@ package org.olat.modules.catalog;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -48,6 +51,7 @@ import org.springframework.stereotype.Service;
 public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff {
 	
 	public enum CatalogV1Migration { pending, running, done }
+	public enum CatalogCardView { externalRef, teaserText, taxonomyLevels, educationalType, mainLanguage, location, executionPeriod, authors, expenditureOfWork }
 	public static final Set<String> HEADER_BG_IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE = "rectangle";
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE = "square";
@@ -59,6 +63,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String KEY_WEB_PUBLISH_ENABLED = "catalog.v2.web.publish.enabled";
 	private static final String KEY_HEADER_BG_IMAGE_URI = "catalog.v2.header.bg.image.filename";
 	private static final String KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE = "catalog.v2.launcher.taxonomy.level.style";
+	private static final String KEY_CARD_VIEW = "catalog.v2.card.view";
 
 	@Value("${catalog.v2.enabled:false}")
 	private boolean enabled;
@@ -68,6 +73,9 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private String headerBgImageFilename;
 	@Value("${catalog.v2.launcher.taxonomy.levelstyle:rectangle}")
 	private String launcherTaxonomyLevelStyle;
+	@Value("${catalog.v2.card.view:externalRef,teaserText,taxonomyLevels,educationalType}")
+	private String cardViewStr;
+	private Set<CatalogCardView> cardView;
 	
 	private CatalogV1Migration catalogV1Migration;
 	
@@ -93,6 +101,8 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 		
 		headerBgImageFilename = getStringPropertyValue(KEY_HEADER_BG_IMAGE_URI, headerBgImageFilename);
 		launcherTaxonomyLevelStyle = getStringPropertyValue(KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE, launcherTaxonomyLevelStyle);
+		cardViewStr = getStringPropertyValue(KEY_CARD_VIEW, cardViewStr);
+		cardView = null;
 		
 		String catalogV1MigrationObj = getStringPropertyValue(KEY_CATALOG_V1_MIGRATION, true);
 		if (StringHelper.containsNonWhitespace(catalogV1MigrationObj)) {
@@ -195,6 +205,23 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	public void setLauncherTaxonomyLevelStyle(String launcherTaxonomyLevelStyle) {
 		this.launcherTaxonomyLevelStyle = launcherTaxonomyLevelStyle;
 		setStringProperty(KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE, launcherTaxonomyLevelStyle, true);
+	}
+
+	public Set<CatalogCardView> getCardView() {
+		if (cardView == null) {
+			if (StringHelper.containsNonWhitespace(cardViewStr)) {
+				cardView = Arrays.stream(cardViewStr.split(",")).map(CatalogCardView::valueOf).collect(Collectors.toSet());
+			} else {
+				cardView = Collections.emptySet();
+			}
+		}
+		return cardView;
+	}
+
+	public void setCardView(Set<CatalogCardView> cardView) {
+		this.cardView = null;
+		this.cardViewStr = cardView.stream().map(CatalogCardView::name).collect(Collectors.joining(","));
+		setStringProperty(KEY_CARD_VIEW, cardViewStr, true);
 	}
 	
 }

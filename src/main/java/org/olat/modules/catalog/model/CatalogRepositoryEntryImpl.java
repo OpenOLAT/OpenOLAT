@@ -46,6 +46,7 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 	private final String description;
 	private final String teaser;
 	private final String authors;
+	private final String mainLanguage;
 	private final String location;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
@@ -68,6 +69,7 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 		description = re.getDescription();
 		teaser = re.getTeaser();
 		authors = re.getAuthors();
+		mainLanguage = re.getMainLanguage();
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
@@ -111,6 +113,11 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 	@Override
 	public String getAuthors() {
 		return authors;
+	}
+
+	@Override
+	public String getMainLanguage() {
+		return mainLanguage;
 	}
 
 	@Override

@@ -27,12 +27,15 @@ import static org.olat.modules.catalog.CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_S
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -48,6 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,6 +67,7 @@ public class CatalogLayoutController extends FormBasicController {
 	private FormLink titleLink;
 	private FileElement headerBgImageEl;
 	private SingleSelection launcherTaxonomyLevelStyleEl;
+	private MultipleSelectionElement cardViewEl;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController titleTranslatorCtrl;
@@ -112,6 +117,20 @@ public class CatalogLayoutController extends FormBasicController {
 		} else {
 			launcherTaxonomyLevelStyleEl.select(TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE, true);
 		}
+		
+		SelectionValues cardViewSV = new SelectionValues();
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.externalRef.name(), translate("admin.card.view.external.ref")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.teaserText.name(), translate("admin.card.view.teaser.text")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.taxonomyLevels.name(), translate("admin.card.view.taxonomy.levels")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.educationalType.name(), translate("admin.card.view.educational.type")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.mainLanguage.name(), translate("admin.card.view.main.language")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.location.name(), translate("admin.card.view.location")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.executionPeriod.name(), translate("admin.card.view.execution.period")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.authors.name(), translate("admin.card.view.authors")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.expenditureOfWork.name(), translate("admin.card.view.expenditure.of.work")));
+		cardViewEl = uifactory.addCheckboxesVertical("admin.card.view", formLayout, cardViewSV.keys(), cardViewSV.values(), 1);
+		cardViewEl.addActionListener(FormEvent.ONCHANGE);
+		catalogModule.getCardView().stream().map(CatalogCardView::name).forEach(key -> cardViewEl.select(key, true));
 	}
 	
 	@Override
@@ -142,6 +161,9 @@ public class CatalogLayoutController extends FormBasicController {
 			}
 		} else if (launcherTaxonomyLevelStyleEl == source) {
 			catalogModule.setLauncherTaxonomyLevelStyle(launcherTaxonomyLevelStyleEl.getSelectedKey());
+		} else if (cardViewEl == source) {
+			Set<CatalogCardView> cardView = cardViewEl.getSelectedKeys().stream().map(CatalogCardView::valueOf).collect(Collectors.toSet());
+			catalogModule.setCardView(cardView);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
