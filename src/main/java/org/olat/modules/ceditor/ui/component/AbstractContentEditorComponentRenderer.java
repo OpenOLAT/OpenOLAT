@@ -93,6 +93,30 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		}
 	}
 	
+	protected void renderMoveUp(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isEditable()) {
+			sb.append("<a id='o_ccup_").append(cmp.getDispatchID()).append("' ")
+				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "move_up"),
+					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+			sb.append(" return false;\" class='o_sel_move_up_element' title='").append(translator.translate("move.up"))
+			  .append("'><i class='o_icon o_icon-fw o_icon_slide_up'> </i> <span>").append(translator.translate("move.up")).append("</span></a>");
+		}
+	}
+	
+	protected void renderMoveDown(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isEditable()) {
+			sb.append("<a id='o_ccdown_").append(cmp.getDispatchID()).append("' ")
+				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "move_down"),
+					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+			sb.append(" return false;\" class='o_sel_move_down_element' title='").append(translator.translate("move.down"))
+			  .append("'><i class='o_icon o_icon-fw o_icon_slide_down'> </i> <span>").append(translator.translate("move.down")).append("</span></a>");
+		}
+	}
+	
 	protected void renderDelete(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isDeleteable()) {
 			sb.append("<a id='o_ccdelete_").append(cmp.getDispatchID()).append("' ")
@@ -126,7 +150,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	protected void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		// More button
 		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
-		  .append("<i class='o_icon o_icon_commands'> </i>")
+		  .append("<i class='o_icon o_icon-fw o_icon_commands'> </i>")
 		  .append("</button>");
 		// Menu
 		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");

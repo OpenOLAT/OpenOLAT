@@ -20,17 +20,20 @@
 		border: 1px solid $o-editor-selected-border-color;
 	}
 	
+	&:hover .o_page_container_tools, {
+		border-bottom: 1px solid $o-editor-selected-border-color;
+	}
+	
 	.o_page_container_tools {
 		display: flex;
 		justify-content: flex-end;
-		align-items: baseline;
+		align-items: stretch;
 		height: $o-editor-border-width;
 		line-height: 18px;
 		width: 100%;
 		border-bottom: $o-editor-element-border-width solid $o-editor-border-color;
 		background-color: #eeeeee;
 		text-align: right;
-		padding: 2px 10px;
 		position: relative;
 		
 		>a, >button {
@@ -70,13 +73,15 @@
 	}
 
 	.o_page_container_tools, .o_page_element_tools {
-		>a {
-			margin-right: 0.5em;
+		>a, >button, >span {
+			margin: 0;
+			padding: 0 5px;
+			line-height: 25px;
+			border-left: 1px solid #d9d9d9;
+			background: #fff;
 		}
-		>button {
-			margin-right: 0.5em;
-			border: none;
-			background-color: transparent;
+		>span.o_container_name {
+			background: transparent;
 		}
 	}
 
