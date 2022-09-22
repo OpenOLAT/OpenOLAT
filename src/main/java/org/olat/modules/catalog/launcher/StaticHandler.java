@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.launcher;
 
+import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERRED_NUMBER_CARDS;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -128,8 +130,11 @@ public class StaticHandler implements CatalogLauncherHandler {
 		List<CatalogRepositoryEntry> entries = reKeys.stream()
 				.map(key -> keyToRe.get(key))
 				.filter(Objects::nonNull)
-				.limit(4)
+				.limit(PREFERRED_NUMBER_CARDS)
 				.collect(Collectors.toList());
+		if (entries.isEmpty()) {
+			return null;
+		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		CatalogRepositoryEntryState state = new CatalogRepositoryEntryState();

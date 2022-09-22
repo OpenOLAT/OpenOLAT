@@ -14,7 +14,7 @@
 					<span class="o_visual_not_available #if($taxonomyLevel.thumbnailRelPath)o_visual_available#end" #if($taxonomyLevel.thumbnailRelPath) style="background-image:url('$taxonomyLevel.thumbnailRelPath');" #end></span>
 				</div>
 				<div class="o_meta">
-					<h4 class="o_title" title="$r.escapeForHtmlAttribute($taxonomyLevel.displayName)">$r.render($taxonomyLevel.selectLinkName)</h4>
+					<h4 class="o_title o_catalog_title_link" title="$r.escapeForHtmlAttribute($taxonomyLevel.displayName)">$r.render($taxonomyLevel.selectLinkName)</h4>
 				</div>
 			</div>
 			#end

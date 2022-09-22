@@ -23,13 +23,36 @@
 								<div class="o_visual_not_available"></div>
 							#end
 						</div>
+						#if($row.educationalTypeName)
+							<div class="o_educational_type">
+								<span>$row.educationalTypeName</span>
+							</div>
+						#end
 						<div class="o_meta">
 							<div class="o_ext_ref">
 								#if ($row.getExternalRef())
 									$r.escapeHtml($r.xssScan($row.getExternalRef()))
 								#end
 							</div>
-							<h4 class="o_title">#if($row.closed)#end$r.xssScan($row.displayName)</h4>
+							<h4 class="o_title o_catalog_title_link">$r.render("$row.getDisplayNameLinkName()")</h4>
+							#if($r.isNotEmpty($row.teaser))
+								<div class="o_teaser">$r.xssScan($row.teaser)</div>
+							#end
+							#if($r.isNotEmpty($row.authors))
+								<div class="o_authors o_flex_item_max">$r.xssScan($row.authors)</div>
+							#end
+							#if($r.isNotEmpty($row.expenditureOfWork))
+								<div class="o_exp_work o_flex_item_max">$r.xssScan($row.expenditureOfWork)</div>
+							#end
+							#if($r.isNotEmpty($row.language))
+								<div class="o_language o_flex_item_max">$r.xssScan($row.language)</div>
+							#end
+							#if($r.isNotEmpty($row.executionPeriod))
+								<div class="o_execution_period o_flex_item_max">$row.executionPeriod</div>
+							#end
+							#if($r.isNotEmpty($row.location))
+								<div class="o_location o_flex_item_max">$r.xssScan($row.location)</div>
+							#end
 							#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
 								<div class="o_taxonomy_levels">	
 									#foreach($taxonomy in $row.taxonomyLevels)
@@ -39,15 +62,6 @@
 									#end
 								</div>
 							#end
-							#if($r.isNotEmpty($row.teaser))
-								<div class="o_teaser">$r.escapeHtml($r.xssScan($row.teaser))</div>
-							#end
-						</div>
-						<div class="o_flex_spacer"></div>
-						<div class="o_card_cmd">
-							<div class="o_learn_more">
-								$r.render("$row.getLearnMoreLinkName()")
-							</div>
 						</div>
 					</div>
 				</div>

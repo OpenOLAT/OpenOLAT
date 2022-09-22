@@ -369,9 +369,17 @@
 			height: inherit;
 		}
 		
+		.o_educational_type {
+			margin-top: -23px;
+			margin-bottom: 6px;
+			margin-right: 5px;
+			margin-left: auto;
+			background: $o-coursesite-rowelem-bg;
+		}
+		
 		.o_title {
 			margin: 0;
-			padding-bottom: 0.1em;
+			padding-bottom: 10px;
 			overflow: hidden;
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
@@ -392,7 +400,6 @@
 				display: block;
 			}
 			.o_taxonomy_levels {
-				margin-top: 0.5em;
 				color: $text-muted;
 				font-size: 85%;
 				vertical-align: text-bottom;
@@ -405,18 +412,6 @@
 					display: inline-block;
 					margin-bottom: 0;
 				}
-			}
-			.o_teaser {
-				margin-top: 0.5em;
-			}
-		}
-		.o_card_cmd {
-			margin-top: auto;
-			display: flex;
-			justify-content: center;
-			.o_learn_more {
-				margin-top: 0.5em;
-				margin-bottom: 5px;
 			}
 		}
 	}
@@ -749,6 +744,16 @@
 		}
 	}
 	
+	.o_catalog_title_link {
+		a {
+			color: $o-coursesite-meta-title-color;
+			@extend %o_undecorated;
+			&:hover {
+				color: $brand-primary;
+			}
+		}
+	}
+	
 	.o_catalog_launcher {
 		margin-top: $o-cat2-launcher-margin-top;
 		.o_launcher_title {
@@ -825,11 +830,6 @@
 						white-space: nowrap;
 						overflow: hidden;
 						text-overflow: ellipsis;
-						color: $o-coursesite-meta-title-color;
-						@extend %o_undecorated;
-						&:hover {
-							color: darken($o-coursesite-meta-title-color, 10%);
-						}
 					}
 				}
 			}

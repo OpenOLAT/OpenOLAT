@@ -19,6 +19,9 @@
  */
 package org.olat.course.learningpath.obligation;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -30,6 +33,7 @@ import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,10 +87,25 @@ public class BusinessGroupExceptionalObligationHandler implements ExceptionalObl
 	public String getDisplayName(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry) {
 		if (exceptionalObligation instanceof BusinessGroupExceptionalObligation) {
 			BusinessGroupExceptionalObligation businessGroupExceptionalObligation = (BusinessGroupExceptionalObligation)exceptionalObligation;
-			BusinessGroup group = businessGroupService.loadBusinessGroup(businessGroupExceptionalObligation.getBusinessGroupRef().getKey());
+			BusinessGroup group = getGroup(businessGroupExceptionalObligation);
 			if (group != null) {
-				return group.getName();
+				String name = group.getName();
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+				params.setGroupKeys(Collections.singletonList(group.getKey()));
+				List<BusinessGroup> courseGroups = businessGroupService.findBusinessGroups(params, courseEntry, 0, 1);
+				if (courseGroups.isEmpty()) {
+					name = translator.translate("exceptional.obligation.group.error.not.course", name);
+				}
+				return name;
 			}
+			return translator.translate("exceptional.obligation.group.error.not.available");
+		}
+		return null;
+	}
+	
+	public BusinessGroup getGroup(BusinessGroupExceptionalObligation businessGroupExceptionalObligation) {
+		if (businessGroupExceptionalObligation.getBusinessGroupRef() != null) {
+			return businessGroupService.loadBusinessGroup(businessGroupExceptionalObligation.getBusinessGroupRef().getKey());
 		}
 		return null;
 	}
@@ -121,7 +140,9 @@ public class BusinessGroupExceptionalObligationHandler implements ExceptionalObl
 			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
 		if (exceptionalObligation instanceof BusinessGroupExceptionalObligation) {
 			BusinessGroupExceptionalObligation businessGroupExceptionalObligation = (BusinessGroupExceptionalObligation)exceptionalObligation;
-			return obligationContext.isParticipant(identity, businessGroupExceptionalObligation.getBusinessGroupRef());
+			if (businessGroupExceptionalObligation.getBusinessGroupRef() != null) {
+				return obligationContext.isParticipant(identity, businessGroupExceptionalObligation.getBusinessGroupRef());
+			}
 		}
 		return false;
 	}
