@@ -98,9 +98,17 @@ public interface ChiefController extends Controller {
 	 */
 	public void hardLockResource(LockResourceInfos lockInfos);
 	
+	/**
+	 * @return Some informations about the currently locked resource
+	 */
 	public LockResourceInfos getLockResourceInfos();
 	
-	
+	/**
+	 * The informations is set to null if a new resource is locked.
+	 * 
+	 * @return Some informations about the last resource which was unlocked.
+	 */
+	public LockResourceInfos getLastUnlockedResourceInfos();
 	
 	/**
 	 * Set a class to the &lt;body&gt;

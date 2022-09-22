@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.mode;
 
+import java.util.UUID;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -69,6 +71,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 	private SingleSelection typeOfUseEl;
 	private SingleSelection downloadConfigEl;
 	private SingleSelection allowToExitEl;
+	private SingleSelection linkToQuitEl;
 	private SingleSelection quitUrlConfirmEl;
 	private TextElement passwordToQuitEl;
 	private SingleSelection enableReloadInExamEl;
@@ -207,11 +210,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		sebConfigCont = FormLayoutContainer.createDefaultFormLayout("seb.config", getTranslator());
 		sebConfigCont.setFormTitle(translate("mode.safeexambrowser.section.title"));
 		formLayout.add(sebConfigCont);
-
-		quitUrlConfirmEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", sebConfigCont,
-				trueFalseValues.keys(), trueFalseValues.values());
-		quitUrlConfirmEl.setEnabled(editable);
-		quitUrlConfirmEl.select(trueFalseKey(sebConfig.isQuitURLConfirm()), true);
 		
 		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -222,6 +220,17 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		String password = sebConfig.getPasswordToExit();
 		passwordToQuitEl = uifactory.addTextElement("password.quit", "mode.safeexambrowser.password.exit", 255, password, sebConfigCont);
 		passwordToQuitEl.setEnabled(editable);
+		
+		linkToQuitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.link.to.quit", sebConfigCont,
+				trueFalseValues.keys(), trueFalseValues.values());
+		linkToQuitEl.addActionListener(FormEvent.ONCHANGE);
+		linkToQuitEl.setEnabled(editable);
+		linkToQuitEl.select(trueFalseKey(StringHelper.containsNonWhitespace(sebConfig.getLinkToQuit())), true);
+		
+		quitUrlConfirmEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", sebConfigCont,
+				trueFalseValues.keys(), trueFalseValues.values());
+		quitUrlConfirmEl.setEnabled(editable);
+		quitUrlConfirmEl.select(trueFalseKey(sebConfig.isQuitURLConfirm()), true);
 		
 		enableReloadInExamEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.enable.reload", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -409,6 +418,14 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 			configuration.setPasswordToExit(passwordToQuitEl.getValue());
 		} else {
 			configuration.setPasswordToExit(null);
+		}
+		if(linkToQuitEl.isKeySelected("true")) {
+			if(!StringHelper.containsNonWhitespace(configuration.getLinkToQuit())) {
+				String linkToQuit = Settings.getServerContextPathURI() + "/" + UUID.randomUUID().toString();
+				configuration.setLinkToQuit(linkToQuit);
+			}
+		} else {
+			configuration.setLinkToQuit(null);
 		}
 		configuration.setBrowserWindowAllowReload(enableReloadInExamEl.isKeySelected("true"));
 		

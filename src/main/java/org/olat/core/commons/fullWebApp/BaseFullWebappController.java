@@ -153,7 +153,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private Panel instantMessagePanel;
 	private final GUIMessage guiMessage;
 	private final OncePanel guimsgPanel;
-	private Panel cssHolder, guimsgHolder, currentMsgHolder;
+	private Panel cssHolder;
+	private Panel guimsgHolder;
+	private Panel currentMsgHolder;
 	private VelocityContainer guimsgVc;
 	private VelocityContainer mainVc;
 	private VelocityContainer navSitesVc;
@@ -163,6 +165,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private LockStatus lockStatus;
 	private OLATResourceable lockResource;
 	private TransientAssessmentMode lockMode;
+	private LockResourceInfos lastUnlockedResource;
 	
 	// NEW FROM FullChiefController
 	private LockableController topnavCtr;
@@ -703,6 +706,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			if(event instanceof ChooseAssessmentModeEvent) {
 				ChooseAssessmentModeEvent came = (ChooseAssessmentModeEvent)event;
 				lockMode = came.getAssessmentMode();
+				lastUnlockedResource = null;
 				lockStatus = LockStatus.locked;
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
@@ -1537,6 +1541,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		if(lockResource == null) return null;
 		return new LockResourceInfos(lockStatus, lockResource, lockMode);
 	}
+	
+	@Override
+	public LockResourceInfos getLastUnlockedResourceInfos() {
+		if(lastUnlockedResource == null) return null;
+		return lastUnlockedResource;
+	}
 
 	@Override
 	public void lockResource(OLATResourceable resource) {
@@ -1551,6 +1561,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		lockResource = lockInfos.getLockResource();
 		lockMode = lockInfos.getLockMode();
 		lockStatus = lockInfos.getLockStatus();
+		lastUnlockedResource = null;
 		lockGUI();
 	}
 	
@@ -1610,6 +1621,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			lockResource(mode.getResource());
 			lock = true;
 			lockMode = mode;
+			lastUnlockedResource = null;
 			lockStatus = LockStatus.need;
 		} else if(lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			if(mode.getStatus() == Status.leadtime || (mode.getStatus() == Status.followup
@@ -1618,6 +1630,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				if(assessmentGuardCtrl == null) {
 					lockStatus = LockStatus.need;
 				}
+				lastUnlockedResource = null;
 				lockMode = mode;
 			}
 			lock = true;
@@ -1636,10 +1649,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		boolean unlock;
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			logAudit("Async unlock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")");
+			OLATResourceable unlockedResource = lockResource;
 			unlockResource();
 			if(lockMode != null) {
 				//check if there is a locked resource first
 				lockStatus = LockStatus.need;
+				lastUnlockedResource = new LockResourceInfos(null, unlockedResource, lockMode);
 			} else {
 				lockStatus = null;
 			}

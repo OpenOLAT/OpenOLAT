@@ -31,7 +31,13 @@
 		<div class="o_info">$r.translate("current.mode.followuptime.info")</div>
 	#elseif($mode.status == "end")
 		<div class="o_info">$r.translate("current.mode.end.info")</div>
-		<div class="o_button_group">$r.render($mode.continue.componentName)</div>
+		<div class="o_button_group">
+		#if($r.visible($mode.quitSEB.componentName)) 
+			$r.render($mode.quitSEB.componentName)
+		#else
+			$r.render($mode.continue.componentName)
+		#end
+		</div>
 	#else
 		<div class="o_error">$mode.errors</div>
 		#if($r.visible($mode.downloadSEBButton.componentName) || $r.visible($mode.downloadSEBConfigurationButton.componentName))
@@ -48,4 +54,7 @@
 	#end
 #end
 
-<div class="o_button_group">$r.render("continue-main")</div>
+<div class="o_button_group">
+	$r.render("continue-main")
+	$r.render("quit-main")
+</div>

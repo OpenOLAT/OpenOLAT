@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -68,6 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentModeGuardController extends BasicController implements GenericEventListener {
 
 	private final Link mainContinueButton;
+	private final ExternalLink mainSEBQuitButton;
 	private final VelocityContainer mainVC;
 	private final CloseableModalController cmc;
 	
@@ -112,6 +114,12 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		mainContinueButton.setVisible(false);
 		mainVC.put("continue-main", mainContinueButton);
 		
+		mainSEBQuitButton = LinkFactory.createExternalLink("quit-seb-main", translate("current.mode.seb.quit"), "");
+		mainSEBQuitButton.setElementCssClass("btn btn-default btn-primary o_sel_assessment_quit");
+		mainSEBQuitButton.setName(translate("current.mode.seb.quit"));
+		mainSEBQuitButton.setVisible(false);
+		mainVC.put("quit-main", mainSEBQuitButton);
+		
 		syncAssessmentModes(ureq);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
@@ -153,17 +161,47 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	
 	private void syncAssessmentModes(UserRequest ureq) {
 		List<ResourceGuard> modeWrappers = new ArrayList<>();
+		
+		String quitUrl = null;
 		for(TransientAssessmentMode mode:modes) {
 			if(mode != null) {
 				ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
 				if(wrapper != null) {
 					modeWrappers.add(wrapper);
 				}
+				if(mode.hasLinkToQuitSEB()) {
+					quitUrl = mode.getLinkToQuitSEB();
+				}
 			}
 		}
+		
 		guards.setList(modeWrappers);
 		mainContinueButton.setVisible(modeWrappers.isEmpty());
+		// See if we can use a quit URL for SEB
+		if(modeWrappers.isEmpty()) {
+			if(quitUrl == null) {
+				quitUrl = getSEBQuitURLFromLastUnlockedResource();
+			}
+			if(StringHelper.containsNonWhitespace(quitUrl)) {
+				mainSEBQuitButton.setUrl(quitUrl);
+				mainSEBQuitButton.setVisible(true);
+				// prefer the quit URL in SEB
+				mainContinueButton.setVisible(false);
+			} else {
+				mainSEBQuitButton.setVisible(false);
+			}
+		} else {
+			mainSEBQuitButton.setVisible(false);
+		}
 		mainVC.setDirty(true);
+	}
+	
+	private String getSEBQuitURLFromLastUnlockedResource() {
+		LockResourceInfos infos = getWindowControl().getWindowBackOffice().getChiefController().getLastUnlockedResourceInfos();
+		if(infos.getLockMode() != null && infos.getLockMode().hasLinkToQuitSEB()) {
+			return infos.getLockMode().getLinkToQuitSEB();
+		}
+		return null;
 	}
 	
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
@@ -223,7 +261,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		if(allowed) {
 			Link go = guard.getGo();
 			Link cont = guard.getContinue();
-			state = updateButtons(mode, now, go, cont);
+			ExternalLink quit = guard.getQuitSEB();
+			state = updateButtons(mode, now, go, cont, quit);
 			if(go.isVisible()) {
 				assessmentModeCoordinationService.waitFor(getIdentity(), mode);
 			}
@@ -235,17 +274,17 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		return guard;
 	}
 	
-	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont) {
+	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont, ExternalLink quit) {
 		String state;
 		if(mode.isManual()) {
-			state = updateButtonsManual(mode, go, cont);
+			state = updateButtonsManual(mode, go, cont, quit);
 		} else {
-			state = updateButtonsAuto(mode, now, go, cont);
+			state = updateButtonsAuto(mode, now, go, cont, quit);
 		}
 		return state;
 	}
 	
-	private String updateButtonsManual(TransientAssessmentMode mode, Link go, Link cont) {
+	private String updateButtonsManual(TransientAssessmentMode mode, Link go, Link cont, ExternalLink quitSEB) {
 		String state;
 		if(Status.leadtime == mode.getStatus()) {
 			state = Status.leadtime.name();
@@ -253,30 +292,40 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			go.setVisible(true);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		} else if(Status.assessment == mode.getStatus() || isDisadvantageCompensationExtension(mode)) {
 			state = Status.assessment.name();
 			go.setEnabled(true);
 			go.setVisible(true);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		} else if(Status.followup == mode.getStatus()) {
 			state = Status.followup.name();
 			go.setEnabled(false);
 			go.setVisible(false);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		} else if(Status.end == mode.getStatus()) {
 			state = Status.end.name();
 			go.setEnabled(false);
 			go.setVisible(false);
 			cont.setEnabled(true);
 			cont.setVisible(true);
+			quitSEB.setEnabled(mode.hasLinkToQuitSEB());
+			quitSEB.setVisible(mode.hasLinkToQuitSEB());
 		} else {
 			state = "error";
 			go.setEnabled(false);
 			go.setVisible(false);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		}
 		return state;
 	}
@@ -290,7 +339,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		return false;
 	}
 	
-	private String updateButtonsAuto(TransientAssessmentMode mode, Date now, Link go, Link cont) {
+	private String updateButtonsAuto(TransientAssessmentMode mode, Date now, Link go, Link cont, ExternalLink quitSEB) {
 		Date begin = mode.getBegin();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
 		Date end = mode.getEnd();
@@ -303,30 +352,40 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			go.setVisible(true);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		} else if(begin.compareTo(now) <= 0 && end.compareTo(now) > 0) {
 			state = Status.assessment.name();
 			go.setEnabled(true);
 			go.setVisible(true);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) > 0) {
 			state = Status.followup.name();
 			go.setEnabled(false);
 			go.setVisible(false);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		} else if(endWithLeadTime.compareTo(now) <= 0 || Status.end == mode.getStatus()) {
 			state = Status.end.name();
 			go.setEnabled(false);
 			go.setVisible(false);
 			cont.setEnabled(true);
 			cont.setVisible(true);
+			quitSEB.setEnabled(mode.hasLinkToQuitSEB());
+			quitSEB.setVisible(mode.hasLinkToQuitSEB());
 		} else {
 			state = "error";
 			go.setEnabled(false);
 			go.setVisible(false);
 			cont.setEnabled(false);
 			cont.setVisible(false);
+			quitSEB.setEnabled(false);
+			quitSEB.setVisible(false);
 		}
 		return state;
 	}
@@ -343,6 +402,12 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		continueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		continueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		
+		String quitUrl = mode.getLinkToQuitSEB();
+		ExternalLink quitSEBLink = LinkFactory.createExternalLink("download.seb-" + id, translate("current.mode.seb.quit"), quitUrl);
+		quitSEBLink.setName(translate("current.mode.seb.quit"));
+		quitSEBLink.setTooltip(translate("current.mode.seb.quit"));
+		quitSEBLink.setElementCssClass("btn btn-default");
+		
 		Link downloadSEBConfigurationButton = LinkFactory.createCustomLink("download-seb-config-" + id, "download.seb.config", "download.seb.config", Link.BUTTON, mainVC, this);
 		downloadSEBConfigurationButton.setVisible(false);
 		
@@ -355,7 +420,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		CountDownComponent countDown = new CountDownComponent("count-" + id, mode.getBegin(), getTranslator());
 		countDown.setI18nKey("current.mode.in");
 		
-		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, downloadSEBLink, downloadSEBConfigurationButton, countDown);
+		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, quitSEBLink, downloadSEBLink, downloadSEBConfigurationButton, countDown);
 		mainVC.put(goButton.getComponentName(), goButton);
 		mainVC.put(continueButton.getComponentName(), continueButton);
 		mainVC.put(countDown.getComponentName(), countDown);
@@ -485,6 +550,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		private String errors;
 		private final Link goButton;
 		private final Link continueButton;
+		private final ExternalLink quitSEBButton;
 		private final ExternalLink downloadSEBButton;
 		private final Link downloadSEBConfigurationButton;
 		
@@ -504,11 +570,12 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		private CountDownComponent countDown;
 		
-		public ResourceGuard(Long modeKey, Link goButton, Link continueButton,
+		public ResourceGuard(Long modeKey, Link goButton, Link continueButton, ExternalLink quitSebButton,
 				ExternalLink downloadSEBButton, Link downloadSEBConfigurationButton, CountDownComponent countDown) {
 			this.modeKey = modeKey;
 			this.goButton = goButton;
 			this.countDown = countDown;
+			this.quitSEBButton = quitSebButton;
 			this.continueButton = continueButton;
 			this.downloadSEBButton = downloadSEBButton;
 			this.downloadSEBConfigurationButton = downloadSEBConfigurationButton;
@@ -608,6 +675,10 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		public Link getContinue() {
 			return continueButton;
+		}
+		
+		public ExternalLink getQuitSEB() {
+			return quitSEBButton;
 		}
 		
 		public ExternalLink getDownloadSEBButton() {

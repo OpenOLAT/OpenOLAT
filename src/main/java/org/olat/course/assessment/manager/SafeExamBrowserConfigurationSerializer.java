@@ -62,6 +62,9 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("showTime", configuration.isShowTimeClock());
 			plist.add("showInputLanguage", configuration.isShowKeyboardLayout());
 			plist.add("allowQuit", configuration.isAllowQuit());
+			if(StringHelper.containsNonWhitespace(configuration.getLinkToQuit())) {
+				plist.add("quitURL", configuration.getLinkToQuit());
+			}
 			plist.add("quitURLConfirm", configuration.isQuitURLConfirm());
 			plist.add("audioControlEnabled", configuration.isAudioControlEnabled());
 			plist.add("audioMute", configuration.isAudioMute());
@@ -127,6 +130,9 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.addProperty("examSessionClearCookiesOnStart", false);
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {
 				plist.addProperty("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));
+			}
+			if(StringHelper.containsNonWhitespace(configuration.getLinkToQuit())) {
+				plist.addProperty("quitURL", configuration.getLinkToQuit());
 			}
 			plist.addProperty("quitURLConfirm", configuration.isQuitURLConfirm());
 			plist.addProperty("sendBrowserExamKey", true);

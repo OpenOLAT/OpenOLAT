@@ -92,6 +92,11 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 
 	@Override
+	public LockResourceInfos getLastUnlockedResourceInfos() {
+		return null;
+	}
+
+	@Override
 	public final void lockResource(OLATResourceable resource) {
 		//
 	}
