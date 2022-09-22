@@ -25,6 +25,8 @@
 
 package org.olat.course.assessment;
 
+import java.util.UUID;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
@@ -52,6 +54,7 @@ public class AssessmentModule extends AbstractSpringModule {
 	private static final String SEB_SHOWTIME = "safe.exam.browser.show.time";
 	private static final String SEB_SHOWINPUTLANGUAGE = "safe.exam.browser.show.input.language";
 	private static final String SEB_ALLOWQUIT = "safe.exam.browser.allow.quit";
+	private static final String SEB_QUITURL = "safe.exam.browser.quit.url";
 	private static final String SEB_QUITURLCONFIRM = "safe.exam.browser.quit.url.confirm";
 	private static final String SEB_AUDIOCONTROLENABLED = "safe.exam.browser.audio.control.enabled";
 	private static final String SEB_AUDIOMUTE = "safe.exam.browser.audio.mute";
@@ -89,6 +92,8 @@ public class AssessmentModule extends AbstractSpringModule {
 	private String safeExamBrowserShowInputLanguage;
 	@Value("${safe.exam.browser.allow.quit:true}")
 	private String safeExamBrowserAllowQuit;
+	@Value("${safe.exam.browser.quit.url:true}")
+	private String safeExamBrowserQuitUrl;
 	@Value("${safe.exam.browser.quit.url.confirm:true}")
 	private String safeExamBrowserQuitURLConfirm;
 	@Value("${safe.exam.browser.audio.control.enabled:true}")
@@ -163,6 +168,7 @@ public class AssessmentModule extends AbstractSpringModule {
 		
 		safeExamBrowserShowInputLanguage = getStringPropertyValue(SEB_SHOWINPUTLANGUAGE, safeExamBrowserShowInputLanguage);
 		safeExamBrowserAllowQuit = getStringPropertyValue(SEB_ALLOWQUIT, safeExamBrowserAllowQuit);
+		safeExamBrowserQuitUrl = getStringPropertyValue(SEB_QUITURL, safeExamBrowserQuitUrl);
 		safeExamBrowserQuitURLConfirm = getStringPropertyValue(SEB_QUITURLCONFIRM, safeExamBrowserQuitURLConfirm);
 		safeExamBrowserAudioControlEnabled = getStringPropertyValue(SEB_AUDIOCONTROLENABLED, safeExamBrowserAudioControlEnabled);
 		safeExamBrowserAudioMute = getStringPropertyValue(SEB_AUDIOMUTE, safeExamBrowserAudioMute);
@@ -217,7 +223,11 @@ public class AssessmentModule extends AbstractSpringModule {
 		config.setShowTimeClock(isSafeExamBrowserShowTime());
 		config.setShowKeyboardLayout(isSafeExamBrowserShowInputLanguage());
 		config.setAllowWlan(isSafeExamBrowserAllowWlan());
-		config.setAllowQuit(this.isSafeExamBrowserAllowQuit());
+		config.setAllowQuit(isSafeExamBrowserAllowQuit());
+		if(isSafeExamBrowserQuitURL()) {
+			String linkToQuit = Settings.getServerContextPathURI() + "/" + UUID.randomUUID().toString();
+			config.setLinkToQuit(linkToQuit);
+		}
 		config.setQuitURLConfirm(isSafeExamBrowserQuitURLConfirm());
 		
 		config.setAudioControlEnabled(isSafeExamBrowserAudioControlEnabled());
@@ -283,6 +293,15 @@ public class AssessmentModule extends AbstractSpringModule {
 	public void setSafeExamBrowserAllowQuit(boolean allowQuit) {
 		safeExamBrowserAllowQuit = allowQuit ? "true" : "false";
 		setStringProperty(SEB_ALLOWQUIT, safeExamBrowserAllowQuit, true);
+	}
+	
+	public boolean isSafeExamBrowserQuitURL() {
+		return "true".equals(safeExamBrowserQuitUrl);
+	}
+
+	public void setSafeExamBrowserQuitURL(boolean quitUrl) {
+		safeExamBrowserQuitUrl = quitUrl ? "true" : "false";
+		setStringProperty(SEB_QUITURL, safeExamBrowserQuitUrl, true);
 	}
 
 	public boolean isSafeExamBrowserQuitURLConfirm() {
