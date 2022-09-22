@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SafeExamBrowserAdminController extends FormBasicController {
 
 	private SingleSelection allowToExitEl;
+	private SingleSelection linkToQuitEl;
 	private SingleSelection askUserToConfirmQuitEl;
 	private SingleSelection enableReloadInExamEl;
 	private SingleSelection browserViewModeEl;
@@ -90,13 +91,19 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		trueFalseValues.add(SelectionValues.entry("true", translate("yes")));
 		trueFalseValues.add(SelectionValues.entry("false", translate("no")));
 		
-		askUserToConfirmQuitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", formLayout,
-				trueFalseValues.keys(), trueFalseValues.values());
-		askUserToConfirmQuitEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserQuitURLConfirm()), true);
+
 		
 		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowToExitEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAllowQuit()), true);
+		
+		linkToQuitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.link.to.quit", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		linkToQuitEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserQuitURL()), true);
+		
+		askUserToConfirmQuitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		askUserToConfirmQuitEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserQuitURLConfirm()), true);
 		
 		enableReloadInExamEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.enable.reload", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -229,6 +236,7 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		}
 		
 		assessmentModule.setSafeExamBrowserAllowQuit(allowToExitEl.isOneSelected() && allowToExitEl.isKeySelected("true"));
+		assessmentModule.setSafeExamBrowserQuitURL(linkToQuitEl.isOneSelected() && linkToQuitEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserQuitURLConfirm(askUserToConfirmQuitEl.isOneSelected() && askUserToConfirmQuitEl.isKeySelected("true"));
 		
 		boolean audioControlEnabled = audioControlEnabledEl.isOneSelected() && audioControlEnabledEl.isKeySelected("true");
@@ -244,8 +252,11 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		assessmentModule.setSafeExamBrowserAllowSpellCheck(allowSpellCheckEl.isOneSelected() && allowSpellCheckEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserAllowZoomInOut(allowZoomEl.isOneSelected() && allowZoomEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserBrowserWindowAllowReload(enableReloadInExamEl.isOneSelected() && enableReloadInExamEl.isKeySelected("true"));
-		assessmentModule.setSafeExamBrowserUrlFilter(urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true"));
-		assessmentModule.setSafeExamBrowserUrlContentFilter(urlContentFilterEl.isOneSelected() && urlContentFilterEl.isKeySelected("true"));
+		
+		boolean urlFilter = urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true");
+		assessmentModule.setSafeExamBrowserUrlFilter(urlFilter);
+		boolean urlContentFilter = urlFilter && urlContentFilterEl.isOneSelected() && urlContentFilterEl.isKeySelected("true");
+		assessmentModule.setSafeExamBrowserUrlContentFilter(urlContentFilter);
 		
 		assessmentModule.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 	}
