@@ -415,8 +415,13 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							String cTimest = target.getTimestamp();
 							String urlCTimest = ureq.getComponentTimestamp();
 							validForDispatching = cTimest.equals(urlCTimest);
-							if (!validForDispatching && isDebugLog) { 
-								log.debug("Invalid timestamp: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + cTimest + " target=" + target);
+							if (!validForDispatching) { 
+								log.debug("Invalid timestamp: ureq.compid:{} ureq.win-ts:{} ureq.comp-ts:{} target.timestamp:{} target={}",
+										ureq.getComponentID(), ureq.getTimestampID(), ureq.getComponentTimestamp(), cTimest, target);
+								//check no response call
+								if(isIgnorableRequest(ureq)) {
+									return;
+								}
 							}
 						} else { 
 							// the component was not found in the rendertree anymore.
@@ -424,10 +429,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							if (isDebugLog) log.debug("no ajax dispatch: component not found (target=null)");
 							validForDispatching = false;
 							//check no response call
-							String noResponseMarker = ureq.getParameter(NO_RESPONSE_PARAMETER_MARKER);
-							String ignoreValidatingMarker = ureq.getParameter(IGNORE_VALIDATING_ERROR_PARAMETER_MARKER);
-							if(NO_RESPONSE_VALUE_MARKER.equals(noResponseMarker)
-									|| IGNORE_VALIDATING_ERROR_RESPONSE_VALUE_MARKER.equals(ignoreValidatingMarker)) {
+							if(isIgnorableRequest(ureq)) {
 								return;
 							}
 						}
@@ -1383,14 +1385,15 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	public String getLatestDispatchComponentInfo() {
 		return latestDispatchComponentInfo;
 	}
+	
+	private boolean isIgnorableRequest(UserRequest ureq) {
+		String noResponseMarker = ureq.getParameter(NO_RESPONSE_PARAMETER_MARKER);
+		String ignoreValidatingMarker = ureq.getParameter(IGNORE_VALIDATING_ERROR_PARAMETER_MARKER);
+		return NO_RESPONSE_VALUE_MARKER.equals(noResponseMarker)
+				|| IGNORE_VALIDATING_ERROR_RESPONSE_VALUE_MARKER.equals(ignoreValidatingMarker);
+	}
 
-	/**
-	 * @return the chiefcontroller that owns this window
-	 */
-	/*public ChiefController getChiefController() {
-		return chiefController;
-	}*/
-
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		throw new AssertException("a window should never be rendered, but its contentpane");
 	}

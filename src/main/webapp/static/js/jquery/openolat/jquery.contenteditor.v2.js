@@ -69,6 +69,8 @@
 		var position = { x: 0, y: 0 };
 		var $settings = settings;
 		
+		console.log('Init interact');
+		
 		function setPositionClass(target, top) {
 			if(top) {
 				jQuery(target).addClass('oo-accepted');
