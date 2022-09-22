@@ -19,24 +19,28 @@
  */
 package org.olat.course.assessment.model;
 
+import java.io.Serializable;
+
 /**
  * 
  * Initial date: 25 janv. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SafeExamBrowserConfiguration {
+public class SafeExamBrowserConfiguration implements Serializable {
+	
+	private static final long serialVersionUID = 8192397054029120553L;
 	
 	public static final int BROWSERVIEWMODE_WINDOW = 0;
 	public static final int BROWSERVIEWMODE_FULLSCREEN = 1;
 	public static final int BROWSERVIEWMODE_TOUCH = 2;
-	
 	
 	private String startUrl;
 	
 	private boolean allowQuit= true;
 	private boolean quitURLConfirm;
 	private String passwordToExit;
+	private String linkToQuit;
 	private boolean browserWindowAllowReload;
 	private boolean showReloadButton;
 	private boolean showTaskBar;
@@ -59,6 +63,10 @@ public class SafeExamBrowserConfiguration {
 	private String blockedUrlRegex;
 	
 	private int browserViewMode;
+	
+	public SafeExamBrowserConfiguration() {
+		//
+	}
 
 	public String getStartUrl() {
 		return startUrl;
@@ -92,6 +100,14 @@ public class SafeExamBrowserConfiguration {
 		this.passwordToExit = passwordToExit;
 	}
 	
+	public String getLinkToQuit() {
+		return linkToQuit;
+	}
+
+	public void setLinkToQuit(String linkToQuit) {
+		this.linkToQuit = linkToQuit;
+	}
+
 	public boolean isBrowserWindowAllowReload() {
 		return browserWindowAllowReload;
 	}
