@@ -94,10 +94,13 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	}
 
 	@Override
-	public void setInspectorVisible(boolean inspectorVisible) {
+	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
 		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
 			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
-			setDirty(true);
+			inspectorPart.getInitialComponent().setDirty(false);
+			if(!silently) {
+				setDirty(true);
+			}
 		}
 	}
 
@@ -225,11 +228,11 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		if(changed) {
 			setDirty(true);
 			if(editMode) {
-				setInspectorVisible(true);
+				setInspectorVisible(true, false);
 				fireEvent(ureq, new EditPageElementEvent(this));
 			}
 		} else if(this.editMode && !isInspectorVisible()) {
-			setInspectorVisible(true);
+			setInspectorVisible(true, false);
 		}
 	}
 	

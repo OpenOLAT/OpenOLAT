@@ -161,10 +161,17 @@
 	}
 }
 
-.o_page_content_editor .o_fragment_edited .o_page_layout,
+.o_page_content_editor .o_page_fragment_edit.o_page_container_edit.o_fragment_edited .o_page_layout,
 .o_page_content_editor .o_page_container_edit:hover .o_page_layout {
 	>div {
 		border-color: $o-editor-selected-border-color;
+	}
+}
+
+.o_page_content_editor .o_fragment_edited .o_inspector_layouts .o_page_layout,
+.o_page_content_editor .o_page_container_edit:hover .o_inspector_layouts .o_page_layout {
+	>div {
+		border: none;
 	}
 }
 

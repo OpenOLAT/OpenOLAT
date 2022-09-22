@@ -32,14 +32,19 @@ public class CloseInspectorEvent extends Event {
 	private static final long serialVersionUID = 4291961805435644416L;
 	
 	private final String elementId;
+	private final boolean silently;
 	
-	public CloseInspectorEvent(String elementId) {
+	public CloseInspectorEvent(String elementId, boolean silently) {
 		super("ce-close-inspector");
 		this.elementId = elementId;
+		this.silently = silently;
 	}
 	
 	public String getElementId() {
 		return elementId;
 	}
 
+	public boolean isSilently() {
+		return silently;
+	}
 }

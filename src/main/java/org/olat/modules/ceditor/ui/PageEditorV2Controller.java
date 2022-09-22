@@ -226,7 +226,7 @@ public class PageEditorV2Controller extends BasicController {
 			doCloseEditor(ureq, cpe.getElement());
 		} else if(event instanceof CloseInspectorEvent) {
 			CloseInspectorEvent cpe = (CloseInspectorEvent)event;
-			doCloseInspector(ureq, cpe.getElementId());
+			doCloseInspector(ureq, cpe.getElementId(), cpe.isSilently());
 		}
 		super.event(ureq, source, event);
 	}
@@ -330,12 +330,12 @@ public class PageEditorV2Controller extends BasicController {
 		}, editorCmp, false).visitAll(ureq);
 	}
 	
-	private void doCloseInspector(UserRequest ureq, String elementId) {
+	private void doCloseInspector(UserRequest ureq, String elementId, boolean silently) {
 		new ComponentTraverser((comp, uureq) -> {
 			if(comp instanceof ContentEditorFragment) {
 				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
 				if(elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
-					elementCmp.setInspectorVisible(false);
+					elementCmp.setInspectorVisible(false, silently);
 				}
 			}
 			return true;

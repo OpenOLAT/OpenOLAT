@@ -5,6 +5,36 @@
 <script>
 "use strict";
 jQuery(function() {
+	
+	var savePosition = function(inspectorEl) {
+		var rect = inspectorEl.getBoundingClientRect();
+		o_info.cinspector.viewX = rect.x;
+		o_info.cinspector.viewY = rect.y;
+	}
+	
+	var initializePosition = function() {
+		var jInspector = jQuery(".o_page_inspector");
+		var inspectorEl = jInspector.get(0);
+
+		var marginTop = 25;
+		if(o_info.cinspector.viewX > 0) {
+			var inspectorRect = inspectorEl.getBoundingClientRect();
+			var editedFragment = inspectorEl.offsetParent;
+			var editedFragmentRect = editedFragment.getBoundingClientRect();
+
+			var marginRight = -((o_info.cinspector.viewX - editedFragmentRect.right) + inspectorRect.width + 1);
+			jInspector.css("margin-right", marginRight + "px");
+
+			if(!isNaN(o_info.cinspector.viewY)) {
+				marginTop =  (o_info.cinspector.viewY - editedFragmentRect.y) - 1;
+			}
+		} else {
+			inspectorPosition();
+		}
+		jInspector.css("margin-top", marginTop + "px");
+		savePosition(inspectorEl);
+	}
+
 	var inspectorPosition = function() {
 		var totalWidth = window.innerWidth;
 		var jMain = jQuery("#o_main_container");
@@ -13,9 +43,9 @@ jQuery(function() {
 		var jInspector = jQuery(".o_page_inspector");
 		var inspectorWidth = jInspector.width();
 		
-		var editedFragment = jInspector.closest(".o_page_fragment_edit");
-		if(editedFragment.length > 0) {
-			var fragmentRect = editedFragment.get(0).getBoundingClientRect();
+		var editedFragment = jInspector.get(0).offsetParent;
+		if(editedFragment != null) {
+			var fragmentRect = editedFragment.getBoundingClientRect();
 			var mainRect = jMain.get(0).getBoundingClientRect();
 		
 			var margin = mainRect.right - mainRect.width;
@@ -26,13 +56,88 @@ jQuery(function() {
 			} else if(margin < inspectorWidth) {
 				positionX -= (inspectorWidth - margin) + 15;
 			}
-			jInspector.css('margin-right', '-' + positionX + 'px');
-			jInspector.css('margin-top', '25px');
+			
+			positionX = -1 * positionX;
+			jInspector.css("margin-right", positionX + "px");
 		}
 	};
 	
+   /**
+	* Hide the inspector if it goes out of the visible area. Only save the position
+	* if it's fully visible.
+	*/
+	var inspectorVisibility = function() {
+		jQuery(".o_page_inspector").each(function(index, inspectorEl) {
+			var el = inspectorEl;
+			var rect = inspectorEl.getBoundingClientRect();
+			var top = el.offsetTop;
+			var height = el.offsetHeight;
+
+			while(el.offsetParent) {
+				el = el.offsetParent;
+			    top += el.offsetTop;
+			}
+
+			var visible = top < (window.pageYOffset + window.innerHeight) && (top + height) > window.pageYOffset;
+			var fullVisible = rect.y > 0 && rect.bottom < window.innerHeight;
+			if(!visible) {
+				o_info.cinspector.viewY = NaN;
+				jQuery(inspectorEl).hide();
+				$r.backgroundCommand('close_inspector')
+			} else if(fullVisible) {
+				savePosition(inspectorEl);
+			} else {
+				o_info.cinspector.viewY = NaN;
+			}
+		});
+	}
+
+	var dragInspector = function() {
+		var posX = 0;
+		var posY = 0;
+		var inspectorEl = jQuery(".o_page_inspector").get(0);
+		var inspectorHeader = jQuery(".o_page_inspector .o_ceditor_inspector_header")[0];
+		inspectorHeader.onmousedown = dragMouseDown;
+		
+		function dragMouseDown(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// get the mouse cursor position at startup:
+			posX = e.clientX;
+			posY = e.clientY;
+			document.onmouseup = closeDragElement;
+			// call a function whenever the cursor moves:
+			document.onmousemove = elementDrag;
+		}
+		
+		function elementDrag(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// calculate the new cursor position:
+			var diffX = posX - e.clientX;
+			var diffY = posY - e.clientY;
+			posX = e.clientX;
+			posY = e.clientY;
+			// set the element's new position:
+			var marginRight = parseInt(inspectorEl.style.marginRight.replace("px", ""));
+			var marginTop = parseInt(inspectorEl.style.marginTop.replace("px", ""));
+			inspectorEl.style.marginTop = (marginTop - diffY) + "px";
+			inspectorEl.style.marginRight = (marginRight + diffX) + "px";
+		}
+
+		function closeDragElement() {
+			// stop moving when mouse button is released:
+			document.onmouseup = null;
+			document.onmousemove = null;
+			// catch last position
+			savePosition(inspectorEl);
+		}
+	}
+	
 	jQuery(window).resize(inspectorPosition);
-	inspectorPosition();
+	jQuery(window).scroll(inspectorVisibility);
+	initializePosition();
+	dragInspector();
 });
 </script>
 

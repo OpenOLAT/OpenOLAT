@@ -119,6 +119,10 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 				case "clone_element":
 					fireEvent(ureq, new CloneElementEvent(this));
 					break;
+				case "clone_inspector":
+					fireEvent(ureq, new CloneElementEvent(this));
+					break;	
+					
 				case "delete_element":
 					fireEvent(ureq, new DeleteElementEvent(this));
 					break;
@@ -195,11 +199,11 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		if(this.editMode != editMode) {
 			this.editMode = editMode;
 			if(this.editMode) {
-				setInspectorVisible(true);
+				setInspectorVisible(true, false);
 			}
 			setDirty(true);
 		} else if(this.editMode && !isInspectorVisible()) {
-			setInspectorVisible(true);
+			setInspectorVisible(true, false);
 		}
 	}
 
@@ -209,10 +213,13 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	}
 
 	@Override
-	public void setInspectorVisible(boolean inspectorVisible) {
+	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
 		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
 			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
-			setDirty(true);
+			inspectorPart.getInitialComponent().setDirty(false);
+			if(!silently) {
+				setDirty(true);
+			}
 		}
 	}
 

@@ -40,7 +40,7 @@ public interface ContentEditorFragment extends ComponentCollection {
 	
 	public boolean isInspectorVisible();
 	
-	public void setInspectorVisible(boolean visible);
+	public void setInspectorVisible(boolean visible, boolean silently);
 	
 	public boolean isCloneable();
 	

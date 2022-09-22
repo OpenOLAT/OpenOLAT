@@ -18,7 +18,6 @@
 	&:hover, &.o_fragment_edited {
 		box-shadow: 1px 1px 2px 2px #eee;
 		border: 1px solid $o-editor-selected-border-color;
-		z-index: 2;
 	}
 	
 	.o_page_container_tools {

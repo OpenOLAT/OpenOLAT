@@ -41,6 +41,7 @@ import org.olat.modules.ceditor.ui.event.CloseInspectorEvent;
 public class ModalInspectorController extends BasicController implements PageElementInspectorController {
 	
 	private final Link closeButton;
+	private final VelocityContainer mainVC;
 	
 	private final String title;
 	private final String elementId;
@@ -52,7 +53,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 		
 		listenTo(inspectorCtrl);
 		
-		VelocityContainer mainVC = createVelocityContainer("element_inspector");
+		mainVC = createVelocityContainer("element_inspector");
 		mainVC.put("inspector", inspectorCtrl.getInitialComponent());
 		if(title != null) {
 			mainVC.contextPut("title", title);
@@ -71,7 +72,11 @@ public class ModalInspectorController extends BasicController implements PageEle
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(closeButton == source) {
-			fireEvent(ureq, new CloseInspectorEvent(elementId));
+			fireEvent(ureq, new CloseInspectorEvent(elementId, false));
+		} else if(mainVC == source) {
+			if("close_inspector".equals(event.getCommand())) {
+				fireEvent(ureq, new CloseInspectorEvent(elementId, true));
+			}
 		}
 	}
 	
