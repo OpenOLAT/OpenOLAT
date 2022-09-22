@@ -130,6 +130,9 @@ public class StaticHandler implements CatalogLauncherHandler {
 				.filter(Objects::nonNull)
 				.limit(4)
 				.collect(Collectors.toList());
+		if (entries.isEmpty()) {
+			return null;
+		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		CatalogRepositoryEntryState state = new CatalogRepositoryEntryState();

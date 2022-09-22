@@ -169,6 +169,9 @@ public class RecentlyPublishedHandler implements CatalogLauncherHandler {
 		searchParams.setOrderBy(OrderBy.publishedDate);
 		searchParams.setOrderByAsc(false);
 		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERED_NUMBER_CARDS);
+		if (entries.isEmpty()) {
+			return null;
+		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
 		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false, null);
