@@ -19,7 +19,7 @@
  */
 package org.olat.modules.catalog.launcher;
 
-import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERED_NUMBER_CARDS;
+import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERRED_NUMBER_CARDS;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -146,7 +146,7 @@ public class PopularCoursesHandler implements CatalogLauncherHandler {
 		searchParams.setStatus(Collections.singletonList(RepositoryEntryStatusEnum.published));
 		searchParams.setOrderBy(OrderBy.popularCourses);
 		searchParams.setOrderByAsc(false);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERED_NUMBER_CARDS);
+		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERRED_NUMBER_CARDS);
 		if (entries.isEmpty()) {
 			return null;
 		}
