@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
@@ -55,6 +56,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.condition.Condition;
@@ -72,8 +74,13 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.learningpath.obligation.BusinessGroupExceptionalObligation;
+import org.olat.course.learningpath.obligation.BusinessGroupExceptionalObligationHandler;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.learningpath.obligation.PassedExceptionalObligation;
+import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -94,6 +101,8 @@ import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.group.BusinessGroupRef;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
@@ -467,6 +476,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
+		postCopyExceptionalObligations(envMapper);
 		postCopyGradeScale(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent(),
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
 		
@@ -693,6 +703,34 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			}
 		}
 	}
+	
+	private void postCopyExceptionalObligations(CourseEnvironmentMapper envMapper) {
+		if (!envMapper.isLearningPathNodeAccess()) {
+			return;
+		}
+		
+		// Set the group references to the mapped group.
+		// If the no mapped group is available (e.g. not copied in course copy wizard)
+		// remove the group reference but let the exceptional obligation. In this case
+		// an error is displayed in the course editor.
+		
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
+		learningPathConfigs.getExceptionalObligations().forEach(obl -> {
+			if (obl instanceof BusinessGroupExceptionalObligation) {
+				BusinessGroupExceptionalObligation bgeo = (BusinessGroupExceptionalObligation)obl;
+				BusinessGroupRef oblGroup = bgeo.getBusinessGroupRef();
+				if (oblGroup != null) {
+					Optional<BusinessGroupReference> mappedGroup = envMapper.getGroups().stream().filter(group -> group.getOriginalKey().equals(oblGroup.getKey())).findFirst();
+					if (mappedGroup.isEmpty()) {
+						bgeo.setBusinessGroupRef(null);
+					} else {
+						bgeo.setBusinessGroupRef(() -> mappedGroup.get().getKey());
+					}
+				}
+			}
+		});
+	}
 
 	private void postCopyGradeScale(RepositoryEntry sourceEntry, String sourceIdent, RepositoryEntry targetEntry, String targetIdent) {
 		if (CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentConfig(sourceEntry, this).hasGrade()) {
@@ -787,8 +825,44 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 				}
 			}
 		}
+		
+		StatusDescription lpsd = validateLearningPathObligations(cev);
+		if (lpsd != null) {
+			condExprsStatusDescs.add(lpsd);
+		}
+		
 		condExprsStatusDescs.add(first);
+		
 		return condExprsStatusDescs;
+	}
+
+	private StatusDescription validateLearningPathObligations(CourseEditorEnv cev) {
+		if(cev != null) {
+			RepositoryEntry courseRe = cev.getCourseGroupManager().getCourseEntry();
+			ICourse course = CourseFactory.loadCourse(courseRe);
+			if (LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+				LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
+				List<ExceptionalObligation> exceptionObligations = learningPathConfigs.getExceptionalObligations();
+				for (ExceptionalObligation exceptionalObligation : exceptionObligations) {
+					if (exceptionalObligation instanceof BusinessGroupExceptionalObligation) {
+						BusinessGroupExceptionalObligation bgeo = (BusinessGroupExceptionalObligation)exceptionalObligation;
+						BusinessGroupExceptionalObligationHandler handler = CoreSpringFactory.getImpl(BusinessGroupExceptionalObligationHandler.class);
+						if (handler.getGroup(bgeo) == null) {
+							StatusDescription sd = new StatusDescription(StatusDescription.ERROR,
+									"exceptional.obligation.group.error.not.available.short",
+									"exceptional.obligation.group.error.not.available.long",
+									null,
+									LearningPathNodeConfigController.class.getPackageName());
+							sd.setDescriptionForUnit(getIdent());
+							sd.setActivateableViewIdentifier(TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH);
+							return sd;
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
