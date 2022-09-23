@@ -55,24 +55,47 @@
 		top: -20px;
 		left: 10px;
 		z-index: 7;
+		display: grid;
+		grid-template-columns: 32px 32px 32px;
+		align-items: baseline;
 		
 		background: white;
-		border: 1px solid black;
-		padding: 1px 10px;
+		border: 1px solid $o-editor-border-color;
+		padding: 0;
 		border-radius: $border-radius-small;
 		box-shadow: $o-editor-tools-box-shadow;
 		
-		>a {
-			margin-right: 0.5em;
+		>a,  {
+			margin: 0;
+			padding: 1px 5px 1px 7px;
 		}
 		>button {
-			margin-right: 0.5em;
+			margin: 0;
+			padding: 1px 7px;
 			border: none;
-			background-color: transparent;
+			background: transparent;
+		}
+		>span {
+			margin: 0;
+			padding: 1px 5px;
+		}
+		
+		>*:not(:first-child) {
+			border-left: 1px solid #d9d9d9;
+		}
+		
+		>a>span, >button>span {
+			display: none;
 		}
 	}
+	
+	.o_fragment_edited .o_page_element_tools>a,
+	.o_fragment_edited .o_page_element_tools>button[aria-expanded='true'] {
+		background-color: $o-editor-selected-color;
+		color: #fff;
+	}
 
-	.o_page_container_tools, .o_page_element_tools {
+	.o_page_container_tools {
 		>a, >button, >span {
 			margin: 0;
 			padding: 0 5px;
@@ -143,16 +166,6 @@
 	padding: 6px 3px;
 }
 
-.o_page_container_slot.col-md-3, .o_page_container_slot.col-md-4 {
-	.o_page_others_above a span {
-		display: none;
-	}
-	
-	.o_page_edit_toolbar ul>li {
-		padding-right: 0;
-	}
-}
-
 .o_page_container {
 	box-sizing: border-box;
 	padding: 10px;
@@ -174,7 +187,12 @@
 	box-sizing: border-box;
 	margin: 0 -1px -1px 0;
 	padding: 10px;
+	
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 }
+
 .o_page_container {
 	.o_page_container_slot {
 		border: $o-editor-element-border-width dotted $o-editor-container-border-color;
@@ -205,8 +223,14 @@
 		}
 	}
 }
+
 .o_page_add_in_container_grp {
-	margin-bottom: 0;
+	margin: 5px 0 -7px 0;
+	flex-grow: 0;
+	flex-shrink: 0;
+	>a {
+		margin: 0;
+	}
 }
 
 /* d&d styles */
@@ -220,6 +244,12 @@
 	-ms-user-select: none;
 }
 
+.o_page_container_slot-inner.oo-drop-accepted {
+	outline: 1px dashed $o-editor-selected-border-color;
+}
+
+
+//TODO editor
 .o_page_part.oo-accepted,
 .o_page_part.oo-accepted-top,
 .o_page_container_edit.o_page_drop.oo-accepted,
@@ -253,8 +283,32 @@
 	content: '';
 }
 
-.oo-dragging {
-	z-index: 4;
+.o_page_container_slot-inner {
+	min-height: 20px;
+	flex-grow: 5;
+}
+
+.gu-transit {
+	//
+}
+
+.gu-transit .o_page_inspector,
+.gu-mirror .o_page_inspector
+{
+	display: none;
+}
+
+.gu-mirror .tox-tinymce {
+	border: none;
+}
+		
+.gu-mirror .o_page_part .tox-statusbar {
+	display: none;
+}
+
+.gu-mirror .o_page_element_tools>span {
+	background-color: $o-editor-selected-color;
+	color: #fff;
 }
 
 .o_page_part.oo-dragging, .o_page_fragment_edit.oo-dragging .o_page_part {

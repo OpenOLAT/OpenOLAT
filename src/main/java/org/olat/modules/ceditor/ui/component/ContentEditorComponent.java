@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.helpers.Settings;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
@@ -220,12 +219,14 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 	
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
-		if(Settings.isDebuging()) {
+		/*if(Settings.isDebuging()) {
 			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/interactjs/interact.js");
 		} else {
 			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/interactjs/interact.min.js");
-		}
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.contenteditor.v2.js");
+		}*/
+		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.contenteditor.v3.js");
+		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/dragula/dragula.js");
+
 		super.validate(ureq, vr);
 	}
 

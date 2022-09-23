@@ -105,7 +105,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		renderMoreMenu(sb, cmp, containerUbu, translator);
 		renderMoveDown(sb, cmp, containerUbu, translator);
 		renderMoveUp(sb, cmp, containerUbu, translator);
-		renderDragZone(sb, cmp, translator);
+		// renderDragZone(sb, cmp, translator);
 		
 		sb.append("</div>");
 	}

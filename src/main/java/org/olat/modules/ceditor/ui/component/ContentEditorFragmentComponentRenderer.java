@@ -77,6 +77,13 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		sb.append("</div>");
 
 		renderInspector(renderer, sb, cmp.getInspectorComponent(), fragmentUbu, translator, renderResult, args);
+		
+		sb.append("<script>\n")
+		  .append("\"use strict\";\n")
+		  .append("jQuery(function() {\n")
+		  .append(" jQuery('.o_page_content_editor').ceditor('editFragment');\n")
+		  .append("});\n")
+		  .append("</script>");
 
 		sb.append("</div>");
 	}

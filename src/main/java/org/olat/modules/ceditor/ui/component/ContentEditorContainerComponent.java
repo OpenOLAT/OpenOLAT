@@ -323,8 +323,17 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 			slot = Integer.parseInt(slotId);
 		}
 		String position = ureq.getParameter("position");
-		fireEvent(ureq, new DropToPageElementEvent(sourceId, this, slot,
-				PositionEnum.valueOf(position, PositionEnum.bottom)));
+		String target = ureq.getParameter("target");
+		if(StringHelper.containsNonWhitespace(target)) {
+			Component editFragment = getComponent(target);
+			if(editFragment instanceof ContentEditorFragment) {
+				fireEvent(ureq, new DropToPageElementEvent(sourceId, (ContentEditorFragment)editFragment,
+						PositionEnum.valueOf(position, PositionEnum.top)));
+			}
+		} else {
+			fireEvent(ureq, new DropToPageElementEvent(sourceId, this, slot,
+					PositionEnum.valueOf(position, PositionEnum.bottom)));
+		}
 	}
 	
 	private void doCloseEditFragment() {

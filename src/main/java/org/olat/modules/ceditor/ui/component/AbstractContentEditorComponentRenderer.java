@@ -89,7 +89,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 					new NameValuePair(VelocityContainer.COMMAND_ID, "edit_fragment"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
 			sb.append(" return false;\" class='o_sel_edit_element' title='").append(translator.translate("edit"))
-			  .append("'><i class='o_icon o_icon-fw o_icon_correction'> </i> <span>").append(translator.translate("edit")).append("</span></a>");
+			  .append("'><i class='o_icon o_icon-fw o_icon_inspect'> </i> <span>").append(translator.translate("edit")).append("</span></a>");
 		}
 	}
 	
