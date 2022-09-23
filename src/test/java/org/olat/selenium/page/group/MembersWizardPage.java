@@ -128,14 +128,16 @@ public class MembersWizardPage {
 		
 		String search = admin ? user.getLogin() : user.getFirstName();
 		browser.findElement(firstFieldBy).sendKeys(search);
+		OOGraphene.waitingALittleLonger();
 
 		try {
 			By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
-			OOGraphene.clickAndWait(searchBy, browser);
+			OOGraphene.click(searchBy, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Search member", browser);
 			throw e;
 		}
+		OOGraphene.waitBusyAndScrollTop(browser);
 		return this;
 	}
 	
