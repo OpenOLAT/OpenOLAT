@@ -141,7 +141,7 @@ public class AdministrationPage {
 		
 		By groupBy = By.cssSelector(".o_sel_group span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(groupBy, browser);
-		browser.findElement(groupBy).click();
+		OOGraphene.click(groupBy, browser);
 		OOGraphene.waitBusyAndScrollTop(browser);
 		By groupConfigBy = By.cssSelector("fieldset.o_sel_group_admin_dedup");
 		OOGraphene.waitElement(groupConfigBy, browser);
