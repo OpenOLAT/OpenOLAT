@@ -41,6 +41,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticMethod;
@@ -53,6 +54,7 @@ import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.ims.lti13.LTI13Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -61,6 +63,9 @@ import org.olat.ims.lti13.LTI13Service;
  *
  */
 public abstract class AbstractBusinessGroupLifecycleListController extends AbstractBusinessGroupListController {
+	
+	@Autowired
+	protected BusinessGroupModule businessGroupModule;
 
 	public AbstractBusinessGroupLifecycleListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
 		super(ureq, wControl, "group_list", false, prefsKey, false, null);
@@ -238,9 +243,10 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 	}
 	
 	@Override
-	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
+	protected final List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
 		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsWithMemberships(params, getIdentity());
 		List<BGTableItem> items = new ArrayList<>(rows.size());
+		boolean automatic = isAutomaticMethod();
 		for(StatisticsBusinessGroupRow row:rows) {
 			BusinessGroupMembership membership = row.getMember();
 			boolean allowLeave =  membership != null;
@@ -251,6 +257,8 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 			item.setNumOfParticipants(row.getNumOfParticipants());
 			item.setNumWaiting(row.getNumWaiting());
 			item.setNumOfPendings(row.getNumPending());
+			
+			updateExcludeFromAutomaticMethodsEl(automatic, item);
 			
 			if(item.getGroupStatus() == BusinessGroupStatusEnum.active) {
 				item.setPlannedInactivationDate(businessGroupLifecycleManager.getInactivationDate(row));
@@ -266,6 +274,17 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 			items.add(item);
 		}
 		return items;
+	}
+	
+	protected abstract boolean isAutomaticMethod();
+	
+	private void updateExcludeFromAutomaticMethodsEl(boolean isAutomatic, BGTableItem item) {
+		if(isAutomatic
+			&& ((item.isManaged() && businessGroupModule.isGroupLifecycleExcludeManaged())
+				|| (LTI13Service.LTI_GROUP_TYPE.equals(item.getTechnicalType()) && businessGroupModule.isGroupLifecycleExcludeLti())
+				|| (item.hasResources() && BusinessGroupLifecycleTypeEnum.withoutResources == businessGroupModule.getGroupLifecycleTypeEnum()))) {
+			item.setExcludedFromAutoLifecycle(true);
+		}
 	}
 
 	@Override

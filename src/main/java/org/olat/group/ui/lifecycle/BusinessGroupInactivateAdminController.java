@@ -294,7 +294,7 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {
 		if(guardModalController(translatorCtrl)) return;
 
-		String description = MailHelper.getVariableNamesHelp(BGMailTemplate.allVariableNames(), getLocale());
+		String description = MailHelper.getVariableNamesHelp(BGMailTemplate.variableNames(true), getLocale());
 		SingleKey subjectKey = new SingleKey(bundle.getSubjectI18nKey(), InputType.TEXT_ELEMENT);
 		SingleKey bodyKey = new SingleKey(bundle.getBodyI18nKey(), InputType.TEXT_AREA);
 		List<SingleKey> keys = List.of(subjectKey, bodyKey);
@@ -303,7 +303,7 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 
-		String title = translate("translate.title", new String[] { translate(bundle.getLabelI18nKey()) });
+		String title = translate("translate.title", translate(bundle.getLabelI18nKey()));
 		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

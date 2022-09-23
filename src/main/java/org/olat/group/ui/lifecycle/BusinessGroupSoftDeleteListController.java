@@ -135,4 +135,9 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 		restoreButton = uifactory.addFormLink("table.restore", TABLE_ACTION_DEFINITIVELY_DELETE, "table.restore", null, formLayout, Link.BUTTON);
 		tableEl.addBatchButton(restoreButton);
 	}
+	
+	@Override
+	protected boolean isAutomaticMethod() {
+		return businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled();
+	}
 }

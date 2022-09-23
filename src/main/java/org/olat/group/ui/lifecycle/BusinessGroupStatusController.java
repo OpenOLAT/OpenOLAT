@@ -42,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
@@ -49,6 +50,7 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.ui.main.BusinessGroupListController;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,6 +73,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 	private MultipleSelectionElement excludeFromAutomaticMethodsEl;
 	
 	private final boolean hasMembersOrResources;
+	private final boolean hasResources;
 	private BusinessGroup businessGroup;
 
 	private CloseableModalController cmc;
@@ -91,8 +94,8 @@ public class BusinessGroupStatusController extends FormBasicController {
 	public BusinessGroupStatusController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.businessGroup = businessGroup;
-		hasMembersOrResources = businessGroupService.countMembers(businessGroup, GroupRoles.coach.name()) > 0
-				|| businessGroupService.hasResources(businessGroup);
+		hasResources = businessGroupService.hasResources(businessGroup);
+		hasMembersOrResources = hasResources || businessGroupService.countMembers(businessGroup, GroupRoles.coach.name()) > 0;
 		
 		initForm(ureq);
 	}
@@ -354,7 +357,16 @@ public class BusinessGroupStatusController extends FormBasicController {
 	}
 	
 	private void updateExcludeFromAutomaticMethodsEl(boolean isAutomatic) {
-		if(!isAutomatic) {
+		if(isAutomatic) {
+			if((StringHelper.containsNonWhitespace(businessGroup.getManagedFlagsString()) && businessGroupModule.isGroupLifecycleExcludeManaged())
+				|| (LTI13Service.LTI_GROUP_TYPE.equals(businessGroup.getTechnicalType()) && businessGroupModule.isGroupLifecycleExcludeLti())
+				|| (hasResources && BusinessGroupLifecycleTypeEnum.withoutResources == businessGroupModule.getGroupLifecycleTypeEnum())) {
+				excludeFromAutomaticMethodsEl.setEnabled(false);
+				excludeFromAutomaticMethodsEl.select("exclude", true);
+			} else {
+				excludeFromAutomaticMethodsEl.setEnabled(true);
+			}
+		} else {
 			excludeFromAutomaticMethodsEl.setEnabled(false);
 		}
 	}

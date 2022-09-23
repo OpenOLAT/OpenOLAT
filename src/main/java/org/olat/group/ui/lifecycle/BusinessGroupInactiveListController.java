@@ -163,4 +163,10 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 			tableEl.addBatchButton(reactivateButton);
 		}
 	}
+	
+	@Override
+	protected boolean isAutomaticMethod() {
+		return businessGroupModule.isAutomaticGroupSoftDeleteEnabled();
+	}
+	
 }

@@ -374,6 +374,10 @@ public class BGMailHelper {
 		private static final String GROUP_DESCRIPTION = "groupDescription";
 		private static final String COURSE_LIST = "courseList";
 		private static final String COURSE_LIST_EMPTY = "courseListEmpty";
+		private static final String ACTOR = "actor";
+		private static final String ACTOR_FIRSTNAME = "actorFirstname";
+		private static final String ACTOR_LASTNAME = "actorLastname";
+		private static final String ACTOR_EMAIL = "actorEmail";
 		
 		private final BGMailTemplateInfos infos;
 		private final Translator translator;
@@ -400,13 +404,19 @@ public class BGMailHelper {
 			return infos;
 		}
 		
-		public static final Collection<String> allVariableNames() {
+		public static final Collection<String> variableNames(boolean withActor) {
 			List<String> variableNames = new ArrayList<>();
 			variableNames.addAll(getStandardIdentityVariableNames());
 			variableNames.add(GROUP_NAME);
 			variableNames.add(GROUP_DESCRIPTION);
 			variableNames.add(COURSE_LIST);
 			variableNames.add(COURSE_LIST_EMPTY);
+			if(withActor) {
+				variableNames.add(ACTOR);
+				variableNames.add(ACTOR_FIRSTNAME);
+				variableNames.add(ACTOR_LASTNAME);
+				variableNames.add(ACTOR_EMAIL);
+			}
 			return variableNames;
 		}
 		
@@ -467,16 +477,16 @@ public class BGMailHelper {
 		}
 		
 		private void putActorVariables(VelocityContext context, String firstName, String lastName, String email, String fullName) {
-			context.put("actor", fullName);
+			context.put(ACTOR, fullName);
 			context.put("actorFirst", firstName);
-			context.put("actorFirstname", firstName);
+			context.put(ACTOR_FIRSTNAME, firstName);
 			context.put("actorFirstName", firstName);
 			context.put("actorfirstname", firstName);
 			context.put("actorLast", lastName);
-			context.put("actorLastname", lastName);
+			context.put(ACTOR_LASTNAME, lastName);
 			context.put("actorLastName", lastName);
 			context.put("actorlastname", lastName);
-			context.put("actorEmail", email);
+			context.put(ACTOR_EMAIL, email);
 			context.put("actoremail", email);	
 		}
 	}

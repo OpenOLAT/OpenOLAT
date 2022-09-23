@@ -60,7 +60,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 
 	private Controller currentCtrl;
 	private BusinessGroupListWrapperController myGroupsCtrl;
-	private OverviewBusinessGroupLifecycleController lifecylceCtrl;
+	private OverviewBusinessGroupLifecycleController lifecycleCtrl;
 	
 	private final boolean isGuestOnly;
 	
@@ -113,9 +113,9 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(myGroupsCtrl);
-		removeAsListenerAndDispose(lifecylceCtrl);
+		removeAsListenerAndDispose(lifecycleCtrl);
 		myGroupsCtrl = null;
-		lifecylceCtrl = null;
+		lifecycleCtrl = null;
 	}
 
 	@Override
@@ -164,12 +164,12 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		lifecylceCtrl = new OverviewBusinessGroupLifecycleController(ureq, bwControl);
-		listenTo(lifecylceCtrl);
-		currentCtrl = lifecylceCtrl;
+		lifecycleCtrl = new OverviewBusinessGroupLifecycleController(ureq, bwControl);
+		listenTo(lifecycleCtrl);
+		currentCtrl = lifecycleCtrl;
 
-		mainVC.put("groupList", lifecylceCtrl.getInitialComponent());
-		addToHistory(ureq, lifecylceCtrl);
-		return lifecylceCtrl;
+		mainVC.put("groupList", lifecycleCtrl.getInitialComponent());
+		addToHistory(ureq, lifecycleCtrl);
+		return lifecycleCtrl;
 	}
 }

@@ -45,6 +45,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	private final String externalId;
 	private final Date lastUsage;
 	private final Long resourceKey;
+	private final String technicalType;
 
 	private final Integer maxParticipants;
 	private final Boolean waitingListEnabled;
@@ -52,7 +53,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	private final BusinessGroupManagedFlag[] managedFlags;
 	
 	private final BusinessGroupStatusEnum status;
-	private final boolean excludeFromAutoLifecycle;
+	private boolean excludeFromAutoLifecycle;
 	private final Date inactivationDate;
 	private final Date inactivationEmailDate;
 	private final Date reactivationDate;
@@ -80,6 +81,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		waitingListEnabled = businessGroup.getWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.getAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		technicalType = businessGroup.getTechnicalType();
 		
 		// life cycle
 		status = businessGroup.getGroupStatus();
@@ -106,6 +108,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		waitingListEnabled = businessGroup.isWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.isAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		technicalType = businessGroup.getTechnicalType();
 		
 		// life cycle
 		status = businessGroup.getGroupStatus();
@@ -167,6 +170,10 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	public String getDescription() {
 		return description;
 	}
+	
+	public String getTechnicalType() {
+		return technicalType;
+	}
 
 	@Override
 	public Date getLastUsage() {
@@ -180,6 +187,10 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	@Override
 	public BusinessGroupManagedFlag[] getManagedFlags() {
 		return managedFlags;
+	}
+	
+	public boolean isManaged() {
+		return managedFlags != null && managedFlags.length > 0;
 	}
 
 	public List<PriceMethodBundle> getBundles() {
@@ -196,6 +207,10 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 
 	public void setResources(List<RepositoryEntryShort> resources) {
 		this.resources = resources;
+	}
+	
+	public boolean hasResources() {
+		return resources != null && !resources.isEmpty();
 	}
 
 	public boolean isMarked() {
@@ -222,6 +237,10 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	@Override
 	public boolean isExcludeFromAutoLifecycle() {
 		return excludeFromAutoLifecycle;
+	}
+	
+	public void setExcludedFromAutoLifecycle(boolean excluded) {
+		this.excludeFromAutoLifecycle = excluded;
 	}
 
 	@Override
