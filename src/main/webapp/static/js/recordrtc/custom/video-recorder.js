@@ -27,7 +27,7 @@ class VideoRecorder {
 		}
 	}
 
-	sizeVideoElement(feedWidth = 640, feedHeight = 480) {
+	sizeVideoElement(feedWidth = 1280, feedHeight = 720) {
 		const browserViewport = jQuery(window);
 		const mainContainer = jQuery('#avRecorder');
 
