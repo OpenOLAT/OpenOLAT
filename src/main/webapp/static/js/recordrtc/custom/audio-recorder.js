@@ -102,7 +102,7 @@ class AudioRecorder {
 				jQuery('#time-rail').hide();
 				fileSize.hide();
 
-				if (this.oneButtonHandler == null) {
+				if (this.oneButtonHandler === null) {
 					this.oneButtonHandler = () => {
 						self.handleOneButton();
 					};
@@ -179,8 +179,8 @@ class AudioRecorder {
 		const self = this;
 
 		navigator.mediaDevices.getUserMedia({
-			audio: isEdge ? true : {
-				echoCancellation: false
+			audio: {
+				echoCancellation: true
 			}
 		}).then((mediaStream) => {
 			console.log('Successfully captured mediaStream', mediaStream);
@@ -194,6 +194,7 @@ class AudioRecorder {
 
 	mediaStreamReady(mediaStream) {
 		this.audioElement.srcObject = mediaStream;
+		this.mute();
 		const self = this;
 		setTimeout(() => {
 			self.stateToWaitingToRecord();
@@ -201,12 +202,12 @@ class AudioRecorder {
 	}
 
 	mute() {
-		this.avUserInterface.setMuted();
 		this.avUserInterface.setVolume(0);
+		this.avUserInterface.setMuted();
 	}
 
 	createRecorder() {
-		if (this.mediaStream == null) {
+		if (this.mediaStream === null) {
 			console.log('No media stream available');
 			return;
 		}
@@ -261,7 +262,7 @@ class AudioRecorder {
 	}
 
 	stopRecording() {
-		if (this.recorder == null) {
+		if (this.recorder === null) {
 			console.log('Cannot stop recording. No recorder available.')
 			return;
 		}
@@ -307,6 +308,8 @@ class AudioRecorder {
 		this.audioElement.currentTime = 0;
 		this.avUserInterface.setCurrentTime(0);
 
+		this.mediaStream.stop();
+
 		this.avService.storeRecording({recorder: this.recorder});
 
 		jQuery('#time-rail').show();
@@ -314,7 +317,7 @@ class AudioRecorder {
 	}
 
 	destroyRecorder() {
-		if (this.recorder == null) {
+		if (this.recorder === null) {
 			return;
 		}
 		this.recorder.destroy();
@@ -332,7 +335,7 @@ class AudioRecorder {
 	}
 
 	releaseMediaStream() {
-		if (this.mediaStream == null) {
+		if (this.mediaStream === null) {
 			return;
 		}
 

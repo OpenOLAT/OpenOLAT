@@ -33,7 +33,7 @@ class VideoRecorder {
 
 		const availableWidth = mainContainer.width();
 		const viewPortHeightPortion = browserViewport.height() * 0.618;
-		const availableHeight = viewPortHeightPortion > 480 ? viewPortHeightPortion : 480;
+		const availableHeight = viewPortHeightPortion > 240 ? viewPortHeightPortion : 240;
 
 		const feedAspectRatio = feedWidth / feedHeight;
 		const availableAspectRatio = availableWidth / availableHeight;
@@ -82,7 +82,7 @@ class VideoRecorder {
 		}
 
 		this.state = RecState.waitingToRecord;
-		this.avUserInterface.setVolume(0.25);
+		this.mute();
 		this.updateUI();
 	}
 
@@ -234,7 +234,9 @@ class VideoRecorder {
 		const self = this;
 
 		navigator.mediaDevices.getUserMedia({
-			audio: true,
+			audio: {
+				echoCancellation: true
+			},
 			video: {
 				height: {ideal: this.quality.height}
 			}
@@ -256,6 +258,7 @@ class VideoRecorder {
 
 	mediaStreamReady(mediaStream) {
 		this.videoElement.srcObject = mediaStream;
+		this.mute();
 		const self = this;
 		setTimeout(() => {
 			self.stateToWaitingToRecord();
@@ -272,8 +275,8 @@ class VideoRecorder {
 	}
 
 	mute() {
-		this.avUserInterface.setMuted();
 		this.avUserInterface.setVolume(0);
+		this.avUserInterface.setMuted();
 	}
 
 	createRecorder() {
@@ -391,7 +394,7 @@ class VideoRecorder {
 		this.videoElement.currentTime = 0;
 		this.avUserInterface.setCurrentTime(0);
 
-		this.recorder.camera.stop();
+		this.mediaStream.stop();
 
 		this.avService.storeRecording({recorder: this.recorder});
 		if (this.config.generatePosterImage) {
@@ -415,6 +418,7 @@ class VideoRecorder {
 	}
 
 	dispose() {
+		console.log('videoRecorder.dispose()');
 		this.blobs = null;
 		this.imageCaptureBlob = null;
 		this.imageCapture = null;
@@ -429,6 +433,7 @@ class VideoRecorder {
 
 		const tracks = this.mediaStream.getTracks();
 		tracks.forEach((track) => {
+			console.log('videoRecorder: stop track', track);
 			track.stop();
 		});
 

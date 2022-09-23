@@ -174,8 +174,14 @@ public class AVCreationController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		JSCommand cmd = new JSCommand("videoRecorder.dispose();");
-		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		if (config.getMode() == AVConfiguration.Mode.video) {
+			JSCommand cmd = new JSCommand("videoRecorder.dispose();");
+			getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		}
+		if (config.getMode() == AVConfiguration.Mode.audio) {
+			JSCommand cmd = new JSCommand("audioRecorder.dispose();");
+			getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		}
 
 		super.doDispose();
 	}
