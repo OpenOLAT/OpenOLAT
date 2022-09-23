@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.GroupRoles;
@@ -59,6 +60,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.co.ContactForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -279,8 +281,12 @@ public class CPNotificationsController extends FormBasicController {
 		List<String> roles = new ArrayList<>(recipientsEl.getSelectedKeys());
 		roles.remove(EXTERNAL);
 		if(!roles.isEmpty()) {
-			List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());	
-			return repositoryService.getMembers(refs, RepositoryEntryRelationType.all, roles.toArray(new String[roles.size()]));
+			List<RepositoryEntry> refs = getReferences();
+			List<Identity> identities = repositoryService.getMembers(refs, RepositoryEntryRelationType.all, roles.toArray(new String[roles.size()]));
+			return identities.stream()
+					.filter(id -> id.getStatus() != null && id.getStatus().intValue() < Identity.STATUS_VISIBLE_LIMIT.intValue())
+					.collect(Collectors.toList());
+			
 		}
 		return List.of();
 	}
@@ -297,6 +303,13 @@ public class CPNotificationsController extends FormBasicController {
 			}
 		}
 		return externalEmails;
+	}
+	
+	private List<RepositoryEntry> getReferences() {
+		List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());	
+		return refs.stream()
+				.filter(ref -> ref.getEntryStatus() != RepositoryEntryStatusEnum.trash && ref.getEntryStatus() != RepositoryEntryStatusEnum.deleted)
+				.collect(Collectors.toList());
 	}
 	
 	private String[] getArguments(UserRequest ureq) {
@@ -316,7 +329,7 @@ public class CPNotificationsController extends FormBasicController {
 	}
 	
 	private String getCoursesList() {
-		List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());
+		List<RepositoryEntry> refs = getReferences();
 		StringBuilder sb = new StringBuilder(1024);
 		if(!refs.isEmpty()) {
 			sb.append("<ul>");
