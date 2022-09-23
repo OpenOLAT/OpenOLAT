@@ -370,26 +370,30 @@
 		}
 		
 		.o_educational_type {
-			margin-top: -23px;
-			margin-bottom: 6px;
-			margin-right: 5px;
+			margin-top: -28px;
+			margin-bottom: 11px;
+			margin-right: 10px;
 			margin-left: auto;
 			background: $o-coursesite-rowelem-bg;
 		}
 		
 		.o_title {
 			margin: 0;
-			padding-bottom: 10px;
+			padding-bottom: 0.1em;
 			overflow: hidden;
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
 			-webkit-box-orient: vertical;
+			
+			&+div {
+				margin-top: 10px;
+			}
 		}
 		
 		.o_meta {
 			display: flex;
 			flex-direction: column;
-			padding: 5px;
+			padding: 10px;
 			gap: 5px;
 			.o_ext_ref {
 				color: $text-muted;
@@ -748,9 +752,6 @@
 		a {
 			color: $o-coursesite-meta-title-color;
 			@extend %o_undecorated;
-			&:hover {
-				color: $brand-primary;
-			}
 		}
 	}
 	
@@ -840,6 +841,11 @@
 		&:hover {
 			border: 1px solid $brand-primary;
 			border-radius: 3px;
+			.o_catalog_title_link {
+				a {
+					color: $brand-primary;
+				}
+			}
 		}
 	}
 }
