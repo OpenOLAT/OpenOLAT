@@ -422,11 +422,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
 				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
 				sb.append("   and participant.role").in(GroupRoles.participant.name(), GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name()).append("");
-				sb.append(") and ");
-				sb.append(identKey).append(" not in :fakeParticipantKeys");
+				sb.append(")");
+				if (params.hasFakeParticipants()) {
+					sb.append(" and ");
+					sb.append(identKey).append(" not in :fakeParticipantKeys");
+					queryParams.addFakeParticipantKeys();
+				}
 				sb.append(")");
 				queryParams.addRepoEntryKey();
-				queryParams.addFakeParticipantKeys();
 				filtered = true;
 			}
 			if (params.isParticipantAllMembers()) {

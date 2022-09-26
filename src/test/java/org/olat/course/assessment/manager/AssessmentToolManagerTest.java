@@ -470,6 +470,18 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, participantStatistics.getNumOfMembers());
 		Assert.assertEquals(0, participantStatistics.getNumOfNonMembers());
 		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
+		
+		// Check the participant filter: Non member, no fake participants
+		assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Collections.emptySet());
+		params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
+		params.setParticipantTypes(Set.of(ParticipantType.nonMember));
+		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
+		Assert.assertEquals(6, assessedIdentities.size());
+		
+		participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
+		Assert.assertEquals(0, participantStatistics.getNumOfMembers());
+		Assert.assertEquals(6, participantStatistics.getNumOfNonMembers());
+		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 	}
 	
 	@Test
