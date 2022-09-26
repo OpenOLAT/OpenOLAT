@@ -55,6 +55,8 @@ import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
+import org.olat.course.nodes.gta.IdentityMark;
+import org.olat.course.nodes.gta.ui.GTACoachedParticipantListController.MakedEvent;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
 import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
@@ -78,7 +80,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private Controller coachingCtrl;
 	private GTACoachedGroupListController groupListCtrl;
 	private GTACoachedParticipantListController participantListCtrl;
-	private final ContextualSubscriptionController contextualSubscriptionCtr;
+	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
 	private final Link backLink;
 	private final Link downloadButton;
@@ -93,7 +95,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment coachCourseEnv;
-	private final boolean markedOnly;
+	private boolean markedOnly = false;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -103,12 +105,11 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private BaseSecurity securityManager;
 	
 	public GTACoachSelectionController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
+			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.coachCourseEnv = coachCourseEnv;
 		this.courseEnv = coachCourseEnv.getCourseEnvironment();
-		this.markedOnly = markedOnly;
 		
 		mainVC = createVelocityContainer("coach_selection");
 		backLink = LinkFactory.createLinkBack(mainVC, this);
@@ -134,12 +135,6 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		nextIdentityLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
 		nextIdentityLink.setTitle(translate("command.next"));
 		assessedIdentityStackPanel.addTool(nextIdentityLink, Align.rightEdge, true, "o_tool_next");
-
-		PublisherData publisherData = gtaManager.getPublisherData(courseEnv, gtaNode, markedOnly);
-		SubscriptionContext subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode, markedOnly);
-		contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
-		listenTo(contextualSubscriptionCtr);
-		mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 		
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -161,12 +156,25 @@ public class GTACoachSelectionController extends BasicController implements Acti
 				doSelectBusinessGroup(ureq, groups.get(0));
 			}	
 		} else {
+			markedOnly = true; // Init marked tab
 			participantListCtrl = new GTACoachedParticipantListController(ureq, getWindowControl(), coachCourseEnv, gtaNode, markedOnly);
 			listenTo(participantListCtrl);
 			mainVC.put("list", participantListCtrl.getInitialComponent());
 		}
 		
+		initSubscription(ureq);
+		
 		putInitialPanel(mainVC);
+	}
+
+	private void initSubscription(UserRequest ureq) {
+		removeAsListenerAndDispose(contextualSubscriptionCtr);
+		
+		PublisherData publisherData = gtaManager.getPublisherData(courseEnv, gtaNode, markedOnly);
+		SubscriptionContext subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode, markedOnly);
+		contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
+		listenTo(contextualSubscriptionCtr);
+		mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 	}
 	
 	private boolean isDownloadAvailable() {
@@ -218,6 +226,9 @@ public class GTACoachSelectionController extends BasicController implements Acti
 				Identity selectedIdentity = securityManager.loadIdentityByKey(selectEvent.getIdentityKey());
 				doSelectParticipant(ureq, selectedIdentity);
 				backLink.setVisible(true);
+			} else if (event instanceof MakedEvent) {
+				markedOnly = ((MakedEvent)event).isMarked();
+				initSubscription(ureq);
 			}
 		}
 		
@@ -322,7 +333,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 			List<Identity> markedIdentities =
 					gtaManager.getMarks(entry, gtaNode, ureq.getIdentity()).stream()
-							.map(mark -> mark.getParticipant())
+							.map(IdentityMark::getParticipant)
 							.collect(Collectors.toList());
 			identities.retainAll(markedIdentities);
 		}

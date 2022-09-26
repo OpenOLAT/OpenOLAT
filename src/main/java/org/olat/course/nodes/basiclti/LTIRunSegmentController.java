@@ -103,9 +103,6 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
-		contentLink = LinkFactory.createLink("segment.content", mainVC, this);
-		segmentView.addSegment(contentLink, true);
-		
 		// Participants
 		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
 			if (courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode).isEditable()) {
@@ -134,6 +131,10 @@ public class LTIRunSegmentController extends BasicController implements Activate
 				segmentView.addSegment(participantsLink, false);
 			}
 		}
+		
+		// Content
+		contentLink = LinkFactory.createLink("segment.content", mainVC, this);
+		segmentView.addSegment(contentLink, true);
 		
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
@@ -203,6 +204,8 @@ public class LTIRunSegmentController extends BasicController implements Activate
 			doOpenOverview(ureq);
 		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
 			doOpenParticipants(ureq);
+		} else if (CourseNodeSegment.preview == segment && contentLink != null) {
+			doOpenContent(ureq);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq);
 		} else {
@@ -233,6 +236,7 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		listenTo(contentCtrl);
 		mainVC.put("segmentCmp", contentCtrl.getInitialComponent());
 		segmentView.select(contentLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview);
 		if (segmentView.getSegments().size() > 1) {
 			mainVC.contextPut("cssClass", "o_block_top");
 		}

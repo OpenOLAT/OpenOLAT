@@ -62,14 +62,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTAParticipantController runCtrl;
 	private AssessmentCourseNodeOverviewController overviewCtrl;
 	private GTACoachSelectionController coachCtrl;
-	private GTACoachSelectionController markedCtrl;
 	private GTACoachManagementController manageCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
 
 	private Link runLink;
 	private Link overviewLink;
 	private Link coachLink;
-	private Link markedLink;
 	private Link manageLink;
 	private Link remindersLink;
 	private VelocityContainer mainVC;
@@ -101,10 +99,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			overviewLink = LinkFactory.createLink("run.overview", mainVC, this);
 			overviewLink.setElementCssClass("o_sel_course_gta_overview");
 			segmentView.addSegment(overviewLink, true);
-			markedLink = LinkFactory.createLink("run.coach.marked", mainVC, this);
-			markedLink.setElementCssClass("o_sel_course_gta_favorit");
-			segmentView.addSegment(markedLink, false);
-			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
+			coachLink = LinkFactory.createLink("run.coach.participants", mainVC, this);
 			coachLink.setElementCssClass("o_sel_course_gta_coaching");
 			segmentView.addSegment(coachLink, false);
 			if(isManagementTabAvalaible(config)) {
@@ -168,13 +163,6 @@ public class GTARunController extends BasicController implements Activateable2 {
 					segmentView.select(coachLink);
 				}
 			}
-		} else if("marked".equalsIgnoreCase(type)) {
-			if(markedLink != null) {
-				doOpenMarked(ureq);
-				if(segmentView != null) {
-					segmentView.select(markedLink);
-				}
-			}
 		} else if("management".equalsIgnoreCase(type)) {
 			if(manageLink != null) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -234,8 +222,6 @@ public class GTARunController extends BasicController implements Activateable2 {
 					doOpenOverview(ureq);
 				} else if (clickedLink == coachLink) {
 					doOpenCoach(ureq);
-				} else if (clickedLink == markedLink) {
-					doOpenMarked(ureq);
 				} else if(clickedLink == manageLink) {
 					doManage(ureq);
 				} else if (clickedLink == remindersLink) {
@@ -283,20 +269,6 @@ public class GTARunController extends BasicController implements Activateable2 {
 		setPreferredSegment(ureq, CourseNodeSegment.overview);
 	}
 
-	private Activateable2 doOpenMarked(UserRequest ureq) {
-		if(markedCtrl == null) {
-			createMarked(ureq);
-		} else {
-			markedCtrl.reload(ureq);
-		}
-		addToHistory(ureq, markedCtrl);
-		if(mainVC != null) {
-			mainVC.put("segmentCmp", markedCtrl.getInitialComponent());
-		}
-		segmentView.select(markedLink);
-		return markedCtrl;
-	}	
-
 	private Activateable2 doOpenCoach(UserRequest ureq) {
 		if(coachCtrl == null) {
 			createCoach(ureq);
@@ -332,20 +304,11 @@ public class GTARunController extends BasicController implements Activateable2 {
 		return runCtrl;
 	}
 	
-	private GTACoachSelectionController createMarked(UserRequest ureq) {
-		removeAsListenerAndDispose(markedCtrl);
-		
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("marked"), null);
-		markedCtrl = new GTACoachSelectionController(ureq, swControl, userCourseEnv, gtaNode, true);
-		listenTo(markedCtrl);
-		return coachCtrl;
-	}
-	
 	private GTACoachSelectionController createCoach(UserRequest ureq) {
 		removeAsListenerAndDispose(coachCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("coach"), null);
-		coachCtrl = new GTACoachSelectionController(ureq, swControl, userCourseEnv, gtaNode, false);
+		coachCtrl = new GTACoachSelectionController(ureq, swControl, userCourseEnv, gtaNode);
 		listenTo(coachCtrl);
 		return coachCtrl;
 	}

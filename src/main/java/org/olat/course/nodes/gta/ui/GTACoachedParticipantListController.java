@@ -57,6 +57,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -131,6 +135,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTACoachedParticipantListController extends GTACoachedListController {
 	
+	public static final String MARKED_TAB_ID = "Marked";
+	public static final String ALL_TAB_ID = "All";
+	
 	private FormLink bulkDoneButton;
 	private FormLink bulkEmailButton;
 	private FormLink bulkExtendButton;
@@ -146,7 +153,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	private int count;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final boolean markedOnly;
+	private final boolean markedDefault;
 	private final AssessmentConfig assessmentConfig;
 
 	private CloseableModalController cmc;
@@ -174,7 +181,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private CourseAssessmentService courseAssessmentService;
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
+			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, boolean markedDefault) {
 		super(ureq, wControl, coachCourseEnv.getCourseEnvironment(), gtaNode);
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		
@@ -183,7 +190,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.coachCourseEnv = coachCourseEnv;
-		this.markedOnly = markedOnly;
+		this.markedDefault = markedDefault;
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		
@@ -281,9 +288,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v3-" + markedOnly);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v3-false");
 		
 		initBulkTools(ureq, formLayout);
+		initFiltersPresets(ureq);
+		initFilters();
 	}
 	
 	protected void initBulkTools(@SuppressWarnings("unused") UserRequest ureq, FormItemContainer formLayout) {
@@ -333,8 +342,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 		bulkEmailButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		tableEl.addBatchButton(bulkEmailButton);
+	}
+	
+	protected final void initFiltersPresets(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
 		
-		initFilters();
+		FlexiFiltersTab markedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MARKED_TAB_ID, translate("filter.marked"),
+				TabSelectionBehavior.clear, List.of());
+		markedTab.setFiltersExpanded(true);
+		tabs.add(markedTab);
+		
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, markedDefault? markedTab: allTab);
 	}
 	
 	private void initFilters() {
@@ -362,7 +386,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		
 		if (!filters.isEmpty()) {
-			tableEl.setFilters(true, filters, false, true);
+			tableEl.setFilters(true, filters, false, false);
 		}
 	}
 	
@@ -402,6 +426,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		
 		List<CoachedIdentityRow> rows = new ArrayList<>(assessableIdentities.size());
+		boolean markedOnly = MARKED_TAB_ID.equals(tableEl.getSelectedFilterTab().getId());
 		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
 			IdentityMark mark = identityToMarks.get(assessableIdentity.getIdentityKey());
 			if (markedOnly && mark == null) continue;
@@ -558,6 +583,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				updateModel(ureq);
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				updateModel(ureq);
+				fireEvent(ureq, new MakedEvent(MARKED_TAB_ID.equals(tableEl.getSelectedFilterTab().getId())));
 			}
 		} else if(bulkExtendButton == source) {
 			List<CoachedIdentityRow> rows = getSelectedRows(row -> true);
@@ -794,5 +822,22 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			cmc.activate();
 			listenTo(cmc);
 		}
+	}
+	
+	public static final class MakedEvent extends Event {
+
+		private static final long serialVersionUID = 1916268792292314400L;
+		
+		private final boolean marked;
+		
+		public MakedEvent(boolean marked) {
+			super("marked");
+			this.marked = marked;
+		}
+
+		public boolean isMarked() {
+			return marked;
+		}
+		
 	}
 }

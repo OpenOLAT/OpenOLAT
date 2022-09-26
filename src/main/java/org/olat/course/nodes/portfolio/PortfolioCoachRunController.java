@@ -107,9 +107,6 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
-		contentLink = LinkFactory.createLink("segment.content", mainVC, this);
-		segmentView.addSegment(contentLink, true);
-		
 		// Participants
 		if (courseAssessmentService.getAssessmentConfig(mapEntry, courseNode).isEditable()) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
@@ -136,6 +133,10 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 			participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
 			segmentView.addSegment(participantsLink, false);
 		}
+		
+		// Content
+		contentLink = LinkFactory.createLink("segment.content", mainVC, this);
+		segmentView.addSegment(contentLink, true);
 		
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
@@ -205,8 +206,12 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 			doOpenOverview(ureq);
 		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
 			doOpenParticipants(ureq);
+		} else if (CourseNodeSegment.preview == segment && contentLink != null) {
+			doOpenContent(ureq);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq);
+		} else if (overviewLink != null) {
+			doOpenOverview(ureq);
 		} else {
 			doOpenContent(ureq);
 		}
@@ -222,6 +227,7 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 		listenTo(contentCtrl);
 		mainVC.put("segmentCmp", contentCtrl.getInitialComponent());
 		segmentView.select(contentLink);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview);
 		if (segmentView.getSegments().size() > 1) {
 			mainVC.contextPut("cssClass", "o_block_top");
 		}
