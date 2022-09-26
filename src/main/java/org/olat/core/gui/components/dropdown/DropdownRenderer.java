@@ -47,6 +47,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		Dropdown dropdown = (Dropdown)source;
 		sb.append("<div class='btn-group'>", dropdown.isEmbbeded());
 		
+		boolean hasComponents = dropdown.size() > 0;
 		Iterable<Component> components = dropdown.getComponents();
 		if(dropdown.isButton()) {
 			sb.append("<button type='button' class='btn btn-default dropdown-toggle");
@@ -62,6 +63,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		if(dropdown.isLabeledToggle()) {
 			sb.append(" o_with_labeled");
+		}
+		if (!hasComponents) {
+			sb.append(" o_empty");
 		}
 		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
 		sb.append("' id='").append(btnDomID);
@@ -79,16 +83,19 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		sb.append("</span>", (dropdownInnerText != null));
 		sb.append("</span>");
 		
-		if (dropdown.getCaretPosition().equals(CaretPosition.left)) {
-			sb.append(" <i class='");
-			if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
-				sb.append(dropdown.getCarretIconCSS());
-			} else {
-				// Caret to indicate the drop-down nature of the button
-				sb.append("o_icon o_icon_caret");
+		if (hasComponents) {
+			if (dropdown.getCaretPosition().equals(CaretPosition.left)) {
+				sb.append(" <i class='");
+				if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
+					sb.append(dropdown.getCarretIconCSS());
+				} else {
+					// Caret to indicate the drop-down nature of the button
+					sb.append("o_icon o_icon_caret");
+				}
+				sb.append("'> </i> ");
 			}
-			sb.append("'> </i> ");
 		}
+		
 		// Button label, normally rendered below the button, but within the clickable link
 		String i18nKey = dropdown.getI18nKey();
 		if(StringHelper.containsNonWhitespace(i18nKey)) {
@@ -101,15 +108,17 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.append("<span class='o_label'>").append(label).append("</span>");
 		}
 		
-		if (dropdown.getCaretPosition().equals(CaretPosition.right)) {
-			sb.append(" <i class='");
-			if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
-				sb.append(dropdown.getCarretIconCSS());
-			} else {
-				// Caret to indicate the drop-down nature of the button
-				sb.append("o_icon o_icon_caret");
+		if (hasComponents) {
+			if (dropdown.getCaretPosition().equals(CaretPosition.right)) {
+				sb.append(" <i class='");
+				if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
+					sb.append(dropdown.getCarretIconCSS());
+				} else {
+					// Caret to indicate the drop-down nature of the button
+					sb.append("o_icon o_icon_caret");
+				}
+				sb.append("'> </i> ");
 			}
-			sb.append("'> </i> ");
 		}
 		
 		if(dropdown.isButton()) {
@@ -117,49 +126,55 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("</a>");
 		}
-		sb.append("<ul class='dropdown-menu");
-		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
-			sb.append(" ").append(dropdown.getElementCssClass());
-		}
-		if(dropdown.isLabeledMenu()) {
-			sb.append(" o_with_labeled");
-		}
-		if(dropdown.getOrientation() == DropdownOrientation.right) {
-			sb.append(" dropdown-menu-right");
-		}		
 		String itemsDomID = "dd_items_" + dropdown.getDispatchID();
-		sb.append("' id='").append(itemsDomID).append("'");
-		sb.append(" role='menu'>");
+		if (hasComponents) {
+			sb.append("<ul class='dropdown-menu");
+			if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
+				sb.append(" ").append(dropdown.getElementCssClass());
+			}
+			if(dropdown.isLabeledMenu()) {
+				sb.append(" o_with_labeled");
+			}
+			if(dropdown.getOrientation() == DropdownOrientation.right) {
+				sb.append(" dropdown-menu-right");
+			}		
+			sb.append("' id='").append(itemsDomID).append("'");
+			sb.append(" role='menu'>");
 
-		boolean wantSpacer = false;
-		for(Component component:components) {
-			if(component instanceof Spacer) {
-				wantSpacer = true;
-			} else if(component.isVisible()) {
-				if(wantSpacer) {
-					sb.append("<li class='divider'></li>");
-					wantSpacer = false;
-				}
-				
-				if(component.isEnabled()) {
-					sb.append("<li>");
+			boolean wantSpacer = false;
+			for(Component component:components) {
+				if(component instanceof Spacer) {
+					wantSpacer = true;
+				} else if(component.isVisible()) {
+					if(wantSpacer) {
+						sb.append("<li class='divider'></li>");
+						wantSpacer = false;
+					}
+					
+					if(component.isEnabled()) {
+						sb.append("<li>");
+					} else {
+						sb.append("<li class='disabled'>");
+					}
+					renderer.render(component, sb, args);
+					sb.append("</li>");
 				} else {
-					sb.append("<li class='disabled'>");
+					component.setDirty(false);
 				}
-				renderer.render(component, sb, args);
-				sb.append("</li>");
-			} else {
-				component.setDirty(false);
+			}
+			sb.append("</ul>");
+		}
+		sb.append("</div>", dropdown.isEmbbeded());
+		
+		if (hasComponents) {
+			// Check if dropdown has enough space in center main container, enlarge if necessary
+			if (dropdown.isExpandContentHeight()) {
+				sb.append("<script>setTimeout(function(){");
+				sb.append("OPOL.adjustContentHeightForAbsoluteElement('#").append(itemsDomID).append("');");
+				sb.append("});</script>");
 			}
 		}
-		sb.append("</ul>").append("</div>", dropdown.isEmbbeded());
-
-		// Check if dropdown has enough space in center main container, enlarge if necessary
-		if (dropdown.isExpandContentHeight()) {
-			sb.append("<script>setTimeout(function(){");
-			sb.append("OPOL.adjustContentHeightForAbsoluteElement('#").append(itemsDomID).append("');");
-			sb.append("});</script>");
-		}
+		
 		
 	}
 }

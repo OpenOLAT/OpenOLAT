@@ -463,7 +463,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			fakeParticipantLink.setIconLeftCSS("o_icon o_icon-fw " + Role.fakeParticipant.getIconCssClass());
 			rolesDropdown.addComponent(fakeParticipantLink);
 		}
-		if (rolesDropdown.size() > 0) {
+		boolean isParticipantOnly = rolesDropdown.size() == 1 && Role.participant == reSecurity.getCurrentRole();
+		if (!isParticipantOnly) {
 			toolbarPanel.addTool(rolesDropdown, Align.right);
 		}
 	}

@@ -281,6 +281,9 @@
 				margin-right: floor($o-toolbar-size-icon-md * -1.1);
 				font-size: $o-toolbar-size-caret-md;
 			}
+			&.o_empty {
+				pointer-events: none;
+			}
 			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
 				i {
 					font-size: $o-toolbar-size-icon-sm;
@@ -314,6 +317,9 @@
 			line-height: ($o-toolbar-size-icon-md - 2px);
 			font-size: 70% !important;
 			padding: 0 18px 0 4px;
+			&:is(.dropdown-toggle.o_empty *) {
+				padding: 0 4px 0 4px;
+			}
 			position: relative;
 			top: -2px;
 						
