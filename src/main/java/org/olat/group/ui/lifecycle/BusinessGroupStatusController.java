@@ -161,10 +161,10 @@ public class BusinessGroupStatusController extends FormBasicController {
 
 		boolean withMail = businessGroupModule.getNumberOfDayBeforeDeactivationMail() > 0;
 		boolean automatic = businessGroupModule.isAutomaticGroupInactivationEnabled();
-		String mode = buildMode(automatic, businessGroup.isExcludeFromAutoLifecycle(), withMail);
+		boolean excluded = updateExcludeFromAutomaticMethodsEl(automatic);
+		String mode = buildMode(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle(), withMail);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
-		updateExcludeFromAutomaticMethodsEl(automatic);
-
+		
 		int delay = businessGroupModule.getNumberOfDayBeforeDeactivationMail();
 		if(delay > 0) {
 			long used = businessGroupLifecycleManager.getInactivationResponseDelayUsed(businessGroup);
@@ -184,7 +184,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		String inactivation = formatter.formatDate(inactivationDate);
 		long days = DateUtils.countDays(ureq.getRequestTimestamp(), inactivationDate);
 		String[] args = new String[] { inactivation, Long.toString(Math.abs(days)) };
-		String prefix = statusPrefix(automatic, businessGroup.isExcludeFromAutoLifecycle());
+		String prefix = statusPrefix(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
 		
 		String plan;
 		if(days == 0) {
@@ -234,9 +234,9 @@ public class BusinessGroupStatusController extends FormBasicController {
 		
 		boolean withMail = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail() > 0;
 		boolean automatic = businessGroupModule.isAutomaticGroupInactivationEnabled();
-		String mode = buildMode(automatic, businessGroup.isExcludeFromAutoLifecycle(), withMail);
+		boolean excluded = updateExcludeFromAutomaticMethodsEl(automatic);
+		String mode = buildMode(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle(), withMail);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
-		updateExcludeFromAutomaticMethodsEl(automatic);
 
 		int delay = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail();
 		if(delay > 0) {
@@ -257,7 +257,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		if(planedDate != null) {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
 			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
-			String prefix = statusPrefix(automatic, businessGroup.isExcludeFromAutoLifecycle());
+			String prefix = statusPrefix(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
 			
 			String plan;
 			if(numOfDaysBeforeDelete == 0) {
@@ -305,15 +305,15 @@ public class BusinessGroupStatusController extends FormBasicController {
 		uifactory.addStaticTextElement("status.soft.delete.by", softDeletedByStr, formLayout);
 		
 		boolean automatic = businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled();
-		String mode = buildMode(automatic, businessGroup.isExcludeFromAutoLifecycle(), null);
+		boolean excluded = updateExcludeFromAutomaticMethodsEl(automatic);
+		String mode = buildMode(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle(), null);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
-		updateExcludeFromAutomaticMethodsEl(automatic);
 		
 		Date planedDate = businessGroupLifecycleManager.getDefinitiveDeleteDate(businessGroup);
 		if(planedDate != null) {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
 			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
-			String prefix = statusPrefix(automatic, businessGroup.isExcludeFromAutoLifecycle());
+			String prefix = statusPrefix(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
 			
 			String plan;
 			if(numOfDaysBeforeDelete == 0 || numOfDaysBeforeDelete == 1) {
@@ -356,19 +356,22 @@ public class BusinessGroupStatusController extends FormBasicController {
 		return sb.toString();
 	}
 	
-	private void updateExcludeFromAutomaticMethodsEl(boolean isAutomatic) {
+	private boolean updateExcludeFromAutomaticMethodsEl(boolean isAutomatic) {
+		boolean excluded = false;
 		if(isAutomatic) {
 			if((StringHelper.containsNonWhitespace(businessGroup.getManagedFlagsString()) && businessGroupModule.isGroupLifecycleExcludeManaged())
 				|| (LTI13Service.LTI_GROUP_TYPE.equals(businessGroup.getTechnicalType()) && businessGroupModule.isGroupLifecycleExcludeLti())
 				|| (hasResources && BusinessGroupLifecycleTypeEnum.withoutResources == businessGroupModule.getGroupLifecycleTypeEnum())) {
 				excludeFromAutomaticMethodsEl.setEnabled(false);
 				excludeFromAutomaticMethodsEl.select("exclude", true);
+				excluded = true;
 			} else {
 				excludeFromAutomaticMethodsEl.setEnabled(true);
 			}
 		} else {
 			excludeFromAutomaticMethodsEl.setEnabled(false);
 		}
+		return excluded;
 	}
 
 	@Override

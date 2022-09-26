@@ -228,17 +228,6 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 			types.add(LTI13Service.LTI_GROUP_TYPE);
 		}
 		params.setTechnicalTypes(types);
-
-		// all group / group without resource
-		BusinessGroupLifecycleTypeEnum type = groupModule.getGroupLifecycleTypeEnum();
-		if(type == BusinessGroupLifecycleTypeEnum.withoutResources) {
-			params.setResources(Boolean.FALSE);
-		}
-		
-		// exclude managed
-		if(groupModule.isGroupLifecycleExcludeManaged()) {
-			params.setManaged(Boolean.FALSE);
-		}
 		return params;
 	}
 	
