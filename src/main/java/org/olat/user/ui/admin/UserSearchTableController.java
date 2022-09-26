@@ -298,7 +298,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		inactiveTab.setFiltersExpanded(true);
 		tabs.add(inactiveTab);
 		
-		loginDeniedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(LOGIN_DENIED_TAB_ID, translate("rightsForm.status.inactive"),
+		loginDeniedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(LOGIN_DENIED_TAB_ID, translate("rightsForm.status.login_denied"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, Identity.STATUS_LOGIN_DENIED.toString())));
 		loginDeniedTab.setElementCssClass("o_sel_users_login_denied");
 		loginDeniedTab.setFiltersExpanded(true);
