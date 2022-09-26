@@ -563,7 +563,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	@Override
-	protected String formatDueDateNew(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
+	protected String formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
 		Date date = dueDate.getDueDate();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -574,7 +574,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			date = cal.getTime();
 		}
 
-		String[] args = formatDueDateArguments(dueDate, now, userDeadLine);
+		DueDateArguments dueDateArgs = formatDueDateArguments(dueDate, now, userDeadLine);
 		
 		String i18nKey;
 		if(now.before(date)) {
@@ -582,7 +582,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		} else {
 			i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
 		}
-		return translate(i18nKey, args);
+		return translate(i18nKey, dueDateArgs.args());
 	}
 	
 	@Override

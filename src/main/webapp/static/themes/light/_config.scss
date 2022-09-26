@@ -948,12 +948,11 @@ $o-hs-histogram-bar-other-hover-color	: lighten($gray-light, 10%) !default;
 $o-hs-histogram-bar-empty-color			: black !default;
 
 /* Process step component */
-$o-step-border				: 1px solid #e7e7e7 !default;
-$o-step-border-radius		: $panel-border-radius !default;
-$o-border-header-padding	: $panel-body-padding !default;
-$o-border-content-padding	: $panel-body-padding !default;
-
-
+$o-step-border						: 1px solid #e7e7e7 !default;
+$o-step-border-radius				: $panel-border-radius !default;
+$o-step-border-header-padding		: 10px !default;
+$o-step-border-header-bg-color		: #fcfcfc;
+$o-step-border-content-padding			: $panel-body-padding !default;
 $o-step-border-width				: 4px !default;
 $o-step-milestone-size				: ($o-step-border-width * 4) !default;
 $o-step-bubble-font-size			: 19px;
@@ -961,10 +960,10 @@ $o-step-bubble-font-size			: 19px;
 $o-step-padding-top					: 10px !default;
 $o-step-padding-left				: 30px !default;
 $o-step-padding-bottom				: 10px !default;
-$o-step-color						: $gray-light !default;
+$o-step-color						: #999 !default;
 $o-step-active-color				: #F1C232 !default;
-$o-step-active-marker-color			: $gray-light !default;
-$o-step-notavailable-color			: $gray-light !default;
+$o-step-active-marker-color			: $o-step-color !default;
+$o-step-notavailable-color			: $o-step-color !default;
 $o-step-notavailable-marker-color	: $o-step-notavailable-color !default;
 $o-step-done-color					: $state-success-text !default;
 $o-step-done-marker-color			: $o-step-done-color;
@@ -981,7 +980,6 @@ $o-step-status-review-color			: $o-step-status-waiting-color;
 $o-step-status-done-color			: $o-repo-published-color;
 $o-step-status-notavailable-color	: $gray-light !default;
 $o-step-status-expired-color		: #E69138 !default;
-
 
 
 /* Radial progress component */

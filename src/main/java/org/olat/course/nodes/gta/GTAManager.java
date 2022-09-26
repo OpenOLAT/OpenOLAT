@@ -408,6 +408,11 @@ public interface GTAManager {
 	 */
 	public Task reviewedTask(Task task, GTACourseNode cNode, Identity doerIdentity, Role by);
 	
+	/**
+	 * 
+	 */
+	public Task collectRevisionTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity);
+	
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by);
 	
 	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate);

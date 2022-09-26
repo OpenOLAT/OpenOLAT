@@ -60,7 +60,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
-import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.SolutionTableModel.SolCols;
 import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -333,7 +332,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 
 	private void doRecordAudio(UserRequest ureq) {
-		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionDir,
 				solutionContainer, true);
 		listenTo(avSampleSolutionController);
@@ -345,7 +343,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 
 	private void doRecordVideo(UserRequest ureq) {
-		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionDir,
 				solutionContainer, false);
 		listenTo(avSampleSolutionController);

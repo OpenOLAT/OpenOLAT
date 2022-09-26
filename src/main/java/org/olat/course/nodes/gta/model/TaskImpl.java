@@ -47,6 +47,7 @@ import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.modules.assessment.Role;
 
 /**
  * 
@@ -93,17 +94,28 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	private Date submissionDate;
 	@Column(name="g_submission_ndocs", nullable=true, insertable=true, updatable=true)
 	private Integer submissionNumOfDocs;
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
-	private Date submissionRevisionsDate;
-	@Column(name="g_submission_revisions_ndocs", nullable=true, insertable=true, updatable=true)
-	private Integer submissionRevisionsNumOfDocs;
+	@Column(name="g_submission_drole", nullable=true, insertable=true, updatable=true)
+	private Role submissionDoerRole;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
 	private Date collectionDate;
 	@Column(name="g_collection_ndocs", nullable=true, insertable=true, updatable=true)
 	private Integer collectionNumOfDocs;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
+	private Date submissionRevisionsDate;
+	@Column(name="g_submission_revisions_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionRevisionsNumOfDocs;
+	@Column(name="g_submission_revisions_drole", nullable=true, insertable=true, updatable=true)
+	private Role submissionRevisionsDoerRole;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_collection_revisions_date", nullable=true, insertable=true, updatable=true)
+	private Date collectionRevisionsDate;
+	@Column(name="g_collection_revisions_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer collectionRevisionsNumOfDocs;
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_allow_reset_date", nullable=true, insertable=true, updatable=true)
 	private Date allowResetDate;
@@ -242,6 +254,32 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	}
 
 	@Override
+	public Role getSubmissionDoerRole() {
+		return submissionDoerRole;
+	}
+	
+	@Override
+	public Date getCollectionDate() {
+		return collectionDate;
+	}
+
+	public void setCollectionDate(Date collectionDate) {
+		this.collectionDate = collectionDate;
+	}
+
+	public Integer getCollectionNumOfDocs() {
+		return collectionNumOfDocs;
+	}
+
+	public void setCollectionNumOfDocs(Integer collectionNumOfDocs) {
+		this.collectionNumOfDocs = collectionNumOfDocs;
+	}
+
+	public void setSubmissionDoerRole(Role submissionDoerRole) {
+		this.submissionDoerRole = submissionDoerRole;
+	}
+
+	@Override
 	public Date getSubmissionRevisionsDate() {
 		return submissionRevisionsDate;
 	}
@@ -259,20 +297,29 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	}
 
 	@Override
-	public Date getCollectionDate() {
-		return collectionDate;
+	public Role getSubmissionRevisionsDoerRole() {
+		return submissionRevisionsDoerRole;
 	}
 
-	public void setCollectionDate(Date collectionDate) {
-		this.collectionDate = collectionDate;
+	public void setSubmissionRevisionsDoerRole(Role submissionRevisionsDoerRole) {
+		this.submissionRevisionsDoerRole = submissionRevisionsDoerRole;
 	}
 
-	public Integer getCollectionNumOfDocs() {
-		return collectionNumOfDocs;
+	@Override
+	public Date getCollectionRevisionsDate() {
+		return collectionRevisionsDate;
 	}
 
-	public void setCollectionNumOfDocs(Integer collectionNumOfDocs) {
-		this.collectionNumOfDocs = collectionNumOfDocs;
+	public void setCollectionRevisionsDate(Date collectionRevisionsDate) {
+		this.collectionRevisionsDate = collectionRevisionsDate;
+	}
+
+	public Integer getCollectionRevisionsNumOfDocs() {
+		return collectionRevisionsNumOfDocs;
+	}
+
+	public void setCollectionRevisionsNumOfDocs(Integer collectionRevisionsNumOfDocs) {
+		this.collectionRevisionsNumOfDocs = collectionRevisionsNumOfDocs;
 	}
 
 	@Override

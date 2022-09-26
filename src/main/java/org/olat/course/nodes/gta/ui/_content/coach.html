@@ -10,18 +10,18 @@
 <div class="o_step $assignmentCssClass o_expand_ctrl">
 	<div class="o_bar"></div>
 	<div class="o_step_block">
-		<div class="o_header">
+		<div class="o_header" #if($collapse_assignement) onclick="$r.javaScriptCommand("hide","step","assignment")" #else onclick="$r.javaScriptCommand("show","step","assignment")" #end>
 			<span class="o_process_status_badge $assignmentCssStatus">$assignmentStatus</span>
 			<h4 class="o_title">$r.translate("run.assignment.title")</h4>
-			#if($assignmentDueDateNew)
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $assignmentDueDateNew</div>
+			#if($assignmentDueDate)
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $assignmentDueDate</div>
 			#end
 			#if($r.isNotEmpty($assignmentDate))
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $assignmentDate</div>
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $assignmentDate</div>
 			#end
 			
 			#if($r.isTrue($assignmentClosed) && $r.isFalse($assignmentClosedWithAssignment))
-				<div class="o_meta_v2 o_expired_warning"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $r.translate("error.assignment.closed.without.assignment")</div>
+				<div class="o_meta o_expired_warning"><i class="o_icon o_icon-fw o_icon_description"> </i> $r.translate("error.assignment.closed.without.assignment")</div>
 			#end
 			
 			#if($assignmentDueDateMsg)
@@ -56,15 +56,19 @@
 <div class="o_step $submitCssClass o_expand_ctrl">
 	<div class="o_bar"></div>
 	<div class="o_step_block">
-		<div class="o_header">
+		<div class="o_header" #if($collapse_submit) onclick="$r.javaScriptCommand("hide","step","submit")" #else onclick="$r.javaScriptCommand("show","step","submit")" #end>
 			<span class="o_process_status_badge $submitCssStatus">$submitStatus</span>
 			<h4 class="o_title">$r.translate("run.submit")</h4>
-			#if($r.isNotEmpty($submitDueDateNew))
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $submitDueDateNew</div>
+			#if($r.isNotEmpty($submitDueDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $submitDueDate</div>
 			#end
-			#if($r.isNotEmpty($submissionDate))
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $submissionDate</div>
+
+			#if($r.isNotEmpty($collectionDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_description"> </i> $collectionDate</div>
+			#elseif($r.isNotEmpty($submissionDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $submissionDate</div>
 			#end
+
 			#if($submitDueDateMsg)
 				<div class="o_meta">$r.escapeHtml($submitDueDateMsg)</div>
 			#end
@@ -120,7 +124,7 @@
 <div class="o_step $reviewCssClass o_step_review o_expand_ctrl">
 	<div class="o_bar"></div>
 	<div class="o_step_block">
-		<div class="o_header">
+		<div class="o_header" #if($collapse_reviewAndCorrection) onclick="$r.javaScriptCommand("hide","step","reviewAndCorrection")" #else onclick="$r.javaScriptCommand("show","step","reviewAndCorrection")" #end>
 			<span class="o_process_status_badge $reviewCssStatus">$reviewStatus</span>
 			<h4 class="o_title">$r.translate("run.review")</h4>
 		</div>
@@ -154,14 +158,17 @@
 <div class="o_step $revisionCssClass o_expand_ctrl">
 	<div class="o_bar"></div>
 	<div class="o_step_block">
-		<div class="o_header">
+		<div class="o_header" #if($collapse_revision) onclick="$r.javaScriptCommand("hide","step","revision")" #else onclick="$r.javaScriptCommand("show","step","revision")" #end>
 			<span class="o_process_status_badge $revisionCssStatus">$revisionStatus</span>
 			<h4 class="o_title">$r.translate("run.revision")</h4>
-			#if($r.isNotEmpty($revisionDueDateNew))
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $revisionDueDateNew</div>
+			#if($r.isNotEmpty($revisionDueDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $revisionDueDate</div>
 			#end
-			#if($r.isNotEmpty($submissionRevisionDate))
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $submissionRevisionDate</div>
+			
+			#if($r.isNotEmpty($collectionRevisionDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_description"> </i> $collectionRevisionDate</div>
+			#elseif($r.isNotEmpty($submissionRevisionDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $submissionRevisionDate</div>
 			#end
 		</div>
 		<div id="o_step_revision_content" class="o_content collapse #if($collapse_revision) in #end" aria-expanded="$collapse_revision" role="region">
@@ -188,11 +195,11 @@
 <div class="o_step $solutionCssClass o_step_solution o_expand_ctrl">
 	<div class="o_bar"></div>
 	<div class="o_step_block">
-		<div class="o_header">
+		<div class="o_header" #if($collapse_solution) onclick="$r.javaScriptCommand("hide","step","solution")" #else onclick="$r.javaScriptCommand("show","step","solution")" #end>
 			<span class="o_process_status_badge $solutionCssStatus">$solutionStatus</span>
 			<h4 class="o_title">$r.translate("run.solution")</h4>
-			#if($r.isNotEmpty($solutionAvailableDateNew))
-				<div class="o_meta_v2"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $solutionAvailableDateNew</div>
+			#if($r.isNotEmpty($solutionAvailableDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $solutionAvailableDate</div>
 			#end
 			#if($solutionAvailableDateMsg)
 				<div class="o_meta">$r.escapeHtml($solutionAvailableDateMsg)</div>
@@ -222,7 +229,7 @@
 <div class="o_step o_step_grading $gradingCssClass o_expand_ctrl">
 	<div class="o_bar"></div>
 	<div class="o_step_block">
-		<div class="o_header">
+		<div class="o_header" #if($collapse_grading) onclick="$r.javaScriptCommand("hide","step","grading")" #else onclick="$r.javaScriptCommand("show","step","grading")" #end>
 			<span class="o_process_status_badge $gradingCssStatus">$gradingStatus</span>
 			<h4 class="o_title">$r.translate("run.grading")</h4>
 		</div>

@@ -273,8 +273,8 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		String date = Formatter.getInstance(locale).formatDateAndTime(new Date());
 		
 		mail.setContext(new MailContextImpl(courseRes, courseNodeIdent, businessPath));
-		String subject = translator.translate("confirmation.mail.subject", new String[]{ courseTitle, nodeTitle });
-		String body = translator.translate("confirmation.mail.body", new String[]{ courseTitle, nodeTitle, feedbackStr, numOfAssessedIds, date });
+		String subject = translator.translate("confirmation.mail.subject", courseTitle, nodeTitle);
+		String body = translator.translate("confirmation.mail.body", courseTitle, nodeTitle, feedbackStr, numOfAssessedIds, date);
 		mail.setContent(subject, body);
 		mailManager.sendMessage(mail);
 	}
@@ -529,7 +529,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		}
 		
 		if(gtaTask == null) {
-			log.error("GTA Task is null by bulk assessment for: " + identity + " in entry:" + entry + " " + courseNode.getIdent());
+			log.error("GTA Task is null by bulk assessment for: {} in entry:{} {}", identity, entry, courseNode.getIdent());
 		} else if(status == TaskProcess.correction) {
 			int iteration = gtaTask.getRevisionLoop() <= 0 ? 1 : gtaTask.getRevisionLoop() + 1;
 			gtaManager.updateTask(gtaTask, status, iteration, courseNode, false, null, Role.auto);

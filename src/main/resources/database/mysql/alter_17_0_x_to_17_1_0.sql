@@ -20,3 +20,10 @@ alter table o_bs_invitation add column i_status varchar(32) default 'active';
 
 -- Business group
 alter table o_gp_business add column excludeautolifecycle bool default false not null;
+
+
+-- Task
+alter table o_gta_task add column g_submission_drole varchar(16);
+alter table o_gta_task add column g_submission_revisions_drole varchar(16);
+alter table o_gta_task add column g_collection_revisions_date datetime;
+alter table o_gta_task add column g_collection_revisions_ndocs bigint;

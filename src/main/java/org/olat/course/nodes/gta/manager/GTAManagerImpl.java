@@ -1585,11 +1585,21 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
+	public Task collectRevisionTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity) {
+		TaskProcess correction = nextStep(TaskProcess.revision, cNode);
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setCollectionRevisionsDate(new Date());
+		taskImpl.setCollectionRevisionsNumOfDocs(numOfDocs);
+		return updateTask(task, correction, cNode, true, doerIdentity, Role.coach);
+	}
+
+	@Override
 	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by) {
 		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionDate(new Date());
 		taskImpl.setSubmissionNumOfDocs(numOfDocs);
+		taskImpl.setSubmissionDoerRole(by);
 		taskImpl.setCollectionDate(null);
 		taskImpl.setCollectionNumOfDocs(null);
 		return updateTask(task, review, cNode, true, doerIdentity, by);
@@ -1635,6 +1645,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionRevisionsDate(new Date());
 		taskImpl.setSubmissionRevisionsNumOfDocs(numOfDocs);
+		taskImpl.setSubmissionRevisionsDoerRole(by);
+		taskImpl.setCollectionRevisionsDate(null);
+		taskImpl.setCollectionRevisionsNumOfDocs(null);
 		//log the date
 		createAndPersistTaskRevisionDate(taskImpl, taskImpl.getRevisionLoop(), TaskProcess.correction);
 		return updateTask(taskImpl, TaskProcess.correction, cNode, true, doerIdentity, by);

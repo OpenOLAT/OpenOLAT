@@ -377,7 +377,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			showWarning("warning.submit.documents.edited", new String[]{ lockedBy.getLockedBy(), lockedBy.getLockedFiles() });
 		} else {
 			String title = translate("coach.collect.revisions.confirm.title");
-			String text = translate("coach.collect.revisions.confirm.text", new String[]{ toName });
+			String text = translate("coach.collect.revisions.confirm.text", toName);
 			text = "<div class='o_warning'>" + text + "</div>";
 			confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
 			listenTo(confirmCollectCtrl);
@@ -385,7 +385,19 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doCollect() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode, true, getIdentity(), Role.coach);
+		File[] submittedDocuments;
+		int iteration = assignedTask.getRevisionLoop();
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		} else {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+
+		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
+		assignedTask = gtaManager.collectRevisionTask(assignedTask, gtaNode, numOfDocs, getIdentity());
+		
 		gtaManager.log("Collect revision", "revision collected", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 

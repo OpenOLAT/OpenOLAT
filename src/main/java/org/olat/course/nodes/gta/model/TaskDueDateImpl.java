@@ -46,6 +46,7 @@ import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.modules.assessment.Role;
 
 /**
  * 
@@ -88,12 +89,21 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionDate;
+	@Column(name="g_submission_drole", nullable=true, insertable=true, updatable=true)
+	private Role submissionDoerRole;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionRevisionsDate;
+	@Column(name="g_submission_revisions_drole", nullable=true, insertable=true, updatable=true)
+	private Role submissionRevisionsDoerRole;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=false)
 	private Date collectionDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_collection_revisions_date", nullable=true, insertable=true, updatable=true)
+	private Date collectionRevisionsDate;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_allow_reset_date", nullable=true, insertable=true, updatable=true)
 	private Date allowResetDate;
@@ -228,6 +238,15 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	}
 
 	@Override
+	public Role getSubmissionDoerRole() {
+		return submissionDoerRole;
+	}
+
+	public void setSubmissionDoerRole(Role submissionDoerRole) {
+		this.submissionDoerRole = submissionDoerRole;
+	}
+
+	@Override
 	public Date getSubmissionRevisionsDate() {
 		return submissionRevisionsDate;
 	}
@@ -237,12 +256,30 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	}
 
 	@Override
+	public Role getSubmissionRevisionsDoerRole() {
+		return submissionRevisionsDoerRole;
+	}
+
+	public void setSubmissionRevisionsDoerRole(Role submissionRevisionsDoerRole) {
+		this.submissionRevisionsDoerRole = submissionRevisionsDoerRole;
+	}
+
+	@Override
 	public Date getCollectionDate() {
 		return collectionDate;
 	}
 
 	public void setCollectionDate(Date collectionDate) {
 		this.collectionDate = collectionDate;
+	}
+
+	@Override
+	public Date getCollectionRevisionsDate() {
+		return collectionRevisionsDate;
+	}
+
+	public void setCollectionRevisionsDate(Date collectionRevisionsDate) {
+		this.collectionRevisionsDate = collectionRevisionsDate;
 	}
 
 	@Override
@@ -295,6 +332,7 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 		return assignmentDueDate;
 	}
 
+	@Override
 	public void setAssignmentDueDate(Date assignmentDueDate) {
 		this.assignmentDueDate = assignmentDueDate;
 	}
@@ -304,6 +342,7 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 		return submissionDueDate;
 	}
 
+	@Override
 	public void setSubmissionDueDate(Date submissionDueDate) {
 		this.submissionDueDate = submissionDueDate;
 	}
@@ -313,6 +352,7 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 		return revisionsDueDate;
 	}
 
+	@Override
 	public void setRevisionsDueDate(Date revisionsDueDate) {
 		this.revisionsDueDate = revisionsDueDate;
 	}
@@ -322,6 +362,7 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 		return solutionDueDate;
 	}
 
+	@Override
 	public void setSolutionDueDate(Date solutionDueDate) {
 		this.solutionDueDate = solutionDueDate;
 	}

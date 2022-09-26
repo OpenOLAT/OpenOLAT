@@ -779,28 +779,22 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
-	protected String formatDueDateNew(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
+	protected String formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
 		Date date = dueDate.getDueDate();
-		Date dateForDiff = date;
+		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
-		
 		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
-		if(dateOnly && userDeadLine) {
-			cal.add(Calendar.DATE, -1);
-			date = cal.getTime();
-		}
-	
-		long timeDiff = Math.abs(dateForDiff.getTime() - now.getTime());
-		String[] args = formatDueDateArguments(dueDate, now, userDeadLine);
+		
+		DueDateArguments dueDateArgs = formatDueDateArguments(dueDate, now, userDeadLine);
 		
 		String i18nKey;
 		if(now.before(date)) {
 			if(done) {
 				i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
-			} else if(timeDiff > TWO_DAYS_IN_MILLISEC) {// 2 days
+			} else if(dueDateArgs.days() > 1) {// 2 days
 				i18nKey = dateOnly ? "msg.end.dateonly.within.days" : "msg.end.within.days";
-			} else if(timeDiff > ONE_DAY_IN_MILLISEC) {
+			} else if(dueDateArgs.days() == 1) {
 				i18nKey = dateOnly ? "msg.end.dateonly.within.day" : "msg.end.within.day";
 			} else {
 				// some hours left
@@ -809,7 +803,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		} else {
 			i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
 		}
-		return translate(i18nKey, args);
+		return translate(i18nKey, dueDateArgs.args());
 	}
 
 	@Override

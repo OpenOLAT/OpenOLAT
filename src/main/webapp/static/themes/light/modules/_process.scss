@@ -17,12 +17,13 @@
 		}
 		
 		.o_header {
-			padding: $o-border-header-padding;
+			padding: $o-step-border-header-padding;
+			background-color: $o-step-border-header-bg-color;
 		}
 		
 		.o_content {
 			border-top: $o-step-border;
-			padding: $o-border-content-padding;
+			padding: $o-step-border-content-padding;
 			
 			.o_button_group {
 				margin-top: 1em;
@@ -42,7 +43,7 @@
 		
 		&:after {
 			position: absolute;
-			top: 16px;
+			top: 10px;
 			left: floor(math.div($o-step-milestone-size, -2) - $o-step-border-width);
 			height: $o-step-milestone-size;
 			width: $o-step-milestone-size;
@@ -53,7 +54,7 @@
 		&:before {
 			content: ' ';
 			position: absolute;
-			top: 16px + $o-step-bubble-font-size - 2;
+			top: 10px + $o-step-bubble-font-size - 2;
 			left: floor(math.div($o-step-milestone-size, -2) + 2);
 			height: calc(100% - 15px);
 			width: 2px;
@@ -152,13 +153,15 @@
 	}
 	
 	h4.o_title {
-		margin-top: 0;	
+		margin: 0 0 1px 0;	
 	}
 
 	.o_meta {
-		color: $o-step-meta-color;
-		font-size: $o-step-meta-size;
-		margin-top: -0.5em;
+		margin-top: 10px;
+	}
+	
+	.o_meta + .o_meta {
+		margin-top: 0;
 	}
 	
 	.o_expired_warning {

@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.Role;
 
 /**
  * 
@@ -34,9 +35,15 @@ public interface Task extends TaskRef {
 	
 	public Date getSubmissionDate();
 	
+	public Role getSubmissionDoerRole();
+	
 	public Date getSubmissionRevisionsDate();
 	
+	public Role getSubmissionRevisionsDoerRole();
+	
 	public Date getCollectionDate();
+	
+	public Date getCollectionRevisionsDate();
 	
 	public Date getAcceptationDate();
 	

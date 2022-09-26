@@ -315,10 +315,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
-				String dateAsString = formatDueDate(dueDate, true);
+				boolean done = isDone(assignedTask, TaskProcess.assignment);
+				String dateAsString = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
 				mainVC.contextPut("assignmentDueDate", dateAsString);
-				String dateAsStringNew = formatDueDateNew(dueDate, ureq.getRequestTimestamp(), false, true);
-				mainVC.contextPut("assignmentDueDateNew", dateAsStringNew);
 				
 				mainVC.contextRemove("assignmentDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
@@ -341,6 +340,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 		
 		return assignedTask;
+	}
+	
+	protected final boolean isDone(Task assignedTask, TaskProcess status) {
+		if(assignedTask == null || assignedTask.getTaskStatus() == null) return false;
+		return status.ordinal() < assignedTask.getTaskStatus().ordinal();
 	}
 	
 	protected final void setDoneStatusAndCssClass(String stepPrefix) {
@@ -372,53 +376,30 @@ public abstract class GTAAbstractController extends BasicController implements G
 		mainVC.contextPut(stepPrefix.concat("CssStatus"), statusCssClass);
 		mainVC.contextPut(stepPrefix.concat("Status"), translate(statusI18nKey));
 	}
+
+	protected abstract String formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine);
 	
-	/**
-	 * User friendly format, 2015-06-20 00:00 will be rendered as 2015-06-20
-	 * if @param userDeadLine is false (for solution,e.g) and 2015-06-20
-	 * if @param userDeadLine is true (meaning the user have the whole day
-	 * to do the job until the deadline at midnight).
-	 * @param dueDate
-	 * @param user deadline
-	 * @return
-	 */
-	protected String formatDueDate(DueDate dueDate, boolean userDeadLine) {
+	protected DueDateArguments formatDueDateArguments(DueDate dueDate, Date now, boolean userDeadLine) {
 		Date date = dueDate.getDueDate();
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		String formattedDate;
-		if(cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0) {
-			if(userDeadLine) {
-				cal.add(Calendar.DATE, -1);
-			}
-			formattedDate = Formatter.getInstance(getLocale()).formatDate(cal.getTime());
-		} else {
-			formattedDate = Formatter.getInstance(getLocale()).formatDateAndTime(date);
-		}
-		return formattedDate;
-	}
-	
-	protected abstract String formatDueDateNew(DueDate dueDate, Date now, boolean done, boolean userDeadLine);
-	
-	protected String[] formatDueDateArguments(DueDate dueDate, Date now, boolean userDeadLine) {
-		Date date = dueDate.getDueDate();
-		Date dateForDiff = date;
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		
 		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
 		if(dateOnly && userDeadLine) {
 			cal.add(Calendar.DATE, -1);
+			cal.set(Calendar.HOUR_OF_DAY, 23);
+			cal.set(Calendar.MINUTE, 59);
+			cal.set(Calendar.SECOND, 59);
 			date = cal.getTime();
 		}
 
-		long timeDiff = Math.abs(dateForDiff.getTime() - now.getTime());
-		long days = Math.abs(DateUtils.countDays(dateForDiff, now)) - 1;
+		long timeDiff = Math.abs(date.getTime() - now.getTime());
+		long days = Math.abs(DateUtils.countDays(date, now));
 		long hours = ((timeDiff - (days * ONE_DAY_IN_MILLISEC)) / ONE_HOUR_IN_MILLISEC) % 24;
 		long minutes = ((timeDiff - (days * ONE_DAY_IN_MILLISEC) - (hours * ONE_HOUR_IN_MILLISEC)) / (60l * 1000l)) % 60;
 
 		Formatter formatter = Formatter.getInstance(getLocale());
-		return new String[] {
+		String[] args = new String[] {
 			Long.toString(days),				// 0 Number of days
 			Long.toString(hours),				// 1 Number of hours
 			Long.toString(minutes),				// 2 Number of minutes
@@ -426,6 +407,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 			formatter.formatDate(date),			// 4 Date
 			formatter.formatTimeShort(date)		// 5 Time
 		};
+		
+		return new DueDateArguments(days, args);
 	}
 	
 	protected void resetDueDates() {
@@ -446,10 +429,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
-				String dateAsString = formatDueDate(dueDate, true);
+				boolean done = isDone(assignedTask, TaskProcess.submit);
+				String dateAsString = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
 				mainVC.contextPut("submitDueDate", dateAsString);
-				String dateAsStringNew = formatDueDateNew(dueDate, ureq.getRequestTimestamp(), true, true);
-				mainVC.contextPut("submitDueDateNew", dateAsStringNew);
 				mainVC.contextRemove("submitDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
@@ -470,11 +452,23 @@ public abstract class GTAAbstractController extends BasicController implements G
 			}
 		}
 		
-		if(assignedTask != null && assignedTask.getSubmissionDate() != null) {
-			String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
-			mainVC.contextPut("submissionDate", translate("msg.submission.date", date));
+		if(assignedTask != null) {
+			if(assignedTask.getCollectionDate() != null) {
+				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getCollectionDate());
+				mainVC.contextPut("collectionDate", translate("msg.collection.date", date));
+				mainVC.contextRemove("submissionDate");
+			 } else if(assignedTask.getSubmissionDate() != null && assignedTask.getSubmissionDoerRole() == Role.auto) {
+				 String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
+				 mainVC.contextPut("collectionDate", translate("msg.collection.date.auto", date));
+					mainVC.contextRemove("submissionDate");
+			 } else if(assignedTask.getSubmissionDate() != null) {
+				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
+				mainVC.contextPut("submissionDate", translate("msg.submission.date", date));
+				mainVC.contextRemove("collectionDate");
+			}
 		} else {
 			mainVC.contextRemove("submissionDate");
+			mainVC.contextRemove("collectionDate");
 		}
 		
 		return assignedTask;
@@ -511,10 +505,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
 			DueDate dueDate = new DueDate(false, date);
-			String dateAsString = formatDueDate(dueDate, true);
+			boolean done = isDone(assignedTask, TaskProcess.revision);
+			String dateAsString = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
 			mainVC.contextPut("revisionDueDate", dateAsString);
-			String newDateAsString = formatDueDateNew(dueDate, ureq.getRequestTimestamp(), true, true);
-			mainVC.contextPut("revisionDueDateNew", newDateAsString);
 			
 			if(assignedTask.getTaskStatus() == TaskProcess.revision
 					&& date.compareTo(new Date()) < 0) {
@@ -524,11 +517,23 @@ public abstract class GTAAbstractController extends BasicController implements G
 			}
 		}
 		
-		if(assignedTask != null && assignedTask.getSubmissionRevisionsDate() != null) {
-			String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionRevisionsDate());
-			mainVC.contextPut("submissionRevisionDate", translate("msg.revision.date", date));
+		if(assignedTask != null) {
+			if(assignedTask.getCollectionRevisionsDate() != null) {
+				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getCollectionRevisionsDate());
+				mainVC.contextPut("collectionRevisionDate", translate("msg.collection.date", date));
+				mainVC.contextRemove("submissionRevisionDate");
+			} else if(assignedTask.getSubmissionRevisionsDate() != null && assignedTask.getSubmissionRevisionsDoerRole() == Role.auto) {
+				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionRevisionsDate());
+				mainVC.contextPut("collectionRevisionDate", translate("msg.collection.date.auto", date));
+				mainVC.contextRemove("submissionRevisionDate");
+			} else if(assignedTask.getSubmissionRevisionsDate() != null) {
+				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionRevisionsDate());
+				mainVC.contextPut("submissionRevisionDate", translate("msg.revision.date", date));
+				mainVC.contextRemove("collectionRevisionDate");
+			}
 		} else {
 			mainVC.contextRemove("submissionRevisionDate");
+			mainVC.contextRemove("collectionRevisionDate");
 		}
 		
 		return assignedTask;
@@ -547,14 +552,12 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return submittedDocuments == null ? 0 : submittedDocuments.length;
 	}
 	
-	protected Task stepSolution(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+	protected Task stepSolution(UserRequest ureq, Task assignedTask) {
 		DueDate availableDate = getSolutionDueDate(assignedTask);
 		if(availableDate != null) {
 			if(availableDate.getDueDate() != null) {
-				String date = formatDueDate(availableDate, false);
+				String date = formatSolutionDueDate(availableDate, ureq.getRequestTimestamp());
 				mainVC.contextPut("solutionAvailableDate", date);
-				String dateNew = formatSolutionDueDate(availableDate, ureq.getRequestTimestamp());
-				mainVC.contextPut("solutionAvailableDateNew", dateNew);
 				mainVC.contextRemove("solutionAvailableDateMsg");
 			} else if(availableDate.getMessageKey() != null) {
 				mainVC.contextPut("solutionAvailableDateMsg", translate(availableDate.getMessageKey(), availableDate.getMessageArg()));
@@ -623,7 +626,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		cal.setTime(date);
 		
 		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
-		String[] args = formatDueDateArguments(dueDate, now, false);
+		DueDateArguments ddArgs = formatDueDateArguments(dueDate, now, false);
 		
 		String i18nKey;
 		if(now.before(date)) {
@@ -631,7 +634,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		} else {
 			i18nKey = dateOnly ? "msg.solution.view.dateonly" : "msg.solution.view";
 		}
-		return translate(i18nKey, args);
+		return translate(i18nKey, ddArgs.args());
 	}
 	
 	protected Task stepGrading(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
@@ -730,4 +733,23 @@ public abstract class GTAAbstractController extends BasicController implements G
 	}
 	
 	protected abstract Role getDoer();
+	
+	protected static class DueDateArguments {
+		
+		private final long days;
+		private final String[] args;
+		
+		public DueDateArguments(long days, String[] args) {
+			this.days = days;
+			this.args = args;
+		}
+		
+		public long days() {
+			return days;
+		}
+		
+		public String[] args() {
+			return args;
+		}
+	}
 }
