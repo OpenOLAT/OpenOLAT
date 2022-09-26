@@ -96,7 +96,7 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		return new MSEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, courseNode);
+		return new MSEvaluationFormExecutionController(ureq, wControl, (TooledStackedPanel)stackPanel, assessedUserCourseEnv, courseNode);
 	}
 
 	@Override

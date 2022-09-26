@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,6 +56,10 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 
 	private final VelocityContainer mainVC;
 	private final Link reopenLink;
+	private final Link editLink;
+	private final TooledStackedPanel stackPanel;
+
+	private MSEvaluationBackController editExecutionCtrl;
 	private EvaluationFormExecutionController executionCtrl;
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
@@ -68,12 +73,13 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	@Autowired
 	private MSService msService;
 
-	public MSEvaluationFormExecutionController(UserRequest ureq, WindowControl wControl,
+	public MSEvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment assessedUserCourseEnv, CourseNode msCourseNode) {
 		super(ureq, wControl);
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.courseNode = msCourseNode;
 		this.config = msCourseNode.getModuleConfiguration();
+		this.stackPanel = stackPanel;
 		
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
@@ -90,6 +96,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		
 		mainVC = createVelocityContainer("evaluation_form_execution");
 		reopenLink = LinkFactory.createButton("evaluation.execution.reopen", mainVC, this);
+		editLink = LinkFactory.createButton("evaluation.edit", mainVC, this);
 		updateUI(ureq);
 		
 		putInitialPanel(mainVC);
@@ -97,7 +104,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 
 	private void updateUI(UserRequest ureq) {
 		refreshExecutionController(ureq);
-		updateUIReopen();
+		updateUIReopenAndEdit();
 	}
 
 	private void refreshExecutionController(UserRequest ureq) {
@@ -106,14 +113,16 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 			removeAsListenerAndDispose(executionCtrl);
 		}
 		
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, false, true, false, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, true, false, false, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}
 
-	private void updateUIReopen() {
+	private void updateUIReopenAndEdit() {
 		boolean reopenVisible = !assessmentDone && isSessionClosed();
 		reopenLink.setVisible(reopenVisible);
+		boolean editVisible = !assessmentDone && !isSessionClosed();
+		editLink.setVisible(editVisible);
 		mainVC.setDirty(true);
 	}
 
@@ -140,14 +149,23 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		if (source == reopenLink) {
 			session = msService.reopenSession(session, auditEnv);
 			updateUI(ureq);
+		} else if(source == editLink) {
+			doEditEvaluation(ureq);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == executionCtrl && Event.DONE_EVENT.equals(event)) {
-			doSetAssessmentScore();
-			fireEvent(ureq, Event.CHANGED_EVENT);
+		if (source == editExecutionCtrl) {
+			if(Event.DONE_EVENT.equals(event)) {
+				stackPanel.popController(editExecutionCtrl);
+				refreshExecutionController(ureq);
+				doSetAssessmentScore();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(Event.BACK_EVENT.equals(event)) {
+				stackPanel.popController(editExecutionCtrl);
+				refreshExecutionController(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -158,7 +176,14 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 			MSCourseNode msCourseNode = (MSCourseNode) courseNode;
 			msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, Role.coach, session, getLocale());
 		}
-		updateUIReopen();
+		updateUIReopenAndEdit();
 	}
-
+	
+	private void doEditEvaluation(UserRequest ureq) {
+		removeAsListenerAndDispose(editExecutionCtrl);
+		
+		editExecutionCtrl = new MSEvaluationBackController(ureq, getWindowControl(), session);
+		listenTo(editExecutionCtrl);
+		stackPanel.pushController(translate("evaluation.edit.crumb"), editExecutionCtrl);
+	}
 }

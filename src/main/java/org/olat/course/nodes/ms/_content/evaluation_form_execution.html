@@ -4,3 +4,8 @@ $r.render("execution")
 		$r.render("evaluation.execution.reopen")
 	</div>
 #end
+#if($r.visible("evaluation.edit"))
+	<div class="o_button_group">
+		$r.render("evaluation.edit")
+	</div>
+#end
