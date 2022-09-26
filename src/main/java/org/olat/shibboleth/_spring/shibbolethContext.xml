@@ -686,10 +686,12 @@
 		<property name="wayfReturnMobileUrl" value="${shibboleth.wayfReturnMobileUrl}" />
 		<property name="additionalIdentityProviders" value="${shibboleth.wayf.additionalIDPs}" />
 	</bean>
+	
+	<alias alias="shibbolethUsernamePresetBean" name="registrationPresetUsername.${registration.preset.username.shibboleth}"/>
 
 	<bean id="registrationPresetUsername.byShibbolethAttribute"
 		class="org.olat.shibboleth.ShibbolethUserNameFromAttributeUserNameCreationInterceptor" lazy-init="true">
-		<property name="allowChangeOfUsername" value="${registration.preset.username.allowChanges}"/>
+		<property name="allowChangeOfUsername" value="${registration.preset.username.shibboleth.allowChanges}"/>
 		<property name="shibUsernameAttr" value="${registration.preset.username.shibbolethAttribute}"/>
 		<property name="regexp">
 			<list>
