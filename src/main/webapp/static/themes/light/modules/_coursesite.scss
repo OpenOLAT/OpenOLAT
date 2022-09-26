@@ -145,6 +145,10 @@
 
 					@include text-overflow();					
 					width: 98%;
+									
+					.o_icon_tags {
+						display: none;
+					}					
 					
 					.o_taxonomy {
 						font-size: 82%;
