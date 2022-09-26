@@ -62,12 +62,12 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.22</org.springframework.version>
+		<org.springframework.version>5.3.23</org.springframework.version>
 		<org.hibernate.version>5.6.11.Final</org.hibernate.version>
 		<apache.cxf>3.5.3</apache.cxf>
 		<apache.pdfbox>2.0.26</apache.pdfbox>
-		<apache.poi>5.2.2</apache.poi>
-		<apache.log4j>2.18.0</apache.log4j>
+		<apache.poi>5.2.3</apache.poi>
+		<apache.log4j>2.19.0</apache.log4j>
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
@@ -76,7 +76,7 @@
 		<swagger.ui.version>4.14.0</swagger.ui.version>
 		<org.mysql.version>8.0.30</org.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
-		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
+		<org.infinispan.version>13.0.11.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.4.0</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
@@ -2075,7 +2075,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-css</artifactId>
-			<version>1.14</version>
+			<version>1.15</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
@@ -2090,7 +2090,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
-			<version>1.14</version>
+			<version>1.15</version>
 		</dependency>
 		<dependency>
 			<groupId>de.java2html</groupId>
@@ -2144,7 +2144,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>5.6</version>
+			<version>5.7.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2230,7 +2230,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20220320</version>
+			<version>20220924</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2289,7 +2289,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.0</version>
+			<version>1.13.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2518,7 +2518,7 @@
 		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile -->
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.29.1-GA</version>
+			<version>3.29.2-GA</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
