@@ -45,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.registration.UserNameCreationInterceptor;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.shibboleth.util.AttributeTranslator;
 import org.olat.user.UserModule;
@@ -121,6 +122,9 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	private String attribute2;
 	@Value("${shibboleth.ac.attribute2Values:#{null}}")
 	private String attribute2Values;
+	
+	@Autowired @Qualifier("shibbolethUsernamePresetBean")
+	private UserNameCreationInterceptor usernamePresetBean;
 
 	@Value("${method.auto.shib.identifiers}")
 	private String acAutoIdentifiersString;
@@ -445,6 +449,14 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 
 	public String getAcAutoSplitter() {
 		return acAutoSplitter;
+	}
+
+	public UserNameCreationInterceptor getUsernamePresetBean() {
+		return usernamePresetBean;
+	}
+
+	public void setUsernamePresetBean(UserNameCreationInterceptor usernamePresetBean) {
+		this.usernamePresetBean = usernamePresetBean;
 	}
 
 }

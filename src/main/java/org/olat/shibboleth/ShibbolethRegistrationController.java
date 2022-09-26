@@ -61,7 +61,6 @@ import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
-import org.olat.registration.RegistrationModule;
 import org.olat.registration.UserNameCreationInterceptor;
 import org.olat.shibboleth.manager.ShibbolethAttributes;
 import org.olat.user.UserManager;
@@ -114,8 +113,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private ShibbolethModule shibbolethModule;
 	@Autowired
 	private ShibbolethManager shibbolethManager;
-	@Autowired
-	private RegistrationModule registrationModule;
 
 	/**
 	 * Implements the shibboleth registration workflow.
@@ -160,8 +157,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		mainContainer.put("select.language", languageChooserController.getInitialComponent());
 		mainContainer.contextPut("languageCode", locale.getLanguage());
 
-		if(registrationModule.getUsernamePresetBean() != null) {
-			UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
+		if(shibbolethModule.getUsernamePresetBean() != null) {
+			UserNameCreationInterceptor interceptor = shibbolethModule.getUsernamePresetBean();
 			proposedUsername = interceptor.getUsernameFor(shibbolethAttributes.toMap());
 			if(proposedUsername == null) {
 				if(interceptor.allowChangeOfUsername()) {
