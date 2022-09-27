@@ -2098,11 +2098,11 @@ function o_ffSetFocusArray(focusArray) {
 function o_ffSetFocus(formId, formItemId) {
 	
 	var applyFocus = function(el) {
-		var jLastEl = jQuery(el);
 		var tagName = el.tagName;
 		var focusApplied = false;
 		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
-			if(jLastEl.hasClass('hasDatepicker')) {
+			var jLastEl = jQuery(el);
+			if(el.classList.contains('o_date_day') >= 0) {
 				jLastEl.datepicker('option', 'showOn', '');
 				jLastEl.focus();
 				jLastEl.datepicker('option', 'showOn', 'focus');
