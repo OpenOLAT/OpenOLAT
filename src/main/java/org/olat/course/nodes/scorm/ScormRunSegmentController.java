@@ -106,6 +106,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 				assessmentEventToState = new AssessmentEventToState(overviewCtrl);
 				
 				overviewLink = LinkFactory.createLink("segment.overview", mainVC, this);
+				overviewLink.setElementCssClass("o_sel_course_scorm_coaching");
 				segmentView.addSegment(overviewLink, false);
 				participantsPanel = new TooledStackedPanel("participantsPanel", getTranslator(), this);
 				participantsPanel.setToolbarAutoEnabled(false);

@@ -211,8 +211,7 @@ public class CourseElementTest extends Deployments {
 		
 		//scorm is auto started -> back
 		ScormPage.getScormPage(browser)
-			.back()
-			.assertOnStart();
+			.assertOnCoachingOverview();
 		
 		// make the author a participant too
 		MembersPage members = course

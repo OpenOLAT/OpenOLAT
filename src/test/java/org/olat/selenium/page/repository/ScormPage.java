@@ -58,6 +58,12 @@ public class ScormPage {
 		return this;
 	}
 	
+	public ScormPage assertOnCoachingOverview() {
+		By overviewBy = By.cssSelector("div.o_segments a.btn.o_sel_course_scorm_coaching");
+		OOGraphene.waitElement(overviewBy, browser);
+		return this;
+	}
+	
 	public ScormPage passVerySimpleScorm() {
 		By frameBy = By.cssSelector("iframe.o_iframe_rel");
 		OOGraphene.waitElement(frameBy, browser);
