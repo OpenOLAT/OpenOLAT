@@ -158,6 +158,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		} else {
 			markedOnly = true; // Init marked tab
 			participantListCtrl = new GTACoachedParticipantListController(ureq, getWindowControl(), coachCourseEnv, gtaNode, markedOnly);
+			markedOnly = participantListCtrl.isMarkedFilterSelected(); // Marked is preferred but if empty, show all users
 			listenTo(participantListCtrl);
 			mainVC.put("list", participantListCtrl.getInitialComponent());
 		}

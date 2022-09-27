@@ -144,6 +144,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private FormLink bulkVisibleButton;
 	private FormLink bulkHiddenButton;
 	private FormLink bulkDownloadButton;
+	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab markedTab;
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
 
@@ -206,7 +209,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		fakeParticipantKeys = fakeParticipants.stream().map(IdentityRef::getKey).collect(Collectors.toSet());
 		
 		initForm(ureq);
-		updateModel(ureq);
+		int rows = updateModel(ureq);
+		if(rows == 0 && tableEl.getSelectedFilterTab() != allTab) {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+			updateModel(ureq);
+		}
 	}
 	
 	public boolean hasIdentityKey(Long identityKey) {
@@ -228,6 +235,10 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
 						.stream().distinct().collect(Collectors.toList())
 				: repositoryService.getCoachedParticipants(getIdentity(), re);
+	}
+	
+	public boolean isMarkedFilterSelected() {
+		return tableEl.getSelectedFilterTab() == markedTab;
 	}
 
 	@Override
@@ -347,12 +358,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	protected final void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
 		
-		FlexiFiltersTab markedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MARKED_TAB_ID, translate("filter.marked"),
+		markedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MARKED_TAB_ID, translate("filter.marked"),
 				TabSelectionBehavior.clear, List.of());
 		markedTab.setFiltersExpanded(true);
 		tabs.add(markedTab);
 		
-		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.clear, List.of());
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
@@ -390,7 +401,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 	}
 	
-	protected void updateModel(UserRequest ureq) {
+	protected int updateModel(UserRequest ureq) {
 		List<AssessmentObligation> filterObligations = getFilterObligations();
 		Set<ParticipantType> filterParticipants = getFilterParticipants();
 		
@@ -478,6 +489,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		tableModel.setObjects(rows);
 		tableEl.reset();
+		return rows.size();
 	}
 
 	private List<AssessmentObligation> getFilterObligations() {
