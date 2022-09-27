@@ -57,7 +57,7 @@ public class AVCreationController extends FormBasicController {
 
 	private AVRecording avRecording;
 	private SingleSelection qualityDropdown;
-	private FormSubmit submitButton;
+	private FormSubmit confirmButton;
 
 	public AVCreationController(UserRequest ureq, WindowControl wControl,
 								AVConfiguration config) {
@@ -143,8 +143,9 @@ public class AVCreationController extends FormBasicController {
 		avRecording = new AVRecordingImpl(getIdentity(), "avRecording", "posterImage");
 		formLayout.add(avRecording);
 
-		submitButton = new FormSubmit("submitButton", "submitButton");
-		formLayout.add(submitButton);
+		confirmButton = new FormSubmit("confirmButton", "confirmButton");
+		confirmButton.setElementCssClass("o_av_confirm_button");
+		formLayout.add(confirmButton);
 	}
 
 	private void initContext() {
@@ -158,7 +159,7 @@ public class AVCreationController extends FormBasicController {
 		// Avoid resetting the JS VideoRecorder instance.
 		flc.setDirty(false);
 
-		submitButton.setEnabled(false);
+		confirmButton.setEnabled(false);
 
 		fireEvent(ureq, new AVCreationEvent());
 	}

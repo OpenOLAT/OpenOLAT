@@ -80,7 +80,7 @@ class AudioRecorder {
 		const stopSymbol = jQuery('#stop-symbol');
 		const playSymbol = jQuery('#play-symbol');
 		const retryButton = jQuery('#retry-button');
-		const submitButton = jQuery('.btn-primary');
+		const confirmButton = jQuery('.o_av_confirm_button');
 		const qualityDropdown = jQuery('#o_fiovideo_audio_quality_SELBOX');
 		const fileSize = jQuery('#file-size');
 
@@ -97,7 +97,7 @@ class AudioRecorder {
 				stopSymbol.hide();
 				playSymbol.hide();
 				retryButton.hide();
-				submitButton.hide();
+				confirmButton.hide();
 
 				jQuery('#time-rail').hide();
 				fileSize.hide();
@@ -131,8 +131,8 @@ class AudioRecorder {
 					self.retryDialog();
 				});
 				retryButton.prop('disabled', false);
-				submitButton.show();
-				submitButton.prop('disabled', false);
+				confirmButton.show();
+				confirmButton.prop('disabled', false);
 				if (this.endedHandler) {
 					this.audioElement.removeEventListener('ended', this.endedHandler);
 					this.endedHandler = null;
@@ -146,7 +146,7 @@ class AudioRecorder {
 				playSymbol.hide();
 				stopSymbol.show();
 				retryButton.prop('disabled', true);
-				submitButton.prop('disabled', true);
+				confirmButton.prop('disabled', true);
 				break;
 			default:
 				break;

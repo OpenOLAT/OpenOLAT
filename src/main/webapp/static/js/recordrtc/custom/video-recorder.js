@@ -123,7 +123,7 @@ class VideoRecorder {
 		const stopSymbol = jQuery('#stop-symbol');
 		const playSymbol = jQuery('#play-symbol');
 		const retryButton = jQuery('#retry-button');
-		const submitButton = jQuery('.btn-primary');
+		const confirmButton = jQuery('.o_av_confirm_button');
 		const qualityDropdown = jQuery('#o_fiovideo_audio_quality_SELBOX');
 		const fileSize = jQuery('#file-size');
 
@@ -139,7 +139,7 @@ class VideoRecorder {
 				stopSymbol.hide();
 				playSymbol.hide();
 				retryButton.hide();
-				submitButton.hide();
+				confirmButton.hide();
 
 				jQuery('#time-rail').hide();
 				fileSize.hide();
@@ -157,7 +157,7 @@ class VideoRecorder {
 				qualityDropdown.prop('disabled', true);
 				qualityDropdown.change(() => {
 					// A change of this value should not make the form dirty:
-					submitButton.removeClass('o_button_dirty');
+					confirmButton.removeClass('o_button_dirty');
 					o2c = false;
 
 					self.setQualityByName(qualityDropdown.val());
@@ -186,8 +186,8 @@ class VideoRecorder {
 					self.retryDialog();
 				});
 				retryButton.prop('disabled', false);
-				submitButton.show();
-				submitButton.prop('disabled', false);
+				confirmButton.show();
+				confirmButton.prop('disabled', false);
 				if (this.endedHandler) {
 					this.videoElement.removeEventListener('ended', this.endedHandler);
 					this.endedHandler = null;
@@ -201,7 +201,7 @@ class VideoRecorder {
 				playSymbol.hide();
 				stopSymbol.show();
 				retryButton.prop('disabled', true);
-				submitButton.prop('disabled', true);
+				confirmButton.prop('disabled', true);
 				break;
 			default:
 				break;
