@@ -23,11 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -38,7 +35,6 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -52,11 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLaunchersController extends BasicController {
 	
-	public static final Event TAXONOMY_ADMIN_EVENT = new Event("taxonomy.admin");
-	
 	private final VelocityContainer mainVC;
-	private Link openAdminLink;
-	private Link taxonomyEditLink;
 	
 	private List<Controller> launcherCtrls;
 	
@@ -66,18 +58,11 @@ public class CatalogLaunchersController extends BasicController {
 	@Autowired
 	private CatalogV2Service catalogService;
 
-	protected CatalogLaunchersController(UserRequest ureq, WindowControl wControl, CatalogSecurityCallback secCallback, CatalogRepositoryEntrySearchParams defaultSearchParams) {
+	protected CatalogLaunchersController(UserRequest ureq, WindowControl wControl, CatalogRepositoryEntrySearchParams defaultSearchParams) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.defaultSearchParams = defaultSearchParams;
 		mainVC = createVelocityContainer("launchers");
-		
-		if (secCallback.canEditCatalogAdministration()) {
-			openAdminLink = LinkFactory.createButton("open.admin", mainVC, this);
-		}
-		if (secCallback.canEditTaxonomy()) {
-			taxonomyEditLink = LinkFactory.createButton("taxonomy.edit", mainVC, this);
-		}
 		
 		putInitialPanel(mainVC);
 		reload(ureq);
@@ -134,24 +119,7 @@ public class CatalogLaunchersController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == openAdminLink) {
-			doOpenAdmin(ureq);
-		} else if (source == taxonomyEditLink) {
-			doEditTaxonomy(ureq);
-		}
-	}
-
-	private void doEditTaxonomy(UserRequest ureq) {
-		fireEvent(ureq, TAXONOMY_ADMIN_EVENT);
-	}
-
-	private void doOpenAdmin(UserRequest ureq) {
-		try {
-			String businessPath = "[AdminSite:0][Catalog:0]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-		} catch (Exception e) {
-			//
-		}
+		//
 	}
 
 }

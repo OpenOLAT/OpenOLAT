@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -93,7 +94,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		
 		mainVC = createVelocityContainer("main");
 		
-		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl);
+		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, secCallback);
 		listenTo(headerSearchCtrl);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
@@ -101,7 +102,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		stackPanel.setInvisibleCrumb(0);
 		mainVC.put("stack", stackPanel);
 		
-		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), secCallback, defaultSearchParams.copy());
+		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), defaultSearchParams.copy());
 		listenTo(launchersCtrl);
 		stackPanel.pushController(translate("overview"), launchersCtrl);
 		
@@ -145,6 +146,10 @@ public class CatalogMainController extends BasicController implements Activateab
 			if (event instanceof CatalogSearchEvent) {
 				CatalogSearchEvent cse = (CatalogSearchEvent)event;
 				doSearch(ureq, cse.getSearchString(), false);
+			} else if (event == CatalogSearchHeaderController.OPEN_ADMIN_EVENT) {
+				doOpenAdmin(ureq);
+			} else if (event == CatalogSearchHeaderController.TAXONOMY_ADMIN_EVENT) {
+				doTaxonomyAdmin(ureq);
 			}
 		} else if (source == launchersCtrl) {
 			if (event instanceof OpenSearchEvent) {
@@ -160,12 +165,16 @@ public class CatalogMainController extends BasicController implements Activateab
 			} else if (event instanceof OpenTaxonomyEvent) {
 				OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
 				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
-			} else if (event == CatalogLaunchersController.TAXONOMY_ADMIN_EVENT) {
-				doTaxonomyAdmin(ureq);
 			}
 		} else if (source instanceof CatalogRepositoryEntryListController) {
 			OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
 			doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
+		} else if (source == taxonomyAdminCtrl) {
+			if (event == Event.BACK_EVENT) {
+				getWindowControl().pop();
+			} else if (event == CatalogTaxonomyEditController.OPEN_ADMIN_EVENT) {
+				doOpenAdmin(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -290,22 +299,30 @@ public class CatalogMainController extends BasicController implements Activateab
 		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void doTaxonomyAdmin(UserRequest ureq) {
-		if (stackPanel.getLastController() != taxonomyAdminCtrl) {
-			stackPanel.popUpToRootController(ureq);
-		}
 		removeAsListenerAndDispose(taxonomyAdminCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_TAXONOMY_ADMIN),
 				null);
-		stackPanel.setCssClass("o_catalog_breadcrumb o_breadcrump_edit_mode");
-		taxonomyAdminCtrl = new CatalogTaxonomyEditController(ureq, swControl, stackPanel);
+		stackPanel.setCssClass("o_catalog_breadcrumb");
+		taxonomyAdminCtrl = new CatalogTaxonomyEditController(ureq, swControl, secCallback);
 		listenTo(taxonomyAdminCtrl);
-		stackPanel.pushController(translate("taxonomy"), taxonomyAdminCtrl);
+		
+		getWindowControl().pushToMainArea(taxonomyAdminCtrl.getInitialComponent());
 	}
 
 	private void resetStackPanelCssClass() {
 		stackPanel.setCssClass("o_catalog_breadcrumb");
+	}
+
+	private void doOpenAdmin(UserRequest ureq) {
+		try {
+			String businessPath = "[AdminSite:0][catalog:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (Exception e) {
+			//
+		}
 	}
 
 }

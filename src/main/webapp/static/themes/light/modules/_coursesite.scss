@@ -718,6 +718,9 @@
 		justify-content: center;
 		align-items: center;
 		
+		.o_catalog_admin_tools {
+			margin-top: $line-height-computed;
+		}
 		.o_search_box {
 			border-radius: $o-coursesite-rowelem-border-radius;
 			background-color: $input-bg;

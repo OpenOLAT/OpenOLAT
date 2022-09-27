@@ -1,6 +1,21 @@
+<div class="o_flex_first_grow">
+	<div>
+		$r.render("backLink")
+	</div>
+	<div>
+		#if($r.available("open.admin"))
+			$r.render("open.admin")
+		#end
+	</div>
+</div>
+#set($helplink=$r.contextHelpLink("manual_admin/administration/Modules_Taxonomy/"))
+<fieldset class="o_block_large_top">
+	<legend>$r.translate("taxonomy.title")</legend>
+	<p>$r.translate("taxonomy.edit.description") <a href="$helplink" target="_blank">$r.translate("taxonomy.edit.help")</a></p>
+</fieldset>
 #if($r.available("taxonomy.selection"))
-	$r.render("taxonomy.selection")
+	<div class="o_block">
+		$r.render("taxonomy.selection")
+	</div>
 #end
-#if($r.available("taxonomy"))
-	$r.render("taxonomy")
-#end
+$r.render("stack")
