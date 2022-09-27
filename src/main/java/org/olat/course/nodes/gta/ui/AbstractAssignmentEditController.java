@@ -83,15 +83,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private FormLink addTaskLink;
 	private FormLink createTaskLink;
 
-	private FormLink recordVideoLink;
-	private FormLink recordAudioLink;
+	private FormLink createVideoAssignmentLink;
+	private FormLink createAudioAssignmentLink;
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private WarningFlexiCellRenderer fileExistsRenderer;
 	
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
-	private AVTaskController videoAudioTaskCtrl;
+	private AVTaskController avTaskCtrl;
 	private EditTaskController addTaskCtrl;
 	private EditTaskController editTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
@@ -143,14 +143,14 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
 		createTaskLink.setIconLeftCSS("o_icon o_icon_edit");
 		createTaskLink.setVisible(!readOnly);
-		recordVideoLink = uifactory.addFormLink("av.record.video", tasksCont, Link.BUTTON);
-		recordVideoLink.setElementCssClass("o_sel_course_gta_record_video");
-		recordVideoLink.setIconLeftCSS("o_icon o_icon_video_record");
-		recordVideoLink.setVisible(!readOnly);
-		recordAudioLink = uifactory.addFormLink("av.record.audio", tasksCont, Link.BUTTON);
-		recordAudioLink.setElementCssClass("o_sel_course_gta_record_audio");
-		recordAudioLink.setIconLeftCSS("o_icon o_icon_audio_record");
-		recordAudioLink.setVisible(!readOnly);
+		createVideoAssignmentLink = uifactory.addFormLink("av.create.video.assignment", tasksCont, Link.BUTTON);
+		createVideoAssignmentLink.setElementCssClass("o_sel_course_gta_create_video_assignment");
+		createVideoAssignmentLink.setIconLeftCSS("o_icon o_icon_video_record");
+		createVideoAssignmentLink.setVisible(!readOnly);
+		createAudioAssignmentLink = uifactory.addFormLink("av.create.audio.assignment", tasksCont, Link.BUTTON);
+		createAudioAssignmentLink.setElementCssClass("o_sel_course_gta_create_audio_assignment");
+		createAudioAssignmentLink.setIconLeftCSS("o_icon o_icon_audio_record");
+		createAudioAssignmentLink.setVisible(!readOnly);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
@@ -263,9 +263,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
-		} else if (videoAudioTaskCtrl == source) {
+		} else if (avTaskCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				gtaManager.addTaskDefinition(videoAudioTaskCtrl.getTask(), courseEnv, gtaNode);
+				gtaManager.addTaskDefinition(avTaskCtrl.getTask(), courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
@@ -280,12 +280,12 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
-		removeAsListenerAndDispose(videoAudioTaskCtrl);
+		removeAsListenerAndDispose(avTaskCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
-		videoAudioTaskCtrl = null;
+		avTaskCtrl = null;
 		cmc = null;
 	}
 
@@ -295,10 +295,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			doAddTask(ureq);
 		} else if(createTaskLink == source) {
 			doCreateTask(ureq);
-		} else if(recordVideoLink == source) {
-			doRecordVideo(ureq);
-		} else if(recordAudioLink == source) {
-			doRecordAudio(ureq);
+		} else if(createVideoAssignmentLink == source) {
+			doCreateVideoAsssignment(ureq);
+		} else if(createAudioAssignmentLink == source) {
+			doCreateAudioAssignment(ureq);
 		} else if(taskDefTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -360,24 +360,24 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		cmc.activate();
 	}
 
-	private void doRecordVideo(UserRequest ureq) {
+	private void doCreateVideoAsssignment(UserRequest ureq) {
 		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
-		videoAudioTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, false);
-		listenTo(videoAudioTaskCtrl);
+		avTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, false);
+		listenTo(avTaskCtrl);
 
-		String title = translate("av.record.video");
-		cmc = new CloseableModalController(getWindowControl(), "close", videoAudioTaskCtrl.getInitialComponent(), true, title, true);
+		String title = translate("av.create.video.assignment");
+		cmc = new CloseableModalController(getWindowControl(), "close", avTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private void doRecordAudio(UserRequest ureq) {
+	private void doCreateAudioAssignment(UserRequest ureq) {
 		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
-		videoAudioTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, true);
-		listenTo(videoAudioTaskCtrl);
+		avTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, true);
+		listenTo(avTaskCtrl);
 
-		String title = translate("av.record.audio");
-		cmc = new CloseableModalController(getWindowControl(), "close", videoAudioTaskCtrl.getInitialComponent(), true, title, true);
+		String title = translate("av.create.audio.assignment");
+		cmc = new CloseableModalController(getWindowControl(), "close", avTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

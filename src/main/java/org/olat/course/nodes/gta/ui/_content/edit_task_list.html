@@ -1,14 +1,10 @@
 <fieldset class="o_form o_block_large_bottom o_sel_course_gta_tasks" role="form">
 	<legend>$r.translate("task.list.title") $r.contextHelpWithWrapper("manual_user/task/Three_Steps_to_Your_Task/#configuration")</legend>
 	<div class="o_desc">$r.translate("task.list.description")</div>
-	#if($r.visible("add.task") || $r.visible("create.task") || $r.visible("av.record.video") || $r.visible("av.record.audio"))
+	#if($r.visible("add.task") || $r.visible("create.task") || $r.visible("av.create.video.assignment") || $r.visible("av.create.audio.assignment"))
 	<div class="o_button_group o_button_group_right">
 		<div class="btn-group">
-			$r.render("add.task") $r.render("create.task")
-		</div>
-		<div class="btn-group">
-			$r.render("av.record.video")
-			$r.render("av.record.audio")
+			$r.render("add.task") $r.render("create.task") $r.render("av.create.video.assignment") $r.render("av.create.audio.assignment")
 		</div>
 	</div>
 	#end
