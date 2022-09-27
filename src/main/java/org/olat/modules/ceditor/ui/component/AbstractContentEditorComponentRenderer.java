@@ -81,15 +81,15 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		  .append("'><i class='o_icon o_icon-fw o_icon_close'> </i> <span>").append(translator.translate("save.and.close")).append("</span></a>");
 	}
 	
-	protected void renderEdit(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+	protected void renderToggleInspector(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isEditable()) {
-			sb.append("<a id='o_ccedit_").append(cmp.getDispatchID()).append("' ")
+			sb.append("<button id='o_ccedit_").append(cmp.getDispatchID()).append("' ")
 				  .append("href='javascript:;' onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "edit_fragment"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-			sb.append(" return false;\" class='o_sel_edit_element' title='").append(translator.translate("edit"))
-			  .append("'><i class='o_icon o_icon-fw o_icon_inspect'> </i> <span>").append(translator.translate("edit")).append("</span></a>");
+			sb.append(" return false;\" class='o_sel_edit_element").append(" active", cmp.isInspectorVisible()).append("' title='").append(translator.translate("edit"))
+			  .append("'><i class='o_icon o_icon-fw o_icon_inspect'> </i> <span>").append(translator.translate("edit")).append("</span></button>");
 		}
 	}
 	
@@ -131,27 +131,27 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderDuplicate(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isCloneable()) {
-			sb.append("<a id='o_ccclone_").append(cmp.getDispatchID()).append("' ")
+			sb.append("<button id='o_ccclone_").append(cmp.getDispatchID()).append("' ")
 				  .append("href='javascript:;' onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
 			sb.append(" return false;\" class='o_sel_clone_element' title='").append(translator.translate("duplicate"))
-			  .append("'><i class='o_icon o_icon-fw o_icon_copy'> </i> <span>").append(translator.translate("duplicate")).append("</span></a>");
+			  .append("'><i class='o_icon o_icon-fw o_icon_copy'> </i> <span>").append(translator.translate("duplicate")).append("</span></button>");
 		}
 	}
 	
 	protected void renderDragZone(StringOutput sb, ContentEditorFragment cmp, Translator translator) {
-		sb.append("<span id='o_ccclone_").append(cmp.getDispatchID()).append("' class='o_page_drag_handle'")
+		sb.append("<button id='o_ccclone_").append(cmp.getDispatchID()).append("' class='o_page_drag_handle'")
 		  .append(" title='").append(translator.translate("drag.element")).append("'>")
-		  .append("<i class='o_icon o_icon-fw o_icon_move'> </i></span></a>");
+		  .append("<i class='o_icon o_icon-fw o_icon_move'> </i></button></a>");
 	}
 	
 	protected void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		// More button
-		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
-		  .append("<i class='o_icon o_icon-fw o_icon_commands'> </i>")
-		  .append("</button>");
+		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'")
+		  .append(" title='").append(translator.translate("more.title")).append("'>")
+		  .append("<i class='o_icon o_icon-fw o_icon_commands'> </i></button>");
 		// Menu
 		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");
 		

@@ -80,6 +80,87 @@
 	}
 }
 
+@media (max-width: $screen-xs-max) {
+
+	.o_page_layout {
+		&.o_container_block_2_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(2, auto);
+		}
+		
+		&.o_container_block_3_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(3, auto);
+		}
+		
+		&.o_container_block_4_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(4, auto);
+		}
+		
+		&.o_container_block_5_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(5, auto);
+		}
+		
+		&.o_container_block_6_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(6, auto);
+		}
+		
+		&.o_container_block_2_1_rows {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(3, auto);
+			
+			div:nth-child(3) {
+				grid-column-end: span 1;
+			}
+		}
+		
+		&.o_container_block_1_3_rows {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(4, auto);
+			
+			div:nth-child(1) {
+				grid-column-end: span 1;
+			}
+		}
+		
+		&.o_container_block_1_1l_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(2, auto);
+		}
+		
+		&.o_container_block_1_2_rows {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(3, auto);
+			
+			div:nth-child(1) {
+				grid-column-end: span 1;
+			}
+		}
+		
+		&.o_container_block_1_2_cols {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(3, auto);
+			
+			div:nth-child(1) {
+				grid-row-end: span 1;
+			}
+		}
+	}
+}
+
 .o_page_content_editor .o_page_layout {
 	&.o_container_block_2_cols {
 		>div:not(:last-child) {
@@ -159,6 +240,10 @@
 			border-bottom: $o-editor-layout-inner-h-border;
 		}
 	}
+	
+	&.o_ed_container>div {
+		padding: $o-editor-container-slot-padding;
+	}
 }
 
 .o_page_content_editor .o_page_fragment_edit.o_page_container_edit.o_fragment_edited .o_page_layout,
@@ -184,6 +269,9 @@
 		margin: 0;
 		color: $o-editor-inspector-title-color;
 		margin-bottom: 5px;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
 	
 	.o_ceditor_inspector_header {

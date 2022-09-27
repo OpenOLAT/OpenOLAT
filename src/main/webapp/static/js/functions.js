@@ -2102,7 +2102,7 @@ function o_ffSetFocus(formId, formItemId) {
 		var focusApplied = false;
 		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
 			var jLastEl = jQuery(el);
-			if(el.classList.contains('o_date_day') >= 0) {
+			if(el.classList.contains('o_date_day')) {
 				jLastEl.datepicker('option', 'showOn', '');
 				jLastEl.focus();
 				jLastEl.datepicker('option', 'showOn', 'focus');

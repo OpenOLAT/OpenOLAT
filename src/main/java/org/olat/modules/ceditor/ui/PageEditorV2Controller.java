@@ -813,6 +813,8 @@ public class PageEditorV2Controller extends BasicController {
 			}
 			
 			inspectorPart = new ModalInspectorController(ureq, getWindowControl(), inspectorPart, element);
+			inspectorPart.getInitialComponent().setVisible(false);
+			inspectorPart.getInitialComponent().setDirty(false);
 			listenTo(inspectorPart);
 		}
 		

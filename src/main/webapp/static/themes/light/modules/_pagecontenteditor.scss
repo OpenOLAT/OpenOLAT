@@ -12,7 +12,7 @@
 	&.o_page_container_edit {
 		border: $o-editor-element-border-width solid $o-editor-border-color;
 		border-radius: 2px;
-		margin-bottom: 1px;
+		margin-bottom: 4px;
 	}
 
 	&:hover, &.o_fragment_edited {
@@ -52,44 +52,40 @@
 	
 	.o_page_element_tools {
 		position: absolute;
-		top: -20px;
+		top: -36px;
 		left: 10px;
 		z-index: 7;
-		display: grid;
-		grid-template-columns: 32px 32px 32px;
-		align-items: baseline;
+		font-size: 18px;
+
 		
 		background: white;
 		border: 1px solid $o-editor-border-color;
 		padding: 0;
-		border-radius: $border-radius-small;
+		border-radius: $border-radius-base;
 		box-shadow: $o-editor-tools-box-shadow;
 		
-		>a,  {
-			margin: 0;
-			padding: 1px 5px 1px 7px;
-		}
 		>button {
 			margin: 0;
-			padding: 1px 7px;
 			border: none;
 			background: transparent;
-		}
-		>span {
-			margin: 0;
-			padding: 1px 5px;
 		}
 		
 		>*:not(:first-child) {
 			border-left: 1px solid #d9d9d9;
 		}
 		
-		>a>span, >button>span {
+		>button>span {
 			display: none;
+		}
+		
+		.o_page_drag_handle {
+			cursor: grab;
 		}
 	}
 	
-	.o_fragment_edited .o_page_element_tools>a,
+	.o_page_container_tools>button.active,
+	.o_page_container_tools>button[aria-expanded='true'],
+	.o_fragment_edited .o_page_element_tools>button.active,
 	.o_fragment_edited .o_page_element_tools>button[aria-expanded='true'] {
 		background-color: $o-editor-selected-color;
 		color: #fff;
@@ -171,22 +167,10 @@
 	padding: 10px;
 }
 
-.o_page_container {
-	background-color: $o-editor-container-level-1-bg-color;
-}
-
-.o_page_container .o_page_container  {
-	background-color: $o-editor-container-level-2-bg-color;
-}
-
-.o_page_container .o_page_container .o_page_container  {
-	background-color: $o-editor-container-level-3-bg-color;
-}
-
 .o_page_container_slot {
 	box-sizing: border-box;
 	margin: 0 -1px -1px 0;
-	padding: 10px;
+	padding: $o-editor-container-slot-padding;
 	
 	display: flex;
 	flex-direction: column;
@@ -248,41 +232,6 @@
 	outline: 1px dashed $o-editor-selected-border-color;
 }
 
-
-//TODO editor
-.o_page_part.oo-accepted,
-.o_page_part.oo-accepted-top,
-.o_page_container_edit.o_page_drop.oo-accepted,
-.o_page_container_edit.o_page_drop.oo-accepted-top,
-.o_page_content_editor.o_page_drop.oo-accepted,
-.o_page_content_editor.o_page_drop.oo-accepted-top  {
-	border: $o-editor-element-border-width dotted $o-editor-drag-accepted-color;
-}
-
-.o_page_part.o_page_drop.oo-accepted:after,
-.o_page_container_edit.o_page_drop.oo-accepted:after,
-.o_page_container_slot.o_page_drop.oo-accepted .o_page_container_slot-inner:after,
-.o_page_content_editor.o_page_drop.oo-accepted:after {
-	display: block;
-	height: 25px;
-	margin: 10px;
-	border: 2px dotted $o-editor-drop-border-color;
-	border-radius: 5px;
-	content: '';
-}
-
-.o_page_part.o_page_drop.oo-accepted-top:before,
-.o_page_container_edit.o_page_drop.oo-accepted-top:before,
-.o_page_container_slot.o_page_drop.oo-accepted-top .o_page_container_slot-inner:before,
-.o_page_content_editor.o_page_drop.oo-accepted-top:before {
-	display: block;
-	height: 25px;
-	margin: 10px 10px 10px 10px;
-	border: 2px dotted $o-editor-drop-border-color;
-	border-radius: 5px;
-	content: '';
-}
-
 .o_page_container_slot-inner {
 	min-height: 20px;
 	flex-grow: 5;
@@ -292,9 +241,12 @@
 	//
 }
 
+.gu-mirror .o_page_element_tools .o_page_drag_handle {
+	cursor: grabbing !important;
+}
+
 .gu-transit .o_page_inspector,
-.gu-mirror .o_page_inspector
-{
+.gu-mirror .o_page_inspector {
 	display: none;
 }
 
@@ -316,6 +268,7 @@
 	background-color: rgba(255, 255, 255, 0.6);
 	border: $o-editor-element-border-width dotted $o-editor-drag-accepted-color;
 	box-shadow: 0px 0px 20px #aaa;
+	cursor: grabbing;
 }
 
 .o_page_add_callout {

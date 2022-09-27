@@ -75,7 +75,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 			fireEvent(ureq, new CloseInspectorEvent(elementId, false));
 		} else if(mainVC == source) {
 			if("close_inspector".equals(event.getCommand())) {
-				fireEvent(ureq, new CloseInspectorEvent(elementId, true));
+				fireEvent(ureq, new CloseInspectorEvent(elementId, false));
 			}
 		}
 	}

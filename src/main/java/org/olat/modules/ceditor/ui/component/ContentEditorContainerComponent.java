@@ -122,7 +122,6 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 				case "clone_inspector":
 					fireEvent(ureq, new CloneElementEvent(this));
 					break;	
-					
 				case "delete_element":
 					fireEvent(ureq, new DeleteElementEvent(this));
 					break;
@@ -338,6 +337,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	
 	private void doCloseEditFragment() {
 		editMode = false;
+		setInspectorVisible(false, false);
 		setDirty(true);
 	}
 

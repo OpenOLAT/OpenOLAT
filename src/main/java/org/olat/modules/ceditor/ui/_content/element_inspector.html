@@ -5,60 +5,37 @@
 <script>
 "use strict";
 jQuery(function() {
-	
-	var savePosition = function(inspectorEl) {
-		var rect = inspectorEl.getBoundingClientRect();
-		o_info.cinspector.viewX = rect.x;
-		o_info.cinspector.viewY = rect.y;
-	}
-	
+
 	var initializePosition = function() {
+		inspectorPosition();
+		
 		var jInspector = jQuery(".o_page_inspector");
-		var inspectorEl = jInspector.get(0);
-
-		var marginTop = 25;
-		if(o_info.cinspector.viewX > 0) {
-			var inspectorRect = inspectorEl.getBoundingClientRect();
-			var editedFragment = inspectorEl.offsetParent;
-			var editedFragmentRect = editedFragment.getBoundingClientRect();
-
-			var marginRight = -((o_info.cinspector.viewX - editedFragmentRect.right) + inspectorRect.width + 1);
-			jInspector.css("margin-right", marginRight + "px");
-
-			if(!isNaN(o_info.cinspector.viewY)) {
-				marginTop =  (o_info.cinspector.viewY - editedFragmentRect.y) - 1;
-			}
-		} else {
-			inspectorPosition();
+		var editedFragment = jInspector.closest(".o_page_container_edit");
+		console.log(editedFragment);
+		if(editedFragment != null) {
+			var fragmentRect = editedFragment.get(0).getBoundingClientRect();
+			var top = fragmentRect.top + 26;
+			jInspector.css("top", top + "px");
 		}
-		jInspector.css("margin-top", marginTop + "px");
-		savePosition(inspectorEl);
 	}
 
 	var inspectorPosition = function() {
-		var totalWidth = window.innerWidth;
-		var jMain = jQuery("#o_main_container");
-		var mainWidth = jMain.width();
-		
 		var jInspector = jQuery(".o_page_inspector");
 		var inspectorWidth = jInspector.width();
-		
-		var editedFragment = jInspector.get(0).offsetParent;
+		var editedFragment = jInspector.get(0).closest(".o_page_container_edit");
 		if(editedFragment != null) {
 			var fragmentRect = editedFragment.getBoundingClientRect();
-			var mainRect = jMain.get(0).getBoundingClientRect();
-		
-			var margin = mainRect.right - mainRect.width;
-			var marginToContainer = mainRect.right - fragmentRect.right;
-			var positionX = marginToContainer + inspectorWidth;
-			if(margin < 0) {
-				positionX -= inspectorWidth;
-			} else if(margin < inspectorWidth) {
-				positionX -= (inspectorWidth - margin) + 15;
-			}
+			var mainEl = document.getElementById("o_main_container");
+			var mainRect = mainEl.getBoundingClientRect();
+			var totalWidth = window.innerWidth;
+			var scrollbarWidth = 18;// Approximation
 			
-			positionX = -1 * positionX;
-			jInspector.css("margin-right", positionX + "px");
+			var left = mainRect.right - 10;
+			if(left + inspectorWidth + scrollbarWidth > totalWidth) {
+				left = totalWidth - scrollbarWidth - inspectorWidth;
+			}
+			jInspector.css("position", "fixed");
+			jInspector.css("left", left + "px");
 		}
 	};
 	
@@ -67,75 +44,90 @@ jQuery(function() {
 	* if it's fully visible.
 	*/
 	var inspectorVisibility = function() {
-		jQuery(".o_page_inspector").each(function(index, inspectorEl) {
-			var el = inspectorEl;
-			var rect = inspectorEl.getBoundingClientRect();
+		var jInspector = jQuery(".o_page_inspector");
+		if(jInspector.length > 0) {
+			var editedFragmentEl = jInspector.get(0).closest(".o_page_fragment_edit");
+	
+			var el = editedFragmentEl;
+			var fragmentRect = editedFragmentEl.getBoundingClientRect();
 			var top = el.offsetTop;
 			var height = el.offsetHeight;
-
 			while(el.offsetParent) {
 				el = el.offsetParent;
-			    top += el.offsetTop;
+				top += el.offsetTop;
 			}
-
+	
 			var visible = top < (window.pageYOffset + window.innerHeight) && (top + height) > window.pageYOffset;
-			var fullVisible = rect.y > 0 && rect.bottom < window.innerHeight;
 			if(!visible) {
-				o_info.cinspector.viewY = NaN;
-				jQuery(inspectorEl).hide();
-				$r.backgroundCommand('close_inspector')
-			} else if(fullVisible) {
-				savePosition(inspectorEl);
-			} else {
-				o_info.cinspector.viewY = NaN;
+				window.removeEventListener('scroll', inspectorVisibility);
+				window.removeEventListener('resize', inspectorPosition);
+				jInspector.hide(300, 'linear', function() {});
+				$r.backgroundCommand('close_fragment')
 			}
-		});
+		} else {
+			window.removeEventListener('scroll', inspectorVisibility);
+			window.removeEventListener('resize', inspectorPosition);
+		}
 	}
 
 	var dragInspector = function() {
-		var posX = 0;
-		var posY = 0;
+		var position = { x: 0, y: 0, dx:0, dy:0 };
+
 		var inspectorEl = jQuery(".o_page_inspector").get(0);
 		var inspectorHeader = jQuery(".o_page_inspector .o_ceditor_inspector_header")[0];
-		inspectorHeader.onmousedown = dragMouseDown;
+		inspectorHeader.onmousedown = dragStart;
+		inspectorHeader.ontouchstart = touchStart;
 		
-		function dragMouseDown(e) {
+		function dragStart(e) {
 			e = e || window.event;
 			e.preventDefault();
-			// get the mouse cursor position at startup:
-			posX = e.clientX;
-			posY = e.clientY;
-			document.onmouseup = closeDragElement;
-			// call a function whenever the cursor moves:
+			if(position.x == 0) {
+				position.x = e.clientX;
+				position.y = e.clientY;
+			}
+			document.onmouseup = dragStop;
 			document.onmousemove = elementDrag;
+		}
+		
+		function touchStart(e) {
+			e = e || window.event;
+			e.preventDefault();
+			if(position.x == 0) {
+				position.x = e.touches[0].clientX;
+				position.y = e.touches[0].clientY;
+			}
+			document.ontouchend = dragStop;
+			document.ontouchmove = elementMove;
 		}
 		
 		function elementDrag(e) {
 			e = e || window.event;
 			e.preventDefault();
+			position.dx = - (position.x - e.clientX);
+			position.dy = - (position.y - e.clientY);
+			inspectorEl.style.transform = `translate(${position.dx}px, ${position.dy}px)`;
+		}
+		
+		function elementMove(e) {
+			e = e || window.event;
+			e.preventDefault();
 			// calculate the new cursor position:
-			var diffX = posX - e.clientX;
-			var diffY = posY - e.clientY;
-			posX = e.clientX;
-			posY = e.clientY;
-			// set the element's new position:
-			var marginRight = parseInt(inspectorEl.style.marginRight.replace("px", ""));
-			var marginTop = parseInt(inspectorEl.style.marginTop.replace("px", ""));
-			inspectorEl.style.marginTop = (marginTop - diffY) + "px";
-			inspectorEl.style.marginRight = (marginRight + diffX) + "px";
+			position.dx = - (position.x - e.touches[0].clientX);
+			position.dy = - (position.y - e.touches[0].clientY);
+			inspectorEl.style.transform = `translate(${position.dx}px, ${position.dy}px)`;
 		}
 
-		function closeDragElement() {
+		function dragStop() {
 			// stop moving when mouse button is released:
 			document.onmouseup = null;
 			document.onmousemove = null;
-			// catch last position
-			savePosition(inspectorEl);
+			document.ontouchstart = null;
+			document.ontouchmove = null;
 		}
 	}
 	
-	jQuery(window).resize(inspectorPosition);
-	jQuery(window).scroll(inspectorVisibility);
+	window.addEventListener('resize', inspectorPosition);
+	window.addEventListener('scroll', inspectorVisibility);
 	initializePosition();
 	dragInspector();
 });

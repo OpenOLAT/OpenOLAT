@@ -96,16 +96,13 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			renderName(sb, cmp, translator);
 		}
 
-		renderEdit(sb, cmp, containerUbu, translator);
-		
+		renderToggleInspector(sb, cmp, containerUbu, translator);
 		renderDuplicate(sb, cmp, containerUbu, translator);
 		renderNameLink(sb, cmp, containerUbu, translator);
 		renderRuleLink(sb, cmp, containerUbu, translator);
-		
 		renderMoreMenu(sb, cmp, containerUbu, translator);
 		renderMoveDown(sb, cmp, containerUbu, translator);
 		renderMoveUp(sb, cmp, containerUbu, translator);
-		// renderDragZone(sb, cmp, translator);
 		
 		sb.append("</div>");
 	}
@@ -113,8 +110,9 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 	private void renderNameLink(StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder ubu,
 			Translator translator) {
 		if (cmp.supportsName()) {
-			sb.append("<a id='o_cname_").append(cmp.getElementId()).append("' ")
-			  .append("href='javascript:;' onclick=\"");
+			sb.append("<a id='o_cname_").append(cmp.getElementId()).append("'")
+			  .append(" title='").append(translator.translate("container.name")).append("'")
+			  .append(" href='javascript:;' onclick=\"");
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "change_name"),
 					new NameValuePair("fragment", cmp.getComponentName()));
