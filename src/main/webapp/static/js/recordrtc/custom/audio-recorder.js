@@ -39,7 +39,7 @@ class AudioRecorder {
 		}
 
 		this.state = RecState.waitingToRecord;
-		this.avUserInterface.setVolume(0.25);
+		this.mute();
 		this.updateUI();
 	}
 
