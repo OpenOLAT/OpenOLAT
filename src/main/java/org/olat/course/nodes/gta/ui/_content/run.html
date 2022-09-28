@@ -20,7 +20,7 @@
 </div>
 #end
 
-<div class="o_process">
+<div id="o_proc_${r.getCId()}" class="o_process">
 #if($assignmentEnabled)
 <div id="o_step_assignement" class="o_step $assignmentCssClass o_expand_ctrl">
 	<div class="o_bar"></div>
@@ -29,7 +29,7 @@
 			<span class="o_process_status_badge $assignmentCssStatus">$assignmentStatus</span>
 			<h4 class="o_title">$r.translate("run.assignment.title")</h4>
 			#if($r.isNotEmpty($assignmentDueDate))
-				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $assignmentDueDate</div>
+				<div id="o_step_assignement_duedate" class="o_meta" data-remaining-time="$assignmentRemainingTime"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $assignmentDueDate</div>
 			#end
 			#if($r.isNotEmpty($assignmentDate))
 				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $assignmentDate</div>
@@ -98,7 +98,7 @@
 			<span class="o_process_status_badge $submitCssStatus">$submitStatus</span>
 			<h4 class="o_title">$r.translate("run.submit")</h4>
 			#if($r.isNotEmpty($submitDueDate))
-				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $submitDueDate</div>
+				<div id="o_step_submit_duedate" class="o_meta" data-remaining-time="$submitRemainingTime"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $submitDueDate</div>
 			#end
 			
 			#if($r.isNotEmpty($collectionDate))
@@ -191,7 +191,7 @@
 			<span class="o_process_status_badge $revisionCssStatus">$revisionStatus</span>
 			<h4 class="o_title">$r.translate("run.revision")</h4>
 			#if($r.isNotEmpty($revisionDueDate))
-				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $revisionDueDate</div>
+				<div id="o_step_revision_duedate" class="o_meta"  data-remaining-time="$revisionRemainingTime"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $revisionDueDate</div>
 			#end
 			
 			#if($r.isNotEmpty($collectionRevisionDate))
@@ -304,3 +304,37 @@
 	</div>
 	#end
 #end
+
+<script>
+"use strict";
+jQuery(function() {
+	function displayRemainingTime(wrapperId, remaining) {
+		var hours = Math.floor(remaining / (60 * 60 * 1000));
+		var minutes = Math.floor((remaining - (hours * 60 * 60 * 1000)) / (60 * 1000));
+		jQuery("#" + wrapperId + " .o_hours").text("" + hours);
+		jQuery("#" + wrapperId + " .o_minutes").text("" + minutes);
+	}
+	
+	jQuery(".o_meta").each(function(index, el) {
+		var numOfCounter = jQuery(".o_minutes", el).length;
+		if(numOfCounter > 0) {
+	    	var availableTime = parseInt(el.getAttribute("data-remaining-time"));
+	    	if(availableTime > 0) {
+				var startTime = performance.now();
+				var wrapperId = el.getAttribute("id");
+				var periodic = jQuery.periodic({period: 1000, decay:1.0, max_period: availableTime + 1000 }, function() {
+					var remaining = availableTime - (performance.now() - startTime);
+					if(jQuery("#o_proc_${r.getCId()}").length == 0) {
+						periodic.cancel();
+					} else if(remaining >= 0) {
+						displayRemainingTime(wrapperId, remaining);
+					} else {
+						$r.javaScriptCommand("reload","ignore-validating-error","oo-ignore-validating-error")
+						periodic.cancel();
+					}
+				});
+	    	}
+		}
+	});
+});
+</script>
