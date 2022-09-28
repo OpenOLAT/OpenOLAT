@@ -203,5 +203,25 @@
 	
 }
 
-
+.o_print_header {
+	@extend %o_flex_first_grow;
+	#o_print_brand {
+		height: $o-print-header-logo-height;
+		width: $o-print-header-logo-width;
+		min-width: $o-print-header-logo-width;
+		max-width: $o-print-header-logo-width;
+		margin-left: 10px;
+		position: relative;
+		img {
+			position: absolute;
+			top: 0;
+			right: 0;
+			max-height: $o-print-header-logo-height;
+		}
+	}
+	
+	h1, h2, h3 {
+		margin-top: 0;
+	}
+}
 

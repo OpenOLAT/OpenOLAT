@@ -1,9 +1,15 @@
 <div class="o_qual_filtered_print">
-	<div id="o_print_brand" class="clearfix">
-		<span class="o_navbar-brand"></span>
-	</div>
 	<div class="o_qual_content">
-		<h2>$mainTitle</h2>
+		<div class="o_print_header">
+			<div>
+				#if($r.isNotNull($mainTitle))
+					<h2>$mainTitle</h2>
+				#end
+			</div>
+			<div id="o_print_brand">
+				<span class="o_navbar-brand"></span>
+			</div>
+		</div>
 		$r.render("ctrl")
 		$r.render("legendFilters")
 	</div>
@@ -18,10 +24,10 @@
 			if(imgUrl.length > 12) {
 				jQuery("#o_print_brand").empty().append(jQuery('<img src="' + imgUrl + '" />'));
 			} else {
-				jQuery("#o_print_brand").empty();
+				jQuery("#o_print_brand").remove();
 			}
 		} else {
-			jQuery("#o_print_brand").empty();
+			jQuery("#o_print_brand").remove();
 		}
 		
 		setTimeout(function() {
