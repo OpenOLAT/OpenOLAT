@@ -465,7 +465,7 @@ public class PageEditorV2Controller extends BasicController {
 					ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
 					element = provider.appendPageElement(element);
 					fragment = createFragmentComponent(ureq, element);
-					container.addElement(fragment, referenceFragment, target);
+					container.addElement(ureq, fragment, referenceFragment, target);
 				}
 			}
 		}
@@ -490,7 +490,7 @@ public class PageEditorV2Controller extends BasicController {
 			PageElement pageElement = provider.appendPageElement(element);
 			fragment = createFragmentComponent(ureq, pageElement);
 			ContentEditorContainerComponent containerCmp = (ContentEditorContainerComponent)referenceFragment;
-			containerCmp.setElementAt(fragment, column, null);
+			containerCmp.setElementAt(ureq, fragment, column, null);
 		}
 		
 		updateImportButtonVisibility();
@@ -597,15 +597,15 @@ public class PageEditorV2Controller extends BasicController {
 		Component parent = ancestors.get(index + 1);
 		if(parent == editorCmp) {
 			if(fragment instanceof ContentEditorContainerComponent) {
-				moveElementsToPreviousContainer((ContentEditorContainerComponent)fragment);
+				moveElementsToPreviousContainer(ureq, (ContentEditorContainerComponent)fragment);
 			}
 			editorCmp.removeRootComponent(fragment);
 		} else if(parent instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
 			if(fragment instanceof ContentEditorContainerComponent) {
-				moveElementsToContainerSlot((ContentEditorContainerComponent)fragment, container);
+				moveElementsToContainerSlot(ureq, (ContentEditorContainerComponent)fragment, container);
 			}
-			container.removeElementAt(fragment);
+			container.removeElementAt(ureq, fragment);
 		}
 		updateImportButtonVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -617,7 +617,7 @@ public class PageEditorV2Controller extends BasicController {
 	 * 
 	 * @param container The container to empty
 	 */
-	private void moveElementsToPreviousContainer(ContentEditorContainerComponent container) {
+	private void moveElementsToPreviousContainer(UserRequest ureq, ContentEditorContainerComponent container) {
 		List<ContentEditorFragment> fragmentsToTransfer = container.getAllContentEditorFragments();
 		if(fragmentsToTransfer.isEmpty()) {
 			return;
@@ -625,11 +625,11 @@ public class PageEditorV2Controller extends BasicController {
 		
 		ContentEditorContainerComponent previousContainer = editorCmp.previousRootContainerComponent(container);
 		if(previousContainer != null) {
-			previousContainer.transferElements(fragmentsToTransfer);
+			previousContainer.transferElements(ureq, fragmentsToTransfer);
 		} else {
 			ContentEditorContainerComponent nextContainer = editorCmp.nextRootContainerComponent(container);
 			if(nextContainer != null) {
-				nextContainer.transferElements(fragmentsToTransfer);
+				nextContainer.transferElements(ureq, fragmentsToTransfer);
 			}
 		}
 	}
@@ -639,7 +639,7 @@ public class PageEditorV2Controller extends BasicController {
 	 * @param container The container to empty
 	 * @param parent The parent of the container to empty
 	 */
-	private void moveElementsToContainerSlot(ContentEditorContainerComponent container, ContentEditorContainerComponent parent) {
+	private void moveElementsToContainerSlot(UserRequest ureq, ContentEditorContainerComponent container, ContentEditorContainerComponent parent) {
 		List<ContentEditorFragment> fragmentsToTransfer = container.getAllContentEditorFragments();
 		if(fragmentsToTransfer.isEmpty()) {
 			return;
@@ -647,9 +647,9 @@ public class PageEditorV2Controller extends BasicController {
 
 		int slot = parent.getContainerSettings().getColumnIndex(container.getElementId());
 		if(slot > 0) {
-			parent.transferElements(fragmentsToTransfer, slot);
+			parent.transferElements(ureq, fragmentsToTransfer, slot);
 		} else {
-			parent.transferElements(fragmentsToTransfer);
+			parent.transferElements(ureq, fragmentsToTransfer);
 		}
 	}
 	
@@ -664,7 +664,7 @@ public class PageEditorV2Controller extends BasicController {
 				}
 			} else if(parent instanceof ContentEditorContainerComponent) {
 				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.moveUp(fragment.getElementId());
+				container.moveUp(ureq, fragment.getElementId());
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -681,7 +681,7 @@ public class PageEditorV2Controller extends BasicController {
 				}
 			} else if(parent instanceof ContentEditorContainerComponent) {
 				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.moveDown(fragment.getElementId());
+				container.moveDown(ureq, fragment.getElementId());
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -701,7 +701,7 @@ public class PageEditorV2Controller extends BasicController {
 			editorCmp.removeRootComponent(source);
 		} else if(sourceParent instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent container = (ContentEditorContainerComponent)sourceParent;
-			container.removeElementAt(source);
+			container.removeElementAt(ureq, source);
 		} else {
 			editorCmp.setDirty(true);
 			return;
@@ -748,7 +748,7 @@ public class PageEditorV2Controller extends BasicController {
 			editorCmp.removeRootComponent(source);
 		} else if(sourceParent instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent container = (ContentEditorContainerComponent)sourceParent;
-			container.removeElementAt(source);
+			container.removeElementAt(ureq, source);
 		} else {
 			editorCmp.setDirty(true);
 			return;
@@ -760,13 +760,13 @@ public class PageEditorV2Controller extends BasicController {
 			if(source instanceof ContentEditorContainerComponent) {
 				ok = moveContainerInEditor(target, source, after);
 			} else {
-				targetContainer.setElementAt(source, dropEvent.getSlot(), null);
+				targetContainer.setElementAt(ureq, source, dropEvent.getSlot(), null);
 				ok = true;
 			}
 		} else if(targetParent instanceof ContentEditorContainerComponent) {
 			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)targetParent;
 			PageElementTarget pos = after ? PageElementTarget.below : PageElementTarget.above;
-			targetContainer.addElement(source, target, pos);
+			targetContainer.addElement(ureq, source, target, pos);
 			ok = true;
 		} else if(targetParent == editorCmp) {
 			ok = moveContainerInEditor(target, source, after);
@@ -810,6 +810,9 @@ public class PageEditorV2Controller extends BasicController {
 		if(inspectorPart != null) {
 			if(editorPart instanceof ControllerEventListener) {
 				inspectorPart.addControllerListener((ControllerEventListener)editorPart);
+			}
+			if(inspectorPart instanceof ControllerEventListener) {
+				editorPart.addControllerListener((ControllerEventListener)inspectorPart);
 			}
 			
 			inspectorPart = new ModalInspectorController(ureq, getWindowControl(), inspectorPart, element);

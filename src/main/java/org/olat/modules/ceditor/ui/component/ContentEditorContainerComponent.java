@@ -257,50 +257,50 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		return true;
 	}
 
-	public void setElementAt(ContentEditorFragment component, int column, String sibling) {
+	public void setElementAt(UserRequest ureq, ContentEditorFragment component, int column, String sibling) {
 		if(!checkAdd(component)) return;
 
-		editorPart.setElementAt(component.getElementId(), column, sibling);
+		editorPart.setElementAt(ureq, component.getElementId(), column, sibling);
 		addComponent(component);
 		setDirty(true);
 	}
 	
-	public void removeElementAt(ContentEditorFragment component) {
-		editorPart.removeElement(component.getElementId());
+	public void removeElementAt(UserRequest ureq, ContentEditorFragment component) {
+		editorPart.removeElement(ureq, component.getElementId());
 		removeComponent(component);
 		setDirty(true);
 	}
 	
-	public void transferElements(List<ContentEditorFragment> fragments) {
+	public void transferElements(UserRequest ureq, List<ContentEditorFragment> fragments) {
 		int lastSlot = editorPart.getLastSlot();
-		transferElements(fragments, lastSlot);
+		transferElements(ureq, fragments, lastSlot);
 	}
 	
-	public void transferElements(List<ContentEditorFragment> fragments, int slot) {
+	public void transferElements(UserRequest ureq, List<ContentEditorFragment> fragments, int slot) {
 		List<String> elementsIds = fragments.stream()
 				.map(ContentEditorFragment::getElementId)
 				.collect(Collectors.toList());
-		editorPart.transferElements(elementsIds, slot);
+		editorPart.transferElements(ureq, elementsIds, slot);
 		for(ContentEditorFragment fragment:fragments) {
 			addComponent(fragment);
 		}
 		setDirty(true);
 	}
 	
-	public void moveUp(String fragmentId) {
-		editorPart.moveUp(fragmentId);
+	public void moveUp(UserRequest ureq, String fragmentId) {
+		editorPart.moveUp(ureq, fragmentId);
 		setDirty(true);
 	}
 	
-	public void moveDown(String fragmentId) {
-		editorPart.moveDown(fragmentId);
+	public void moveDown(UserRequest ureq, String fragmentId) {
+		editorPart.moveDown(ureq, fragmentId);
 		setDirty(true);
 	}
 	
-	public void addElement(ContentEditorFragment newComponent, ContentEditorFragment collocator, PageElementTarget target) {
+	public void addElement(UserRequest ureq, ContentEditorFragment newComponent, ContentEditorFragment collocator, PageElementTarget target) {
 		if(!checkAdd(newComponent)) return;
 		
-		editorPart.addElement(newComponent.getElementId(), collocator.getElementId(), target);
+		editorPart.addElement(ureq, newComponent.getElementId(), collocator.getElementId(), target);
 		addComponent(newComponent);
 		setDirty(true);
 	}

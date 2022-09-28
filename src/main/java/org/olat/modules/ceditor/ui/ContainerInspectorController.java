@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
@@ -70,6 +71,17 @@ public class ContainerInspectorController extends FormBasicController implements
 	@Override
 	public String getTitle() {
 		return translate("inspector.layout");
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof ContainerEditorController && event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			if(cpe.isElement(container)) {
+				container = (ContainerElement)cpe.getElement();
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
