@@ -128,7 +128,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.o_flex_first_grow {
+.o_flex_first_grow, %o_flex_first_grow {
 	display: flex;
 	> div:first-child {
 		margin-right: auto;
