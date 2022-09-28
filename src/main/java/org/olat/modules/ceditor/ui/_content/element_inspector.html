@@ -10,11 +10,14 @@ jQuery(function() {
 		inspectorPosition();
 		
 		var jInspector = jQuery(".o_page_inspector");
-		var editedFragment = jInspector.closest(".o_page_container_edit");
-		console.log(editedFragment);
-		if(editedFragment != null) {
-			var fragmentRect = editedFragment.get(0).getBoundingClientRect();
-			var top = fragmentRect.top + 26;
+		var jFragment = jInspector.closest(".o_page_fragment_edit");
+		if(jFragment != null) {
+			var fragmentEl = jFragment.get(0);
+			var fragmentRect = fragmentEl.getBoundingClientRect();
+			var top = fragmentRect.top;
+			if(fragmentEl.classList.contains("o_page_container_edit")) {
+				top += 26;
+			}
 			jInspector.css("top", top + "px");
 		}
 	}
