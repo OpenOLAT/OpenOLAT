@@ -116,7 +116,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "change_name"),
 					new NameValuePair("fragment", cmp.getComponentName()));
-			sb.append(" return false;\" class=''><i class='o_icon o_icon_settings'> </i>");
+			sb.append(" return false;\" class=''><i class='o_icon o_icon_tag'> </i>");
 			sb.append(" <span>").append(translator.translate("container.name")).append("</span></a>");
 		}
 	}
