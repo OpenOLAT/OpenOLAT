@@ -62,8 +62,6 @@ public class BusinessGroupQueryParams {
 	private LifecycleSyntheticStatus lifecycleStatus;
 	private Date lifecycleStatusReference;
 	
-	private LifecycleSyntheticMethod lifecycleMethod;
-	
 	public BusinessGroupQueryParams() {
 		//
 	}
@@ -269,14 +267,6 @@ public class BusinessGroupQueryParams {
 		this.lifecycleStatusReference = lifecycleStatusReference;
 	}
 
-	public LifecycleSyntheticMethod getLifecycleMethod() {
-		return lifecycleMethod;
-	}
-
-	public void setLifecycleMethod(LifecycleSyntheticMethod lifecycleMethod) {
-		this.lifecycleMethod = lifecycleMethod;
-	}
-
 	public enum LifecycleSyntheticStatus {
 		ACTIVE,
 		ACTIVE_LONG,
@@ -299,13 +289,5 @@ public class BusinessGroupQueryParams {
 		SOFT_DELETE,
 		SOFT_DELETE_LONG,
 		TO_DELETE
-	}
-	
-
-	public enum LifecycleSyntheticMethod {
-		all,
-		automatic,
-		manual
-		
 	}
 }
