@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -99,7 +100,17 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		editLink = LinkFactory.createButton("evaluation.edit", mainVC, this);
 		updateUI(ureq);
 		
+		stackPanel.addListener(this);
+		
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public synchronized void dispose() {
+		super.dispose();
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	private void updateUI(UserRequest ureq) {
@@ -133,14 +144,14 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	@Override
 	public void assessmentDone(UserRequest ureq) {
 		assessmentDone = true;
-		session = msService.closeSession(session, auditEnv);
+		session = msService.getSession(session);
 		updateUI(ureq);
 	}
 
 	@Override
 	public void assessmentReopen(UserRequest ureq) {
 		assessmentDone = false;
-		session = msService.reopenSession(session, auditEnv);
+		session = msService.getSession(session);
 		updateUI(ureq);
 	}
 
@@ -151,6 +162,13 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 			updateUI(ureq);
 		} else if(source == editLink) {
 			doEditEvaluation(ureq);
+		} else if(source == this.stackPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == editExecutionCtrl) {
+					updateUI(ureq);
+				}
+			}
 		}
 	}
 

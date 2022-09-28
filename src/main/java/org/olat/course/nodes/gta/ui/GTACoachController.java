@@ -56,7 +56,6 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
-import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -86,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback, Activateable2 {
+public class GTACoachController extends GTAAbstractController implements Activateable2 {
 
 	private DirectoryController solutionsCtrl;
 	private DirectoryController correctionsCtrl;
@@ -530,36 +529,6 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	@Override
 	protected void processEvent(TaskMultiUserEvent event) {
 		//
-	}
-
-	@Override
-	public void assessmentDone(UserRequest ureq) {
-		Task task;
-		if(businessGroupTask) {
-			task = gtaManager.getTask(assessedGroup, taskList);
-		} else {
-			task = gtaManager.getTask(assessedIdentity, taskList);
-		}
-		if(task != null) {
-			gtaManager.updateTask(task, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
-			cleanUpProcess();
-			process(ureq);
-		}
-	}
-
-	@Override
-	public void assessmentReopen(UserRequest ureq) {
-		Task task;
-		if(businessGroupTask) {
-			task = gtaManager.getTask(assessedGroup, taskList);
-		} else {
-			task = gtaManager.getTask(assessedIdentity, taskList);
-		}
-		if(task != null && task.getTaskStatus() == TaskProcess.graded) {
-			gtaManager.updateTask(task, TaskProcess.grading, gtaNode, false, getIdentity(), Role.coach);
-			cleanUpProcess();
-			process(ureq);
-		}
 	}
 	
 	@Override
