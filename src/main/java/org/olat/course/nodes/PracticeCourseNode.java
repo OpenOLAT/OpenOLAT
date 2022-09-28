@@ -28,8 +28,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -164,8 +167,15 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd,
 			VisibilityFilter visibilityFilter) {
-		
-		PracticeRunController controller = new PracticeRunController(ureq, wControl, this, userCourseEnv);
+		Controller controller;
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isGuestOnly()) {
+			Translator trans = Util.createPackageTranslator(PracticeCourseNode.class, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else 
+		controller = new PracticeRunController(ureq, wControl, this, userCourseEnv);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_practice_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
