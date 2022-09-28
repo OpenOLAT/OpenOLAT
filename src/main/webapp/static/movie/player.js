@@ -117,7 +117,7 @@ var BPlayer = {
 	
 	_loadNanooTv : function(domId, config) {
 		var frameName = domId + "_frame";
-		for(i=jQuery('#' + frameName).length; i-->0; ) {
+		for(var i=jQuery('#' + frameName).length; i-->0; ) {
 			jQuery('#' + frameName).remove();
 		}
 		
@@ -161,7 +161,7 @@ var BPlayer = {
 	},
 	
 	_loadNanooTvFrame : function(domId, frameName, config) {
-		for(i=jQuery('#' + frameName).length; i-->0; ) {
+		for(var i=jQuery('#' + frameName).length; i-->0; ) {
 			jQuery('#' + frameName).remove();
 		}
 		
