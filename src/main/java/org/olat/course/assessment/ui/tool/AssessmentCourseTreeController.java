@@ -172,7 +172,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				if(courseNode != null) {
 					AssessmentCourseNodeController ctrl = doOpenParticipants(ureq, treeNode, courseNode);
 					if(ctrl != null) {
-						ctrl.activate(ureq, entries, null);
+						ctrl.activate(ureq, entries, syncParticipantTypes(state));
 					}
 					menuTree.setSelectedNode(treeNode);
 				}
@@ -183,9 +183,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				if(courseNode != null) {
 					AssessmentCourseNodeController ctrl = doOpenParticipants(ureq, treeNode, courseNode);
 					if(ctrl != null) {
-						syncParticipantTypes(state);
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						ctrl.activate(ureq, subEntries, state);
+						ctrl.activate(ureq, subEntries, syncParticipantTypes(state));
 					}
 					menuTree.setSelectedNode(treeNode);
 				}
@@ -205,9 +204,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		}
 	}
 
-	private void syncParticipantTypes(StateEntry state) {
+	private AssessedIdentityListState syncParticipantTypes(StateEntry state) {
+		AssessedIdentityListState listState = null;
 		if (state instanceof AssessedIdentityListState) {
-			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			listState = (AssessedIdentityListState)state;
 			List<String> members = listState.getMembers();
 			if (members == null) {
 				members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
@@ -215,7 +215,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 			} else {
 				participantTypeFilter = members.stream().map(ParticipantType::valueOf).collect(Collectors.toList());
 			}
+		} else {
+			List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
+			listState = new AssessedIdentityListState(null, null, null, members, null, null, null, true);
 		}
+		return listState;
 	}
 
 	@Override
@@ -263,7 +267,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 			TreeNode selectedTreeNode = menuTree.getSelectedNode();
 			Object uo = selectedTreeNode.getUserObject();
 			if (uo instanceof CourseNode) {
-				doOpenParticipants(ureq, selectedTreeNode, (CourseNode)uo).activate(ureq, null, assessmentEventToState.getState(event));
+				AssessedIdentityListState state = assessmentEventToState.getState(event);
+				doOpenParticipants(ureq, selectedTreeNode, (CourseNode)uo).activate(ureq, null, syncParticipantTypes(state));
 			}
 		} else if (source == overviewCtrl) {
 			if (event instanceof ParticipantTypeFilterEvent) {
@@ -284,21 +289,14 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	}
 
 	private void processSelectCourseNodeWithMemory(UserRequest ureq, TreeNode tn, CourseNode cn) {
-		StateEntry listState;
+		StateEntry listState = null;
 		if (identityListCtrl != null) {
 			listState = identityListCtrl.getListState();
-			if (listState instanceof AssessedIdentityListState) {
-				List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
-				((AssessedIdentityListState)listState).setMembers(members);
-			}
-		} else {
-			List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
-			listState = new AssessedIdentityListState(null, null, null, members, null, null, null, true);
 		}
 		
 		AssessmentCourseNodeController ctrl = doOpenParticipants(ureq, tn, cn);
 		if(ctrl != null) {
-			ctrl.activate(ureq, null, listState);
+			ctrl.activate(ureq, null, syncParticipantTypes(listState));
 		}
 	}
 
