@@ -7,22 +7,29 @@
 jQuery(function() {
 
 	var initializePosition = function() {
-		inspectorPosition();
-		
-		var jInspector = jQuery(".o_page_inspector");
-		var editedFragment = jInspector.closest(".o_page_container_edit");
-		console.log(editedFragment);
-		if(editedFragment != null) {
-			var fragmentRect = editedFragment.get(0).getBoundingClientRect();
-			var top = fragmentRect.top + 26;
-			jInspector.css("top", top + "px");
+		if(inspectorPosition()) {
+			var jInspector = jQuery(".o_page_inspector");
+			var jFragment = jInspector.closest(".o_page_fragment_edit");
+			if(jFragment != null) {
+				var fragmentEl = jFragment.get(0);
+				var fragmentRect = fragmentEl.getBoundingClientRect();
+				var top = fragmentRect.top;
+				if(fragmentEl.classList.contains("o_page_container_edit")) {
+					top += 26;
+				}
+				jInspector.css("top", top + "px");
+			}
 		}
 	}
 
 	var inspectorPosition = function() {
 		var jInspector = jQuery(".o_page_inspector");
+		if(jInspector.length == 0) {
+			return false;
+		}
+		
 		var inspectorWidth = jInspector.width();
-		var editedFragment = jInspector.get(0).closest(".o_page_container_edit");
+		var editedFragment = jInspector.get(0).closest(".o_page_fragment_edit");
 		if(editedFragment != null) {
 			var fragmentRect = editedFragment.getBoundingClientRect();
 			var mainEl = document.getElementById("o_main_container");
@@ -36,7 +43,9 @@ jQuery(function() {
 			}
 			jInspector.css("position", "fixed");
 			jInspector.css("left", left + "px");
+			return true;
 		}
+		return false;
 	};
 	
    /**
@@ -62,7 +71,7 @@ jQuery(function() {
 				window.removeEventListener('scroll', inspectorVisibility);
 				window.removeEventListener('resize', inspectorPosition);
 				jInspector.hide(300, 'linear', function() {});
-				$r.backgroundCommand('close_fragment')
+				$r.backgroundCommand('close_inspector')
 			}
 		} else {
 			window.removeEventListener('scroll', inspectorVisibility);

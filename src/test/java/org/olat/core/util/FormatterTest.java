@@ -183,4 +183,22 @@ public class FormatterTest {
 			Assert.assertTrue(!invalidMail.contains("</a>"));
 		}
 	}
+	
+	@Test
+	public void testFormatTwoDigitsYearsAsFourDigitsYears() {
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1.2.22"), "1.2.2022");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1/2/22"), "1/2/2022");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1.2.1922"), "1.2.1922");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1/2/1922"), "1/2/1922");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1.2.2023"), "1.2.2023");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1.2.0022"), "1.2.0022");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1/2/0022"), "1/2/0022");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("  1.2.22  "), "1.2.2022");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("1.2."), "1.2.");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("some other stuff"), "some other stuff");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("some other stuff on 1.2.22"), "some other stuff on 1.2.22");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears(""), "");
+		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears(null), null);
+	}
+	
 }

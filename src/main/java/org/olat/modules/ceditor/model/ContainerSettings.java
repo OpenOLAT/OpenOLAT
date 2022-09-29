@@ -49,7 +49,7 @@ public class ContainerSettings {
 	}
 	
 	public void updateType(ContainerLayout type) {
-		this.setType(type);
+		setType(type);
 		
 		int numOfBlocks = type.numberOfBlocks();
 		if(columns != null && columns.size() >= numOfBlocks) {
@@ -61,7 +61,7 @@ public class ContainerSettings {
 					outColumn.getElementIds().clear();
 				}
 			}
-		}	
+		}
 	}
 
 	public String getName() {
@@ -192,5 +192,23 @@ public class ContainerSettings {
 		if(column != null) {
 			column.moveDown(elementId);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("ContainerSettings[").append(type == null ? "unkown" : type.name());
+		if(columns != null) {
+			for(ContainerColumn column:columns) {
+				sb.append(";");
+				if(column != null) {
+					sb.append(column.getElementIds().toString());
+				} else {
+					sb.append("NULL");
+				}
+			}
+		}
+		sb.append("]");
+		return sb.toString();
 	}
 }

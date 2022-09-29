@@ -39,6 +39,7 @@ import org.olat.modules.ceditor.model.TableElement;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.ceditor.ui.TableEditorController;
+import org.olat.modules.ceditor.ui.TableInspectorController;
 import org.olat.modules.ceditor.ui.TableRunController;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Table;
@@ -93,6 +94,9 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof TableElement) {
+			return new TableInspectorController(ureq, wControl, (TableElement)element, this);
+		}
 		return null;
 	}
 

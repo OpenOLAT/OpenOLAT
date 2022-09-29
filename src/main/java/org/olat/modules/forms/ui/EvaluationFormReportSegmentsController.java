@@ -139,6 +139,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	private void doOpenOverviewReport(UserRequest ureq) {
 		if (overviewCtrl == null) {
 			overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, storage, filter, figures);
+			listenTo(overviewCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
 		segmentView.select(overviewReportLink);
@@ -173,6 +174,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	private void doOpenSessionSelection(UserRequest ureq) {
 		if (sessionSelectionCtrl == null) {
 			sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, storage, filter, reportHelper, formHeader);
+			listenTo(sessionSelectionCtrl);
 			stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), sessionSelectionCtrl);
 			stackedSessionPanel.pushController(translate("reports.session.forms"), sessionSelectionCtrl);
 			sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);

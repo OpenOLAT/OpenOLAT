@@ -95,6 +95,8 @@ public interface UserCourseEnvironment {
 	 */
 	public boolean isMemberParticipant();
 	
+	public boolean isGuestOnly();
+	
 	public boolean isIdentityInCourseGroup(Long groupKey);
 	
 	

@@ -167,6 +167,9 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		super.evalFormRequest(ureq);
 		if(!isEnabled()) return;
 		
+		// If only two digit year is entered, expand to to 20xx
+		value = Formatter.formatTwoDigitsYearsAsFourDigitsYears(value);
+		
 		try {
 			String receiverId = component.getFormDispatchId();
 			int requestHour = getRequestValue("o_dch_".concat(receiverId));

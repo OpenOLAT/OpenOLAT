@@ -96,7 +96,6 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BusinessGroupQueryParams;
-import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticMethod;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -1437,14 +1436,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				} else {
 					params.setLifecycleStatus(null);
 					params.setLifecycleStatusReference(null);
-				}
-				break;
-			case LIFECYCLE_METHOD:
-				String lifecycleMethod = tableFilter.getValue();
-				if(StringHelper.containsNonWhitespace(lifecycleMethod)) {
-					params.setLifecycleMethod(LifecycleSyntheticMethod.valueOf(lifecycleMethod));
-				} else {
-					params.setLifecycleMethod(null);
 				}
 				break;
 			default:

@@ -967,7 +967,7 @@ $o-step-done-color					: $state-success-text !default;
 $o-step-done-marker-color			: $o-step-done-color;
 
 $o-step-expired-color				: #F1C232 !default;
-$o-step-expired-marker-color		: $gray-light !default;
+$o-step-expired-marker-color		: $o-step-color;
 
 $o-step-meta-color					: $text-muted !default;
 $o-step-meta-size					: $font-size-small !default;
@@ -1079,6 +1079,8 @@ $o-reminder-marker-padding			: 0.2em 0.4em !default;
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;
+$o-print-header-logo-height		: 2cm !default;
+$o-print-header-logo-width		: 5cm !default;
 $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */

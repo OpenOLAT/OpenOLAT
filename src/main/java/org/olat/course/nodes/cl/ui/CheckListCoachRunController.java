@@ -133,13 +133,13 @@ public class CheckListCoachRunController extends BasicController implements Acti
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, true);
 		} if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
-			doOpenParticipants(ureq);
+			doOpenParticipants(ureq, true);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
-			doOpenReminders(ureq);
+			doOpenReminders(ureq, true);
 		} else if(ORES_TYPE_PREVIEW.equalsIgnoreCase(type)) {
-			doOpenPreview(ureq);
+			doOpenPreview(ureq, true);
 		}
 	}
 	
@@ -151,13 +151,13 @@ public class CheckListCoachRunController extends BasicController implements Acti
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == overviewLink) {
-					doOpenOverview(ureq);
+					doOpenOverview(ureq, true);
 				} else if (clickedLink == participantsLink) {
-					doOpenParticipants(ureq);
+					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
-					doOpenReminders(ureq);
+					doOpenReminders(ureq, true);
 				} else if (clickedLink == previewLink) {
-					doOpenPreview(ureq);
+					doOpenPreview(ureq, true);
 				}
 			}
 		}
@@ -166,26 +166,26 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	private void doOpenPreferredSegment(UserRequest ureq) {
 		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
 		if (CourseNodeSegment.overview == segment && overviewLink != null) {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, false);
 		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
-			doOpenParticipants(ureq);
+			doOpenParticipants(ureq, false);
 		} else if (CourseNodeSegment.preview == segment && previewLink != null) {
-			doOpenPreview(ureq);
+			doOpenPreview(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
-			doOpenReminders(ureq);
+			doOpenReminders(ureq, false);
 		} else {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, false);
 		}
 	}
 
-	private void doOpenOverview(UserRequest ureq) {
+	private void doOpenOverview(UserRequest ureq, boolean saveSegmentPref) {
 		overviewCtrl.reload();
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
-		segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.overview, segmentView, saveSegmentPref);
 	}
 
-	private void doOpenParticipants(UserRequest ureq) {
+	private void doOpenParticipants(UserRequest ureq, boolean saveSegmentPref) {
 		removeAsListenerAndDispose(participantsCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
@@ -193,10 +193,10 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		listenTo(participantsCtrl);
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 		segmentView.select(participantsLink);
-		segmentPrefs.setSegment(ureq, CourseNodeSegment.participants);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.participants, segmentView, saveSegmentPref);
 	}
 	
-	private void doOpenPreview(UserRequest ureq) {
+	private void doOpenPreview(UserRequest ureq, boolean saveSegmentPref) {
 		removeAsListenerAndDispose(previewCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PREVIEW), null);
@@ -204,15 +204,15 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		listenTo(previewCtrl);
 		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
 		segmentView.select(previewLink);
-		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview, segmentView, saveSegmentPref);
 	}
 	
-	private void doOpenReminders(UserRequest ureq) {
+	private void doOpenReminders(UserRequest ureq, boolean saveSegmentPref) {
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
-			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders, segmentView, saveSegmentPref);
 		}
 	}
 }

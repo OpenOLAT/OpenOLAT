@@ -160,7 +160,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	public void updateScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts,
 			Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -179,7 +179,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Date start,
 			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -191,7 +191,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Double completion,
 			AssessmentEntryStatus runStatus, Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -202,7 +202,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Boolean fullyAssessed, AssessmentEntryStatus status) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -218,7 +218,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public void incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -229,7 +229,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateAttempts(CourseNode courseNode, Integer userAttempts, Date lastAttempt,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		if (userAttempts != null) {
@@ -249,7 +249,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updatedUserComment(CourseNode courseNode, String userComment,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		if (userComment != null) {
@@ -269,7 +269,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateCoachComment(CourseNode courseNode, String coachComment,
 			UserCourseEnvironment userCourseEnvironment) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		if (coachComment != null) {
@@ -290,7 +290,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void addIndividualAssessmentDocument(CourseNode courseNode, File document, String filename,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		if (document != null) {
@@ -303,7 +303,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void removeIndividualAssessmentDocument(CourseNode courseNode, File document,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		if (document != null) {
@@ -316,7 +316,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateLastModifications(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Identity identity2, Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -334,7 +334,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts, Role by) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -345,7 +345,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public Overridable<Boolean> getRootPassed(UserCourseEnvironment userCourseEnvironment) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return Overridable.empty();
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -355,7 +355,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public Overridable<Boolean> overrideRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment,
 			Boolean passed) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return Overridable.empty();
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -364,7 +364,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public Overridable<Boolean> resetRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return Overridable.empty();
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -442,7 +442,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		if (!userCourseEnvironment.isParticipant())
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return false;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

@@ -779,7 +779,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
-	protected String formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
+	protected DueDateValues formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
 		Date date = dueDate.getDueDate();
 		
 		Calendar cal = Calendar.getInstance();
@@ -794,6 +794,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 			} else if(dueDateArgs.days() > 1) {// 2 days
 				i18nKey = dateOnly ? "msg.end.dateonly.within.days" : "msg.end.within.days";
+			} else if(dueDateArgs.timeDiffInMillSeconds() < ONE_DAY_IN_MILLISEC) {
+				// Less than a day, but perhaps still next day
+				i18nKey = dateOnly ? "msg.end.dateonly.within.hours" : "msg.end.within.hours";
 			} else if(dueDateArgs.days() == 1) {
 				i18nKey = dateOnly ? "msg.end.dateonly.within.day" : "msg.end.within.day";
 			} else {
@@ -803,7 +806,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		} else {
 			i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
 		}
-		return translate(i18nKey, dueDateArgs.args());
+		
+		String text = translate(i18nKey, dueDateArgs.args());
+		return new DueDateValues(text, dueDateArgs.timeDiffInMillSeconds());
 	}
 
 	@Override
@@ -860,6 +865,11 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			doConfirmResetTask(ureq, (Task)resetTaskButton.getUserObject());
 		} else if(optionalTaskButton == source) {
 			doConfirmOptionalAssignment(ureq, null);
+		} else if("reload".equals(event.getCommand())) {
+			cleanUpProcess();
+			resetDueDates();
+			process(ureq);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.event(ureq, source, event);
 	}

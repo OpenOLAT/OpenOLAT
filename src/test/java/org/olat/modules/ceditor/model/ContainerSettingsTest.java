@@ -19,6 +19,9 @@
  */
 package org.olat.modules.ceditor.model;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,12 +40,38 @@ public class ContainerSettingsTest {
 		settings.setNumOfColumns(4);
 		settings.setElementAt("112", 3, null);
 		
-		Assert.assertEquals(4, settings.getNumOfColumns());
+		Assert.assertEquals(4, settings.getNumOfBlocks());
 		Assert.assertEquals(4, settings.getColumns().size());
 		
 		ContainerColumn column = settings.getColumn(3);
 		Assert.assertNotNull(column);
 		Assert.assertTrue(column.getElementIds().contains("112"));
 	}
+	
+	
+	@Test
+	public void reduceColumns() {
+		ContainerSettings settings = new ContainerSettings();
+		settings.setType(ContainerLayout.block_3cols);
+		settings.setElementAt("100", 0, null);
+		settings.setElementAt("200", 1, null);
+		
+		Assert.assertEquals(3, settings.getNumOfBlocks());
+		
+		// check the second column
+		ContainerColumn column = settings.getColumn(1);
+		Assert.assertNotNull(column);
+		Assert.assertTrue(column.getElementIds().contains("200"));
 
+		// Reduce the number of slots
+		settings.updateType(ContainerLayout.block_2cols);
+		
+		// Check first and second column after reduction
+		ContainerColumn firstColumn = settings.getColumn(0);
+		assertThat(firstColumn.getElementIds())
+			.containsExactly("100");
+		ContainerColumn secondColumn = settings.getColumn(1);
+		assertThat(secondColumn.getElementIds())
+			.containsExactly("200");
+	}
 }

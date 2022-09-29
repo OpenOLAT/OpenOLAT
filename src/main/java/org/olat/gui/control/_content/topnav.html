@@ -11,9 +11,9 @@
 				#end
 			#elseif($helpPlugins.size() > 1) 
 				<li id="o_navbar_help_opener" class="o_navbar_tool dropdown">
-					<a id="o_help_tool_toggler" href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")" aria-label="$r.translate("search")">
-						<i class="o_icon o_icon_help o_icon-lg"></i>
-						<span>$r.translate("topnav.search")</span>
+					<a id="o_help_tool_toggler" href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("topnav.help.alt")" aria-label="$r.translate("topnav.help")">
+						<i class="o_icon o_icon_help o_icon-lg"> </i>
+						<span>$r.translate("topnav.help")</span>
 					</a>
 					<ul class="dropdown-menu dropdown-menu-right">          
 						#foreach($helpPlugin in $helpPlugins)

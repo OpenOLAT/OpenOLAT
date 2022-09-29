@@ -218,11 +218,17 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		} else if(assessmentViewCtrl == source) {
 			if(AssessmentFormEvent.ASSESSMENT_REOPEN.equals(event.getCommand())) {
 				doOpenAssessment(ureq);
+				if(detailsEditController instanceof AssessmentFormCallback) {
+					((AssessmentFormCallback)detailsEditController).assessmentReopen(ureq);
+				}
 			}
 			fireEvent(ureq, event);
 		} else if(assessmentEditCtrl == source) {
 			if(AssessmentFormEvent.ASSESSMENT_DONE.equals(event.getCommand())) {
 				doOpenAssessment(ureq);
+				if(detailsEditController instanceof AssessmentFormCallback) {
+					((AssessmentFormCallback)detailsEditController).assessmentDone(ureq);
+				}
 			}
 			fireEvent(ureq, event);
 		}

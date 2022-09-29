@@ -37,6 +37,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
@@ -58,6 +60,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 	private Link remindersLink;
 	
 	private VelocityContainer mainVC;
+	private final CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
 	
 	private final TooledStackedPanel participantsPanel;
@@ -69,6 +72,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("segments");
+		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
@@ -101,9 +105,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 			}
 		}
 		
-		
-		doOpenParticipants(ureq);
-		
+		doOpenPreferredSegment(ureq);
 		putInitialPanel(mainVC);
 	}
 
@@ -115,11 +117,9 @@ public class FormRunCoachController extends BasicController implements Activatea
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doOpenParticipants(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-			segmentView.select(participantsLink);
+			doOpenParticipants(ureq, true).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
-			doOpenReminders(ureq);
-			segmentView.select(remindersLink);
+			doOpenReminders(ureq, true);
 		}
 	}
 
@@ -131,27 +131,42 @@ public class FormRunCoachController extends BasicController implements Activatea
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == participantsLink) {
-					doOpenParticipants(ureq);
+					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
-					doOpenReminders(ureq);
+					doOpenReminders(ureq, true);
 				}
 			}
 		}
 	}
 	
-	private Activateable2 doOpenParticipants(UserRequest ureq) {
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (CourseNodeSegment.participants == segment && participantsLink != null) {
+			doOpenParticipants(ureq, false);
+		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
+			doOpenReminders(ureq, false);
+		} else {
+			doOpenParticipants(ureq, false);
+		}
+	}
+	
+	private Activateable2 doOpenParticipants(UserRequest ureq, boolean saveSegmentPref) {
 		participantsCtrl.reload();
 		addToHistory(ureq, participantsCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", participantsPanel);
+			segmentView.select(participantsLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.participants, segmentView, saveSegmentPref);
 		}
 		return participantsCtrl;
 	}
 	
-	private void doOpenReminders(UserRequest ureq) {
+	private void doOpenReminders(UserRequest ureq, boolean saveSegmentPref) {
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+			segmentView.select(remindersLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders, segmentView, saveSegmentPref);
 		}
 	}
 

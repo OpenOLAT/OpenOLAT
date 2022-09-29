@@ -116,46 +116,31 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		this.container = container;
 	}
 	
-	public ContainerElement setNumOfColumns(int numOfColumns) {
-		ContainerSettings settings = container.getContainerSettings();
-		settings.setNumOfColumns(numOfColumns);
-		return save(settings);
-	}
-	
-	public ContainerElement setElementAt(String fragmentId, int slot, String sibling) {
+	public void setElementAt(UserRequest ureq, String fragmentId, int slot, String sibling) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.setElementAt(fragmentId, slot, sibling);
-		return save(settings);
+		save(ureq, settings);
 	}
 	
-	public ContainerElement setElementIn(String elementId, String collocatorId) {
-		ContainerSettings settings = container.getContainerSettings();
-		ContainerColumn column = settings.getColumn(collocatorId);
-		if(column != null) {
-			column.getElementIds().add(elementId);
-		}
-		return save(settings);
-	}
-	
-	public ContainerElement removeElement(String fragmentId) {
+	public void removeElement(UserRequest ureq, String fragmentId) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.removeElement(fragmentId);
-		return save(settings);
+		save(ureq, settings);
 	}
 	
-	public ContainerElement moveUp(String elementId) {
+	public void moveUp(UserRequest ureq, String elementId) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.moveUp(elementId);
-		return save(settings);
+		save(ureq, settings);
 	}
 	
-	public ContainerElement moveDown(String elementId) {
+	public void moveDown(UserRequest ureq, String elementId) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.moveDown(elementId);
-		return save(settings);
+		save(ureq, settings);
 	}
 	
-	public ContainerElement addElement(String elementId, String collocatorId, PageElementTarget target) {
+	public void addElement(UserRequest ureq, String elementId, String collocatorId, PageElementTarget target) {
 		ContainerSettings settings = container.getContainerSettings();
 		ContainerColumn column = settings.getColumn(collocatorId);
 		if(column != null) {
@@ -174,7 +159,7 @@ public class ContainerEditorController extends FormBasicController implements Pa
 				elementIds.add(elementId);
 			}
 		}
-		return save(settings);
+		save(ureq, settings);
 	}
 	
 	public int getLastSlot() {
@@ -183,12 +168,12 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		return numOfBlocks - 1;
 	}
 	
-	public ContainerElement transferElements(List<String> elementsIds, int slot) {
+	public void transferElements(UserRequest ureq, List<String> elementsIds, int slot) {
 		ContainerSettings settings = container.getContainerSettings();
 		for(String elementId:elementsIds) {
 			settings.setElementAt(elementId, slot, null);
 		}
-		return save(settings);
+		save(ureq, settings);
 	}
 	
 	public void openNameCallout(UserRequest ureq, String nameLinkId) {
@@ -205,15 +190,15 @@ public class ContainerEditorController extends FormBasicController implements Pa
 	private void setContainerName(UserRequest ureq, String name) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.setName(name);
-		save(settings);
+		save(ureq, settings);
 
-		fireEvent(ureq, new ChangePartEvent(container));
 	}
 	
-	private ContainerElement save(ContainerSettings settings) {
+	private ContainerElement save(UserRequest ureq, ContainerSettings settings) {
 		String settingsXml = ContentEditorXStream.toXml(settings);
 		container.setLayoutOptions(settingsXml);
 		container = store.savePageElement(container);
+		fireEvent(ureq, new ChangePartEvent(container));
 		return container;
 	}
 }

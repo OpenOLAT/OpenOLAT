@@ -150,7 +150,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("overview".equalsIgnoreCase(type)) {
 			if(overviewLink != null || overviewCtrl != null) {
-				doOpenOverview(ureq);
+				doOpenOverview(ureq, true);
 				if(segmentView != null) {
 					segmentView.select(overviewLink);
 				}
@@ -158,7 +158,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		} if("coach".equalsIgnoreCase(type)) {
 			if(coachLink != null || coachCtrl != null) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				doOpenCoach(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+				doOpenCoach(ureq, true).activate(ureq, subEntries, entries.get(0).getTransientState());
 				if(segmentView != null) {
 					segmentView.select(coachLink);
 				}
@@ -173,7 +173,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 		} else if("Reminders".equalsIgnoreCase(type)) {
 			if(remindersLink != null) {
-				doOpenReminders(ureq);
+				doOpenReminders(ureq, true);
 				if(segmentView != null) {
 					segmentView.select(remindersLink);
 				}
@@ -219,13 +219,13 @@ public class GTARunController extends BasicController implements Activateable2 {
 				if (clickedLink == runLink) {
 					doOpenRun(ureq);
 				} else if (clickedLink == overviewLink) {
-					doOpenOverview(ureq);
+					doOpenOverview(ureq, true);
 				} else if (clickedLink == coachLink) {
-					doOpenCoach(ureq);
+					doOpenCoach(ureq, true);
 				} else if(clickedLink == manageLink) {
 					doManage(ureq);
 				} else if (clickedLink == remindersLink) {
-					doOpenReminders(ureq);
+					doOpenReminders(ureq, true);
 				}
 			}
 		}
@@ -234,19 +234,19 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private void doOpenPreferredSegment(UserRequest ureq) {
 		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
 		if (CourseNodeSegment.overview == segment && overviewLink != null) {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, false);
 		} else if (CourseNodeSegment.participants == segment && coachLink != null) {
-			doOpenCoach(ureq);
+			doOpenCoach(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
-			doOpenReminders(ureq);
+			doOpenReminders(ureq, false);
 		} else {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, false);
 		}
 	}
 
-	private void setPreferredSegment(UserRequest ureq, CourseNodeSegment segment) {
+	private void setPreferredSegment(UserRequest ureq, CourseNodeSegment segment, boolean saveSegmentPref) {
 		if (segmentPrefs != null) {
-			segmentPrefs.setSegment(ureq, segment);
+			segmentPrefs.setSegment(ureq, segment, segmentView, saveSegmentPref);
 		}
 	}
 	
@@ -261,15 +261,15 @@ public class GTARunController extends BasicController implements Activateable2 {
 		return runCtrl;
 	}
 	
-	private void doOpenOverview(UserRequest ureq) {
+	private void doOpenOverview(UserRequest ureq, boolean saveSegmentPref) {
 		overviewCtrl.reload();
 		addToHistory(ureq, overviewCtrl);
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
-		setPreferredSegment(ureq, CourseNodeSegment.overview);
+		setPreferredSegment(ureq, CourseNodeSegment.overview, saveSegmentPref);
 	}
 
-	private Activateable2 doOpenCoach(UserRequest ureq) {
+	private Activateable2 doOpenCoach(UserRequest ureq, boolean saveSegmentPref) {
 		if(coachCtrl == null) {
 			createCoach(ureq);
 		} else {
@@ -280,7 +280,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			mainVC.put("segmentCmp", coachCtrl.getInitialComponent());
 		}
 		segmentView.select(coachLink);
-		setPreferredSegment(ureq, CourseNodeSegment.participants);
+		setPreferredSegment(ureq, CourseNodeSegment.participants, saveSegmentPref);
 		return coachCtrl;
 	}
 	
@@ -322,12 +322,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 		return manageCtrl;
 	}
 	
-	private void doOpenReminders(UserRequest ureq) {
+	private void doOpenReminders(UserRequest ureq, boolean saveSegmentPref) {
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
-			setPreferredSegment(ureq, CourseNodeSegment.reminders);
+			setPreferredSegment(ureq, CourseNodeSegment.reminders, saveSegmentPref);
 		}
 	}
 }

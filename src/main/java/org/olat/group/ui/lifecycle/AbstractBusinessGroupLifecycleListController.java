@@ -20,12 +20,14 @@
 package org.olat.group.ui.lifecycle;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -44,7 +46,6 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
-import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticMethod;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
@@ -201,9 +202,9 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 		
 		// methods
 		SelectionValues lifecycleMethodValues = new SelectionValues();
-		lifecycleMethodValues.add(SelectionValues.entry(LifecycleSyntheticMethod.all.name(), translate("search.all")));
-		lifecycleMethodValues.add(SelectionValues.entry(LifecycleSyntheticMethod.automatic.name(), translate("search.automatic.lifecycle")));
-		lifecycleMethodValues.add(SelectionValues.entry(LifecycleSyntheticMethod.manual.name(), translate("search.manual.lifecycle")));
+		lifecycleMethodValues.add(SelectionValues.entry("all", translate("search.all")));
+		lifecycleMethodValues.add(SelectionValues.entry("automatic", translate("search.automatic.lifecycle")));
+		lifecycleMethodValues.add(SelectionValues.entry("manual", translate("search.manual.lifecycle")));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("search.lifecycle.method"), BGSearchFilter.LIFECYCLE_METHOD.name(), lifecycleMethodValues, true));
 		
 		// orphans
@@ -262,7 +263,36 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 
 			items.add(item);
 		}
+		
+		filterTableItems(items);
+		
 		return items;
+	}
+	
+	/**
+	 * The method does some in-memory filtering, especially lifecycle method of groups
+	 * which are calculated.
+	 * 
+	 * @param items The list of items.
+	 */
+	protected void filterTableItems(List<BGTableItem> items) {
+		FlexiTableFilter methodFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), BGSearchFilter.LIFECYCLE_METHOD.name());
+		if (methodFilter != null) {
+			String filterVal = methodFilter.getValue();
+			if("automatic".equals(filterVal)) {
+				for(Iterator<BGTableItem> it=items.iterator(); it.hasNext(); ) {
+					if(it.next().isExcludeFromAutoLifecycle()) {
+						it.remove();
+					}
+				}
+			} else if("manual".equals(filterVal)) {
+				for(Iterator<BGTableItem> it=items.iterator(); it.hasNext(); ) {
+					if(!it.next().isExcludeFromAutoLifecycle()) {
+						it.remove();
+					}
+				}
+			}
+		}
 	}
 	
 	protected abstract boolean isAutomaticMethod();

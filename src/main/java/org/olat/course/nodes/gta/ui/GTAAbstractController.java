@@ -316,8 +316,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
 				boolean done = isDone(assignedTask, TaskProcess.assignment);
-				String dateAsString = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
-				mainVC.contextPut("assignmentDueDate", dateAsString);
+				DueDateValues dueDateValues = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
+				mainVC.contextPut("assignmentDueDate", dueDateValues.asString());
+				mainVC.contextPut("assignmentRemainingTime", Long.toString(dueDateValues.remainingTime()));
 				
 				mainVC.contextRemove("assignmentDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
@@ -377,7 +378,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		mainVC.contextPut(stepPrefix.concat("Status"), translate(statusI18nKey));
 	}
 
-	protected abstract String formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine);
+	protected abstract DueDateValues formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine);
 	
 	protected DueDateArguments formatDueDateArguments(DueDate dueDate, Date now, boolean userDeadLine) {
 		Date date = dueDate.getDueDate();
@@ -393,22 +394,23 @@ public abstract class GTAAbstractController extends BasicController implements G
 			date = cal.getTime();
 		}
 
-		long timeDiff = Math.abs(date.getTime() - now.getTime());
+		long timeDiffMilliSec = Math.abs(date.getTime() - now.getTime());
 		long days = Math.abs(DateUtils.countDays(date, now));
-		long hours = ((timeDiff - (days * ONE_DAY_IN_MILLISEC)) / ONE_HOUR_IN_MILLISEC) % 24;
-		long minutes = ((timeDiff - (days * ONE_DAY_IN_MILLISEC) - (hours * ONE_HOUR_IN_MILLISEC)) / (60l * 1000l)) % 60;
+		long diffDays = timeDiffMilliSec / ONE_DAY_IN_MILLISEC;
+		long hours = ((timeDiffMilliSec - (diffDays * ONE_DAY_IN_MILLISEC)) / ONE_HOUR_IN_MILLISEC) % 24;
+		long minutes = ((timeDiffMilliSec - (diffDays * ONE_DAY_IN_MILLISEC) - (hours * ONE_HOUR_IN_MILLISEC)) / (60l * 1000l)) % 60;
 
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String[] args = new String[] {
-			Long.toString(days),				// 0 Number of days
-			Long.toString(hours),				// 1 Number of hours
-			Long.toString(minutes),				// 2 Number of minutes
-			formatter.dayOfWeekName(date),		// 3 End day
-			formatter.formatDate(date),			// 4 Date
-			formatter.formatTimeShort(date)		// 5 Time
+			Long.toString(days),											// 0 Number of days
+			"<span class='o_hours'>" + Long.toString(hours) + "</span>",	// 1 Number of hours
+			"<span class='o_minutes'>" + Long.toString(minutes) + "</span>",	// 2 Number of minutes
+			formatter.dayOfWeekName(date),									// 3 End day
+			formatter.formatDate(date),										// 4 Date
+			formatter.formatTimeShort(date)									// 5 Time
 		};
 		
-		return new DueDateArguments(days, args);
+		return new DueDateArguments(days, args, timeDiffMilliSec);
 	}
 	
 	protected void resetDueDates() {
@@ -430,8 +432,10 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
 				boolean done = isDone(assignedTask, TaskProcess.submit);
-				String dateAsString = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
-				mainVC.contextPut("submitDueDate", dateAsString);
+				DueDateValues dueDateValues = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
+				mainVC.contextPut("submitDueDate", dueDateValues.asString());
+				mainVC.contextPut("submitRemainingTime", Long.toString(dueDateValues.remainingTime()));
+				
 				mainVC.contextRemove("submitDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
@@ -448,7 +452,6 @@ public abstract class GTAAbstractController extends BasicController implements G
 			} else if(dueDate.getMessageKey() != null) {
 				mainVC.contextPut("submitDueDateMsg", translate(dueDate.getMessageKey(), dueDate.getMessageArg()));
 				mainVC.contextRemove("submitDueDate");
-				mainVC.contextRemove("submitDueDateNew");
 			}
 		}
 		
@@ -506,8 +509,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 			Date date =  assignedTask.getRevisionsDueDate();
 			DueDate dueDate = new DueDate(false, date);
 			boolean done = isDone(assignedTask, TaskProcess.revision);
-			String dateAsString = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
-			mainVC.contextPut("revisionDueDate", dateAsString);
+			DueDateValues dueDateValues = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
+			mainVC.contextPut("revisionDueDate", dueDateValues.asString());
+			mainVC.contextPut("revisionRemainingTime", Long.toString(dueDateValues.remainingTime()));
 			
 			if(assignedTask.getTaskStatus() == TaskProcess.revision
 					&& date.compareTo(new Date()) < 0) {
@@ -518,7 +522,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 		
 		if(assignedTask != null) {
-			if(assignedTask.getCollectionRevisionsDate() != null) {
+			TaskProcess process = assignedTask.getTaskStatus();
+			if(process == TaskProcess.revision) {
+				mainVC.contextRemove("submissionRevisionDate");
+				mainVC.contextRemove("collectionRevisionDate");
+			} else if(assignedTask.getCollectionRevisionsDate() != null) {
 				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getCollectionRevisionsDate());
 				mainVC.contextPut("collectionRevisionDate", translate("msg.collection.date", date));
 				mainVC.contextRemove("submissionRevisionDate");
@@ -734,14 +742,34 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	protected abstract Role getDoer();
 	
-	protected static class DueDateArguments {
+	protected static final class DueDateValues {
+		private String dueDateString;
+		private long remainingTime;
+		
+		public DueDateValues(String dueDateString, long remainingTime) {
+			this.dueDateString = dueDateString;
+			this.remainingTime = remainingTime;
+		}
+		
+		public String asString() {
+			return dueDateString;
+		}
+		
+		public long remainingTime() {
+			return remainingTime;
+		}
+	}
+	
+	protected static final class DueDateArguments {
 		
 		private final long days;
 		private final String[] args;
+		private final long timeDiffMilliSec;
 		
-		public DueDateArguments(long days, String[] args) {
+		public DueDateArguments(long days, String[] args, long timeDiffMilliSec) {
 			this.days = days;
 			this.args = args;
+			this.timeDiffMilliSec = timeDiffMilliSec;
 		}
 		
 		public long days() {
@@ -750,6 +778,10 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		public String[] args() {
 			return args;
+		}
+		
+		public long timeDiffInMillSeconds() {
+			return timeDiffMilliSec;
 		}
 	}
 }

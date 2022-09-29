@@ -32,7 +32,6 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -52,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *  Initial Date:  Jun 16, 2004
  *  @author gnaegi
  */
-public class MSCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class MSCourseNodeEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_CONFIGURATION = "pane.tab.configuration";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";

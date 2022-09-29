@@ -176,6 +176,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				sb.append("select distinct ae.identity.key");
 				sb.append("  from assessmententry ae");
 				sb.append(" where ae.repositoryEntry.key = :repoEntryKey");
+				sb.append(" and ae.identity.key is not null");
 				sb.append(" and ae.identity.key not in (");
 				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
 				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
@@ -417,6 +418,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				sb.append("select ae.identity.key");
 				sb.append("  from assessmententry ae");
 				sb.append(" where ae.repositoryEntry.key = :repoEntryKey");
+				sb.append("   and ae.identity.key is not null");
 				sb.append(") and ");
 				sb.append(identKey).append(" not in (");
 				sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -52,6 +53,22 @@ public class CourseNodeSegmentPrefs {
 	
 	public CourseNodeSegmentPrefs(RepositoryEntryRef courseEntry) {
 		this.courseEntry = courseEntry;
+	}
+	
+	public void setSegment(UserRequest ureq, CourseNodeSegment segment, SegmentViewComponent segmentView, boolean save) {
+		// Convenience check to not always add an 'if' before each method call.
+		// The segment should only be saved if the user actively selects the segment.
+		if (!save) {
+			return;
+		}
+		
+		// If the only one segment available, the segment is not displayed.
+		// So the user surely has not actively selected the segment.
+		if (segmentView == null || segmentView.size() < 1) {
+			return;
+		}
+		
+		setSegment(ureq, segment);
 	}
 
 	public void setSegment(UserRequest ureq, CourseNodeSegment segment) {

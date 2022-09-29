@@ -287,6 +287,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 
 		boolean start = false;
 		FlexiTreeTableNode parentOf = objectToClose.getParent();
+		int parentLevel = parentOf == null ? 0 : getIndentation(parentOf);
 		
 		List<U> currentRows = getObjects();
 		List<U> closedRows = new ArrayList<>();
@@ -294,7 +295,8 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			if(start) {
 				if((parentOf == null && currentRow.getParent() == null)
 					|| (currentRow.getParent() == null)
-					|| (parentOf != null && parentOf.equals(currentRow.getParent()))) {
+					|| (parentOf != null && parentOf.equals(currentRow.getParent()))
+					|| (parentOf != null && parentLevel > getIndentation(currentRow.getParent()))) {
 					start = false;
 				} else {
 					openedRows.remove(currentRow);
