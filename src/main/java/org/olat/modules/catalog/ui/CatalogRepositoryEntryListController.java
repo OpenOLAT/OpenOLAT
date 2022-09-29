@@ -310,6 +310,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	@Override
 	public void forgeDetailsLink(CatalogRepositoryEntryRow row) {
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, flc, Link.LINK);
+		detailsLink.setIconRightCSS("o_icon o_icon_details");
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
 		detailsLink.setTitle("details");
 		detailsLink.setUserObject(row);
