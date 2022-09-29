@@ -48,7 +48,9 @@ class AvService {
 		if (type.startsWith('video/webm')) {
 			return 'webm';
 		}
-
+		if (type.startsWith('video/x-matroska')) {
+			return 'mkv';
+		}
 		if (type.startsWith('video/mp4')) {
 			return 'mp4';
 		}

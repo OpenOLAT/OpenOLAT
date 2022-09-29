@@ -65,6 +65,10 @@ class VideoRecorder {
 			mimeType = 'video/mp4';
 		}
 
+		if (isChrome) {
+			//mimeType = 'video/x-matroska;codecs=h264';
+		}
+
 		return mimeType;
 	}
 
@@ -134,8 +138,8 @@ class VideoRecorder {
 				this.avUserInterface.hideTimeContainer();
 				jQuery(this.videoElement).show();
 				recordingIndicator.hide();
-				oneButton.show();
-				recordSymbol.show();
+				oneButton.hide();
+				recordSymbol.hide();
 				stopSymbol.hide();
 				playSymbol.hide();
 				retryButton.hide();
@@ -165,6 +169,8 @@ class VideoRecorder {
 				});
 				break;
 			case RecState.waitingToRecord:
+				oneButton.show();
+				recordSymbol.show();
 				qualityDropdown.prop('disabled', false);
 				this.avUserInterface.hideTotalTime();
 				fileSize.show();
