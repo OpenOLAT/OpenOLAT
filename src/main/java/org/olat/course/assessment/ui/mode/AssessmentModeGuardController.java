@@ -209,7 +209,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	
 	private String getSEBQuitURLFromLastUnlockedResource() {
 		LockResourceInfos infos = getWindowControl().getWindowBackOffice().getChiefController().getLastUnlockedResourceInfos();
-		if(infos.getLockMode() != null && infos.getLockMode().hasLinkToQuitSEB()) {
+		if(infos != null && infos.getLockMode() != null && infos.getLockMode().hasLinkToQuitSEB()) {
 			return infos.getLockMode().getLinkToQuitSEB();
 		}
 		return null;
