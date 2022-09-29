@@ -42,12 +42,29 @@ public class ContentEditorComponentRenderer extends AbstractContentEditorCompone
 		ContentEditorComponent cmp = (ContentEditorComponent)source;
 
 		Renderer fr = Renderer.getInstance(cmp, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
-		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_content_editor o_page_drop' data-oo-content-editor-url='")
+		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_content_editor' data-oo-content-editor-url='")
 		  .append(fr.getUrlBuilder().getJavascriptURI()).append("'>");
+		
+		boolean implicitContainer = false;
+		
 		for(Component subCmp:cmp.getComponents()) {
+			if(!(subCmp instanceof ContentEditorContainerComponent) && !implicitContainer) {
+				sb.append("<div class='o_legacy_container' data-oo-content-editor-url='")
+				  .append(fr.getUrlBuilder().getJavascriptURI()).append("'>");
+				implicitContainer = true;
+			} else if((subCmp instanceof ContentEditorContainerComponent) && implicitContainer) {
+				sb.append("</div>");
+				implicitContainer = false;
+			}
+			
 			subCmp.getHTMLRendererSingleton().render(renderer, sb, subCmp, ubu, translator, renderResult, args);
 			subCmp.setDirty(false);
 		}
+		
+		if(implicitContainer) {
+			sb.append("</div>");
+		}
+		
 		renderEditJavascript(fr, sb, cmp);
 		sb.append("</div>");
 	}

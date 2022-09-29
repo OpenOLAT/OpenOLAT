@@ -56,6 +56,9 @@
 		jQuery('.o_page_container_slot-inner').each(function(index, slot) {
 			containers.push(slot);
 		});
+		jQuery('.o_legacy_container').each(function(index, slot) {
+			containers.push(slot);
+		});
 		return dragula({
 			containers: containers,
 			revertOnSpill: true,
@@ -89,14 +92,36 @@
 
 		var draggedId = jQuery(el).data('oo-page-fragment');
 		var jTargetContainer = jQuery(targetContainer);
-		var jContainerSlot = jTargetContainer.closest(".o_page_container_slot");
-		var slotId = jContainerSlot.data('oo-slot');
-		var componentUrl = jContainerSlot.data("oo-content-editor-url");
-		var containerId = jContainerSlot.data('oo-page-fragment');
+		if(jTargetContainer.hasClass("o_page_container_slot-inner")) {
+			var jContainerSlot = jTargetContainer.closest(".o_page_container_slot");
+			var slotId = jContainerSlot.data('oo-slot');
+			var componentUrl = jContainerSlot.data("oo-content-editor-url");
+			var containerId = jContainerSlot.data('oo-page-fragment');
 
-		o_afterserver();
-		o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", containerId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
-		return true;
+			o_afterserver();
+			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", containerId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
+			return true;
+		} else if(jTargetContainer.hasClass("o_legacy_container")) {
+			var containerId = null;
+			var componentUrl;
+			
+			if(sibling) {
+				componentUrl = jQuery(sibling).data('oo-content-editor-url');
+			} else {
+				var partEls = jTargetContainer.children(".o_page_part.o_page_part_view");
+				if(partEls.length > 0) {
+					var partEl = jQuery(partEls.get(partEls.length - 1));
+					targetId = partEl.data('oo-page-fragment');
+					componentUrl = partEl.data("oo-content-editor-url");
+				} else {
+					return false;
+				}
+			}
+			o_afterserver();
+			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", targetId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
+			return true;
+		}
+		return false;
 	}
 	
 	function closeMathLive() {
