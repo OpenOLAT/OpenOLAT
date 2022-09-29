@@ -117,6 +117,7 @@ class AvUserInterface {
 		this.currentTimeText = jQuery('#current-time');
 		this.currentTimeRail = jQuery('#current-time-rail');
 		this.totalTimeText = jQuery('#total-time');
+		this.recordingLengthLimitText = jQuery('#recording-length-limit');
 	}
 
 	init() {
@@ -227,7 +228,7 @@ class AvUserInterface {
 
 	setTotalTime(msec) {
 		const totalTime = this.formatTime(msec);
-		this.totalTimeText.text('/' + totalTime);
+		this.totalTimeText.text('/ ' + totalTime);
 	}
 
 	getTotalTimeInMsec() {
@@ -268,6 +269,19 @@ class AvUserInterface {
 
 	hideTimeContainer() {
 		this.timeContainer.hide();
+	}
+
+	showRecordingLengthLimitIfApplicable() {
+		if (this.config.recordingLengthLimit) {
+			this.recordingLengthLimitText.show();
+			this.recordingLengthLimitText.text('/ ' + this.formatTime(this.config.recordingLengthLimit));
+		} else {
+			this.recordingLengthLimitText.hide();
+		}
+	}
+
+	hideRecordingLengthLimit() {
+		this.recordingLengthLimitText.hide();
 	}
 
 	hideTotalTime() {

@@ -20,11 +20,13 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -51,7 +53,9 @@ public class GTASubmissionEditController extends FormBasicController {
 	private MultipleSelectionElement embeddedEditorEl;
 	private MultipleSelectionElement submissionTemplateEl;
 	private MultipleSelectionElement allowVideoRecordingsEl;
+	private TextElement maxVideoDurationEl;
 	private MultipleSelectionElement allowAudioRecordingsEl;
+	private TextElement maxAudioDurationEl;
 	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
@@ -89,10 +93,22 @@ public class GTASubmissionEditController extends FormBasicController {
 		allowVideoRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.video.recordings", "av.allow.video.recordings", configCont, enableKeys, enableValues);
 		boolean allowVideoRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS);
 		allowVideoRecordingsEl.select(enableKeys[0], allowVideoRecordings);
+		allowVideoRecordingsEl.addActionListener(FormEvent.ONCHANGE);
+
+		String maxVideoDuration = config.getStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, "600");
+		maxVideoDurationEl = uifactory.addTextElement("av.max.video.duration", "av.max.duration", 5, maxVideoDuration, configCont);
+		maxVideoDurationEl.setRegexMatchCheck("\\d+", "av.max.duration.error");
+		maxVideoDurationEl.setVisible(allowVideoRecordings);
 
 		allowAudioRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.audio.recordings", "av.allow.audio.recordings", configCont, enableKeys, enableValues);
 		boolean allowAudioRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS);
 		allowAudioRecordingsEl.select(enableKeys[0], allowAudioRecordings);
+		allowAudioRecordingsEl.addActionListener(FormEvent.ONCHANGE);
+
+		String maxAudioDuration = config.getStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, "600");
+		maxAudioDurationEl = uifactory.addTextElement("av.max.audio.duration", "av.max.duration", 5, maxAudioDuration, configCont);
+		maxAudioDurationEl.setRegexMatchCheck("\\d+", "av.max.duration.error");
+		maxAudioDurationEl.setVisible(allowAudioRecordings);
 
 		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		String minVal = "";
@@ -132,6 +148,22 @@ public class GTASubmissionEditController extends FormBasicController {
 		confirmationCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == allowVideoRecordingsEl || source == allowAudioRecordingsEl) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void updateUI() {
+		boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
+		maxVideoDurationEl.setVisible(allowVideoRecordings);
+
+		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
+		maxAudioDurationEl.setVisible(allowAudioRecordings);
 	}
 
 	@Override
@@ -191,8 +223,14 @@ public class GTASubmissionEditController extends FormBasicController {
 
 		boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS, allowVideoRecordings);
+		if (allowVideoRecordings) {
+			config.setStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, maxVideoDurationEl.getValue());
+		}
 		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS, allowAudioRecordings);
+		if (allowAudioRecordings) {
+			config.setStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, maxAudioDurationEl.getValue());
+		}
 
 		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
 		setNumberOfdocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);

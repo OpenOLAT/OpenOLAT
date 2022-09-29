@@ -89,6 +89,7 @@ class AudioRecorder {
 		switch (this.state) {
 			case RecState.init:
 				this.avUserInterface.hideTimeContainer();
+				this.avUserInterface.hideRecordingLengthLimit();
 				jQuery(this.audioElement).show();
 				recordingIndicator.hide();
 				qualityDropdown.hide();
@@ -118,6 +119,7 @@ class AudioRecorder {
 				break;
 			case RecState.recording:
 				this.avUserInterface.showTimeContainer();
+				this.avUserInterface.showRecordingLengthLimitIfApplicable();
 				recordingIndicator.show();
 				recordSymbol.hide();
 				stopSymbol.show();
@@ -237,6 +239,15 @@ class AudioRecorder {
 				self.updateSize(size);
 			}
 		});
+
+		if (this.config.recordingLengthLimit) {
+			this.recorder.setRecordingDuration(this.config.recordingLengthLimit, () => {
+				self.state = RecState.stopped;
+				self.updateUI();
+				self.avUserInterface.updateTotalTime();
+				self.stopRecordingCallback();
+			});
+		}
 	}
 
 	updateSize(size) {
@@ -314,6 +325,7 @@ class AudioRecorder {
 
 		jQuery('#time-rail').show();
 		this.avUserInterface.showTotalTime();
+		this.avUserInterface.hideRecordingLengthLimit();
 	}
 
 	destroyRecorder() {

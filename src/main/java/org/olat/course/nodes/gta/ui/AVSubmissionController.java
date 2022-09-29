@@ -45,7 +45,8 @@ public class AVSubmissionController extends BasicController {
 	private AVSubmissionDetailsController submissionDetailsController;
 	private String userDefinedFileName;
 
-	public AVSubmissionController(UserRequest ureq, WindowControl wControl, File documentsDir, boolean audioOnly) {
+	public AVSubmissionController(UserRequest ureq, WindowControl wControl, File documentsDir, boolean audioOnly,
+								  long recordingLengthLimit) {
 		super(ureq, wControl);
 
 		this.documentsDir = documentsDir;
@@ -54,6 +55,7 @@ public class AVSubmissionController extends BasicController {
 		if (audioOnly) {
 			config.setMode(AVConfiguration.Mode.audio);
 		}
+		config.setRecordingLengthLimit(recordingLengthLimit);
 		creationController = new AVCreationController(ureq, wControl, config);
 		listenTo(creationController);
 

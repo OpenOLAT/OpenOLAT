@@ -195,6 +195,7 @@
 						 aria-live="off">
 						<span id="current-time" class="mejs__currenttime">0:00</span>
 						<span id="total-time">/0:00</span>
+						<span id="recording-length-limit">/0:00</span>
 					</div>
 					<div id="volume-button-container" class="mejs__button mejs__volume-button mejs__unmute">
 						<button id="volume-button" type="button" aria-controls="mep_15" tabindex="0"></button>
@@ -288,6 +289,7 @@
 	var audioRecorder = new AudioRecorder(audioElement, {
 		firstName: '$firstName',
 		lastName: '$lastName',
+		recordingLengthLimit: $recordingLengthLimit,
 		compact: true
 	});
 	audioRecorder.stateInit();
@@ -295,6 +297,7 @@
 	var videoRecorder = new VideoRecorder(videoElement, $qualities, {
 		firstName: '$firstName',
 		lastName: '$lastName',
+		recordingLengthLimit: $recordingLengthLimit,
 		compact: false,
 		generatePosterImage: $generatePosterImage
 	});

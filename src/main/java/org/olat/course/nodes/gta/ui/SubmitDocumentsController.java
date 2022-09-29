@@ -571,7 +571,9 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 
 	private void doRecordVideo(UserRequest ureq) {
-		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, false);
+		long recordingLengthLimit = 1000 * Long.parseLong(config.getStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, "600"));
+		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, false,
+				recordingLengthLimit);
 		listenTo(avSubmissionController);
 
 		String title = translate("av.record.video");
@@ -581,7 +583,9 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 
 	private void doRecordAudio(UserRequest ureq) {
-		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, true);
+		long recordingLengthLimit = 1000 * Long.parseLong(config.getStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, "600"));
+		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, true,
+				recordingLengthLimit);
 		listenTo(avSubmissionController);
 
 		String title = translate("av.record.audio");

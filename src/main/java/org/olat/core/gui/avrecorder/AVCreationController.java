@@ -134,6 +134,7 @@ public class AVCreationController extends FormBasicController {
 		String[] qualities = Arrays.stream(AVQualtiy.values()).map(AVQualtiy::toJson).toArray(String[]::new);
 		flc.contextPut("qualities", qualities);
 
+		flc.contextPut("recordingLengthLimit", config.getRecordingLengthLimit());
 		flc.contextPut("generatePosterImage", config.isGeneratePosterImage());
 
 		qualityDropdown = uifactory.addDropdownSingleselect("video.audio.quality", formLayout,

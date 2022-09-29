@@ -176,7 +176,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public static final String GTASK_EMBBEDED_EDITOR = "grouptask.embbeded.editor";
 	public static final String GTASK_SUBMISSION_TEMPLATE = "grouptask.submission.template";
 	public static final String GTASK_ALLOW_VIDEO_RECORDINGS = "grouptask.allow.video.recordings";
+	public static final String GTASK_MAX_VIDEO_DURATION = "grouptask.max.video.duration";
 	public static final String GTASK_ALLOW_AUDIO_RECORDINGS = "grouptask.allow.audio.recordings";
+	public static final String GTASK_MAX_AUDIO_DURATION = "grouptask.max.audio.duration";
 	public static final String GTASK_MIN_SUBMITTED_DOCS = "grouptask.min.submitted.docs";
 	public static final String GTASK_MAX_SUBMITTED_DOCS = "grouptask.max.submitted.docs";
 	
