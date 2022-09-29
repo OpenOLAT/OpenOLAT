@@ -73,6 +73,14 @@ public class Formatter {
 
 	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<>();
 
+	// Pattern to find date formats with only two year digits for dates formatted
+	// with . (most languages) and with / (EN). Since the date string is converted
+	// to a date the two digit dates are interpreted as first century years which is
+	// most likely not what the user meant. 
+	private static final Pattern twoYearDatePattern = Pattern.compile("^(\\d{1,2}[\\./]\\d{1,2}[\\./])(\\d{2})$");
+	private static final String twentyXX_replacementPattern = "$120$2"; // replace xx with 20xx
+	
+
 	private final Locale locale;
 	private final DateFormat shortDateFormat;
 	private final DateFormat longDateFormat;
@@ -941,6 +949,28 @@ public class Formatter {
         decimalFormat.setGroupingSize(3);
         
         return decimalFormat.format(value);
+	}
+
+	/**
+	 * Format a string containing a date (without the time, just the date) that uses
+	 * a two digits form for the year as a date with a four digits year assuming
+	 * that the 21st century is meant. Only the year is modified, all other aspects of
+	 * the date remain untouched except for trailing whitespace which is removed.
+	 * 
+	 * 2.3.22 -> 2.3.2022
+	 * 02.03.22 -> 02.03.2022
+	 * 3/2/22 -> 3/2/2022
+	 * 03/02/22 -> 03/02/2022
+	 * 
+	 * @param dateString
+	 * @return
+	 */
+	public static String formatTwoDigitsYearsAsFourDigitsYears(String dateString) {
+		if (StringHelper.containsNonWhitespace(dateString)) {
+			dateString = dateString.trim();
+			dateString = twoYearDatePattern.matcher(dateString).replaceAll(twentyXX_replacementPattern);
+		}
+		return dateString;
 	}
 	
 }
