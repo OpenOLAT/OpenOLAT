@@ -148,6 +148,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public boolean isGuestOnly() {
+		return false;
+	}
+
+	@Override
 	public boolean isMemberParticipant() {
 		return false;
 	}

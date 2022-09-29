@@ -193,7 +193,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 	
 	private void initScoreAccounting() {
-		scoreAccounting = isParticipant() ? new AssessmentAccounting(this): new NoEvaluationAccounting();
+		scoreAccounting = isParticipant() && !isGuestOnly() ? new AssessmentAccounting(this): new NoEvaluationAccounting();
 	}
 
 	@Override
@@ -271,7 +271,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return partLazy;
 	}
 	
-	private boolean isGuestOnly() {
+	@Override
+	public boolean isGuestOnly() {
 		Roles roles = getIdentityEnvironment().getRoles() != null
 				? getIdentityEnvironment().getRoles()
 				: CoreSpringFactory.getImpl(BaseSecurity.class).getRoles(getIdentityEnvironment().getIdentity());

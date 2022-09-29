@@ -697,6 +697,11 @@ public class NodeRightServiceImplTest {
 		}
 
 		@Override
+		public boolean isGuestOnly() {
+			return false;
+		}
+
+		@Override
 		public boolean isIdentityInCourseGroup(Long groupKey) {
 			return false;
 		}
