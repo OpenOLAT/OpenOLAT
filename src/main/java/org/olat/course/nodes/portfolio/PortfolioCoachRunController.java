@@ -161,14 +161,14 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_CONTENT.equalsIgnoreCase(type)) {
-			doOpenContent(ureq);
+			doOpenContent(ureq, true);
 		} else if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, true);
 		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type) && participantsLink != null) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doOpenParticipants(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			doOpenParticipants(ureq, true).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type) && remindersLink != null) {
-			doOpenReminders(ureq);
+			doOpenReminders(ureq, true);
 		}
 	}
 
@@ -180,13 +180,13 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == contentLink) {
-					doOpenContent(ureq);
+					doOpenContent(ureq, true);
 				} else if (clickedLink == overviewLink) {
-					doOpenOverview(ureq);
+					doOpenOverview(ureq, true);
 				} else if (clickedLink == participantsLink) {
-					doOpenParticipants(ureq);
+					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
-					doOpenReminders(ureq);
+					doOpenReminders(ureq, true);
 				}
 			}
 		}
@@ -195,7 +195,7 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (assessmentEventToState != null && assessmentEventToState.handlesEvent(source, event)) {
-			doOpenParticipants(ureq).activate(ureq, null, assessmentEventToState.getState(event));
+			doOpenParticipants(ureq, true).activate(ureq, null, assessmentEventToState.getState(event));
 		}
 		super.event(ureq, source, event);
 	}
@@ -203,21 +203,21 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 	private void doOpenPreferredSegment(UserRequest ureq) {
 		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
 		if (CourseNodeSegment.overview == segment && overviewLink != null) {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, false);
 		} else if (CourseNodeSegment.participants == segment && participantsLink != null) {
-			doOpenParticipants(ureq);
+			doOpenParticipants(ureq, false);
 		} else if (CourseNodeSegment.preview == segment && contentLink != null) {
-			doOpenContent(ureq);
+			doOpenContent(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
-			doOpenReminders(ureq);
+			doOpenReminders(ureq, false);
 		} else if (overviewLink != null) {
-			doOpenOverview(ureq);
+			doOpenOverview(ureq, false);
 		} else {
-			doOpenContent(ureq);
+			doOpenContent(ureq, false);
 		}
 	}
 	
-	public void doOpenContent(UserRequest ureq) {
+	public void doOpenContent(UserRequest ureq, boolean saveSegmentPref) {
 		mainVC.contextRemove("cssClass");
 		removeAsListenerAndDispose(contentCtrl);
 		
@@ -227,41 +227,41 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 		listenTo(contentCtrl);
 		mainVC.put("segmentCmp", contentCtrl.getInitialComponent());
 		segmentView.select(contentLink);
-		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview);
+		segmentPrefs.setSegment(ureq, CourseNodeSegment.preview, segmentView, saveSegmentPref);
 		if (segmentView.getSegments().size() > 1) {
 			mainVC.contextPut("cssClass", "o_block_top");
 		}
 	}
 	
-	private void doOpenOverview(UserRequest ureq) {
+	private void doOpenOverview(UserRequest ureq, boolean saveSegmentPref) {
 		mainVC.contextRemove("cssClass");
 		if (overviewLink != null) {
 			overviewCtrl.reload();
 			mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 			segmentView.select(overviewLink);
-			segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.overview, segmentView, saveSegmentPref);
 		}
 	}
 	
-	private Activateable2 doOpenParticipants(UserRequest ureq) {
+	private Activateable2 doOpenParticipants(UserRequest ureq, boolean saveSegmentPref) {
 		mainVC.contextRemove("cssClass");
 		participantsCtrl.reload(ureq);
 		addToHistory(ureq, participantsCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", participantsPanel);
 			segmentView.select(participantsLink);
-			segmentPrefs.setSegment(ureq, CourseNodeSegment.participants);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.participants, segmentView, saveSegmentPref);
 		}
 		return participantsCtrl;
 	}
 	
-	private void doOpenReminders(UserRequest ureq) {
+	private void doOpenReminders(UserRequest ureq, boolean saveSegmentPref) {
 		mainVC.contextRemove("cssClass");
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
-			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders, segmentView, saveSegmentPref);
 		}
 	}
 

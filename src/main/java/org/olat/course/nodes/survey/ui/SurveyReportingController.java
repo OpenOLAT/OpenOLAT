@@ -22,6 +22,7 @@ package org.olat.course.nodes.survey.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -48,6 +49,8 @@ public class SurveyReportingController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	
+	private EvaluationFormReportsController reportsCtrl;
+
 	@Autowired
 	private SurveyManager surveyManager;
 
@@ -64,10 +67,19 @@ public class SurveyReportingController extends BasicController {
 				.addCustomFigure(translate("figure.course"), courseEntry.getDisplayname())
 				.addCustomFigure(translate("figure.course.node"), courseNode.getShortTitle())
 				.build();
-		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter, figures);
+		reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter, figures);
+		listenTo(reportsCtrl);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == reportsCtrl) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

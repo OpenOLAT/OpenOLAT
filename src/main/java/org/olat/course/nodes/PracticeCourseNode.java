@@ -174,8 +174,9 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 			String title = trans.translate("guestnoaccess.title");
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else 
-		controller = new PracticeRunController(ureq, wControl, this, userCourseEnv);
+		} else {
+			controller = new PracticeRunController(ureq, wControl, this, userCourseEnv);
+		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_practice_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}

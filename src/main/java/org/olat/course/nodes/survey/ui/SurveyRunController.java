@@ -37,6 +37,8 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
@@ -48,6 +50,8 @@ import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.ProgressEvent;
+import org.olat.modules.forms.ui.ReportSegment;
+import org.olat.modules.forms.ui.ReportSegmentEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +71,7 @@ public class SurveyRunController extends BasicController {
 	private CloseableModalController cmc;
 	private SurveyDeleteDataConfirmationController deleteDataConfirmationCtrl;
 	private EvaluationFormExecutionController executionCtrl;
+	private SurveyReportingController reportingCtrl;
 	
 	private final UserCourseEnvironment userCourseEnv;
 	private final RepositoryEntry courseEntry;
@@ -165,6 +170,14 @@ public class SurveyRunController extends BasicController {
 				ProgressEvent pe = (ProgressEvent)event;
 				doQuickSaved(ureq, pe.getProgress());
 			}
+		} else if(source == reportingCtrl) {
+			if (event instanceof ReportSegmentEvent) {
+				ReportSegmentEvent rse = (ReportSegmentEvent)event;
+				if (ReportSegment.OVERVIEW == rse.getSegment()) {
+					CourseNodeSegmentPrefs segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+					segmentPrefs.setSegment(ureq, CourseNodeSegment.overview);
+				}
+			}
 		} else if(source == deleteDataConfirmationCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doDeleteAllData(ureq);
@@ -220,7 +233,8 @@ public class SurveyRunController extends BasicController {
 	private void doShowReporting(UserRequest ureq) {
 		removeAllComponents();
 		participation = loadOrCreateParticipation(ureq);
-		Controller reportingCtrl = new SurveyReportingController(ureq, getWindowControl(), courseEntry, courseNode, survey);
+		reportingCtrl = new SurveyReportingController(ureq, getWindowControl(), courseEntry, courseNode, survey);
+		listenTo(reportingCtrl);
 		mainVC.put("reporting", reportingCtrl.getInitialComponent());
 	}
 

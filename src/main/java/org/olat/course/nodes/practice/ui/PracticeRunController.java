@@ -37,6 +37,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.course.assessment.AssessmentEvents;
+import org.olat.course.nodes.CourseNodeSegmentPrefs;
+import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
 import org.olat.course.nodes.practice.PracticeResource;
@@ -61,6 +63,7 @@ public class PracticeRunController extends BasicController {
 	
 	private Link coachLink;
 	private Link previewLink;
+	private final CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
 	private BreadcrumbedStackedPanel composerPanel;
 	private final VelocityContainer mainVC;
@@ -88,6 +91,7 @@ public class PracticeRunController extends BasicController {
 		courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		mainVC = createVelocityContainer("practice_run");
+		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		authorMode = userCourseEnv.isCoach() || userCourseEnv.isAdmin();
 		if(authorMode) {
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -106,9 +110,9 @@ public class PracticeRunController extends BasicController {
 			coachPanel.setShowCloseLink(true, false);
 			coachPanel.setCssClass("o_segment_toolbar o_block_top");
 			
-			doOpenCoach(ureq);
+			doOpenPreferredSegment(ureq);
 		} else {
-			doOpenParticipant(ureq);
+			doOpenParticipant(ureq, false);
 		}
 		
 		putInitialPanel(mainVC);
@@ -122,9 +126,9 @@ public class PracticeRunController extends BasicController {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == coachLink) {
-					doOpenCoach(ureq);
+					doOpenCoach(ureq, true);
 				} else if (clickedLink == previewLink) {
-					doOpenParticipant(ureq);
+					doOpenParticipant(ureq, true);
 				}
 			}
 		} else if(composerPanel == source) {
@@ -172,7 +176,18 @@ public class PracticeRunController extends BasicController {
 		serieCtrl = null;
 	}
 	
-	private Activateable2 doOpenCoach(UserRequest ureq) {
+	private void doOpenPreferredSegment(UserRequest ureq) {
+		CourseNodeSegment segment = segmentPrefs.getSegment(ureq);
+		if (CourseNodeSegment.participants == segment && coachLink != null) {
+			doOpenCoach(ureq, false);
+		} else if (CourseNodeSegment.preview == segment && previewLink != null) {
+			doOpenParticipant(ureq, false);
+		} else {
+			doOpenCoach(ureq, false);
+		}
+	}
+	
+	private Activateable2 doOpenCoach(UserRequest ureq, boolean saveSegmentPref) {
 		if(coachCtrl == null) {
 			coachCtrl = new PracticeCoachController(ureq, getWindowControl(), coachPanel,
 					courseEntry, courseNode, userCourseEnv);
@@ -182,11 +197,13 @@ public class PracticeRunController extends BasicController {
 		addToHistory(ureq, coachCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", coachPanel);
+			segmentView.select(coachLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.participants, segmentView, saveSegmentPref);
 		}
 		return coachCtrl;
 	}
 	
-	private void doOpenParticipant(UserRequest ureq) {
+	private void doOpenParticipant(UserRequest ureq, boolean saveSegmentPref) {
 		participantCtrl = new PracticeParticipantController(ureq, getWindowControl(),
 				courseEntry, courseNode, userCourseEnv, getIdentity(), null, null);
 		listenTo(participantCtrl);
@@ -194,6 +211,8 @@ public class PracticeRunController extends BasicController {
 		addToHistory(ureq, participantCtrl);
 		if(segmentView != null) {
 			mainVC.put("segmentCmp", participantCtrl.getInitialComponent());
+			segmentView.select(previewLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.preview, segmentView, saveSegmentPref);
 		} else {
 			mainVC.put("participantCmp", participantCtrl.getInitialComponent());
 		}
