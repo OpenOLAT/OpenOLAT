@@ -92,7 +92,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	public BusinessGroupStatusController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
-		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
+		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.businessGroup = businessGroup;
 		hasResources = businessGroupService.hasResources(businessGroup);
 		hasMembersOrResources = hasResources || businessGroupService.countMembers(businessGroup, GroupRoles.coach.name()) > 0;
@@ -111,28 +111,36 @@ public class BusinessGroupStatusController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("fieldset.legend.status");
+		
+		FormLayoutContainer methodCont = FormLayoutContainer.createDefaultFormLayout("methodLayout", getTranslator());
+		formLayout.add(methodCont);
+		methodCont.setFormTitle(translate("exclude.form.title"));
+		
+		FormLayoutContainer lifecycleCont = FormLayoutContainer.createDefaultFormLayout("lifecycleLayout", getTranslator());
+		formLayout.add(lifecycleCont);
+		lifecycleCont.setFormTitle(translate("status.form.title"));
 
 		Formatter formatter = Formatter.getInstance(getLocale());
-		initStatusForm(formLayout);
+		initStatusForm(methodCont, lifecycleCont);
 		
 		Date creationDate = businessGroup.getCreationDate();
 		String creation = formatter.formatDate(creationDate);
-		uifactory.addStaticTextElement("status.creation", creation, formLayout);
+		uifactory.addStaticTextElement("status.creation", creation, lifecycleCont);
 
 		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
 		if(status == BusinessGroupStatusEnum.active) {
-			initActiveForm(formLayout, ureq, formatter);
+			initActiveForm(lifecycleCont, ureq, formatter);
 		} else if(status == BusinessGroupStatusEnum.inactive) {
-			initInactiveForm(formLayout, ureq, formatter);
+			initInactiveForm(lifecycleCont, ureq, formatter);
 		} else if(status == BusinessGroupStatusEnum.trash) {
-			initSoftDeletedForm(formLayout, ureq, formatter);
+			initSoftDeletedForm(lifecycleCont, ureq, formatter);
 		}
 	}
 
-	private void initStatusForm(FormItemContainer formLayout) {
+	private void initStatusForm(FormItemContainer methodLayout, FormItemContainer lifecycleLayout) {
 		SelectionValues excludeAutoKeyValues = new SelectionValues();
 		excludeAutoKeyValues.add(SelectionValues.entry("exclude", translate("exclude.auto.lifecycle.opt")));
-		excludeFromAutomaticMethodsEl = uifactory.addCheckboxesHorizontal("exclude.auto.lifecycle", "exclude.auto.lifecycle", formLayout,
+		excludeFromAutomaticMethodsEl = uifactory.addCheckboxesHorizontal("exclude.auto.lifecycle", "exclude.auto.lifecycle", methodLayout,
 				excludeAutoKeyValues.keys(), excludeAutoKeyValues.values());
 		excludeFromAutomaticMethodsEl.setHelpText(translate("exclude.auto.lifecycle.hint"));
 		excludeFromAutomaticMethodsEl.addActionListener(FormEvent.ONCHANGE);
@@ -151,7 +159,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 			value += " - " + translate("status.within.reactiontime");
 		}
 		
-		uifactory.addStaticTextElement("status", value, formLayout);
+		uifactory.addStaticTextElement("status", value, lifecycleLayout);
 	}
 	
 	private void initActiveForm(FormItemContainer formLayout, UserRequest ureq, Formatter formatter) {
