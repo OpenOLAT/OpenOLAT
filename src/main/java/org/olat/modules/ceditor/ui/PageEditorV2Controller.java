@@ -811,7 +811,7 @@ public class PageEditorV2Controller extends BasicController {
 			if(editorPart instanceof ControllerEventListener) {
 				inspectorPart.addControllerListener((ControllerEventListener)editorPart);
 			}
-			if(inspectorPart instanceof ControllerEventListener) {
+			if(editorPart != null && inspectorPart instanceof ControllerEventListener) {
 				editorPart.addControllerListener((ControllerEventListener)inspectorPart);
 			}
 			
