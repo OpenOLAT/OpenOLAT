@@ -86,7 +86,9 @@
 	.o_page_container_tools>button.active,
 	.o_page_container_tools>button[aria-expanded='true'],
 	.o_fragment_edited .o_page_element_tools>button.active,
-	.o_fragment_edited .o_page_element_tools>button[aria-expanded='true'] {
+	&.o_fragment_edited .o_page_element_tools>button.active,
+	.o_fragment_edited .o_page_element_tools>button[aria-expanded='true'],
+	&.o_fragment_edited .o_page_element_tools>button[aria-expanded='true'] {
 		background-color: $o-editor-selected-color;
 		color: #fff;
 	}
