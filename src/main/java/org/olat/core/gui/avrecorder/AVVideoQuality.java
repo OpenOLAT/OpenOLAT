@@ -19,14 +19,20 @@
  */
 package org.olat.core.gui.avrecorder;
 
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+
+import java.util.Locale;
+
 /**
  * Initial date: 2022-09-09<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public enum AVQualtiy {
-	low("video.audio.quality.low", 480, 872000, 128000),
-	medium("video.audio.quality.medium", 720, 1872000, 128000),
+public enum AVVideoQuality {
+	low("video.audio.quality.low", 480, 622000, 128000),
+	medium("video.audio.quality.medium", 720, 1372000, 128000),
 	high("video.audio.quality.high", 1080, 2872000, 128000);
 
 	private final String textKey;
@@ -34,7 +40,7 @@ public enum AVQualtiy {
 	private final int videoBitsPerSecond;
 	private final int audioBitsPerSecond;
 
-	AVQualtiy(String textKey, int height, int videoBitsPerSecond, int audioBitsPerSecond) {
+	AVVideoQuality(String textKey, int height, int videoBitsPerSecond, int audioBitsPerSecond) {
 		this.textKey = textKey;
 		this.height = height;
 		this.videoBitsPerSecond = videoBitsPerSecond;
@@ -55,6 +61,15 @@ public enum AVQualtiy {
 
 	public int getAudioBitsPerSecond() {
 		return audioBitsPerSecond;
+	}
+
+	public static SelectionValues getSelectionValues(Locale locale) {
+		Translator translator = Util.createPackageTranslator(AVVideoQuality.class, locale);
+		SelectionValues selectionValues = new SelectionValues();
+		selectionValues.add(SelectionValues.entry(low.name(), translator.translate(low.getTextKey())));
+		selectionValues.add(SelectionValues.entry(medium.name(), translator.translate(medium.getTextKey())));
+		selectionValues.add(SelectionValues.entry(high.name(), translator.translate(high.getTextKey())));
+		return selectionValues;
 	}
 
 	public String toJson() {

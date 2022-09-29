@@ -37,6 +37,7 @@ import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -573,7 +574,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private void doRecordVideo(UserRequest ureq) {
 		long recordingLengthLimit = 1000 * Long.parseLong(config.getStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, "600"));
 		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, false,
-				recordingLengthLimit);
+				recordingLengthLimit, AVVideoQuality.valueOf(config.getStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, AVVideoQuality.medium.name())));
 		listenTo(avSubmissionController);
 
 		String title = translate("av.record.video");
@@ -585,7 +586,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private void doRecordAudio(UserRequest ureq) {
 		long recordingLengthLimit = 1000 * Long.parseLong(config.getStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, "600"));
 		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, true,
-				recordingLengthLimit);
+				recordingLengthLimit, null);
 		listenTo(avSubmissionController);
 
 		String title = translate("av.record.audio");

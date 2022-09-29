@@ -36,7 +36,8 @@ public class AVConfiguration {
 
 	private Mode mode = Mode.video;
 
-	private AVQualtiy quality = AVQualtiy.medium;
+	private AVVideoQuality videoQuality = AVVideoQuality.medium;
+	private boolean userCanChangeVideoQuality = true;
 	private int videoBitsPerSecond = 872000;
 	private int audioBitsPerSecond = 128000;
 
@@ -109,12 +110,20 @@ public class AVConfiguration {
 		this.recordingLengthLimit = recordingLengthLimit;
 	}
 
-	public AVQualtiy getQuality() {
-		return quality;
+	public AVVideoQuality getVideoQuality() {
+		return videoQuality;
 	}
 
-	public void setQuality(AVQualtiy quality) {
-		this.quality = quality;
+	public void setVideoQuality(AVVideoQuality videoQuality) {
+		this.videoQuality = videoQuality;
+	}
+
+	public boolean isUserCanChangeVideoQuality() {
+		return userCanChangeVideoQuality;
+	}
+
+	public void setUserCanChangeVideoQuality(boolean userCanChangeVideoQuality) {
+		this.userCanChangeVideoQuality = userCanChangeVideoQuality;
 	}
 
 	public boolean isGeneratePosterImage() {

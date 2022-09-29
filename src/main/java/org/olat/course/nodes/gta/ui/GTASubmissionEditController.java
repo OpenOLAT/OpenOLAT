@@ -20,14 +20,17 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,7 +56,9 @@ public class GTASubmissionEditController extends FormBasicController {
 	private MultipleSelectionElement embeddedEditorEl;
 	private MultipleSelectionElement submissionTemplateEl;
 	private MultipleSelectionElement allowVideoRecordingsEl;
+	private SelectionValues videoQualityKV;
 	private TextElement maxVideoDurationEl;
+	private SingleSelection videoQualityEl;
 	private MultipleSelectionElement allowAudioRecordingsEl;
 	private TextElement maxAudioDurationEl;
 	private MultipleSelectionElement  emailConfirmationEl;
@@ -99,6 +104,13 @@ public class GTASubmissionEditController extends FormBasicController {
 		maxVideoDurationEl = uifactory.addTextElement("av.max.video.duration", "av.max.duration", 5, maxVideoDuration, configCont);
 		maxVideoDurationEl.setRegexMatchCheck("\\d+", "av.max.duration.error");
 		maxVideoDurationEl.setVisible(allowVideoRecordings);
+
+		AVVideoQuality videoQuality = AVVideoQuality.valueOf(config.getStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, AVVideoQuality.medium.name()));
+		videoQualityKV = AVVideoQuality.getSelectionValues(getLocale());
+		videoQualityEl = uifactory.addDropdownSingleselect("av.video.quality", configCont, videoQualityKV.keys(),
+				videoQualityKV.values());
+		videoQualityEl.select(videoQuality.name(), true);
+		videoQualityEl.setVisible(allowVideoRecordings);
 
 		allowAudioRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.audio.recordings", "av.allow.audio.recordings", configCont, enableKeys, enableValues);
 		boolean allowAudioRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS);
@@ -161,6 +173,7 @@ public class GTASubmissionEditController extends FormBasicController {
 	private void updateUI() {
 		boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
 		maxVideoDurationEl.setVisible(allowVideoRecordings);
+		videoQualityEl.setVisible(allowVideoRecordings);
 
 		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
 		maxAudioDurationEl.setVisible(allowAudioRecordings);
@@ -225,6 +238,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS, allowVideoRecordings);
 		if (allowVideoRecordings) {
 			config.setStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, maxVideoDurationEl.getValue());
+			config.setStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, videoQualityEl.getSelectedKey());
 		}
 		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS, allowAudioRecordings);

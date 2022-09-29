@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVConfiguration;
 import org.olat.core.gui.avrecorder.AVCreationController;
 import org.olat.core.gui.avrecorder.AVCreationEvent;
+import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -46,7 +47,7 @@ public class AVSubmissionController extends BasicController {
 	private String userDefinedFileName;
 
 	public AVSubmissionController(UserRequest ureq, WindowControl wControl, File documentsDir, boolean audioOnly,
-								  long recordingLengthLimit) {
+								  long recordingLengthLimit, AVVideoQuality videoQuality) {
 		super(ureq, wControl);
 
 		this.documentsDir = documentsDir;
@@ -56,6 +57,11 @@ public class AVSubmissionController extends BasicController {
 			config.setMode(AVConfiguration.Mode.audio);
 		}
 		config.setRecordingLengthLimit(recordingLengthLimit);
+		if (videoQuality != null) {
+			config.setVideoQuality(videoQuality);
+			config.setUserCanChangeVideoQuality(false);
+		}
+
 		creationController = new AVCreationController(ureq, wControl, config);
 		listenTo(creationController);
 

@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.AVRecordingImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.JSCommand;
@@ -58,6 +59,7 @@ public class AVCreationController extends FormBasicController {
 	private AVRecording avRecording;
 	private SingleSelection qualityDropdown;
 	private FormSubmit confirmButton;
+	private SelectionValues qualitySelectionValues;
 
 	public AVCreationController(UserRequest ureq, WindowControl wControl,
 								AVConfiguration config) {
@@ -116,30 +118,20 @@ public class AVCreationController extends FormBasicController {
 
 		flc.put("avRecorderJs", avRecorderJs);
 
-		String[] dropdownKeys = new String[] {
-				AVQualtiy.low.name(),
-				AVQualtiy.medium.name(),
-				AVQualtiy.high.name()
-		};
-
-		String[] dropdownOptions = new String[] {
-				translate(AVQualtiy.low.getTextKey()),
-				translate(AVQualtiy.medium.getTextKey()),
-				translate(AVQualtiy.high.getTextKey())
-		};
-
 		flc.contextPut("firstName", getIdentity().getUser().getFirstName().replaceAll("[\\W_]", "-"));
 		flc.contextPut("lastName", getIdentity().getUser().getLastName().replaceAll("[\\W_]", "-"));
 
-		String[] qualities = Arrays.stream(AVQualtiy.values()).map(AVQualtiy::toJson).toArray(String[]::new);
+		String[] qualities = Arrays.stream(AVVideoQuality.values()).map(AVVideoQuality::toJson).toArray(String[]::new);
 		flc.contextPut("qualities", qualities);
 
 		flc.contextPut("recordingLengthLimit", config.getRecordingLengthLimit());
+		flc.contextPut("userCanChangeVideoQuality", config.isUserCanChangeVideoQuality());
 		flc.contextPut("generatePosterImage", config.isGeneratePosterImage());
 
+		qualitySelectionValues = AVVideoQuality.getSelectionValues(getLocale());
 		qualityDropdown = uifactory.addDropdownSingleselect("video.audio.quality", formLayout,
-				dropdownKeys, dropdownOptions, null);
-		qualityDropdown.select(config.getQuality().name(), true);
+				qualitySelectionValues.keys(), qualitySelectionValues.values());
+		qualityDropdown.select(config.getVideoQuality().name(), true);
 
 		avRecording = new AVRecordingImpl(getIdentity(), "avRecording", "posterImage");
 		formLayout.add(avRecording);

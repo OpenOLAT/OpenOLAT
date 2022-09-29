@@ -160,14 +160,18 @@ class VideoRecorder {
 
 				this.setQualityByName(qualityDropdown.val());
 				qualityDropdown.prop('disabled', true);
-				qualityDropdown.change(() => {
-					// A change of this value should not make the form dirty:
-					confirmButton.removeClass('o_button_dirty');
-					o2c = false;
+				if (this.config.userCanChangeVideoQuality) {
+					qualityDropdown.change(() => {
+						// A change of this value should not make the form dirty:
+						confirmButton.removeClass('o_button_dirty');
+						o2c = false;
 
-					self.setQualityByName(qualityDropdown.val());
-					self.resetMediaStream();
-				});
+						self.setQualityByName(qualityDropdown.val());
+						self.resetMediaStream();
+					});
+				} else {
+					qualityDropdown.hide();
+				}
 				break;
 			case RecState.waitingToRecord:
 				oneButton.show();
