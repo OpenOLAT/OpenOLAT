@@ -59,6 +59,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 			mainVC.contextPut("title", title);
 		}
 		closeButton = LinkFactory.createIconClose("close", mainVC, this);
+		closeButton.setDomReplacementWrapperRequired(false);
 		mainVC.put("close", closeButton);
 		
 		putInitialPanel(mainVC);

@@ -1,5 +1,5 @@
 <div class="o_ceditor_inspector">
-	<div class="o_ceditor_inspector_header">$r.render("close")<h4>$title </h4></div>
+	<div class="o_ceditor_inspector_header">$r.render("close")<h4>$title</h4></div>
 	<div class="o_ceditor_inspector_content">$r.render("inspector")</div>
 </div>
 <script>
@@ -100,6 +100,9 @@ jQuery(function() {
 		
 		function touchStart(e) {
 			e = e || window.event;
+			if(e.target.tagName === "I") {
+				return;// Touch close
+			}
 			e.preventDefault();
 			if(position.x == 0) {
 				position.x = e.touches[0].clientX;
