@@ -25,7 +25,7 @@
 	"use strict";
     $.fn.ceditor = function(options) {
     	var editor = this.data("data-oo-ceditor");
-    	if(typeof editor === "undefined") {
+    	if(typeof editor === "undefined" || editor == null) {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
     	} else if("editFragment" === options) {
