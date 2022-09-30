@@ -20,6 +20,7 @@ $r.translate("form.pwd.intro")
 #end
 </ul>
 
+<div aria-hidden="true">
 #o_togglebox_start("o_usermanagement_importexample" "$r.translate('import.example')")
 	#if($canCreateOLATPassword)
 		<img alt="$r.translateInAttribute("import.example")" src='$r.staticLink('images/screen/userimport.png')' />
@@ -27,6 +28,7 @@ $r.translate("form.pwd.intro")
 		<img alt="$r.translateInAttribute("import.example")" src='$r.staticLink('images/screen/userimport_nopwd.png')' />
 	#end
 #o_togglebox_end()
+</div>
 <p>
 	<a href="$mapperURI/UserImportSample.xls" target="_blank">
 	 	<i class="o_icon o_filetype_xls o_icon-lg"></i> 

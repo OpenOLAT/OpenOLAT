@@ -75,7 +75,7 @@
 			#end
 			#if(!$guestOnly)
 				#if($message.guest || ($message.pseudonym && !${message.pseudonym.isEmpty()}))
-				 	<div class="o_portrait"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous" /></div></div>
+				 	<div class="o_portrait" aria-hidden="true"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous" /></div></div>
 				#elseif($r.available("portrait_${message.key}"))
 					$r.render("portrait_${message.key}")
 				#end
@@ -175,7 +175,7 @@
 							 $r.formatBytes($attachment.getSize())
 						</div>
 						#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
-						<img src="${thumbMapper}/$message.key/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" alt="$r.escapeHtml("$fname")" title="$r.escapeHtml("$fname")"/>
+						<img src="${thumbMapper}/$message.key/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" alt=""/>
 						<i class="o_icon o_icon-lg o_icon_enlarge"></i>
 						#end
 					</a>		

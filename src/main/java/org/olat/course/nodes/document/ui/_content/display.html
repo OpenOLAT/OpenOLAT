@@ -8,11 +8,11 @@
 		</div>
 		<div class="o_cnd_file">
 			#if($item.isThumbnailAvailable())
-				<div class="o_cnd_thumbnail">
+				<div class="o_cnd_thumbnail" aria-hidden="true">
 					<img src="$item.getThumbnailUrl()"/>
 				</div>
 			#else
-				<div class="o_cnd_file_icon">
+				<div class="o_cnd_file_icon" aria-hidden="true">
 					<i class='o_icon $item.getIconCssClass()'> </i>
 				</div>
 			#end

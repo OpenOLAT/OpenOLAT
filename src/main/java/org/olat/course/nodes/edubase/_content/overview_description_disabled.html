@@ -2,7 +2,7 @@
 #foreach($bookSection in $bookSections)
 	<div class="o_edubase_booksection">
 		#set( $runindex = $run + $foreach.index)
-		<img src="$!{bookSection.getCoverUrl()}" onClick="$r.javaScriptCommand($runindex);" onerror="if (this.src != '$r.staticLink('images/edubase/empty_cover.png')') this.src = '$r.staticLink('images/edubase/empty_cover.png')';">
+		<img src="$!{bookSection.getCoverUrl()}" onClick="$r.javaScriptCommand($runindex);" onerror="if (this.src != '$r.staticLink('images/edubase/empty_cover.png')') this.src = '$r.staticLink('images/edubase/empty_cover.png')';" alt="">
 		<div>
 			$r.escapeHtml($bookSection.getTitle())
 		</div>

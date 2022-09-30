@@ -11,7 +11,7 @@
 			<tr class="#if(${ident.isMe()}) o_practice_rank_me #end">
 				<td>${ident.rank}.</td>
 				<td>
-					<span class="o_portrait"><span class="o_portrait">
+					<span class="o_portrait" aria-hidden="true"><span class="o_portrait">
 						<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$ident.name)" title="$r.translate("portrait.alt",$ident.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${ident.avatarKey}/portrait_small.jpg')" />
 					</span></span>
 				</td>

@@ -170,7 +170,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(ic.getAlt())) {
 			sb.append(ic.getAlt());
 		} else {
-			sb.append("*");
+			// accessibility best practice: empty alt text when no alternative text available
 		}
 		sb.append("\" />");
 		

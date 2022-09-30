@@ -1,7 +1,7 @@
 <h2><i class="o_icon $cssClass"> </i> $r.escapeHtml($displayName)</h2>
 <div class="o_web_content">
 #if($image)
-	<img src="$mediaUrl/$filename" />
+	<img src="$mediaUrl/$filename" alt="$r.escapeHtml("displayName")"/>
 #elseif($r.available("content"))
 	<div class="o_content clearfix">$r.render("content")</div>
 #end

@@ -2,7 +2,7 @@
 	#foreach($bookSection in $bookSections)
 		<div class="o_edubase_pv_fig">
 			<figure>
-				<img src="$!{bookSection.getCoverUrl()}" onerror="if (this.src != '$r.staticLink('images/edubase/empty_cover.png')') this.src = '$r.staticLink('images/edubase/empty_cover.png')';" />
+				<img src="$!{bookSection.getCoverUrl()}" onerror="if (this.src != '$r.staticLink('images/edubase/empty_cover.png')') this.src = '$r.staticLink('images/edubase/empty_cover.png')';" alt="" />
 				<figcaption>$r.escapeHtml($bookSection.getTitle())</figcaption>
 			</figure>
 		</div>

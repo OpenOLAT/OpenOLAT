@@ -53,10 +53,12 @@ public abstract class IconedTypeCellRenderer implements CustomCellRenderer {
 				sb.append("<img border=\"0\" src=\"");
 				Renderer.renderStaticURI(sb, iconPath);
 				sb.append(DOUBLE_QUOTES);
+				sb.append(" alt=\"");
 				if (altText != null) {
-					sb.append(" alt=\"").appendHtmlEscaped(altText).append(DOUBLE_QUOTES);
-					sb.append(" title= \"").appendHtmlEscaped(altText).append(DOUBLE_QUOTES);
+					sb.appendHtmlEscaped(altText);
 				}
+				// else: accessibility best practice: empty alt text when no alternative text available
+				sb.append(DOUBLE_QUOTES);
 			}
 			sb.append(" />");			
 		}

@@ -2,7 +2,7 @@
 #foreach($member in $members)
 	<div class="o_cmember $typecss o_print_break_avoid col-xs-3 col-sm-3 col-md-3">
 		<div class="clearfix">
-			<div class="o_portrait">
+			<div class="o_portrait" aria-hidden="true">
 				#if(${member.isPortraitAvailable()})
 					<img src="$avatarBaseURL/${member.getKey()}/portrait_hq_${member.getKey()}.jpg">
 				#elseif(${member.getGender().equals("female")})

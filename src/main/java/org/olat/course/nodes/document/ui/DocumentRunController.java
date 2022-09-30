@@ -25,6 +25,7 @@ import org.olat.core.commons.services.doceditor.DocEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -43,6 +44,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.DocumentCourseNode;
@@ -96,6 +98,13 @@ public class DocumentRunController extends BasicController {
 			String lowerFilename = filename.toLowerCase();
 			String cssClass = CSSHelper.createFiletypeIconCssClassFor(lowerFilename);
 			mainVC.contextPut("cssClass", cssClass);
+			
+			VFSMetadata metaInfo = vfsLeaf.getMetaInfo();
+			if (metaInfo != null) {
+				String title = metaInfo.getTitle();
+				mainVC.contextPut("title", title);
+				
+			}
 			
 			String height = courseNode.getModuleConfiguration().getStringValue(DocumentCourseNode.CONFIG_KEY_HEIGHT, DocumentCourseNode.CONFIG_HEIGHT_AUTO);
 			if (!DocumentCourseNode.CONFIG_HEIGHT_AUTO.equals(height)) {

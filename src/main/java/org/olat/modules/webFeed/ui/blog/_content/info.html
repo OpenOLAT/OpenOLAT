@@ -4,7 +4,7 @@
 	#end		
 	<h2><i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"> </i> $r.escapeHtml($!feed.getTitle())</h2>
 	#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "")
-		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" alt="Blog Image" />
+		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" aria-hidden="true" />
 	#end
 	<div class="o_block ">
 		#if ($!feed.getAuthor())

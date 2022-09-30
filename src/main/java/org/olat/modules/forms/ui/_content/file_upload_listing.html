@@ -13,7 +13,7 @@
 		<h6>$r.escapeHtml($wrapper.evaluator)</h6>
 	</div>
 	#if($r.isNotNull($wrapper.thumbUri))
-		<div class="o_evaluation_thumb">
+		<div class="o_evaluation_thumb" aria-hidden="true">
 			<img src="$wrapper.thumbUri/$wrapper.filename"/>
 		</div>
 	#end

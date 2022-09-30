@@ -30,7 +30,7 @@
 			</div>
 		</div>
 		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
-			<div class="o_image"><img #if($teaserImageBgCss) class="$teaserImageBgCss" #end src="$teaserImageUrl"></div>
+			<div class="o_image" aria-hidden="true"><img #if($teaserImageBgCss) class="$teaserImageBgCss" #end src="$teaserImageUrl"></div>
 		#end
 	</div>
 	#if($r.isNotEmpty($item.description))

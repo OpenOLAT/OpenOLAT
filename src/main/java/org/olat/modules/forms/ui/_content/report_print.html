@@ -36,7 +36,7 @@
 		if(!(typeof imgUrl === "undefined") && !(imgUrl == "none")) {
 			imgUrl = imgUrl.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
 			if(imgUrl.length > 12) {
-				jQuery("#o_print_brand").empty().append(jQuery('<img src="' + imgUrl + '" />'));
+				jQuery("#o_print_brand").empty().append(jQuery('<img src="' + imgUrl + '" alt=""/>'));
 			} else {
 				jQuery("#o_print_brand").remove();
 			}

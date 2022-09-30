@@ -6,7 +6,7 @@
 		
 		#if (!$isOrdering)
 		<div class="o_level o_level_${catalogLevel} row">
-			<div class="o_visual">
+			<div class="o_visual" aria-hidden="true">
 				#if($catThumbnail)
 					<img src="$mapperThumbnailUrl/${catThumbnail}" alt="$r.escapeHtml($catalogEntryTitle)"/>
 				#else

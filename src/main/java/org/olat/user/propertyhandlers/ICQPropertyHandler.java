@@ -60,7 +60,7 @@ public class ICQPropertyHandler extends Generic127CharTextPropertyHandler {
 			sb.append("<a href=\"").append(ICQ_NAME_VALIDATION_URL).append(icqname).append("\" target=\"_blank\">")
 			  .append(icqname).append("</a>")
 			  .append("<img src=\"").append(ICQ_INDICATOR_URL).append("?icq=").append(icqname)
-			  .append("&img=5\" style=\"width:10px; height:10px; margin-left:2px;\">");
+			  .append("&img=5\" style=\"width:10px; height:10px; margin-left:2px;\" alt=\"\">");
 			return sb.toString();
 		} else {
 			return null;
