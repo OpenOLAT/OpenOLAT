@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -67,6 +68,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 	private static final String[] onValues = new String[] { "" };
 	
 	private FormLink addEducationalTypeLink;
+	private FormLayoutContainer dummyCont;
 	private FlexiTableElement tableEl;
 	private EducationalTypeDataModel dataModel;
 	
@@ -75,7 +77,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 	private DialogBoxController deleteDialogCtrl;
 
 	public EducationalTypeAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "educational_types");
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		initForm(ureq);
 		loadModel();
@@ -86,7 +88,17 @@ public class EducationalTypeAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addEducationalTypeLink = uifactory.addFormLink("educational.type.add", formLayout, Link.BUTTON);
+		setFormTitle("educational.types");
+		setFormContextHelp("manual_user/authoring/Set_up_info_page/#metadata");
+		
+		dummyCont = FormLayoutContainer.createBareBoneFormLayout("dummy", getTranslator());
+		dummyCont.setRootForm(mainForm);
+		
+		FormLayoutContainer topButtonCont = FormLayoutContainer.createButtonLayout("buttons.top", getTranslator());
+		topButtonCont.setElementCssClass("o_button_group o_button_group_right o_button_group_top");
+		formLayout.add(topButtonCont);
+		
+		addEducationalTypeLink = uifactory.addFormLink("educational.type.add", topButtonCont, Link.BUTTON);
 		addEducationalTypeLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -122,7 +134,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 			Long numberOfCourse = typeKeyToNumberOfEntries.get(type.getKey());
 			row.setNumberOfCourse(numberOfCourse);
 			
-			MultipleSelectionElement presetEl = uifactory.addCheckboxesHorizontal("preset_" + type.getKey(), null, flc, onKeys, onValues);
+			MultipleSelectionElement presetEl = uifactory.addCheckboxesHorizontal("preset_" + type.getKey(), null, dummyCont, onKeys, onValues);
 			presetEl.setAjaxOnly(true);
 			presetEl.setDomReplacementWrapperRequired(false);
 			presetEl.setUserObject(row);

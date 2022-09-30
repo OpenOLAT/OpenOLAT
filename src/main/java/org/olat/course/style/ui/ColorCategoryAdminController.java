@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
+import org.olat.course.CourseModule;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategorySearchParams;
 import org.olat.course.style.CourseStyleService;
@@ -82,7 +83,8 @@ public class ColorCategoryAdminController extends FormBasicController {
 	private CourseStyleService courseStyleService;
 
 	public ColorCategoryAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(CourseModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
@@ -91,8 +93,10 @@ public class ColorCategoryAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer topCont = FormLayoutContainer.createVerticalFormLayout("top", getTranslator());
-		topCont.setElementCssClass("o_button_group_right");
+		setFormTitle("color.categories");
+		
+		FormLayoutContainer topCont = FormLayoutContainer.createButtonLayout("top", getTranslator());
+		topCont.setElementCssClass("o_button_group o_button_group_right o_button_group_top");
 		topCont.setRootForm(mainForm);
 		formLayout.add(topCont);
 		
