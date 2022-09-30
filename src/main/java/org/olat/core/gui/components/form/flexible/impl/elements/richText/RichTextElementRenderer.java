@@ -285,6 +285,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		if(config.isSendOnBlur()) {
 			sb.append("      ed.on('blur', function(e) {\n")
 			  .append("        if(jQuery('#mathlive').length == 0) {")// MathLive plug-in takes the focus and blur Tiny
+			  .append("          o_afterserver();\n")// The XHR event is blocked on mobile device by the busy flag
 			  .append("          o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false, false, 'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
 	          .append("        }\n")
 			  .append("      });\n");
