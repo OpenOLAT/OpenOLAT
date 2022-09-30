@@ -439,6 +439,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		// Don't use submit button, form should not be marked as dirty since this is
 		// not a configuration form but only a search form (OLAT-5626)
 		searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON);
+		searchButton.setElementCssClass("o_sel_user_search_button");
 		searchButton.addActionListener(FormEvent.ONCLICK);
 		
 	}

@@ -64,6 +64,7 @@ public class UserAdminPage {
 		By createBy = By.cssSelector(".o_tree li.o_sel_useradmin_search>div>span.o_tree_link>a");
 		OOGraphene.waitElement(createBy, browser);
 		browser.findElement(createBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
 		return assertOnSearchUser();
 	}
 	
@@ -232,8 +233,11 @@ public class UserAdminPage {
 		OOGraphene.waitElement(usernameBy, browser);
 		browser.findElement(usernameBy).sendKeys(username);
 		
-		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
-		OOGraphene.click(searchBy, browser);
+		By searchBlockBy = By.xpath("//fieldset[contains(@class,'o_sel_user_search_form')]//div[contains(@class,'form-group')][div/p/a]");
+		OOGraphene.scrollTo(searchBlockBy, browser);
+		
+		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default.o_sel_user_search_button");
+		browser.findElement(searchBy).click();
 		OOGraphene.waitElement(By.cssSelector(".o_sel_user_search_table"), browser);
 		return this;
 	}
