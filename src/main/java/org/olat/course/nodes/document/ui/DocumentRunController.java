@@ -44,7 +44,6 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.DocumentCourseNode;
