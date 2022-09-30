@@ -27,6 +27,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -35,6 +36,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
@@ -181,6 +183,37 @@ public class PFManagerTest extends OlatTestCase {
 			VFSContainer returnboxContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
 			Assert.assertTrue("textfile3".equals(returnboxContainer.getItems().get(0).getName())); 
 		}
+	}
+
+	@Test
+	public void isValidModuleConfigSyncModuleConfigWithVFSContainer() {
+		// prepare
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-19");
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		List<String> folders = new ArrayList<>();
+		String config = "drop.box/SubBoxD1,drop.box/SubBoxD1/ ,.return.box/SubBoxR1,/return.box/SubBoxR1/SubBoxR11,return.box/SubBoxR1/SubBoxR11/SubBoxR111,return.box/SubBoxR2";
+		ienv.setIdentity(initialAuthor);
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.getModuleConfiguration().setStringValue(PFCourseNode.CONFIG_KEY_TEMPLATE, config);
+
+		Object moduleConfiguration = pfNode.getModuleConfiguration().get(PFCourseNode.CONFIG_KEY_TEMPLATE);
+
+		if (!moduleConfiguration.toString().equals("")) {
+			folders = new ArrayList<>(Arrays.asList(moduleConfiguration.toString().split(",")));
+		}
+
+		// false, because config contains illegal starting chars like . or /
+		Assert.assertFalse(folders.stream().noneMatch(f -> f.startsWith(".") || f.startsWith("/")));
+		folders.removeIf(f -> f.startsWith(".") || f.startsWith("/"));
+		// true, because config was sanitized, paths were removed it they contained starting . or /
+		Assert.assertTrue(folders.stream().noneMatch(f -> (f.startsWith(".") || f.startsWith("/"))));
+
+		// false, because config contains fileNames which are invalid
+		Assert.assertFalse(folders.stream().anyMatch(f -> (f.startsWith(".") || f.startsWith("/")) && FileUtils.validateFilename(f.replaceAll(".+?/", ""))));
+
+		folders.removeIf(f -> !FileUtils.validateFilename(f.replaceAll(".+?/", "")));
+		// true, because config was sanitized, foldernames with invalid Filenames were removed
+		Assert.assertTrue(folders.stream().anyMatch(f -> (!f.startsWith(".") || !f.startsWith("/")) && FileUtils.validateFilename(f.replaceAll(".+?/", ""))));
 	}
 	
 	@Test  

@@ -28,11 +28,13 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -62,6 +65,7 @@ import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
@@ -484,7 +488,9 @@ public class PFManager {
 		if (pfNode.hasCoachBoxConfigured()){
 			namedCourseFolder.addItem(returnContainer);
 		}
-		
+
+		// Generate folders from template
+        syncModuleConfigWithVFSContainer(pfNode, namedCourseFolder);
 
 		if (readOnly) {
 			dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, null));
@@ -518,6 +524,43 @@ public class PFManager {
 		}
 		
 		return folderRunContainer;
+	}
+
+	private void syncModuleConfigWithVFSContainer(PFCourseNode pfNode, VirtualContainer namedCourseFolder) {
+    	List<String> folders;
+    	ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
+
+    	if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
+    		folders = new ArrayList<>(Arrays.asList(moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().split(",")));
+			// sanitize
+			folders.removeIf(f -> f.startsWith("/"));
+			folders.removeIf(f -> !FileUtils.validateFilename(f.replaceAll(".+?/", "")));
+			Collections.sort(folders);
+
+			for(String folder : folders){
+				List<String> path = new ArrayList<>(Arrays.asList(folder.split("/")));
+
+				if (path.get(0).equals(PFCourseNode.FOLDER_DROP_BOX) && namedCourseFolder.getItems().stream().anyMatch(b -> b.getMetaInfo().getFilename().equals(FILENAME_DROPBOX))) {
+					folder = folder.replace(PFCourseNode.FOLDER_DROP_BOX + "/", "");
+					VFSManager.resolveOrCreateContainerFromPath(
+							(VFSContainer) Objects.requireNonNull(namedCourseFolder
+									.getItems()
+									.stream()
+									.filter(b -> b.getMetaInfo().getFilename().equals(FILENAME_DROPBOX))
+									.findFirst()
+									.orElse(null), "DropBox does not exist."), folder);
+				} else if (path.get(0).equals(PFCourseNode.FOLDER_RETURN_BOX) && namedCourseFolder.getItems().stream().anyMatch(b -> b.getMetaInfo().getFilename().equals(FILENAME_RETURNBOX))) {
+					folder = folder.replace(PFCourseNode.FOLDER_RETURN_BOX + "/", "");
+					VFSManager.resolveOrCreateContainerFromPath(
+							(VFSContainer) Objects.requireNonNull(namedCourseFolder
+									.getItems()
+									.stream()
+									.filter(b -> b.getMetaInfo().getFilename().equals(FILENAME_RETURNBOX))
+									.findFirst()
+									.orElse(null), "ReturnBox does not exist."), folder);
+				}
+			}
+    	}
 	}
 	
 	public List<DropBoxRow> getParticipants(ParticipantSearchParams params, PFCourseNode pfNode,

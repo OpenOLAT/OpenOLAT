@@ -83,6 +83,9 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_TIMEFRAME = "timeframe";
 	public static final String CONFIG_KEY_DATESTART = "datestart";
 	public static final String CONFIG_KEY_DATEEND = "dateend";
+	public static final String CONFIG_KEY_TEMPLATE = "template";
+	public static final String FOLDER_RETURN_BOX = "return.box";
+	public static final String FOLDER_DROP_BOX = "drop.box";
 
 	public static final long serialVersionUID = 1L;
 

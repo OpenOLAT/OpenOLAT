@@ -37,10 +37,12 @@ import org.olat.course.nodes.PFCourseNode;
 public class PFEditController extends ActivateableTabbableDefaultController {
 	
 	private static final String PANE_TAB_CONFIGURATION = "pane.tab.configuration";
+	private static final String PANE_TAB_TEMPLATE = "pane.tab.templateFolder";
 	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION };
 
 	private VelocityContainer configVC;
 	private PFEditFormController modConfigCtr;
+	private PFFolderTemplateController templateCtrl;
 	private TabbedPane myTabbedPane;
 	
 	public PFEditController(UserRequest ureq, WindowControl wControl, 
@@ -50,14 +52,18 @@ public class PFEditController extends ActivateableTabbableDefaultController {
 		configVC = createVelocityContainer("edit");
 		
 		modConfigCtr = new PFEditFormController(ureq, wControl, pfNode);
+		templateCtrl = new PFFolderTemplateController(ureq, wControl, pfNode);
 		listenTo(modConfigCtr);
-		configVC.put("sfeditform", modConfigCtr.getInitialComponent());		
+		listenTo(templateCtrl);
+
+		configVC.put("sfeditform", modConfigCtr.getInitialComponent());
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_CONFIGURATION), configVC);
+		tabbedPane.addTab(translate(PANE_TAB_TEMPLATE), templateCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -77,10 +83,10 @@ public class PFEditController extends ActivateableTabbableDefaultController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == modConfigCtr) {
-			if (Event.DONE_EVENT.equals(event)) {
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);	
-			}
+		if (source == modConfigCtr && Event.DONE_EVENT.equals(event)) {
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		} else if (source == templateCtrl && Event.CHANGED_EVENT.equals(event)) {
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 		super.event(ureq, source, event);
 	}
