@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
@@ -170,10 +169,7 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(PracticeCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			controller = new PracticeRunController(ureq, wControl, this, userCourseEnv);
 		}

@@ -170,10 +170,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		Controller runCtrl;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(FormCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			runCtrl = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else if (userCourseEnv.isParticipant()) {
 			runCtrl = new FormRunController(ureq, wControl, this, userCourseEnv);
 		} else {

@@ -131,8 +131,6 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 
 	// NLS support:
 
-	private static final transient String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
-	private static final transient String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
 	private static final transient String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
 	private static final transient String NLS_WARN_NODEDELETE = "warn.nodedelete";
 
@@ -200,10 +198,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		// Do not allow guests to access tasks
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
-			String title = trans.translate(NLS_GUESTNOACCESS_TITLE);
-			String message = trans.translate(NLS_GUESTNOACCESS_MESSAGE);
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			// Add message id to business path if nodemcd is available
 			if (nodecmd != null) {

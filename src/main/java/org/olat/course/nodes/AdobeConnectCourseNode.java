@@ -139,10 +139,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("wimba.not.supported.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else if(roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(AdobeConnectCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			// check if user is moderator of the virtual classroom
 			boolean admin = userCourseEnv.isAdmin();

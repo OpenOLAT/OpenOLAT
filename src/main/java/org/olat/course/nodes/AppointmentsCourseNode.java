@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -121,10 +120,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(AppointmentsCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			OrganizerCandidateSupplier organizerCandidateSupplier = new CourseNodeOrganizerCandidateSupplier(entry, this);

@@ -100,10 +100,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         // Do not allow guests to send anonymous emails
         Roles roles = ureq.getUserSession().getRoles();
         if (roles.isGuestOnly()) {
-            Translator trans = Util.createPackageTranslator(COCourseNode.class, ureq.getLocale());
-            String title = trans.translate("guestnoaccess.title");
-            String message = trans.translate("guestnoaccess.message");
-            controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+            controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
         } else if(userCourseEnv.isCourseReadOnly()) {
             Translator trans = Util.createPackageTranslator(COCourseNode.class, ureq.getLocale());
             String title = trans.translate("freezenoaccess.title");

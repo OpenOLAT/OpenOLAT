@@ -66,5 +66,16 @@ public class MessageUIFactory {
 	public static SimpleMessageController createFormattedMessage(UserRequest ureq, WindowControl wControl, String text, String cssName) {
 		return new SimpleMessageController(ureq, wControl, text, cssName);
 	}
+	
+	/**
+	 * Create a message to be shown for guest users when the requested feature is not allowed for guest users
+	 * @param ureq
+	 * @param wControl
+	 * @param reason null or a reason that describes why the feature is not ok for guests.
+	 * @return
+	 */
+	public static GuestNoAccessMessageController createGuestNoAccessMessage(UserRequest ureq, WindowControl wControl, String reason) {
+		return new GuestNoAccessMessageController(ureq, wControl, reason);
+	}
 
 }

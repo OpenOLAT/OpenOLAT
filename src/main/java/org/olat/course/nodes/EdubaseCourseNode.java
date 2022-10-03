@@ -90,10 +90,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 		    String message = trans.translate("freezenoaccess.message");
 		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else if (userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(EdubaseCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		    runCtrl = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			runCtrl = new EdubaseRunController(ureq, wControl, this.getModuleConfiguration());
 		}

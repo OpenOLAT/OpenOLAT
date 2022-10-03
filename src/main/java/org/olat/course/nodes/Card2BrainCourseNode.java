@@ -90,10 +90,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 		    String message = trans.translate("freezenoaccess.message");
 		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else if (userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		    runCtrl = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			runCtrl = new Card2BrainRunController(ureq, wControl, this.getModuleConfiguration());
 		}

@@ -263,10 +263,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		Controller runCtrl;
 		if (ureq.getUserSession().getRoles().isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(PFCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			runCtrl = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			runCtrl = new PFCoachController(ureq, wControl, this, userCourseEnv);
 		} else if (userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseParticipant(ureq.getIdentity())) {

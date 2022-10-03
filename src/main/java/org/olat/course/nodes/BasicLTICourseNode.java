@@ -138,10 +138,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 			Roles roles = ureq.getUserSession().getRoles();
 			if (roles.isGuestOnly()) {
 				if(isGuestAllowed()) {
-					Translator trans = Util.createPackageTranslator(BasicLTICourseNode.class, ureq.getLocale());
-					String title = trans.translate("guestnoaccess.title");
-					String message = trans.translate("guestnoaccess.message");
-					runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					runCtrl = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 				} else {
 					runCtrl = new LTIRunSegmentController(ureq, wControl, userCourseEnv, this);
 				}

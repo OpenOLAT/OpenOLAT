@@ -227,10 +227,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		// Do not allow guests to have manual scoring
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(MSCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else if (userCourseEnv.isParticipant()) {
 			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, true, true);
 		} else if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {

@@ -189,9 +189,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			if(isGuestAllowedForQTI21(getReferencedRepositoryEntry())) {
 				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
 			} else {
-				String title = trans.translate("guestnoaccess.title");
-				String message = trans.translate("guestnoaccess.message");
-				controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 			}
 		} else {
 			RepositoryEntry testEntry = getReferencedRepositoryEntry();

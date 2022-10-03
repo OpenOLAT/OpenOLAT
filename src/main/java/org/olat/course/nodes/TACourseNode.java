@@ -119,8 +119,6 @@ public class TACourseNode extends GenericCourseNode {
 	public static final String TYPE = "ta";
 	
 	// NLS support:
-	private static final String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
-	private static final String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
 	private static final String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
 	private static final String NLS_WARN_NODEDELETE = "warn.nodedelete";
 	
@@ -200,10 +198,7 @@ public class TACourseNode extends GenericCourseNode {
 		// Do not allow guests to access tasks
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
-			String title = trans.translate(NLS_GUESTNOACCESS_TITLE);
-			String message = trans.translate(NLS_GUESTNOACCESS_MESSAGE);
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			controller = new TACourseNodeRunController(ureq, wControl, userCourseEnv, this, nodeSecCallback.getNodeEvaluation(), false);
 		}
