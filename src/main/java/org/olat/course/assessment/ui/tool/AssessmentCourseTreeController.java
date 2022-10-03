@@ -254,7 +254,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					if (clickedLink == courseNodeOverviewLink) {
 						doOpenCourseNodeOverview(ureq, selectedTreeNode, (CourseNode)uo);
 					} else if (clickedLink == participantsLink) {
-						processSelectCourseNodeWithMemory(ureq, selectedTreeNode, (CourseNode)uo);
+						doOpenParticipants(ureq, selectedTreeNode, (CourseNode)uo).activate(ureq, null, syncParticipantTypes(null));
 					}
 				}
 			}
