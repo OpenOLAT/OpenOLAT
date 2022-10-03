@@ -327,7 +327,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_QTITESTRESULTS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, true, new IQTESTCourseNode(), new IQSELFCourseNode());
-		        assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "iqtest.assistance.title");
+		        assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "assistance");
 		        assistanceCtrl.addQuestionAnswer("iqtest.assistance.item1.title", "iqtest.assistance.item1.details", new Component[0]);
 		        assistanceCtrl.addQuestionAnswer("iqtest.assistance.item2.title", "iqtest.assistance.item2.details", new Component[0]);
 				setContent(contentCtr, assistanceCtrl);

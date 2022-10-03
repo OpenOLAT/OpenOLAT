@@ -14,7 +14,7 @@
                 <div class="o_text_block">
                     $r.render($helpItem.getTitleLink())
                 </div>
-                #if($helpItem.isExpanded())
+                #if($helpItem.isExpanded() && $helpItem.getDetailsText())
                 <div class="o_text_block">
                     $helpItem.getDetailsText()
                 </div>

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.zoom.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -42,8 +44,6 @@ import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 /**
  *
@@ -111,7 +111,7 @@ public class ZoomRunController extends BasicController implements Activateable2 
         openZoomButton = LinkFactory.createButton("zoom.run.assistance.openZoomButton", vc, this);
         openZoomButton.setCustomEnabledLinkCSS("btn btn-primary");
         AssistanceAccordionController assistanceAccordionCtrl =
-                new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "zoom.run.assistance");
+                new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "assistance");
         assistanceAccordionCtrl.setHelpLink("zoom.run.assistance.helpLinkText",
                 "manual_user/course_elements/Frequentyl_asked_questions_Zoom/");
         assistanceAccordionCtrl.addQuestionAnswer("zoom.run.assistance.item1.title",

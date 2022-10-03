@@ -208,7 +208,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		}
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
-			displaynameEl.setErrorKey("cif.error.displayname.empty", new String[] {});
+			displaynameEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		} else if (displaynameEl.hasError()) {
 			allOk = false;

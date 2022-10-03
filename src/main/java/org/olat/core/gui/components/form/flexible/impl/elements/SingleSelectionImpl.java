@@ -371,6 +371,12 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		super.setVisible(isVisible);
 		component.setVisible(isVisible);
 	}
+	
+	@Override
+	public void setElementCssClass(String cssClass) {
+		super.setElementCssClass(cssClass);
+		component.setElementCssClass(cssClass);
+	}
 
 	@Override
 	public String getFormDispatchId() {

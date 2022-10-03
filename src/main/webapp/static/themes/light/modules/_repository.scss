@@ -470,4 +470,39 @@ a.o_repo_tools_status {
 	}
 }
 
-
+.o_course_design.o_radio_cards {
+	label {
+		flex-basis: 279px;
+		.o_radio_icon {
+			height: 130px;
+		}
+	}
+	.o_course_design_desc {
+		ul {
+			 padding-left: 1em;
+		}
+	}
+}
+.o_course_design_assistance {
+	tr {
+		th:not(:last-child), td:not(:last-child) {
+			border-right: 1px solid $table-border-color;
+		}
+		ul {
+			 padding-left: 1em;
+		}
+	}
+	.o_course_design_icon {
+		width: 86px;
+		height: 130px;
+	}
+}
+.o_course_design_path_icon {
+	background-image:url('#{$o-images-path}course/course-design-path.png')
+}
+.o_course_design_progress_icon {
+	background-image:url('#{$o-images-path}course/course-design-progress.png')
+}
+.o_course_design_classic_icon {
+	background-image:url('#{$o-images-path}course/course-design-classic.png')
+}

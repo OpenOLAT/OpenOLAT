@@ -180,7 +180,7 @@ public class RepositoyUIFactory {
 			if(el.isVisible() && el.isEnabled()) {
 				String val = el.getValue();
 				if (mandatory && !StringHelper.containsNonWhitespace(val)) {
-					el.setErrorKey("cif.error.displayname.empty", new String[] {});
+					el.setErrorKey("form.legende.mandatory", null);
 					return false;
 				} else if (StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
 					el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });

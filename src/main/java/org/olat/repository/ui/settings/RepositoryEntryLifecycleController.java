@@ -159,6 +159,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 				translate("cif.dates.public")	
 		};
 		dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKeys, dateValues);
+		dateTypesEl.setHelpText(translate("cif.dates.help"));
 		dateTypesEl.setElementCssClass("o_sel_repo_lifecycle_type");
 		if(repositoryEntry.getLifecycle() == null) {
 			dateTypesEl.select("none", true);

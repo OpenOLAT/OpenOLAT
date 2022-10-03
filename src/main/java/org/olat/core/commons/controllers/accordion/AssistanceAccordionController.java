@@ -19,6 +19,9 @@
  */
 package org.olat.core.commons.controllers.accordion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -28,9 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.olat.core.util.StringHelper;
 
 /**
  *
@@ -100,7 +101,7 @@ public class AssistanceAccordionController extends BasicController {
         private final Component[] components;
 
         public HelpItem(int index, String titleKey, String detailsKey, Component[] components) {
-            this.detailsText = translator.translate(detailsKey);
+            this.detailsText = StringHelper.containsNonWhitespace(detailsKey)? translator.translate(detailsKey): null;
 
             String expandButtonName = "expandButton_" + index;
             expandButton = LinkFactory.createCustomLink(expandButtonName, expandButtonName, null,
