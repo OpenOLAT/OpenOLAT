@@ -648,6 +648,7 @@
 	text-align: left;
 	display: flex;
 	&>span {
+		@extend %o_nowrap;
 		width: 100%;
 	}
 	.o_icon {
