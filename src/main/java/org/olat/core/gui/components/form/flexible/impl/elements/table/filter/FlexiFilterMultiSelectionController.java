@@ -50,7 +50,7 @@ public class FlexiFilterMultiSelectionController extends AbstractMultiSelectionC
 	
 	@Override
 	protected Event createChangedEvent(Set<String> selectedKeys) {
-		return new ChangeValueEvent(filter, new ArrayList<>(selectedKeys));
+		return new ChangeValueEvent(filter, selectedKeys != null? new ArrayList<>(selectedKeys): null);
 	}
 
 }

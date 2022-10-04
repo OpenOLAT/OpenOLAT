@@ -160,6 +160,9 @@ public class MultiSelectionFilterElementImpl  extends FormItemImpl implements Mu
 			if (event instanceof KeysSelectedEvent) {
 				KeysSelectedEvent se = (KeysSelectedEvent)event;
 				selectedKeys = se.getSelectedKeys();
+				if (selectedKeys == null) {
+					selectedKeys = new HashSet<>(3);
+				}
 				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI();
