@@ -185,7 +185,9 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		
 		List<TaxonomyLevel> taxonomyLevels = getChildren(config);
 		catalogService.excludeLevelsWithoutOffers(taxonomyLevels, defaultSearchParams);
-		if (taxonomyLevels == null) return null;
+		if (taxonomyLevels == null || taxonomyLevels.isEmpty()) {
+			return null;
+		}
 		
 		taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(translator));
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
