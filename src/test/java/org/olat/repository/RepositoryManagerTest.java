@@ -582,19 +582,12 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Organisation organisation = organisationService.getOrganisation(offerOrganisationRefs.get(0));
 		acService.updateOfferOrganisations(offer, List.of(organisation));
 		dbInstance.commitAndCloseSession();
-
+		
+		// Since this query is only used in the portal, the participant should not get
+		// repository entries with open access.
 		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
-		Assert.assertTrue(entries.contains(re));
-		log.info("Num. of entries: {}", entries.size());
-		
-		// check access
-		for(RepositoryEntry entry:entries) {
-			Assert.assertTrue(entry.isPublicVisible() || repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
-			if (!entry.isPublicVisible()) {
-				Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
-			}
-		}
+		Assert.assertTrue(entries.isEmpty());
 	}
 	
 	@Test
