@@ -466,7 +466,20 @@ public class VFSMetadataDAO {
 				.setMaxResults(maxResult)		
 				.getResultList();
 	}
-	
 
+	public void setTranscodingStatus(Long vfsMetadataKey, int transcodingStatus) {
+		String updateQuery = "update filemetadata set transcodingStatus=:transcodingStatus where key=:key";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(updateQuery)
+				.setParameter("transcodingStatus", transcodingStatus)
+				.setParameter("key", vfsMetadataKey)
+				.executeUpdate();
+	}
 
+	public List<VFSMetadata> getMetadatasInNeedForTranscoding() {
+		String query = "select meta from filemetadata as meta where transcodingStatus = " +
+				VFSMetadata.TRANSCODING_STATUS_WAITING +
+				" order by meta.creationDate asc, meta.id asc";
+		return dbInstance.getCurrentEntityManager().createQuery(query, VFSMetadata.class).getResultList();
+	}
 }

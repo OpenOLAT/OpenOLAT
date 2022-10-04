@@ -33,7 +33,14 @@ import org.olat.core.id.ModifiedInfo;
  *
  */
 public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
-	
+
+	int TRANSCODING_STATUS_WAITING = -1;
+	int TRANSCODING_STATUS_STARTED = 0;
+	int TRANSCODING_STATUS_DONE = 100;
+	int TRANSCODING_STATUS_INEFFICIENT = -2;
+	int TRANSCODING_STATUS_ERROR = -3;
+	int TRANSCODING_STATUS_TIMEOUT = -4;
+
 	public boolean isDeleted();
 	
 	public String getUuid();

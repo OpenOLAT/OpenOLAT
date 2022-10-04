@@ -88,6 +88,8 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	private Identity fileInitializedBy;
 	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
 	private long fileSize;
+	@Column(name="f_transcoding_status", nullable=true, insertable=true, updatable=true)
+	private Integer transcodingStatus;
 	@Column(name="f_uri", nullable=false, insertable=true, updatable=true)
 	private String uri;
 	@Column(name="f_uri_protocol", nullable=false, insertable=true, updatable=true)
@@ -241,6 +243,14 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
+	}
+
+	public Integer getTranscodingStatus() {
+		return transcodingStatus;
+	}
+
+	public void setTranscodingStatus(Integer transcodingStatus) {
+		this.transcodingStatus = transcodingStatus;
 	}
 
 	@Override

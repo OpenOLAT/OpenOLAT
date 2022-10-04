@@ -2029,6 +2029,7 @@ create table o_vfs_metadata (
    f_directory bool default false,
    f_lastmodified timestamp not null,
    f_size bigint default 0,
+   f_transcoding_status int8,
    f_uri varchar(2000) not null,
    f_uri_protocol varchar(16) not null,
    f_cannot_thumbnails bool default false,
@@ -4623,6 +4624,8 @@ alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_meta
 create index idx_fvers_to_meta_idx on o_vfs_revision (fk_metadata);
 alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 create index idx_fvers_to_lic_type_idx on o_vfs_revision (fk_license_type);
+
+create index idx_vfs_meta_transstat_idx on o_vfs_metadata(f_transcoding_status);
 
 -- Document editor
 create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);

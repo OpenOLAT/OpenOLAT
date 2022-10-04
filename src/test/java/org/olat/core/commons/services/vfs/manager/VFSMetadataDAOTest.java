@@ -20,10 +20,7 @@
 package org.olat.core.commons.services.vfs.manager;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -220,5 +217,53 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 			Assert.assertNotNull(vfsMetadata.getExpirationDate());
 			Assert.assertTrue(vfsMetadata.getExpirationDate().compareTo(now) <= 0);
 		}
+	}
+
+	@Test
+	public void setTranscodingStatus() {
+		String uuid1 = UUID.randomUUID().toString();
+		String uuid2 = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/course/test/";
+		String fileName1 = uuid1 + ".mp4";
+		String fileName2 = uuid2 + ".mp3";
+		String uri1 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName1;
+		String uri2 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName2;
+
+		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 100L, false, uri1, "file", null);
+		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(uuid1, relativePath, fileName2, new Date(), 100L, false, uri2, "file", null);
+
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(metadata1);
+		Assert.assertNotNull(metadata2);
+
+		vfsMetadataDao.setTranscodingStatus(metadata1.getKey(), VFSMetadata.TRANSCODING_STATUS_WAITING);
+
+		dbInstance.commitAndCloseSession();
+
+		List<VFSMetadata> inNeedForTranscoding = vfsMetadataDao.getMetadatasInNeedForTranscoding();
+		Assert.assertEquals(1, inNeedForTranscoding.size());
+		Assert.assertEquals(metadata1, inNeedForTranscoding.get(0));
+
+		List<VFSMetadata> allItems = vfsMetadataDao.getMetadatas(relativePath);
+		Assert.assertEquals(2, allItems.size());
+		Assert.assertEquals(Set.of(metadata1, metadata2), Set.of(allItems.toArray()));
+
+		vfsMetadataDao.setTranscodingStatus(metadata1.getKey(), VFSMetadata.TRANSCODING_STATUS_DONE);
+		vfsMetadataDao.setTranscodingStatus(metadata2.getKey(), VFSMetadata.TRANSCODING_STATUS_WAITING);
+		dbInstance.commitAndCloseSession();
+
+		List<VFSMetadata> inNeedForTranscodingAfterUpdate = vfsMetadataDao.getMetadatasInNeedForTranscoding();
+		Assert.assertEquals(1, inNeedForTranscodingAfterUpdate.size());
+		Assert.assertEquals(metadata2, inNeedForTranscodingAfterUpdate.get(0));
+
+		List<VFSMetadata> allItemsAfterTests = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsAfterTests) {
+			vfsMetadataDao.removeMetadata(item);
+		}
+		dbInstance.commitAndCloseSession();
+
+		List<VFSMetadata> inNeedForTranscodingAfterCleanup = vfsMetadataDao.getMetadatasInNeedForTranscoding();
+		Assert.assertEquals(0, inNeedForTranscodingAfterCleanup.size());
 	}
 }

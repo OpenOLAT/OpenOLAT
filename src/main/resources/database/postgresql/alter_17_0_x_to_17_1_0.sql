@@ -28,3 +28,7 @@ alter table o_gta_task add column g_submission_drole varchar(16);
 alter table o_gta_task add column g_submission_revisions_drole varchar(16);
 alter table o_gta_task add column g_collection_revisions_date timestamp;
 alter table o_gta_task add column g_collection_revisions_ndocs int8;
+
+-- VFS metadata
+alter table o_vfs_metadata add column f_transcoding_status int8;
+create index idx_vfs_meta_transstat_idx on o_vfs_metadata(f_transcoding_status);
