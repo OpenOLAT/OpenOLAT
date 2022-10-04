@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.FlushModeType;
@@ -60,7 +59,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
@@ -1952,73 +1950,11 @@ public class RepositoryManager {
 		  .append(" )")
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 		
-		// Public access and offers
-		List<OrganisationRef> offerOrganisations = acService.getOfferOrganisations(identity);
-		Date offerValidAt = null;
-		if (!offerOrganisations.isEmpty()) {
-			sb.append(" or (");
-			sb.append(" res.key in (");
-			sb.append("   select resource.key");
-			sb.append("     from acoffer offer");
-			sb.append("     inner join offer.resource resource");
-			sb.append("     inner join repositoryentry re2");
-			sb.append("        on re2.olatResource.key = resource.key");
-			sb.append("       and re2.publicVisible = true");
-			sb.append("     inner join offertoorganisation oto");
-			sb.append("        on oto.offer.key = offer.key");
-			sb.append("    where offer.valid = true");
-			sb.append("      and offer.openAccess = true");
-			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
-			sb.append("      and oto.organisation.key in :organisationKeys");
-			sb.append(")"); // in
-			sb.append(")"); // or
-			
-			// Access methods
-			if (acModule.isEnabled()) {
-				sb.append(" or (");
-				sb.append(" res.key in (");
-				sb.append("   select resource.key");
-				sb.append("     from acofferaccess access");
-				sb.append("     inner join access.offer offer");
-				sb.append("     inner join offer.resource resource");
-				sb.append("     inner join repositoryentry re2");
-				sb.append("        on re2.olatResource.key = resource.key");
-				sb.append("       and re2.publicVisible = true");
-				sb.append("     inner join offertoorganisation oto");
-				sb.append("        on oto.offer.key = offer.key");
-				sb.append("   where offer.valid = true");
-				sb.append("     and offer.openAccess = false");
-				sb.append("     and offer.guestAccess = false");
-				sb.append("     and access.method.enabled = true");
-				sb.append("     and oto.organisation.key in :organisationKeys");
-				
-				offerValidAt = new Date();
-				sb.append(" and (");
-				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
-				sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-				sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
-				sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
-				sb.append(" or");
-				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
-				sb.append(" and offer.validFrom is null and offer.validTo is null");
-				sb.append(" )");
-				sb.append(")"); // in
-				sb.append(")"); // or
-			}
-		}
-		
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey());
-		if (!offerOrganisations.isEmpty()) {
-			query.setParameter("organisationKeys", offerOrganisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
-		}
-		if (offerValidAt != null) {
-			query.setParameter( "offerValidAt", offerValidAt);
-		}
-		
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
