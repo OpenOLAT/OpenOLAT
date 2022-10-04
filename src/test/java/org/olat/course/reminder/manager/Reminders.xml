@@ -13,7 +13,7 @@
   &lt;/rules&gt;
 &lt;/rules&gt;</configuration>
       <emailSubject>Test passed</emailSubject>
-      <emailBody>&lt;p&gt;Ch&amp;egrave;re(er) $firstname $lastname&lt;/p&gt;
+      <emailBody>&lt;p&gt;Bonjour $firstname $lastname&lt;/p&gt;
 &lt;p&gt;Vous &amp;ecirc;tes inscrit dans le cours &amp;quot;$coursename&amp;quot;. C&apos;est l&apos;occasion id&amp;eacute;al pour le voir!&lt;/p&gt;
 &lt;p&gt;$courseurl&lt;/p&gt;
 &lt;p&gt;Avec nos salutations distingu&amp;eacute;es&lt;/p&gt;</emailBody>
@@ -30,7 +30,7 @@
   &lt;/rules&gt;
 &lt;/rules&gt;</configuration>
       <emailSubject>Test</emailSubject>
-      <emailBody>&lt;p&gt;Liebe(r) $username $firstname $lastname&lt;/p&gt;&#xd;
+      <emailBody>&lt;p&gt;Guten Tag $username $firstname $lastname&lt;/p&gt;&#xd;
 &lt;p&gt;Sie haben sich in den Kurs &amp;#34;$coursename&amp;#34; eingetragen. Jetzt wäre ein guter Zeitpunkt diesen zu besuchen!&lt;/p&gt;&#xd;
 &lt;p&gt;$courseurl&lt;/p&gt;&#xd;
 &lt;p&gt;Viele Grüsse&lt;/p&gt;</emailBody>
