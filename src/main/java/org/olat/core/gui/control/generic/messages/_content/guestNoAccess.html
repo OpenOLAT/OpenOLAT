@@ -1,8 +1,24 @@
-<div class="o_empty_state">
-	<div class="o_empty_visual">
+<div class="o_empty_state" role="alert" aria-labelledby="$r.getId("_title")" aria-describedby="$r.getId("_desc")" id="$r.getCId()">
+	<div class="o_empty_visual" aria-hidden="true">
 		<i class="o_icon o_no_icon"></i>
 		<i class="o_icon o_icon_status_not_ready"> </i>
 	</div>
-	<h3 class="o_empty_msg">$r.translate("guestnoaccess.title")</h3>
-	<div class="o_empty_hint">$r.translate("guestnoaccess.message")</div>
+	<h3 class="o_empty_msg" id="$r.getId("_title")">$r.translate("guestnoaccess.title")</h3>
+	<div class="o_empty_hint" id="$r.getId("_desc")">
+		$r.translate("guestnoaccess.message")
+		#if ($reason)
+		<p class="o_empty_reason">
+			$reason
+		</p>	
+		#end
+		<p class="o_empty_instruction">
+			$r.translate("guestnoaccess.instruction")
+		</>
+	</div>
+	<div class="o_empty_action">	
+		<a class="btn btn-primary" href="$loginUrl" role="button">
+			<i class="o_icon o_icon-fw o_icon_login"></i> 
+			<span>$r.translate("guestnoaccess.login")</span>
+		</a>
+	</div>
 </div>

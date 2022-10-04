@@ -19,12 +19,14 @@
  */
 package org.olat.core.gui.control.generic.messages;
 
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.WebappHelper;
 
 /**
  * 
@@ -37,13 +39,15 @@ public class GuestNoAccessMessageController  extends BasicController {
 	public GuestNoAccessMessageController(UserRequest ureq, WindowControl wControl, String reason) {
 		super(ureq, wControl);
 		VelocityContainer guestNoAccessVC  = createVelocityContainer("guestNoAccess");
+		guestNoAccessVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		guestNoAccessVC.contextPut("reason", reason);
+		String loginUrl = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
+		guestNoAccessVC.contextPut("loginUrl",loginUrl);
 		putInitialPanel(guestNoAccessVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// nothing to catch
+		// nothing to dispatch
 	}
-
 }
