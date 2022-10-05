@@ -212,9 +212,9 @@ public class FileSystemExport implements MediaResource {
 				//checks module config and translates folder name
 				private String boxesEnabled(String relPath) {
 					if (pfNode.hasParticipantBoxConfigured() && relPath.contains(PFManager.FILENAME_DROPBOX)) {
-						return relPath.replace(PFManager.FILENAME_DROPBOX, translator.translate("drop.box"));
+						return relPath.replace(PFManager.FILENAME_DROPBOX, translator.translate(PFCourseNode.FOLDER_DROP_BOX));
 					} else if (pfNode.hasCoachBoxConfigured() && relPath.contains(PFManager.FILENAME_RETURNBOX)) {
-						return relPath.replace(PFManager.FILENAME_RETURNBOX, translator.translate("return.box"));
+						return relPath.replace(PFManager.FILENAME_RETURNBOX, translator.translate(PFCourseNode.FOLDER_RETURN_BOX));
 					} else {
 						return null;
 					}

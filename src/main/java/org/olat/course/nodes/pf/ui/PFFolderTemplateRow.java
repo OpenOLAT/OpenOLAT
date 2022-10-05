@@ -22,6 +22,7 @@ package org.olat.course.nodes.pf.ui;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.nodes.PFCourseNode;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -38,8 +39,8 @@ public class PFFolderTemplateRow implements FlexiTreeTableNode {
     public PFFolderTemplateRow(String folderName, FormLink toolsLink, FormLink createSubFolderLink, Translator translator) {
         this.folderName = folderName;
         this.createSubFolderLink = createSubFolderLink;
-        if (!folderName.equals(translator.translate("return.box"))
-                && !folderName.equals(translator.translate("drop.box"))) {
+        if (!folderName.equals(translator.translate(PFCourseNode.FOLDER_RETURN_BOX))
+                && !folderName.equals(translator.translate(PFCourseNode.FOLDER_DROP_BOX))) {
             this.toolsLink = toolsLink;
         } else {
             this.toolsLink = null;

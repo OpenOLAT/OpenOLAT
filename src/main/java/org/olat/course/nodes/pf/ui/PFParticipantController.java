@@ -95,10 +95,10 @@ public class PFParticipantController extends BasicController {
 		String path;
 		switch(pfView) {
 			case displayDrop:
-				path = translate("drop.box");
+				path = translate(PFCourseNode.FOLDER_DROP_BOX);
 				break;
 			case displayReturn:
-				path = translate("return.box");
+				path = translate(PFCourseNode.FOLDER_RETURN_BOX);
 				break;
 			default:
 				path = null;
