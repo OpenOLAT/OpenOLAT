@@ -38,6 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.nodes.PFCourseNode;
+import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.modules.ModuleConfiguration;
 
 import java.util.*;
@@ -172,16 +173,16 @@ public class PFFolderTemplateController extends FormBasicController {
         }
 
 
-        elements.add(PFCourseNode.FOLDER_RETURN_BOX);
-        elements.add(PFCourseNode.FOLDER_DROP_BOX);
+        elements.add(PFManager.FILENAME_RETURNBOX);
+        elements.add(PFManager.FILENAME_DROPBOX);
 
         for (String element : elements) {
             String normalizedElement =
                     element
                             .replaceAll(".+?/", "")
                             .replace("/", "")
-                            .replace(PFCourseNode.FOLDER_RETURN_BOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
-                            .replace(PFCourseNode.FOLDER_DROP_BOX, translate(PFCourseNode.FOLDER_DROP_BOX));
+                            .replace(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
+                            .replace(PFManager.FILENAME_DROPBOX, translate(PFCourseNode.FOLDER_DROP_BOX));
             PFFolderTemplateRow row = forgeRow(normalizedElement, element);
 
             initBoxes.add(row);

@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.PFCourseNode;
+import org.olat.course.nodes.pf.manager.PFManager;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -47,8 +48,8 @@ public class PFCreateFolderTemplateController extends FormBasicController {
         this.folderElement = folderElement;
         this.translatedFolderElement =
                 folderElement
-                        .replaceAll(PFCourseNode.FOLDER_RETURN_BOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
-                        .replaceAll(PFCourseNode.FOLDER_DROP_BOX, translate(PFCourseNode.FOLDER_DROP_BOX));
+                        .replaceAll(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
+                        .replaceAll(PFManager.FILENAME_DROPBOX, translate(PFCourseNode.FOLDER_DROP_BOX));
 
         initForm(ureq);
     }

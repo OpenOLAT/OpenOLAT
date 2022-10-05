@@ -174,7 +174,7 @@ public class PFManagerTest extends OlatTestCase {
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		
-		pfManager.uploadFileToAllReturnBoxes(portrait, "textfile3", courseEnv, pfNode, identities);
+		pfManager.uploadFileToAllReturnBoxes(portrait, "textfile3", PFManager.FILENAME_RETURNBOX, courseEnv, pfNode, identities);
 		//check
 		for (Identity identity : identities) {
 			Path relPath = Paths.get(PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(),
@@ -191,7 +191,7 @@ public class PFManagerTest extends OlatTestCase {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-19");
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		List<String> folders = new ArrayList<>();
-		String config = "drop.box/SubBoxD1,drop.box/SubBoxD1/ ,.return.box/SubBoxR1,/return.box/SubBoxR1/SubBoxR11,return.box/SubBoxR1/SubBoxR11/SubBoxR111,return.box/SubBoxR2";
+		String config = "dropbox/SubBoxD1,dropbox/SubBoxD1/ ,.returnbox/SubBoxR1,/returnbox/SubBoxR1/SubBoxR11,returnbox/SubBoxR1/SubBoxR11/SubBoxR111,returnbox/SubBoxR2";
 		ienv.setIdentity(initialAuthor);
 		PFCourseNode pfNode = new PFCourseNode();
 		pfNode.getModuleConfiguration().setStringValue(PFCourseNode.CONFIG_KEY_TEMPLATE, config);

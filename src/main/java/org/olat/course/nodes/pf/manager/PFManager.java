@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -149,6 +148,21 @@ public class PFManager {
 	}
 
 	/**
+	 * Resolve or create selected/destination folder
+	 *
+	 * @param courseEnv
+	 * @param pfNode
+	 * @param identity
+	 * @param destination
+	 * @return
+	 */
+	private VFSContainer resolveOrCreateSelectedFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity, String destination) {
+		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), destination);
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
+		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
+	}
+
+	/**
 	 * Count files recursively for each participant.
 	 *
 	 * @param vfsContainer the root folder
@@ -237,13 +251,24 @@ public class PFManager {
 	 * @param pfNode
 	 * @param identity
 	 */
-	private void uploadFileToReturnBox(File uploadFile, String fileName, CourseEnvironment courseEnv,
+	private void uploadFileToReturnBox(File uploadFile, String fileName, String destination, CourseEnvironment courseEnv,
 			PFCourseNode pfNode, Identity identity) {
 		if (uploadFile.exists() && uploadFile.isFile() && uploadFile.length() > 0) {
-			VFSContainer dropbox = resolveOrCreateReturnFolder(courseEnv, pfNode, identity);
+			VFSContainer dropbox = resolveOrCreateSelectedFolder(courseEnv, pfNode, identity, destination);
 			VFSLeaf uploadedFile = dropbox.createChildLeaf(fileName);
 			VFSManager.copyContent(uploadFile, uploadedFile, identity);
 		}
+	}
+
+	/**
+	 * Create folders from template structure for given identity
+	 *
+	 * @param pfNode
+	 * @param identity
+	 * @param courseEnv
+	 */
+	private void createFoldersForSelectedParticipant(PFCourseNode pfNode, Identity identity, CourseEnvironment courseEnv) {
+		syncModuleConfigWithVFSContainer(pfNode, identity, courseEnv);
 	}
 	
 	/**
@@ -255,10 +280,21 @@ public class PFManager {
 	 * @param pfNode 
 	 * @param identities 
 	 */
-	public void uploadFileToAllReturnBoxes (File uploadFile, String fileName, CourseEnvironment courseEnv,
-			PFCourseNode pfNode, List<Identity> identities) {
+	public void uploadFileToAllReturnBoxes (File uploadFile, String fileName, String destination,
+											CourseEnvironment courseEnv, PFCourseNode pfNode, List<Identity> identities) {
 		for(Identity identity : identities){
-			uploadFileToReturnBox(uploadFile, fileName, courseEnv, pfNode, identity);			
+			uploadFileToReturnBox(uploadFile, fileName, destination, courseEnv, pfNode, identity);
+		}
+	}
+
+	/**
+	 * Create participants folders from template structure of a given list of identities
+	 *
+	 * @param identities
+	 */
+	public void createFoldersForAllSelectedParticipants(CourseEnvironment courseEnv, PFCourseNode pfNode, List<Identity> identities) {
+		for(Identity identity : identities){
+			createFoldersForSelectedParticipant(pfNode, identity, courseEnv);
 		}
 	}
 	
@@ -330,7 +366,7 @@ public class PFManager {
 		Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(identity));
 		VFSContainer userBaseContainer = VFSManager.resolveOrCreateContainerFromPath(courseElementBaseContainer, relPath.toString());		
 		if (pfNode.hasParticipantBoxConfigured()){
-			VFSContainer dropContainer = new NamedContainerImpl(translator.translate("drop.box"),
+			VFSContainer dropContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_DROP_BOX),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 			if (courseReadOnly) {
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
@@ -342,7 +378,7 @@ public class PFManager {
 			namedCourseFolder.addItem(dropContainer);
 		}		
 		if (pfNode.hasCoachBoxConfigured()){
-			VFSContainer returnContainer = new NamedContainerImpl(translator.translate("return.box"),
+			VFSContainer returnContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
 			namedCourseFolder.addItem(returnContainer);
@@ -376,7 +412,7 @@ public class PFManager {
 			namedCourseFolder.addItem(participantFolder);
 			
 			if (pfNode.hasParticipantBoxConfigured()){
-				VFSContainer dropContainer = new NamedContainerImpl(translator.translate("drop.box"),
+				VFSContainer dropContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_DROP_BOX),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 				//if coach is also participant, can user his/her webdav folder with participant rights
 				if (identity.equals(participant)){
@@ -390,7 +426,7 @@ public class PFManager {
 			}
 			
 			if (pfNode.hasCoachBoxConfigured()){
-				VFSContainer returnContainer = new NamedContainerImpl(translator.translate("return.box"),
+				VFSContainer returnContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(returnContainer);
@@ -428,14 +464,14 @@ public class PFManager {
 			namedCourseFolder.addItem(participantFolder);
 			
 			if (pfNode.hasParticipantBoxConfigured()) {
-				VFSContainer dropContainer = new NamedContainerImpl(translator.translate("drop.box"),
+				VFSContainer dropContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_DROP_BOX),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(dropContainer);
 			}
 			
 			if (pfNode.hasCoachBoxConfigured()){
-				VFSContainer returnContainer = new NamedContainerImpl(translator.translate("return.box"),
+				VFSContainer returnContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(returnContainer);
@@ -473,16 +509,16 @@ public class PFManager {
 		VirtualContainer namedCourseFolder = new VirtualContainer(baseContainerName);
 		namedCourseFolder.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 
-		VFSContainer dropContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ? 
-				baseContainerName : translator.translate("drop.box"), 
+		VFSContainer dropContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
+				baseContainerName : translator.translate(PFCourseNode.FOLDER_DROP_BOX),
 				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 
 		if (pfNode.hasParticipantBoxConfigured()){
 			namedCourseFolder.addItem(dropContainer);
 		}
 		
-		VFSContainer returnContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ? 
-				baseContainerName : translator.translate("return.box"),
+		VFSContainer returnContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
+				baseContainerName : translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
 				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 
 		if (pfNode.hasCoachBoxConfigured()){
@@ -490,7 +526,7 @@ public class PFManager {
 		}
 
 		// Generate folders from template
-        syncModuleConfigWithVFSContainer(pfNode, namedCourseFolder);
+        syncModuleConfigWithVFSContainer(pfNode, identity, courseEnv);
 
 		if (readOnly) {
 			dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, null));
@@ -526,41 +562,33 @@ public class PFManager {
 		return folderRunContainer;
 	}
 
-	private void syncModuleConfigWithVFSContainer(PFCourseNode pfNode, VirtualContainer namedCourseFolder) {
-    	List<String> folders;
-    	ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
+	private void syncModuleConfigWithVFSContainer(PFCourseNode pfNode, Identity identity, CourseEnvironment courseEnv) {
+		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity));
+		ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
+		List<String> folders;
 
-    	if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
-    		folders = new ArrayList<>(Arrays.asList(moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().split(",")));
+		if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
+			folders = new ArrayList<>(Arrays.asList(moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().split(",")));
 			// sanitize
 			folders.removeIf(f -> f.startsWith("/"));
 			folders.removeIf(f -> !FileUtils.validateFilename(f.replaceAll(".+?/", "")));
 			Collections.sort(folders);
 
-			for(String folder : folders){
+			for (String folder : folders) {
 				List<String> path = new ArrayList<>(Arrays.asList(folder.split("/")));
+				Path relBoxPath = Paths.get(String.valueOf(relPath), folder);
 
-				if (path.get(0).equals(PFCourseNode.FOLDER_DROP_BOX) && namedCourseFolder.getItems().stream().anyMatch(b -> b.getMetaInfo().getFilename().equals(FILENAME_DROPBOX))) {
-					folder = folder.replace(PFCourseNode.FOLDER_DROP_BOX + "/", "");
-					VFSManager.resolveOrCreateContainerFromPath(
-							(VFSContainer) Objects.requireNonNull(namedCourseFolder
-									.getItems()
-									.stream()
-									.filter(b -> b.getMetaInfo().getFilename().equals(FILENAME_DROPBOX))
-									.findFirst()
-									.orElse(null), "DropBox does not exist."), folder);
-				} else if (path.get(0).equals(PFCourseNode.FOLDER_RETURN_BOX) && namedCourseFolder.getItems().stream().anyMatch(b -> b.getMetaInfo().getFilename().equals(FILENAME_RETURNBOX))) {
-					folder = folder.replace(PFCourseNode.FOLDER_RETURN_BOX + "/", "");
-					VFSManager.resolveOrCreateContainerFromPath(
-							(VFSContainer) Objects.requireNonNull(namedCourseFolder
-									.getItems()
-									.stream()
-									.filter(b -> b.getMetaInfo().getFilename().equals(FILENAME_RETURNBOX))
-									.findFirst()
-									.orElse(null), "ReturnBox does not exist."), folder);
+				if ((path.get(0).equals(FILENAME_DROPBOX) && pfNode.hasParticipantBoxConfigured()) ||
+						(path.get(0).equals(FILENAME_RETURNBOX) && pfNode.hasCoachBoxConfigured())) {
+					VFSManager.resolveOrCreateContainerFromPath(baseContainer, relBoxPath.toString());
+				} else if (log.isDebugEnabled()) {
+					log.info("No participant or coachbox is available.");
 				}
 			}
-    	}
+		} else if (log.isDebugEnabled()) {
+			log.info("moduleConfiguration for template folders seems to be null in course {}", courseEnv.getCourseTitle());
+		}
 	}
 	
 	public List<DropBoxRow> getParticipants(ParticipantSearchParams params, PFCourseNode pfNode,

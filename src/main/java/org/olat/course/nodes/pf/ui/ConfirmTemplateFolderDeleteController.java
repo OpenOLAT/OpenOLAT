@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.PFCourseNode;
+import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.modules.ModuleConfiguration;
 
 import java.util.ArrayList;
@@ -49,8 +50,8 @@ public class ConfirmTemplateFolderDeleteController extends FormBasicController {
         this.folderToDelete = folderToDelete;
         this.translatedFolderElement =
                 folderToDelete
-                        .replaceAll(PFCourseNode.FOLDER_RETURN_BOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
-                        .replaceAll(PFCourseNode.FOLDER_DROP_BOX, translate(PFCourseNode.FOLDER_DROP_BOX));
+                        .replaceAll(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
+                        .replaceAll(PFManager.FILENAME_DROPBOX, translate(PFCourseNode.FOLDER_DROP_BOX));
 
         initForm(ureq);
     }

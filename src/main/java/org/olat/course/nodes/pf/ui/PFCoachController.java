@@ -109,6 +109,7 @@ public class PFCoachController extends FormBasicController {
 	private FormLink uploadLink;
 	private FormLink downloadLink;
 	private FormLink uploadAllLink;
+	private FormLink loadTemplateStructureLink;
 	private TimerComponent timerCmp;
 	private DropBoxTableModel tableModel;
 	private FlexiTableElement dropboxTable;
@@ -164,7 +165,10 @@ public class PFCoachController extends FormBasicController {
 		if (source == pfFileUploadCtr) {
 			if (event == Event.DONE_EVENT) {
 				if (pfFileUploadCtr.isUploadToAll()) {
-					uploadToSelection(pfFileUploadCtr.getUpLoadFile(), pfFileUploadCtr.getUploadFileName());
+					uploadToSelection(
+							pfFileUploadCtr.getUpLoadFile(),
+							pfFileUploadCtr.getUploadFileName(),
+							pfFileUploadCtr.getFileDestinationEl().getSelectedKey());
 					showInfo("upload.success");
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else {
@@ -200,9 +204,9 @@ public class PFCoachController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				DropBoxRow currentObject = tableModel.getObject(se.getIndex());
-				if ("drop.box".equals(se.getCommand())){
+				if (PFCourseNode.FOLDER_DROP_BOX.equals(se.getCommand())){
 					doSelectParticipantFolder(ureq, currentObject.getIdentity(), PFView.displayDrop);
-				} else if ("return.box".equals(se.getCommand())){
+				} else if (PFCourseNode.FOLDER_RETURN_BOX.equals(se.getCommand())){
 					doSelectParticipantFolder(ureq, currentObject.getIdentity(), PFView.displayReturn);
 				} else if ("open.box".equals(se.getCommand())){
 					doSelectParticipantFolder(ureq, currentObject.getIdentity(), null);
@@ -211,6 +215,11 @@ public class PFCoachController extends FormBasicController {
 				} 
 			} else if(event instanceof FlexiTableSearchEvent) {
 				loadModel(true);
+			}
+		} else if (source == loadTemplateStructureLink) {
+			if (!dropboxTable.getMultiSelectedIndex().isEmpty()) {
+				createFoldersForSelection();
+				showInfo("creating.folders.successful");
 			}
 		}
 	}
@@ -270,11 +279,11 @@ public class PFCoachController extends FormBasicController {
 		}
 
 		if (pfNode.hasParticipantBoxConfigured()){
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.numberFiles,"drop.box"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.numberFiles,PFCourseNode.FOLDER_DROP_BOX));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.lastUpdate));
 		}
 		if (pfNode.hasCoachBoxConfigured()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.numberFilesReturn,"return.box"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.numberFilesReturn,PFCourseNode.FOLDER_RETURN_BOX));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.lastUpdateReturn));
 		}
 		StaticFlexiCellRenderer openCellRenderer = new StaticFlexiCellRenderer(translate("open.box"), "open.box");
@@ -296,6 +305,11 @@ public class PFCoachController extends FormBasicController {
 		dropboxTable.addBatchButton(downloadLink);
 		uploadAllLink = uifactory.addFormLink("upload.link", formLayout, Link.BUTTON);
 		dropboxTable.addBatchButton(uploadAllLink);
+
+		if (!pfNode.getModuleConfiguration().get(PFCourseNode.CONFIG_KEY_TEMPLATE).equals("")) {
+			loadTemplateStructureLink = uifactory.addFormLink("load.template.structure", formLayout, Link.BUTTON);
+			dropboxTable.addBatchButton(loadTemplateStructureLink);
+		}
 	}
 	
 	private void initFilters() {
@@ -391,14 +405,24 @@ public class PFCoachController extends FormBasicController {
 		flc.contextPut("hasParticipants", tableModel.getRowCount() > 0);
 	}
 	
-	private void uploadToSelection (File uploadFile, String fileName) {
+	private void uploadToSelection (File uploadFile, String fileName, String destination) {
 		List<Long> identitykeys = new ArrayList<>();
 		for (int i : dropboxTable.getMultiSelectedIndex()) {			
 			identitykeys.add(tableModel.getObject(i).getIdentity().getIdentityKey());
 		}
 		List<Identity> identities = securityManager.loadIdentityByKeys(identitykeys);
 
-		pfManager.uploadFileToAllReturnBoxes(uploadFile, fileName, courseEnv, pfNode, identities);
+		pfManager.uploadFileToAllReturnBoxes(uploadFile, fileName, destination, courseEnv, pfNode, identities);
+	}
+
+	private void createFoldersForSelection() {
+		List<Long> identityKeys = new ArrayList<>();
+		for (int i : dropboxTable.getMultiSelectedIndex()) {
+			identityKeys.add(tableModel.getObject(i).getIdentity().getIdentityKey());
+		}
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+
+		pfManager.createFoldersForAllSelectedParticipants(courseEnv, pfNode, identities);
 	}
 	
 	private void downloadFromSelection (UserRequest ureq) {
@@ -420,7 +444,7 @@ public class PFCoachController extends FormBasicController {
 		removeControllerListener(pfFileUploadCtr);
 		removeControllerListener(cmc);
 		
-		pfFileUploadCtr = new PFFileUploadController(ureq, getWindowControl(), uploadToAll);
+		pfFileUploadCtr = new PFFileUploadController(ureq, getWindowControl(), uploadToAll, pfNode);
 		listenTo(pfFileUploadCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
