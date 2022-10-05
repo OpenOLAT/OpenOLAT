@@ -32,8 +32,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.model.Solution;
 
-import java.io.File;
-
 /**
  * Initial date: 2022-09-09<br>
  *
@@ -42,16 +40,14 @@ import java.io.File;
 public class AVSampleSolutionController extends BasicController {
 
 	private final VelocityContainer mainVC;
-	private final File solutionDir;
 	private final VFSContainer solutionContainer;
 	private final AVCreationController creationController;
 	private AVSampleSolutionDetailsController sampleSolutionDetailsController;
 
-	public AVSampleSolutionController(UserRequest ureq, WindowControl wControl, File solutionDir,
-									  VFSContainer solutionContainer, boolean audioOnly) {
+	public AVSampleSolutionController(UserRequest ureq, WindowControl wControl, VFSContainer solutionContainer,
+									  boolean audioOnly) {
 		super(ureq, wControl);
 
-		this.solutionDir = solutionDir;
 		this.solutionContainer = solutionContainer;
 
 		AVConfiguration config = new AVConfiguration();
@@ -65,10 +61,6 @@ public class AVSampleSolutionController extends BasicController {
 		mainVC.put("component", creationController.getInitialComponent());
 
 		putInitialPanel(mainVC);
-	}
-
-	public File getRecordedFile() {
-		return creationController.getRecordedFile();
 	}
 
 	public Solution getSolution() {
@@ -89,7 +81,7 @@ public class AVSampleSolutionController extends BasicController {
 			}
 		} else if (sampleSolutionDetailsController == source) {
 			if (event == Event.DONE_EVENT) {
-				creationController.moveUploadFileTo(solutionContainer);
+				creationController.moveUploadFileTo(solutionContainer, sampleSolutionDetailsController.getSolution().getFilename());
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -98,7 +90,8 @@ public class AVSampleSolutionController extends BasicController {
 	}
 
 	private void doSetSampleSolutionDetails(UserRequest ureq) {
-		sampleSolutionDetailsController = new AVSampleSolutionDetailsController(ureq, getWindowControl(), solutionDir, creationController.getRecordedFileName());
+		sampleSolutionDetailsController = new AVSampleSolutionDetailsController(ureq, getWindowControl(),
+				solutionContainer, creationController.getFileName());
 		listenTo(sampleSolutionDetailsController);
 		mainVC.put("component", sampleSolutionDetailsController.getInitialComponent());
 	}

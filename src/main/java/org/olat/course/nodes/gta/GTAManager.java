@@ -53,6 +53,7 @@ public interface GTAManager {
 	
 	public static final String SOLUTIONS_DEFINITIONS = "solutionDefinitions.xml";
 	public static final String TASKS_DEFINITIONS = "taskDefinitions.xml";
+	String BUSY_VALUE = "busy";
 	
 	public VFSContainer getTasksContainer(CourseEnvironment courseEnv, GTACourseNode cNode);
 	

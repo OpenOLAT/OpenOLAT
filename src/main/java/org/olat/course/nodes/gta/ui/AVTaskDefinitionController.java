@@ -29,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 import java.io.File;
@@ -46,15 +48,14 @@ public class AVTaskDefinitionController extends FormBasicController {
 	private TextElement fileNameEl;
 
 	private final TaskDefinition task;
-	private final File taskFolder;
+	private final VFSContainer tasksContainer;
 	private final List<TaskDefinition> existingDefinitions;
 
-	public AVTaskDefinitionController(UserRequest ureq, WindowControl wControl,
-									  TaskDefinition task, File taskFolder,
-									  List<TaskDefinition> existingDefinitions) {
+	public AVTaskDefinitionController(UserRequest ureq, WindowControl wControl, TaskDefinition task,
+									  VFSContainer tasksContainer, List<TaskDefinition> existingDefinitions) {
 		super(ureq, wControl);
 		this.task = task;
-		this.taskFolder = taskFolder;
+		this.tasksContainer = tasksContainer;
 		this.existingDefinitions = existingDefinitions;
 
 		initForm(ureq);
@@ -100,8 +101,8 @@ public class AVTaskDefinitionController extends FormBasicController {
 			fileNameEl.setErrorKey("error.file.invalid", null);
 			allOk &= false;
 		} else {
-			File target = new File(taskFolder, fileNameEl.getValue());
-			if (target.exists()) {
+			VFSItem item = tasksContainer.resolve(fileNameEl.getValue());
+			if (item != null && item.exists()) {
 				fileNameEl.setErrorKey("error.file.exists", new String[] { fileNameEl.getValue() });
 				allOk &= false;
 			} else if (existingDefinitions != null) {

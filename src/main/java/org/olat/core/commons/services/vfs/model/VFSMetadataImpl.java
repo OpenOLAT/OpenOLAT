@@ -250,6 +250,10 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		return transcodingStatus;
 	}
 
+	public boolean isInTranscoding() {
+		return transcodingStatus != null && transcodingStatus != VFSMetadata.TRANSCODING_STATUS_DONE;
+	}
+
 	public void setTranscodingStatus(Integer transcodingStatus) {
 		this.transcodingStatus = transcodingStatus;
 	}

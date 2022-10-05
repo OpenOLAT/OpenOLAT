@@ -34,6 +34,7 @@ public class TaskDefinition implements Serializable {
 	private String title;
 	private String description;
 	private String filename;
+	private boolean inTranscoding;
 	
 	public TaskDefinition() {
 		//
@@ -87,5 +88,13 @@ public class TaskDefinition implements Serializable {
 					&& ((filename == null && taskDef.filename == null) || (filename != null && filename.equals(taskDef.filename)));
 		}
 		return false;
+	}
+
+	public boolean isInTranscoding() {
+		return inTranscoding;
+	}
+
+	public void setInTranscoding(boolean inTranscoding) {
+		this.inTranscoding = inTranscoding;
 	}
 }

@@ -29,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 
 import java.io.File;
 
@@ -40,12 +42,13 @@ import java.io.File;
 public class AVSubmissionDetailsController extends FormBasicController {
 
 	private TextElement fileNameEl;
-	private final File documentsDir;
+	private final VFSContainer documentsContainer;
 	private String fileName;
 
-	public AVSubmissionDetailsController(UserRequest ureq, WindowControl wControl, File documentsDir, String fileName) {
+	public AVSubmissionDetailsController(UserRequest ureq, WindowControl wControl, VFSContainer documentsContainer,
+										 String fileName) {
 		super(ureq, wControl);
-		this.documentsDir = documentsDir;
+		this.documentsContainer = documentsContainer;
 		this.fileName = fileName;
 		initForm(ureq);
 	}
@@ -80,8 +83,8 @@ public class AVSubmissionDetailsController extends FormBasicController {
 			fileNameEl.setErrorKey("error.file.invalid", null);
 			allOk &= false;
 		} else {
-			File target = new File(documentsDir, fileNameEl.getValue());
-			if (target.exists()) {
+			VFSItem item = documentsContainer.resolve(fileNameEl.getValue());
+			if (item != null && item.exists()) {
 				fileNameEl.setErrorKey("error.file.exists", new String[] { fileNameEl.getValue() });
 				allOk &= false;
 			}

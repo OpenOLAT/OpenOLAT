@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -31,7 +32,7 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
  *
  */
 public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDefinitionRow> {
-	
+
 	public TaskDefinitionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
@@ -43,7 +44,8 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 		switch(TDCols.values()[col]) {
 			case title: return taskDef.getTitle();
 			case file: return  taskDefRow.getDownloadLink() == null ? taskDef.getFilename() : taskDefRow.getDownloadLink();
-			case mode: return Pair.of(taskDefRow.getMode(), taskDef.getFilename());
+			case mode: return taskDef.isInTranscoding() ?
+					GTAManager.BUSY_VALUE : Pair.of(taskDefRow.getMode(), taskDef.getFilename());
 			default: return "ERROR";
 		}
 	}

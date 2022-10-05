@@ -31,6 +31,8 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,9 +52,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -72,8 +77,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTASampleSolutionsEditController extends FormBasicController implements Activateable2 {
-	
+public class GTASampleSolutionsEditController extends FormBasicController implements Activateable2, GenericEventListener {
+
 	private FormLink addSolutionLink;
 	private FormLink createSolutionLink;
 	private FormLink recordVideoLink;
@@ -95,7 +100,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private final Long courseRepoKey;
 	
 	private int linkCounter = 0;
-	
+	private Roles roles;
+
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -113,6 +119,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		solutionDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 		solutionContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 		initForm(ureq);
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, VFSTranscodingService.ores);
 	}
 
 	@Override
@@ -153,6 +161,9 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 	
 	private void updateModel(UserRequest ureq) {
+		if (ureq != null) {
+			roles = ureq.getUserSession().getRoles();
+		}
 		List<Solution> solutionList = gtaManager.getSolutions(courseEnv, gtaNode);
 		List<SolutionRow> rows = new ArrayList<>(solutionList.size());
 		for(Solution solution:solutionList) {
@@ -161,25 +172,37 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			Mode openMode = null;
 			
 			VFSItem item = solutionContainer.resolve(filename);
+			solution.setInTranscoding(false);
 			if(item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo.getFileInitializedBy() != null) {
 					author = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 				}
+				solution.setInTranscoding(metaInfo.isInTranscoding());
 			}
 			
 			DownloadLink downloadLink = null;
 			if(item instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				downloadLink = uifactory
-					.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
-				openMode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
+				downloadLink = solution.isInTranscoding() ? null : uifactory
+						.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
+				openMode = roles != null ? getOpenMode(getIdentity(), roles, vfsLeaf, readOnly) : null;
 			}
 
 			rows.add(new SolutionRow(solution, author, downloadLink, openMode));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VFSTranscodingDoneEvent) {
+			VFSTranscodingDoneEvent doneEvent = (VFSTranscodingDoneEvent) event;
+			if (solutionModel.getObjects().stream().anyMatch(s -> doneEvent.getFileName().equals(s.getSolution().getFilename()))) {
+				updateModel(null);
+			}
+		}
 	}
 
 	@Override
@@ -279,6 +302,10 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 	
 	private void doOpen(UserRequest ureq, Solution solution, Mode mode) {
+		if (solution.isInTranscoding()) {
+			return;
+		}
+
 		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
@@ -332,8 +359,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 
 	private void doRecordAudio(UserRequest ureq) {
-		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionDir,
-				solutionContainer, true);
+		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionContainer, true);
 		listenTo(avSampleSolutionController);
 
 		String title = translate("av.record.audio");
@@ -343,13 +369,18 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 
 	private void doRecordVideo(UserRequest ureq) {
-		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionDir,
-				solutionContainer, false);
+		avSampleSolutionController = new AVSampleSolutionController(ureq, getWindowControl(), solutionContainer, false);
 		listenTo(avSampleSolutionController);
 
 		String title = translate("av.record.video");
 		cmc = new CloseableModalController(getWindowControl(), "close", avSampleSolutionController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, VFSTranscodingService.ores);
+		super.doDispose();
 	}
 }

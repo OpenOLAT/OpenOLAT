@@ -24,6 +24,8 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -52,7 +54,10 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -78,7 +83,7 @@ import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2 {
+abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2, GenericEventListener {
 
 	private FormLink addTaskLink;
 	private FormLink createTaskLink;
@@ -103,7 +108,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	protected final CourseEnvironment courseEnv;
 	protected final ModuleConfiguration config;
 	private final Long courseRepoKey;
-	
+	private Roles roles;
+
 	private int linkCounter = 0;
 	
 	@Autowired
@@ -125,6 +131,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 		setTranslator(getTranslator());
 		initForm(ureq);
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, VFSTranscodingService.ores);
 	}
 
 	@Override
@@ -173,19 +181,24 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	}
 	
 	protected void updateModel(UserRequest ureq) {
+		if (ureq != null) {
+			roles = ureq.getUserSession().getRoles();
+		}
 		fileExistsRenderer.setFilenames(tasksFolder.list());
 		List<TaskDefinition> taskDefinitions = getTaskDefinitions();
 		List<TaskDefinitionRow> rows = new ArrayList<>(taskDefinitions.size());
-		Roles roles = ureq.getUserSession().getRoles();
 		for(TaskDefinition def:taskDefinitions) {
 			DownloadLink downloadLink = null;
 			Mode mode = Mode.VIEW;
 			VFSItem item = tasksContainer.resolve(def.getFilename());
+			boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+					item.getMetaInfo().isInTranscoding();
+			def.setInTranscoding(inTranscoding);
 			if(item instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				downloadLink = uifactory
+				downloadLink = def.isInTranscoding() ? null : uifactory
 						.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, vfsLeaf, taskDefTableEl);
-				mode = GTAUIFactory.getOpenMode(getIdentity(), roles, vfsLeaf, readOnly);
+				mode = roles != null ? GTAUIFactory.getOpenMode(getIdentity(), roles, vfsLeaf, readOnly) : null;
 			}
 			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, mode);
 			rows.add(row);
@@ -222,6 +235,18 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if((entries == null || entries.isEmpty())) {
 			cleanUp();
+		}
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VFSTranscodingDoneEvent) {
+			VFSTranscodingDoneEvent doneEvent = (VFSTranscodingDoneEvent) event;
+			if (taskModel.getObjects().stream().anyMatch(
+					t -> doneEvent.getFileName().equals(t.getTaskDefinition().getFilename())
+			)) {
+				updateModel(null);
+			}
 		}
 	}
 
@@ -362,7 +387,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	private void doCreateVideoAsssignment(UserRequest ureq) {
 		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
-		avTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, false);
+		avTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksContainer, existingDefinitions, false);
 		listenTo(avTaskCtrl);
 
 		String title = translate("av.create.video.assignment");
@@ -373,7 +398,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	private void doCreateAudioAssignment(UserRequest ureq) {
 		List<TaskDefinition> existingDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
-		avTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksFolder, existingDefinitions, true);
+		avTaskCtrl = new AVTaskController(ureq, getWindowControl(), tasksContainer, existingDefinitions, true);
 		listenTo(avTaskCtrl);
 
 		String title = translate("av.create.audio.assignment");
@@ -383,6 +408,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	}
 
 	private void doOpen(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+		if (taskDef.isInTranscoding()) {
+			return;
+		}
+
 		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
@@ -438,5 +467,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 				StringHelper.escapeHtml(target, filename);
 			}
 		}
+	}
+
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, VFSTranscodingService.ores);
+		super.doDispose();
 	}
 }

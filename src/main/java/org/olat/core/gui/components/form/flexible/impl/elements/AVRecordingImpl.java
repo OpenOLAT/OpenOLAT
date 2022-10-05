@@ -21,8 +21,11 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.avrecorder.AVConfiguration;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.AVRecording;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -50,13 +53,16 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	private final AVRecordingComponent component;
 
 	private File recordedFile;
+	private String recordedFileType;
 	private String recordedFileName;
 	private File posterFile;
 	private final Identity identity;
+	private final AVConfiguration config;
 
-	public AVRecordingImpl(Identity identity, String name, String posterName) {
+	public AVRecordingImpl(Identity identity, String name, String posterName, AVConfiguration config) {
 		super(name);
 		this.identity = identity;
+		this.config = config;
 		component = new AVRecordingComponent(name, posterName);
 	}
 
@@ -71,6 +77,8 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 		if (keys.isEmpty() || !keys.contains(recordedFileId)) {
 			return;
 		}
+
+		recordedFileType = form.getRequestMultipartFileMimeType(recordedFileId);
 
 		deleteFiles();
 
@@ -122,7 +130,10 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	}
 
 	@Override
-	public String getRecordedFileName() {
+	public String getFileName() {
+		if (needsTranscoding()) {
+			return getDestinationFileName(recordedFileName);
+		}
 		return recordedFileName;
 	}
 
@@ -141,43 +152,148 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	}
 
 	@Override
-	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer) {
-		VFSLeaf targetLeaf = null;
+	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, String requestedName) {
+		final VFSLeaf leaf;
 		if (recordedFile != null && recordedFile.exists()) {
-			VFSItem itemWithSameName = destinationContainer.resolve(recordedFileName);
-			if (itemWithSameName != null) {
-				recordedFileName = VFSManager.rename(destinationContainer, recordedFileName);
-			}
-			if (destinationContainer instanceof LocalFolderImpl) { // optimize for local folders
-				LocalFolderImpl folderContainer = (LocalFolderImpl) destinationContainer;
-				File destinationDir = folderContainer.getBasefile();
-				File targetFile = new File(destinationDir, recordedFileName);
-				if (FileUtils.copyFileToFile(recordedFile, targetFile, true)) {
-					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
-					VFSRepositoryService repositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-					if (repositoryService != null) {
-						repositoryService.itemSaved(targetLeaf, identity);
-					} else {
-						log.error("Cannot access VFSRepositoryService");
-					}
+			if (needsTranscoding()) {
+				String destinationFileName = getDestinationFileName(destinationContainer, requestedName);
+				String masterFileName = VFSTranscodingService.masterFilePrefix + destinationFileName;
+				if (destinationContainer instanceof LocalFolderImpl) {
+					leaf = moveRecordingToLocalFolderWithTranscoding((LocalFolderImpl) destinationContainer, destinationFileName, masterFileName);
 				} else {
-					log.error("Error copying content from temp file. Cannot copy file::" +
-							(recordedFile == null ? "NULL" : recordedFile) + " - " + targetFile);
+					leaf = moveRecordingToVfsContainerWithTranscoding(destinationContainer, destinationFileName, masterFileName);
 				}
+				CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+				CoreSpringFactory.getImpl(VFSTranscodingService.class).startTranscodingProcess();
 			} else {
-				VFSLeaf leaf = destinationContainer.createChildLeaf(recordedFileName);
-				boolean success = false;
-				try {
-					success = VFSManager.copyContent(recordedFile, leaf, identity);
-				} catch (Exception e) {
-					log.error("Error while copying content from temp file: {}", recordedFile, e);
+				if (destinationContainer instanceof LocalFolderImpl) {
+					leaf = moveRecordingToLocalFolder((LocalFolderImpl) destinationContainer, requestedName);
+				} else {
+					leaf = moveRecordingToVfsContainer(destinationContainer, requestedName);
 				}
-				if (success) {
-					FileUtils.deleteFile(recordedFile);
-					targetLeaf = leaf;
-				}
+			}
+		} else {
+			leaf = null;
+		}
+		return leaf;
+	}
+
+	private VFSLeaf moveRecordingToLocalFolderWithTranscoding(LocalFolderImpl destinationContainer, String destinationFileName, String masterFileName) {
+		File destinationDir = destinationContainer.getBasefile();
+		File destinationFile = new File(destinationDir, destinationFileName);
+		FileUtils.createEmptyFile(destinationFile);
+		File masterFile = new File(destinationDir, masterFileName);
+		if (FileUtils.copyFileToFile(recordedFile, masterFile, true)) {
+			VFSLeaf destinationLeaf = (VFSLeaf) destinationContainer.resolve(destinationFileName);
+			CoreSpringFactory.getImpl(VFSTranscodingService.class).itemSavedWithTranscoding(destinationLeaf, identity);
+			return destinationLeaf;
+		} else {
+			log.error("Error copying recording from temporary file to master file. Cannot copy file::" +
+					(recordedFile == null ? "NULL" : recordedFile) + " - " + masterFile);
+			return null;
+		}
+	}
+
+	private VFSLeaf moveRecordingToVfsContainerWithTranscoding(VFSContainer destinationContainer, String destinationFileName, String masterFileName) {
+		VFSLeaf destinationLeaf = destinationContainer.createChildLeaf(destinationFileName);
+		File emptyFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
+		FileUtils.createEmptyFile(emptyFile);
+
+		try {
+			VFSManager.copyContent(emptyFile, destinationLeaf, identity);
+		} catch (Exception e) {
+			log.error("Error while copying content from temp file: {}", emptyFile, e);
+		}
+		FileUtils.deleteFile(emptyFile);
+
+		VFSLeaf masterLeaf = destinationContainer.createChildLeaf(masterFileName);
+		boolean success = false;
+		try {
+			success = VFSManager.copyContent(recordedFile, masterLeaf, identity);
+		} catch (Exception e) {
+			log.error("Error while copying content from temp file: {}", recordedFile, e);
+		}
+		if (success) {
+			CoreSpringFactory.getImpl(VFSTranscodingService.class).itemSavedWithTranscoding(destinationLeaf, identity);
+			FileUtils.deleteFile(recordedFile);
+		}
+		return destinationLeaf;
+	}
+
+	private VFSLeaf moveRecordingToLocalFolder(LocalFolderImpl destinationContainer, String requestedName) {
+		VFSItem itemWithSameName = destinationContainer.resolve(requestedName);
+		if (itemWithSameName != null) {
+			requestedName = VFSManager.rename(destinationContainer, requestedName);
+		}
+
+		File destinationDir = destinationContainer.getBasefile();
+		File destinationFile = new File(destinationDir, requestedName);
+		if (FileUtils.copyFileToFile(recordedFile, destinationFile, true)) {
+			VFSLeaf destinationLeaf = (VFSLeaf) destinationContainer.resolve(destinationFile.getName());
+			VFSRepositoryService repositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+			if (repositoryService != null) {
+				repositoryService.itemSaved(destinationLeaf, identity);
+			} else {
+				log.error("Cannot access VFSRepositoryService");
+			}
+			return destinationLeaf;
+		} else {
+			log.error("Error copying recording from temporary file to destination file. Cannot copy file::" +
+					(recordedFile == null ? "NULL" : recordedFile) + " - " + destinationFile);
+			return null;
+		}
+	}
+
+	private VFSLeaf moveRecordingToVfsContainer(VFSContainer destinationContainer, String requestedName) {
+		VFSItem itemWithSameName = destinationContainer.resolve(requestedName);
+		if (itemWithSameName != null) {
+			requestedName = VFSManager.rename(destinationContainer, requestedName);
+		}
+		VFSLeaf destinationLeaf = destinationContainer.createChildLeaf(requestedName);
+		boolean success = false;
+		try {
+			success = VFSManager.copyContent(recordedFile, destinationLeaf, identity);
+		} catch (Exception e) {
+			log.error("Error while copying content from temp file: {}", recordedFile, e);
+		}
+		if (success) {
+			VFSRepositoryService repositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+			if (repositoryService != null) {
+				repositoryService.itemSaved(destinationLeaf, identity);
+			} else {
+				log.error("Cannot access VFSRepositoryService");
+			}
+			FileUtils.deleteFile(recordedFile);
+		}
+		return destinationLeaf;
+	}
+
+	private boolean needsTranscoding() {
+		if (config.getMode() == AVConfiguration.Mode.video) {
+			if (recordedFileType == null || !recordedFileType.startsWith("video/mp4")) {
+				return true;
 			}
 		}
-		return targetLeaf;
+		return false;
+	}
+
+	private String getDestinationFileName(String requestedName) {
+		if (config.getMode() == AVConfiguration.Mode.video) {
+			int indexOfPeriod = requestedName.lastIndexOf('.');
+			if (indexOfPeriod != -1 && indexOfPeriod >= (requestedName.length() - 1 - 4)) {
+				String baseName = requestedName.substring(0, indexOfPeriod);
+				return baseName + ".mp4";
+			}
+		}
+		return requestedName;
+	}
+
+	private String getDestinationFileName(VFSContainer destinationContainer, String requestedName) {
+		final String destinationFileName = getDestinationFileName(requestedName);
+		VFSItem itemWithSameName = destinationContainer.resolve(destinationFileName);
+		if (itemWithSameName != null) {
+			return VFSManager.rename(destinationContainer, destinationFileName);
+		}
+		return destinationFileName;
 	}
 }

@@ -36,6 +36,8 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -57,9 +59,12 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -82,7 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class SubmitDocumentsController extends FormBasicController {
+class SubmitDocumentsController extends FormBasicController implements GenericEventListener {
 	
 	private DocumentTableModel model;
 	private FlexiTableElement tableEl;
@@ -119,14 +124,15 @@ class SubmitDocumentsController extends FormBasicController {
 	private final boolean externalEditor;
 	private final boolean embeddedEditor;
 	private final Date deadline;
-	
+	private Roles roles;
+
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private DocEditorService docEditorService;
-	
+
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
 			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
 			boolean readOnly, boolean externalEditor, boolean embeddedEditor, Date deadline, String docI18nKey,
@@ -150,6 +156,8 @@ class SubmitDocumentsController extends FormBasicController {
 		this.courseEnv = courseEnv;
 		initForm(ureq);
 		updateModel(ureq);
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, VFSTranscodingService.ores);
 	}
 
 	public Task getAssignedTask() {
@@ -251,6 +259,9 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 
 	private void updateModel(UserRequest ureq) {
+		if (ureq != null) {
+			roles = ureq.getUserSession().getRoles();
+		}
 		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		if(documents == null) {
 			documents = new File[0];
@@ -260,12 +271,14 @@ class SubmitDocumentsController extends FormBasicController {
 			String filename = document.getName();
 			String createdBy = null;
 			Mode openMode = null;
-			
+			boolean inTranscoding = false;
+
 			VFSItem item = documentsContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo != null) {
 					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
+					inTranscoding = metaInfo.isInTranscoding();
 				}
 			}
 			
@@ -280,9 +293,9 @@ class SubmitDocumentsController extends FormBasicController {
 			
 			if(item instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				openMode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
+				openMode = roles == null ? null : getOpenMode(getIdentity(), roles, vfsLeaf, readOnly);
 			}
-			docList.add(new SubmittedSolution(document, createdBy, download, openMode));
+			docList.add(new SubmittedSolution(document, createdBy, download, openMode, inTranscoding));
 		}
 		model.setObjects(docList);
 		tableEl.reset();
@@ -332,6 +345,16 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 
 	@Override
+	public void event(Event event) {
+		if (event instanceof VFSTranscodingDoneEvent) {
+			VFSTranscodingDoneEvent doneEvent = (VFSTranscodingDoneEvent) event;
+			if (model.getObjects().stream().anyMatch(s -> doneEvent.getFileName().equals(s.getFile().getName()))) {
+				updateModel(null);
+			}
+		}
+	}
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
@@ -354,9 +377,10 @@ class SubmitDocumentsController extends FormBasicController {
 			cleanUp();
 			checkDeadline(ureq);
 		} else if (avSubmissionController == source) {
-			if (event == Event.DONE_EVENT) {
-				String fileName = avSubmissionController.getUserDefinedFileName();
-				doUpload(ureq, avSubmissionController.getRecordedFile(), fileName);
+			if (event instanceof AVDoneEvent) {
+				updateModel(ureq);
+				updateWarnings();
+				String fileName = ((AVDoneEvent)event).getRecording().getName();
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, fileName));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
@@ -518,6 +542,9 @@ class SubmitDocumentsController extends FormBasicController {
 			showError("error.missing.file");
 		} else {
 			VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
+			if (vfsLeaf.canMeta() == VFSConstants.YES && vfsLeaf.getMetaInfo() != null && vfsLeaf.getMetaInfo().isInTranscoding()) {
+				return;
+			}
 			fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, filename, mode, null);
 			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
@@ -573,7 +600,7 @@ class SubmitDocumentsController extends FormBasicController {
 
 	private void doRecordVideo(UserRequest ureq) {
 		long recordingLengthLimit = 1000 * Long.parseLong(config.getStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, "600"));
-		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, false,
+		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsContainer, false,
 				recordingLengthLimit, AVVideoQuality.valueOf(config.getStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, AVVideoQuality.medium.name())));
 		listenTo(avSubmissionController);
 
@@ -585,7 +612,7 @@ class SubmitDocumentsController extends FormBasicController {
 
 	private void doRecordAudio(UserRequest ureq) {
 		long recordingLengthLimit = 1000 * Long.parseLong(config.getStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, "600"));
-		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsDir, true,
+		avSubmissionController = new AVSubmissionController(ureq, getWindowControl(), documentsContainer, true,
 				recordingLengthLimit, null);
 		listenTo(avSubmissionController);
 
@@ -652,12 +679,14 @@ class SubmitDocumentsController extends FormBasicController {
 		private final String createdBy;
 		private final FormItem downloadLink;
 		private final Mode mode;
+		private final boolean inTranscoding;
 		
-		public SubmittedSolution(File file, String createdBy, FormItem downloadLink, Mode mode) {
+		public SubmittedSolution(File file, String createdBy, FormItem downloadLink, Mode mode, boolean inTranscoding) {
 			this.file = file;
 			this.createdBy = createdBy;
 			this.downloadLink = downloadLink;
 			this.mode = mode;
+			this.inTranscoding = inTranscoding;
 		}
 
 		public File getFile() {
@@ -674,6 +703,10 @@ class SubmitDocumentsController extends FormBasicController {
 
 		public Mode getMode() {
 			return mode;
+		}
+
+		public boolean isInTranscoding() {
+			return inTranscoding;
 		}
 	}
 	
@@ -694,9 +727,16 @@ class SubmitDocumentsController extends FormBasicController {
 					return cal.getTime();
 				}
 				case createdBy: return solution.getCreatedBy();
-				case mode: return Pair.of(solution.getMode(), solution.getFile().getName());
+				case mode: return solution.isInTranscoding() ?
+						GTAManager.BUSY_VALUE : Pair.of(solution.getMode(), solution.getFile().getName());
 				default: return "ERROR";
 			}
 		}
+	}
+
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, VFSTranscodingService.ores);
+		super.doDispose();
 	}
 }

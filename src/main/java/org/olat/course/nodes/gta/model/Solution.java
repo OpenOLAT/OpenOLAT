@@ -32,6 +32,7 @@ public class Solution implements Serializable {
 	private static final long serialVersionUID = 2285624762294196486L;
 	private String title;
 	private String filename;
+	private boolean inTranscoding;
 	
 	public String getTitle() {
 		return title;
@@ -47,5 +48,13 @@ public class Solution implements Serializable {
 	
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public boolean isInTranscoding() {
+		return inTranscoding;
+	}
+
+	public void setInTranscoding(boolean inTranscoding) {
+		this.inTranscoding = inTranscoding;
 	}
 }

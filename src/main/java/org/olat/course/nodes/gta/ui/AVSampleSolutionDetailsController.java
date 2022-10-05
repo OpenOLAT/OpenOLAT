@@ -29,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.nodes.gta.model.Solution;
 
 import java.io.File;
@@ -42,13 +44,13 @@ public class AVSampleSolutionDetailsController extends FormBasicController {
 
 	private TextElement titleEl;
 	private TextElement fileNameEl;
-	private final File solutionDir;
+	private final VFSContainer solutionContainer;
 	private String fileName;
 	private Solution solution;
 
-	public AVSampleSolutionDetailsController(UserRequest ureq, WindowControl wControl, File solutionDir, String fileName) {
+	public AVSampleSolutionDetailsController(UserRequest ureq, WindowControl wControl, VFSContainer solutionContainer, String fileName) {
 		super(ureq, wControl);
-		this.solutionDir = solutionDir;
+		this.solutionContainer = solutionContainer;
 		this.fileName = fileName;
 		initForm(ureq);
 	}
@@ -92,8 +94,8 @@ public class AVSampleSolutionDetailsController extends FormBasicController {
 			fileNameEl.setErrorKey("error.file.invalid", null);
 			allOk &= false;
 		} else {
-			File target = new File(solutionDir, fileNameEl.getValue());
-			if (target.exists()) {
+			VFSItem item = solutionContainer.resolve(fileNameEl.getValue());
+			if (item != null && item.exists()) {
 				fileNameEl.setErrorKey("error.file.exists", new String[]{fileNameEl.getValue()});
 				allOk &= false;
 			}

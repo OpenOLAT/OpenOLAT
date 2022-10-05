@@ -30,6 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 
 import java.io.File;
 
@@ -41,16 +43,15 @@ import java.io.File;
 public class AVSubmissionController extends BasicController {
 
 	private final VelocityContainer mainVC;
-	private final File documentsDir;
+	private final VFSContainer documentsContainer;
 	private final AVCreationController creationController;
 	private AVSubmissionDetailsController submissionDetailsController;
-	private String userDefinedFileName;
 
-	public AVSubmissionController(UserRequest ureq, WindowControl wControl, File documentsDir, boolean audioOnly,
-								  long recordingLengthLimit, AVVideoQuality videoQuality) {
+	public AVSubmissionController(UserRequest ureq, WindowControl wControl, VFSContainer documentsContainer,
+								  boolean audioOnly, long recordingLengthLimit, AVVideoQuality videoQuality) {
 		super(ureq, wControl);
 
-		this.documentsDir = documentsDir;
+		this.documentsContainer = documentsContainer;
 
 		AVConfiguration config = new AVConfiguration();
 		if (audioOnly) {
@@ -71,14 +72,6 @@ public class AVSubmissionController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	public File getRecordedFile() {
-		return creationController.getRecordedFile();
-	}
-
-	public String getUserDefinedFileName() {
-		return userDefinedFileName;
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 	}
@@ -93,8 +86,8 @@ public class AVSubmissionController extends BasicController {
 			}
 		} else if (submissionDetailsController == source) {
 			if (event == Event.DONE_EVENT) {
-				userDefinedFileName = submissionDetailsController.getFileName();
-				fireEvent(ureq, Event.DONE_EVENT);
+				VFSLeaf recording = creationController.moveUploadFileTo(documentsContainer, submissionDetailsController.getFileName());
+				fireEvent(ureq, new AVDoneEvent(recording));
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
@@ -102,7 +95,8 @@ public class AVSubmissionController extends BasicController {
 	}
 
 	private void doSetSubmissionDetails(UserRequest ureq) {
-		submissionDetailsController = new AVSubmissionDetailsController(ureq, getWindowControl(), documentsDir, creationController.getRecordedFileName());
+		submissionDetailsController = new AVSubmissionDetailsController(ureq, getWindowControl(), documentsContainer,
+				creationController.getFileName());
 		listenTo(submissionDetailsController);
 		mainVC.put("component", submissionDetailsController.getInitialComponent());
 	}

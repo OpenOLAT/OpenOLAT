@@ -32,13 +32,10 @@ import org.olat.core.gui.avrecorder.AVCreationController;
 import org.olat.core.gui.avrecorder.AVCreationEvent;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
@@ -51,17 +48,17 @@ public class AVTaskController extends BasicController implements Activateable2 {
 	private final VelocityContainer mainVC;
 
 	private TaskDefinition task;
-	private final File tasksFolder;
+	private final VFSContainer tasksContainer;
 	private final List<TaskDefinition> existingDefinitions;
 
 	private final AVCreationController creationController;
 	private AVTaskDefinitionController taskDefinitionController;
 
-	public AVTaskController(UserRequest ureq, WindowControl wControl, File tasksFolder,
+	public AVTaskController(UserRequest ureq, WindowControl wControl, VFSContainer tasksContainer,
 							List<TaskDefinition> existingDefinitions, boolean audioOnly) {
 		super(ureq, wControl);
 
-		this.tasksFolder = tasksFolder;
+		this.tasksContainer = tasksContainer;
 		this.existingDefinitions = existingDefinitions;
 
 		AVConfiguration config = new AVConfiguration();
@@ -95,7 +92,7 @@ public class AVTaskController extends BasicController implements Activateable2 {
 			}
 		} else if (taskDefinitionController == source) {
 			if (event == Event.DONE_EVENT) {
-				doMoveRecordedFile();
+				creationController.moveUploadFileTo(tasksContainer, task.getFilename());
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -105,24 +102,13 @@ public class AVTaskController extends BasicController implements Activateable2 {
 
 	private void doSetTaskDefinition(UserRequest ureq) {
 		task = new TaskDefinition();
-		task.setFilename(creationController.getRecordedFileName());
+		task.setFilename(creationController.getFileName());
 
-		taskDefinitionController = new AVTaskDefinitionController(ureq, getWindowControl(), task, tasksFolder,
+		taskDefinitionController = new AVTaskDefinitionController(ureq, getWindowControl(), task, tasksContainer,
 				existingDefinitions);
 		listenTo(taskDefinitionController);
 
 		mainVC.put("component", taskDefinitionController.getInitialComponent());
-	}
-
-	private void doMoveRecordedFile() {
-		try {
-			Path recordedFilePath = creationController.getRecordedFile().toPath();
-			File targetFile = new File(tasksFolder, task.getFilename());
-			Files.move(recordedFilePath, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		} catch (Exception e) {
-			logError("", e);
-			task = null;
-		}
 	}
 
 	@Override

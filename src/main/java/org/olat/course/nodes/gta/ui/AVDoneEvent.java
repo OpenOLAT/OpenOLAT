@@ -17,32 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.elements;
+package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.gui.components.form.flexible.FormMultipartItem;
-import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.util.vfs.VFSLeaf;
 
-import java.io.File;
-
 /**
- * Initial date: 2022-09-06<br>
+ * Initial date: 2022-10-05<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface AVRecording extends FormMultipartItem {
+public class AVDoneEvent extends Event {
 
-	boolean isUploadSuccess();
+	private final static String COMMAND = "av.recording.done";
+	private final VFSLeaf recording;
 
-	File getRecordedFile();
+	public AVDoneEvent(VFSLeaf recording) {
+		super(COMMAND);
+		this.recording = recording;
+	}
 
-	String getFileName();
-
-	/**
-	 * Moves the uploaded file to a directory specified by 'destinationContainer'.
-	 * This method either stores the file in the destination container as uploaded (if it is
-	 * in the required format), otherwise it stores an empty proxy file and stores the original file
-	 * as a hidden master file in the same container.
-	 */
-	VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, String requestedName);
+	public VFSLeaf getRecording() {
+		return recording;
+	}
 }

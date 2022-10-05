@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.nodes.gta.GTAManager;
 
 public class ModeCellRenderer extends StaticFlexiCellRenderer {
 
@@ -44,8 +45,9 @@ public class ModeCellRenderer extends StaticFlexiCellRenderer {
 		String icon = null;
 		String buttonLabel = null;
 		String buttonStyle = null;
-		
-		if (cellValue instanceof Pair<?, ?>) {			
+		setNewWindow(true);
+
+		if (cellValue instanceof Pair<?, ?>) {
 			Pair<Mode, String> pair = (Pair<Mode, String>) cellValue;
 			Mode mode = pair.getLeft();
 			String fileName = pair.getRight();
@@ -55,7 +57,11 @@ public class ModeCellRenderer extends StaticFlexiCellRenderer {
 				buttonStyle = "btn btn-default btn-xs o_button_ghost";
 				buttonLabel = docEditorService.getModeButtonLabel(mode, fileName, translator);
 			}
+		} else if (GTAManager.BUSY_VALUE.equals(cellValue)) {
+			icon = "o_icon o_icon_busy o_icon-spin";
+			setNewWindow(false);
 		}
+
 		// Set with calculated values or reset using the null values from initialization
 		setIconLeftCSS(icon);				
 		setLabel(buttonLabel);

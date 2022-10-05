@@ -72,6 +72,8 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 
 	Integer getTranscodingStatus();
 
+	boolean isInTranscoding();
+
 	public boolean isDirectory();
 	
 	public String getIconCssClass();

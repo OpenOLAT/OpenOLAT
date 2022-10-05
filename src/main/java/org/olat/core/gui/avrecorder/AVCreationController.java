@@ -77,15 +77,15 @@ public class AVCreationController extends FormBasicController {
 		return avRecording.getRecordedFile();
 	}
 
-	public String getRecordedFileName() {
+	public String getFileName() {
 		if (avRecording == null) {
 			return null;
 		}
-		return avRecording.getRecordedFileName();
+		return avRecording.getFileName();
 	}
 
-	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer) {
-		return avRecording.moveUploadFileTo(destinationContainer);
+	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, String requestedName) {
+		return avRecording.moveUploadFileTo(destinationContainer, requestedName);
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public class AVCreationController extends FormBasicController {
 				qualitySelectionValues.keys(), qualitySelectionValues.values());
 		qualityDropdown.select(config.getVideoQuality().name(), true);
 
-		avRecording = new AVRecordingImpl(getIdentity(), "avRecording", "posterImage");
+		avRecording = new AVRecordingImpl(getIdentity(), "avRecording", "posterImage", config);
 		formLayout.add(avRecording);
 
 		confirmButton = new FormSubmit("confirmButton", "confirmButton");
