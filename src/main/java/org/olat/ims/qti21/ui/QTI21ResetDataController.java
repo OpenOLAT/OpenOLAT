@@ -251,7 +251,7 @@ public class QTI21ResetDataController extends FormBasicController {
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
 			//author can do this, also they can archive all users and anonyme users
-	    	QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null, true, true, true);
+			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null, true, true, true, false);
 			new QTI21ArchiveFormat(getLocale(), searchParams).exportResource(exportStream);
 		} catch (IOException e) {
 			logError("", e);

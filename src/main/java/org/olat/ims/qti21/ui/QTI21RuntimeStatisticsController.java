@@ -90,7 +90,7 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 		}
 		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym());
+		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym(), false);
 		resourceResult = new QTI21StatisticResourceResult(testEntry, searchParams, secCallback);
 		
 		TreeModel treeModel = resourceResult.getTreeModel();

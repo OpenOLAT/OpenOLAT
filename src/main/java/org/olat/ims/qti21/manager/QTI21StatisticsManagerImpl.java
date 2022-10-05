@@ -35,6 +35,7 @@ import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -107,7 +108,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Autowired
 	private DB dbInstance;
 	
-	private void decorateRSet(QueryBuilder sb, QTI21StatisticSearchParams searchParams, boolean finished) {
+	private boolean decorateRSet(QueryBuilder sb, QTI21StatisticSearchParams searchParams, boolean finished) {
+		boolean fakeParticipantParam = false;
+		
 		sb.append(" where asession.testEntry.key=:testEntryKey and asession.repositoryEntry.key=:repositoryEntryKey");
 		if(searchParams.getNodeIdent() != null ) {
 			sb.append(" and asession.subIdent=:subIdent");
@@ -137,9 +140,10 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			  .append(" )");
 		} else if(searchParams.getLimitToIdentities() != null && !searchParams.getLimitToIdentities().isEmpty()) {
 			sb.append(" and asession.identity.key in (:limitIdentityKeys)");
-		} else if (searchParams.isViewMembers() && searchParams.isViewNonMembers() && searchParams.isViewAnonymUsers()) {
+		} else if ((searchParams.isViewMembers() && searchParams.isViewNonMembers() && searchParams.isViewAnonymUsers() && searchParams.isViewFakeParticipants())
+				|| (!searchParams.isViewMembers() && !searchParams.isViewNonMembers() && !searchParams.isViewAnonymUsers() && !searchParams.isViewFakeParticipants())) {
 			//no restrictions
-		} else if (searchParams.isViewMembers() || searchParams.isViewNonMembers() || searchParams.isViewAnonymUsers()) {
+		} else if (searchParams.isViewMembers() || searchParams.isViewNonMembers() || searchParams.isViewAnonymUsers() || searchParams.isViewFakeParticipants()) {
 			boolean or = false;
 			sb.append(" and (");
 			if (searchParams.isViewMembers()) {
@@ -149,11 +153,22 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				or = true;
 			}
 			if (searchParams.isViewNonMembers()) {
-				if (or) sb.append(" or ");
+				if (or) sb.append(" or (");
 				sb.append(" asession.identity.key not in (select membership.identity.key from repoentrytogroup as rel, bgroupmember as membership")
 				  .append("   where rel.entry.key=:repositoryEntryKey and rel.group.key=membership.group.key and membership.role")
-				      .in(GroupRoles.participant.name(), GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name())
-				.append(" )");
+				      .in(GroupRoles.participant.name(), GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name());
+				sb.append(")");
+				if (searchParams.getFakeParticipants() != null && !searchParams.getFakeParticipants().isEmpty()) {
+					sb.append(" and asession.identity.key not in :fakeParticipantKeys");
+					fakeParticipantParam = true;
+				}
+				if (or) sb.append(" )");
+				or = true;
+			}
+			if (searchParams.isViewFakeParticipants() && searchParams.getFakeParticipants() != null && !searchParams.getFakeParticipants().isEmpty()) {
+				if (or) sb.append(" or ");
+				sb.append(" asession.identity.key in :fakeParticipantKeys");
+				fakeParticipantParam = true;
 				or = true;
 			}
 			if (searchParams.isViewAnonymUsers()) {
@@ -161,11 +176,12 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				sb.append(" asession.anonymousIdentifier is not null");
 			}
 			
-			sb.append(")");
+			sb.append(")"); // and
 		}
+		return fakeParticipantParam;
 	}
 	
-	private void decorateRSetQuery(TypedQuery<?> query, QTI21StatisticSearchParams searchParams) {
+	private void decorateRSetQuery(TypedQuery<?> query, QTI21StatisticSearchParams searchParams, boolean fakeParticipantParam) {
 		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
 		if(searchParams.getCourseEntry() == null) {
 			query.setParameter("repositoryEntryKey", searchParams.getTestEntry().getKey());
@@ -183,18 +199,21 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 					.map(Identity::getKey).collect(Collectors.toList());
 			query.setParameter("limitIdentityKeys", keys);
 		}
+		if (fakeParticipantParam) {
+			query.setParameter("fakeParticipantKeys", searchParams.getFakeParticipants().stream().map(IdentityRef::getKey).collect(Collectors.toSet()));
+		}
 	}
 
 	@Override
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams, Double cutValue) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select asession.score, asession.manualScore, asession.passed, asession.duration from qtiassessmenttestsession asession ");
-		decorateRSet(sb, searchParams, true);
+		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
 		sb.append(" order by asession.key asc");
 
 		TypedQuery<Object[]> rawDataQuery = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
-		decorateRSetQuery(rawDataQuery, searchParams);
+		decorateRSetQuery(rawDataQuery, searchParams, fakeParticipantParam);
 		List<Object[]> rawDatas =	rawDataQuery.getResultList();
 		
 		int numOfPassed = 0;
@@ -287,7 +306,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select isession.key, isession.score, isession.manualScore, isession.duration, asession.identity.key from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams, true);
+		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
 		
 		if(testPart != null) {
 			sb.append(" and isession.testPartIdentifier=:testPartId");
@@ -301,7 +320,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
-		decorateRSetQuery(query, searchParams);
+		decorateRSetQuery(query, searchParams, fakeParticipantParam);
 		if(testPart != null) {
 			query.setParameter("testPartId", testPart.getIdentifier().toString());
 		}
@@ -412,14 +431,14 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select isession.score, isession.manualScore, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams, true);
+		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
 		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and isession.duration > 0")
 		  .append(" group by isession.score, isession.manualScore");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("itemIdent", itemIdent);
-		decorateRSetQuery(query, searchParams);
+		decorateRSetQuery(query, searchParams, fakeParticipantParam);
 		List<Object[]> results = query.getResultList();
 		if(results.isEmpty()) {
 			return new StatisticsItem();
@@ -884,7 +903,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		sb.append("select isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse, count(aresponse.key) from qtiassessmentresponse aresponse ")
 		  .append(" inner join aresponse.assessmentItemSession isession")
 		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams, true);
+		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
 		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and aresponse.responseIdentifier=:responseIdentifier and isession.duration > 0")
 		  .append(" group by isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse");
 
@@ -892,7 +911,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("itemIdent", itemRefIdent)
 				.setParameter("responseIdentifier", responseIdentifier);
-		decorateRSetQuery(query, searchParams);
+		decorateRSetQuery(query, searchParams, fakeParticipantParam);
 		List<Object[]> results = query.getResultList();
 		if(results.isEmpty()) {
 			return new ArrayList<>();
@@ -914,7 +933,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select isession.assessmentItemIdentifier, isession.score, isession.manualScore, count(*) from qtiassessmentitemsession isession")
 		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams, true);
+		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
 		if(testPart != null) {
 			sb.append(" and isession.testPartIdentifier=:testPartId");
 		}
@@ -927,7 +946,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		decorateRSetQuery(query, searchParams);
+		decorateRSetQuery(query, searchParams, fakeParticipantParam);
 		if(testPart != null) {
 			query.setParameter("testPartId", testPart.getIdentifier().toString());
 		}

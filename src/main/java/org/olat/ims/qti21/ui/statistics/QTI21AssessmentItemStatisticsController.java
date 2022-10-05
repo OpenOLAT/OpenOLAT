@@ -259,6 +259,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
 				resourceResult.setViewPaticipantUsers(ufe.isWithMembers());
 				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());
+				resourceResult.setViewFakeParticipants(ufe.isWithFakeParticipants());
 				updateData(ureq);
 			}
 		}

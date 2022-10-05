@@ -125,9 +125,10 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		downloadRawLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
-			filterCtrl = new UserFilterController(ureq, getWindowControl(), 
-					true, resourceResult.canViewNonParticipantUsers(), false, resourceResult.canViewAnonymousUsers(),
-					true, resourceResult.isViewNonParticipantUsers(), false, resourceResult.isViewAnonymousUsers());
+			filterCtrl = new UserFilterController(ureq, getWindowControl(), true,
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewFakeParticipants(),
+					resourceResult.canViewAnonymousUsers(), true, resourceResult.isViewNonParticipantUsers(), false,
+					resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
@@ -153,13 +154,16 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		}
 	}
 	
-	public void updateData(boolean participants, boolean nonParticipans, boolean anonymous) {
+	public void updateData(boolean participants, boolean nonParticipans, boolean anonymous, boolean fakeParticipants) {
 		resourceResult.setViewPaticipantUsers(participants);
 		if (resourceResult.canViewNonParticipantUsers()) {
 			resourceResult.setViewNonPaticipantUsers(nonParticipans);
 		}
 		if (resourceResult.canViewAnonymousUsers()) {
 			resourceResult.setViewAnonymousUsers(anonymous);
+		}
+		if (resourceResult.canViewFakeParticipants()) {
+			resourceResult.setViewFakeParticipants(fakeParticipants);
 		}
 		updateData();
 	}
@@ -294,7 +298,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		if(filterCtrl == source) {
 			if(event instanceof UserFilterEvent) {
 				UserFilterEvent ufe = (UserFilterEvent)event;
-				updateData(ufe.isWithMembers(), ufe.isWithNonParticipantUsers(), ufe.isWithAnonymousUser());
+				updateData(ufe.isWithMembers(), ufe.isWithNonParticipantUsers(), ufe.isWithAnonymousUser(), ufe.isWithFakeParticipants());
 			}
 		}
 		super.event(ureq, source, event);

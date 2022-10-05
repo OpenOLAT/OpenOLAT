@@ -227,6 +227,7 @@ public class QTI21AbstractPartStatisticsController extends BasicController imple
 				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
 				resourceResult.setViewPaticipantUsers(ufe.isWithMembers());
 				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());
+				resourceResult.setViewFakeParticipants(ufe.isWithFakeParticipants());
 				updateData();
 			}
 		}

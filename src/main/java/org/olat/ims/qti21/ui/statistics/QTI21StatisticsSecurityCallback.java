@@ -27,12 +27,14 @@ package org.olat.ims.qti21.ui.statistics;
  */
 public class QTI21StatisticsSecurityCallback {
 	
-	private boolean anonymousUsers;
-	private boolean nonParticipantUsers;
+	private final boolean anonymousUsers;
+	private final boolean nonParticipantUsers;
+	private final boolean fakeParticipants;
 	
-	public QTI21StatisticsSecurityCallback(boolean nonParticipantUsers, boolean anonymousUsers) {
+	public QTI21StatisticsSecurityCallback(boolean nonParticipantUsers, boolean anonymousUsers, boolean fakeParticipants) {
 		this.anonymousUsers = anonymousUsers;
 		this.nonParticipantUsers = nonParticipantUsers;
+		this.fakeParticipants = fakeParticipants;
 	}
 	
 	public boolean canViewAnonymousUsers() {
@@ -41,6 +43,10 @@ public class QTI21StatisticsSecurityCallback {
 	
 	public boolean canViewNonParticipantUsers() {
 		return nonParticipantUsers;
+	}
+
+	public boolean canViewFakeParticipants() {
+		return fakeParticipants;
 	}
 
 }

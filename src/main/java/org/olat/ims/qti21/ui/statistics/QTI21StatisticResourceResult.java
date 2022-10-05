@@ -188,6 +188,10 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		return searchParams.isViewAnonymUsers();
 	}
 	
+	public boolean canViewFakeParticipants() {
+		return secCallback.canViewFakeParticipants();
+	}
+	
 	public void setViewAnonymousUsers(boolean view) {
 		if(view != searchParams.isViewAnonymUsers()) {
 			statisticAssessment = null;
@@ -215,6 +219,17 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			statisticAssessment = null;
 		}
 		searchParams.setViewNonMembers(view);
+	}
+	
+	public boolean isViewFakeParticipants() {
+		return searchParams.isViewFakeParticipants();
+	}
+	
+	public void setViewFakeParticipants(boolean view) {
+		if(view != searchParams.isViewFakeParticipants()) {
+			statisticAssessment = null;
+		}
+		searchParams.setViewFakeParticipants(view);
 	}
 
 	public void setLimitToIdentities(List<Identity> limitToIdentities) {

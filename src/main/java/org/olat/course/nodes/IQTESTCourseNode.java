@@ -37,10 +37,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -67,6 +69,7 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -347,10 +350,18 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiTestEntry, courseEntry, getIdent());
 			boolean admin = userCourseEnv.isAdmin();
+			boolean canViewFakeParticipants = false;
 			if(options.getParticipantsGroups() != null) {
 				searchParams.setLimitToGroups(options.getParticipantsGroups());
+			} else {
+				Set<IdentityRef> fakeParticipants = CoreSpringFactory.getImpl(AssessmentToolManager.class)
+						.getFakeParticipants(courseEntry, userCourseEnv.getIdentityEnvironment().getIdentity(), admin, userCourseEnv.isCoach());
+				if (!fakeParticipants.isEmpty()) {
+					searchParams.setFakeParticipants(fakeParticipants);
+					canViewFakeParticipants = true;
+				}
 			}
-			QTI21StatisticsSecurityCallback secCallback = new QTI21StatisticsSecurityCallback(admin, admin && isGuestAllowedForQTI21(qtiTestEntry));
+			QTI21StatisticsSecurityCallback secCallback = new QTI21StatisticsSecurityCallback(admin, admin && isGuestAllowedForQTI21(qtiTestEntry), canViewFakeParticipants);
 			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams, secCallback);
 		}
 		

@@ -103,12 +103,13 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		nodeAccessType = NodeAccessType.of(courseEnv);
 		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym());
+		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym(), false);
 		
 		searchParams = new QTI21StatisticSearchParams(testEntry, courseEntry, courseNode.getIdent());
 		searchParams.setViewAnonymUsers(false);//In assessment tool, no user allowed
 		searchParams.setViewMembers(false);
 		searchParams.setViewNonMembers(false);
+		searchParams.setViewFakeParticipants(false);
 		
 		if(asOptions.getGroup() != null) {// filter by business group
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
