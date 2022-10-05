@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -62,7 +60,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
@@ -70,6 +67,7 @@ import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogSearchTerm;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataModel.CatalogRepositoryEntryCols;
@@ -128,8 +126,6 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private ACService acService;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
-	@Autowired
-	private I18nManager i18nManager;
 	@Autowired
 	private MapperService mapperService;
 
@@ -390,16 +386,10 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	public void search(UserRequest ureq, String searchString, boolean reset) {
 		if (StringHelper.containsNonWhitespace(searchString)) {
-			searchParams.setSearchString(searchString);
-			Set<String> serachTaxonomyLevelI18nSuffix = i18nManager
-					.findI18nKeysByOverlayValue(searchString, TaxonomyUIFactory.PREFIX_DISPLAY_NAME, getLocale(),
-							TaxonomyUIFactory.BUNDLE_NAME, false)
-					.stream().map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
-					.collect(Collectors.toSet());
-			searchParams.setSerachTaxonomyLevelI18nSuffix(serachTaxonomyLevelI18nSuffix);
+			List<CatalogSearchTerm> searchTems = catalogService.getSearchTems(searchString, getLocale());
+			searchParams.setSearchTerms(searchTems);
 		} else {
-			searchParams.setSearchString(null);
-			searchParams.setSerachTaxonomyLevelI18nSuffix(null);
+			searchParams.setSearchTerms(null);
 		}
 		if (reset) {
 			tableEl.resetSearch(ureq);

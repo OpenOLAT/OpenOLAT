@@ -77,8 +77,7 @@ public class CatalogRepositoryEntrySearchParams {
 	private Date offerValidAt;
 	
 	// Search
-	private String searchString;
-	private Collection<String> serachTaxonomyLevelI18nSuffix;
+	private List<CatalogSearchTerm> searchTerms;
 	
 	// Filter
 	private Collection<Long> repositoryEntryKeys;
@@ -135,21 +134,13 @@ public class CatalogRepositoryEntrySearchParams {
 	public void setOfferValidAt(Date offerValidAt) {
 		this.offerValidAt = offerValidAt;
 	}
-
-	public String getSearchString() {
-		return searchString;
-	}
 	
-	public void setSearchString(String searchString) {
-		this.searchString = searchString;
+	public List<CatalogSearchTerm> getSearchTerms() {
+		return searchTerms;
 	}
 
-	public Collection<String> getSerachTaxonomyLevelI18nSuffix() {
-		return serachTaxonomyLevelI18nSuffix;
-	}
-
-	public void setSerachTaxonomyLevelI18nSuffix(Collection<String> serachTaxonomyLevelI18nSuffix) {
-		this.serachTaxonomyLevelI18nSuffix = serachTaxonomyLevelI18nSuffix;
+	public void setSearchTerms(List<CatalogSearchTerm> searchTerms) {
+		this.searchTerms = searchTerms;
 	}
 
 	public Collection<Long> getRepositoryEntryKeys() {
@@ -255,9 +246,8 @@ public class CatalogRepositoryEntrySearchParams {
 		}
 		
 		// Search
-		copy.searchString = this.searchString;
-		if (this.serachTaxonomyLevelI18nSuffix != null) {
-			copy.serachTaxonomyLevelI18nSuffix = new ArrayList<>(this.serachTaxonomyLevelI18nSuffix);
+		if (this.searchTerms != null) {
+			copy.searchTerms = new ArrayList<>(this.searchTerms);
 		}
 		
 		// Filter

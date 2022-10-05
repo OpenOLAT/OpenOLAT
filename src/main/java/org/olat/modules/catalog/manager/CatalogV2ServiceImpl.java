@@ -25,7 +25,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,6 +38,8 @@ import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterRef;
@@ -47,10 +51,13 @@ import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogSearchTerm;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.model.CatalogRepositoryEntryImpl;
+import org.olat.modules.catalog.model.CatalogSearchTermImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
@@ -96,6 +103,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	private RepositoryService repositoryService;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private I18nManager i18nManager;
 	
 	@PostConstruct
 	public void initHandlers() {
@@ -223,6 +232,31 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		}
 		
 		return reToResourceAccess;
+	}
+	
+	@Override
+	public List<CatalogSearchTerm> getSearchTems(String queryString, Locale locale) {
+		List<CatalogSearchTerm> searchTerms = null;
+		
+		if (StringHelper.containsNonWhitespace(queryString)) {
+			String[] queryParts = queryString.split(" ");
+			searchTerms = new ArrayList<>(queryParts.length);
+			for (String queryPart : queryParts) {
+				if (StringHelper.containsNonWhitespace(queryPart)) {
+					Set<String> taxonomyLevelI18nSuffix = null;
+					if (taxonomyModule.isEnabled()) {
+						taxonomyLevelI18nSuffix = i18nManager
+						.findI18nKeysByOverlayValue(queryPart, TaxonomyUIFactory.PREFIX_DISPLAY_NAME, locale,
+								TaxonomyUIFactory.BUNDLE_NAME, false)
+						.stream().map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
+						.collect(Collectors.toSet());
+					}
+					searchTerms.add(new CatalogSearchTermImpl(queryPart, taxonomyLevelI18nSuffix));
+				}
+			}
+		}
+		
+		return searchTerms;
 	}
 
 	@Override

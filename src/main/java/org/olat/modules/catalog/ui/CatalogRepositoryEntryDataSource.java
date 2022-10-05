@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
@@ -36,13 +35,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
+import org.olat.modules.catalog.CatalogSearchTerm;
 import org.olat.modules.catalog.CatalogV2Service;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
@@ -73,7 +71,6 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private final Locale locale;
 	private final CatalogV2Service catalogService;
 	private final AccessControlModule acModule;
-	private final I18nManager i18nManager;
 	
 	public CatalogRepositoryEntryDataSource(CatalogRepositoryEntrySearchParams searchParams,
 			boolean withSearch, CatalogRepositoryEntryRowItemCreator rowItemCreator, Locale locale) {
@@ -83,7 +80,6 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		this.locale = locale;
 		this.catalogService = CoreSpringFactory.getImpl(CatalogV2Service.class);
 		this.acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		this.i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 	}
 	
 	public void resetCount() {
@@ -108,16 +104,10 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if (withSearch) {
 			if (StringHelper.containsNonWhitespace(query)) {
-				searchParams.setSearchString(query);
-				Set<String> serachTaxonomyLevelI18nSuffix = i18nManager
-						.findI18nKeysByOverlayValue(query, TaxonomyUIFactory.PREFIX_DISPLAY_NAME, locale,
-								TaxonomyUIFactory.BUNDLE_NAME, false)
-						.stream().map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
-						.collect(Collectors.toSet());
-				searchParams.setSerachTaxonomyLevelI18nSuffix(serachTaxonomyLevelI18nSuffix);
+				List<CatalogSearchTerm> searchTems = catalogService.getSearchTems(query, locale);
+				searchParams.setSearchTerms(searchTems);
 			} else {
-				searchParams.setSearchString(null);
-				searchParams.setSerachTaxonomyLevelI18nSuffix(null);
+				searchParams.setSearchTerms(null);
 			}
 		}
 		

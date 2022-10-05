@@ -21,6 +21,7 @@ package org.olat.modules.catalog;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Organisation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -40,6 +41,8 @@ public interface CatalogV2Service {
 	public void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams);
 
 	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults);
+	
+	public List<CatalogSearchTerm> getSearchTems(String queryString, Locale locale);
 	
 	public List<CatalogLauncherHandler> getCatalogLauncherHandlers();
 

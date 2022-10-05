@@ -21,8 +21,10 @@ package org.olat.modules.catalog.manager;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +42,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
+import org.olat.modules.catalog.CatalogSearchTerm;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -207,25 +210,36 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(" )");
 		}
 		
-		String text = searchParams.getSearchString();
-		Collection<String> serachTaxonomyLevelI18nSuffix = null;
-		if (StringHelper.containsNonWhitespace(text)) {
-			text = PersistenceHelper.makeFuzzyQueryString(text);
-			sb.and().append("(");
-			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "displaytext", dbInstance.getDbVendor());
-			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "v.description", "displaytext", dbInstance.getDbVendor());
-			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "v.objectives", "displaytext", dbInstance.getDbVendor());
-			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "displaytext", dbInstance.getDbVendor());
-			if (searchParams.getSerachTaxonomyLevelI18nSuffix() != null && !searchParams.getSerachTaxonomyLevelI18nSuffix().isEmpty()) {
-				sb.append(" or exists (select reToTax.key from repositoryentrytotaxonomylevel as reToTax");
-				sb.append("  where reToTax.entry.key=v.key");
-				sb.append("    and reToTax.taxonomyLevel.i18nSuffix in :serachTaxonomyLevelI18nSuffix)");
-				serachTaxonomyLevelI18nSuffix = searchParams.getSerachTaxonomyLevelI18nSuffix();
+		Map<String, String> paramToSearchText = null;
+		Map<String, Collection<String>> paramToTaxonomyLevelI18nSuffix = null;
+		if (searchParams.getSearchTerms() != null && !searchParams.getSearchTerms().isEmpty()) {
+			paramToSearchText = new HashMap<>(searchParams.getSearchTerms().size());
+			paramToTaxonomyLevelI18nSuffix = new HashMap<>(searchParams.getSearchTerms().size());
+			
+			for (int i = 0; i < searchParams.getSearchTerms().size(); i++) {
+				CatalogSearchTerm searchTerm = searchParams.getSearchTerms().get(i);
+				
+				String fuzzySearchText = PersistenceHelper.makeFuzzyQueryString(searchTerm.getText());
+				String paramName = "displaytext" + i;
+				paramToSearchText.put(paramName, fuzzySearchText);
+				
+				sb.and().append("(");
+				PersistenceHelper.appendFuzzyLike(sb, "v.displayname", paramName, dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "v.description", paramName, dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "v.objectives", paramName, dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "v.authors", paramName, dbInstance.getDbVendor());
+				
+				if (searchTerm.getTaxonomyLevelI18nSuffix() != null && !searchTerm.getTaxonomyLevelI18nSuffix().isEmpty()) {
+					String taxParamName = "serachTaxonomyLevelI18nSuffix" + i;
+					sb.append(" or v.key in (select reToTax.entry.key from repositoryentrytotaxonomylevel as reToTax");
+					sb.append("  where reToTax.taxonomyLevel.i18nSuffix in :").append(taxParamName).append(")");
+					paramToTaxonomyLevelI18nSuffix.put(taxParamName, searchTerm.getTaxonomyLevelI18nSuffix());
+				}
+				sb.append(")");
 			}
-			sb.append(")");
 		}
 		
 		if(countTaxonomyLevels) {
@@ -277,11 +291,11 @@ public class CatalogRepositoryEntryQueries {
 		if (StringHelper.containsNonWhitespace(author)) {
 			dbQuery.setParameter("author", author);
 		}
-		if (StringHelper.containsNonWhitespace(text)) {
-			dbQuery.setParameter("displaytext", text);
+		if (paramToSearchText != null && !paramToSearchText.isEmpty()) {
+			paramToSearchText.entrySet().stream().forEach(entrySet -> dbQuery.setParameter(entrySet.getKey(), entrySet.getValue()));
 		}
-		if (serachTaxonomyLevelI18nSuffix != null) {
-			dbQuery.setParameter("serachTaxonomyLevelI18nSuffix", serachTaxonomyLevelI18nSuffix);
+		if (paramToTaxonomyLevelI18nSuffix!= null && !paramToTaxonomyLevelI18nSuffix.isEmpty()) {
+			paramToTaxonomyLevelI18nSuffix.entrySet().stream().forEach(entrySet -> dbQuery.setParameter(entrySet.getKey(), entrySet.getValue()));
 		}
 		if (selectRepositoryEntries && OrderBy.popularCourses == searchParams.getOrderBy()) {
 			dbQuery.setParameter("statDay", DateUtils.addDays(new Date(), -28));

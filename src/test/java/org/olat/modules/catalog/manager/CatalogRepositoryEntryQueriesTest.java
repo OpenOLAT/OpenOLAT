@@ -42,6 +42,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.course.statistic.daily.DailyStat;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
+import org.olat.modules.catalog.model.CatalogSearchTermImpl;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataModel;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryDataModel.CatalogRepositoryEntryCols;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -469,6 +470,32 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_SearchTerms() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), ":::AB", null, "123", null, null, null, null, null, null, null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, ":::ABc", null, null, null, null, null, null, null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, "234", ":::ABc", null, null, null, null, null, null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, "345", null, null, ":::ABd", null, null, null, null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, "456", null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setSearchTerms(List.of(new CatalogSearchTermImpl(":ab", null)));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2),
+						catalogItem.getRepositoryEntry(3));
+		
+		searchParams.setSearchTerms(List.of(new CatalogSearchTermImpl(":ab", null), new CatalogSearchTermImpl("23", null)));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(2));
 	}
 	
 	@Test
