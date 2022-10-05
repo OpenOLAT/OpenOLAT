@@ -245,6 +245,7 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		this.fileSize = fileSize;
 	}
 
+	@Override
 	public Integer getTranscodingStatus() {
 		return transcodingStatus;
 	}

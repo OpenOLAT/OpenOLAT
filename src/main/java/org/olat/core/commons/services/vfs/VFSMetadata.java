@@ -69,7 +69,9 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public void setFileInitializedBy(Identity identity);
 	
 	public long getFileSize();
-	
+
+	Integer getTranscodingStatus();
+
 	public boolean isDirectory();
 	
 	public String getIconCssClass();

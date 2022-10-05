@@ -15,6 +15,7 @@
 	<import resource="classpath:/org/olat/core/commons/services/taskexecutor/_spring/taskExecutorCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/notifications/_spring/notificationsContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/sms/_spring/smsCorecontext.xml"/>
+	<import resource="classpath:/org/olat/core/commons/services/vfs/_spring/vfsContext.xml"/>
 	
 	<bean id="imageHelper" class="org.olat.core.commons.services.image.ImageHelperBean">
 		<property name="imageHelperServiceProvider" ref="imageHelperServiceProvider_${thumbnail.provider}"/>
