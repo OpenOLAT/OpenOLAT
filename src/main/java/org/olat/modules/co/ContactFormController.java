@@ -149,7 +149,7 @@ public class ContactFormController extends BasicController {
 		if(StringHelper.containsNonWhitespace(cmsg.getSubject())) {
 			cntctForm.setSubject(cmsg.getSubject());
 		} else if(template != null && StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
-			cntctForm.setSubject(template.getSubjectTemplate());
+			cntctForm.setSubject(template);
 		}
 		
 		//init display component

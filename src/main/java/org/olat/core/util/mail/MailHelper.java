@@ -149,6 +149,18 @@ public class MailHelper {
 		message += "</ul>\n";
 		return message;
 	}
+
+	public static void setSubjectAsHelp(FormItem formItem, Locale locale) {
+		String subjectHelp = getSubjectAsHelp(locale);
+		if (StringHelper.containsNonWhitespace(subjectHelp)) {
+			formItem.setHelpText(subjectHelp);
+		}
+	}
+
+	public static String getSubjectAsHelp(Locale locale) {
+		Translator translator = getTranslator(locale);
+		return translator.translate("help.subject");
+	}
 	
 	public static void setVariableNamesAsHelp(FormItem formItem, MailTemplate template, Locale locale) {
 		setVariableNamesAsHelp(formItem, template.getVariableNames(), locale);
