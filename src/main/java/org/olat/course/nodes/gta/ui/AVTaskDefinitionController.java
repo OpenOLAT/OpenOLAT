@@ -33,7 +33,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
-import java.io.File;
 import java.util.List;
 
 /**

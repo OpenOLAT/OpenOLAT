@@ -32,8 +32,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 
-import java.io.File;
-
 /**
  * Initial date: 2022-09-08<br>
  *

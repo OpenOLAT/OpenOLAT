@@ -33,8 +33,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 
-import java.io.File;
-
 /**
  * Initial date: 2022-09-09<br>
  *

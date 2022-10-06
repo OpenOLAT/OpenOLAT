@@ -35,7 +35,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -69,6 +74,7 @@ import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
 import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -118,6 +124,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	protected NotificationsManager notificationsManager;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private AVModule avModule;
 	
 	public AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
@@ -154,11 +162,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		createVideoAssignmentLink = uifactory.addFormLink("av.create.video.assignment", tasksCont, Link.BUTTON);
 		createVideoAssignmentLink.setElementCssClass("o_sel_course_gta_create_video_assignment");
 		createVideoAssignmentLink.setIconLeftCSS("o_icon o_icon_video_record");
-		createVideoAssignmentLink.setVisible(!readOnly);
+		createVideoAssignmentLink.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
 		createAudioAssignmentLink = uifactory.addFormLink("av.create.audio.assignment", tasksCont, Link.BUTTON);
 		createAudioAssignmentLink.setElementCssClass("o_sel_course_gta_create_audio_assignment");
 		createAudioAssignmentLink.setIconLeftCSS("o_icon o_icon_audio_record");
-		createAudioAssignmentLink.setVisible(!readOnly);
+		createAudioAssignmentLink.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));

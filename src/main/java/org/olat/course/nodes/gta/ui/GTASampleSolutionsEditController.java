@@ -19,13 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -68,8 +61,16 @@ import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.ui.SolutionTableModel.SolCols;
 import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 /**
  * 
@@ -108,6 +109,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private GTAManager gtaManager;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private AVModule avModule;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -136,11 +139,11 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		recordVideoLink = uifactory.addFormLink("av.record.video", formLayout, Link.BUTTON);
 		recordVideoLink.setElementCssClass("o_sel_course_gta_record_video");
 		recordVideoLink.setIconLeftCSS("o_icon o_icon_video_record");
-		recordVideoLink.setVisible(!readOnly);
+		recordVideoLink.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
 		recordAudioLink = uifactory.addFormLink("av.record.audio", formLayout, Link.BUTTON);
 		recordAudioLink.setElementCssClass("o_sel_course_gta_record_audio");
 		recordAudioLink.setIconLeftCSS("o_icon o_icon_audio_record");
-		recordAudioLink.setVisible(!readOnly);
+		recordAudioLink.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));

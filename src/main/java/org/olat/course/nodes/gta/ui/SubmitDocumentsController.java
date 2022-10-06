@@ -19,16 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -78,8 +68,19 @@ import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 /**
  * 
@@ -132,6 +133,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private UserManager userManager;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private AVModule avModule;
 
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
 			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
@@ -202,14 +205,14 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			recordVideoButton = uifactory.addFormLink("av.record.video", formLayout, Link.BUTTON);
 			recordVideoButton.setIconLeftCSS("o_icon o_icon_video_record");
 			recordVideoButton.setElementCssClass("o_sel_course_gta_record_video");
-			recordVideoButton.setVisible(!readOnly);
+			recordVideoButton.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
 		}
 
 		if (config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS)) {
 			recordAudioButton = uifactory.addFormLink("av.record.audio", formLayout, Link.BUTTON);
 			recordAudioButton.setIconLeftCSS("o_icon o_icon_audio_record");
 			recordAudioButton.setElementCssClass("o_sel_course_gta_record_audio");
-			recordAudioButton.setVisible(!readOnly);
+			recordAudioButton.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
