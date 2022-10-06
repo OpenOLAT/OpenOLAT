@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -47,7 +46,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -209,15 +207,6 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("default", getTranslator());
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
-		
-		String typeName;
-		if (handler != null) {
-			typeName = NewControllerFactory.translateResourceableTypeName(handler.getSupportedType(), getLocale());
-		} else {
-			typeName = translate("cif.type.na");
-		}
-		StaticTextElement typeEl = uifactory.addStaticTextElement("cif.type.learning.resource", typeName, generalCont);
-		typeEl.setElementCssClass("o_sel_author_type");
 		
 		displaynameEl = uifactory.addTextElement("cif.title", 100, "", generalCont);
 		displaynameEl.setElementCssClass("o_sel_author_displayname");

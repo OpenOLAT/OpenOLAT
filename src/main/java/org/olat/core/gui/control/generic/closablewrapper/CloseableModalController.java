@@ -130,6 +130,7 @@ public class CloseableModalController extends DefaultController implements Modal
 		if (showCloseIcon) {
 			closeIcon = LinkFactory.createIconClose(closeButtonText, myContent, this);
 			closeIcon.setDomReplacementWrapperRequired(false);
+			closeIcon.setSuppressDirtyFormWarning(true);
 		}
 		if (title != null) {
 			myContent.contextPut("title", StringHelper.escapeHtml(title));

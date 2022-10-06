@@ -143,7 +143,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 
 	@Override
 	public String getCreateLabelI18nKey() {
-		return "tools.add.qti21";
+		return "new.test";
 	}
 
 	@Override

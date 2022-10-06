@@ -107,7 +107,7 @@ public class ImsCPHandler extends FileHandler {
 	
 	@Override
 	public String getCreateLabelI18nKey() {
-		return "tools.add.cp";
+		return "new.cp";
 	}
 	
 	@Override

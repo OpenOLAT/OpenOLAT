@@ -473,8 +473,23 @@ a.o_repo_tools_status {
 .o_course_design.o_radio_cards {
 	label {
 		flex-basis: 279px;
-		.o_radio_icon {
+		.o_radio_text_wrapper {
+			display: flex;
+			flex-direction: column;
+			.o_radio_desc {
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				.o_course_design_desc {
+					height: 100%;
+					
+					// small aus dem o_course_design_desc rausnehmen
+				}
+			}
+		}
+		.o_radio_icon:not(.o_icon) {
 			height: 130px;
+			border: none;
 		}
 	}
 	.o_course_design_desc {
@@ -484,17 +499,22 @@ a.o_repo_tools_status {
 	}
 }
 .o_course_design_assistance {
-	tr {
-		th:not(:last-child), td:not(:last-child) {
-			border-right: 1px solid $table-border-color;
-		}
-		ul {
-			 padding-left: 1em;
+	table {
+		table-layout: fixed;
+		tr {
+			th:not(:last-child), td:not(:last-child) {
+				border-right: 1px solid $table-border-color;
+			}
+			ul {
+				 padding-left: 1em;
+			}
 		}
 	}
 	.o_course_design_icon {
-		width: 86px;
 		height: 130px;
+		background-position: top left;
+		background-repeat: no-repeat;
+		background-size: contain;
 	}
 }
 .o_course_design_path_icon {

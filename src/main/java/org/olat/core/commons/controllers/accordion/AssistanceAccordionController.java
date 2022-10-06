@@ -107,12 +107,14 @@ public class AssistanceAccordionController extends BasicController {
             expandButton = LinkFactory.createCustomLink(expandButtonName, expandButtonName, null,
                     Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, AssistanceAccordionController.this);
             expandButton.setCustomEnabledLinkCSS("o_clean_link");
+            expandButton.setSuppressDirtyFormWarning(true);
 
             String titleLinkName = "titleLink_" + index;
             titleLink = LinkFactory.createCustomLink(titleLinkName, titleLinkName, null,
                     Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, AssistanceAccordionController.this);
             titleLink.setCustomDisplayText(translator.translate(titleKey));
             titleLink.setCustomEnabledLinkCSS("o_clean_link");
+            titleLink.setSuppressDirtyFormWarning(true);
 
             this.components = components;
             if (components != null) {
