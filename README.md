@@ -247,6 +247,13 @@ sponsor this compatibility.
   from eclipse to console and back with command like mvn clean, or eclipse clean and such. You will always get 
   a clean and working environment when you do the following: Eclipse clean, create eclipse settings with launch, 
   Server publish resources and restart OpenOlat.
+* If you have problems with your postgres database regarding the ownership of the content use these:
+    * Set owner for tables of your database: 
+      * ```for tbl in `psql -qAt -c "select tablename from pg_tables where schemaname = 'public';" <YOURDATABASE>` ; do  psql -c "alter table \"$tbl\" owner to <YOURUSERNAME>" <YOURDATABASE> ; done```
+    * .. for sequences:
+      * ```for tbl in `psql -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'public';" <YOURDATABASE>` ; do  psql -c "alter sequence \"$tbl\" owner to <YOURUSERNAME>" <YOURDATABASE> ; done```
+    * .. for view:
+      * ```for tbl in `psql -qAt -c "select table_name from information_schema.views where table_schema = 'public';" <YOURDATABASE>` ; do  psql -c "alter view \"$tbl\" owner to <YOURUSERNAME>" <YOURDATABASE> ; done```
  
 #### Eclipse Plugins
 For a lean and speedy development setup it is recommended to to use a bare-bone Eclipse installation and only install
