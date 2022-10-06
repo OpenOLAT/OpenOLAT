@@ -135,6 +135,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private DocEditorService docEditorService;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private VFSTranscodingService transcodingService;
 
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
 			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
@@ -531,6 +533,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 	private void doDelete(UserRequest ureq, SubmittedSolution solution) {
 		File document = solution.getFile();
+		VFSItem item = documentsContainer.resolve(document.getName());
+		transcodingService.deleteMasterFile(item);
 		FileUtils.deleteFile(document);
 		updateModel(ureq);
 		updateWarnings();

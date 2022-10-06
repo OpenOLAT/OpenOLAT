@@ -111,6 +111,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private DocEditorService docEditorService;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private VFSTranscodingService transcodingService;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -354,6 +356,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		String documentName = solution.getSolution().getFilename();
 		VFSItem item = solutionContainer.resolve(documentName);
 		if(item != null) {
+			transcodingService.deleteMasterFile(item);
 			item.delete();
 		}
 		gtaManager.removeSolution(solution.getSolution(), courseEnv, gtaNode);

@@ -19,7 +19,14 @@
  */
 package org.olat.core.commons.services.vfs.model;
 
-import java.util.Date;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.model.LicenseTypeImpl;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,15 +40,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.commons.services.license.LicenseType;
-import org.olat.core.commons.services.license.model.LicenseTypeImpl;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
+import java.util.Date;
 
 /**
  * 
@@ -252,6 +251,11 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	public boolean isInTranscoding() {
 		return transcodingStatus != null && transcodingStatus != VFSMetadata.TRANSCODING_STATUS_DONE;
+	}
+
+	@Override
+	public boolean isTranscoded() {
+		return transcodingStatus != null && transcodingStatus == VFSMetadata.TRANSCODING_STATUS_DONE;
 	}
 
 	public void setTranscodingStatus(Integer transcodingStatus) {

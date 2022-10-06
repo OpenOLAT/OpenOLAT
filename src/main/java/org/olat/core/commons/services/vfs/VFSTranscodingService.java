@@ -59,4 +59,6 @@ public interface VFSTranscodingService {
 	void startTranscodingProcess();
 
 	void fileDoneEvent(VFSMetadata vfsMetadata);
+
+	void deleteMasterFile(VFSItem item);
 }

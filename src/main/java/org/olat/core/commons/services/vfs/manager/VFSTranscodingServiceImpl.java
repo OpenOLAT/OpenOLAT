@@ -27,6 +27,8 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.quartz.JobKey;
@@ -115,5 +117,21 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	public void fileDoneEvent(VFSMetadata vfsMetadata) {
 		VFSTranscodingDoneEvent doneEvent = new VFSTranscodingDoneEvent(vfsMetadata.getFilename());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(doneEvent, ores);
+	}
+
+	@Override
+	public void deleteMasterFile(VFSItem item) {
+		if (item != null && item.canMeta() == VFSConstants.YES) {
+			VFSMetadata metaInfo = item.getMetaInfo();
+			if (metaInfo != null && metaInfo.isTranscoded()) {
+				VFSContainer parentContainer = item.getParentContainer();
+				String name = item.getName();
+				String metaName = masterFilePrefix + name;
+				VFSItem masterItem = parentContainer.resolve(metaName);
+				if (masterItem != null) {
+					masterItem.delete();
+				}
+			}
+		}
 	}
 }
