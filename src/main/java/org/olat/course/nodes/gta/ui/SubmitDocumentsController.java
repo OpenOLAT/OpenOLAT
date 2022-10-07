@@ -480,7 +480,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			if(checkOpen(ureq) && checkDeadline(ureq) && event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				SubmittedSolution row = model.getObject(se.getIndex());
-				if("delete".equals(se.getCommand())) {
+				if("delete".equals(se.getCommand()) && !row.isInTranscoding()) {
 					doConfirmDelete(ureq, row);
 				} else if("open".equals(se.getCommand())) {
 					String filename = row.getFile().getName();

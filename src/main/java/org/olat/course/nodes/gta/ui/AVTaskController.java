@@ -20,6 +20,9 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.avrecorder.AVConfiguration;
+import org.olat.core.gui.avrecorder.AVCreationController;
+import org.olat.core.gui.avrecorder.AVCreationEvent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -27,12 +30,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.avrecorder.AVConfiguration;
-import org.olat.core.gui.avrecorder.AVCreationController;
-import org.olat.core.gui.avrecorder.AVCreationEvent;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
@@ -92,7 +93,8 @@ public class AVTaskController extends BasicController implements Activateable2 {
 			}
 		} else if (taskDefinitionController == source) {
 			if (event == Event.DONE_EVENT) {
-				creationController.moveUploadFileTo(tasksContainer, task.getFilename());
+				VFSLeaf leaf = creationController.moveUploadFileTo(tasksContainer, task.getFilename());
+				task.setFilename(leaf.getName());
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);

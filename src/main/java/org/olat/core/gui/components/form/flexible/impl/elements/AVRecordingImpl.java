@@ -36,7 +36,11 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.*;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 
 import java.io.File;
 import java.util.Set;
@@ -154,9 +158,10 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	@Override
 	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, String requestedName) {
 		final VFSLeaf leaf;
+		String fixedRequestedName = fixRequestedName(requestedName);
 		if (recordedFile != null && recordedFile.exists()) {
 			if (needsTranscoding()) {
-				String destinationFileName = getDestinationFileName(destinationContainer, requestedName);
+				String destinationFileName = getDestinationFileName(destinationContainer, fixedRequestedName);
 				String masterFileName = VFSTranscodingService.masterFilePrefix + destinationFileName;
 				if (destinationContainer instanceof LocalFolderImpl) {
 					leaf = moveRecordingToLocalFolderWithTranscoding((LocalFolderImpl) destinationContainer, destinationFileName, masterFileName);
@@ -167,9 +172,9 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 				CoreSpringFactory.getImpl(VFSTranscodingService.class).startTranscodingProcess();
 			} else {
 				if (destinationContainer instanceof LocalFolderImpl) {
-					leaf = moveRecordingToLocalFolder((LocalFolderImpl) destinationContainer, requestedName);
+					leaf = moveRecordingToLocalFolder((LocalFolderImpl) destinationContainer, fixedRequestedName);
 				} else {
-					leaf = moveRecordingToVfsContainer(destinationContainer, requestedName);
+					leaf = moveRecordingToVfsContainer(destinationContainer, fixedRequestedName);
 				}
 			}
 		} else {
@@ -275,6 +280,22 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 			}
 		}
 		return false;
+	}
+
+	private String fixRequestedName(String requestedName) {
+		if (config.getMode() == AVConfiguration.Mode.video) {
+			int indexOfPeriod = requestedName.lastIndexOf('.');
+			if (indexOfPeriod == -1 || indexOfPeriod < (requestedName.length() - 1 - 4)) {
+				if (recordedFileType != null) {
+					if (recordedFileType.startsWith("video/mp4")) {
+						return requestedName + ".mp4";
+					} else if (recordedFileType.startsWith("video/webm")) {
+						return requestedName + ".webm";
+					}
+				}
+			}
+		}
+		return requestedName;
 	}
 
 	private String getDestinationFileName(String requestedName) {

@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.model.Solution;
 
 /**
@@ -81,7 +82,8 @@ public class AVSampleSolutionController extends BasicController {
 			}
 		} else if (sampleSolutionDetailsController == source) {
 			if (event == Event.DONE_EVENT) {
-				creationController.moveUploadFileTo(solutionContainer, sampleSolutionDetailsController.getSolution().getFilename());
+				VFSLeaf leaf = creationController.moveUploadFileTo(solutionContainer, sampleSolutionDetailsController.getSolution().getFilename());
+				getSolution().setFilename(leaf.getName());
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);

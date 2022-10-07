@@ -336,9 +336,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				TaskDefinitionRow row = taskModel.getObject(se.getIndex());
-				if("metadata".equals(se.getCommand())) {
+				if("metadata".equals(se.getCommand()) && !row.getTaskDefinition().isInTranscoding()) {
 					doEditMetadata(ureq, row.getTaskDefinition());
-				} else if("delete".equals(se.getCommand())) {
+				} else if("delete".equals(se.getCommand()) && !row.getTaskDefinition().isInTranscoding()) {
 					if(gtaManager.isTaskInProcess(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode, row.getTaskDefinition().getFilename())) {
 						doConfirmDelete(ureq, row.getTaskDefinition());
 					} else {

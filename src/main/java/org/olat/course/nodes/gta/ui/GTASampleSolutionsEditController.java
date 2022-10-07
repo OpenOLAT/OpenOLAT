@@ -287,9 +287,9 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 				SolutionRow row = solutionModel.getObject(se.getIndex());
 				if("open".equals(se.getCommand())) {
 					doOpen(ureq, row.getSolution(), row.getMode());
-				} else if("metadata".equals(se.getCommand())) {
+				} else if("metadata".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
 					doEditmetadata(ureq, row.getSolution());
-				} else if("delete".equals(se.getCommand())) {
+				} else if("delete".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
 					doDelete(ureq, row);
 				}
 			}
