@@ -279,7 +279,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			boolean inTranscoding = false;
 
 			VFSItem item = documentsContainer.resolve(filename);
-			if(item.canMeta() == VFSConstants.YES) {
+			if(item != null && item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo != null) {
 					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());

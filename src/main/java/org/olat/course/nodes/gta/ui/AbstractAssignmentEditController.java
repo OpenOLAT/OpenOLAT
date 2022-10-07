@@ -199,7 +199,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			DownloadLink downloadLink = null;
 			Mode mode = Mode.VIEW;
 			VFSItem item = tasksContainer.resolve(def.getFilename());
-			boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+			boolean inTranscoding = item != null && item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
 					item.getMetaInfo().isInTranscoding();
 			def.setInTranscoding(inTranscoding);
 			if(item instanceof VFSLeaf) {

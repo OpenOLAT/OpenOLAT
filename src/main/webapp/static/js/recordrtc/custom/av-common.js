@@ -130,7 +130,7 @@ class AvUserInterface {
 		if (this.volumeButtonHandler == null) {
 			this.volumeButtonHandler = (event) => {
 				event.preventDefault();
-				if (self.avElement.mute) {
+				if (self.avElement.muted) {
 					return;
 				}
 				self.volumeSlider.toggle();
@@ -141,7 +141,7 @@ class AvUserInterface {
 		if (this.volumeSliderHandler == null) {
 			this.volumeSliderHandler = (event) => {
 				event.preventDefault();
-				if (self.avElement.mute) {
+				if (self.avElement.muted) {
 					return;
 				}
 				const pageX = event.pageX;
@@ -183,14 +183,14 @@ class AvUserInterface {
 	}
 
 	setMuted() {
-		this.avElement.mute = true;
+		this.avElement.muted = true;
 		this.volumeButtonContainer.addClass('mejs__unmute');
 		this.volumeButtonContainer.removeClass('mejs__mute');
 		this.volumeSlider.hide();
 	}
 
 	setUnmuted() {
-		this.avElement.mute = false;
+		this.avElement.muted = false;
 		this.volumeButtonContainer.removeClass('mejs__unmute');
 		this.volumeButtonContainer.addClass('mejs__mute');
 		this.volumeSlider.hide();

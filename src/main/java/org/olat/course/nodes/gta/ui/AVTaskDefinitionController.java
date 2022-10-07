@@ -69,7 +69,7 @@ public class AVTaskDefinitionController extends FormBasicController {
 		titleEl.setMandatory(true);
 
 		String description = task.getDescription() == null ? "" : task.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, false, description, formLayout);
+		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 6, -1, true, false, description, formLayout);
 
 		String fileName = task.getFilename() == null ? "" : task.getFilename();
 		fileNameEl = uifactory.addTextElement("fileName", "task.file", 128, fileName, formLayout);
