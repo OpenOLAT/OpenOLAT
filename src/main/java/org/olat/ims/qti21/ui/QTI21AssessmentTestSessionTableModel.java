@@ -118,7 +118,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 				return "";
 			}
 			case open: return Boolean.valueOf(!isTestSessionOpen(session));
-			case correction: return isCorrectionAllowed(session);
+			case correct: return isCorrectionAllowed(session);
 			case invalidate: return !isTestSessionOpen(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
 			case tools: return session.getToolsLink();
 			default: return "ERROR";
@@ -174,7 +174,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		manualScore("table.header.manualScore"),
 		finalScore("table.header.finalScore"),
 		open("table.header.action"),
-		correction("table.header.correction"),
+		correct("table.header.correct"),
 		tools("table.header.tools"),
 		invalidate("table.header.invalidate"),
 		id("table.header.id");

@@ -257,7 +257,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
 		}
 		if(!readOnly) {
-			correctionCol = new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
+			correctionCol = new DefaultFlexiColumnModel(TSCols.correct.i18nHeaderKey(), TSCols.correct.ordinal(), "correction",
 					new CorrectionCellRender());
 			columnsModel.addFlexiColumnModel(correctionCol);
 		}
@@ -850,7 +850,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private class CorrectionCellRender implements FlexiCellRenderer, ActionDelegateCellRenderer {
 		
-		private final FlexiCellRenderer correctionDelegate = new StaticFlexiCellRenderer(translate("correction"), "correction");
+		private final FlexiCellRenderer correctionDelegate = new StaticFlexiCellRenderer(translate("correct"), "correction");
 		private final FlexiCellRenderer previewDelegate = new StaticFlexiCellRenderer(translate("preview"), "preview");
 		private final List<String> actions = List.of("correction", "preview");
 		
