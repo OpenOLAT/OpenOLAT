@@ -418,6 +418,10 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			allOk &= false;
 		}
 		
+		if (!allOk) {
+			wizardProvider = null;
+		}
+		
 		return allOk;
 	}
 
