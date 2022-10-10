@@ -306,7 +306,8 @@ public class PFCoachController extends FormBasicController {
 		uploadAllLink = uifactory.addFormLink("upload.link", formLayout, Link.BUTTON);
 		dropboxTable.addBatchButton(uploadAllLink);
 
-		if (!pfNode.getModuleConfiguration().get(PFCourseNode.CONFIG_KEY_TEMPLATE).equals("")) {
+		if (pfNode.getModuleConfiguration().get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null
+				&& !pfNode.getModuleConfiguration().get(PFCourseNode.CONFIG_KEY_TEMPLATE).equals("")) {
 			loadTemplateStructureLink = uifactory.addFormLink("load.template.structure", formLayout, Link.BUTTON);
 			dropboxTable.addBatchButton(loadTemplateStructureLink);
 		}
