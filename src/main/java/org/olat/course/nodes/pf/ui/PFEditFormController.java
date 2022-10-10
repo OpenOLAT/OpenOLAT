@@ -65,6 +65,11 @@ public class PFEditFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
+		teacherDropBox = uifactory.addCheckboxesHorizontal("coach.drop", formLayout, new String[]{"xx"}, new String[]{null});
+		teacherDropBox.addActionListener(FormEvent.ONCLICK);
+
+		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
+
 		studentDropBox = uifactory.addCheckboxesHorizontal("participant.drop", formLayout, new String[]{"xx"}, new String[]{null});
 		studentDropBox.addActionListener(FormEvent.ONCLICK);
 				
@@ -98,11 +103,6 @@ public class PFEditFormController extends FormBasicController {
 		fileCount = uifactory.addTextElement("file.count", 4, "3", formLayout);
 		fileCount.showLabel(Boolean.FALSE);
 		fileCount.setHelpTextKey("limit.count.coach.info", null);
-
-		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
-		
-		teacherDropBox = uifactory.addCheckboxesHorizontal("coach.drop", formLayout, new String[]{"xx"}, new String[]{null});
-		teacherDropBox.addActionListener(FormEvent.ONCLICK);
 		
 		// Create submit button
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
