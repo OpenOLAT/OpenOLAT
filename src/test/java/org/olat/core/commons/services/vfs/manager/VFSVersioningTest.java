@@ -870,6 +870,45 @@ public class VFSVersioningTest extends OlatTestCase {
 		Assert.assertEquals("Initital version 0", restoredMetadata.getComment());
 	}
 	
+	/**
+	 * This unit test mimic OO-6499 
+	 */
+	@Test
+	public void deleteAndRename() {
+		VFSContainer testContainer = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		VFSContainer container = testContainer.createChildContainer("T1");
+		
+		// Add file in container
+		VFSLeaf file = container.createChildLeaf("PDF.pdf");
+		int byteCopied = copyTestTxt(file);
+		Assert.assertNotEquals(0, byteCopied);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		VFSMetadata fileMeta = file.getMetaInfo();
+		Assert.assertNotNull(fileMeta);
+		dbInstance.commit();
+
+		// Rename the container to T2
+		VFSMetadata meta = container.getMetaInfo();
+		meta.setTitle("T2");
+		vfsRepositoryService.updateMetadata(meta);
+		container.rename("T2");
+		dbInstance.commit();
+		
+		// Delete the container
+		container.delete();
+		dbInstance.commit();
+		
+		VFSContainer secondContainer = testContainer.createChildContainer("T1");
+		// Rename it to T2
+		VFSMetadata secondMeta = container.getMetaInfo();
+		secondMeta.setTitle("T2");
+		vfsRepositoryService.updateMetadata(secondMeta);
+		// Rename will delete the first metadata of the container
+		// And needs to delete all children of it
+		secondContainer.rename("T2");
+		dbInstance.commit();
+	}
+	
 	private int copyTestTxt(VFSLeaf file) {
 		try(OutputStream out = file.getOutputStream(false);
 				InputStream in = VFSVersioningTest.class.getResourceAsStream("test.txt")) {
