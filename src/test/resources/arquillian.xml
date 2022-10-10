@@ -27,12 +27,12 @@
 		<property name="dimensions">1024x800</property>
 		<!--
 		<property name="downloadBinaries">false</property>
-		<property name="chromeDriverBinary">target/drone/e0850ea1139d840adbba8f7274bee7ce/chromedriver</property>
+		<property name="chromeDriverBinary">target/drone/e410d1d9e5cc5e253a907c99c68710e0/chromedriver</property>
 		<property name="firefoxDriverBinary">target/drone/66a8842efe8a87c2b1e8237deb1c2905/geckodriver</property>
 		-->
 		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.31.0}</property>
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
-		<property name="chromeDriverVersion">${webdriver.chrome.version:105.0.5195.52}</property>
+		<property name="chromeDriverVersion">${webdriver.chrome.version:106.0.5249.21}</property>
 		<property name="chromeArguments">${webdriver.chrome.arguments}</property>
 		<property name="chromeExperimentalOption">{
 			"prefs":{"credentials_enable_service": false, "profile.password_manager_enabled": false }
