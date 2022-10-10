@@ -65,15 +65,15 @@
 		<org.springframework.version>5.3.23</org.springframework.version>
 		<org.hibernate.version>5.6.12.Final</org.hibernate.version>
 		<apache.cxf>3.5.3</apache.cxf>
-		<apache.pdfbox>2.0.26</apache.pdfbox>
+		<apache.pdfbox>2.0.27</apache.pdfbox>
 		<apache.poi>5.2.3</apache.poi>
 		<apache.log4j>2.19.0</apache.log4j>
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.2.19.Final</io.undertow>
+		<io.undertow>2.2.20.Final</io.undertow>
 		<jackson.version>2.14.0-rc1</jackson.version>
-		<swagger.ui.version>4.14.0</swagger.ui.version>
+		<swagger.ui.version>4.14.2</swagger.ui.version>
 		<org.mysql.version>8.0.30</org.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
 		<org.infinispan.version>13.0.11.Final</org.infinispan.version>
@@ -2141,7 +2141,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.9</version>
+			<version>1.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -2291,7 +2291,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.1</version>
+			<version>1.13.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
