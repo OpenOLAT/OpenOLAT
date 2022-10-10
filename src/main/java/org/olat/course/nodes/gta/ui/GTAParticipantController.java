@@ -596,29 +596,29 @@ public class GTAParticipantController extends GTAAbstractController implements A
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
 					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
 				if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {
-					setActiveStatusAndCssClass("solution");
+					setActiveStatusAndCssClass("solution", "msg.status.available");
 					setSolutions(ureq, assignedTask);
 				} else {
 					setNotAvailableStatusAndCssClass("solution");
 				}
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
 				if(setSolutions(ureq, assignedTask)) {
-					setActiveStatusAndCssClass("solution");
+					setActiveStatusAndCssClass("solution", "msg.status.available");
 				} else {
 					setNotAvailableStatusAndCssClass("solution");
 				}
 			} else {
-				setDoneStatusAndCssClass("solution");
+				setDoneStatusAndCssClass("solution", "msg.status.available");
 				setSolutions(ureq, assignedTask);
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution) {
 			if(setSolutions(ureq, assignedTask)) {
-				setActiveStatusAndCssClass("solution");
+				setActiveStatusAndCssClass("solution", "msg.status.available");
 			} else {
 				setNotAvailableStatusAndCssClass("solution");
 			}
 		} else {
-			setDoneStatusAndCssClass("solution");
+			setDoneStatusAndCssClass("solution", "msg.status.available");
 			setSolutions(ureq, assignedTask);
 		}
 		

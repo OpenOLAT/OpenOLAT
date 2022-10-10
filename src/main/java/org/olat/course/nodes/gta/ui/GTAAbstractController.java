@@ -349,11 +349,19 @@ public abstract class GTAAbstractController extends BasicController implements G
 	}
 	
 	protected final void setDoneStatusAndCssClass(String stepPrefix) {
-		setStatusAndCssClass(stepPrefix, "o_done", "o_process_status_done", "msg.status.done");
+		setDoneStatusAndCssClass(stepPrefix, "msg.status.done");
+	}
+	
+	protected final void setDoneStatusAndCssClass(String stepPrefix, String i18nKey) {
+		setStatusAndCssClass(stepPrefix, "o_done", "o_process_status_done", i18nKey);
 	}
 	
 	protected final void setActiveStatusAndCssClass(String stepPrefix) {
-		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_active", "msg.status.active");
+		setActiveStatusAndCssClass(stepPrefix, "msg.status.active");
+	}
+	
+	protected final void setActiveStatusAndCssClass(String stepPrefix, String i18nKey) {
+		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_active", i18nKey);
 	}
 	
 	protected final void setNotAvailableStatusAndCssClass(String stepPrefix) {
@@ -461,12 +469,15 @@ public abstract class GTAAbstractController extends BasicController implements G
 				mainVC.contextPut("collectionDate", translate("msg.collection.date", date));
 				mainVC.contextRemove("submissionDate");
 			 } else if(assignedTask.getSubmissionDate() != null && assignedTask.getSubmissionDoerRole() == Role.auto) {
-				 String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
-				 mainVC.contextPut("collectionDate", translate("msg.collection.date.auto", date));
-					mainVC.contextRemove("submissionDate");
+				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
+				mainVC.contextPut("collectionDate", translate("msg.collection.date.auto", date));
+				mainVC.contextRemove("submissionDate");
 			 } else if(assignedTask.getSubmissionDate() != null) {
 				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
 				mainVC.contextPut("submissionDate", translate("msg.submission.date", date));
+				mainVC.contextRemove("collectionDate");
+			} else {
+				mainVC.contextRemove("submissionDate");
 				mainVC.contextRemove("collectionDate");
 			}
 		} else {

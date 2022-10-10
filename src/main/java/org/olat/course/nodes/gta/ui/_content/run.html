@@ -135,11 +135,11 @@
 	<div class="o_button_group">
 	#if($collapse_submit)
 		<a href="javascript:;" onclick="$r.javaScriptCommand("hide","step","submit")" data-toggle="collapse" aria-expanded="$collapse_submit" class="btn btn-default o_button_details">
-			<i class="o_icon o_icon_lg o_icon_details_expand"> </i><span></span>
+			<i class="o_icon o_icon_lg o_icon_details_collaps"> </i><span></span>
 		</a>
 	#else
 		<a href="javascript:;" onclick="$r.javaScriptCommand("show","step","submit")" data-toggle="collapse" aria-expanded="$collapse_submit" class="btn btn-default o_button_details">
-			<i class="o_icon o_icon_lg o_icon_details_collaps"> </i><span></span>
+			<i class="o_icon o_icon_lg o_icon_details_expand"> </i><span></span>
 		</a>
 	#end
 	</div>
@@ -320,10 +320,10 @@ jQuery(function() {
 		if(numOfCounter > 0) {
 	    	var availableTime = parseInt(el.getAttribute("data-remaining-time"));
 	    	if(availableTime > 0) {
-				var startTime = performance.now();
+				var startTime = Math.floor(performance.now());
 				var wrapperId = el.getAttribute("id");
 				var periodic = jQuery.periodic({period: 1000, decay:1.0, max_period: availableTime + 1000 }, function() {
-					var remaining = availableTime - (performance.now() - startTime);
+					var remaining = availableTime - (Math.floor(performance.now()) - startTime);
 					if(jQuery("#o_proc_${r.getCId()}").length == 0) {
 						periodic.cancel();
 					} else if(remaining >= 0) {

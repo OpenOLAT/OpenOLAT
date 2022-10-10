@@ -455,21 +455,21 @@ public class GTACoachController extends GTAAbstractController implements Activat
 				setNotAvailableStatusAndCssClass("solution");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
 				if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
-					setActiveStatusAndCssClass("solution");
+					setActiveStatusAndCssClass("solution", "msg.status.available");
 				} else {
 					setNotAvailableStatusAndCssClass("solution");
 				}
 			} else {
-				setDoneStatusAndCssClass("solution");
+				setDoneStatusAndCssClass("solution", "msg.status.available");
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution) {
 			if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
-				setActiveStatusAndCssClass("solution");
+				setActiveStatusAndCssClass("solution", "msg.status.available");
 			} else {
 				setNotAvailableStatusAndCssClass("solution");
 			}
 		} else {
-			setDoneStatusAndCssClass("solution");
+			setDoneStatusAndCssClass("solution", "msg.status.available");
 		}
 		
 		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);

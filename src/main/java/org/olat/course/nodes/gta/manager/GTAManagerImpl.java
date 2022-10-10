@@ -1703,6 +1703,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				taskImpl.setSubmissionDate(null);
 				taskImpl.setSubmissionNumOfDocs(null);
 			}
+			
+			if(taskImpl.getCollectionDate() != null) {
+				taskImpl.setCollectionDate(null);
+				taskImpl.setCollectionNumOfDocs(null);
+			}
 		}
 	}
 	
