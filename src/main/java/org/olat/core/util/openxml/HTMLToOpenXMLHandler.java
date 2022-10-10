@@ -280,7 +280,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		Node run = paragraphEl.getLastChild();
 		if(run != null && "w:r".equals(run.getNodeName())) {
 			Node prefs = run.getLastChild();
-			if("w:rPr".equals(prefs.getNodeName())){
+			if(prefs != null && "w:rPr".equals(prefs.getNodeName())){
 				runPrefs = prefs;
 			}
 		}

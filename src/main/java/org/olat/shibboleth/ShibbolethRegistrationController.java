@@ -317,8 +317,10 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if (!UserManager.getInstance().isEmailAllowed(email)) {
 						// error, email already exists. should actually not happen if OLAT Authenticator has
 						// been set after removing shibboleth authenticator
-						getWindowControl().setError(translator.translate("sr.error.emailexists", WebappHelper.getMailConfig("mailSupport")));
-						mainContainer.setPage(VELOCITY_ROOT + "/register.html");
+						String errorMsg = translator.translate("sr.error.emailexists", WebappHelper.getMailConfig("mailSupport"));
+						getWindowControl().setError(errorMsg);
+						mainContainer.contextPut("error_msg", errorMsg);
+						mainContainer.setPage(VELOCITY_ROOT + "/error.html");
 						state = STATE_UNDEFINED;
 						return;
 					}
