@@ -162,10 +162,9 @@ public class AuthoringEnvPage {
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
-		String type = learnPath ? "learningpath" : "condition";
-		By typeBy = By.xpath("//div[@id='o_cocif_node_access']//input[@name='cif.node.access'][@value='" + type + "']");
+		String type = learnPath ? "path" : "classic";
+		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='" + type + "']");
 		browser.findElement(typeBy).click();
-		OOGraphene.waitBusy(browser);
 		// create the course
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
