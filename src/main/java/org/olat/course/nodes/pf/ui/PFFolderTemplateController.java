@@ -27,9 +27,16 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -37,11 +44,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.modules.ModuleConfiguration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -54,11 +68,12 @@ public class PFFolderTemplateController extends FormBasicController {
     private final Map<String, PFFolderTemplateRow> keyToRows = new HashMap<>();
     private final PFCourseNode pfNode;
     private List<String> elements = new ArrayList<>();
+    private String folderToDelete;
     private PFFolderTemplateTreeTableModel tableDataModel;
     private FlexiTableElement tableEl;
     private PFCreateFolderTemplateController createFolderTemplateCtrl;
-    private ConfirmTemplateFolderDeleteController confirmDeleteCtrl;
     private CloseableCalloutWindowController toolsCalloutCtrl;
+    private DialogBoxController deleteDialogCtrl;
     private CloseableModalController cmc;
     private ToolsController toolsCtrl;
 
@@ -74,9 +89,10 @@ public class PFFolderTemplateController extends FormBasicController {
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         setFormTitle("form.template");
         setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#participant_folder");
+        setFormInfo("template.info");
 
         FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-        TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
+        TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(false);
         tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.folderName, treeNodeRenderer));
         tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.numOfChildren));
         tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.createSubFolder));
@@ -86,7 +102,7 @@ public class PFFolderTemplateController extends FormBasicController {
 
         tableEl = uifactory.addTableElement(getWindowControl(), "FolderTemplateTable", tableDataModel, getTranslator(), formLayout);
 
-        readTemplateStructure(ureq,true, true);
+        readTemplateStructure(ureq, true, true);
     }
 
     @Override
@@ -112,16 +128,16 @@ public class PFFolderTemplateController extends FormBasicController {
                 String newFolderName = createFolderTemplateCtrl.getSubFolderNameEl().getValue();
                 String path = createFolderTemplateCtrl.getFolderElement();
                 saveTemplateStructure(ureq, path, newFolderName);
-                readTemplateStructure(ureq,false, true);
+                readTemplateStructure(ureq, false, true);
             }
             deactivateCmc();
             cleanUp();
-        } else if (source == confirmDeleteCtrl) {
-            if (event == Event.DONE_EVENT) {
+        } else if (source == deleteDialogCtrl) {
+            if (DialogBoxUIFactory.isOkEvent(event)) {
+                doDelete();
                 fireEvent(ureq, Event.CHANGED_EVENT);
-                readTemplateStructure(ureq,false, true);
+                readTemplateStructure(ureq, false, true);
             }
-            deactivateCmc();
             cleanUp();
         }
     }
@@ -134,12 +150,12 @@ public class PFFolderTemplateController extends FormBasicController {
 
     private void cleanUp() {
         removeAsListenerAndDispose(createFolderTemplateCtrl);
-        removeAsListenerAndDispose(confirmDeleteCtrl);
+        removeAsListenerAndDispose(deleteDialogCtrl);
         removeAsListenerAndDispose(toolsCalloutCtrl);
         removeAsListenerAndDispose(toolsCtrl);
         removeAsListenerAndDispose(cmc);
         createFolderTemplateCtrl = null;
-        confirmDeleteCtrl = null;
+        deleteDialogCtrl = null;
         toolsCalloutCtrl = null;
         toolsCtrl = null;
         cmc = null;
@@ -221,8 +237,7 @@ public class PFFolderTemplateController extends FormBasicController {
         if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
             if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().equals("")) {
                 updatedModuleConfig = moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().concat(newPath);
-            }
-            else {
+            } else {
                 updatedModuleConfig = moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().concat("," + newPath);
             }
         }
@@ -254,13 +269,36 @@ public class PFFolderTemplateController extends FormBasicController {
     }
 
     private void doConfirmDelete(UserRequest ureq, String folder) {
-        confirmDeleteCtrl = new ConfirmTemplateFolderDeleteController(ureq, getWindowControl(), folder, pfNode);
-        listenTo(confirmDeleteCtrl);
+        folderToDelete = folder;
+        folder = folder
+                .replaceAll(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
+                .replaceAll(PFManager.FILENAME_DROPBOX, translate(PFCourseNode.FOLDER_DROP_BOX));
 
-        cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(),
-                true, translate("table.elementDeleteFolder", folder));
-        listenTo(cmc);
-        cmc.activate();
+        List<String> buttons = new ArrayList<>();
+        buttons.add(translate("delete"));
+        buttons.add(translate("cancel"));
+
+        deleteDialogCtrl = activateGenericDialog(ureq, translate("table.elementDeleteFolder"), translate("confirmation.delete.element.title", folder), buttons , deleteDialogCtrl);
+    }
+
+    private void doDelete() {
+        ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
+        List<String> folderElements = new ArrayList<>();
+
+        if (!moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).equals("")) {
+            folderElements = new ArrayList<>(Arrays.asList(moduleConfiguration
+                    .get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString()
+                    .split(",")));
+        }
+        if (!folderElements.isEmpty()) {
+            folderElements.removeIf(el -> el.contains(folderToDelete));
+        }
+
+        String updatedElements = folderElements.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        moduleConfiguration.setStringValue(PFCourseNode.CONFIG_KEY_TEMPLATE, updatedElements);
     }
 
     @Override

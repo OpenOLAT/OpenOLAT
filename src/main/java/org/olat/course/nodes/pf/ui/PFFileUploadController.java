@@ -106,8 +106,8 @@ public class PFFileUploadController extends FormBasicController {
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit", "upload.link", buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
 	
 	@Override
