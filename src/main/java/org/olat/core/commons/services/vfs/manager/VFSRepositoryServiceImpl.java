@@ -645,6 +645,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		// Is there already a metadata from an other file with the same name
 		VFSMetadata currentMetadata = metadataDao.getMetadata(metadata.getRelativePath(), newName, (item instanceof VFSContainer));
 		if(currentMetadata != null && !currentMetadata.equals(metadata)) {
+			// Delete first all children metadata
+			if(currentMetadata.isDirectory()) {
+				List<VFSMetadata> children = metadataDao.getMetadatasOnly(currentMetadata);
+				for(VFSMetadata child:children) {
+					deleteMetadata(child);
+				}
+			}
+			
 			metadata.copyValues(currentMetadata, false);
 			deleteThumbnailsOfMetadata(currentMetadata);
 			deleteRevisionsOfMetadata(currentMetadata);
@@ -655,10 +663,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		((VFSMetadataImpl)metadata).setFilename(newName);
 		String uri = newFile.toFile().toURI().toString();
 		((VFSMetadataImpl)metadata).setUri(uri);
-			
-		if(item instanceof VFSContainer) {
-			//TODO rename container ???
-		}
 		
 		List<VFSRevision> revisions = getRevisions(metadata);
 		for(VFSRevision revision:revisions) {
