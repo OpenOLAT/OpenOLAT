@@ -78,7 +78,7 @@
 		<org.postgresql.version>42.4.2</org.postgresql.version>
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.4.0</version.selenium>
+		<version.selenium>4.5.0</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
 		<activemq.version>5.17.0</activemq.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
@@ -106,9 +106,9 @@
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.browserVersion>103.0.5060.53</test.env.webdriver.browserVersion>
+	    <test.env.webdriver.browserVersion>106.0.5249.21</test.env.webdriver.browserVersion>
 	    <test.env.webdriver.firefox.version>v0.31.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>103.0.5060.53</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>106.0.5249.21</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
@@ -1484,6 +1484,8 @@
 						<test.env.msgraph.app.tenant>${test.env.msgraph.app.tenant}</test.env.msgraph.app.tenant>
 						<test.env.msgraph.teams.producer>${test.env.msgraph.teams.producer}</test.env.msgraph.teams.producer>
 						<arquillian.launch>tomcat-8-managed</arquillian.launch>
+						
+						<webdriver.http.factory>jdk-http-client</webdriver.http.factory>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 	    				<webdriver.browserVersion>${test.env.webdriver.browserVersion}</webdriver.browserVersion>
 						<webdriver.firefox.version>${test.env.webdriver.firefox.version}</webdriver.firefox.version>
@@ -2537,6 +2539,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-http-jdk-client</artifactId>
+			<version>${version.selenium}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-support</artifactId>
 			<version>${version.selenium}</version>
 			<scope>test</scope>
@@ -2569,12 +2577,6 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-ie-driver</artifactId>
-			<version>${version.selenium}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-opera-driver</artifactId>
 			<version>${version.selenium}</version>
 			<scope>test</scope>
 		</dependency>
