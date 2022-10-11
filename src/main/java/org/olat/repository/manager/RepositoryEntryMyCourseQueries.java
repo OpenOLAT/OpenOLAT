@@ -247,7 +247,8 @@ public class RepositoryEntryMyCourseQueries {
 		sb.append(" where ");
 		boolean membershipMandatory = params.isMembershipMandatory() || params.isMembershipOnly();
 		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(),
-				membershipMandatory, params.getOfferValidAt(),  params.getOfferOrganisations());
+				membershipMandatory, params.getOfferValidAt(), params.getOfferOrganisations(),
+				params.getEntryStatus());
 		needIdentityKey |= addParams.isIdentity();
 
 		if(params.getEntryStatus() != null) {
@@ -435,9 +436,10 @@ public class RepositoryEntryMyCourseQueries {
 	}
 	
 	private AddParams appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters,
-			boolean membershipMandatory, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations) {
+			boolean membershipMandatory, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
+			RepositoryEntryStatusEnum[] entryStatus) {
 		if(roles.isGuestOnly()) {
-			sb.append(" v.publicVisible=true and v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
+			sb.append(" v.publicVisible=true and v.status ").in(subSetOf(ACService.RESTATUS_ACTIVE_GUEST, entryStatus));
 			sb.append(" and res.key in (");
 			sb.append("   select resource.key");
 			sb.append("     from acoffer offer");
@@ -475,11 +477,12 @@ public class RepositoryEntryMyCourseQueries {
 			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("    and (");
 		} else {
-			sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			sb.append(" exists (select rel.key from repoentrytogroup as rel")
+			  .append("    inner join bgroupmember as membership on (membership.group.key=rel.group.key)")
+			  .append("    where rel.entry.key=v.key and membership.identity.key=:identityKey")
 			  .append("    and (");
 		}
-		sb.append("membership.role").in(inRoles.stream().toArray(GroupRoles[]::new)).append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+		sb.append("membership.role").in(inRoles.stream().toArray(GroupRoles[]::new)).append(" and v.status ").in(subSetOf(RepositoryEntryStatusEnum.preparationToClosed(), entryStatus));
 		sb.append(")");
 		sb.append(")");
 		
@@ -499,7 +502,7 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append("        on oto.offer.key = offer.key");
 			sb.append("    where offer.valid = true");
 			sb.append("      and offer.openAccess = true");
-			sb.append("      and re2.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
+			sb.append("      and re2.status ").in(subSetOf(RepositoryEntryStatusEnum.publishedAndClosed(), entryStatus));
 			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
 				sb.append("      and oto.organisation.key in :organisationKeys");
 				offerOrganisationsUsed = true;
@@ -530,13 +533,13 @@ public class RepositoryEntryMyCourseQueries {
 				}
 				if (offerValidAt != null) {
 					sb.append(" and (");
-					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+					sb.append(" (re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
 					sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
 					sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
-					sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+					sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt))");
 					sb.append(" or");
-					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
-					sb.append(" and offer.validFrom is null and offer.validTo is null");
+					sb.append(" (re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
+					sb.append(" and offer.validFrom is null and offer.validTo is null)");
 					sb.append(" )");
 					offerValidAtUsed = true;
 				}
@@ -547,6 +550,21 @@ public class RepositoryEntryMyCourseQueries {
 		
 		sb.append(")");
 		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed);
+	}
+	
+	private RepositoryEntryStatusEnum[] subSetOf(RepositoryEntryStatusEnum[] allowed, RepositoryEntryStatusEnum[] filterStatus) {
+		if(filterStatus != null && filterStatus.length > 0) {
+			List<RepositoryEntryStatusEnum> statusList = new ArrayList<>();
+			for(RepositoryEntryStatusEnum fStatus:filterStatus) {
+				for(RepositoryEntryStatusEnum allow:allowed) {
+					if(fStatus == allow) {
+						statusList.add(fStatus);
+					}
+				}
+			}
+			return statusList.toArray(new RepositoryEntryStatusEnum[statusList.size()]);
+		}
+		return allowed;
 	}
 	
 	private boolean appendFiltersInWhereClause(Filter filter, QueryBuilder sb) {
