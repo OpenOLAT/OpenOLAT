@@ -184,16 +184,19 @@ public class AuthoringEnvPage {
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
-		By typeBy = By.xpath("//div[@id='o_cocif_node_access']//input[@name='cif.node.access'][@value='condition']");
+		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='classic']");
 		browser.findElement(typeBy).click();
-		OOGraphene.waitBusy(browser);
-		// select the simple wizard
-		By simpleCourseWizardBy = By.xpath("//div[@id='o_cocsc_wizard']//input[@name='csc.wizard'][@value='simple.course']");
-		browser.findElement(simpleCourseWizardBy).click();
+		// open the assistant list
+		By assistantListBy = By.cssSelector("div.modal-dialog div.o_sel_repo_save_details button.dropdown-toggle");
+		browser.findElement(assistantListBy).click();
+		By assistantDropdownBy = By.cssSelector("div.modal-dialog ul.dropdown-menu");
+		OOGraphene.waitElement(assistantDropdownBy, browser);
 		// create the course
-		By createBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
-		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
+		By simpleCourseWizardBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@class,'o_sel_wizard_simple.course')]");
+		browser.findElement(simpleCourseWizardBy).click();
+		// wait the wizard
+		By elementsBy = By.xpath("//div[contains(@class,'modal-dialog')]//div[@class='o_sel_course_elements']");
+		OOGraphene.waitElement(elementsBy, browser);
 		return new CourseWizardPage(browser);
 	}
 	

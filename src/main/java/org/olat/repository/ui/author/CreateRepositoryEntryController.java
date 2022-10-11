@@ -283,6 +283,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 					FormLink link = uifactory.addFormLink(wizardProvider.getType(), CMD_WIZARD, null, null, dummyCont, Link.LINK + Link.NONTRANSLATED);
 					link.setI18nKey(wizardProvider.getDisplayName(getLocale()));
 					link.setUserObject(wizardProvider);
+					link.setElementCssClass("o_sel_wizard_" + wizardProvider.getType());
 					wizardDropdown.addElement(link);
 				}
 			}
