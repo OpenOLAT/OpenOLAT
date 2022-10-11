@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -520,9 +521,30 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		        		
 		        		updateLevel.setType(levelType);
 		        	}
-		        	
-		        	TaxonomyLevel savedUpdateLevel = updateLevel;
-		        	taxonomyService.updateTaxonomyLevel(savedUpdateLevel);
+
+					taxonomyService.updateTaxonomyLevel(updateLevel);
+
+					Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
+					List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
+							.map(key -> i18nManager.getLocaleOrNull(key))
+							.filter(Objects::nonNull)
+							.collect(Collectors.toList());
+					String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + updateLevel.getI18nSuffix();
+					String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + updateLevel.getI18nSuffix();
+
+					for (Locale locale : locales) {
+						I18nItem displayNameItem = i18nManager.getI18nItem(
+								TaxonomyUIFactory.BUNDLE_NAME,
+								displayNameKey,
+								allOverlays.get(locale));
+						i18nManager.saveOrUpdateI18nItem(displayNameItem, ((TaxonomyLevelImpl) updateLevel).getDisplayName());
+
+						I18nItem descriptionItem = i18nManager.getI18nItem(
+								TaxonomyUIFactory.BUNDLE_NAME,
+								descriptionKey,
+								allOverlays.get(locale));
+						i18nManager.saveOrUpdateI18nItem(descriptionItem, ((TaxonomyLevelImpl) updateLevel).getDescription());
+					}
 		        }
 	        }
 	    	
