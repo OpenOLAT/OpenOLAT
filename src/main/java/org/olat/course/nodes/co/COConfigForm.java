@@ -273,6 +273,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		String mS = (String) config.get(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT);
 		String mSubject = (mS != null) ? mS : "";
 		teElSubject = uifactory.addTextElement("mSubject", "message.subject", 255, mSubject, formLayout);
+		MailHelper.setSubjectAsHelp(teElSubject, getLocale());
 		
 		//message body
 		String mB = (String) config.get(COEditController.CONFIG_KEY_MBODY_DEFAULT);

@@ -157,7 +157,6 @@ public class ContactForm extends FormBasicController {
 
 	public void setSubject(MailTemplate template) {
 		setSubject(template.getSubjectTemplate());
-		MailHelper.setSubjectAsHelp(tsubject, getLocale());
 	}
 
 	public void setSubject(String defaultBody) {
