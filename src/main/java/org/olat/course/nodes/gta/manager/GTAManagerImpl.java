@@ -1341,18 +1341,41 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		}
 		return false;
 	}
-	
+
+	@Override
+	public boolean isLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		if(task == null) return false;
+		
+		Date submissionDate = task.getCollectionDate() != null ? task.getCollectionDate() : task.getSubmissionDate();
+		if(submissionDate != null) {
+			DueDate submissionDueDate = getSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
+			if(submissionDueDate != null && submissionDueDate.getDueDate() != null) {
+				DueDate lateSubmissionDueDate = getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
+				if(lateSubmissionDueDate != null && lateSubmissionDueDate.getDueDate() != null && submissionDate.after(submissionDueDate.getDueDate())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup, GTACourseNode cNode,
+			RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		return task != null && task.getSubmissionDueDate() != null && (task.getSubmissionDate() != null || task.getCollectionDate() != null);
+	}
+
 	@Override
 	public DueDate getAssignmentDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		DueDate assignmentDueDate = null;
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getAssignmentDueDate() != null) {
-			assignmentDueDate = new DueDate(false, assignedTask.getAssignmentDueDate());
-		} else if(DueDateConfig.isRelative(dueDateConfig)) {
-			assignmentDueDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-		} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
-			assignmentDueDate = new DueDate(false, dueDateConfig.getAbsoluteDate());
+			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			assignmentDueDate = new DueDate(false, assignedTask.getAssignmentDueDate(), referenceDate, assignedTask.getAssignmentDueDate());
+		} else {
+			assignmentDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
 		return assignmentDueDate;
 	}
@@ -1363,32 +1386,61 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		DueDate submissionDueDate = null;
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
-			submissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate());
-		} else if(DueDateConfig.isRelative(dueDateConfig)) {
-			submissionDueDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-		} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
-			submissionDueDate = new DueDate(false, dueDateConfig.getAbsoluteDate());
+			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			submissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate(), referenceDate, assignedTask.getSubmissionDueDate());
+		} else {
+			submissionDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
 		return submissionDueDate;
 	}
 	
+	@Override
+	public DueDate getLateSubmissionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity,
+			BusinessGroup assessedGroup, GTACourseNode cNode, RepositoryEntry courseEntry,
+			boolean withIndividualDueDate) {
+		DueDate lateSubmissionDueDate = null;
+		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE);
+		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
+			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			lateSubmissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate(), referenceDate, assignedTask.getSubmissionDueDate());
+		} else {
+			lateSubmissionDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+		}
+		return lateSubmissionDueDate;
+	}
+
 	@Override
 	public DueDate getSolutionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		DueDate solutionDueDate = null;
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSolutionDueDate() != null) {
-			solutionDueDate = new DueDate(false, assignedTask.getSolutionDueDate());
-		} else if(DueDateConfig.isRelative(dueDateConfig)) {
-			solutionDueDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-		} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
-			solutionDueDate = new DueDate(false, dueDateConfig.getAbsoluteDate());
+			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			solutionDueDate = new DueDate(false, assignedTask.getSolutionDueDate(), referenceDate, assignedTask.getSolutionDueDate());
+		} else {
+			solutionDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
-
 		return solutionDueDate;
 	}
 	
-	private DueDate getReferenceDate(RelativeDueDateConfig relativeDueDateConfig, TaskRef assignedTask,
+	private Date getReferenceDate(DueDateConfig dueDateConfig, TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			RepositoryEntry courseEntry) {
+		DueDate referenceDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+		return referenceDueDate == null ? null : referenceDueDate.getDueDate();
+	}
+	
+	private DueDate getReferenceDueDate(DueDateConfig dueDateConfig, TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			RepositoryEntry courseEntry) {
+		DueDate dueDate = null;
+		if(DueDateConfig.isRelative(dueDateConfig)) {
+			dueDate = getRelativeReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+		} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
+			dueDate = new DueDate(false, dueDateConfig.getAbsoluteDate(), dueDateConfig.getAbsoluteDate(), null);
+		}
+		return dueDate;
+	}
+	
+	private DueDate getRelativeReferenceDate(RelativeDueDateConfig relativeDueDateConfig, TaskRef assignedTask,
 			IdentityRef assessedIdentity, BusinessGroup assessedGroup, RepositoryEntry courseEntry) {
 		DueDate dueDate = null;
 		if(DueDateConfig.isRelative(relativeDueDateConfig)) {
@@ -1410,7 +1462,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			}
 			
 			if(referenceDate != null) {
-				dueDate = new DueDate(true, referenceDate);
+				dueDate = new DueDate(true, referenceDate, referenceDate, null);
 			} else if(messageKey != null) {
 				dueDate = new DueDate(true, messageKey, messageArg);
 			}
@@ -1418,6 +1470,24 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		return dueDate;
 	}
 	
+	@Override
+	public Date getDeadlineOf(DueDate dueDate, DueDate lateDueDate) {
+		Date date = dueDate == null ? null : dueDate.getDueDate();
+		Date lateDate = lateDueDate == null ? null : lateDueDate.getDueDate();
+		
+		Date deadline;
+		if(date != null && lateDate == null) {
+			deadline = date;
+		} else if(date == null && lateDate != null) {
+			deadline = lateDate;
+		} else if(date != null && lateDate.after(date)) {
+			deadline = lateDate;
+		} else {
+			deadline = date;
+		}
+		return deadline;
+	}
+
 	@Override
 	public Task nextStep(Task task, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;

@@ -747,7 +747,9 @@ class GTANotifications {
 		if(task != null && task.getTaskStatus() == TaskProcess.submit) {
 			RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 			DueDate dueDate = gtaManager.getSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, re, true);
-			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().before(new Date())) {
+			DueDate lateDueDate = gtaManager.getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, re, true);
+			Date deadline = gtaManager.getDeadlineOf(dueDate, lateDueDate);
+			if(deadline != null &&  deadline.before(new Date())) {
 				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
 				task = gtaManager.submitTask(task, gtaNode, numOfDocs, null, Role.auto);
 				gtaManager.log("Submit", (SubmitEvent)null, task, null, assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.auto);

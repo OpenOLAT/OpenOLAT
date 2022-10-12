@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -108,6 +109,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	private DueDate assignmentDueDate;
 	private DueDate submissionDueDate;
+	private DueDate lateSubmissionDueDate;
 	private DueDate solutionDueDate;
 	
 	@Autowired
@@ -316,7 +318,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
 				boolean done = isDone(assignedTask, TaskProcess.assignment);
-				DueDateValues dueDateValues = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
+				DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true);
 				mainVC.contextPut("assignmentDueDate", dueDateValues.asString());
 				mainVC.contextPut("assignmentRemainingTime", Long.toString(dueDateValues.remainingTime()));
 				
@@ -386,10 +388,15 @@ public abstract class GTAAbstractController extends BasicController implements G
 		mainVC.contextPut(stepPrefix.concat("Status"), translate(statusI18nKey));
 	}
 
-	protected abstract DueDateValues formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine);
+	protected abstract DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine);
 	
-	protected DueDateArguments formatDueDateArguments(DueDate dueDate, Date now, boolean userDeadLine) {
-		Date date = dueDate.getDueDate();
+	protected boolean isDateOnly(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		return (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+	}
+	
+	protected DueDateArguments formatDueDateArguments(Date date, Date now, boolean late, boolean countDown, boolean userDeadLine) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		
@@ -409,16 +416,30 @@ public abstract class GTAAbstractController extends BasicController implements G
 		long minutes = ((timeDiffMilliSec - (diffDays * ONE_DAY_IN_MILLISEC) - (hours * ONE_HOUR_IN_MILLISEC)) / (60l * 1000l)) % 60;
 
 		Formatter formatter = Formatter.getInstance(getLocale());
-		String[] args = new String[] {
-			Long.toString(days),											// 0 Number of days
-			"<span class='o_hours'>" + Long.toString(hours) + "</span>",	// 1 Number of hours
-			"<span class='o_minutes'>" + Long.toString(minutes) + "</span>",	// 2 Number of minutes
-			formatter.dayOfWeekName(date),									// 3 End day
-			formatter.formatDate(date),										// 4 Date
-			formatter.formatTimeShort(date)									// 5 Time
-		};
+		String suffix = (late ? "_late" : "");
 		
+		String hoursString = Long.toString(hours);
+		String minutesString = Long.toString(minutes);
+		if(countDown) {
+			hoursString = "<span class='o_hours" + suffix + "'>" + hoursString + "</span>";
+			minutesString = "<span class='o_minutes" + suffix + "'>" + minutesString + "</span>";
+		}
+
+		String[] args = new String[] {
+			Long.toString(days),				// 0 Number of days
+			hoursString,						// 1 Number of hours
+			minutesString,						// 2 Number of minutes
+			formatter.dayOfWeekName(date),		// 3 End day
+			formatter.formatDate(date),			// 4 Date
+			formatter.formatTimeShort(date)		// 5 Time
+		};
 		return new DueDateArguments(days, args, timeDiffMilliSec);
+	}
+	
+	protected String[] mergeArguments(String[] args1, String[] args2) {
+		String[] result = Arrays.copyOf(args1, args1.length + args2.length);
+	    System.arraycopy(args2, 0, result, args1.length, args2.length);
+	    return result;
 	}
 	
 	protected void resetDueDates() {
@@ -434,20 +455,25 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignmentDueDate;
 	}
 	
-	protected Task stepSubmit(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+	protected Task stepSubmit(UserRequest ureq, Task assignedTask) {
 		DueDate dueDate = getSubmissionDueDate(assignedTask);
+		DueDate lateDueDate = getLateSubmissionDueDate(assignedTask);
+		
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
-				Date date = dueDate.getDueDate();
+				Date deadline = gtaManager.getDeadlineOf(dueDate, lateDueDate);
 				boolean done = isDone(assignedTask, TaskProcess.submit);
-				DueDateValues dueDateValues = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
-				mainVC.contextPut("submitDueDate", dueDateValues.asString());
+				DueDateValues dueDateValues = formatDueDate(dueDate, lateDueDate, ureq.getRequestTimestamp(), done, true);
 				mainVC.contextPut("submitRemainingTime", Long.toString(dueDateValues.remainingTime()));
+				if(lateDueDate != null && lateDueDate.getDueDate() != null) {
+					mainVC.contextPut("lateSubmitRemainingTime", Long.toString(dueDateValues.lateRemainingTime()));
+				}
+				mainVC.contextPut("submitDueDate", dueDateValues.asString());
 				
 				mainVC.contextRemove("submitDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
-						&& date.compareTo(new Date()) < 0) {
+						&& deadline.compareTo(new Date()) < 0) {
 					//push to the next step
 					int numOfDocs = getNumberOfSubmittedDocuments();
 					if (numOfDocs > 0 || getDoer() != Role.coach) {
@@ -473,8 +499,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 				mainVC.contextPut("collectionDate", translate("msg.collection.date.auto", date));
 				mainVC.contextRemove("submissionDate");
 			 } else if(assignedTask.getSubmissionDate() != null) {
-				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
-				mainVC.contextPut("submissionDate", translate("msg.submission.date", date));
+				SubmissionDateInfos submissionDateText = formatSubmissionDateMessage(assignedTask, dueDate, lateDueDate);
+				mainVC.contextPut("submissionDate", submissionDateText);
 				mainVC.contextRemove("collectionDate");
 			} else {
 				mainVC.contextRemove("submissionDate");
@@ -488,11 +514,36 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignedTask;
 	}
 	
+	protected SubmissionDateInfos formatSubmissionDateMessage(Task assignedTask, DueDate dueDate, DueDate lateDueDate) {
+		Date submissionDate = assignedTask.getSubmissionDate();
+		String date = Formatter.getInstance(getLocale()).formatDateAndTime(submissionDate);
+		if(dueDate == null || dueDate.getReferenceDueDate() == null || submissionDate.before(dueDate.getReferenceDueDate())) {
+			return new SubmissionDateInfos(translate("msg.submission.date", date), "o_icon_status_done", "");
+		}
+		if(assignedTask.getSubmissionDueDate() != null) {
+			return new SubmissionDateInfos(translate("msg.extended.submission.date", date), "o_icon_description", "o_process_status_extended");
+		}
+		if(lateDueDate != null && lateDueDate.getReferenceDueDate() != null && submissionDate.after(dueDate.getReferenceDueDate())) {
+			long lateInMilliSec = submissionDate.getTime() - dueDate.getReferenceDueDate().getTime();
+			String duration = Formatter.formatDuration(lateInMilliSec);
+			return new SubmissionDateInfos(translate("msg.late.submission.date", date, duration), "o_icon_description", "o_process_status_late");
+		}
+
+		return new SubmissionDateInfos(translate("msg.submission.date", date), "o_icon_status_done", "");
+	}
+	
 	protected DueDate getSubmissionDueDate(Task assignedTask) {
 		if(submissionDueDate == null) {
 			submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		}
 		return submissionDueDate;
+	}
+	
+	protected DueDate getLateSubmissionDueDate(Task assignedTask) {
+		if(lateSubmissionDueDate == null) {
+			lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
+		}
+		return lateSubmissionDueDate;
 	}
 	
 	protected int getNumberOfSubmittedDocuments() {
@@ -513,14 +564,14 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignedTask;
 	}
 	
-	protected Task stepRevision(@SuppressWarnings("unused")UserRequest ureq,
-			Task assignedTask, @SuppressWarnings("unused")List<TaskRevision> taskRevisions) {
+	protected Task stepRevision(UserRequest ureq, Task assignedTask,
+			@SuppressWarnings("unused") List<TaskRevision> taskRevisions) {
 		// need an instantiated to go further (import for optional tasks)
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
-			DueDate dueDate = new DueDate(false, date);
+			DueDate dueDate = new DueDate(false, date, null, date);
 			boolean done = isDone(assignedTask, TaskProcess.revision);
-			DueDateValues dueDateValues = formatDueDate(dueDate, ureq.getRequestTimestamp(), done, true);
+			DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true);
 			mainVC.contextPut("revisionDueDate", dueDateValues.asString());
 			mainVC.contextPut("revisionRemainingTime", Long.toString(dueDateValues.remainingTime()));
 			
@@ -645,7 +696,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		cal.setTime(date);
 		
 		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
-		DueDateArguments ddArgs = formatDueDateArguments(dueDate, now, false);
+		DueDateArguments ddArgs = formatDueDateArguments(date, now, false, true, false);
 		
 		String i18nKey;
 		if(now.before(date)) {
@@ -753,13 +804,40 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	protected abstract Role getDoer();
 	
-	protected static final class DueDateValues {
-		private String dueDateString;
-		private long remainingTime;
+	public static class SubmissionDateInfos {
 		
-		public DueDateValues(String dueDateString, long remainingTime) {
+		private final String message;
+		private final String iconCssClass;
+		private final String cssClass;
+		
+		public SubmissionDateInfos(String message, String iconCssClass, String cssClass) {
+			this.message = message;
+			this.iconCssClass = iconCssClass;
+			this.cssClass = cssClass;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public String getIconCssClass() {
+			return iconCssClass;
+		}
+
+		public String getCssClass() {
+			return cssClass;
+		}
+	}
+	
+	protected static final class DueDateValues {
+		private final String dueDateString;
+		private final long remainingTime;
+		private final long lateRemainingTime;
+		
+		public DueDateValues(String dueDateString, long remainingTime, long lateRemainingTime) {
 			this.dueDateString = dueDateString;
 			this.remainingTime = remainingTime;
+			this.lateRemainingTime = lateRemainingTime;
 		}
 		
 		public String asString() {
@@ -768,6 +846,10 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		public long remainingTime() {
 			return remainingTime;
+		}
+		
+		public long lateRemainingTime() {
+			return lateRemainingTime;
 		}
 	}
 	

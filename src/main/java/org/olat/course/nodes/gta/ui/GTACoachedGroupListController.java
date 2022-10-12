@@ -153,11 +153,16 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		List<CoachedGroupRow> rows = new ArrayList<>(coachedGroups.size());
 		for(BusinessGroup group:coachedGroups) {
 			TaskLight task = groupToTasks.get(group.getKey());
-			Date submissionDueDate = null;
+			DueDate submissionDueDate = null;
+			DueDate lateSubmissionDueDate = null;
 			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
 				DueDate dueDate = gtaManager.getSubmissionDueDate(task, null, group, gtaNode, entry, true);
-				if(dueDate != null) {
-					submissionDueDate = dueDate.getDueDate();
+				if(dueDate != null && dueDate.getDueDate() != null) {
+					submissionDueDate = dueDate;
+					DueDate lateDueDate = gtaManager.getLateSubmissionDueDate(task, null, group, gtaNode, entry, true);
+					if(lateDueDate != null && lateDueDate.getDueDate() != null) {
+						lateSubmissionDueDate = lateDueDate;
+					}
 				}
 			}
 
@@ -166,7 +171,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
 				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
 				if(syntheticSubmissionDate != null) {
-					hasSubmittedDocument = this.hasSubmittedDocument(task);
+					hasSubmittedDocument = hasSubmittedDocument(task);
 				}
 			}
 			
@@ -176,7 +181,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 				taskDefinition = fileNameToDefinitions.get(taskName);
 			}
 			
-			CoachedGroupRow row = new CoachedGroupRow(group, task, taskDefinition, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument);
+			CoachedGroupRow row = new CoachedGroupRow(group, task, taskDefinition, submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate, hasSubmittedDocument);
 			if(taskDefinition != null) {
 				File file = new File(tasksFolder, taskDefinition.getFilename());
 				DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
@@ -261,7 +266,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, null, assessedGroup, gtaNode, entry, courseEnv);
 		listenTo(editDueDatesCtrl);
 		
-		String title = translate("duedates.user", new String[] { StringHelper.escapeHtml(assessedGroup.getName()) });
+		String title = translate("duedates.user", StringHelper.escapeHtml(assessedGroup.getName()));
 		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();

@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -374,14 +375,31 @@ public interface GTAManager {
 
 	public boolean isDueDateEnabled(GTACourseNode cNode);
 	
+	public boolean isLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
+	public boolean isExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
 	public DueDate getAssignmentDueDate(TaskRef task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode gtaNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
 	public DueDate getSubmissionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
+	public DueDate getLateSubmissionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
 	public DueDate getSolutionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
+	/**
+	 * 
+	 * @param dueDate The due date (can be null)
+	 * @param lateDueDate The late submission date (can be null)
+	 * @return The latest due date 
+	 */
+	public Date getDeadlineOf(DueDate dueDate, DueDate lateDueDate);
 	
 	public TaskProcess firstStep(GTACourseNode cNode);
 

@@ -144,6 +144,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public static final String GTASK_SUBMIT_DEADLINE = "grouptask.submit.deadline";
 	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE = "grouptask.submit.deadline.relative";
 	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE_TO = "grouptask.submit.deadline.relative.to";
+	public static final String GTASK_LATE_SUBMIT = "grouptask.late.submit";
+	public static final String GTASK_LATE_SUBMIT_DEADLINE = "grouptask.late.submit.deadline";
+	public static final String GTASK_LATE_SUBMIT_DEADLINE_RELATIVE = "grouptask.late.submit.deadline.relative";
+	public static final String GTASK_LATE_SUBMIT_DEADLINE_RELATIVE_TO = "grouptask.late.submit.deadline.relative.to";
 	public static final String GTASK_REVIEW_AND_CORRECTION = "grouptask.review.and.correction";
 	public static final String GTASK_REVISION_PERIOD = "grouptask.revision.period";
 	public static final String GTASK_SAMPLE_SOLUTION = "grouptask.solution";
@@ -785,6 +789,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	private void archiveNodeData(ICourse course, Identity assessedIdentity, TaskList taskList, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		User user = assessedIdentity.getUser();
 		String name = user.getLastName()
@@ -808,6 +813,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			File submitDirectory = gtaManager.getSubmitDirectory(course.getCourseEnvironment(), this, assessedIdentity);
 			String submissionDirName = userDirName + "/" + (++flow) + "_submissions";
 			ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
+			if(gtaManager.isExtended(task, assessedIdentity, null, this, courseEntry, true)) {
+				String extendedFile = submissionDirName + "/Extended_submission.txt";
+				ZipUtil.addTextFileToZip(extendedFile, "Extended", exportStream);
+			} else if(gtaManager.isLate(task, assessedIdentity, null, this, courseEntry, true)) {
+				String lateFile = submissionDirName + "/Late_submission.txt";
+				ZipUtil.addTextFileToZip(lateFile, "Late", exportStream);
+			}
 		}
 
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
@@ -1023,6 +1035,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_SUBMIT_DEADLINE,
 							GTASK_SUBMIT_DEADLINE_RELATIVE, GTASK_SUBMIT_DEADLINE_RELATIVE_TO)
+					: DueDateConfig.noDueDateConfig();
+		} else if (GTASK_LATE_SUBMIT_DEADLINE.equals(key)) {
+			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_LATE_SUBMIT)
+					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_LATE_SUBMIT_DEADLINE,
+							GTASK_LATE_SUBMIT_DEADLINE_RELATIVE, GTASK_LATE_SUBMIT_DEADLINE_RELATIVE_TO)
 					: DueDateConfig.noDueDateConfig();
 		} else if (GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER.equals(key)) {
 			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)

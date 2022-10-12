@@ -29,7 +29,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class AVDoneEvent extends Event {
 
-	private final static String COMMAND = "av.recording.done";
+	private static final long serialVersionUID = -7513831431031399917L;
+	private static final String COMMAND = "av.recording.done";
 	private final VFSLeaf recording;
 
 	public AVDoneEvent(VFSLeaf recording) {

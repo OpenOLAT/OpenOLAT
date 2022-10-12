@@ -978,6 +978,8 @@ $o-step-status-review-color			: $o-step-status-waiting-color;
 $o-step-status-done-color			: $o-repo-published-color;
 $o-step-status-notavailable-color	: $gray-light !default;
 $o-step-status-expired-color		: #E69138 !default;
+$o-step-status-late-color			: #B45E05 !default;
+$o-step-status-extended-color		: #31708F !default;
 
 
 /* Radial progress component */

@@ -65,8 +65,8 @@
 
 			#if($r.isNotEmpty($collectionDate))
 				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_description"> </i> $collectionDate</div>
-			#elseif($r.isNotEmpty($submissionDate))
-				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_status_done"> </i> $submissionDate</div>
+			#elseif($r.isNotNull($submissionDate))
+				<div class="o_meta $submissionDate.cssClass"><i class="o_icon o_icon-fw $submissionDate.iconCssClass"> </i> $submissionDate.message</div>
 			#end
 
 			#if($submitDueDateMsg)

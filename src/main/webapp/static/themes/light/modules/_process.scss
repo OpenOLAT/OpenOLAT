@@ -199,8 +199,29 @@
 	    background-color: 	$o-step-status-expired-color;
 	    color: 				#fff;
 	}
-	
 }
 
+.o_process_status_late {
+	color: $o-step-status-late-color;
+}
 
+.o_process_status_extended {
+	color: $o-step-status-extended-color;
+}
 
+.o_labeled_light {
+	&.o_process_status_late {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-expired-color;
+	    color: $o-step-status-expired-color;
+	}
+	&.o_process_status_extended {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-extended-color;
+	    color: $o-step-status-extended-color;
+	}
+}

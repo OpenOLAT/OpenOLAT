@@ -48,6 +48,7 @@ public class ModeCellRenderer extends StaticFlexiCellRenderer {
 		setNewWindow(true);
 
 		if (cellValue instanceof Pair<?, ?>) {
+			@SuppressWarnings("unchecked")
 			Pair<Mode, String> pair = (Pair<Mode, String>) cellValue;
 			Mode mode = pair.getLeft();
 			String fileName = pair.getRight();

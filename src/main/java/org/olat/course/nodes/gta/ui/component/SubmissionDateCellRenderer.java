@@ -29,6 +29,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.CoachedElementRow;
 
 /**
@@ -62,10 +63,25 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 				if(date != null) {
 					if(ciRow.getHasSubmittedDocuments()) {
 						target.append(formatter.formatDate(date));
+						// Submission only
+						Date submissionDate = ciRow.getCollectionDate() != null ? ciRow.getCollectionDate() : ciRow.getSubmissionDate();
+						marker(target, submissionDate, ciRow.getSubmissionDueDate(), ciRow.getLateSubmissionDueDate());
 					} else {
 						target.append(translator.translate("no.submission"));
 					}
 				}
+			}
+		}
+	}
+	
+	private void marker(StringOutput target, Date date, DueDate dueDate, DueDate lateDueDate) {
+		if(date != null && dueDate != null && dueDate.getDueDate() != null
+				// And only if not submitted in time
+				&& date.after(dueDate.getReferenceDueDate())) {
+			if(dueDate.getOverridenDueDate() != null) {
+				target.append("&#160;<span class='o_labeled_light o_process_status_extended'>").append(translator.translate("label.extended")).append("</span>");
+			} else if(lateDueDate != null && lateDueDate.getDueDate() != null && date.after(dueDate.getDueDate())) {
+				target.append("&#160;<span class='o_labeled_light o_process_status_late'>").append(translator.translate("label.late")).append("</span>");
 			}
 		}
 	}

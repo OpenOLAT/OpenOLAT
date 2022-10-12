@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 
 /**
  * Common interface for CoachedIdentityRow and CoachedGroupRow
@@ -42,7 +43,9 @@ public interface CoachedElementRow {
 	/**
 	 * @return Date only if there is a due date and the task is not submitted.
 	 */
-	public Date getSubmissionDueDate();
+	public DueDate getSubmissionDueDate();
+	
+	public DueDate getLateSubmissionDueDate();
 	
 	public Date getSubmissionDate();
 

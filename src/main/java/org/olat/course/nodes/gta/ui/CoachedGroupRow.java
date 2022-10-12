@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.group.BusinessGroup;
 
@@ -37,7 +38,8 @@ public class CoachedGroupRow implements CoachedElementRow {
 	
 	private final TaskLight task;
 	private final TaskDefinition taskDefinition;
-	private final Date submissionDueDate;
+	private final DueDate submissionDueDate;
+	private final DueDate lateSubmissionDueDate;
 	private final Date syntheticSubmissionDate;
 	private final boolean hasSubmittedDocuments;
 	private final BusinessGroup businessGroup;
@@ -45,11 +47,12 @@ public class CoachedGroupRow implements CoachedElementRow {
 	private DownloadLink downloadTaskFileLink;
 	
 	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task, TaskDefinition taskDefinition,
-			Date submissionDueDate, Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
+			DueDate submissionDueDate, DueDate lateSubmissionDueDate, Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
 		this.task = task;
 		this.taskDefinition = taskDefinition;
 		this.businessGroup = businessGroup;
 		this.submissionDueDate = submissionDueDate;
+		this.lateSubmissionDueDate = lateSubmissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
 	}
@@ -79,8 +82,13 @@ public class CoachedGroupRow implements CoachedElementRow {
 	}
 
 	@Override
-	public Date getSubmissionDueDate() {
+	public DueDate getSubmissionDueDate() {
 		return submissionDueDate;
+	}
+
+	@Override
+	public DueDate getLateSubmissionDueDate() {
+		return lateSubmissionDueDate;
 	}
 
 	@Override

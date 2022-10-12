@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -41,7 +42,8 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 
 	private final TaskLight task;
 	private final TaskDefinition taskDefinition;
-	private final Date submissionDueDate;
+	private final DueDate submissionDueDate;
+	private final DueDate lateSubmissionDueDate;
 	private final Date syntheticSubmissionDate;
 	private final boolean hasSubmittedDocuments;
 	private final FormLink markLink;
@@ -52,13 +54,15 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	
 	private DownloadLink downloadTaskFileLink;
 	
-	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, TaskDefinition taskDefinition, Date submissionDueDate,
-			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink, AssessmentEntry assessmentEntry,
+	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, TaskDefinition taskDefinition,
+			DueDate submissionDueDate, DueDate lateSubmissionDueDate, Date syntheticSubmissionDate,
+			boolean hasSubmittedDocuments, FormLink markLink, AssessmentEntry assessmentEntry,
 			int numOfSubmissionDocs, int numOfCollectedDocs) {
 		super(identity);
 		this.task = task;
 		this.taskDefinition = taskDefinition;
 		this.submissionDueDate = submissionDueDate;
+		this.lateSubmissionDueDate = lateSubmissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
 		this.markLink = markLink;
@@ -88,8 +92,13 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	}
 
 	@Override
-	public Date getSubmissionDueDate() {
+	public DueDate getSubmissionDueDate() {
 		return submissionDueDate;
+	}
+
+	@Override
+	public DueDate getLateSubmissionDueDate() {
+		return lateSubmissionDueDate;
 	}
 
 	@Override

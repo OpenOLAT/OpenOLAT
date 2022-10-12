@@ -96,6 +96,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private DueDateConfigFormItem assignmentDeadlineEl;
 	private DueDateConfigFormItem submissionDeadlineEl;
 	private DueDateConfigFormItem solutionVisibleAfterEl;
+	private DueDateConfigFormItem lateSubmissionDeadlineEl;
 	private MultipleSelectionElement relativeDatesEl;
 	private MultipleSelectionElement taskAssignmentEl;
 	private MultipleSelectionElement reviewEl;
@@ -103,6 +104,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private MultipleSelectionElement sampleEl;
 	private MultipleSelectionElement gradingEl;
 	private MultipleSelectionElement submissionEl;
+	private MultipleSelectionElement lateSubmissionEl;
 	private FormLayoutContainer stepsCont;
 	private SingleSelection solutionVisibleToAllEl;
 	private FormLayoutContainer documentsCont;
@@ -258,7 +260,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean useRelativeDates = config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
 		relativeDatesEl.select(onKeys[0], useRelativeDates);
 		
-		uifactory.addSpacerElement("s1", stepsCont, true);
+		uifactory.addSpacerElement("s1", stepsCont, false);
 		
 		//assignment
 		String[] assignmentValues = new String[] { translate("task.assignment.enabled") };
@@ -273,7 +275,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		assignmentDeadlineEl.setVisible(assignement);
 		stepsCont.add(assignmentDeadlineEl);
 		
-		uifactory.addSpacerElement("s2", stepsCont, true);
+		uifactory.addSpacerElement("s2", stepsCont, false);
 
 		//turning in
 		String[] submissionValues = new String[] { translate("submission.enabled") };
@@ -288,7 +290,19 @@ public class GTAWorkflowEditController extends FormBasicController {
 		submissionDeadlineEl.setVisible(submit);
 		stepsCont.add(submissionDeadlineEl);
 		
-		uifactory.addSpacerElement("s3", stepsCont, true);
+		String[] lateSubmissionValues = new String[] { translate("late.submission.enabled") };
+		lateSubmissionEl = uifactory.addCheckboxesHorizontal("late.submission", "late.submission", stepsCont, onKeys, lateSubmissionValues);
+		lateSubmissionEl.addActionListener(FormEvent.ONCHANGE);
+		boolean lateSubmit = config.getBooleanSafe(GTACourseNode.GTASK_LATE_SUBMIT);
+		lateSubmissionEl.select(onKeys[0], lateSubmit);
+		
+		lateSubmissionDeadlineEl = DueDateConfigFormItem.create("late.submit.deadline", getRelativeToDates(false), useRelativeDates,
+				gtaNode.getDueDateConfig(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE));
+		lateSubmissionDeadlineEl.setLabel("late.submit.deadline", null);
+		lateSubmissionDeadlineEl.setVisible(lateSubmit);
+		stepsCont.add(lateSubmissionDeadlineEl);
+		
+		uifactory.addSpacerElement("s3", stepsCont, false);
 
 		//review and correction
 		String[] reviewValues = new String[] { translate("review.enabled") };
@@ -305,7 +319,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		revisionEl.select(onKeys[0], revision);
 		revisionEl.setVisible(review);
 		
-		uifactory.addSpacerElement("s4", stepsCont, true);
+		uifactory.addSpacerElement("s4", stepsCont, false);
 
 		//sample solution
 		String[] sampleValues = new String[] { translate("sample.solution.enabled") };
@@ -330,7 +344,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		} else {
 			solutionVisibleToAllEl.select(solutionVisibleToAllKeys[1], true);
 		}
-		uifactory.addSpacerElement("s5", stepsCont, true);
+		uifactory.addSpacerElement("s5", stepsCont, false);
 
 		//grading
 		String[] gradingValues = new String[] { translate("grading.enabled") };
@@ -467,6 +481,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_RELATIVE_DATES, relativeDates);
 		
+		// Assignment
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, assignment);
 		DueDateConfig assignmentDueDateConfig = assignment? assignmentDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
@@ -474,13 +489,23 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, assignmentDueDateConfig.getRelativeToType());
 		config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, assignmentDueDateConfig.getAbsoluteDate());
 		
+		// Submission step
 		boolean turningIn = submissionEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMIT, turningIn);
 		DueDateConfig submissionDueDateConfig = turningIn? submissionDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
 		config.setIntValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, submissionDueDateConfig.getNumOfDays());
 		config.setStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO, submissionDueDateConfig.getRelativeToType());
 		config.setDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE, submissionDueDateConfig.getAbsoluteDate());
-
+		
+		// Late submission
+		boolean turningLateIn = turningIn && lateSubmissionEl.isAtLeastSelected(1);
+		config.setBooleanEntry(GTACourseNode.GTASK_LATE_SUBMIT, turningLateIn);
+		DueDateConfig lateSubmissionDueDateConfig = turningLateIn? lateSubmissionDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE_RELATIVE, lateSubmissionDueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE_RELATIVE_TO, lateSubmissionDueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE, lateSubmissionDueDateConfig.getAbsoluteDate());
+		
+		// Review
 		boolean review = reviewEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, review);
 		if(review) {
@@ -507,7 +532,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(submissionEl == source) {
+		if(submissionEl == source || lateSubmissionEl == source) {
 			updateSubmissionDeadline();
 		} else if(taskAssignmentEl == source) {
 			updateAssignmentDeadline();
@@ -554,6 +579,13 @@ public class GTAWorkflowEditController extends FormBasicController {
 		submissionDeadlineEl.setRelativeToDates(getRelativeToDates(false));
 		submissionDeadlineEl.setVisible(submit);
 		submissionDeadlineEl.setRelative(useRelativeDate);
+		
+		lateSubmissionEl.setVisible(submit);
+		
+		boolean lateSubmit = submit && lateSubmissionEl.isAtLeastSelected(1);
+		lateSubmissionDeadlineEl.setRelativeToDates(getRelativeToDates(false));
+		lateSubmissionDeadlineEl.setVisible(lateSubmit);
+		lateSubmissionDeadlineEl.setRelative(useRelativeDate);
 	}
 	
 	private void updateSolutionDeadline() {

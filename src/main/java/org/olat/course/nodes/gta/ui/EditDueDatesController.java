@@ -53,7 +53,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditDueDatesController extends FormBasicController {
 	
-	private DateChooser assignmentDueDateEl, submissionDueDateEl, revisionDueDateEl, solutionDueDateEl;
+	private DateChooser assignmentDueDateEl;
+	private DateChooser submissionDueDateEl;
+	private DateChooser revisionDueDateEl;
+	private DateChooser solutionDueDateEl;
 	
 	private Task task;
 	private GTACourseNode gtaNode;
@@ -88,14 +91,16 @@ public class EditDueDatesController extends FormBasicController {
 		assignmentDueDateEl = uifactory.addDateChooser("assignment.duedate", assignmentDueDate, formLayout);
 		assignmentDueDateEl.setDateChooserTimeEnabled(true);
 		DueDate standardAssignmentDueDate = gtaManager.getAssignmentDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, false);
-		setDueDateExplanation(assignmentDueDateEl, standardAssignmentDueDate);
+		setDueDateExplanation(assignmentDueDateEl, standardAssignmentDueDate, null);
 		assignmentDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		
 		Date submissionDueDate = task.getSubmissionDueDate();
 		submissionDueDateEl = uifactory.addDateChooser("submission.duedate", submissionDueDate, formLayout);
 		submissionDueDateEl.setDateChooserTimeEnabled(true);
 		DueDate standardSubmissionDueDate = gtaManager.getSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, false);
-		setDueDateExplanation(submissionDueDateEl, standardSubmissionDueDate);
+		DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
+		
+		setDueDateExplanation(submissionDueDateEl, standardSubmissionDueDate, lateSubmissionDueDate);
 		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
 		submissionDueDateEl.setVisible(submissionDeadline);
 		if(submissionDeadline && task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()) {
@@ -113,7 +118,7 @@ public class EditDueDatesController extends FormBasicController {
 		solutionDueDateEl = uifactory.addDateChooser("solution.duedate", solutionDueDate, formLayout);
 		solutionDueDateEl.setDateChooserTimeEnabled(true);
 		DueDate standardSolutionDueDate = gtaManager.getSolutionDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
-		setDueDateExplanation(solutionDueDateEl, standardSolutionDueDate);
+		setDueDateExplanation(solutionDueDateEl, standardSolutionDueDate, null);
 		solutionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -122,9 +127,12 @@ public class EditDueDatesController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
-	private void setDueDateExplanation(DateChooser dateEl, DueDate standardDueDate) {
+	private void setDueDateExplanation(DateChooser dateEl, DueDate standardDueDate, DueDate lateDueDate) {
 		if(standardDueDate != null) {
-			if(standardDueDate.getDueDate() != null) {
+			if(lateDueDate != null) {
+				dateEl.setExampleKey("duedate.late", new String[] { formatter.formatDateAndTime(standardDueDate.getDueDate()),
+						formatter.formatDateAndTime(lateDueDate.getDueDate()) });
+			} else if(standardDueDate.getDueDate() != null) {
 				dateEl.setExampleKey("duedate.standard", new String[] { formatter.formatDateAndTime(standardDueDate.getDueDate()) });
 			} else if(standardDueDate.getMessageKey() != null) {
 				dateEl.setExampleKey(standardDueDate.getMessageKey(), new String[] { standardDueDate.getMessageArg() });

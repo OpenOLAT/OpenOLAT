@@ -28,6 +28,7 @@ package org.olat.core.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -765,6 +767,16 @@ public class ZipUtil {
 	 */
 	public static void addFileToZip(String path, File file, ZipOutputStream exportStream) {
 		try(InputStream source = new FileInputStream(file)) {
+			exportStream.putNextEntry(new ZipEntry(path));
+			FileUtils.copy(source, exportStream);
+			exportStream.closeEntry();
+		} catch(IOException e) {
+			handleIOException("", e);
+		}
+	}
+	
+	public static void addTextFileToZip(String path, String content, ZipOutputStream exportStream) {
+		try(InputStream source = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
 			exportStream.putNextEntry(new ZipEntry(path));
 			FileUtils.copy(source, exportStream);
 			exportStream.closeEntry();

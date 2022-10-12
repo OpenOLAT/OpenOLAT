@@ -20,7 +20,6 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -318,7 +317,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		}
 		
 		DueDate dueDate = getSubmissionDueDate(task);
-		Date deadline = dueDate == null ? null : dueDate.getDueDate();
+		DueDate lateDueDate = getLateSubmissionDueDate(task);
+		Date deadline = gtaManager.getDeadlineOf(dueDate, lateDueDate);
 		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
@@ -779,17 +779,105 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
-	protected DueDateValues formatDueDate(DueDate dueDate, Date now, boolean done, boolean userDeadLine) {
-		Date date = dueDate.getDueDate();
+	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine) {
+		Date date = dueDate.getReferenceDueDate();
+		Date lateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
+		Date extensionDate = dueDate.getOverridenDueDate();
+
+		String text = null;
+		DueDateArguments dueDateArgs = null;
+		DueDateArguments lateDueDateArgs = null;
+
+		// Extension date
+		if(extensionDate != null && now.before(extensionDate)
+				&& (date == null || date.before(extensionDate))
+				&& (lateDate == null || lateDate.before(extensionDate))) {
+			boolean dateOnly = isDateOnly(extensionDate);
+			if(done) {
+				dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
+				String i18nKey;
+				if(now.before(date)) {
+					i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
+				} else {
+					i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
+				}
+				text = translate(i18nKey, dueDateArgs.args());
+			} else {
+				dateOnly = isDateOnly(extensionDate);
+				dueDateArgs = formatDueDateArguments(extensionDate, now, false, true, userDeadLine);
+				
+				String i18nKey;
+				if(dueDateArgs.days() > 1) {// 2 days
+					i18nKey = dateOnly ? "msg.extended.dateonly.within.days" : "msg.extended.within.days";
+				} else if(dueDateArgs.timeDiffInMillSeconds() < ONE_DAY_IN_MILLISEC) {
+					// Less than a day, but perhaps still next day
+					i18nKey = dateOnly ? "msg.extended.dateonly.within.hours" : "msg.extended.within.hours";
+				} else if(dueDateArgs.days() == 1) {
+					i18nKey = dateOnly ? "msg.extended.dateonly.within.day" : "msg.extended.within.day";
+				} else {
+					// some hours left
+					i18nKey = dateOnly ? "msg.extended.dateonly.within.hours" : "msg.extended.within.hours";
+				}
+				text = translate(i18nKey, dueDateArgs.args());
+			}
+		}
 		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		boolean dateOnly = (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+		// Late date
+		else if(lateDate != null && now.before(lateDate)) {
+			boolean lateDateOnly = isDateOnly(lateDate);
+			boolean dateOnly = isDateOnly(date);
+			if(done) {
+				dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
+				String i18nKey;
+				if(now.before(date)) {
+					i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
+				} else {
+					i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
+				}
+				text = translate(i18nKey, dueDateArgs.args());
+			} else {
+				dueDateArgs = formatDueDateArguments(date, now, false, false, userDeadLine);
+				lateDueDateArgs = formatDueDateArguments(lateDate, now, true, true, userDeadLine);
+				
+				// Late configured but we are still in the normal deadline
+				if(now.before(date)) {
+					String stdI18nKey;
+					if(dueDateArgs.timeDiffInMillSeconds() < ONE_DAY_IN_MILLISEC) {
+						stdI18nKey = dateOnly ? "msg.late.standard.dateonly.within.hours" : "msg.late.standard.within.hours";
+					} else {
+						stdI18nKey = dateOnly ? "msg.late.standard.dateonly.within.days" : "msg.late.standard.within.days";
+					}
+					text = translate(stdI18nKey, dueDateArgs.args());
+					
+					String lateI18nKey = lateDateOnly ? "msg.late.standard.dateonly.late.part" : "msg.late.standard.late.part";
+					// standard is 6
+					text = translate(lateI18nKey, mergeArguments(lateDueDateArgs.args(), new String[] {text}));
+				}
+				// We are late
+				else {
+					String i18nKey;
+					if(lateDueDateArgs.days() > 1) {// 2 days
+						i18nKey = lateDateOnly ? "msg.late.dateonly.within.days" : "msg.late.within.days";
+					} else if(lateDueDateArgs.timeDiffInMillSeconds() < ONE_DAY_IN_MILLISEC) {
+						// Less than a day, but perhaps still next day
+						i18nKey = lateDateOnly ? "msg.late.dateonly.within.hours" : "msg.late.within.hours";
+					} else if(lateDueDateArgs.days() == 1) {
+						i18nKey = lateDateOnly ? "msg.late.dateonly.within.day" : "msg.late.within.day";
+					} else {
+						// some hours left
+						i18nKey = lateDateOnly ? "msg.late.dateonly.within.hours" : "msg.late.within.hours";
+					}
+					text = translate(i18nKey, lateDueDateArgs.args());
+				}
+			}
+		}
 		
-		DueDateArguments dueDateArgs = formatDueDateArguments(dueDate, now, userDeadLine);
-		
-		String i18nKey;
-		if(now.before(date)) {
+		// Standard date
+		else if(date != null && now.before(date)) {
+			boolean dateOnly = isDateOnly(date);
+			dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
+			
+			String i18nKey;
 			if(done) {
 				i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 			} else if(dueDateArgs.days() > 1) {// 2 days
@@ -803,12 +891,17 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				// some hours left
 				i18nKey = dateOnly ? "msg.end.dateonly.within.hours" : "msg.end.within.hours";
 			}
-		} else {
-			i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
+			text = translate(i18nKey, dueDateArgs.args());
+		} else if (date != null) {
+			boolean dateOnly = isDateOnly(date);
+			dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
+			String i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
+			text = translate(i18nKey, dueDateArgs.args());
 		}
-		
-		String text = translate(i18nKey, dueDateArgs.args());
-		return new DueDateValues(text, dueDateArgs.timeDiffInMillSeconds());
+
+		long remainingTime = (dueDateArgs == null ? -1l : dueDateArgs.timeDiffInMillSeconds());
+		long lateRemainingTime = (lateDueDateArgs == null ? -1l : lateDueDateArgs.timeDiffInMillSeconds());
+		return new DueDateValues(text, remainingTime, lateRemainingTime);
 	}
 
 	@Override

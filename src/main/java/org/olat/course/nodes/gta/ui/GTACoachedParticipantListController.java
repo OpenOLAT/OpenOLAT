@@ -440,56 +440,72 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		boolean markedOnly = MARKED_TAB_ID.equals(tableEl.getSelectedFilterTab().getId());
 		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
 			IdentityMark mark = identityToMarks.get(assessableIdentity.getIdentityKey());
-			if (markedOnly && mark == null) continue;
+			if (markedOnly && mark == null) {
+				continue;
+			}
 			
 			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
-			if (isExcludedByObligation(filterObligations, assessment) || isExcludedByParticipant(filterParticipants, assessableIdentity)) continue;
-			
-			FormLink markLink = uifactory.addFormLink("mark_" + assessableIdentity.getIdentityKey(), "mark", "", null, null, Link.NONTRANSLATED);
-			markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-			markLink.setUserObject(assessableIdentity.getIdentityKey());
+			if (isExcludedByObligation(filterObligations, assessment) || isExcludedByParticipant(filterParticipants, assessableIdentity)) {
+				continue;
+			}
 			
 			TaskLight task = identityToTasks.get(assessableIdentity.getIdentityKey());
-			Date submissionDueDate = null;
-			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
-				IdentityRef identityRef = new IdentityRefImpl(assessableIdentity.getIdentityKey());
-				DueDate dueDate = gtaManager.getSubmissionDueDate(task, identityRef, null, gtaNode, entry, true);
-				if(dueDate != null) {
-					submissionDueDate = dueDate.getDueDate();
-				}
-			} 
-
-			Date syntheticSubmissionDate = null;
-			boolean hasSubmittedDocument = false;
-			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
-				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
-				if(syntheticSubmissionDate != null) {
-					hasSubmittedDocument = hasSubmittedDocument(task);
-				}
-			}
-			
-			int numSubmittedDocs = task != null && task.getSubmissionNumOfDocs() != null ? task.getSubmissionNumOfDocs().intValue() : 0;
-			int numOfCollectedDocs = task != null && task.getCollectionNumOfDocs() != null ? task.getCollectionNumOfDocs().intValue() : 0;
-
-			String taskName = task == null ? null : task.getTaskName();
-			TaskDefinition taskDefinition = null;
-			if(StringHelper.containsNonWhitespace(taskName)) {
-				taskDefinition = fileNameToDefinitions.get(taskName);
-			}
-			
-			CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition, submissionDueDate, syntheticSubmissionDate,
-					hasSubmittedDocument, markLink, assessment, numSubmittedDocs, numOfCollectedDocs);
-			if(taskDefinition != null) {
-				File file = new File(tasksFolder, taskDefinition.getFilename());
-				DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
-				row.setDownloadTaskFileLink(downloadLink);
-			}
+			CoachedIdentityRow row = forgeRow(assessableIdentity, mark, task, assessment, entry, fileNameToDefinitions, tasksFolder);
 			rows.add(row);
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset();
 		return rows.size();
+	}
+	
+	private CoachedIdentityRow forgeRow(UserPropertiesRow assessableIdentity, IdentityMark mark, TaskLight task, AssessmentEntry assessment,
+			RepositoryEntry entry, Map<String,TaskDefinition> fileNameToDefinitions, File tasksFolder) {
+		FormLink markLink = uifactory.addFormLink("mark_" + assessableIdentity.getIdentityKey(), "mark", "", null, null, Link.NONTRANSLATED);
+		markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setUserObject(assessableIdentity.getIdentityKey());
+
+		Date syntheticSubmissionDate = null;
+		boolean hasSubmittedDocument = false;
+		if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
+			syntheticSubmissionDate = getSyntheticSubmissionDate(task);
+			if(syntheticSubmissionDate != null) {
+				hasSubmittedDocument = hasSubmittedDocument(task);
+			}
+		}
+		
+		DueDate submissionDueDate = null;
+		DueDate lateSubmissionDueDate = null;
+		if(task != null && syntheticSubmissionDate != null) {
+			IdentityRef identityRef = new IdentityRefImpl(assessableIdentity.getIdentityKey());
+			DueDate dueDate = gtaManager.getSubmissionDueDate(task, identityRef, null, gtaNode, entry, true);
+			if(dueDate != null && dueDate.getDueDate() != null) {
+				submissionDueDate = dueDate;
+				DueDate lateDueDate = gtaManager.getLateSubmissionDueDate(task, identityRef, null, gtaNode, entry, true);
+				if(lateDueDate != null && lateDueDate.getDueDate() != null) {
+					lateSubmissionDueDate = lateDueDate;
+				}
+			}
+		}
+		
+		int numSubmittedDocs = task != null && task.getSubmissionNumOfDocs() != null ? task.getSubmissionNumOfDocs().intValue() : 0;
+		int numOfCollectedDocs = task != null && task.getCollectionNumOfDocs() != null ? task.getCollectionNumOfDocs().intValue() : 0;
+
+		String taskName = task == null ? null : task.getTaskName();
+		TaskDefinition taskDefinition = null;
+		if(StringHelper.containsNonWhitespace(taskName)) {
+			taskDefinition = fileNameToDefinitions.get(taskName);
+		}
+		
+		CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition,
+				submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate,
+				hasSubmittedDocument, markLink, assessment, numSubmittedDocs, numOfCollectedDocs);
+		if(taskDefinition != null) {
+			File file = new File(tasksFolder, taskDefinition.getFilename());
+			DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
+			row.setDownloadTaskFileLink(downloadLink);
+		}
+		return row;
 	}
 
 	private List<AssessmentObligation> getFilterObligations() {
