@@ -439,6 +439,9 @@ public class RepositoryEntryMyCourseQueries {
 			boolean membershipMandatory, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
 			RepositoryEntryStatusEnum[] entryStatus) {
 		if(roles.isGuestOnly()) {
+			System.out.println("entryStatus: " + entryStatus);
+			System.out.println("subSet: " + subSetOf(ACService.RESTATUS_ACTIVE_GUEST, entryStatus));
+			
 			sb.append(" v.publicVisible=true and v.status ").in(subSetOf(ACService.RESTATUS_ACTIVE_GUEST, entryStatus));
 			sb.append(" and res.key in (");
 			sb.append("   select resource.key");
@@ -552,6 +555,14 @@ public class RepositoryEntryMyCourseQueries {
 		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed);
 	}
 	
+	/**
+	 * Optimize the status to contains only the ones the user search for. If the result
+	 * is empty, returns the permitted ones.
+	 * 
+	 * @param allowed The list of status to optimize
+	 * @param filterStatus The status the user search for
+	 * @return Intersection of the permitted status and the status used to filter
+	 */
 	private RepositoryEntryStatusEnum[] subSetOf(RepositoryEntryStatusEnum[] allowed, RepositoryEntryStatusEnum[] filterStatus) {
 		if(filterStatus != null && filterStatus.length > 0) {
 			List<RepositoryEntryStatusEnum> statusList = new ArrayList<>();
@@ -562,7 +573,9 @@ public class RepositoryEntryMyCourseQueries {
 					}
 				}
 			}
-			return statusList.toArray(new RepositoryEntryStatusEnum[statusList.size()]);
+			if(!statusList.isEmpty()) {
+				allowed = statusList.toArray(new RepositoryEntryStatusEnum[statusList.size()]);
+			}
 		}
 		return allowed;
 	}
