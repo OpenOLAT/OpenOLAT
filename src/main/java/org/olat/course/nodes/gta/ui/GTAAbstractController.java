@@ -473,7 +473,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 				mainVC.contextRemove("submitDueDateMsg");
 				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
-						&& deadline.compareTo(new Date()) < 0) {
+						&& deadline.compareTo(ureq.getRequestTimestamp()) < 0) {
 					//push to the next step
 					int numOfDocs = getNumberOfSubmittedDocuments();
 					if (numOfDocs > 0 || getDoer() != Role.coach) {
@@ -514,7 +514,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignedTask;
 	}
 	
-	protected SubmissionDateInfos formatSubmissionDateMessage(Task assignedTask, DueDate dueDate, DueDate lateDueDate) {
+	protected final SubmissionDateInfos formatSubmissionDateMessage(Task assignedTask, DueDate dueDate, DueDate lateDueDate) {
 		Date submissionDate = assignedTask.getSubmissionDate();
 		String date = Formatter.getInstance(getLocale()).formatDateAndTime(submissionDate);
 		if(dueDate == null || dueDate.getReferenceDueDate() == null || submissionDate.before(dueDate.getReferenceDueDate())) {
@@ -532,7 +532,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return new SubmissionDateInfos(translate("msg.submission.date", date), "o_icon_status_done", "");
 	}
 	
-	protected DueDate getSubmissionDueDate(Task assignedTask) {
+	protected final DueDate getSubmissionDueDate(Task assignedTask) {
 		if(submissionDueDate == null) {
 			submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		}

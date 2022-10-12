@@ -1363,7 +1363,25 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Override
 	public boolean isExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup, GTACourseNode cNode,
 			RepositoryEntry courseEntry, boolean withIndividualDueDate) {
-		return task != null && task.getSubmissionDueDate() != null && (task.getSubmissionDate() != null || task.getCollectionDate() != null);
+
+		Date submissionDate = task.getCollectionDate() != null ? task.getCollectionDate() : task.getSubmissionDate();
+		if(submissionDate != null && task.getSubmissionDueDate() != null) {
+			DueDate submissionDueDate = getSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
+
+			Date deadline = submissionDueDate == null ? null : submissionDueDate.getReferenceDueDate();
+			if(deadline != null) {
+				DueDate lateSubmissionDueDate = getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
+				Date lateDeadline = lateSubmissionDueDate == null ? null : lateSubmissionDueDate.getReferenceDueDate();
+				if(lateDeadline != null && lateDeadline.after(deadline)) {
+					deadline = lateDeadline;
+				}
+			}
+			
+			if(task.getSubmissionDueDate().after(deadline) && submissionDate.after(deadline)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -1472,18 +1490,25 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	@Override
 	public Date getDeadlineOf(DueDate dueDate, DueDate lateDueDate) {
-		Date date = dueDate == null ? null : dueDate.getDueDate();
-		Date lateDate = lateDueDate == null ? null : lateDueDate.getDueDate();
-		
+		Date refDate = dueDate == null ? null : dueDate.getReferenceDueDate();
+		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
+		Date overridenDate = dueDate == null ? null : dueDate.getOverridenDueDate();
+
 		Date deadline;
-		if(date != null && lateDate == null) {
-			deadline = date;
-		} else if(date == null && lateDate != null) {
-			deadline = lateDate;
-		} else if(date != null && lateDate.after(date)) {
-			deadline = lateDate;
+		if(refDate != null && refLateDate == null) {
+			deadline = refDate;
+		} else if(refDate == null && refLateDate != null) {
+			deadline = refLateDate;
+		} else if(refDate != null && refLateDate.after(refDate)) {
+			deadline = refLateDate;
 		} else {
-			deadline = date;
+			deadline = refDate;
+		}
+		
+		if(deadline != null && overridenDate != null && overridenDate.after(deadline)) {
+			deadline = overridenDate;
+		} else if(deadline == null && overridenDate != null) {
+			deadline = overridenDate;
 		}
 		return deadline;
 	}
