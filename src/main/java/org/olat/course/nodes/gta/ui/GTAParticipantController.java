@@ -780,8 +780,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	@Override
 	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine) {
-		Date date = dueDate.getReferenceDueDate();
-		Date lateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
+		Date refDate = dueDate.getReferenceDueDate();
+		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
 		Date extensionDate = dueDate.getOverridenDueDate();
 
 		String text = null;
@@ -790,13 +790,13 @@ public class GTAParticipantController extends GTAAbstractController implements A
 
 		// Extension date
 		if(extensionDate != null && now.before(extensionDate)
-				&& (date == null || date.before(extensionDate))
-				&& (lateDate == null || lateDate.before(extensionDate))) {
+				&& (refDate == null || refDate.before(extensionDate))
+				&& (refLateDate == null || refLateDate.before(extensionDate))) {
 			boolean dateOnly = isDateOnly(extensionDate);
 			if(done) {
-				dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
+				dueDateArgs = formatDueDateArguments(refDate, now, false, true, userDeadLine);
 				String i18nKey;
-				if(now.before(date)) {
+				if(now.before(refDate)) {
 					i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 				} else {
 					i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
@@ -823,13 +823,15 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		}
 		
 		// Late date
-		else if(lateDate != null && now.before(lateDate)) {
-			boolean lateDateOnly = isDateOnly(lateDate);
+		else if(refLateDate != null && now.before(refLateDate)) {
+			Date date = dueDate.getDueDate();
 			boolean dateOnly = isDateOnly(date);
+			boolean lateDateOnly = isDateOnly(refLateDate);
+			
 			if(done) {
 				dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
 				String i18nKey;
-				if(now.before(date)) {
+				if(now.before(refDate)) {
 					i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 				} else {
 					i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
@@ -837,7 +839,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				text = translate(i18nKey, dueDateArgs.args());
 			} else {
 				dueDateArgs = formatDueDateArguments(date, now, false, false, userDeadLine);
-				lateDueDateArgs = formatDueDateArguments(lateDate, now, true, true, userDeadLine);
+				lateDueDateArgs = formatDueDateArguments(refLateDate, now, true, true, userDeadLine);
 				
 				// Late configured but we are still in the normal deadline
 				if(now.before(date)) {
@@ -873,9 +875,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		}
 		
 		// Standard date
-		else if(date != null && now.before(date)) {
-			boolean dateOnly = isDateOnly(date);
-			dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
+		else if(refDate != null && now.before(refDate)) {
+			boolean dateOnly = isDateOnly(refDate);
+			dueDateArgs = formatDueDateArguments(refDate, now, false, true, userDeadLine);
 			
 			String i18nKey;
 			if(done) {
@@ -892,7 +894,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				i18nKey = dateOnly ? "msg.end.dateonly.within.hours" : "msg.end.within.hours";
 			}
 			text = translate(i18nKey, dueDateArgs.args());
-		} else if (date != null) {
+		} else if (dueDate.getDueDate() != null) {
+			Date date = dueDate.getDueDate();
 			boolean dateOnly = isDateOnly(date);
 			dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
 			String i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";

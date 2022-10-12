@@ -533,16 +533,16 @@ public class GTACoachController extends GTAAbstractController implements Activat
 	
 	@Override
 	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine) {
-		Date date = dueDate.getReferenceDueDate();
-		Date lateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
+		Date refDate = dueDate.getReferenceDueDate();
+		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
 		Date extensionDate = dueDate.getOverridenDueDate();
 		
-		boolean dateOnly = date != null && isDateOnly(date);
+		boolean dateOnly = refDate != null && isDateOnly(refDate);
 		if(dateOnly && userDeadLine) {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
+			cal.setTime(refDate);
 			cal.add(Calendar.DATE, -1);
-			date = cal.getTime();
+			refDate = cal.getTime();
 		}
 
 		DueDateArguments dueDateArgs = null;
@@ -551,38 +551,40 @@ public class GTACoachController extends GTAAbstractController implements Activat
 		String text = null;
 		// Extension date
 		if(extensionDate != null && now.before(extensionDate)
-				&& (date == null || date.before(extensionDate))
-				&& (lateDate == null || lateDate.before(extensionDate))) {
+				&& (refDate == null || refDate.before(extensionDate))
+				&& (refLateDate == null || refLateDate.before(extensionDate))) {
 			dueDateArgs = formatDueDateArguments(extensionDate, now, false, false, userDeadLine);
 			
 			String i18nKey = dateOnly ? "msg.extended.coach.dateonly" : "msg.extended.coach";
 			text = translate(i18nKey, dueDateArgs.args());
 		}
 		// Late date
-		else if(lateDate != null && now.before(lateDate)) {
-			dueDateArgs = formatDueDateArguments(dueDate.getDueDate(), now, false, false, userDeadLine);
-			lateDueDateArgs = formatDueDateArguments(lateDueDate.getDueDate(), now, false, false, userDeadLine);
+		else if(refLateDate != null && now.before(refLateDate)) {
+			Date date = dueDate.getDueDate();
+			
+			dueDateArgs = formatDueDateArguments(date, now, false, false, userDeadLine);
+			lateDueDateArgs = formatDueDateArguments(refLateDate, now, false, false, userDeadLine);
 			
 			if(now.before(date)) {
 				String i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 				text = translate(i18nKey, dueDateArgs.args());
 				
 				i18nKey = dateOnly ? "msg.late.standard.coach.dateonly" : "msg.late.standard.coach";
-				text = translate(i18nKey, this.mergeArguments(lateDueDateArgs.args(), new String[] { text }));
+				text = translate(i18nKey, mergeArguments(lateDueDateArgs.args(), new String[] { text }));
 				
 			} else {
 				String i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
 				text = translate(i18nKey, dueDateArgs.args());
 				
 				i18nKey = dateOnly ? "msg.late.coach.dateonly" : "msg.late.coach";
-				text = translate(i18nKey, this.mergeArguments(lateDueDateArgs.args(), new String[] { text }));
+				text = translate(i18nKey, mergeArguments(lateDueDateArgs.args(), new String[] { text }));
 			}
 		}
-		else if(date != null && now.before(date)) {
+		else if(refDate != null && now.before(refDate)) {
 			dueDateArgs = formatDueDateArguments(dueDate.getDueDate(), now, false, false, userDeadLine);
 			String i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 			text = translate(i18nKey, dueDateArgs.args());
-		} else if(date != null) {
+		} else if(dueDate.getDueDate() != null) {
 			dueDateArgs = formatDueDateArguments(dueDate.getDueDate(), now, false, false, userDeadLine);
 			String i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
 			text = translate(i18nKey, dueDateArgs.args());
