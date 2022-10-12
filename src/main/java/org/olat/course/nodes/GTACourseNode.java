@@ -20,7 +20,6 @@
 package org.olat.course.nodes;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -30,7 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -56,7 +54,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -89,6 +86,7 @@ import org.olat.course.nodes.gta.ITALearningPathNodeHandler;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.manager.GTAResultsExport;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.rule.GTAReminderProvider;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
@@ -737,14 +735,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			
 			String courseTitle = course.getCourseTitle();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-			List<CourseNode> nodes = Collections.singletonList(this);
-			try(OutputStream out = new ShieldOutputStream(exportStream)) {
-				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
-				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, out);
-				exportStream.closeEntry();
-			} catch (Exception e) {
-				log.error("", e);
-			}
+			GTAResultsExport export = new GTAResultsExport(course, this, locale);
+			export.export(dirName + "/" + fileName, users, null, exportStream);
 		}
 		
 		//copy tasks

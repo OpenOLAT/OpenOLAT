@@ -45,7 +45,7 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class GTAUIFactory {
+public class GTAUIFactory {
 	
 	static Mode getOpenMode(Identity identity, Roles roles, VFSLeaf vfsLeaf, boolean readOnly) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);

@@ -20,12 +20,9 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
@@ -41,14 +38,12 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.manager.GTAResultsExport;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 
@@ -130,14 +125,8 @@ public class GroupBulkDownloadResource implements MediaResource {
 						.getMembers(groups, GroupRoles.participant.name());
 				String courseTitle = course.getCourseTitle();
 				String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-				List<CourseNode> nodes = Collections.singletonList(courseNode);
-				try(OutputStream out = new ShieldOutputStream(zout)) {
-					zout.putNextEntry(new ZipEntry(fileName));
-					ScoreAccountingHelper.createCourseResultsOverviewXMLTable(assessableIdentities, nodes, course, locale, out);
-					zout.closeEntry();
-				} catch (Exception e) {
-					log.error("", e);
-				}
+				GTAResultsExport export = new GTAResultsExport(course, courseNode, locale);
+				export.export(fileName, assessableIdentities, groups, zout);
 			}
 
 			TaskList taskList = gtaManager.getTaskList(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode);
