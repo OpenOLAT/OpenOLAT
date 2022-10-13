@@ -59,8 +59,9 @@ public class GTASubmissionEditController extends FormBasicController {
 	private SelectionValues videoQualityKV;
 	private TextElement maxVideoDurationEl;
 	private SingleSelection videoQualityEl;
-	private MultipleSelectionElement allowAudioRecordingsEl;
-	private TextElement maxAudioDurationEl;
+	//TODO OO-6508
+	//private MultipleSelectionElement allowAudioRecordingsEl;
+	//private TextElement maxAudioDurationEl;
 	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
@@ -112,6 +113,8 @@ public class GTASubmissionEditController extends FormBasicController {
 		videoQualityEl.select(videoQuality.name(), true);
 		videoQualityEl.setVisible(allowVideoRecordings);
 
+		//TODO OO-6508
+		/*
 		allowAudioRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.audio.recordings", "av.allow.audio.recordings", configCont, enableKeys, enableValues);
 		boolean allowAudioRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS);
 		allowAudioRecordingsEl.select(enableKeys[0], allowAudioRecordings);
@@ -121,6 +124,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		maxAudioDurationEl = uifactory.addTextElement("av.max.audio.duration", "av.max.duration", 5, maxAudioDuration, configCont);
 		maxAudioDurationEl.setRegexMatchCheck("\\d+", "av.max.duration.error");
 		maxAudioDurationEl.setVisible(allowAudioRecordings);
+		*/
 
 		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		String minVal = "";
@@ -164,7 +168,7 @@ public class GTASubmissionEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == allowVideoRecordingsEl || source == allowAudioRecordingsEl) {
+		if (source == allowVideoRecordingsEl /* || source == allowAudioRecordingsEl */) {//TODO OO-6508
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -175,8 +179,8 @@ public class GTASubmissionEditController extends FormBasicController {
 		maxVideoDurationEl.setVisible(allowVideoRecordings);
 		videoQualityEl.setVisible(allowVideoRecordings);
 
-		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
-		maxAudioDurationEl.setVisible(allowAudioRecordings);
+		//TODO OO-6508 boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
+		//TODO OO-6508 maxAudioDurationEl.setVisible(allowAudioRecordings);
 	}
 
 	@Override
@@ -240,11 +244,15 @@ public class GTASubmissionEditController extends FormBasicController {
 			config.setStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, maxVideoDurationEl.getValue());
 			config.setStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, videoQualityEl.getSelectedKey());
 		}
+		
+		//TODO OO-6508
+		/*
 		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS, allowAudioRecordings);
 		if (allowAudioRecordings) {
 			config.setStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, maxAudioDurationEl.getValue());
 		}
+		*/
 
 		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
 		setNumberOfdocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);
