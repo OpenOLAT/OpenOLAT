@@ -179,7 +179,7 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 		}
 		
 		for(int i=index; i-->=0; ) {
-			ContentEditorFragment fragment = (ContentEditorContainerComponent)rootComponents.get(i);
+			ContentEditorFragment fragment = (ContentEditorFragment)rootComponents.get(i);
 			if(fragment instanceof ContentEditorContainerComponent) {
 				return (ContentEditorContainerComponent)fragment;
 			}
@@ -194,7 +194,7 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 		}
 		
 		for(int i=index; i<rootComponents.size(); i++) {
-			ContentEditorFragment fragment = (ContentEditorContainerComponent)rootComponents.get(i);
+			ContentEditorFragment fragment = (ContentEditorFragment)rootComponents.get(i);
 			if(fragment instanceof ContentEditorContainerComponent) {
 				return (ContentEditorContainerComponent)fragment;
 			}
