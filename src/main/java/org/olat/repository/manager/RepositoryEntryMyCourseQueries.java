@@ -480,36 +480,36 @@ public class RepositoryEntryMyCourseQueries {
 			inRoles.add(GroupRoles.participant);
 		}
 		
-		
+		int numOfStatus = 0;
+
 		sb.append("(");
-		//make sure that in all case the role is mandatory
-		if(dbInstance.isMySQL()) {
-			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("    and (");
-		} else {
-			sb.append(" exists (select rel.key from repoentrytogroup as rel")
-			  .append("    inner join bgroupmember as membership on (membership.group.key=rel.group.key)")
-			  .append("    where rel.entry.key=v.key and membership.identity.key=:identityKey")
-			  .append("    and (");
-		}
 		
 		RepositoryEntryStatusEnum[] memberShipsStatus = subSetOf(RepositoryEntryStatusEnum.preparationToClosed(), entryStatus);
-		int numOfStatus = memberShipsStatus.length;
-		sb.append("membership.role").in(inRoles.stream().toArray(GroupRoles[]::new))
-		  .append(" and v.status ").in(memberShipsStatus)
-		  .append(")")
-		  .append(")");
+		if(memberShipsStatus.length > 0) {
+			//make sure that in all case the role is mandatory
+			sb.append(" v.key in (select re4.key from repositoryentry as re4 ")
+			  .append("   inner join repoentrytogroup as rel4 on (re4.key=rel4.entry.key)")
+			  .append("   inner join bgroupmember as membership on (membership.group.key=rel4.group.key)")
+			  .append("   where membership.identity.key=:identityKey and (")
+			  .append("    membership.role").in(inRoles.stream().toArray(GroupRoles[]::new))
+			  .append("    and re4.status ").in(memberShipsStatus)
+			  .append("   )")
+			  .append(" )");
+			numOfStatus += memberShipsStatus.length;
+		}
 		
 		boolean offerValidAtUsed = false;
 		boolean offerOrganisationsUsed = false;
 		if(emptyRoles && !membershipMandatory) {
 			RepositoryEntryStatusEnum[] openAccessStatus = subSetOf(RepositoryEntryStatusEnum.publishedAndClosed(), entryStatus);
-			numOfStatus += openAccessStatus.length;
-			
+
 			// Open access
 			if(openAccessStatus.length > 0) {
-				sb.append(" or (");
+				if(numOfStatus > 0) {
+					sb.append(" or");
+				}
+				
+				sb.append(" (");
 				sb.append(" res.key in (");
 				sb.append("   select resource.key");
 				sb.append("     from acoffer offer");
@@ -528,17 +528,21 @@ public class RepositoryEntryMyCourseQueries {
 				}
 				sb.append(")"); // in
 				sb.append(")"); // or
+				
+				numOfStatus += openAccessStatus.length;
 			}
 			
 			// Access methods
 			RepositoryEntryStatusEnum[] subSetsPeriodAccessMethods = subSetOf(ACService.RESTATUS_ACTIVE_METHOD_PERIOD, entryStatus);
-			numOfStatus += subSetsPeriodAccessMethods.length;
 			RepositoryEntryStatusEnum[] subSetsActiveAccessMethods = subSetOf(ACService.RESTATUS_ACTIVE_METHOD, entryStatus);
-			numOfStatus += subSetsActiveAccessMethods.length;
 			
 			if (acModule.isEnabled()
 					&& (subSetsActiveAccessMethods.length > 0 || subSetsPeriodAccessMethods.length > 0 || offerValidAt == null)) {
-				sb.append(" or (");
+				if(numOfStatus > 0) {
+					sb.append(" or");
+				}
+
+				sb.append(" (");
 				sb.append(" res.key in (");
 				sb.append("   select resource.key");
 				sb.append("     from acofferaccess access");
@@ -567,6 +571,7 @@ public class RepositoryEntryMyCourseQueries {
 						sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
 						sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
 						sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt))");
+						numOfStatus += subSetsPeriodAccessMethods.length;
 					}
 					
 					if(subSetsActiveAccessMethods.length > 0) {
@@ -574,11 +579,11 @@ public class RepositoryEntryMyCourseQueries {
 						
 						sb.append(" (re2.status ").in(subSetsActiveAccessMethods);
 						sb.append(" and offer.validFrom is null and offer.validTo is null)");
+						numOfStatus += subSetsActiveAccessMethods.length;
 					}
 					
 					sb.append(" )"); // and
 					offerValidAtUsed = true;
-					numOfStatus += subSetsPeriodAccessMethods.length + subSetsActiveAccessMethods.length;
 				} else if(offerValidAt == null && entryStatus != null && entryStatus.length > 0) {
 					sb.append(" and re2.status ").in(entryStatus);
 					numOfStatus += entryStatus.length;
