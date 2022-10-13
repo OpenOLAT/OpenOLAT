@@ -103,7 +103,7 @@ public class TableInspectorController extends FormBasicController implements Pag
 		rowHeaderEl.addActionListener(FormEvent.ONCHANGE);
 		rowHeaderEl.select(onKeys[0], settings.isRowHeaders());
 		
-		String[] columnHeaderValues = new String[] { translate("table.column.header") + " dd" };
+		String[] columnHeaderValues = new String[] { translate("table.column.header") };
 		columnHeaderEl = uifactory.addCheckboxesHorizontal("table.column.header", "table.column.header", formLayout, onKeys, columnHeaderValues);
 		columnHeaderEl.addActionListener(FormEvent.ONCHANGE);
 		columnHeaderEl.select(onKeys[0], settings.isColumnHeaders());
