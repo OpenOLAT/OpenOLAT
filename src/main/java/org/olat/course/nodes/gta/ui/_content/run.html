@@ -98,7 +98,7 @@
 			<span class="o_process_status_badge $submitCssStatus">$submitStatus</span>
 			<h4 class="o_title">$r.translate("run.submit")</h4>
 			#if($r.isNotEmpty($submitDueDate))
-				<div id="o_step_submit_duedate" class="o_meta" data-remaining-time="$submitRemainingTime" data-late-remaining-time="$lateSubmitRemainingTime"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $submitDueDate</div>
+				<div id="o_step_submit_duedate" class="o_meta #if($r.isTrue($submitLate)) o_process_status_late #end" data-remaining-time="$submitRemainingTime" data-late-remaining-time="$lateSubmitRemainingTime"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $submitDueDate</div>
 			#end
 			
 			#if($r.isNotEmpty($collectionDate))
@@ -308,17 +308,17 @@
 <script>
 "use strict";
 jQuery(function() {
-	function displayRemainingTime(wrapperId, remaining) {
+	function displayRemainingTime(wrapperId, hourCssClass, minuteCssClass, remaining) {
 		var hours = Math.floor(remaining / (60 * 60 * 1000));
 		var minutes = Math.floor((remaining - (hours * 60 * 60 * 1000)) / (60 * 1000));
-		jQuery("#" + wrapperId + " .o_hours").text("" + hours);
-		jQuery("#" + wrapperId + " .o_minutes").text("" + minutes);
+		jQuery("#" + wrapperId + " ." + hourCssClass).text("" + hours);
+		jQuery("#" + wrapperId + " ." + minuteCssClass).text("" + minutes);
 	}
 	
-	jQuery(".o_meta").each(function(index, el) {
-		var numOfCounter = jQuery(".o_minutes", el).length;
+	function pollRemainingTime(el, hourCssClass, minuteCssClass, dataAttribute) {
+		var numOfCounter = jQuery("." + minuteCssClass, el).length;
 		if(numOfCounter > 0) {
-	    	var availableTime = parseInt(el.getAttribute("data-remaining-time"));
+	    	var availableTime = parseInt(el.getAttribute(dataAttribute));
 	    	if(availableTime > 0) {
 				var startTime = Math.floor(performance.now());
 				var wrapperId = el.getAttribute("id");
@@ -327,7 +327,7 @@ jQuery(function() {
 					if(jQuery("#o_proc_${r.getCId()}").length == 0) {
 						periodic.cancel();
 					} else if(remaining >= 0) {
-						displayRemainingTime(wrapperId, remaining);
+						displayRemainingTime(wrapperId, hourCssClass, minuteCssClass, remaining);
 					} else {
 						$r.javaScriptCommand("reload","ignore-validating-error","oo-ignore-validating-error")
 						periodic.cancel();
@@ -335,6 +335,11 @@ jQuery(function() {
 				});
 	    	}
 		}
+	}
+	
+	jQuery(".o_meta").each(function(index, el) {
+		pollRemainingTime(el, "o_hours", "o_minutes", "data-remaining-time");
+		pollRemainingTime(el, "o_hours_late", "o_minutes_late", "data-late-remaining-time");	
 	});
 });
 </script>

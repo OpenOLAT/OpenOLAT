@@ -375,9 +375,31 @@ public interface GTAManager {
 
 	public boolean isDueDateEnabled(GTACourseNode cNode);
 	
+	/**
+	 * Check if the submission was done late.
+	 * 
+	 * @param task
+	 * @param assessedIdentity
+	 * @param assessedGroup
+	 * @param cNode
+	 * @param courseEntry
+	 * @param withIndividualDueDate
+	 * @return
+	 */
 	public boolean isLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
+	/**
+	 * Check if the submission was done in extended time.
+	 * 
+	 * @param task
+	 * @param assessedIdentity
+	 * @param assessedGroup
+	 * @param cNode
+	 * @param courseEntry
+	 * @param withIndividualDueDate
+	 * @return
+	 */
 	public boolean isExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	

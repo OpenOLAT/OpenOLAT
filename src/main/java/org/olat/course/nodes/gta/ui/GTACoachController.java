@@ -228,14 +228,24 @@ public class GTACoachController extends GTAAbstractController implements Activat
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
 				setNotAvailableStatusAndCssClass("submit");
 			} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-				setWaitingStatusAndCssClass("submit");
+				if(isSubmissionLate(ureq, getSubmissionDueDate(assignedTask), getLateSubmissionDueDate(assignedTask))) {
+					setLateStatusAndCssClass("submit");
+					mainVC.contextPut("submitLate", Boolean.TRUE);
+				} else {
+					setWaitingStatusAndCssClass("submit");
+				}
 				collect(assignedTask);
 			} else {
 				setDoneStatusAndCssClass("submit");
 				viewSubmittedDocument = true;
 			}	
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-			setActiveStatusAndCssClass("submit");
+			if(isSubmissionLate(ureq, getSubmissionDueDate(assignedTask), getLateSubmissionDueDate(assignedTask))) {
+				setLateStatusAndCssClass("submit");
+				mainVC.contextPut("submitLate", Boolean.TRUE);
+			} else {
+				setActiveStatusAndCssClass("submit");
+			}
 			collect(assignedTask);
 		} else {
 			setDoneStatusAndCssClass("submit");

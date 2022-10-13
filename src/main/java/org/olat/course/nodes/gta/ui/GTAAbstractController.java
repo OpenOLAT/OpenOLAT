@@ -382,6 +382,10 @@ public abstract class GTAAbstractController extends BasicController implements G
 		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_review", "msg.status.review");
 	}
 	
+	protected final void setLateStatusAndCssClass(String stepPrefix) {
+		setStatusAndCssClass(stepPrefix, "o_active", "o_process_status_late", "msg.status.late");
+	}
+	
 	protected final void setStatusAndCssClass(String stepPrefix, String stepCssClass, String statusCssClass, String statusI18nKey) {
 		mainVC.contextPut(stepPrefix.concat("CssClass"), stepCssClass);
 		mainVC.contextPut(stepPrefix.concat("CssStatus"), statusCssClass);
@@ -459,6 +463,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 		DueDate dueDate = getSubmissionDueDate(assignedTask);
 		DueDate lateDueDate = getLateSubmissionDueDate(assignedTask);
 		
+		// clean this value, coach and participant will set it at will
+		mainVC.contextRemove("submitLate");
+		
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
 				Date deadline = gtaManager.getDeadlineOf(dueDate, lateDueDate);
@@ -494,11 +501,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getCollectionDate());
 				mainVC.contextPut("collectionDate", translate("msg.collection.date", date));
 				mainVC.contextRemove("submissionDate");
-			 } else if(assignedTask.getSubmissionDate() != null && assignedTask.getSubmissionDoerRole() == Role.auto) {
+			} else if(assignedTask.getSubmissionDate() != null && assignedTask.getSubmissionDoerRole() == Role.auto) {
 				String date = Formatter.getInstance(getLocale()).formatDateAndTime(assignedTask.getSubmissionDate());
 				mainVC.contextPut("collectionDate", translate("msg.collection.date.auto", date));
 				mainVC.contextRemove("submissionDate");
-			 } else if(assignedTask.getSubmissionDate() != null) {
+			} else if(assignedTask.getSubmissionDate() != null) {
 				SubmissionDateInfos submissionDateText = formatSubmissionDateMessage(assignedTask, dueDate, lateDueDate);
 				mainVC.contextPut("submissionDate", submissionDateText);
 				mainVC.contextRemove("collectionDate");
@@ -530,6 +537,17 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 
 		return new SubmissionDateInfos(translate("msg.submission.date", date), "o_icon_status_done", "");
+	}
+	
+	protected final boolean isSubmissionLate(UserRequest ureq, DueDate dueDate, DueDate lateDueDate) {
+		if(dueDate == null || dueDate.getDueDate() == null
+				|| lateDueDate == null || lateDueDate.getDueDate() == null) {
+			return false;
+		}
+		
+		Date now = ureq.getRequestTimestamp();
+		Date refDate = dueDate.getDueDate();
+		return now.after(refDate);
 	}
 	
 	protected final DueDate getSubmissionDueDate(Task assignedTask) {

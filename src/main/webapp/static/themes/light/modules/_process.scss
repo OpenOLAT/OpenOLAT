@@ -199,6 +199,10 @@
 	    background-color: 	$o-step-status-expired-color;
 	    color: 				#fff;
 	}
+	&.o_process_status_late {
+		background-color: 	$o-step-status-late-color;
+	    color: 				#fff;
+	}
 }
 
 .o_process_status_late {

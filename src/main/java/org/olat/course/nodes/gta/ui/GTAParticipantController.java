@@ -280,7 +280,12 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
 				setNotAvailableStatusAndCssClass("submit");
 			} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-				setActiveStatusAndCssClass("submit");
+				if(isSubmissionLate(ureq, getSubmissionDueDate(assignedTask), getLateSubmissionDueDate(assignedTask))) {
+					setLateStatusAndCssClass("submit");
+					mainVC.contextPut("submitLate", Boolean.TRUE);
+				} else {
+					setActiveStatusAndCssClass("submit");
+				}
 				if(userCourseEnv.isCourseReadOnly()) {
 					setSubmittedDocumentsController(ureq);
 				} else {
@@ -291,7 +296,12 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				setSubmittedDocumentsController(ureq);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-			setActiveStatusAndCssClass("submit");
+			if(isSubmissionLate(ureq, getSubmissionDueDate(assignedTask), getLateSubmissionDueDate(assignedTask))) {
+				setLateStatusAndCssClass("submit");
+				mainVC.contextPut("submitLate", Boolean.TRUE);
+			} else {
+				setActiveStatusAndCssClass("submit");
+			}
 			if(userCourseEnv.isCourseReadOnly()) {
 				setSubmittedDocumentsController(ureq);
 			} else {
@@ -792,18 +802,19 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		if(extensionDate != null && now.before(extensionDate)
 				&& (refDate == null || refDate.before(extensionDate))
 				&& (refLateDate == null || refLateDate.before(extensionDate))) {
-			boolean dateOnly = isDateOnly(extensionDate);
 			if(done) {
-				dueDateArgs = formatDueDateArguments(refDate, now, false, true, userDeadLine);
+				Date date = dueDate.getDueDate();
+				boolean dateOnly = isDateOnly(date);
+				dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
 				String i18nKey;
-				if(now.before(refDate)) {
+				if(now.before(date)) {
 					i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 				} else {
 					i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
 				}
 				text = translate(i18nKey, dueDateArgs.args());
 			} else {
-				dateOnly = isDateOnly(extensionDate);
+				boolean dateOnly = isDateOnly(extensionDate);
 				dueDateArgs = formatDueDateArguments(extensionDate, now, false, true, userDeadLine);
 				
 				String i18nKey;
