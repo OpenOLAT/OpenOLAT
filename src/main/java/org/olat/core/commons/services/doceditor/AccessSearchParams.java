@@ -21,6 +21,7 @@ package org.olat.core.commons.services.doceditor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -52,8 +53,11 @@ public class AccessSearchParams {
 		return metadataKeys;
 	}
 	
-	public void setMatadatas(Collection<VFSMetadata> metadatas) {
-		this.metadataKeys = metadatas.stream().map(VFSMetadata::getKey).collect(Collectors.toSet());
+	public void setMetadatas(Collection<VFSMetadata> metadatas) {
+		metadataKeys = metadatas.stream()
+				.filter(Objects::nonNull)
+				.map(VFSMetadata::getKey)
+				.collect(Collectors.toSet());
 	}
 	
 	public void setMetadataKey(Long metadataKey) {

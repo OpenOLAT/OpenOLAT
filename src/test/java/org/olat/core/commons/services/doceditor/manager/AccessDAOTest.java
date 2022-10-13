@@ -174,7 +174,7 @@ public class AccessDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AccessSearchParams params = new AccessSearchParams();
-		params.setMatadatas(List.of(vfsMetadata1, vfsMetadata2));
+		params.setMetadatas(List.of(vfsMetadata1, vfsMetadata2));
 		List<Access> accesses = sut.getAccesses(params);
 		
 		assertThat(accesses)

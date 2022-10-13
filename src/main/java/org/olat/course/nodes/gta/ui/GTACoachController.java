@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -277,12 +278,13 @@ public class GTACoachController extends GTAAbstractController implements Activat
 			mainVC.contextPut("hasUploadedDocs", hasDocuments);
 			
 			List<VFSMetadata> metadatas = submitContainer.getItems().stream()
-					.filter(item -> item instanceof VFSLeaf)
+					.filter(VFSLeaf.class::isInstance)
 					.map(item -> ((VFSLeaf)item).getMetaInfo())
+					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			AccessSearchParams params = new AccessSearchParams();
 			params.setMode(Mode.EDIT);
-			params.setMatadatas(metadatas);
+			params.setMetadatas(metadatas);
 			List<Access> accesses = docEditorService.getAccesses(params);
 			mainVC.contextPut("docsEdit", !accesses.isEmpty());
 		}

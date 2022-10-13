@@ -132,7 +132,7 @@ public class CopyDocumentController extends FormBasicController {
 			// 2) Remove documents which are not saved
 			AccessSearchParams params = new AccessSearchParams();
 			params.setMode(Mode.EDIT);
-			params.setMatadatas(metadatas);
+			params.setMetadatas(metadatas);
 			List<Access> accesses = docEditorService.getAccesses(params);
 			
 			List<VFSMetadata> metadataInEdit = new ArrayList<>();
