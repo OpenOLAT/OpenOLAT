@@ -805,10 +805,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			File submitDirectory = gtaManager.getSubmitDirectory(course.getCourseEnvironment(), this, assessedIdentity);
 			String submissionDirName = userDirName + "/" + (++flow) + "_submissions";
 			ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
-			if(gtaManager.isExtended(task, assessedIdentity, null, this, courseEntry, true)) {
+			if(gtaManager.isSubmissionExtended(task, assessedIdentity, null, this, courseEntry, true)) {
 				String extendedFile = submissionDirName + "/Extended_submission.txt";
 				ZipUtil.addTextFileToZip(extendedFile, "Extended", exportStream);
-			} else if(gtaManager.isLate(task, assessedIdentity, null, this, courseEntry, true)) {
+			} else if(gtaManager.isSubmissionLate(task, assessedIdentity, null, this, courseEntry, true)) {
 				String lateFile = submissionDirName + "/Late_submission.txt";
 				ZipUtil.addTextFileToZip(lateFile, "Late", exportStream);
 			}

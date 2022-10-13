@@ -378,29 +378,29 @@ public interface GTAManager {
 	/**
 	 * Check if the submission was done late.
 	 * 
-	 * @param task
-	 * @param assessedIdentity
-	 * @param assessedGroup
-	 * @param cNode
-	 * @param courseEntry
+	 * @param task Task with a submission date mandatory
+	 * @param assessedIdentity The assessed identity
+	 * @param assessedGroup The assessed business group
+	 * @param cNode The group task course element
+	 * @param courseEntry The course repository entry
 	 * @param withIndividualDueDate
-	 * @return
+	 * @return If the submission was done late
 	 */
-	public boolean isLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+	public boolean isSubmissionLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
 	/**
 	 * Check if the submission was done in extended time.
 	 * 
-	 * @param task
-	 * @param assessedIdentity
-	 * @param assessedGroup
-	 * @param cNode
-	 * @param courseEntry
+	 * @param task Task with a submission date mandatory
+	 * @param assessedIdentity The assessed identity
+	 * @param assessedGroup The assessed business group
+	 * @param cNode The group task course element
+	 * @param courseEntry The course repository entry
 	 * @param withIndividualDueDate
-	 * @return
+	 * @return If the submission was done during the extension of time or not
 	 */
-	public boolean isExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+	public boolean isSubmissionExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
 	public DueDate getAssignmentDueDate(TaskRef task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,

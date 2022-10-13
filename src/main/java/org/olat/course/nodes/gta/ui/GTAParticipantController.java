@@ -849,7 +849,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				}
 				text = translate(i18nKey, dueDateArgs.args());
 			} else {
-				dueDateArgs = formatDueDateArguments(date, now, false, false, userDeadLine);
+				dueDateArgs = formatDueDateArguments(date, now, false, true, userDeadLine);
 				lateDueDateArgs = formatDueDateArguments(refLateDate, now, true, true, userDeadLine);
 				
 				// Late configured but we are still in the normal deadline

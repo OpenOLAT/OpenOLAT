@@ -1343,7 +1343,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public boolean isLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+	public boolean isSubmissionLate(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		if(task == null) return false;
 		
@@ -1361,8 +1361,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public boolean isExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup, GTACourseNode cNode,
+	public boolean isSubmissionExtended(Task task, IdentityRef assessedIdentity, BusinessGroup assessedGroup, GTACourseNode cNode,
 			RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		if(task == null) return false;
 
 		Date submissionDate = task.getCollectionDate() != null ? task.getCollectionDate() : task.getSubmissionDate();
 		if(submissionDate != null && task.getSubmissionDueDate() != null) {

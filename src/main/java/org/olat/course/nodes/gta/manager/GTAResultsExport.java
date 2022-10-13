@@ -271,9 +271,9 @@ public class GTAResultsExport {
 
 		if(submissionDate != null) {
 			StringBuilder remark = new StringBuilder();
-			if(gtaManager.isExtended(task, assessedIdentity, null, gtaNode, courseEntry, true)) {
+			if(gtaManager.isSubmissionExtended(task, assessedIdentity, null, gtaNode, courseEntry, true)) {
 				remark.append(translator.translate("label.extended"));
-			} else if(gtaManager.isLate(task, assessedIdentity, null, gtaNode, courseEntry, true)) {
+			} else if(gtaManager.isSubmissionLate(task, assessedIdentity, null, gtaNode, courseEntry, true)) {
 				remark.append(translator.translate("label.late"));
 			}
 			if(task.getCollectionDate() != null) {
