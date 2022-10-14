@@ -112,7 +112,7 @@ public class AccessDeniedController extends BasicController {
 		if (emailOk) {
 			showInfo("membership.request.success");
 		} else {
-			showError("membership.request.faild");
+			showError("membership.request.failed");
 		}
 	}
 	
