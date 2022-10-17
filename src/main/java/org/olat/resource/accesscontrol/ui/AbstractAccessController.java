@@ -70,7 +70,7 @@ public abstract class AbstractAccessController extends BasicController {
 		} else if (from != null) {
 			period =  translate("period.from", formatter.formatDate(from));
 		} else if (to != null) {
-			period = translate("period.active.to", formatter.formatDate(to));
+			period = translate("period.to", formatter.formatDate(to));
 		}
 		mainVC.contextPut("period", period);
 		

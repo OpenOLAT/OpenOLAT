@@ -21,38 +21,29 @@ package org.olat.course.nodes.livestream.paella;
 
 /**
  * 
- * Initial date: 16 Dec 2019<br>
+ * Initial date: 6 Oct 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class Stream {
+public class Manifest {
 	
-	private Sources sources;
-	private String content;
-	private String role;
+	private Metadata metadata;
+	private Stream[] streams;
 	
-	public Sources getSources() {
-		return sources;
-	}
-
-	public void setSources(Sources sources) {
-		this.sources = sources;
-	}
-
-	public String getContent() {
-		return content;
+	public Metadata getMetadata() {
+		return metadata;
 	}
 	
-	public void setContent(String content) {
-		this.content = content;
+	public void setMetadata(Metadata metadata) {
+		this.metadata = metadata;
 	}
 
-	public String getRole() {
-		return role;
+	public Stream[] getStreams() {
+		return streams;
 	}
 
-	public void setRole(String role) {
-		this.role = role;
+	public void setStreams(Stream[] streams) {
+		this.streams = streams;
 	}
-
+	
 }
