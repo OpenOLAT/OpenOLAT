@@ -19,40 +19,32 @@
  */
 package org.olat.course.nodes.livestream.paella;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.StringMediaResource;
+
 /**
  * 
- * Initial date: 16 Dec 2019<br>
+ * Initial date: 6 Oct 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class Stream {
+public class PaellaConfigMapper implements Mapper {
 	
-	private Sources sources;
-	private String content;
-	private String role;
+	private final String paellaConfig;
 	
-	public Sources getSources() {
-		return sources;
+	public PaellaConfigMapper(String paellaConfig) {
+		this.paellaConfig = paellaConfig;
 	}
 
-	public void setSources(Sources sources) {
-		this.sources = sources;
-	}
-
-	public String getContent() {
-		return content;
-	}
-	
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
+	@Override
+	public MediaResource handle(String relPath, HttpServletRequest request) {
+		StringMediaResource resource = new StringMediaResource();
+		resource.setContentType("application/json; charset=UTF-8");
+		resource.setData(paellaConfig.replace("'", "\""));
+		return resource;
 	}
 
 }

@@ -150,20 +150,24 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		readyToInactivateUserCtrl.loadModel(readyToInactivateSearchParams);
 
 		// inactive
-		inactiveUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
-		listenTo(inactiveUserCtrl);
-		lifecycleTabbedPane.addTab(translate("overview.inactive.user"), inactiveUserCtrl.getInitialComponent());
+		lifecycleTabbedPane.addTabControllerCreator(ureq, translate("overview.inactive.user"), (uureq -> {
+			inactiveUserCtrl = new UserSearchTableController(uureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
+			listenTo(inactiveUserCtrl);
+			
+			SearchIdentityParams inactiveSearchParams = getInactiveParams();
+			inactiveUserCtrl.loadModel(inactiveSearchParams);
+			return inactiveUserCtrl;
+		}));
 
-		SearchIdentityParams inactiveSearchParams = getInactiveParams();
-		inactiveUserCtrl.loadModel(inactiveSearchParams);
-		
 		// ready to delete
-		readyToDeleteUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
-		listenTo(readyToDeleteUserCtrl);
-		lifecycleTabbedPane.addTab(translate("overview.ready.to.delete.user"), readyToDeleteUserCtrl.getInitialComponent());
-
-		SearchIdentityParams readyToDeleteSearchParams = getReadyToDeleteParams();
-		readyToDeleteUserCtrl.loadModel(readyToDeleteSearchParams);
+		lifecycleTabbedPane.addTabControllerCreator(ureq, translate("overview.ready.to.delete.user"), uureq -> {
+			readyToDeleteUserCtrl = new UserSearchTableController(uureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
+			listenTo(readyToDeleteUserCtrl);
+			
+			SearchIdentityParams readyToDeleteSearchParams = getReadyToDeleteParams();
+			readyToDeleteUserCtrl.loadModel(readyToDeleteSearchParams);
+			return readyToDeleteUserCtrl;
+		});
 	}
 	
 	@Override
@@ -189,6 +193,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		List<Integer> statusList = List.of(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		params.setExactStatusList(statusList);
 		params.setOrganisations(manageableOrganisations);
+		params.setExcludedRoles(new OrganisationRoles[] { OrganisationRoles.guest });
 		return params;
 	}
 	
@@ -196,6 +201,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setExactStatusList(List.of(Identity.STATUS_INACTIVE));
 		params.setOrganisations(manageableOrganisations);
+		params.setExcludedRoles(new OrganisationRoles[] { OrganisationRoles.guest });
 		return params;
 	}
 	
@@ -213,6 +219,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		params.setUserLoginBefore(lastLoginBefore);
 		params.setExactStatusList(List.of(Identity.STATUS_INACTIVE));
 		params.setOrganisations(manageableOrganisations);
+		params.setExcludedRoles(new OrganisationRoles[] { OrganisationRoles.guest });
 		return params;
 	}
 	

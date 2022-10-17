@@ -211,15 +211,20 @@ public class ContactFormController extends BasicController {
 			listenTo(mCtr);// to be disposed as this controller gets disposed
 			putInitialPanel(mCtr.getInitialComponent());
 		}
-		if(!hasAtLeastOneAddress || !disabledIdentities.isEmpty()){
+		if(hasAtLeastOneAddress && !disabledIdentities.isEmpty()) {
+			// Only a warning message, user can proceed further and send the E-mail
+			String title = MailHelper.getTitleForFailedUsersError(getLocale());
+			String message =  MailHelper.getMessageForFailedUsersError(getLocale(), disabledIdentities);
+			activateGenericDialog(ureq, title, message, List.of(translate("ok")), noUsersErrorCtr);
+		} else if(!hasAtLeastOneAddress || !disabledIdentities.isEmpty()){
 			//show error that message can not be sent
 			List<String> myButtons = new ArrayList<>();
 			myButtons.add(translate("back"));
 			String title = "";
 			String message = "";
 			if(!disabledIdentities.isEmpty()) {
-				title = MailHelper.getTitleForFailedUsersError(ureq.getLocale());
-				message = MailHelper.getMessageForFailedUsersError(ureq.getLocale(), disabledIdentities);
+				title = MailHelper.getTitleForFailedUsersError(getLocale());
+				message = MailHelper.getMessageForFailedUsersError(getLocale(), disabledIdentities);
 			} else {
 				title = translate("error.title.nousers");
 				message = translate("error.msg.nousers");
