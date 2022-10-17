@@ -49,7 +49,7 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;

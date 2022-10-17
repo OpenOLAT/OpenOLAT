@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.license.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -141,8 +142,8 @@ public class LicenseTypeDAO {
 
 	boolean exists(String name) {
 		String query = new StringBuilder()
-				.append("select count(*) from licensetype licensetype")
-				.append(" where name=:name")
+				.append("select count(*) from licensetype ltype")
+				.append(" where ltype.name=:name")
 				.toString();
 		
 		Long number = dbInstance.getCurrentEntityManager()
@@ -154,7 +155,7 @@ public class LicenseTypeDAO {
 	}
 
 	List<LicenseType> loadPredefinedLicenseTypes() {
-		String query = "select licensetype from licensetype licensetype where predefined is true";
+		String query = "select ltype from licensetype as ltype where ltype.predefined=true";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, LicenseType.class)
 				.getResultList();

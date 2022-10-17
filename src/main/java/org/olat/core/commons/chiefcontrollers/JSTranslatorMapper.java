@@ -26,7 +26,7 @@ package org.olat.core.commons.chiefcontrollers;
 
 import java.util.Locale;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;

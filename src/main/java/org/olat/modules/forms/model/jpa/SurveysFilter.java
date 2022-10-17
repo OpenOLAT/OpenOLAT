@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;

@@ -61,22 +61,22 @@
 		level if necessary. -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.23</org.springframework.version>
-		<org.hibernate.version>5.6.12.Final</org.hibernate.version>
-		<apache.cxf>3.5.3</apache.cxf>
+		<targetJdk>17</targetJdk>
+		<org.springframework.version>6.0.0-M6</org.springframework.version>
+		<org.hibernate.version>6.1.4.Final</org.hibernate.version>
+		<apache.cxf>4.0.0-SNAPSHOT</apache.cxf>
 		<apache.pdfbox>2.0.27</apache.pdfbox>
 		<apache.poi>5.2.3</apache.poi>
 		<apache.log4j>2.19.0</apache.log4j>
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.2.20.Final</io.undertow>
+		<io.undertow>2.3.0.Final</io.undertow>
 		<jackson.version>2.14.0-rc1</jackson.version>
 		<swagger.ui.version>4.14.2</swagger.ui.version>
 		<org.mysql.version>8.0.30</org.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
-		<org.infinispan.version>13.0.11.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.0.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.5.0</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
@@ -419,10 +419,15 @@
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
 				    <artifactId>jakarta.xml.ws-api</artifactId>
-				    <version>2.3.3</version>
+				    <version>4.0.0</version>
 				</dependency>
 				<dependency>
-					<groupId>org.hibernate</groupId>
+				    <groupId>jakarta.transaction</groupId>
+				    <artifactId>jakarta.transaction-api</artifactId>
+				    <version>2.0.1</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate.orm</groupId>
 					<artifactId>hibernate-core</artifactId>
 					<version>${org.hibernate.version}</version>
 					<exclusions>
@@ -441,17 +446,17 @@
 					</exclusions>
 				</dependency>
 				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-entitymanager</artifactId>
-					<version>${org.hibernate.version}</version>
+					<groupId>org.hibernate.validator</groupId>
+					<artifactId>hibernate-validator</artifactId>
+					<version>7.0.5.Final</version>
 				</dependency>
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-hibernate-cache-v53</artifactId>
+					<artifactId>infinispan-hibernate-cache-v60</artifactId>
 					<version>${org.infinispan.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.hibernate</groupId>
+					<groupId>org.hibernate.orm</groupId>
 					<artifactId>hibernate-hikaricp</artifactId>
 					<version>${org.hibernate.version}</version>
 				</dependency>
@@ -461,10 +466,6 @@
 					<artifactId>infinispan-core</artifactId>
 					<version>${org.infinispan.version}</version>
 					<exclusions>
-						<exclusion>
-							<groupId>org.jboss.spec.javax.transaction</groupId>
-							<artifactId>jboss-transaction-api_1.1_spec</artifactId>
-						</exclusion>
 						<exclusion>
 							<groupId>org.jboss.logging</groupId>
 							<artifactId>jboss-logging</artifactId>
@@ -613,10 +614,10 @@
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
 				    <artifactId>jakarta.xml.ws-api</artifactId>
-				    <version>2.3.3</version>
+				    <version>4.0.0</version>
 				</dependency>
 				<dependency>
-					<groupId>org.hibernate</groupId>
+					<groupId>org.hibernate.orm</groupId>
 					<artifactId>hibernate-core</artifactId>
 					<version>${org.hibernate.version}</version>
 					<exclusions>
@@ -635,17 +636,22 @@
 					</exclusions>
 				</dependency>
 				<dependency>
+					<groupId>org.hibernate.validator</groupId>
+					<artifactId>hibernate-validator</artifactId>
+					<version>7.0.5.Final</version>
+				</dependency>
+				<dependency>
 					<groupId>org.hibernate</groupId>
 					<artifactId>hibernate-entitymanager</artifactId>
 					<version>${org.hibernate.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-hibernate-cache-v53</artifactId>
+					<artifactId>infinispan-hibernate-cache-v60</artifactId>
 					<version>${org.infinispan.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.hibernate</groupId>
+					<groupId>org.hibernate.orm</groupId>
 					<artifactId>hibernate-hikaricp</artifactId>
 					<version>${org.hibernate.version}</version>
 				</dependency>
@@ -655,10 +661,6 @@
 					<artifactId>infinispan-core</artifactId>
 					<version>${org.infinispan.version}</version>
 					<exclusions>
-						<exclusion>
-							<groupId>org.jboss.spec.javax.transaction</groupId>
-							<artifactId>jboss-transaction-api_1.1_spec</artifactId>
-						</exclusion>
 						<exclusion>
 							<groupId>org.jboss.logging</groupId>
 							<artifactId>jboss-logging</artifactId>
@@ -676,6 +678,12 @@
 							<artifactId>rhq-pluginAnnotations</artifactId>
 						</exclusion>
 					</exclusions>
+				</dependency>
+				
+				<dependency>
+					<groupId>org.hibernate.validator</groupId>
+					<artifactId>hibernate-validator</artifactId>
+					<version>7.0.5.Final</version>
 				</dependency>
 		
 				<dependency>
@@ -754,7 +762,7 @@
 				</dependency>
 				
 				<dependency>
-					<groupId>org.hibernate</groupId>
+					<groupId>org.hibernate.orm</groupId>
 					<artifactId>hibernate-core</artifactId>
 					<version>${org.hibernate.version}</version>
 					<scope>provided</scope>
@@ -781,7 +789,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-hibernate-cache-v53</artifactId>
+					<artifactId>infinispan-hibernate-cache-v60</artifactId>
 					<version>${org.infinispan.version}</version>
 					<scope>provided</scope>
 				</dependency>
@@ -792,10 +800,6 @@
 					<version>${org.infinispan.version}</version>
 					<scope>provided</scope>
 					<exclusions>
-						<exclusion>
-							<groupId>org.jboss.spec.javax.transaction</groupId>
-							<artifactId>jboss-transaction-api_1.1_spec</artifactId>
-						</exclusion>
 						<exclusion>
 							<groupId>org.jboss.logging</groupId>
 							<artifactId>jboss-logging</artifactId>
@@ -1337,6 +1341,32 @@
 				<updatePolicy>daily</updatePolicy>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>apache-snapshot</id>
+			<name>Apache Snapshot</name>
+			<url>https://repository.apache.org/snapshots</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>springio-snapshot</id>
+			<name>Spring IO Snapshot</name>
+			<url>https://repo.spring.io/milestone</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+			</snapshots>
+		</repository>
 	</repositories>
 	<build>
 		<!-- Useful maven commands: o mvn dependency:tree - check to see what other 
@@ -1795,7 +1825,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.2</version>
+			<version>3.2.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1810,7 +1840,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j-zoneinfo-outlook</artifactId>
-			<version>2.1.2</version>
+			<version>2.1.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1826,17 +1856,17 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>openmeetingws</artifactId>
-			<version>3.0.8</version>
+			<version>3.0.8.jdk17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>10.3.0</version>
+			<version>10.3.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>edusharingws</artifactId>
-			<version>4.1.0</version>
+			<version>4.1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -1979,7 +2009,7 @@
 		<dependency>
 			<groupId>org.openolat.imscp</groupId>
 			<artifactId>manifest</artifactId>
-			<version>1.4.4</version>
+			<version>2.0.0.jdk17</version>
 		</dependency>
 		<dependency>
 			<groupId>com.rometools</groupId>
@@ -2031,19 +2061,19 @@
 		<dependency>
 			<groupId>org.sakaiproject.basiclti</groupId>
 			<artifactId>basiclti-util</artifactId>
-			<version>2.10.SP1</version>
+			<version>2.10.jdk17</version>
 		</dependency>
 		<!-- J2EE dependencies but provided -->
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-			<version>4.0.4</version>
+			<version>6.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.websocket</groupId>
 			<artifactId>jakarta.websocket-api</artifactId>
-			<version>1.1.2</version>
+			<version>2.1.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -2053,11 +2083,29 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>jakarta.xml.ws</groupId>
-		    <artifactId>jakarta.xml.ws-api</artifactId>
-		    <version>2.3.3</version>
+		    <groupId>jakarta.transaction</groupId>
+		    <artifactId>jakarta.transaction-api</artifactId>
+		    <version>2.0.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>jakarta.xml.ws</groupId>
+		    <artifactId>jakarta.xml.ws-api</artifactId>
+		    <version>4.0.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>jakarta.el</groupId>
+		    <artifactId>jakarta.el-api</artifactId>
+		    <version>4.0.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.el</artifactId>
+			<version>4.0.1</version>
+		</dependency>
+		
 		<!-- core dependencies -->
 		<dependency>
 			<groupId>nu.validator</groupId>
@@ -2165,10 +2213,6 @@
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
-					<groupId>org.jboss.spec.javax.transaction</groupId>
-					<artifactId>jboss-transaction-api_1.1_spec</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>org.jboss.logging</groupId>
 					<artifactId>jboss-logging</artifactId>
 				</exclusion>
@@ -2187,7 +2231,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${org.hibernate.version}</version>
 			<scope>test</scope>
@@ -2207,19 +2251,19 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-			<version>${org.hibernate.version}</version>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>7.0.5.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-hibernate-cache-v53</artifactId>
+			<artifactId>infinispan-hibernate-cache-v60</artifactId>
 			<version>${org.infinispan.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-hikaricp</artifactId>
 			<version>${org.hibernate.version}</version>
 			<scope>test</scope>
@@ -2267,7 +2311,7 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>jakarta.mail</artifactId>
-			<version>1.6.7</version>		
+			<version>2.0.1</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>

@@ -20,8 +20,8 @@
 
 package org.olat.resource.accesscontrol.model;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 

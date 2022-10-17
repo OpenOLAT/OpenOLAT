@@ -21,7 +21,7 @@ package org.olat.modules.bigbluebutton.manager;
 
 import java.io.File;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.FileMediaResource;

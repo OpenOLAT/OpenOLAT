@@ -37,8 +37,8 @@ import java.util.Stack;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;

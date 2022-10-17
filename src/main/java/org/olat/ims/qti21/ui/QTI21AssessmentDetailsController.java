@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;

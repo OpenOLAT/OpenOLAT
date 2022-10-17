@@ -41,8 +41,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class UserChangesListener implements PostUpdateEventListener {
-
-	private static final long serialVersionUID = 1666311938725742075L;
 	
 	private static final Logger log = Tracing.createLoggerFor(UserChangesListener.class);
 	
@@ -56,10 +54,10 @@ public class UserChangesListener implements PostUpdateEventListener {
 	}
 
 	@Override
-	public boolean requiresPostCommitHanding(EntityPersister persister) {
+	public boolean requiresPostCommitHandling(EntityPersister arg0) {
 		return false;
 	}
-	
+
 	@Override
 	public void onPostUpdate(PostUpdateEvent event) {
 		int[] props = event.getDirtyProperties();

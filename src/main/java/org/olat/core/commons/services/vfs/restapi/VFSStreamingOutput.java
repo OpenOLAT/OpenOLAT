@@ -22,7 +22,7 @@ package org.olat.core.commons.services.vfs.restapi;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;

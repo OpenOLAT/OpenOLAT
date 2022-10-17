@@ -25,8 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.InfoMessage;

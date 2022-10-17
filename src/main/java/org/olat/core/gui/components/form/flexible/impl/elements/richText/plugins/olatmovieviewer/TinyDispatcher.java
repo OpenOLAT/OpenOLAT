@@ -19,8 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;

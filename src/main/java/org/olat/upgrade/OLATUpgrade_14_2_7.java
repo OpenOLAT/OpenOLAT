@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TemporalType;
+import jakarta.persistence.TemporalType;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;

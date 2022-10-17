@@ -22,7 +22,7 @@ package org.olat.modules.lecture.manager;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TemporalType;
+import jakarta.persistence.TemporalType;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;

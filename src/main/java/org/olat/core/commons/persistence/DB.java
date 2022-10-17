@@ -26,7 +26,7 @@
 
 package org.olat.core.commons.persistence;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.stat.Statistics;

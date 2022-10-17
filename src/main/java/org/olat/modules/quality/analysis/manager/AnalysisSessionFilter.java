@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.forms.SessionFilter;

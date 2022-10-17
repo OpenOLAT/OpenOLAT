@@ -24,7 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TemporalType;
+import jakarta.persistence.TemporalType;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.mapper.Mapper;

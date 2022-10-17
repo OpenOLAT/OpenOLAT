@@ -55,7 +55,7 @@
 				<prop key="hibernate.connection.url">jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</prop>
 				<prop key="hibernate.connection.username">${db.user}</prop>
 				<prop key="hibernate.connection.password">${db.pass}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL94Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 	        </props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hikariHibernateProperties" />
@@ -66,7 +66,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL94Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
@@ -126,7 +126,7 @@
 				<!-- The 2 options below are automatically reduced if not enough memory is available -->
 				<prop key="hibernate.query.plan_cache_max_size">2048</prop>
 				<prop key="hibernate.query.plan_parameter_metadata_max_size">128</prop>
-				<prop key="javax.persistence.lock.timeout">30000</prop>
+				<prop key="jakarta.persistence.lock.timeout">30000</prop>
 	        </props>
 		</constructor-arg> 
 		<property name="addMoreProperties" ref="hibernateCacheProps_${hibernate.cache}_${cluster.mode}" />      
@@ -137,7 +137,7 @@
 			<props>
 				<prop key="hibernate.cache.use_query_cache">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
-				<prop key="hibernate.cache.region.factory_class">org.infinispan.hibernate.cache.v53.InfinispanRegionFactory</prop>
+				<prop key="hibernate.cache.region.factory_class">org.infinispan.hibernate.cache.v60.InfinispanRegionFactory</prop>
 				<prop key="hibernate.cache.infinispan.cfg">org/infinispan/hibernate/cache/commons/builder/infinispan-configs-local.xml</prop>
 				<prop key="hibernate.cache.infinispan.statistics">true</prop>
 				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>

@@ -21,7 +21,7 @@ package org.olat.admin.sysinfo.model;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;

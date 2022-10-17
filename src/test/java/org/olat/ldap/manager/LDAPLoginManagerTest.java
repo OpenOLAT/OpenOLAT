@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;

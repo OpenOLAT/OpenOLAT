@@ -30,13 +30,13 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletResponse;
-import javax.servlet.ServletResponseWrapper;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.ServletResponseWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -316,8 +316,7 @@ public abstract class DefaultDispatcher implements Serializable {
                         "defaultServlet.missingResource");
             }
 
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND,
-                               requestUri);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
@@ -331,7 +330,7 @@ public abstract class DefaultDispatcher implements Serializable {
             if (requestUri == null) {
                 requestUri = request.getRequestURI();
             }
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND, requestUri);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 

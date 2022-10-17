@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.PersonalRSSServlet;

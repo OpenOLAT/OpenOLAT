@@ -19,7 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;

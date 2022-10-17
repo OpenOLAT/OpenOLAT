@@ -21,7 +21,7 @@ package org.olat.course.certificate.ui;
 
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;

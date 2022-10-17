@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 /**
  * Filter to filter sessions. The using queries will use the selectKeys() in an "select session.keys in(...)" - clause.

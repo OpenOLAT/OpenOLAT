@@ -19,9 +19,9 @@
  */
 package org.olat.core.util.xml;
 
-import org.hibernate.collection.internal.PersistentBag;
-import org.hibernate.collection.internal.PersistentList;
-import org.hibernate.collection.internal.PersistentMap;
+import org.hibernate.collection.spi.PersistentBag;
+import org.hibernate.collection.spi.PersistentList;
+import org.hibernate.collection.spi.PersistentMap;
 
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 

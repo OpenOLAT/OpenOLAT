@@ -25,7 +25,7 @@ import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
 import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomProfile;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 /**

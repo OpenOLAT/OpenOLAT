@@ -22,7 +22,7 @@ package org.olat.selenium.page.user;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import javax.mail.internet.MimeUtility;
+import jakarta.mail.internet.MimeUtility;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;

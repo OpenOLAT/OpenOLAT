@@ -21,7 +21,7 @@ package org.olat.upgrade;
 
 import java.util.List;
 
-import javax.persistence.Tuple;
+import jakarta.persistence.Tuple;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;

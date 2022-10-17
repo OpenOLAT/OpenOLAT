@@ -22,11 +22,11 @@ package org.olat.modules.edusharing.manager;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.UriBuilder;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.Handler;
-import javax.xml.ws.handler.HandlerResolver;
-import javax.xml.ws.handler.PortInfo;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.handler.Handler;
+import jakarta.xml.ws.handler.HandlerResolver;
+import jakarta.xml.ws.handler.PortInfo;
 
 import org.apache.logging.log4j.Logger;
 import org.edu_sharing.webservices.authbyapp.AuthByApp;

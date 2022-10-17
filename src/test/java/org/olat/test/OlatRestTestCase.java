@@ -35,14 +35,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletException;
-import javax.ws.rs.core.UriBuilder;
-
 import org.apache.http.HttpEntity;
-import org.junit.Before;
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.olat.core.helpers.SettingsTest;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestModule;
@@ -60,6 +55,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.Undertow;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletException;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -100,7 +99,6 @@ public abstract class OlatRestTestCase extends OlatTestCase {
 	public void instantiateServer() {
 		if(webServer == null) {
 			SettingsTest.createHttpDefaultPortSettings();
-			
 			try {
 				DeploymentInfo servletBuilder = deployment()
 				        .setClassLoader(OlatRestTestCase.class.getClassLoader())

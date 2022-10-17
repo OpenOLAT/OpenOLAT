@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;

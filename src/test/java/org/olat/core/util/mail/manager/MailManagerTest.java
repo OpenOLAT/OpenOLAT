@@ -22,10 +22,10 @@ package org.olat.core.util.mail.manager;
 import java.util.List;
 import java.util.UUID;
 
-import javax.mail.Address;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Address;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 import org.junit.After;
 import org.junit.Assert;

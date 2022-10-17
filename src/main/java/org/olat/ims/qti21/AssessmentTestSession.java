@@ -22,7 +22,7 @@ package org.olat.ims.qti21;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;

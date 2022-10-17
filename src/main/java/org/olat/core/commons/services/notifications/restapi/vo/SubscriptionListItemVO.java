@@ -22,8 +22,8 @@ package org.olat.core.commons.services.notifications.restapi.vo;
 
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
 
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 

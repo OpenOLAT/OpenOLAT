@@ -23,7 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.EntityTag;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;

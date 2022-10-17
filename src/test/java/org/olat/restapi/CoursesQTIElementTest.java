@@ -27,8 +27,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.HttpResponse;

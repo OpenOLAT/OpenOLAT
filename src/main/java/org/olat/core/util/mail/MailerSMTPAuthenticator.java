@@ -19,8 +19,8 @@
  */
 package org.olat.core.util.mail;
 
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
 
 /**
  * <h3>Description:</h3>

@@ -21,7 +21,7 @@ package org.olat.modules.gotomeeting.ui;
 
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;

@@ -27,8 +27,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.LockModeType;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.commons.calendar.CalendarUtils;

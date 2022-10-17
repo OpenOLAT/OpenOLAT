@@ -27,7 +27,7 @@ package org.olat.core.commons.services.lock.pessimistic;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.LockModeType;
+import jakarta.persistence.LockModeType;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.AssertException;
@@ -82,7 +82,7 @@ public class PessimisticLockManager implements InitializingBean {
 				.createNamedQuery("loadByPLockByAsset", PLock.class)
 				.setParameter("asset", asset)
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.setHint("javax.persistence.lock.timeout", Integer.valueOf(30000))
+				.setHint("jakarta.persistence.lock.timeout", Integer.valueOf(30000))
 				.getResultList();
 
 		if (res.isEmpty()) {

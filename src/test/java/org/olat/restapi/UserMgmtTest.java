@@ -46,8 +46,8 @@ import java.util.Locale;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;

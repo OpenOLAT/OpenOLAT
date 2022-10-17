@@ -26,7 +26,7 @@
 
 package org.olat.core.dispatcher.mapper;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.gui.media.MediaResource;
 

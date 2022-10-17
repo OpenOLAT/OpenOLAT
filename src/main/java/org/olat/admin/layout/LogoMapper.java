@@ -21,7 +21,7 @@ package org.olat.admin.layout;
 
 import java.io.File;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.ImageService;

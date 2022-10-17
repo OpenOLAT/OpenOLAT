@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;

@@ -26,7 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;

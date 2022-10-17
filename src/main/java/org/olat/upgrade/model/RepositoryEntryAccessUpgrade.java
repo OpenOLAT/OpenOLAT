@@ -19,7 +19,7 @@
  */
 package org.olat.upgrade.model;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 
 import org.olat.repository.RepositoryEntry;
 

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;

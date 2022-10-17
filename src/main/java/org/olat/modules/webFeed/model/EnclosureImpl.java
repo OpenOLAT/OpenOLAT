@@ -22,7 +22,7 @@ package org.olat.modules.webFeed.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 
 import org.olat.modules.webFeed.Enclosure;
 

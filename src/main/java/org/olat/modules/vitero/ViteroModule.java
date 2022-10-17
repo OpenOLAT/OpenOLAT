@@ -26,7 +26,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import java.net.URI;
 import java.util.Calendar;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;

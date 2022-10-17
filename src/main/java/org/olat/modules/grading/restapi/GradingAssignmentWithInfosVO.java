@@ -19,9 +19,9 @@
  */
 package org.olat.modules.grading.restapi;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.olat.modules.assessment.restapi.AssessmentEntryVO;
 import org.olat.modules.grading.GradingAssignment;

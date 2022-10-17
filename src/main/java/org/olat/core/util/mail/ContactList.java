@@ -33,8 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
@@ -147,7 +147,7 @@ public class ContactList {
 		String rfc2047name;
 		// try to MIME-encode the name, if this fails, return the name un-encoded  
 		try {
-			rfc2047name = javax.mail.internet.MimeUtility.encodeWord(name, "UTF-8", null);
+			rfc2047name = jakarta.mail.internet.MimeUtility.encodeWord(name, "UTF-8", null);
 		}
 		catch (java.io.UnsupportedEncodingException e) {
 			log.warn("Error MIME-encoding name: ", e);

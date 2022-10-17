@@ -29,8 +29,8 @@ package org.olat.core.dispatcher;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;

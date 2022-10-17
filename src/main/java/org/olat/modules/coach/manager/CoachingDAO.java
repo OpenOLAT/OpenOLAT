@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.FlushModeType;
-import javax.persistence.Query;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.Query;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;

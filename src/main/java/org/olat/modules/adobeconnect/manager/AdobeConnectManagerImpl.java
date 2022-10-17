@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;

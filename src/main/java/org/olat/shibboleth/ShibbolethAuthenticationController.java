@@ -30,7 +30,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Locale;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;

@@ -28,7 +28,7 @@ package org.olat.core.util.mail;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.mail.Address;
+import jakarta.mail.Address;
 
 import org.olat.core.id.Identity;
 

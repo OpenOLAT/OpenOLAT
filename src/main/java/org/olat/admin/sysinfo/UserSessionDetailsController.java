@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;

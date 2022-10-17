@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
-import javax.ws.rs.core.UriBuilder;
-import javax.xml.ws.BindingProvider;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.xml.ws.BindingProvider;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;

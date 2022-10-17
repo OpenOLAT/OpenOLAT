@@ -19,8 +19,8 @@
  */
 package org.olat.registration;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
 

@@ -25,7 +25,7 @@
 
 package org.olat.admin;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.logging.log4j.Logger;

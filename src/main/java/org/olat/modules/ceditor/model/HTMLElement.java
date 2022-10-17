@@ -19,7 +19,7 @@
  */
 package org.olat.modules.ceditor.model;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;

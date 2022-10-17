@@ -20,7 +20,7 @@
 
 package org.olat.restapi.system;
 
-import javax.ws.rs.Path;
+import jakarta.ws.rs.Path;
 
 import org.springframework.stereotype.Component;
 

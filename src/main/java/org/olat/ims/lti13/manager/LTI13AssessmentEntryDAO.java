@@ -22,7 +22,7 @@ package org.olat.ims.lti13.manager;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;

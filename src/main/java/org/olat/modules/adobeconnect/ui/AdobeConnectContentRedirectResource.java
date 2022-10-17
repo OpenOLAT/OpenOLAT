@@ -22,7 +22,7 @@ package org.olat.modules.adobeconnect.ui;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;

@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.modules.bc;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.modules.bc.commands.CmdServeResource;
 import org.olat.core.dispatcher.mapper.Mapper;

@@ -21,7 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.json.JSONArray;
 import org.olat.core.CoreSpringFactory;

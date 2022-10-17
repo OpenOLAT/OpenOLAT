@@ -20,8 +20,8 @@
 package org.olat.modules.vitero.restapi;
 
 
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;

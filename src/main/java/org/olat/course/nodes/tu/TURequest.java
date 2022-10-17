@@ -27,7 +27,7 @@ package org.olat.course.nodes.tu;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.modules.ModuleConfiguration;

@@ -32,7 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;

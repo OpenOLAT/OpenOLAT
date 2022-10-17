@@ -19,7 +19,7 @@ jk * <a href="http://www.openolat.org">
  */
 package org.olat.core.gui.control.generic.ajax.autocompletion;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.json.JSONArray;
 import org.olat.core.dispatcher.mapper.Mapper;

@@ -29,8 +29,8 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;

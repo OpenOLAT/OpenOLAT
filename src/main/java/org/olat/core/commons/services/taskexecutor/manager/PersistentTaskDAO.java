@@ -23,8 +23,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.LockModeType;
-import javax.persistence.TemporalType;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.TemporalType;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.Task;

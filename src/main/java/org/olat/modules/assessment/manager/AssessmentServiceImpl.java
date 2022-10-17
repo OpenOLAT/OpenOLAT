@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.PersistenceException;
+import jakarta.persistence.PersistenceException;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;

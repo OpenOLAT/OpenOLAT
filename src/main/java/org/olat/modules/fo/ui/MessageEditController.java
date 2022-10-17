@@ -27,8 +27,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.persistence.PersistenceException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;

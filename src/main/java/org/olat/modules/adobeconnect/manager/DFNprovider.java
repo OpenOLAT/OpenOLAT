@@ -23,7 +23,7 @@ import static org.olat.modules.adobeconnect.manager.AdobeConnectUtils.orDefault;
 
 import java.util.List;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

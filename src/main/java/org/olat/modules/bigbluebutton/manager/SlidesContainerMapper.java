@@ -19,7 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.mapper.Mapper;

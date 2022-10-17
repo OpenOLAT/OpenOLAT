@@ -32,12 +32,12 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import javax.persistence.Cache;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-import javax.persistence.RollbackException;
+import jakarta.persistence.Cache;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.RollbackException;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
@@ -48,7 +48,7 @@ import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.stat.Statistics;
-import org.infinispan.hibernate.cache.v53.InfinispanRegionFactory;
+import org.infinispan.hibernate.cache.v60.InfinispanRegionFactory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.id.Persistable;

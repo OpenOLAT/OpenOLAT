@@ -19,8 +19,8 @@
  */
 package org.olat.modules.portfolio.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 
 import org.olat.modules.ceditor.model.ParagraphElement;
 

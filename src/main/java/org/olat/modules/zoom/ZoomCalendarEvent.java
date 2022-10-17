@@ -23,7 +23,7 @@ import com.mysql.cj.util.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

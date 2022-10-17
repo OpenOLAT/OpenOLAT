@@ -21,18 +21,18 @@ package org.olat.core.commons.services.taskexecutor.model;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -52,7 +52,7 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="extask")
 @Table(name="o_ex_task")
-@NamedQuery(name="loadTaskByKey", query="select task from extask where task.key=:taskKey")
+@NamedQuery(name="loadTaskByKey", query="select task from extask as task where task.key=:taskKey")
 @NamedQuery(name="loadTaskByResource", query="select task from extask task where task.resource.key=:resourceKey")
 @NamedQuery(name="taskToDos", query="select task.key from extask task where (task.statusStr='newTask' or (task.statusStr='inWork' and task.executorNode=:executorNode and task.executorBootId!=:executorBootId)) and (task.scheduledDate is null or task.scheduledDate <=:currentDate)")
 public class PersistentTask implements Task, Persistable {

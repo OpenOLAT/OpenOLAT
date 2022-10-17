@@ -28,7 +28,7 @@ package org.olat.core.gui.media;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * @author Felix Jost

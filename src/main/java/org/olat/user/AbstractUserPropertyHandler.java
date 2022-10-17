@@ -28,7 +28,7 @@ package org.olat.user;
 import java.lang.reflect.Field;
 import java.util.Locale;
 
-import javax.persistence.Column;
+import jakarta.persistence.Column;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;

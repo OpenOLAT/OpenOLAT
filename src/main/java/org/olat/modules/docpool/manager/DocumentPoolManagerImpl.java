@@ -21,7 +21,7 @@ package org.olat.modules.docpool.manager;
 
 import java.util.List;
 
-import javax.persistence.FlushModeType;
+import jakarta.persistence.FlushModeType;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;

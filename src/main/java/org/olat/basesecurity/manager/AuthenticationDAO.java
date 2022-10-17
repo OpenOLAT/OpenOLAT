@@ -23,8 +23,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.FlushModeType;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;

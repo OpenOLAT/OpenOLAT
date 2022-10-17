@@ -95,10 +95,10 @@ import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.CacheRetrieveMode;
-import javax.persistence.CacheStoreMode;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.Query;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;

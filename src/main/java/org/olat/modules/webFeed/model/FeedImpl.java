@@ -23,16 +23,16 @@ package org.olat.modules.webFeed.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.webFeed.Feed;
@@ -46,7 +46,7 @@ import org.olat.modules.webFeed.Feed;
 @Entity(name="feed")
 @Table(name="o_feed")
 @NamedQuery(name="loadFeedByRessourceable",
-		query="select data from feed data where f_resourceable_id=:key and f_resourceable_type=:name")
+		query="select data from feed as data where data.resourceableId=:key and data.resourceableType=:name")
 public class FeedImpl implements Feed, Serializable {
 
 	private static final long serialVersionUID = 6005283969959964489L;

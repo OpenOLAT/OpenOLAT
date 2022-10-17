@@ -26,9 +26,9 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -126,7 +126,7 @@ public class ManifestBuilder {
 			Marshaller marshaller = context.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, SCHEMA_LOCATIONS);
-			marshaller.marshal(objectFactory.createManifest(manifest), out);
+			//TODO j2ee9 marshaller.marshal(objectFactory.createManifest(manifest), out);
 		} catch (JAXBException | IOException e) {
 			log.error("", e);
 		}

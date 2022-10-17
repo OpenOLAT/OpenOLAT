@@ -24,7 +24,7 @@ import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQuery
 
 import java.util.List;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;

@@ -19,7 +19,7 @@
  */
 package org.olat.restapi.security;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.olat.core.id.Identity;
 

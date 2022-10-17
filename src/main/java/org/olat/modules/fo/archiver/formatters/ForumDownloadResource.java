@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;

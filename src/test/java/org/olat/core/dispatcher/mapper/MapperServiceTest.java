@@ -22,8 +22,8 @@ package org.olat.core.dispatcher.mapper;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.junit.Assert;
 import org.junit.Test;

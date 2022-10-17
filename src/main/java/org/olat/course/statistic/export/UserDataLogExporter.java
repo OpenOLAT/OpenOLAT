@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;

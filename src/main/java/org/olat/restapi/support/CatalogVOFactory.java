@@ -21,8 +21,8 @@ package org.olat.restapi.support;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.olat.core.helpers.Settings;
 import org.olat.repository.CatalogEntry;

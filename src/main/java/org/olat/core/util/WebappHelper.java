@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.Destroyable;

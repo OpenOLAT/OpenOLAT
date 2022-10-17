@@ -22,7 +22,7 @@ package org.olat.course.nodes.basiclti;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.imsglobal.basiclti.XMLMap;
 import org.imsglobal.pox.IMSPOXRequest;

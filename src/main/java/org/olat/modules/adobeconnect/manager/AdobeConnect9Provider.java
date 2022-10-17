@@ -24,7 +24,7 @@ import static org.olat.modules.adobeconnect.manager.AdobeConnectUtils.orDefault;
 import java.net.URI;
 import java.util.List;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;

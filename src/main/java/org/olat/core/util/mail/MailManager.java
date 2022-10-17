@@ -25,8 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.mail.Address;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Address;
+import jakarta.mail.internet.MimeMessage;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;

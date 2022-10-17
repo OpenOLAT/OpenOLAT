@@ -26,7 +26,7 @@ package org.olat.core.gui.media;
 
 import java.io.File;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;

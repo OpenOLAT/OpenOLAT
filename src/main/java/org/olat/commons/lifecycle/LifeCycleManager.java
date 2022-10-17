@@ -28,7 +28,7 @@ package org.olat.commons.lifecycle;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Persistable;

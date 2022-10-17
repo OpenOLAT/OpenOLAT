@@ -22,9 +22,9 @@ package org.olat.course.db.impl;
 
 import java.util.List;
 
-import javax.persistence.FlushModeType;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.AbstractSpringModule;

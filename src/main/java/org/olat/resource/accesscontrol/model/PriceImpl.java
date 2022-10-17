@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
