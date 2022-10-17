@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -120,6 +121,17 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 			assertThat(identityToInactivate.getStatus())
 				.isIn(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		}
+	}
+	
+	@Test
+	public void getReadyToInactivateIdentitiesExcludeGuest() {
+		Identity guestId = securityManager.getAndUpdateAnonymousUserForLanguage(Locale.FRENCH);
+		identityDao.setIdentityLastLogin(guestId, DateUtils.addDays(new Date(), -910));
+
+		Date beforeDate = DateUtils.addDays(new Date(), -900);
+		Date reactivationDateLimite = DateUtils.addDays(new Date(), -30);
+		List<Identity> identitiesToInactivate = lifecycleManager.getReadyToInactivateIdentities(beforeDate, reactivationDateLimite);
+		Assert.assertFalse(identitiesToInactivate.contains(guestId));
 	}
 	
 	@Test
