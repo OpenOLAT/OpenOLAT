@@ -30,7 +30,8 @@ public enum PlayerProfile {
 	both("player.profile.both") {
 		@Override
 		public String getPlayerPluginConfig() {
-			return "'es.upv.paella.singleStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'professor_icon.svg','id':'professor','content':['stream1']},{'icon':'slide_icon.svg','id':'slide','content':['stream2']}]},'es.upv.paella.dualStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'slide_professor_icon.svg','id':'slide_over_professor','content':['stream1','stream2']}]}";
+			return "\"es.upv.paella.singleVideo\": {\"enabled\": true,\"validContent\": [{ \"id\": \"stream1\", \"content\": [\"stream1\"], \"icon\": \"$configPath/present-mode-2.svg\", \"title\": \"Live stream 1\" },{ \"id\": \"stream2\", \"content\": [\"stream2\"], \"icon\": \"$configPath/present-mode-1.svg\", \"title\": \"Live stream 2\" }]},\n"
+					+ "\"es.upv.paella.dualVideo\": {\"enabled\": true,\"validContent\": [{ \"id\": \"default\", \"content\": [\"stream1\",\"stream2\"], \"icon\": \"$configPath/present-mode-3.svg \", \"title\": \"Live streams\" }]}";
 		}
 
 		@Override
@@ -41,7 +42,7 @@ public enum PlayerProfile {
 	stream1("player.profile.stream1") {
 		@Override
 		public String getPlayerPluginConfig() {
-			return "'es.upv.paella.singleStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'professor_icon.svg','id':'professor','content':['stream1']}]}";
+			return "\"es.upv.paella.singleVideo\": {\"enabled\": true, \"validContent\": [{ \"id\": \"default\", \"content\": [\"stream1\"], \"icon\": \"$configPath/present-mode-2.svg\", \"title\": \"Live stream\" }]}";
 		}
 
 		@Override
@@ -52,7 +53,7 @@ public enum PlayerProfile {
 	stream2("player.profile.stream2") {
 		@Override
 		public String getPlayerPluginConfig() {
-			return "'es.upv.paella.singleStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'slide_icon.svg','id':'slide','content':['stream1']}]}";
+			return "\"es.upv.paella.singleVideo\": {\"enabled\": true, \"validContent\": [{ \"id\": \"default\", \"content\": [\"stream1\"], \"icon\": \"$configPath/present-mode-1.svg\", \"title\": \"Live stream\" }]}";
 		}
 
 		@Override

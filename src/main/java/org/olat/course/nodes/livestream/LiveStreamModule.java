@@ -43,7 +43,7 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public static final String LIVE_STREAM_BUFFER_AFTER_MIN = "live.stream.buffer.after.min";
 	public static final String LIVE_STREAM_EDIT_COACH = "live.stream.edit.coach";
 	public static final String LIVE_STREAM_PLAYER_PROFILE = "live.stream.player.profile";
-	public static final String LIVE_STREAM_PAELLA_CONFIG = "live.stream.paella.config";
+	public static final String LIVE_STREAM_PAELLA_CONFIG = "live.stream.paella.config.v7";
 
 	@Value("${live.stream.enabled:false}")
 	private boolean enabled;
@@ -59,7 +59,7 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean editCoach;
 	@Value("${live.stream.player.profile:both}")
 	private String playerProfile;
-	@Value("${live.stream.paella.config}")
+	@Value("${live.stream.paella.config.v7}")
 	private String paellaConfig;
 	
 	@Autowired

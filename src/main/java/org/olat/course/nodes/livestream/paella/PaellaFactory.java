@@ -30,34 +30,35 @@ import java.util.List;
  */
 public class PaellaFactory {
 	
-	public static Streams createStreams(String[] urls, PlayerProfile playerProfile) {
-		Streams streams = new Streams();
+	public static Stream[] createStreams(String[] urls, PlayerProfile playerProfile) {
 		if (urls.length > 0) {
 			String[] filteredUrls = playerProfile.filterUrls(urls);
-			addStreams(streams, filteredUrls);
+			return createStreams(filteredUrls);
 		}
-		return streams;
+		return null;
 	}
 	
-	private static void addStreams(Streams streams, String[] urls) {
+	private static Stream[] createStreams(String[] urls) {
 		List<Stream> streamList = new ArrayList<>(2);
 		if (urls.length > 0) {
-			Stream stream1 = createStream("stream1", urls[0]);
+			Stream stream1 = createStream("stream1", urls[0], true);
 			streamList.add(stream1);
 		}
 		if (urls.length > 1) {
-			Stream stream1 = createStream("stream2", urls[1]);
+			Stream stream1 = createStream("stream2", urls[1], false);
 			streamList.add(stream1);
 		}
-		Stream[] streamArray = streamList.toArray(new Stream[streamList.size()]);
-		streams.setStreams(streamArray);
+		return streamList.toArray(new Stream[streamList.size()]);
 	}
 
-	private static Stream createStream(String content, String url) {
+	private static Stream createStream(String content, String url, boolean mainAudio) {
 		Stream stream = new Stream();
 		stream.setContent(content);
 		Sources sources = createSources(url);
 		stream.setSources(sources);
+		if (mainAudio) {
+			stream.setRole("mainAudio");
+		}
 		return stream;
 	}
 
