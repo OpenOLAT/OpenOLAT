@@ -82,12 +82,12 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	/** Only used for order by (hibernate hack) */
 	@GeneratedValue
 	@Column(name="pos", insertable=false, updatable=false)
-	private Long pos;
+	private Integer pos;
 	
 	/** Only used for order by (hibernate hack) */
 	@GeneratedValue
 	@Column(name="pos_cur", insertable=false, updatable=false)
-	private Long posCurriculum;
+	private Integer posCurriculum;
 	
 	@Column(name="c_identifier", nullable=true, insertable=true, updatable=true)
 	private String identifier;
@@ -380,22 +380,20 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	}
 
 	@Override
-	public Long getPos() {
+	public Integer getPos() {
 		return pos;
 	}
 	
-	public void setPos(Long pos) {
+	public void setPos(Integer pos) {
 		this.pos = pos;
 	}
-	
-	
 
 	@Override
-	public Long getPosCurriculum() {
+	public Integer getPosCurriculum() {
 		return posCurriculum;
 	}
 
-	public void setPosCurriculum(Long posCurriculum) {
+	public void setPosCurriculum(Integer posCurriculum) {
 		this.posCurriculum = posCurriculum;
 	}
 

@@ -274,7 +274,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 		return element == null ? null : element.getEndDate();
 	}
 	
-	public Long getCurriculumElementPos() {
+	public Integer getCurriculumElementPos() {
 		return element == null ? null : element.getPos();
 	}
 	

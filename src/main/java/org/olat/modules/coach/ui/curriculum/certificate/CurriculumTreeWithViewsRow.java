@@ -327,7 +327,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 		return element == null ? null : element.getEndDate();
 	}
 	
-	public Long getCurriculumElementPos() {
+	public Integer getCurriculumElementPos() {
 		return element == null ? null : element.getPos();
 	}
 	

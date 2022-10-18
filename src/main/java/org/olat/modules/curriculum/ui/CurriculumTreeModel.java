@@ -161,8 +161,8 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 			CurriculumElement o1 = (CurriculumElement)((TreeNode)n1).getUserObject();
 			CurriculumElement o2 = (CurriculumElement)((TreeNode)n2).getUserObject();
 
-			Long p1 = null;
-			Long p2 = null;
+			Integer p1 = null;
+			Integer p2 = null;
 			
 			if(o1.getParent() == null && o2.getParent() == null) {
 				p1 = o1.getPosCurriculum();

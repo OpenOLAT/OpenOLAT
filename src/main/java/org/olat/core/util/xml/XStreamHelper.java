@@ -39,12 +39,14 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 
 /**
  * Description:<br>
@@ -92,8 +94,8 @@ public class XStreamHelper {
 		};
 	private static final XStream cloneXStream = new XStream();
 	static {
-		XStream.setupDefaultSecurity(cloneXStream);
 		allowDefaultPackage(cloneXStream);
+		enhanceXstream(cloneXStream);
 	}
 	
 	public static final void allowDefaultPackage(XStream xstream) {
@@ -118,8 +120,33 @@ public class XStreamHelper {
 	 */
 	public static XStream createXStreamInstance() {
 		XStream xstream = new EnhancedXStream(false);
-		XStream.setupDefaultSecurity(xstream);
+		enhanceXstream(xstream);
 		return xstream;
+	}
+	
+	private static void enhanceXstream(XStream xstream) {
+		xstream.omitField(ArrayList.class, "modCount");
+		xstream.registerConverter(new CollectionConverter(xstream.getMapper()) {
+
+			@Override
+			public boolean canConvert(Class type) {
+				if("java.util.Arrays$ArrayList".equals(type.getName())
+						|| "java.util.Collections$EmptyList".equals(type.getName())
+						|| type.getName().startsWith("java.util.ImmutableCollections$List")) {
+					return true;
+				}
+				return super.canConvert(type);
+			}
+			
+		    protected Object createCollection(Class type) {
+		    	if("java.util.Arrays$ArrayList".equals(type.getName())
+		    			|| "java.util.Collections$EmptyList".equals(type.getName())
+		    			|| type.getName().equals("java.util.ImmutableCollections$List")) {
+					return new ArrayList<>();
+				}
+		        return super.createCollection(type);
+		    }
+		});
 	}
 	
 	/**
@@ -130,7 +157,7 @@ public class XStreamHelper {
 	 */
 	public static XStream createXStreamInstanceForDBObjects() {
 		XStream xstream = new EnhancedXStream(true);
-		XStream.setupDefaultSecurity(xstream);
+		enhanceXstream(xstream);
 		return xstream;
 	}
 

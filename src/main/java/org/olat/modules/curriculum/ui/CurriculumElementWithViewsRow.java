@@ -193,7 +193,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return element == null ? null : element.getEndDate();
 	}
 	
-	public Long getCurriculumElementPos() {
+	public Integer getCurriculumElementPos() {
 		return element == null ? null : element.getPos();
 	}
 	

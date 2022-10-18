@@ -70,12 +70,12 @@ class ReorderCurriculumElementComparator implements Comparator<CurriculumElement
 	}
 	
 	private int comparePos(CurriculumElement c1, CurriculumElement c2) {
-		Long pos1 = c1.getPos();
-		Long pos2 = c2.getPos();
+		Integer pos1 = c1.getPos();
+		Integer pos2 = c2.getPos();
 		
 		int c = 0;
 		if(pos1 != null && pos2 != null) {
-			c = Long.compare(pos1.longValue(), pos2.longValue());
+			c = Integer.compare(pos1.intValue(), pos2.intValue());
 		}
 		return c;
 	}

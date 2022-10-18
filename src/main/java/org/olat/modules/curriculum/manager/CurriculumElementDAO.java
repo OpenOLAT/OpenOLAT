@@ -205,7 +205,7 @@ public class CurriculumElementDAO {
 		CurriculumImpl curriculum = loadCurriculumByKey(newCurriculum.getKey());
 		curriculum.getRootElements().add(rootElement);
 		rootElement.setCurriculum(curriculum);
-		rootElement.setPosCurriculum(Long.valueOf(curriculum.getRootElements().size()));
+		rootElement.setPosCurriculum(Integer.valueOf(curriculum.getRootElements().size()));
 		rootElement.setCurriculumParent(curriculum);
 		rootElement = dbInstance.getCurrentEntityManager().merge(rootElement);
 		curriculum = dbInstance.getCurrentEntityManager().merge(curriculum);

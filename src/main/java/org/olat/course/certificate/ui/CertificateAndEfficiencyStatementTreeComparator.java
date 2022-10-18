@@ -77,9 +77,9 @@ public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNo
 		if(c1 == null || c2 == null) {
 			c = compareNullObjects(c1, c2);
 		} else {
-			Long p1 = c1.getPos();
-			Long p2 = c2.getPos();
-			c = compareLongs(p1, p2);
+			Integer p1 = c1.getPos();
+			Integer p2 = c2.getPos();
+			c = compareIntegers(p1, p2);
 		}
 		return c;
 	}
@@ -89,6 +89,13 @@ public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNo
 			return compareNullObjects(s1, s2);
 		}
 		return collator.compare(s1, s2);
+	}
+	
+	private int compareIntegers(Integer l1, Integer l2) {
+		if (l1 == null || l2 == null) {
+			return compareNullObjects(l1, l2);
+		}
+		return l1.compareTo(l2);
 	}
 	
 	private int compareLongs(Long l1, Long l2) {

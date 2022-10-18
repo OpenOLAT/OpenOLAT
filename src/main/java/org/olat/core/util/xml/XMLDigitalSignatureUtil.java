@@ -119,6 +119,7 @@ public class XMLDigitalSignatureUtil {
 		DOMValidateContext validContext = new DOMValidateContext(publicKey, signatureEl);
 		validContext.setBaseURI(uri);
 		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
+		validContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE);//TODO jee
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = fac.unmarshalXMLSignature(validContext);
@@ -164,6 +165,7 @@ public class XMLDigitalSignatureUtil {
 		DOMValidateContext validContext = new DOMValidateContext(new X509KeySelector(), nl.item(0));
 		validContext.setBaseURI(uri);
 		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
+		validContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE); //TODO jee
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = fac.unmarshalXMLSignature(validContext);
@@ -195,6 +197,7 @@ public class XMLDigitalSignatureUtil {
         }
         
 		DOMValidateContext validContext = new DOMValidateContext(publicKey, nl.item(0));
+		validContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE);//TODO jee
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = fac.unmarshalXMLSignature(validContext);

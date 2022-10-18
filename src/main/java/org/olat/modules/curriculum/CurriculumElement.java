@@ -88,12 +88,12 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	/**
 	 * @return The position of an element as child of a parent element
 	 */
-	public Long getPos();
+	public Integer getPos();
 	
 	/**
 	 * @return The position of a root element directly under the curriculum
 	 */
-	public Long getPosCurriculum();
+	public Integer getPosCurriculum();
 	
 	public Curriculum getCurriculum();
 	
