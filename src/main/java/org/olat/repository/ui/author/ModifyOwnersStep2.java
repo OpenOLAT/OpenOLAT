@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 
 /**
  * Initial date: Dec 21, 2020<br>
@@ -94,7 +96,10 @@ public class ModifyOwnersStep2 extends BasicStep {
 
 		@Override
 		protected void formNext(UserRequest ureq) {
-			context.setOwnersToAdd(searchController.getSelectedIdentities());
+			List<Identity> selectedIdentities = searchController.getSelectedIdentities();
+			if(selectedIdentities != null && !selectedIdentities.isEmpty()) {
+				context.setOwnersToAdd(selectedIdentities);
+			}
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
