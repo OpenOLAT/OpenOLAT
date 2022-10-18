@@ -27,7 +27,7 @@ import jakarta.ws.rs.core.Application;
 
 import org.olat.core.CoreSpringFactory;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class OlatRestApplication extends Application {
 	@Override
 	public Set<Class<?>> getClasses() {
 		Set<Class<?>> classes = new HashSet<>();
-		classes.add(JacksonJaxbJsonProvider.class);	
+		classes.add(JacksonXmlBindJsonProvider.class);	
 		classes.addAll(getRestRegistrationService().getClasses());
 		return classes;
 	}

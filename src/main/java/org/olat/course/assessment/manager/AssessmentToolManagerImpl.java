@@ -1005,7 +1005,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if (identityKeys == null || identityKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident");
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident");
 		sb.append(" inner join fetch ident.user user");
 		sb.and().append(" ident.key in (:identityKeys)");
 		sb.and().append(" ident.status<").append(Identity.STATUS_DELETED);

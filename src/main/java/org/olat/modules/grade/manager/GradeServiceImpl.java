@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityRelationshipService;

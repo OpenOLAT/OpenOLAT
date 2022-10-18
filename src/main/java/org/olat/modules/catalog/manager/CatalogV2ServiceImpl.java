@@ -32,7 +32,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.id.Identity;

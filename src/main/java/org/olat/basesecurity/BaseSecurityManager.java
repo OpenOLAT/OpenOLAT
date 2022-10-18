@@ -609,7 +609,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public Identity loadIdentityByKey(Long identityKey) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.key=:key");
 		
@@ -637,7 +637,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if(strict) return loadIdentityByKey(identityKey);
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.key=:identityKey");
 
@@ -790,11 +790,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public Long countUniqueUserLoginsSince (Date lastLoginLimit){
-		String queryStr ="Select count(ident) from org.olat.core.id.Identity as ident where " 
-			+ "ident.lastLogin > :lastLoginLimit and ident.lastLogin != ident.creationDate";	
+	public Long countUniqueUserLoginsSince (Date lastLoginLimit) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(ident.key) from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" where ident.lastLogin>:lastLoginLimit and ident.lastLogin!=ident.creationDate");	
 		List<Long> res = dbInstance.getCurrentEntityManager()
-				.createQuery(queryStr, Long.class)
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("lastLoginLimit", lastLoginLimit, TemporalType.TIMESTAMP)
 				.getResultList();
 		return res.get(0);

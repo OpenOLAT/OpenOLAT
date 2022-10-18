@@ -21,7 +21,7 @@ package org.olat.course.learningpath.manager;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;

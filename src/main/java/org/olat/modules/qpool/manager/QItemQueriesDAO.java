@@ -97,11 +97,11 @@ public class QItemQueriesDAO {
 		  .append(" ) as manager,")
 		  .append(" (select count(pool2item.key) from qpool2item pool2item")
 		  .append("    where pool2item.item.key=item.key")
-		  .append("      and pool2item.editable is true")
+		  .append("      and pool2item.editable=true")
 		  .append(" ) as pools,")
 		  .append(" (select count(shareditem.key) from qshareitem shareditem")
 		  .append("    where shareditem.item.key=item.key")
-		  .append("      and shareditem.editable is true")
+		  .append("      and shareditem.editable=true")
 		  .append(" ) as groups,");
 		if(params.isFavoritOnly()) {
 			sb.append(" 1 as marks,");
@@ -120,11 +120,11 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as numberOfRatingsTotal")
-		  .append(" from questionitem item")
-		  .append(" inner join fetch item.ownerGroup ownerGroup")
-		  .append(" left join fetch item.type itemType")
-		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
-		  .append(" left join fetch item.educationalContext educationalContext");
+		  .append(" from questionitem as item")
+		  .append(" inner join fetch item.ownerGroup as ownerGroup")
+		  .append(" left join fetch item.type as itemType")
+		  .append(" left join fetch item.taxonomyLevel as taxonomyLevel")
+		  .append(" left join fetch item.educationalContext as educationalContext");
 		
 		appendIn(sb, params);
 		appendWhere(sb, params);
@@ -186,14 +186,14 @@ public class QItemQueriesDAO {
 		    .append(" ) as manager,")
 			.append(" (select count(pool2item.key) from qpool2item pool2item")
 			.append("    where pool2item.item.key=item.key")
-			.append("      and pool2item.editable is true");
+			.append("      and pool2item.editable=true");
 		if (restrictToPoolKey != null) {
 			sb.append(" and pool2item.pool.key=:restrictToPoolKey");
 		}
 		sb.append(" ) as pools,")
 			.append(" (select count(shareditem.key) from qshareitem shareditem")
 			.append("    where shareditem.item.key=item.key")
-			.append("      and shareditem.editable is true");
+			.append("      and shareditem.editable=true");
 		if (restrictToGroupKey != null) {
 			sb.append(" and shareditem.resource=:restrictToGroupKey");
 		}

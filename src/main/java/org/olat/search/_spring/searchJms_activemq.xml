@@ -5,26 +5,20 @@
                         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- JMS Stuff for ActiveMQ -->
-	<bean id="searchConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
+	<bean id="searchConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true">
 		<property name="brokerURL" value="${search.broker.url}" />
-		<property name="trustAllPackages" value="true"/>
 	</bean>
 
-	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+	<bean id="searchQueue" class="org.apache.activemq.artemis.jms.client.ActiveMQQueue" lazy-init="true">
 		<constructor-arg value="olat/searchQueue" />
 	</bean>
 	
 	
-	<bean id="indexConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
+	<bean id="indexConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true">
 		<property name="brokerURL" value="${index.broker.url}" />
-		<property name="trustAllPackages" value="true"/>
 	</bean>
 
-	<bean id="indexQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+	<bean id="indexQueue" class="org.apache.activemq.artemis.jms.client.ActiveMQQueue" lazy-init="true">
 		<constructor-arg value="olat/indexQueue" />
 	</bean>
-	
-	
-	
-	
 </beans>

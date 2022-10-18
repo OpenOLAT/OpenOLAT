@@ -22,7 +22,7 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;

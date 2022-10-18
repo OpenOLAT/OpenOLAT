@@ -4,14 +4,19 @@
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
+  
+	<bean id="EmbeddedActiveMQ" class="org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ" init-method="start" destroy-method="stop">
+		<!--  
+		<property name="SecurityManager" ref="securityManager"/>
+		-->
+	</bean>
 
-	<bean id="sysbus.topic" class="org.apache.activemq.command.ActiveMQTopic">
+	<bean id="sysbus.topic" class="org.apache.activemq.artemis.jms.client.ActiveMQTopic">
 		<constructor-arg value="olat/${instance.id}/sysbus" />
 	</bean>
   
-	<bean id="jmsConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+	<bean id="jmsConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" depends-on="EmbeddedActiveMQ">
 		<property name="brokerURL" value="${jms.broker.url}" />
-		<property name="trustAllPackages" value="true"/>
 	</bean>
 
 </beans>	

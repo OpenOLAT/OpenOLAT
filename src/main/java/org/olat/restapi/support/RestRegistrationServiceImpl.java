@@ -67,7 +67,7 @@ public class RestRegistrationServiceImpl implements RestRegistrationService {
 				Class<?> cl = Class.forName(classname);
 				classes.add(cl);
 			} catch (ClassNotFoundException e) {
-				log.error("Class not found: " + classname, e); 
+				log.error("Class not found: {}", classname, e); 
 			}
 		}
 	}

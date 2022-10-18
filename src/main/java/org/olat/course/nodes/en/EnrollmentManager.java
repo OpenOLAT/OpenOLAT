@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;

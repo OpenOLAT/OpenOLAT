@@ -23,7 +23,7 @@ package org.olat.core.commons.services.thumbnail.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
 import org.olat.core.commons.services.image.ImageService;

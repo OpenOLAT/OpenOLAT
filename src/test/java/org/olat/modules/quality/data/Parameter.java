@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality.data;
 
-import javax.annotation.Generated;
+import jakarta.annotation.Generated;
 
 /**
  * 

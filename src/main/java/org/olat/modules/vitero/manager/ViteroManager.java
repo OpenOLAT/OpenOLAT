@@ -39,7 +39,7 @@ import java.util.UUID;
 
 import jakarta.activation.DataHandler;
 import jakarta.activation.FileDataSource;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.xml.soap.SOAPElement;
 import jakarta.xml.soap.SOAPFaultElement;

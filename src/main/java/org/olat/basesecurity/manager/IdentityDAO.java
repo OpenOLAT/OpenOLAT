@@ -77,7 +77,7 @@ public class IdentityDAO {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder(512);
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.key in (:keys)");
 		

@@ -57,13 +57,14 @@
 
 	<jaxrs:server address="/" basePackages="org.olat">
 		<jaxrs:providers>
-			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+			<bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
 			<bean class="org.olat.restapi.security.OpenOLATContainerResponseFilter" />
 		</jaxrs:providers>
 		<jaxrs:features>
 			<ref bean="openApiFeature" />
 		</jaxrs:features>
 	</jaxrs:server>
+	
 	<context:component-scan base-package="org.olat.restapi,org.olat.restapi.security,org.olat.restapi.system" />
 	
 	<bean id="exceptionMapper" class="org.apache.cxf.jaxrs.impl.WebApplicationExceptionMapper">

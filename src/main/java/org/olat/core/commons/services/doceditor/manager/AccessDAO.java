@@ -22,7 +22,7 @@ package org.olat.core.commons.services.doceditor.manager;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;

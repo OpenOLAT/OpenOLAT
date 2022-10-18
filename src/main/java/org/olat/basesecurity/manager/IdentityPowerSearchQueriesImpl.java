@@ -75,7 +75,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
 		QueryBuilder sb = new QueryBuilder(5000);
-		sb.append("select count(ident.key) from org.olat.core.id.Identity as ident ")
+		sb.append("select count(ident.key) from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" inner join ident.user as user ");
 		Number count = createIdentitiesByPowerQuery(params, null, sb, Number.class).getSingleResult();
 		return count.intValue();
@@ -84,7 +84,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {
 		QueryBuilder sb = new QueryBuilder(5000);
-		sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
+		sb.append("select distinct ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" inner join fetch ident.user as user ");
 		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, null, sb, Identity.class);
 		if(firstResult >= 0) {
@@ -112,7 +112,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		  .append(" ident.deletionEmailDate as ident_deDate,");
 		writeUserProperties("user", sb, userPropertyHandlers);
 		sb.append(" user.key as ident_user_id")
-		  .append(" from ").append(IdentityImpl.class.getCanonicalName()).append(" as ident ")
+		  .append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" inner join ident.user as user ");
 		
 		TypedQuery<Object[]> dbq = createIdentitiesByPowerQuery(params, orderBy, sb, Object[].class);

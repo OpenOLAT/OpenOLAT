@@ -28,7 +28,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.apache.logging.log4j.Logger;

@@ -21,7 +21,7 @@ package org.olat.modules.forms;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;

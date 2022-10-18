@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.modules.qpool.QuestionItem;

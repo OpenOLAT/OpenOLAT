@@ -5,12 +5,11 @@
                         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- JMS Stuff for ActiveMQ -->
-	<bean id="ltiConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
+	<bean id="ltiConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true">
 		<property name="brokerURL" value="${lti.broker.url}" />
-		<property name="trustAllPackages" value="true"/>
 	</bean>
 
-	<bean id="ltiQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+	<bean id="ltiQueue" class="org.apache.activemq.artemis.jms.client.ActiveMQQueue" lazy-init="true">
 		<constructor-arg value="olat/ltiQueue" />
 	</bean>
 	

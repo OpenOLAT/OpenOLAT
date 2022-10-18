@@ -34,7 +34,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;

@@ -21,7 +21,7 @@ package org.olat.core.commons.services.license.manager;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseType;

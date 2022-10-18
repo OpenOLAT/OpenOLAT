@@ -39,17 +39,18 @@ public class CoreSpringInitializer implements ApplicationContextInitializer<Conf
 
 	@Override
 	public void initialize(ConfigurableWebApplicationContext ctx) {
-  	//detect activemq
-  	String jmsProvider;
-  	try {
-			Class.forName("org.apache.activemq.command.ActiveMQTopic");
+		//detect activemq
+		String jmsProvider;
+		try {
+			Class.forName("org.apache.activemq.artemis.jms.client.ActiveMQTopic");
 			jmsProvider = "activemq";
 		} catch (ClassNotFoundException e) {
 			jmsProvider = "jndi";
 		}
-  	log.info("Bootstrapping spring startup");
-  	PropertySource<String> ps = new OpenOLATProperties(jmsProvider);
-    ctx.getEnvironment().getPropertySources().addFirst(ps);
+  	
+		log.info("Bootstrapping spring startup");
+		PropertySource<String> ps = new OpenOLATProperties(jmsProvider);
+		ctx.getEnvironment().getPropertySources().addFirst(ps);
 	}
 	
 	private static class OpenOLATProperties extends PropertySource<String> {

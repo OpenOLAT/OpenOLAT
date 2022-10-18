@@ -23,7 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.LockModeType;
 
 import org.olat.core.commons.persistence.DB;

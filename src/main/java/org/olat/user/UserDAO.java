@@ -66,8 +66,7 @@ public class UserDAO {
 		if (!StringHelper.containsNonWhitespace(email)) return false;
 		
 		StringBuilder query = new StringBuilder(255)
-				.append("select count(*) ")
-				.append("  from org.olat.core.id.User user")
+				.append("select count(*) from ").append(UserImpl.class.getName()).append(" user")
 				.append(" where");
 		
 		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
