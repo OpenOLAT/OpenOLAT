@@ -109,6 +109,7 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		
+		int count = 0;
 		for(BusinessGroup group:businessGroups) {
 			//check security
 			boolean ow = roles.isAdministrator() || roles.isGroupManager()
@@ -116,6 +117,7 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 			if (ow) {
 				businessGroupLifecycleManager.deleteBusinessGroup(group, getIdentity(), doSendMail);
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_DELETED, getClass(), LoggingResourceable.wrap(group));
+				count++;
 			}
 		}
 		
@@ -126,7 +128,7 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 		if(businessGroups.size() == 1) {
 			showInfo("info.group.permanently.deleted.singular");
 		} else {
-			showInfo("info.group.permanently.deleted.plural");
+			showInfo("info.group.permanently.deleted.plural", Integer.toString(count));
 		}
 	}
 
