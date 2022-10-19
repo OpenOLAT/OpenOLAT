@@ -60,6 +60,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
@@ -239,7 +240,14 @@ public class CourseOverviewController extends FormBasicController  {
 				invitation = repoEntryKeyToInvitations.get(membership.getRepositoryEntryKey());
 				membership.getMemberShip().setExternalUser(invitation != null);
 			}
-			CourseMemberView view = new CourseMemberView(membership, invitation);
+			
+			String url = null;
+			if(membership.getRepositoryEntryKey() != null) {
+				String path = "[RepositoryEntry:" + membership.getRepositoryEntryKey() + "]";
+				url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
+			}
+			
+			CourseMemberView view = new CourseMemberView(membership, invitation, url);
 			resourceToViewMap.put(membership.getOLATResource(), view);
 		}
 		

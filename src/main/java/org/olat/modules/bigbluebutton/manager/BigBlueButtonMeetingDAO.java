@@ -444,7 +444,9 @@ public class BigBlueButtonMeetingDAO {
 
 	public List<BigBlueButtonMeeting> getAutoDeleteMeetings(Date endBefore) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select meeting from bigbluebuttonmeeting as meeting");
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" left join fetch meeting.entry as entry")
+		  .append(" left join fetch meeting.businessGroup as businessGroup");
 		sb.and().append("meeting.permanent = false");
 		sb.and().append("meeting.endDate < :endBefore");
 		

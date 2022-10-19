@@ -86,7 +86,7 @@ public class ProjectFolderController extends BasicController {
 				// nothing to show => Show text message no folder
 				content.contextPut("noFolder", Boolean.TRUE);
 			} else {
-				getLogger().debug("isDropboxAccessible(project, moduleConfig)=" + isDropboxAccessible(project, moduleConfig));
+				getLogger().debug("isDropboxAccessible(project, moduleConfig)={}", isDropboxAccessible(project, moduleConfig));
 				if (isProjectManagerOrAdministrator) {
 					dropboxEditController = new ProjectBrokerDropboxScoringViewController(project, ureq, wControl, courseNode, userCourseEnv); 
 					content.put("dropboxController", dropboxEditController.getInitialComponent());
