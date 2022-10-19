@@ -358,7 +358,9 @@ public class UserAdminController extends BasicController implements Activateable
 	private void reloadEditedIdentity(UserRequest ureq) {
 		editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
 		exposeUserDataToVC(ureq, editedIdentity, editedRoles);
-		userProfileCtr.resetForm(ureq, editedIdentity);
+		if(userProfileCtr != null) {
+			userProfileCtr.resetForm(ureq, editedIdentity);
+		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
