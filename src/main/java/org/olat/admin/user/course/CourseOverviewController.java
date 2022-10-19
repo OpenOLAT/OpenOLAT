@@ -60,6 +60,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
@@ -261,7 +262,13 @@ public class CourseOverviewController extends FormBasicController  {
 	}
 	
 	private CourseMemberView forgeRow(MemberView membership, Invitation invitation) {
-		CourseMemberView row = new CourseMemberView(membership, invitation);
+		String url = null;
+		if(membership.getRepositoryEntryKey() != null) {
+			String path = "[RepositoryEntry:" + membership.getRepositoryEntryKey() + "]";
+			url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
+		}
+		
+		CourseMemberView row = new CourseMemberView(membership, invitation, url);
 		
 		if(invitation != null) {
 			FormLink invitationLink = uifactory.addFormLink("invitation_" + (++counter), "invitation", "", null, flc, Link.LINK | Link.NONTRANSLATED);

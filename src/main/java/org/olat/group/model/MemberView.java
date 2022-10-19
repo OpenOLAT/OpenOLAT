@@ -57,13 +57,7 @@ public class MemberView extends UserPropertiesRow {
 	private final CourseMembership membership = new CourseMembership();
 	
 	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		this(identity, userPropertyHandlers, locale, null, null);
-	}
-	
-	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale, Date creationDate, Date lastModified) {
 		super(identity, userPropertyHandlers, locale);
-		this.creationDate = creationDate;
-		this.lastModified = lastModified;
 		identityStatus = identity == null ? null : identity.getStatus();
 	}
 	
@@ -74,17 +68,23 @@ public class MemberView extends UserPropertiesRow {
 	public Date getCreationDate() {
 		return creationDate;
 	}
-
+	
 	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+		if(creationDate == null) return;
+		if(this.creationDate == null || this.creationDate.compareTo(creationDate) > 0) {
+			this.creationDate = creationDate;
+		}
 	}
 
 	public Date getLastModified() {
 		return lastModified;
 	}
-
+	
 	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
+		if(lastModified == null) return;
+		if(this.lastModified == null || this.lastModified.compareTo(lastModified) < 0) {
+			this.lastModified = lastModified;
+		}
 	}
 
 	public Long getRepositoryEntryKey() {
