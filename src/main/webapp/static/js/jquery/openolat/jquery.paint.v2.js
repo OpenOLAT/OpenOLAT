@@ -167,7 +167,7 @@
 					left: 35, top: 20,
 					fill: color,
 					fontFamily: 'helvetica',
-					fontSize: '' + width,
+					fontSize: Math.floor(2.5 * width),
 					originX: 'left',
 					hasRotatingPoint: false,
 					centerTransform: true,
