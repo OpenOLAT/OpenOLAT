@@ -440,11 +440,13 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		
 		PracticeItem item = runningItem.getItem();
 		if(item.getRepositoryEntry() != null) {
-			AssessmentItemRef itemRef = item.getItemRef();
+			Identifier itemRefIdentifier = item.getItemRef().getIdentifier();
 			FileResourceManager frm = FileResourceManager.getInstance();
 			fUnzippedDirRoot = frm.unzipFileResource(item.getRepositoryEntry().getOlatResource());
 
 			ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+			// Reload the assessment item ref. if the test was evicted from the cache
+			AssessmentItemRef itemRef = resolvedAssessmentTest.getItemRefsByIdentifierMap().get(itemRefIdentifier);
 			resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 			if(resolvedAssessmentItem == null) {
 				return;
