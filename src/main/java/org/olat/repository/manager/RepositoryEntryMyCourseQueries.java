@@ -570,8 +570,8 @@ public class RepositoryEntryMyCourseQueries {
 					if(subSetsPeriodAccessMethods.length > 0) {
 						sb.append(" (re2.status ").in(subSetsPeriodAccessMethods);
 						sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-						sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
-						sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt))");
+						sb.append(" and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
+						sb.append(" and (offer.validTo is null or date(offer.validTo)>=:offerValidAt))");
 						numOfStatus += subSetsPeriodAccessMethods.length;
 					}
 					
