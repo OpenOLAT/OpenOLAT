@@ -46,13 +46,22 @@ public class CourseMemberView {
 	private final Invitation invitation;
 
 	
-	public CourseMemberView(MemberView view, Invitation invitation) {
+	private final String url;
+	
+	public CourseMemberView(MemberView view, Invitation invitation, String url) {
+		this.url = url;
 		this.memberView = view;
 		this.invitation = invitation;
+		firstTime = view.getCreationDate();
+		lastTime = view.getLastModified();
 	}
 	
 	public Long getRepoKey() {
 		return memberView.getRepositoryEntryKey();
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 	
 	public String getDisplayName() {

@@ -101,7 +101,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	private CourseNode courseNode;
 	private UserCourseEnvironment userCourseEnv;
 
-	private ProjectBrokerModuleConfiguration moduleConfig;
+	private final ProjectBrokerModuleConfiguration moduleConfig;
 	private Long projectBrokerId;
 	private int numberOfCustomFieldInTable = 0;
 	private int numberOfEventInTable = 0;
@@ -296,14 +296,14 @@ public class ProjectListController extends BasicController implements GenericEve
 		} else if ( te.getActionId().equals(TABLE_ACTION_CANCEL_SELECT)) {
 			handleCancelEnrollmentAction(urequest, selectedProject);
 		} else {
-			getLogger().warn("Controller-event-handling: Unkown event=" + te);
+			getLogger().warn("Controller-event-handling: Unkown event={}", te);
 		}
 		fireEvent(urequest, te);
 	}
 
 
 	private void handleCancelEnrollmentAction(UserRequest urequest, Project selectedProject) {
-		getLogger().debug("start cancelProjectEnrollmentOf identity=" + urequest.getIdentity() + " to project=" + selectedProject);
+		getLogger().debug("start cancelProjectEnrollmentOf identity={} to project={}", getIdentity() , selectedProject);
 		boolean cancelledEnrollmend = projectBrokerManager.cancelProjectEnrollmentOf(urequest.getIdentity(), selectedProject, moduleConfig);
 		if (cancelledEnrollmend) {
 			projectBrokerMailer.sendCancelEnrollmentEmailToParticipant(urequest.getIdentity(), selectedProject, this.getTranslator());
@@ -319,7 +319,7 @@ public class ProjectListController extends BasicController implements GenericEve
 
 
 	private void handleEnrollAction(UserRequest urequest, Project selectedProject) {
-		getLogger().debug("start enrollProjectParticipant identity=" + urequest.getIdentity() + " to project=" + selectedProject);
+		getLogger().debug("start enrollProjectParticipant identity={} to project={}", getIdentity(), selectedProject);
 		boolean enrolled = projectBrokerManager.enrollProjectParticipant(urequest.getIdentity(), selectedProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
 		if (enrolled) {
 			projectBrokerMailer.sendEnrolledEmailToParticipant(urequest.getIdentity(), selectedProject, this.getTranslator());
