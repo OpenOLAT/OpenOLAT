@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.PFManager;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -39,17 +40,19 @@ public class PFCreateFolderTemplateController extends FormBasicController {
 
     private final String translatedFolderElement;
     private final String folderElement;
+    private final PFCourseNode pfNode;
     private TextElement subFolderNameEl;
     private StaticTextElement folderEl;
 
 
-    public PFCreateFolderTemplateController(UserRequest ureq, WindowControl wControl, String folderElement) {
+    public PFCreateFolderTemplateController(UserRequest ureq, WindowControl wControl, String folderElement, PFCourseNode pfNode) {
         super(ureq, wControl, LAYOUT_DEFAULT);
         this.folderElement = folderElement;
         this.translatedFolderElement =
                 folderElement
                         .replaceAll(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
                         .replaceAll(PFManager.FILENAME_DROPBOX, translate(PFCourseNode.FOLDER_DROP_BOX));
+        this.pfNode = pfNode;
 
         initForm(ureq);
     }
@@ -72,6 +75,8 @@ public class PFCreateFolderTemplateController extends FormBasicController {
 
     @Override
     protected boolean validateFormLogic(UserRequest ureq) {
+        ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
+
         boolean isInputValid = super.validateFormLogic(ureq);
         String name = subFolderNameEl.getValue();
 
@@ -80,6 +85,9 @@ public class PFCreateFolderTemplateController extends FormBasicController {
             isInputValid = false;
         } else if (!validateFolderName(subFolderNameEl.getValue())) {
             subFolderNameEl.setErrorKey("error.sf.invalid", null);
+            isInputValid = false;
+        } else if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().contains(folderElement + "/" + subFolderNameEl.getValue())) {
+            subFolderNameEl.setErrorKey("error.sf.exists", new String[]{subFolderNameEl.getValue()});
             isInputValid = false;
         }
 

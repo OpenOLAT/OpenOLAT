@@ -19,13 +19,6 @@
  */
 package org.olat.course.nodes.pf.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -54,6 +47,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.modules.ModuleConfiguration;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -247,7 +247,7 @@ public class PFFolderTemplateController extends FormBasicController {
     }
 
     private void doCreateSubFolder(UserRequest ureq, String folderPath) {
-        createFolderTemplateCtrl = new PFCreateFolderTemplateController(ureq, getWindowControl(), folderPath);
+        createFolderTemplateCtrl = new PFCreateFolderTemplateController(ureq, getWindowControl(), folderPath, pfNode);
         listenTo(createFolderTemplateCtrl);
 
         cmc = new CloseableModalController(getWindowControl(), "close", createFolderTemplateCtrl.getInitialComponent(),
@@ -276,7 +276,7 @@ public class PFFolderTemplateController extends FormBasicController {
         buttons.add(translate("delete"));
         buttons.add(translate("cancel"));
 
-        deleteDialogCtrl = activateGenericDialog(ureq, translate("table.elementDeleteFolder"), translate("confirmation.delete.element.title", folder), buttons , deleteDialogCtrl);
+        deleteDialogCtrl = activateGenericDialog(ureq, translate("table.elementDeleteFolder"), translate("confirmation.delete.element.title", folder), buttons, deleteDialogCtrl);
     }
 
     private void doDelete() {
