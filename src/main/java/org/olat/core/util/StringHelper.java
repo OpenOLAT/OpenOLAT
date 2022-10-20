@@ -433,6 +433,16 @@ public class StringHelper {
 		return escaped.replace("\"", "&quot;").replace("'", "&apos;");
 	}
 	
+	/**
+	 * Escapes the characters in a String using Json String rules.
+	 * 
+	 * @param str The string to escape
+	 * @return An escaped string which can be used as a Json value.
+	 */
+	public static final String escapeJson(String str) {
+		return org.apache.commons.text.StringEscapeUtils.escapeJson(str);
+	}
+	
 	public static final String escapeXml(String str) {
 		return org.apache.commons.text.StringEscapeUtils.escapeXml11(str);
 	}
