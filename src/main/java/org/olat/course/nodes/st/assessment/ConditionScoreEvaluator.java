@@ -44,7 +44,8 @@ public class ConditionScoreEvaluator implements ScoreEvaluator {
 		if (scoreCalculator != null) {
 			String scoreExpression = scoreCalculator.getScoreExpression();
 			if (StringHelper.containsNonWhitespace(scoreExpression)) {
-				return Float.valueOf(conditionInterpreter.evaluateCalculation(scoreExpression));
+				float val = conditionInterpreter.evaluateCalculation(scoreExpression);
+				return Float.isNaN(val) ? null : Float.valueOf(val);
 			}
 		}
 		return null;
