@@ -155,17 +155,13 @@ public class ContactForm extends FormBasicController {
 		sendEl.setVisible(optional);
 	}
 
-	public void setSubject(MailTemplate template) {
-		setSubject(template.getSubjectTemplate());
+	public void setSubject(MailTemplate template, boolean isReadOnly) {
+		setSubject(template.getSubjectTemplate(), isReadOnly);
 	}
 
-	public void setSubject(String defaultBody) {
-		tsubject.setValue(defaultBody);
-		if (!tsubject.isEmpty()) {
-			tsubject.setEnabled(readOnly);
-		} else {
-			tsubject.setEnabled(!readOnly);
-		}
+	public void setSubject(String defaultSubject, boolean isReadOnly) {
+		tsubject.setValue(defaultSubject);
+		tsubject.setEnabled(!isReadOnly);
 		tsubject.setMandatory(tsubject.isEnabled());
 	}
 
@@ -455,7 +451,12 @@ public class ContactForm extends FormBasicController {
 	private void selectTemplate(int index) {
 		if(index >= 0 && index < mailTemplates.size()) {
 			MailTemplate template = mailTemplates.get(index);
-			setSubject(template);
+			if (StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
+				setSubject(template, true);
+			} else {
+				setSubject(template, false);
+			}
+
 			setBody(template);
 		}
 	}
