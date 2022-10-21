@@ -39,6 +39,7 @@ import org.olat.commons.calendar.manager.ImportToCalendarManager;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProviderCreator;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -59,18 +60,16 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.course.CorruptedCourseException;
-import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
-import org.olat.course.run.calendar.CourseLinkProviderController;
+import org.olat.course.run.calendar.CourseLinkProviderControllerCreator;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.run.InfoGroupRunController;
@@ -468,20 +467,15 @@ public class CollaborationTools implements Serializable {
 		// add linking
 		List<RepositoryEntry> repoEntries = CoreSpringFactory.getImpl(BusinessGroupService.class).findRepositoryEntries(Collections.singleton(businessGroup), 0, -1);
 		
-		List<ICourse> courses = new ArrayList<>(repoEntries.size());
+		List<OLATResourceable> coursesOres = new ArrayList<>(repoEntries.size());
 		for (RepositoryEntry repoEntry:repoEntries) {
 			if (repoEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-				try {
-					ICourse course = CourseFactory.loadCourse(repoEntry);
-					courses.add(course);
-				} catch (CorruptedCourseException e) {
-					log.error("Course corrupted: {} ({})", repoEntry.getKey(), repoEntry.getOlatResource().getResourceableId(), e);
-				}
+				coursesOres.add(OresHelper.clone(repoEntry.getOlatResource()));
 			}
 		}
-		if(!courses.isEmpty()) {
-			CourseLinkProviderController clp = new CourseLinkProviderController(null, courses, ureq, wControl);
-			calRenderWrapper.setLinkProvider(clp);
+		if(!coursesOres.isEmpty()) {
+			LinkProviderCreator clp = new CourseLinkProviderControllerCreator(coursesOres);
+			calRenderWrapper.setLinkProviderCreator(clp);
 		}
 
 		List<KalendarRenderWrapper> calendars = new ArrayList<>();

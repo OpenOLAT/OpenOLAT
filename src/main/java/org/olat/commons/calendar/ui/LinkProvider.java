@@ -26,16 +26,9 @@
 package org.olat.commons.calendar.ui;
 
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.course.run.calendar.CourseLinkProviderController;
+import org.olat.core.gui.control.Controller;
 
-public interface LinkProvider {
-
-	/**
-	 * Get the controller to modify calendar event links.
-	 * @return
-	 */
-	public CourseLinkProviderController getControler();
+public interface LinkProvider extends Controller {
 
 	/**
 	 * Set this provider to display information only.
@@ -50,5 +43,4 @@ public interface LinkProvider {
 	 */
 	public void setKalendarEvent(KalendarEvent kalendarEvent);
 
-	public void addControllerListener(ControllerEventListener controller);
 }

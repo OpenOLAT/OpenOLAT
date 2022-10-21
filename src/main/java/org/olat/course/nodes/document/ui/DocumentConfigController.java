@@ -273,7 +273,7 @@ public class DocumentConfigController extends BasicController {
 			if (event == FormEvent.DONE_EVENT) {
 				VFSMetadata meta = metadataCtrl.getMetaInfo();
 				String fileName = metadataCtrl.getFilename();
-				doUpdateMetadata(meta, fileName);
+				doUpdateMetadata(ureq, meta, fileName);
 				updateUI(ureq);
 			}
 			cmc.deactivate();
@@ -486,7 +486,7 @@ public class DocumentConfigController extends BasicController {
 		}
 	}
 
-	private void doUpdateMetadata(VFSMetadata meta, String fileName) {
+	private void doUpdateMetadata(UserRequest ureq, VFSMetadata meta, String fileName) {
 		if (meta != null) {
 			vfsRepositoryService.updateMetadata(meta);
 			if (metadataCtrl.isFileRenamed()) {
@@ -497,6 +497,9 @@ public class DocumentConfigController extends BasicController {
 					VFSStatus renameStatus = documentSource.getVfsLeaf().rename(fileName);
 					if (VFSConstants.NO.equals(renameStatus)) {
 						showError("error.file.not.renamed");
+					} else {
+						documentSource = new DocumentSource(documentSource.getVfsLeaf());
+						doSetDocumentFromCourseFolder(ureq, fileName);
 					}
 				}
 			}

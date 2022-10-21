@@ -135,7 +135,7 @@ public class FeedPage {
 	public FeedPage addBlogPost() {
 		By newItemButton = By.className("o_sel_feed_item_new");
 		browser.findElement(newItemButton).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		By postForm = By.className("o_sel_feed_form");
 		OOGraphene.waitElement(postForm, browser);
 		return this;
@@ -156,7 +156,7 @@ public class FeedPage {
 	
 	public FeedPage publishPost() {
 		By publishButton = By.cssSelector(".o_sel_feed_form button.btn-primary");
-		OOGraphene.moveAndClick(publishButton, browser);
+		OOGraphene.click(publishButton, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -170,7 +170,7 @@ public class FeedPage {
 	public MediaPage addAsMedia() {
 		By addAsMediaBy = By.cssSelector(".o_post .o_portfolio_collector");
 		browser.findElement(addAsMediaBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
 	}
 	

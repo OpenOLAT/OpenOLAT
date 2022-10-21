@@ -32,6 +32,8 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.ui.LinkProvider;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -58,7 +60,7 @@ public class KalendarRenderWrapper {
 	private String identifier;
 	
 	private Kalendar kalendar;
-	private LinkProvider linkProvider;
+	private LinkProviderCreator linkProviderCreator;
 	
 	private int access = ACCESS_READ_ONLY;
 	private boolean imported = false;
@@ -197,17 +199,20 @@ public class KalendarRenderWrapper {
 	}
 
 	/**
-	 * @return Returns the linkProvider.
+	 * @return Returns the link provider.
 	 */
-	public LinkProvider getLinkProvider() {
-		return linkProvider;
+	public LinkProvider createLinkProvider(UserRequest ureq, WindowControl wControl) {
+		if(linkProviderCreator != null) {
+			return linkProviderCreator.createController(ureq, wControl);
+		}
+		return null;
 	}
 
 	/**
-	 * @param linkProvider The linkProvider to set.
+	 * @param linkProvider The link provider factory.
 	 */
-	public void setLinkProvider(LinkProvider linkProvider) {
-		this.linkProvider = linkProvider;
+	public void setLinkProviderCreator(LinkProviderCreator linkProviderCreator) {
+		this.linkProviderCreator = linkProviderCreator;
 	}
 	
 	public String getFeedUrl(Identity identity) {
@@ -245,5 +250,11 @@ public class KalendarRenderWrapper {
 			
 		}
 		return false;
+	}
+	
+	public interface LinkProviderCreator {
+		
+		public LinkProvider createController(UserRequest lureq, WindowControl lwControl);
+		
 	}
 }
