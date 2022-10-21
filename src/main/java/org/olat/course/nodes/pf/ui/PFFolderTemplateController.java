@@ -212,7 +212,8 @@ public class PFFolderTemplateController extends FormBasicController {
 
         for (PFFolderTemplateRow row : initBoxes) {
             if (keyToRows.get(row.getPath()) != null) {
-                if (!row.getFolderName().equals(keyToRows.get(row.getPath()).getFolderName())) {
+                if (!row.getFolderName().equals(translate(PFCourseNode.FOLDER_DROP_BOX))
+                        && !row.getFolderName().equals(translate(PFCourseNode.FOLDER_RETURN_BOX))) {
                     row.setParent(keyToRows.get(row.getPath()));
                     keyToRows.get(row.getPath()).setNumOfChildren(keyToRows.get(row.getPath()).getNumberOfChildren() + 1);
                 }

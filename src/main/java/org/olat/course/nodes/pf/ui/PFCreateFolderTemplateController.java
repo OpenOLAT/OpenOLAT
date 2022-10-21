@@ -33,6 +33,10 @@ import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.modules.ModuleConfiguration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
  */
@@ -76,6 +80,15 @@ public class PFCreateFolderTemplateController extends FormBasicController {
     @Override
     protected boolean validateFormLogic(UserRequest ureq) {
         ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
+        List<String> elements = new ArrayList<>();
+
+        if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
+            elements = new ArrayList<>(Arrays.asList(moduleConfiguration
+                    .get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString()
+                    .split(",")));
+            elements.removeIf(String::isBlank);
+        }
+
 
         boolean isInputValid = super.validateFormLogic(ureq);
         String name = subFolderNameEl.getValue();
@@ -86,8 +99,12 @@ public class PFCreateFolderTemplateController extends FormBasicController {
         } else if (!validateFolderName(subFolderNameEl.getValue())) {
             subFolderNameEl.setErrorKey("error.sf.invalid", null);
             isInputValid = false;
-        } else if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString().contains(folderElement + "/" + subFolderNameEl.getValue())) {
+        } else if (elements.stream().anyMatch(l -> l.equals(folderElement + "/" + subFolderNameEl.getValue()))) {
             subFolderNameEl.setErrorKey("error.sf.exists", new String[]{subFolderNameEl.getValue()});
+            isInputValid = false;
+        } else if (subFolderNameEl.getValue().equals(translate(PFCourseNode.FOLDER_DROP_BOX))
+                || subFolderNameEl.getValue().equals(translate(PFCourseNode.FOLDER_RETURN_BOX))) {
+            subFolderNameEl.setErrorKey("error.sf.root", new String[]{subFolderNameEl.getValue()});
             isInputValid = false;
         }
 
