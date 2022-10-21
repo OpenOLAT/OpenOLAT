@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,6 +28,7 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProviderCreator;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,7 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.cal.CourseCalendars;
-import org.olat.course.run.calendar.CourseLinkProviderController;
+import org.olat.course.run.calendar.CourseLinkProviderControllerCreator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -121,8 +121,8 @@ public class CurriculumElementCalendarController extends BasicController {
 			courseKalendarWrapper.setConfiguration(config);
 		}
 		// add link provider
-		CourseLinkProviderController clpc = new CourseLinkProviderController(course, Collections.<ICourse>singletonList(course), ureq, getWindowControl());
-		courseKalendarWrapper.setLinkProvider(clpc);
+		LinkProviderCreator clpc = new CourseLinkProviderControllerCreator(course);
+		courseKalendarWrapper.setLinkProviderCreator(clpc);
 		calendarWrappers.add(courseKalendarWrapper);
 		
 		// add course group calendars
@@ -168,4 +168,6 @@ public class CurriculumElementCalendarController extends BasicController {
 		calendarController.dispose();
         super.doDispose();
 	}
+	
+
 }

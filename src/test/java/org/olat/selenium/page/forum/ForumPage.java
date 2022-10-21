@@ -118,7 +118,7 @@ public class ForumPage {
 		//save
 		By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
 		OOGraphene.click(saveBy, browser);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		By messageTitleBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + title + "')]]");
 		OOGraphene.waitElement(messageTitleBy, 5, browser);
 		return this;

@@ -39,6 +39,7 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 	private boolean admin = false;
 	private boolean poolAdmin = false;
 	private boolean olatAuthor = false;
+	private boolean principalOnly = false;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
@@ -48,6 +49,7 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 		admin = roles.isAdministrator();
 		poolAdmin = roles.isPoolManager();
 		olatAuthor = roles.isAuthor();
+		principalOnly = roles.isPrincipal() && !admin && !poolAdmin && !olatAuthor;
 	}
 
 	@Override
@@ -82,17 +84,17 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 
 	@Override
 	public boolean canNewQuestions() {
-		return admin || olatAuthor || poolAdmin;
+		return !principalOnly;
 	}
 
 	@Override
 	public boolean canEditQuestions() {
-		return admin || olatAuthor || poolAdmin;
+		return !principalOnly;
 	}
 
 	@Override
 	public boolean canShareQuestions() {
-		return admin || olatAuthor || poolAdmin;
+		return !principalOnly;
 	}
 
 	@Override

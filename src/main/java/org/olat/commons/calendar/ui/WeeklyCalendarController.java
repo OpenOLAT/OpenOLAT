@@ -209,9 +209,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, KalendarRenderWrapper kalendarRenderWrapper, SubscriptionContext context) {
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
 		if (caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarController.CALLER_CURRICULUM) ||caller.equals(CalendarManager.TYPE_COURSE)) {
-			Long courseId = kalendarRenderWrapper.getLinkProvider().getControler().getCourseId();
-			
-			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), String.valueOf(courseId), businessPath);
+			String courseId = kalendarRenderWrapper.getCalendarKey().getCalendarId();
+			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), courseId, businessPath);
 			return new ContextualSubscriptionController(ureq, getWindowControl(), context, pdata);
 		}
 		if (caller.equals(CalendarController.CALLER_COLLAB) || caller.equals(CalendarManager.TYPE_GROUP)) {
