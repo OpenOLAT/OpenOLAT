@@ -290,7 +290,7 @@ public class PFFolderTemplateController extends FormBasicController {
                     .split(",")));
         }
         if (!folderElements.isEmpty()) {
-            folderElements.removeIf(el -> el.contains(folderToDelete));
+            folderElements.removeIf(el -> el.matches(folderToDelete));
         }
 
         String updatedElements = folderElements.stream()
