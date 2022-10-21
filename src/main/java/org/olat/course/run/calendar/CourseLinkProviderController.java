@@ -29,9 +29,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -50,9 +49,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -68,22 +70,18 @@ public class CourseLinkProviderController extends FormBasicController implements
 
 	private FormSubmit saveButton;
 	private final Long courseId;
-	private final List<CourseRef> availableCourses;
+	private final List<OLATResourceable> availableCourses;
 	private MenuTreeItem multiSelectTree;
 	private final CourseNodeSelectionTreeModel courseNodeTreeModel;
 	
 	@Autowired
 	private CalendarManager calendarManager;
 
-	public CourseLinkProviderController(ICourse course, List<ICourse> courses, UserRequest ureq, WindowControl wControl) {
+	protected CourseLinkProviderController(Long courseId, List<OLATResourceable> courses, UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "course_elements");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
-
-		courseId = course == null ? null : course.getResourceableId();
-		availableCourses = courses.stream()
-				.filter(Objects::nonNull)
-				.map(CourseRef::new)
-				.collect(Collectors.toList());
+		this.courseId = courseId;
+		this.availableCourses = courses;
 		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
 
 		initForm(ureq);
@@ -149,11 +147,6 @@ public class CourseLinkProviderController extends FormBasicController implements
 			rebuildKalendarEventLinks(node.getChildAt(i), selectedNodeIDs, kalendarEventLinks);
 		}
 	}
-	
-	@Override
-	public CourseLinkProviderController getControler() {
-		return this;
-	}
 
 	@Override
 	public void setKalendarEvent(KalendarEvent kalendarEvent) {
@@ -167,15 +160,20 @@ public class CourseLinkProviderController extends FormBasicController implements
 				String nodeId = link.getId();
 				TreeNode node = courseNodeTreeModel.getNodeById(nodeId);
 				if(node == null) {
-					String fallBackNodeId = availableCourses.get(0).getResourceId() + "_" + nodeId;
+					String fallBackNodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
 					node = courseNodeTreeModel.getNodeById(fallBackNodeId);
 				}
 				if(node == null && nodeId.indexOf("_") < 0) {
 					//course selected -> map to root node
-					for(CourseRef course: availableCourses) {
-						if(nodeId.equals(course.getResourceId().toString())) {
-							String fallBackNodeId = course.getResourceId() + "_" + course.getRootNodeIdent();
-							node = courseNodeTreeModel.getNodeById(fallBackNodeId);
+					for(OLATResourceable courseOres: availableCourses) {
+						if(nodeId.equals(courseOres.getResourceableId().toString())) {
+							try {
+								ICourse course = CourseFactory.loadCourse(courseOres);
+								String fallBackNodeId = course.getResourceableId() + "_" + course.getRunStructure().getRootNode().getIdent();
+								node = courseNodeTreeModel.getNodeById(fallBackNodeId);
+							} catch (CorruptedCourseException e) {
+								logError("", e);
+							}
 						}
 					}
 				}
@@ -205,17 +203,23 @@ public class CourseLinkProviderController extends FormBasicController implements
 	
 	private static class CourseNodeSelectionTreeModel extends GenericTreeModel {
 		private static final long serialVersionUID = -7863033366847344767L;
+		private static final Logger log = Tracing.createLoggerFor(CourseNodeSelectionTreeModel.class);
 
-		public CourseNodeSelectionTreeModel(List<ICourse> courses) {
-			if(courses.size() == 1) {
-				ICourse course = courses.get(0);
-				setRootNode(buildCourseTree(course));
-			} else {
-				LinkTreeNode rootNode = new LinkTreeNode("", null, null);
-				for(ICourse course:courses) {
-					rootNode.addChild(buildCourseTree(course));
+		public CourseNodeSelectionTreeModel(List<OLATResourceable> courses) {
+			try {
+				if(courses.size() == 1) {
+					ICourse course = CourseFactory.loadCourse(courses.get(0));
+					setRootNode(buildCourseTree(course));
+				} else {
+					LinkTreeNode rootNode = new LinkTreeNode("", null, null);
+					for(OLATResourceable courseOres:courses) {
+						ICourse course = CourseFactory.loadCourse(courseOres);
+						rootNode.addChild(buildCourseTree(course));
+					}
+					setRootNode(rootNode);
 				}
-				setRootNode(rootNode);
+			} catch (Exception e) {
+				log.error("", e);
 			}
 		}
 		
@@ -244,25 +248,6 @@ public class CourseLinkProviderController extends FormBasicController implements
 		}
 	}
 	
-	private static class CourseRef {
-		
-		private final Long resourceId;
-		private final String rootNodeIdent;
-		
-		public CourseRef(ICourse course) {
-			resourceId = course.getResourceableId();
-			rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
-		}
-
-		public Long getResourceId() {
-			return resourceId;
-		}
-		
-		public String getRootNodeIdent() {
-			return rootNodeIdent;
-		}
-	}
-	
 	private static class LinkTreeNode extends GenericTreeNode {
 		private static final long serialVersionUID = -6043669089871217496L;
 		
@@ -271,7 +256,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 		
 		public LinkTreeNode(String title, ICourse course, CourseNode courseNode) {
 			super(title, null);
-			courseOres = OresHelper.clone(course);
+			courseOres = course == null ? null : OresHelper.clone(course);
 			courseNodeIdent = courseNode == null ? null : courseNode.getIdent();
 		}
 

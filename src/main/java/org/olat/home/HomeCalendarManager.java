@@ -23,13 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.collaboration.CollaborationManager;
@@ -42,13 +42,13 @@ import org.olat.commons.calendar.model.CalendarFileInfos;
 import org.olat.commons.calendar.model.CalendarKey;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProviderCreator;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.course.CorruptedCourseException;
@@ -56,7 +56,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.cal.CourseCalendars;
-import org.olat.course.run.calendar.CourseLinkProviderController;
+import org.olat.course.run.calendar.CourseLinkProviderControllerCreator;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -178,7 +178,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 				.getCalendarUserConfigurationsMap(ureq.getIdentity());
 		appendPersonalCalendar(identity, calendars, configMap);
 		appendGroupCalendars(identity, calendars, configMap);
-		appendCourseCalendars(ureq, wControl, calendars, configMap);
+		appendCourseCalendars(ureq, calendars, configMap);
 		
 		//reload every hour
 		List<KalendarRenderWrapper> importedCalendars = importCalendarManager.getImportedCalendarsForIdentity(identity, true);
@@ -204,7 +204,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 				}
 				calendars.add(calendarWrapper);
 			} catch (Exception e) {
-				log.error("Cannot read personal calendar of: " + identity, e);
+				log.error("Cannot read personal calendar of: {}", identity, e);
 			}
 		}
 	}
@@ -226,7 +226,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 		}
 	}
 
-	private void appendCourseCalendars(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendars,
+	private void appendCourseCalendars(UserRequest ureq, List<KalendarRenderWrapper> calendars,
 			Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
 			
@@ -266,15 +266,16 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 						if (config != null) {
 							courseCalendarWrapper.setConfiguration(config);
 						}
-						courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl));
+						LinkProviderCreator cpl = new CourseLinkProviderControllerCreator(course);
+						courseCalendarWrapper.setLinkProviderCreator(cpl);
 						calendars.add(courseCalendarWrapper);
 					}
 				} catch (CorruptedCourseException e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
-					log.error("Corrupted course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID);
+					log.error("Corrupted course: {} :: {}", olatResource.getResourceableTypeName(), courseResourceableID);
 				} catch (Exception e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
-					log.error("Cannor read calendar of course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID);
+					log.error("Cannor read calendar of course: {} :: {}", olatResource.getResourceableTypeName(), courseResourceableID);
 				}
 			}
 		}
