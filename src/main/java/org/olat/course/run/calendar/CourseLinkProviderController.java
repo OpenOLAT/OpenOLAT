@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -53,6 +55,8 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +67,8 @@ public class CourseLinkProviderController extends FormBasicController implements
 	private KalendarEvent kalendarEvent;
 
 	private FormSubmit saveButton;
-	private final OLATResourceable ores;
-	private final List<ICourse> availableCourses;
+	private final Long courseId;
+	private final List<CourseRef> availableCourses;
 	private MenuTreeItem multiSelectTree;
 	private final CourseNodeSelectionTreeModel courseNodeTreeModel;
 	
@@ -75,8 +79,11 @@ public class CourseLinkProviderController extends FormBasicController implements
 		super(ureq, wControl, "course_elements");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 
-		this.ores = course;
-		availableCourses = new ArrayList<>(courses);
+		courseId = course == null ? null : course.getResourceableId();
+		availableCourses = courses.stream()
+				.filter(Objects::nonNull)
+				.map(CourseRef::new)
+				.collect(Collectors.toList());
 		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
 
 		initForm(ureq);
@@ -115,7 +122,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 	}
 
 	public Long getCourseId() {
-		return ores.getResourceableId();
+		return courseId;
 	}
 
 	private void rebuildKalendarEventLinks(INode node, Collection<String> selectedNodeIDs, List<KalendarEventLink> kalendarEventLinks) {
@@ -127,8 +134,8 @@ public class CourseLinkProviderController extends FormBasicController implements
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, true);
 				List<ContextEntry> ces = new ArrayList<>();
 				ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
-				if(treeNode.getCourseNode() != null) {
-					String courseNodeId = treeNode.getCourseNode().getIdent();
+				if(treeNode.getCourseNodeIdent() != null) {
+					String courseNodeId = treeNode.getCourseNodeIdent();
 					OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(courseNodeId));
 					ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
 				}
@@ -160,14 +167,14 @@ public class CourseLinkProviderController extends FormBasicController implements
 				String nodeId = link.getId();
 				TreeNode node = courseNodeTreeModel.getNodeById(nodeId);
 				if(node == null) {
-					String fallBackNodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
+					String fallBackNodeId = availableCourses.get(0).getResourceId() + "_" + nodeId;
 					node = courseNodeTreeModel.getNodeById(fallBackNodeId);
 				}
 				if(node == null && nodeId.indexOf("_") < 0) {
 					//course selected -> map to root node
-					for(ICourse course: availableCourses) {
-						if(nodeId.equals(course.getResourceableId().toString())) {
-							String fallBackNodeId = course.getResourceableId() + "_" + course.getRunStructure().getRootNode().getIdent();
+					for(CourseRef course: availableCourses) {
+						if(nodeId.equals(course.getResourceId().toString())) {
+							String fallBackNodeId = course.getResourceId() + "_" + course.getRootNodeIdent();
 							node = courseNodeTreeModel.getNodeById(fallBackNodeId);
 						}
 					}
@@ -199,7 +206,6 @@ public class CourseLinkProviderController extends FormBasicController implements
 	private static class CourseNodeSelectionTreeModel extends GenericTreeModel {
 		private static final long serialVersionUID = -7863033366847344767L;
 
-
 		public CourseNodeSelectionTreeModel(List<ICourse> courses) {
 			if(courses.size() == 1) {
 				ICourse course = courses.get(0);
@@ -220,11 +226,14 @@ public class CourseLinkProviderController extends FormBasicController implements
 		private LinkTreeNode buildTree(ICourse course, CourseNode courseNode) {
 			LinkTreeNode node = new LinkTreeNode(courseNode.getShortTitle(), course, courseNode);
 			node.setAltText(courseNode.getLongTitle());
-			node.setIdent(course.getResourceableId() + "_" + courseNode.getIdent());
+			node.setIdent(course.getResourceableId() + "_".concat(courseNode.getIdent()));
 			if(courseNode == course.getRunStructure().getRootNode()) {
 				node.setIconCssClass("o_CourseModule_icon");
 			} else {
-				node.setIconCssClass(("o_icon o_" + courseNode.getType() + "_icon").intern());
+				CourseNodeConfiguration config = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
+				if(config != null) {
+					node.setIconCssClass(("o_icon ".concat(config.getIconCSSClass())).intern());
+				}
 			}
 			node.setUserObject(course);
 			for (int i = 0; i < courseNode.getChildCount(); i++) {
@@ -235,24 +244,43 @@ public class CourseLinkProviderController extends FormBasicController implements
 		}
 	}
 	
+	private static class CourseRef {
+		
+		private final Long resourceId;
+		private final String rootNodeIdent;
+		
+		public CourseRef(ICourse course) {
+			resourceId = course.getResourceableId();
+			rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
+		}
+
+		public Long getResourceId() {
+			return resourceId;
+		}
+		
+		public String getRootNodeIdent() {
+			return rootNodeIdent;
+		}
+	}
+	
 	private static class LinkTreeNode extends GenericTreeNode {
 		private static final long serialVersionUID = -6043669089871217496L;
-		private final ICourse course;
-		private final CourseNode courseNode;
+		
+		private final OLATResourceable courseOres;
+		private final String courseNodeIdent;
 		
 		public LinkTreeNode(String title, ICourse course, CourseNode courseNode) {
 			super(title, null);
-			
-			this.course = course;
-			this.courseNode = courseNode;
+			courseOres = OresHelper.clone(course);
+			courseNodeIdent = courseNode == null ? null : courseNode.getIdent();
 		}
 
-		public ICourse getCourse() {
-			return course;
+		public OLATResourceable getCourse() {
+			return courseOres;
 		}
 
-		public CourseNode getCourseNode() {
-			return courseNode;
+		public String getCourseNodeIdent() {
+			return courseNodeIdent;
 		}
 	}
 }

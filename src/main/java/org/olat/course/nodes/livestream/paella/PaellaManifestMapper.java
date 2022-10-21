@@ -42,7 +42,10 @@ public class PaellaManifestMapper implements Mapper {
 
 	private static final Logger log = Tracing.createLoggerFor(PaellaManifestMapper.class);
 	
-	private final ObjectMapper mapper;
+	private static final ObjectMapper mapper = new ObjectMapper();
+	static {
+		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+	}
 	
 	private final Stream[] streams;
 	private final String title;
@@ -50,8 +53,6 @@ public class PaellaManifestMapper implements Mapper {
 	public PaellaManifestMapper(Stream[] streams, String title) {
 		this.streams = streams;
 		this.title = StringHelper.containsNonWhitespace(title)? title: "OpenOlat live stream";
-		 mapper = new ObjectMapper();
-		 mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 	}
 
 	@Override
