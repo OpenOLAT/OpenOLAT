@@ -171,7 +171,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Link nextLink, previousLink;
 	private GlossaryMarkupItemController glossaryMarkerCtr;
 	
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Autowired
 	private RepositoryService repositoryService;
