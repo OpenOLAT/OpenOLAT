@@ -74,7 +74,7 @@ public abstract class FormItemImpl implements InlineElement {
 	private Panel labelPanel;
 	protected Translator translator;
 	private final String id;
-	private String name;
+	private final String name;
 	private boolean hasLabel = false;
 	private boolean hasExample = false;
 	protected boolean hasError = false;
@@ -109,9 +109,10 @@ public abstract class FormItemImpl implements InlineElement {
 		/*
 		 * prepare three panels as placeholder for label, example, error
 		 */
-		errorPanel = new Panel(PREFIX + name + FormItem.ERRORC);
-		examplePanel = new Panel(PREFIX + name + FormItem.EXAMPLEC);
-		labelPanel = new Panel(PREFIX + name + FormItem.LABELC);
+		String pName = PREFIX.concat(name);
+		errorPanel = new Panel(pName.concat(FormItem.ERRORC));
+		examplePanel = new Panel(pName.concat(FormItem.EXAMPLEC));
+		labelPanel = new Panel(pName.concat(FormItem.LABELC));
 	}
 
 	@Override
