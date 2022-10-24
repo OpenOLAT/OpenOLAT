@@ -283,8 +283,9 @@ public class AssessmentTest extends Deployments {
 			.assertOnTitle(testNodeTitle);
 		
 		//add Ryomou and Kanu as a course member
-		courseRuntime.members().quickAdd(ryomou);
-		courseRuntime.members().quickAdd(kanu);
+		MembersPage members = courseRuntime.members();
+		members.quickAdd(ryomou);
+		members.quickAdd(kanu);
 		
 		//Kanu log in 
 		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);

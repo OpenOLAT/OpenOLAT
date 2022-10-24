@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
@@ -91,9 +92,11 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 		for(VFSItem item: items) {
 			if(item instanceof VFSContainer) {
 				String name = userManager.getUserDisplayName(item.getName());
-				NamedContainerImpl named = new NamedContainerImpl(name, (VFSContainer)item);
-				named.setLocalSecurityCallback(readOnly);
-				namedContainers.add(named);
+				if(StringHelper.containsNonWhitespace(name)) {
+					NamedContainerImpl named = new NamedContainerImpl(name, (VFSContainer)item);
+					named.setLocalSecurityCallback(readOnly);
+					namedContainers.add(named);
+				}
 			}
 		}
 		
@@ -113,9 +116,11 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 		for(VFSItem item: items) {
 			if(item instanceof VFSContainer) {
 				String name = userManager.getUserDisplayName(item.getName());
-				NamedContainerImpl named = new NamedContainerImpl(name, (VFSContainer)item);
-				named.setLocalSecurityCallback(secCallback);
-				namedContainers.add(named);
+				if(StringHelper.containsNonWhitespace(name)) {
+					NamedContainerImpl named = new NamedContainerImpl(name, (VFSContainer)item);
+					named.setLocalSecurityCallback(secCallback);
+					namedContainers.add(named);
+				}
 			}
 		}
 		

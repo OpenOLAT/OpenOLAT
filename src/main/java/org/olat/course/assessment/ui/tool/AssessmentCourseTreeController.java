@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -210,13 +211,15 @@ public class AssessmentCourseTreeController extends BasicController implements A
 			listState = (AssessedIdentityListState)state;
 			List<String> members = listState.getMembers();
 			if (members == null) {
-				members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
+				members = participantTypeFilter == null ? new ArrayList<>(1)
+						: participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
 				listState.setMembers(members);
 			} else {
 				participantTypeFilter = members.stream().map(ParticipantType::valueOf).collect(Collectors.toList());
 			}
 		} else {
-			List<String> members = participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
+			List<String> members = participantTypeFilter == null ? new ArrayList<>(1)
+					: participantTypeFilter.stream().map(ParticipantType::name).collect(Collectors.toList());
 			listState = new AssessedIdentityListState(null, null, null, members, null, null, null, true);
 		}
 		return listState;

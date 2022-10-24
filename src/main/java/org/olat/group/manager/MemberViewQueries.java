@@ -102,7 +102,9 @@ public class MemberViewQueries {
 			Date lastModified = (Date)objects[pos++];
 			
 			Identity identity = (Identity)objects[pos++];
-			MemberView view = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale, creationDate, lastModified));
+			MemberView view = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
+			view.setCreationDate(creationDate);
+			view.setLastModified(lastModified);
 			view.addGroup(businessGroup);
 			view.getMemberShip().setBusinessGroupRole(role);
 		}
@@ -150,6 +152,9 @@ public class MemberViewQueries {
 				v.setRepositoryEntry(entry);
 				return v;
 			});
+			
+			view.setCreationDate(membership.getCreationDate());
+			view.setLastModified(membership.getLastModified());
 
 			if(defaultGroup != null && defaultGroup.booleanValue()) {
 				view.getMemberShip().setRepositoryEntryRole(membership.getRole());
@@ -211,7 +216,10 @@ public class MemberViewQueries {
 			Identity member = membership.getIdentity();
 			
 			MemberView view = views.computeIfAbsent(member, id
-					-> new MemberView(id, userPropertyHandlers, locale, membership.getCreationDate(), membership.getLastModified()));
+					-> new MemberView(id, userPropertyHandlers, locale));
+			
+			view.setCreationDate(membership.getCreationDate());
+			view.setLastModified(membership.getLastModified());
 			
 			if(defaultGroup != null && defaultGroup.booleanValue()) {
 				view.setRepositoryEntry(entry);

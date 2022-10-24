@@ -32,11 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
- * 
- * based on https://github.com/polimediaupv/paella-opencast/blob/master/src/main/paella-opencast/ui/embed.html
  * 
  * Initial date: 11 Dec 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
@@ -46,14 +42,12 @@ public class PaellaMapper implements Mapper {
 
 	private static final Logger log = Tracing.createLoggerFor(PaellaMapper.class);
 	
-	private final ObjectMapper mapper = new ObjectMapper();
+	private final String configUrl;
+	private final String manifestUrl;
 	
-	private final Streams streams;
-	private final String paellaConfig;
-	
-	public PaellaMapper(Streams streams, String paellaConfig) {
-		this.streams = streams;
-		this.paellaConfig = paellaConfig;
+	public PaellaMapper(String configUrl, String manifestUrl) {
+		this.configUrl = configUrl;
+		this.manifestUrl = manifestUrl;
 	}
 
 	@Override
@@ -61,12 +55,12 @@ public class PaellaMapper implements Mapper {
 		StringMediaResource smr = new StringMediaResource();
 		
 		String encoding = StandardCharsets.ISO_8859_1.name();
+		smr.setEncoding(encoding);
 		String mimetype = "text/html;charset=" + StringHelper.check4xMacRoman(encoding);
 		smr.setContentType(mimetype);
-		smr.setEncoding(encoding);
-		
 		String content = createContent();
 		smr.setData(content);
+		
 		return smr;
 	}
 	
@@ -77,23 +71,21 @@ public class PaellaMapper implements Mapper {
 		sb.append("<head>");
 		sb.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">");
 		sb.append("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
-		appendStaticJs(sb, "js/paella/player/javascript/hls.min.js");
-		appendStaticJs(sb, "js/paella/player/javascript/jquery.min.js");
-		appendStaticJs(sb, "js/paella/player/javascript/lunr.min.js");
-		appendStaticJs(sb, "js/paella/player/javascript/paella_player_es2015.js");
-		sb.append("</head>");
-		sb.append("<body id=\"body\" onload=\"");
-		sb.append("paella.baseUrl='");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/paella/player/");
-		sb.append("';");
-		sb.append("paella.load('playerContainer', {");
-		sb.append(" config: ").append(paellaConfig);
-		sb.append(" ,");
-		sb.append(" data:");
-		sb.append(objectToJson(streams));
+		sb.append("<style>");
+		sb.append("#player-container {");
+		sb.append("height: 90vh;");
+		sb.append("font-family: helvetica, arial, sans-serif;");
 		sb.append("}");
-		sb.append(");\">");
-		sb.append("<div id=\"playerContainer\" style=\"display:block;width:100%\">");
+		sb.append("</style>");
+		sb.append("<script>");
+		sb.append("var configMapperUrl=\"").append(configUrl).append("\";");
+		sb.append("var manifestMapperUrl=\"").append(manifestUrl).append("\";");
+		sb.append("var getManifestFileMapperUrl = function() {return \"").append(manifestUrl).append("\";};");
+		sb.append("</script>");
+		appendStaticJs(sb, "js/paella/oopaella/dist/oopaella.js");
+		sb.append("</head>");
+		sb.append("<body>");
+		sb.append("<div id=\"player-container\">");
 		sb.append("</div>");
 		sb.append("</body>");
 		sb.append("</html>");
@@ -107,18 +99,6 @@ public class PaellaMapper implements Mapper {
 		sb.append("<script src=\"");
 		StaticMediaDispatcher.renderStaticURI(sb, javascript);
 		sb.append("\"></script>");
-	}
-	
-	private String objectToJson(Object o)  {
-		String json = null;
-		try {
-			json = mapper.writeValueAsString(o);
-		} catch (Exception e) {
-			json = "{}";
-		}
-		json = json.replace("\"", "'");
-		log.debug(json);
-		return json;
 	}
 
 }

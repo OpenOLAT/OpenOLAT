@@ -73,8 +73,8 @@
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.0.Final</io.undertow>
 		<jackson.version>2.14.0-rc1</jackson.version>
-		<swagger.ui.version>4.14.2</swagger.ui.version>
-		<org.mysql.version>8.0.30</org.mysql.version>
+		<swagger.ui.version>4.14.3</swagger.ui.version>
+		<com.mysql.version>8.0.31</com.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
 		<org.infinispan.version>14.0.0.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
@@ -486,9 +486,9 @@
 				</dependency>
 		
 				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
-					<version>${org.mysql.version}</version>
+					<groupId>com.mysql</groupId>
+					<artifactId>mysql-connector-j</artifactId>
+					<version>${com.mysql.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.postgresql</groupId>
@@ -820,9 +820,9 @@
 				</dependency>
 		
 				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
-					<version>${org.mysql.version}</version>
+					<groupId>com.mysql</groupId>
+					<artifactId>mysql-connector-j</artifactId>
+					<version>${com.mysql.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
@@ -904,9 +904,9 @@
 						<version>1.5</version>
 						<dependencies>
 							<dependency>
-								<groupId>mysql</groupId>
-								<artifactId>mysql-connector-java</artifactId>
-								<version>${org.mysql.version}</version>
+								<groupId>com.mysql</groupId>
+								<artifactId>mysql-connector-j</artifactId>
+								<version>${com.mysql.version}</version>
 							</dependency>
 						</dependencies>
 	
@@ -1908,7 +1908,7 @@
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
 		    <artifactId>scribejava-apis</artifactId>
-		    <version>8.3.1</version>
+		    <version>8.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2147,19 +2147,6 @@
 			<artifactId>java2html</artifactId>
 			<version>5.0</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
@@ -2324,7 +2311,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.56.0-SNAPSHOT</version>
+			<version>0.58.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>

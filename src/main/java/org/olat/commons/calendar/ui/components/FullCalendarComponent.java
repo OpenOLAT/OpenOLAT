@@ -36,6 +36,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -47,7 +48,7 @@ import org.olat.core.logging.Tracing;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FullCalendarComponent extends AbstractComponent {
+public class FullCalendarComponent extends AbstractComponent implements Disposable {
 	
 	private static final Logger log = Tracing.createLoggerFor(FullCalendarComponent.class);
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
@@ -85,6 +86,11 @@ public class FullCalendarComponent extends AbstractComponent {
 		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
 		mapperKey = mapper.register(ureq.getUserSession(), new FullCalendarMapper(this));
+	}
+	
+	@Override
+	public void dispose() {
+		CoreSpringFactory.getImpl(MapperService.class).cleanUp(List.of(mapperKey));
 	}
 	
 	protected String getMapperUrl() {

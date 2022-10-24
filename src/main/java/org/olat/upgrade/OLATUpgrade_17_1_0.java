@@ -91,8 +91,8 @@ public class OLATUpgrade_17_1_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(GUEST_ASSESSMENT_ENTRIES_DELETE)) {
 			try {
 				log.info("Start delete guest assessment entries.");
-				deleteGuestAssessmentEntries();
-				log.info("All guest assessment entries deleted.");
+				int count = deleteGuestAssessmentEntries();
+				log.info("All guest assessment entries deleted: {}", count);
 			} catch (Exception e) {
 				log.error("", e);
 				allOk = false;
@@ -103,15 +103,16 @@ public class OLATUpgrade_17_1_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private void deleteGuestAssessmentEntries() {
+	private int deleteGuestAssessmentEntries() {
 		List<Long> guestsKey = getGuests().stream().map(Identity::getKey).collect(Collectors.toList());
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from assessmententry aentry");
 		sb.and().append("aentry.anonymousIdentifier is null");
 		sb.and().append("aentry.identity.key in :guestKeys");
+		sb.and().append("aentry.key not in (select asession.assessmentEntry.key from qtiassessmenttestsession as asession)");
 		
-		dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("guestKeys", guestsKey)
 				.executeUpdate();

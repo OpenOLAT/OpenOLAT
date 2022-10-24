@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -35,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CourseOverviewMembershipDataModel extends DefaultFlexiTableDataModel<CourseMemberView>
-implements SortableFlexiTableDataModel<CourseMemberView> {
+implements SortableFlexiTableDataModel<CourseMemberView>, FlexiBusinessPathModel {
 	
 	private static final MSCols[] COLS = MSCols.values();
 
@@ -52,6 +54,14 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 			List<CourseMemberView> views = new CourseOverviewMembershipSortDelegate(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
+	}
+
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if(action == null) return null;
+		
+		CourseMemberView view = (CourseMemberView)object;
+		return view.getUrl();
 	}
 
 	@Override

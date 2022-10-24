@@ -91,14 +91,17 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public boolean containsSearch(String search) {
 		if (taxonomyLevel != null) {
-			return displayName.toLowerCase().contains(search) 
-					|| taxonomyLevel.getIdentifier().toLowerCase().contains(search);
+			return containsSearch(displayName, search)
+					|| containsSearch(taxonomyLevel.getIdentifier(), search);
 		} else if (taxonomy != null) {
-			return taxonomy.getDisplayName().toLowerCase().contains(search) 
-					|| taxonomy.getIdentifier().toLowerCase().contains(search);
+			return containsSearch(taxonomy.getDisplayName(), search) 
+					|| containsSearch(taxonomy.getIdentifier(), search);
 		}
-		
 		return false;
+	}
+
+	private boolean containsSearch(String value, String search) {
+		return value != null && value.toLowerCase().contains(search);
 	}
 	
 	@Override

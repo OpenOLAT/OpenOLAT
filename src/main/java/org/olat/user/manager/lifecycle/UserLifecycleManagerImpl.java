@@ -36,6 +36,7 @@ import jakarta.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.manager.IdentityDAO;
@@ -169,6 +170,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status in (:statusList) and ident.expirationDate<=:referenceDate")
 		  .append(" and ident.expirationEmailDate is null");
+		andExcludeFromIdentitiesList(sb);
 
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		return dbInstance.getCurrentEntityManager()
@@ -183,6 +185,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status in (:statusList) and ident.expirationDate < :referenceDate");
+		andExcludeFromIdentitiesList(sb);
 
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		return dbInstance.getCurrentEntityManager()
@@ -198,6 +201,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status in (:statusList) and ((ident.lastLogin = null and ident.creationDate < :lastLogin) or ident.lastLogin < :lastLogin)")
 		  .append(" and ident.inactivationEmailDate is null and (ident.reactivationDate is null or ident.reactivationDate<:reactivationDateLimit)");
+		andExcludeFromIdentitiesList(sb);
 		
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		return dbInstance.getCurrentEntityManager()
@@ -217,6 +221,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			sb.append(" and (ident.inactivationEmailDate<:emailDate or ident.lastLogin is null)");	
 		}
 		sb.append(" and (ident.reactivationDate is null or ident.reactivationDate<:reactivationDateLimit)");
+		andExcludeFromIdentitiesList(sb);
 
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
@@ -236,6 +241,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status=:status and ident.inactivationDate<:inactivationDate")
 		  .append(" and ident.deletionEmailDate is null");
+		andExcludeFromIdentitiesList(sb);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -252,6 +258,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		if(emailBeforeDate != null) {
 			sb.append(" and (ident.deletionEmailDate<:emailDate or ident.lastLogin is null)");	
 		}
+		andExcludeFromIdentitiesList(sb);
 
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -261,6 +268,11 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			query.setParameter("emailDate", emailBeforeDate);	
 		}
 		return query.getResultList();
+	}
+	
+	private final void andExcludeFromIdentitiesList(StringBuilder sb) {
+		sb.append(" and ident.key not in (select membership.identity.key from bgroupmember membership")
+		  .append("  where membership.role='").append(OrganisationRoles.guest.name()).append("')");
 	}
 
 	public Identity setIdentityAsInactive(Identity identity) {

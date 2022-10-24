@@ -141,13 +141,13 @@ public class CalendarEntryDetailsController extends BasicController {
 						}
 					}
 					
-					if(activeLinkProvider == null) {
-						activeLinkProvider = calendarWrapper.getLinkProvider();
+					if(activeLinkProvider == null && calendarWrapper != null) {
+						activeLinkProvider = calendarWrapper.createLinkProvider(ureq, getWindowControl());
 						if (activeLinkProvider != null) {
-							activeLinkProvider.addControllerListener(this);
+							listenTo(activeLinkProvider);
 							activeLinkProvider.setKalendarEvent(kalendarEvent);
 							activeLinkProvider.setDisplayOnly(isReadOnly);
-							linkVC.put("linkprovider", activeLinkProvider.getControler().getInitialComponent());
+							linkVC.put("linkprovider", activeLinkProvider.getInitialComponent());
 							linkVC.contextPut("hasLinkProvider", Boolean.TRUE);
 						} else {
 							linkVC.contextPut("hasLinkProvider", Boolean.FALSE);

@@ -38,6 +38,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -50,7 +51,7 @@ import org.olat.core.util.ValidationStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FullCalendarElement extends FormItemImpl {
+public class FullCalendarElement extends FormItemImpl implements Disposable {
 	
 	private static final Logger log = Tracing.createLoggerFor(FullCalendarElement.class);
 
@@ -63,6 +64,11 @@ public class FullCalendarElement extends FormItemImpl {
 		component = new FullCalendarComponent(ureq, this, name, calendarWrappers, translator);
 	}
 	
+	@Override
+	public void dispose() {
+		component.dispose();
+	}
+
 	public String getMapperUrl() {
 		return component.getMapperUrl();
 	}

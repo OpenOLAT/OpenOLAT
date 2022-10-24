@@ -37,10 +37,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamService;
+import org.olat.course.nodes.livestream.paella.PaellaConfigMapper;
 import org.olat.course.nodes.livestream.paella.PaellaFactory;
+import org.olat.course.nodes.livestream.paella.PaellaManifestMapper;
 import org.olat.course.nodes.livestream.paella.PaellaMapper;
 import org.olat.course.nodes.livestream.paella.PlayerProfile;
-import org.olat.course.nodes.livestream.paella.Streams;
+import org.olat.course.nodes.livestream.paella.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,6 +58,7 @@ public class LiveStreamVideoController extends BasicController {
 	
 	private final PlayerProfile playerProfile;
 	private final List<MapperKey> mappers = new ArrayList<>();
+	private String title;
 	private boolean error = false;
 	private String url;
 	private String[] urls;
@@ -73,6 +76,7 @@ public class LiveStreamVideoController extends BasicController {
 	}
 	
 	public void setEvent(UserSession usess, LiveStreamEvent event) {
+		title = event != null? event.getSubject(): null;
 		String newUrl = event != null? event.getLiveStreamUrl(): null;
 		if (newUrl == null || !newUrl.equalsIgnoreCase(url)) {
 			error = false;
@@ -91,9 +95,18 @@ public class LiveStreamVideoController extends BasicController {
 			if (streamingUrls.length > 0) {
 				mainVC.contextRemove("error");
 				mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
-				Streams streams = PaellaFactory.createStreams(streamingUrls, playerProfile);
+				
 				String paellaConfig = liveStreamService.getPaellaConfig(playerProfile);
-				PaellaMapper paellaMapper = new PaellaMapper(streams, paellaConfig);
+				PaellaConfigMapper paellaConfigMapper = new PaellaConfigMapper(paellaConfig);
+				MapperKey configMapperKey = mapperService.register(usess, paellaConfigMapper);
+				mappers.add(configMapperKey);
+				
+				Stream[] streams = PaellaFactory.createStreams(streamingUrls, playerProfile);
+				PaellaManifestMapper PaellaManifestMapper = new PaellaManifestMapper(streams, title);
+				MapperKey manifestMapperKey = mapperService.register(usess, PaellaManifestMapper);
+				mappers.add(manifestMapperKey);
+				
+				PaellaMapper paellaMapper = new PaellaMapper(configMapperKey.getUrl(), manifestMapperKey.getUrl());
 				MapperKey mapperKey = mapperService.register(usess, paellaMapper);
 				mappers.add(mapperKey);
 				String baseURI = mapperKey.getUrl();

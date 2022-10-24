@@ -161,7 +161,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		recordingHandlerId = getStringPropertyValue(PROP_RECORDING_HANDLER_ID, recordingHandlerId);
 		recordingsPermanent = getStringPropertyValue(PROP_RECORDINGS_DEF_PERMANENT, recordingsPermanent);
 		
-		String meetingDeletionDaysObj = getStringPropertyValue(PROP_MEETING_DELETION_DAYS, maxUploadSize.toString());
+		String meetingDeletionDaysObj = getStringPropertyValue(PROP_MEETING_DELETION_DAYS, true);
 		if(StringHelper.containsNonWhitespace(meetingDeletionDaysObj)) {
 			meetingDeletionDays = Integer.valueOf(meetingDeletionDaysObj);
 		}

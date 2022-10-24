@@ -60,7 +60,7 @@ public class OpencastRestClient {
 	@Autowired
 	private HttpClientService httpClientService;
 	
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	public Api getApi() {
 		URI uri = URI.create(opencastModule.getApiUrl());

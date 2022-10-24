@@ -62,21 +62,24 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	// Owners
 	private MultipleSelectionElement multiSelectionOwnerKeys;
 	private SingleSelection radioButtonOwner;
-	private String[] radioKeysOwners,radioValuesOwners;
+	private String[] radioKeysOwners;
+	private String[] radioValuesOwners;
 	private String[] keysOwner;
 	private String[] valuesOwner;
 	
 	// Participants 
 	private MultipleSelectionElement multiSelectionPartipKeys;
 	private SingleSelection radioButtonPartips;
-	private String[] radioKeysPartips,radioValuesPartips;
+	private String[] radioKeysPartips;
+	private String[] radioValuesPartips;
 	private String[] keysPartips; 
 	private String[] valuesPartips;
 		
   // Waiting 
 	private MultipleSelectionElement multiSelectionWaitingKeys;
 	private SingleSelection radioButtonWaitings;
-	private String[] radioKeysWaitings,radioValuesWaitings;
+	private String[] radioKeysWaitings;
+	private String[] radioValuesWaitings;
 	private String[] keysWaitings; 
 	private String[] valuesWaitings;
 	

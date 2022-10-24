@@ -29,6 +29,7 @@ public class Stream {
 	
 	private Sources sources;
 	private String content;
+	private String role;
 	
 	public Sources getSources() {
 		return sources;
@@ -44,6 +45,14 @@ public class Stream {
 	
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 }

@@ -48,6 +48,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -314,8 +315,19 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 
 	@Override
 	public String getPaellaConfig(PlayerProfile playerProfile) {
+		String staticURI = StaticMediaDispatcher.getStaticURI(null);
+		int numParts = (int) (-1 + staticURI.chars().filter(ch -> ch == '/').count());
+		String staticRelPath = "../".repeat(numParts);
+		staticRelPath = staticRelPath.substring(0, staticRelPath.length()-1);
+		staticRelPath += staticURI;
+		String configPath = staticRelPath + "js/paella/oopaella/dist/config";
+		
 		VelocityContext context = new VelocityContext();
-		context.put("profilePlayerPluginConfig", playerProfile.getPlayerPluginConfig());
+		
+		String playerPluginConfig = playerProfile.getPlayerPluginConfig();
+		playerPluginConfig = playerPluginConfig.replace("$configPath", configPath);
+		context.put("profilePlayerPluginConfig", playerPluginConfig);
+		
 		return merge(liveStreamModule.getPaellaConfig(), context);
 	}
 	

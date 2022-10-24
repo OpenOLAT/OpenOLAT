@@ -61,7 +61,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private final RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 	
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
 
 	@Autowired

@@ -60,6 +60,7 @@ import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,6 +78,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private LTI13ResourceAccessController lti13AccessCtrl;
 	private AuthoringEditAccessShareController accessShareCtrl;
 	private AccessConfigurationController accessOffersCtrl;
+	private AccessConfigurationDisabledController accessOfferDisabledCtrl;
 	private AccessOverviewController accessOverviewCtrl;
 	private DialogBoxController confirmDeleteCalendarDialog;
 	
@@ -204,7 +206,9 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	private void initAccessOffers(UserRequest ureq) {
 		removeAsListenerAndDispose(accessOffersCtrl);
+		removeAsListenerAndDispose(accessOfferDisabledCtrl);
 		accessOffersCtrl = null;
+		accessOfferDisabledCtrl = null;
 		mainVC.remove("offers");
 		
 		if (entry.isPublicVisible()) {
@@ -219,6 +223,10 @@ public class AuthoringEditAccessController extends BasicController {
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
 			mainVC.put("offers", accessOffersCtrl.getInitialComponent());
+		} else {
+			accessOfferDisabledCtrl = new AccessConfigurationDisabledController(ureq, getWindowControl(), "manual_user/course_create/Access_configuration#offer");
+			listenTo(accessOfferDisabledCtrl);
+			mainVC.put("offers", accessOfferDisabledCtrl.getInitialComponent());
 		}
 	}
 	

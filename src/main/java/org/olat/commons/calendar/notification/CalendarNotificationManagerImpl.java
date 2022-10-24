@@ -46,7 +46,7 @@ public class CalendarNotificationManagerImpl implements CalendarNotificationMana
 		String caller = kalendarRenderWrapper.getKalendar().getType();
 		SubscriptionContext subsContext = null;
 		if (caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarManager.TYPE_COURSE)) {
-			Long courseId = kalendarRenderWrapper.getLinkProvider().getControler().getCourseId();
+			Long courseId = Long.valueOf(kalendarRenderWrapper.getCalendarKey().getCalendarId());
 			subsContext = new SubscriptionContext(OresHelper.calculateTypeName(CalendarManager.class) + "." +  CalendarManager.TYPE_COURSE, courseId, CalendarController.ACTION_CALENDAR_COURSE);
 		}
 		if (caller.equals(CalendarController.CALLER_COLLAB) || caller.equals(CalendarManager.TYPE_GROUP)) {

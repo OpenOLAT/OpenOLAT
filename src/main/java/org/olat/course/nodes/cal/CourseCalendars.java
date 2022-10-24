@@ -20,7 +20,6 @@
 package org.olat.course.nodes.cal;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +30,8 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.CalendarKey;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
-import org.olat.commons.calendar.ui.LinkProvider;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProviderCreator;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -48,7 +47,7 @@ import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
-import org.olat.course.run.calendar.CourseLinkProviderController;
+import org.olat.course.run.calendar.CourseLinkProviderControllerCreator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 
@@ -118,8 +117,8 @@ public class CourseCalendars {
 		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 		// add link provider
 		
-		CourseLinkProviderController clpc = new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl);
-		courseKalendarWrapper.setLinkProvider(clpc);
+		final LinkProviderCreator clpc = new CourseLinkProviderControllerCreator(course);
+		courseKalendarWrapper.setLinkProviderCreator(clpc);
 		calendars.add(courseKalendarWrapper);
 		
 		Identity identity = ureq.getIdentity();
@@ -155,7 +154,7 @@ public class CourseCalendars {
 	}
 
 	public static void addCalendars(UserRequest ureq, UserCourseEnvironment courseEnv, List<BusinessGroup> groups, boolean isOwner,
-			LinkProvider linkProvider, List<KalendarRenderWrapper> calendars) {
+			LinkProviderCreator linkProvider, List<KalendarRenderWrapper> calendars) {
 		if(groups == null || groups.isEmpty()) return;
 		
 		CollaborationToolsFactory collabFactory = CollaborationToolsFactory.getInstance();
@@ -183,7 +182,7 @@ public class CourseCalendars {
 			if (config != null) {
 				groupCalendarWrapper.setConfiguration(config);
 			}
-			groupCalendarWrapper.setLinkProvider(linkProvider);
+			groupCalendarWrapper.setLinkProviderCreator(linkProvider);
 			calendars.add(groupCalendarWrapper);
 		}
 	}
