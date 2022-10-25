@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jakarta.persistence.TypedQuery;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -66,6 +64,8 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -107,6 +107,8 @@ public class BinderDAO {
 		if(entry != null) {
 			binder.setOlatResource(entry.getOlatResource());
 		}
+		binder.setAssignments(new ArrayList<>());
+		binder.setSections(new ArrayList<>());
 		dbInstance.getCurrentEntityManager().persist(binder);
 		return binder;
 	}
@@ -128,6 +130,8 @@ public class BinderDAO {
 		if(StringHelper.containsNonWhitespace(subIdent)) {
 			binder.setSubIdent(subIdent);
 		}
+		binder.setAssignments(new ArrayList<>());
+		binder.setSections(new ArrayList<>());
 		dbInstance.getCurrentEntityManager().persist(binder);
 		binder.getSections().size();
 		
@@ -365,6 +369,8 @@ public class BinderDAO {
 		section.setStatus(SectionStatus.notStarted.name());
 		section.setBinder(binder);
 		section.setTemplateReference(templateSection);
+		section.setAssignments(new ArrayList<>());
+		section.setPages(new ArrayList<>());
 		return section;
 	}
 	
@@ -1227,6 +1233,8 @@ public class BinderDAO {
 		section.setEndDate(end);
 		section.setOverrideBeginEndDates(false);
 		section.setStatus(SectionStatus.notStarted.name());
+		section.setAssignments(new ArrayList<>());
+		section.setPages(new ArrayList<>());
 		//force load of the list
 		((BinderImpl)binder).getSections().size();
 		section.setBinder(binder);

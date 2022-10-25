@@ -73,7 +73,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 
 	/** Only used for order by */
 	@Column(name="pos", insertable=false, updatable=false)
-	private Long pos;
+	private Integer pos;
 	
 	@Column(name="p_title", nullable=true, insertable=true, updatable=true)
 	private String title;

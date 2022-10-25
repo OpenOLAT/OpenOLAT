@@ -29,10 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
-
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -71,6 +67,10 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 /**
  * 
  * Initial date: 17 mars 2017<br>
@@ -95,6 +95,7 @@ public class LectureBlockDAO {
 		block.setRollCallStatus(LectureRollCallStatus.open);
 		block.setCompulsory(true);
 		block.setEntry(entry);
+		block.setGroups(new HashSet<>());
 		return block;
 	}
 	

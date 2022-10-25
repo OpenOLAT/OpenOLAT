@@ -169,6 +169,7 @@ public class PageDAO {
 		body.setCreationDate(new Date());
 		body.setLastModified(body.getCreationDate());
 		body.setUsage(usage);
+		body.setParts(new ArrayList<>());
 		if(syntheticStatus != null) {
 			body.setSyntheticStatus(syntheticStatus.name());
 		}

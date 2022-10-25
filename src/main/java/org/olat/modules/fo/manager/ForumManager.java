@@ -349,7 +349,7 @@ public class ForumManager {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from fomessage as msg")
 		     .append(" left join fetch msg.creator as creator")
-		     .append(" left join fetch msg.modifier as creator")
+		     .append(" left join fetch msg.modifier as modifier")
 		     .append(" left join fetch msg.threadtop as threadtop")
 		     .append(" where msg.key=:messageKey");
 		
@@ -375,7 +375,7 @@ public class ForumManager {
 
 	public boolean isPseudonymProtected(String pseudonym) {
 		QueryBuilder query = new QueryBuilder();
-		query.append("select pseudonym.key from fopseudonym as pseudo")
+		query.append("select pseudo.key from fopseudonym as pseudo")
 	     .append(" where ").lowerEqual("pseudo.pseudonym").append(":pseudonym");
 		
 		List<Long> pseudonyms = dbInstance.getCurrentEntityManager()

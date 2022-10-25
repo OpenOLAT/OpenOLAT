@@ -90,7 +90,7 @@ public class EvaluationFormReportDAO {
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
-		sb.append("   and (response.noResponse is false or response.noResponse is null)");
+		sb.append("   and (response.noResponse = false or response.noResponse is null)");
 	}
 
 	private void getResponsesAppendParameters(Query query, List<String> responseIdentifiers, SessionFilter filter,
@@ -115,7 +115,7 @@ public class EvaluationFormReportDAO {
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
-		sb.append("   and (response.noResponse is false or response.noResponse is null)");
+		sb.append("   and (response.noResponse = false or response.noResponse is null)");
 		sb.append(" group by cast(response.stringuifiedResponse as string)");
 		
 		TypedQuery<CalculatedLong> query = dbInstance.getCurrentEntityManager()
@@ -137,7 +137,7 @@ public class EvaluationFormReportDAO {
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
-		sb.append("   and (response.noResponse is false or response.noResponse is null)");
+		sb.append("   and (response.noResponse = false or response.noResponse is null)");
 		sb.append(" group by response.responseIdentifier");
 		sb.append("        , response.numericalResponse");
 		
@@ -181,7 +181,7 @@ public class EvaluationFormReportDAO {
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
-		sb.append("   and (response.noResponse is false or response.noResponse is null)");
+		sb.append("   and (response.noResponse = false or response.noResponse is null)");
 		sb.append(" group by response.responseIdentifier");
 		
 		TypedQuery<CalculatedDouble> query = dbInstance.getCurrentEntityManager()

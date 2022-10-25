@@ -876,6 +876,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		Group defGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
 		lectureBlockDao.addGroupToLectureBlock(lectureBlock, defGroup);
+		dbInstance.commit();
 		lectureService.addTeacher(lectureBlock, teacher);
 		dbInstance.commitAndCloseSession();
 

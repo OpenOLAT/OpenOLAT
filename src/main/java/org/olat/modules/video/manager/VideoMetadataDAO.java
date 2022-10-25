@@ -121,7 +121,7 @@ public class VideoMetadataDAO {
 	 * @return the number of entities updated or deleted
 	 */
 	int deleteVideoMetadata(OLATResource videoResource) {
-		String deleteQuery = "delete from videometadata where fk_resource_id=:resourceKey";
+		String deleteQuery = "delete from videometadata data where data.videoResource.key=:resourceKey";
 		return dbInstance.getCurrentEntityManager().createQuery(deleteQuery)
 				.setParameter("resourceKey", videoResource.getKey()).executeUpdate();
 	}

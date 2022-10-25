@@ -90,10 +90,8 @@ public class AssignmentDAO {
 		assignment.setFormEntry(formEntry);
 		
 		if(section != null) {
-			((SectionImpl)section).getAssignments().size();
 			((SectionImpl)section).getAssignments().add(assignment);
 		} else if(binder != null) {
-			((BinderImpl)binder).getAssignments().size();
 			((BinderImpl)binder).getAssignments().add(assignment);
 		}
 		dbInstance.getCurrentEntityManager().persist(assignment);

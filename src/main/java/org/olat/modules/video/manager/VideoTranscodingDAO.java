@@ -76,8 +76,7 @@ public class VideoTranscodingDAO {
 	 */
 	VideoTranscoding updateTranscoding(VideoTranscoding videoTranscoding) {
 		((VideoTranscodingImpl) videoTranscoding).setLastModified(new Date());
-		VideoTranscoding trans = dbInstance.getCurrentEntityManager().merge(videoTranscoding);
-		return trans;
+		return dbInstance.getCurrentEntityManager().merge(videoTranscoding);
 	}
 
 	/**
@@ -87,7 +86,7 @@ public class VideoTranscodingDAO {
 	 * @return
 	 */
 	int deleteVideoTranscodings(OLATResource videoResource) {
-		String deleteQuery = "delete from videotranscoding where fk_resource_id=:resourceKey";
+		String deleteQuery = "delete from videotranscoding tcode where tcode.videoResource.key=:resourceKey";
 		return dbInstance.getCurrentEntityManager().createQuery(deleteQuery)
 				.setParameter("resourceKey", videoResource.getKey()).executeUpdate();
 	}

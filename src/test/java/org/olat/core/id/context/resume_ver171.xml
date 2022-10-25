@@ -1,0 +1,94 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>127</uuid>
+  <businessPath>[RepositoryEntry:2018279424][CourseNode:101602908980121]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.repository.RepositoryEntry">
+        <key>2018279424</key>
+        <version>11</version>
+        <creationDate class="sql-timestamp">2020-04-22 08:52:05.847</creationDate>
+        <lastModified class="sql-timestamp">2022-01-31 15:57:36.141</lastModified>
+        <softkey>sroopath_1_101602908980092</softkey>
+        <olatResource class="org.olat.resource.OLATResourceImpl">
+          <key>2018148352</key>
+          <version>0</version>
+          <creationDate class="sql-timestamp">2020-04-22 08:52:05.848</creationDate>
+          <resName>CourseModule</resName>
+          <resId>101602908980091</resId>
+        </olatResource>
+        <groups class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.groups</role>
+          <key class="long">2018279424</key>
+          <dirty>false</dirty>
+          <elementRemoved>false</elementRemoved>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </groups>
+        <organisations class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.organisations</role>
+          <key class="long">2018279424</key>
+          <dirty>false</dirty>
+          <elementRemoved>false</elementRemoved>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </organisations>
+        <taxonomyLevels class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.taxonomyLevels</role>
+          <key class="long">2018279424</key>
+          <dirty>false</dirty>
+          <elementRemoved>false</elementRemoved>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </taxonomyLevels>
+        <technicalType>condition</technicalType>
+        <resourcename>-</resourcename>
+        <displayname>Test assessment mode</displayname>
+        <description>&lt;p&gt;this a description&lt;/p&gt;</description>
+        <initialAuthor>kanu</initialAuthor>
+        <authors>I&apos;m an author</authors>
+        <mainLanguage>French</mainLanguage>
+        <objectives>&lt;p&gt;Objective / Lernziele&lt;/p&gt;</objectives>
+        <requirements>&lt;p&gt;Voraussetzung or objectives&lt;/p&gt;</requirements>
+        <credits>&lt;p&gt;Bla bla bla&lt;/p&gt;</credits>
+        <expenditureOfWork>6 heures</expenditureOfWork>
+        <externalRef>Kennzeichen</externalRef>
+        <statistics>
+          <key>2018181120</key>
+          <creationDate class="sql-timestamp">2020-04-22 08:52:05.847</creationDate>
+          <lastModified class="sql-timestamp">2020-04-22 08:52:05.847</lastModified>
+          <numOfRatings>0</numOfRatings>
+          <numOfComments>0</numOfComments>
+          <launchCounter>516</launchCounter>
+          <downloadCounter>0</downloadCounter>
+          <lastUsage class="sql-timestamp">2022-10-24 13:27:38.865</lastUsage>
+        </statistics>
+        <status>published</status>
+        <publicVisible>false</publicVisible>
+        <allUsers>false</allUsers>
+        <guests>false</guests>
+        <bookable>false</bookable>
+        <canCopy>false</canCopy>
+        <canReference>false</canReference>
+        <canDownload>false</canDownload>
+        <allowToLeave>atAnyTime</allowToLeave>
+        <invitationByOwnerWithAuthorRightsEnabled>false</invitationByOwnerWithAuthorRightsEnabled>
+        <lti13DeploymentByOwnerWithAuthorRightsEnabled>false</lti13DeploymentByOwnerWithAuthorRightsEnabled>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.Resourceable">
+        <resourceableTypeName>CourseNode</resourceableTypeName>
+        <resourceableId>101602908980121</resourceableId>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>

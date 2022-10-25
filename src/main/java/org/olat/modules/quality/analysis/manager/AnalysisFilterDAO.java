@@ -400,7 +400,7 @@ public class AnalysisFilterDAO {
 		sb.append("       inner join context.evaluationFormSession session");
 		sb.append("       inner join evaluationformresponse response");
 		sb.append("               on response.session.key = session.key");
-		sb.append("              and (response.noResponse is false or response.noResponse is null)");
+		sb.append("              and (response.noResponse = false or response.noResponse is null)");
 		sb.append("              and response.responseIdentifier in (:responseIdentifiers)");
 		appendWhere(sb, searchParams);
 		if (groupByIdentifier) {
