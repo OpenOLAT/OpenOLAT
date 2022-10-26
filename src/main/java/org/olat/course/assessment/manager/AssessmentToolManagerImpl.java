@@ -312,7 +312,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select new org.olat.course.assessment.model.AssessmentScoreStatistic(")
-		  .append(" round(aentry.score), ")
+		  .append(" round(aentry.score, 0), ")
 		  .append(" count(aentry.key)")
 		  .append(")")
 		  .append(" from assessmententry aentry ")
@@ -334,7 +334,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sf.append(" aentry.obligation in (:assessmentObligations))");
 		}
 		appendIdentityQuery(sf, params, queryParams, "aentry.identity.key");
-		sf.append(" group by round(aentry.score)");
+		sf.append(" group by round(aentry.score, 0)");
 
 		TypedQuery<AssessmentScoreStatistic> stats = dbInstance.getCurrentEntityManager()
 				.createQuery(sf.toString(), AssessmentScoreStatistic.class)
@@ -917,22 +917,22 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append(" , aentry.assessmentDoneBy.key");
 		sb.append(" , aentry.assessmentDone");
 		sb.append(" , (");
-		sb.append("      select count(*) > 0 from repoentrytogroup as rel, bgroupmember as owner");
-		sb.append("       where rel.entry.key=aentry.repositoryEntry.key");
-		sb.append("         and rel.group=owner.group and owner.role='").append(GroupRoles.owner.name()).append("' and owner.identity.key=:identityKey");
-		sb.append("   ) as owner");
+		sb.append("      select count(*) > 0 from repoentrytogroup as rel1, bgroupmember as owner");
+		sb.append("       where rel1.entry.key=aentry.repositoryEntry.key");
+		sb.append("         and rel1.group=owner.group and owner.role='").append(GroupRoles.owner.name()).append("' and owner.identity.key=:identityKey");
+		sb.append("   ) as wner");
 		sb.append(" , (");
-		sb.append("      select count(*) > 0 from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach");
-		sb.append("       where rel.entry.key=aentry.repositoryEntry.key");
-		sb.append("         and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey");
-		sb.append("         and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("' and participant.identity=aentry.identity");
-		sb.append("   ) as coach");
+		sb.append("      select count(*) > 0 from repoentrytogroup as rel2, bgroupmember as participant, bgroupmember as coach");
+		sb.append("       where rel2.entry.key=aentry.repositoryEntry.key");
+		sb.append("         and rel2.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey");
+		sb.append("         and rel2.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("' and participant.identity=aentry.identity");
+		sb.append("   ) as oach");
 		sb.append(")");
 		sb.append("  from assessmententry aentry");
 		sb.append("       inner join courseelement courseele");
 		sb.append("               on courseele.repositoryEntry.key = aentry.repositoryEntry.key");
 		sb.append("              and courseele.subIdent = aentry.subIdent");
-		sb.append("              and courseele.assesseable is true");
+		sb.append("              and courseele.assesseable = true");
 		sb.append("              and (courseele.scoreMode = '").append(Mode.setByNode).append("'");
 		sb.append("                   or courseele.passedMode = '").append(Mode.setByNode).append("')");
 		if (params.getConfigHasGrade() != null) {

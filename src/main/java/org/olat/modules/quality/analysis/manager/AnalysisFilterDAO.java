@@ -545,8 +545,7 @@ public class AnalysisFilterDAO {
 		sb.append("              and survey.resId = collection.key");
 		sb.append("       inner join qualitydatacollectiontoorganisation dc2org");
 		sb.append("              on dc2org.dataCollection.key = collection.key");
-		sb.append("       inner join organisation dcOrganisation");
-		sb.append("              on dc2org.organisation.key = dcOrganisation.key");
+		sb.append("       inner join dc2org.organisation as dcOrganisation");
 		sb.append("       left join collection.topicOrganisation topicOrganisation");
 		sb.append("       left join qualitycontext context");
 		sb.append("              on context.dataCollection.key = collection.key");
@@ -558,8 +557,7 @@ public class AnalysisFilterDAO {
 		sb.append("       left join contextCurriculum.organisation contextCurriculumOrganisation");
 		sb.append("       left join contexttoorganisation contextToOrganisation");
 		sb.append("              on contextToOrganisation.context.key = context.key");
-		sb.append("       left join organisation contextOrganisation");
-		sb.append("              on contextToOrganisation.organisation.key = contextOrganisation.key");
+		sb.append("       left join contextToOrganisation.organisation as contextOrganisation");
 		sb.append("       left join contexttotaxonomylevel contextToTaxonomyLevel");
 		sb.append("              on contextToTaxonomyLevel.context.key = context.key");
 		sb.append("       left join ctaxonomylevel taxonomyLevel");

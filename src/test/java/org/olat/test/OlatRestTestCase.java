@@ -52,9 +52,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.ServletInfo;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
@@ -100,15 +104,15 @@ public abstract class OlatRestTestCase extends OlatTestCase {
 		if(webServer == null) {
 			SettingsTest.createHttpDefaultPortSettings();
 			try {
+				ServletInfo cxfInfo = servlet("CXFServlet", org.apache.cxf.transport.servlet.CXFServlet.class)
+		        		.setMultipartConfig(new MultipartConfigElement((String)null))
+		        		.addMapping("/*");
+				
 				DeploymentInfo servletBuilder = deployment()
 				        .setClassLoader(OlatRestTestCase.class.getClassLoader())
-				        .setContextPath("/" + CONTEXT_PATH)
-				        
+				        .setContextPath("/" + CONTEXT_PATH) 
 				        .setDeploymentName("rest.war")
-				        .addServlets(servlet("CXF Servlet", org.apache.cxf.transport.servlet.CXFServlet.class)
-				        		.setMultipartConfig(new MultipartConfigElement((String)null))
-				        		.addMapping("/*")
-				        	)
+				        .addServlets(cxfInfo)
 				        .addFilters(filter("REST security filter", RestApiLoginFilter.class))
 				        .addFilterUrlMapping("REST security filter", "/*", DispatcherType.REQUEST);
 
@@ -117,10 +121,14 @@ public abstract class OlatRestTestCase extends OlatTestCase {
 				manager.getDeployment()
 					.getServletContext()
 					.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
+				
+				HttpHandler servletHandler = manager.start();
+	            PathHandler path = Handlers.path(Handlers.redirect("/" + CONTEXT_PATH))
+	                    .addPrefixPath("/" + CONTEXT_PATH, servletHandler);
 
 				webServer = Undertow.builder()
 				        .addHttpListener(PORT, HOST)
-				        .setHandler(manager.start())
+				        .setHandler(path)
 				        .build();
 			} catch (ServletException e) {
 				log.error("", e);

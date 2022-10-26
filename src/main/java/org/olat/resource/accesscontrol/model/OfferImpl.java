@@ -332,8 +332,7 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OfferImpl) {
-			OfferImpl offer = (OfferImpl)obj;
+		if(obj instanceof OfferImpl offer) {
 			return getKey() != null && getKey().equals(offer.getKey());
 		}
 		return false;

@@ -214,19 +214,26 @@ public class CurriculumDAO {
 		}
 		
 		if(params.getCurriculumAdmin() != null) {
+			// curriculum administrator at level curriculum
 			sb.and()
-			  .append("exists (select membership.key from bgroupmember as membership")
-			  .append("  where membership.identity.key=:managerKey")
-			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
-			  .append("  and role ").in(CurriculumRoles.curriculummanager, CurriculumRoles.curriculumowner)
+			  .append("(baseGroup.key in (select cGroup.key from bgroupmember as cMembership")
+			  .append("  inner join cMembership.group as cGroup")
+			  .append("  where cMembership.identity.key=:managerKey")
+			  .append("  and cMembership.role ").in(CurriculumRoles.curriculummanager, CurriculumRoles.curriculumowner)
 			  .append(")");
+			// curriculum administrator from the organisation
+			sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
+			  .append("  inner join oMembership.group as oGroup")
+			  .append("  where oMembership.identity.key=:managerKey")
+			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+			  .append("))");
 		}
 
 		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class);
 		if(!params.getOrganisations().isEmpty()) {
 			List<Long> organisationKeys = params.getOrganisations()
-					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+					.stream().map(OrganisationRef::getKey).toList();
 			query.setParameter("organisationKeys", organisationKeys);
 		}
 		if(key != null) {
@@ -314,21 +321,26 @@ public class CurriculumDAO {
 					sb.append(" or ");
 				}
 				needOr = true;
-				sb.append("exists (select membership.key from bgroupmember as membership")
-				  .append("  where membership.identity.key=:managerKey")
-				  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
-				  .append("  and role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+				sb.append("baseGroup.key in (select mgrGroup.key from bgroupmember as mgrMembership")
+				  .append("  inner join mgrMembership.group as mgrGroup")
+				  .append("  where mgrMembership.identity.key=:managerKey")
+				  .append("  and mgrMembership.role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager)
 				  .append(")");
+				sb.append("or organis.group.key in (select admGroup.key from bgroupmember as admMembership")
+				  .append("  inner join admMembership.group as admGroup")
+				  .append("  where admMembership.identity.key=:managerKey")
+					  .append("  and admMembership.role ").in(OrganisationRoles.administrator)
+					  .append(")");
 			}
 			
 			if(params.getCurriculumPrincipal() != null) {
 				if(needOr) {
 					sb.append(" or ");
 				}
-				sb.append("exists (select membership.key from bgroupmember as membership")
-				  .append("  where membership.identity.key=:principalKey")
-				  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
-				  .append("  and role ").in(OrganisationRoles.principal)
+				sb.append(" organis.group.key in (select principalGroup.key from bgroupmember as principalMembership")
+				  .append("  inner join principalMembership.group as principalGroup")
+				  .append("  where principalMembership.identity.key=:principalKey")
+				  .append("  and principalMembership.role ").in(OrganisationRoles.principal)
 				  .append(")");
 			}
 			
@@ -339,7 +351,7 @@ public class CurriculumDAO {
 				.createQuery(sb.toString(), Object[].class);
 		if(!params.getOrganisations().isEmpty()) {
 			List<Long> organisationKeys = params.getOrganisations()
-					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+					.stream().map(OrganisationRef::getKey).toList();
 			query.setParameter("organisationKeys", organisationKeys);
 		}
 		if(key != null) {

@@ -160,7 +160,7 @@ public class EvaluationFormReportDAO {
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
-		sb.append("   and response.noResponse is true");
+		sb.append("   and response.noResponse = true");
 		sb.append(" group by response.responseIdentifier");
 		
 		TypedQuery<CalculatedLong> query = dbInstance.getCurrentEntityManager()

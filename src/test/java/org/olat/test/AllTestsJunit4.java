@@ -584,7 +584,6 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.doceditor.discovery.manager.DiscoveryServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.discovery.manager.DiscoveryXStreamTest.class,
 	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceTest.class,
-	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImplTest.class,
@@ -671,6 +670,8 @@ import org.junit.runners.Suite;
 	org.olat.user.propertyhandlers.DatePropertyHandlerTest.class,
 	org.olat.user.propertyhandlers.LinkedinPropertyHandlerTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.FileElementRendererTest.class,
+	// Must be at the end
+	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
 	/**
 	 *
 	 * Place tests which load their own Spring context

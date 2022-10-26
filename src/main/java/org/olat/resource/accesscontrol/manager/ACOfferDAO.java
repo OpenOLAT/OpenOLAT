@@ -129,7 +129,6 @@ public class ACOfferDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct offer.resource");
 		sb.append("  from acoffer offer");
-		sb.append(" inner join offer.resource resource");
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.append(" inner join offertoorganisation oto");
 			sb.append("   on oto.offer.key = offer.key");
@@ -141,12 +140,12 @@ public class ACOfferDAO {
 			sb.and().append(" oto.organisation.key in :organisationKeys");
 		}
 		
-		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).collect(Collectors.toList());
+		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).toList();
 		TypedQuery<OLATResource> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), OLATResource.class)
 				.setParameter("resourceKeys", resourceKeys);
 		if (organisations != null && !organisations.isEmpty()) {
-			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).toList());
 		}
 		
 		return query.getResultList();
@@ -170,12 +169,11 @@ public class ACOfferDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct offer.resource");
 		sb.append("  from acoffer offer");
-		sb.append(" inner join offer.resource resource");
 		sb.and().append(" offer.valid = true");
 		sb.and().append(" offer.guestAccess = true");
 		sb.and().append(" offer.resource.key in :resourceKeys");
 		
-		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).collect(Collectors.toList());
+		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).toList();
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), OLATResource.class)
 				.setParameter("resourceKeys", resourceKeys)

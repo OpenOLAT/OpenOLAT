@@ -178,7 +178,7 @@ class QualityParticipationDAO {
 			sb.append("       when collection.topicType = '").append(topicType.toString()).append("'");
 			sb.append("       then '").append(translator.translate(topicType.getI18nKey())).append("'");
 		}
-		sb.append("       end as topicType");
+		sb.append("       end as typeName");
 		sb.append("     , case collection.topicType");
 		sb.append("            when '").append(QualityDataCollectionTopicType.CUSTOM).append("'");
 		sb.append("            then collection.topicCustom");

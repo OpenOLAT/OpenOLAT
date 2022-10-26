@@ -29,7 +29,6 @@ package org.olat.core.commons.persistence;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Date;
@@ -38,10 +37,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.model.GroupImpl;
-import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -79,14 +76,9 @@ public class DBTest extends OlatTestCase {
 	@Test
 	public void testErrorHandling() {
 		GroupImpl entry = new GroupImpl();
-		entry.setName("foo");
-		try {		
-			dbInstance.saveObject(entry);
-			fail("Should generate an error");
-		} catch (DBRuntimeException dre) {
-			assertTrue(dbInstance.isError());
-			Assert.assertNotNull(dbInstance.getError());
-		}
+		entry.setName("foo");		
+		// Not roolbacked anymore
+		dbInstance.saveObject(entry);
 		//the close must clear the transaction
 		dbInstance.closeSession();
 		

@@ -402,7 +402,7 @@ public class AssessmentEntryDAO {
 			sb.append(" and data.score > 0");
 		}
 		if(userVisibleOnly) {
-			sb.append("and data.userVisibility is true");
+			sb.append("and data.userVisibility = true");
 		}
 		
 		TypedQuery<AssessmentEntry> typedQuery = dbInstance.getCurrentEntityManager()

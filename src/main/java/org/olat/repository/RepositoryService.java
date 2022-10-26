@@ -380,6 +380,7 @@ public interface RepositoryService {
 	 * @param entry The repository entry
 	 * @param level
 	 */
+	//TODO jee9 remove?
 	public void addTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level);
 	
 	/**
@@ -387,6 +388,7 @@ public interface RepositoryService {
 	 * @param entry The repository entry
 	 * @param level
 	 */
+	//TODO jee9 remove?
 	public void removeTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level);
 	
 	/**

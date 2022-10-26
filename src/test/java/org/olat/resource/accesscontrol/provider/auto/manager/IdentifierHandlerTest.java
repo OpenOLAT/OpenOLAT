@@ -23,9 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,7 +32,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 
@@ -55,19 +52,16 @@ public class IdentifierHandlerTest {
 	@InjectMocks
 	private IdentifierHandler sut;
 
-	@Spy
-	private Collection<IdentifierKeyHandler> handlers = new ArrayList<>();
-
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 
 		when(externaHandlerMock.getIdentifierKey()).thenReturn(IdentifierKey.externalId);
-		handlers.add(externaHandlerMock);
+		sut.setLoadedHandlers(List.of(externaHandlerMock));
 		sut.initHandlerCache();
 
-		 course = new RepositoryEntry();
-		 course2 = new RepositoryEntry();
+		course = new RepositoryEntry();
+		course2 = new RepositoryEntry();
 	}
 
 	@Test

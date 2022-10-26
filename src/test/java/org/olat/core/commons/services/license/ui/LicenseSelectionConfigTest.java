@@ -46,8 +46,6 @@ import org.olat.core.commons.services.license.model.LicenseTypeImpl;
  */
 public class LicenseSelectionConfigTest {
 	
-	/*
-	
 	private static final LicenseHandler LICENSE_HANDLER = new TestableLicenseHandler();
 	
 	private static final String INACTIVE_LICENSE_KEY = "100";
@@ -58,7 +56,7 @@ public class LicenseSelectionConfigTest {
 	@Mock
 	private LicenseService licenseServiceMock;
 	
-	private License license = new ResourceLicenseImpl();;
+	private License license = new ResourceLicenseImpl();
 	
 	private LicenseSelectionConfig sut;
 
@@ -215,7 +213,5 @@ public class LicenseSelectionConfigTest {
 		}
 		
 	}
-	
-	*/
 
 }

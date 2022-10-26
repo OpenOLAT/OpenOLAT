@@ -20,13 +20,11 @@
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -34,6 +32,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PostConstruct;
 
 /**
  *
@@ -49,7 +49,11 @@ class IdentifierHandler {
 	@Autowired
     private Collection<IdentifierKeyHandler> loadedHandlers;
 
-    private Map<IdentifierKey, IdentifierKeyHandler> handlers = new HashMap<>();
+    private Map<IdentifierKey, IdentifierKeyHandler> handlers = new EnumMap<>(IdentifierKey.class);
+    
+    void setLoadedHandlers(Collection<IdentifierKeyHandler> loadedHandlers) {
+    	this.loadedHandlers = loadedHandlers;
+    }
 
     @PostConstruct
     void initHandlerCache() {

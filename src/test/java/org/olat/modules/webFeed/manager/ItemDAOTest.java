@@ -533,7 +533,7 @@ public class ItemDAOTest extends OlatTestCase {
 		assertThat(updated.getGuid()).isEqualTo(item.getGuid());
 		assertThat(updated.getHeight()).isEqualTo(item.getHeight());
 		assertThat(updated.getModifierKey()).isEqualTo(item.getModifierKey());
-		assertThat(updated.getPublishDate()).isEqualTo(item.getPublishDate());
+		assertThat(updated.getPublishDate()).hasSameTimeAs(item.getPublishDate());
 		assertThat(updated.getTitle()).isEqualTo(item.getTitle());
 		assertThat(updated.getWidth()).isEqualTo(item.getWidth());
 		assertThat(updated.getEnclosure().getExternalUrl()).isEqualTo(item.getEnclosure().getExternalUrl());

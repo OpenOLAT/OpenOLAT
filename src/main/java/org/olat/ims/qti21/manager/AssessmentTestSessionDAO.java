@@ -785,11 +785,11 @@ public class AssessmentTestSessionDAO {
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("subIdent", subIdent)
 				.executeUpdate();
-		
+
 		StringBuilder responseSb  = new StringBuilder();
 		responseSb.append("delete from qtiassessmentresponse response where")
 		  .append("  response.assessmentItemSession.key in (")
-		  .append("   select itemSession from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
+		  .append("   select itemSession.key from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
 		  .append("   where itemSession.assessmentTestSession.key=session.key and session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent")
 		  .append(" )");
 		int responses = dbInstance.getCurrentEntityManager()
@@ -797,6 +797,7 @@ public class AssessmentTestSessionDAO {
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("subIdent", subIdent)
 				.executeUpdate();
+
 		
 		StringBuilder itemSb  = new StringBuilder();
 		itemSb.append("delete from qtiassessmentitemsession itemSession")
@@ -829,7 +830,7 @@ public class AssessmentTestSessionDAO {
 		StringBuilder responseSb  = new StringBuilder();
 		responseSb.append("delete from qtiassessmentresponse response where")
 		  .append("  response.assessmentItemSession.key in (")
-		  .append("   select itemSession from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
+		  .append("   select itemSession.key from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
 		  .append("   where itemSession.assessmentTestSession.key=session.key and session.repositoryEntry.key=:entryKey")
 		  .append(" )");
 		int responses = dbInstance.getCurrentEntityManager()

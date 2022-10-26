@@ -390,15 +390,19 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment = assessmentEntryDao.setLastVisit(nodeAssessment, firstDate);
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertEquals(nodeAssessment.getFirstVisit(), firstDate);
-		Assert.assertEquals(nodeAssessment.getLastVisit(), firstDate);
-		Assert.assertEquals(nodeAssessment.getNumberOfVisits().intValue(), 1);
+		assertThat(nodeAssessment.getFirstVisit())
+			.hasSameTimeAs(firstDate);
+		assertThat(nodeAssessment.getLastVisit())
+			.hasSameTimeAs(firstDate);
+		Assert.assertEquals(1l, nodeAssessment.getNumberOfVisits().longValue());
 		
 		nodeAssessment = assessmentEntryDao.setLastVisit(nodeAssessment, secondDate);
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertEquals(nodeAssessment.getFirstVisit(), firstDate);
-		Assert.assertEquals(nodeAssessment.getLastVisit(), secondDate);
+		assertThat(nodeAssessment.getFirstVisit())
+			.hasSameTimeAs(firstDate);
+		assertThat(nodeAssessment.getLastVisit())
+			.hasSameTimeAs(secondDate);
 		Assert.assertEquals(nodeAssessment.getNumberOfVisits().intValue(), 2);
 	}
 	

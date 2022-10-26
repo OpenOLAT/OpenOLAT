@@ -110,7 +110,7 @@ class QualityContextDAO {
 		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) {
 			return Collections.emptyList();
 		}
-		
+		//TODO jee9 remove 2 fetch
 		StringBuilder sb = new StringBuilder();
 		sb.append("select context");
 		sb.append("  from qualitycontext as context");
@@ -122,12 +122,10 @@ class QualityContextDAO {
 		sb.append("              on contextToCurriculumElement.curriculumElement.key = curriculumElement.key");
 		sb.append("       left join fetch contexttocurriculum contextToCurriculum");
 		sb.append("              on contextToCurriculum.context.key = context.key");
-		sb.append("       left join fetch curriculum as curriculum");
-		sb.append("              on contextToCurriculum.curriculum.key = curriculum.key");
+		sb.append("       left join contextToCurriculum.curriculum as contextCurriculum");
 		sb.append("       left join fetch contexttoorganisation contextToOrganisation");
 		sb.append("              on contextToOrganisation.context.key = context.key");
-		sb.append("       left join fetch organisation as organisation");
-		sb.append("              on contextToOrganisation.organisation.key = organisation.key");
+		sb.append("       left join contextToOrganisation.organisation as contextOrganisation");
 		sb.append("       left join fetch contexttotaxonomylevel contextToTaxonomyLevel");
 		sb.append("              on contextToTaxonomyLevel.context.key = context.key");
 		sb.append("       left join fetch ctaxonomylevel as taxonomyLevel");

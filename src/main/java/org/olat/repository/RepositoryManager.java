@@ -37,10 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TypedQuery;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.GroupRoles;
@@ -98,7 +94,6 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
@@ -108,6 +103,10 @@ import org.olat.user.UserImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Initial Date:  Mar 31, 2004
@@ -145,8 +144,6 @@ public class RepositoryManager {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private ACService acService;
 	@Autowired

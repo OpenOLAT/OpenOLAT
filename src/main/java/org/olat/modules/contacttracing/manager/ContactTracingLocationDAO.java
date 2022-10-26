@@ -169,7 +169,8 @@ public class ContactTracingLocationDAO {
             queryBuilder.where().append("registration.endDate <= :end");
         }
 
-        TypedQuery<ContactTracingLocation> query = dbInstance.getCurrentEntityManager().createQuery(queryBuilder.toString(), ContactTracingLocation.class);
+        TypedQuery<ContactTracingLocation> query = dbInstance.getCurrentEntityManager()
+        		.createQuery(queryBuilder.toString(), ContactTracingLocation.class);
 
         if (searchParams.getFullTextSearch() != null) {
             query.setParameter("searchString", PersistenceHelper.makeFuzzyQueryString(searchParams.getFullTextSearch()));
@@ -193,10 +194,10 @@ public class ContactTracingLocationDAO {
             query.setParameter("tableString", PersistenceHelper.makeFuzzyQueryString(searchParams.getTable()));
         }
         if (searchParams.getStartDate() != null) {
-            query.setParameter("start", searchParams.getStartDate(), TemporalType.DATE);
+            query.setParameter("start", searchParams.getStartDate(), TemporalType.TIMESTAMP);
         }
         if (searchParams.getEndDate() != null) {
-            query.setParameter("end", searchParams.getEndDate(), TemporalType.DATE);
+            query.setParameter("end", searchParams.getEndDate(), TemporalType.TIMESTAMP);
         }
 
         return query.getResultList();

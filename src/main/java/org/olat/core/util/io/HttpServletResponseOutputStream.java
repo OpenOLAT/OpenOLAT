@@ -145,12 +145,10 @@ public class HttpServletResponseOutputStream implements HttpServletResponse {
 		return null;
 	}
 
-	@Override
 	public String encodeRedirectUrl(String arg0) {
 		return null;
 	}
 
-	@Override
 	public String encodeUrl(String arg0) {
 		return null;
 	}
@@ -205,7 +203,6 @@ public class HttpServletResponseOutputStream implements HttpServletResponse {
 		//
 	}
 	
-	@Override
 	public void setStatus(int arg0, String arg1) {
 		//
 	}

@@ -549,11 +549,15 @@ public class PageDAO {
 		  .append(" left join page.section as section")
 		  .append(" left join section.binder as binder")
 		  .append(" left join body.parts as part")
-		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
-		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append(" where page.baseGroup.key in (select pageMember.group.key from bgroupmember as pageMember")
+		  .append("   inner join pageMember.identity as pIdent")
+		  .append("   where pIdent.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("'")
+		  .append(" )")
+		  .append(" or binder.baseGroup.key in (select binderMember.group.key from bgroupmember as binderMember")
+		  .append("   inner join binderMember.identity as bIdent")
+		  .append("   where bIdent.key=:ownerKey and binderMember.role='").append(PortfolioRoles.owner.name()).append("'")
 		  .append(" )");
-		
+
 		List<Object[]> rawLastModifieds = dbInstance.getCurrentEntityManager()
 			.createQuery(sc.toString(), Object[].class)
 			.setParameter("ownerKey", owner.getKey())

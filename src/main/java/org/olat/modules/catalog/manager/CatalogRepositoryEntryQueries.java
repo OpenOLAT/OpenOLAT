@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
@@ -298,7 +299,7 @@ public class CatalogRepositoryEntryQueries {
 			paramToTaxonomyLevelI18nSuffix.entrySet().stream().forEach(entrySet -> dbQuery.setParameter(entrySet.getKey(), entrySet.getValue()));
 		}
 		if (selectRepositoryEntries && OrderBy.popularCourses == searchParams.getOrderBy()) {
-			dbQuery.setParameter("statDay", DateUtils.addDays(new Date(), -28));
+			dbQuery.setParameter("statDay", DateUtils.addDays(new Date(), -28), TemporalType.DATE);
 		}
 		return dbQuery;
 	}

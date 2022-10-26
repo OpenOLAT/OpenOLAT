@@ -143,7 +143,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 				.createTaxonomyLevel(UUID.randomUUID().toString(), random(), null, null, null, taxonomy);
 		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement, taxonomyLevel1);
 		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement, taxonomyLevel2);
+		dbInstance.commit();
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevelRepo);
+		dbInstance.commit();
 		
 		curriculumService.addMember(curriculumElement, executor, CurriculumRoles.participant);
 		curriculumService.addMember(curriculumElement, executor, CurriculumRoles.coach);

@@ -60,7 +60,9 @@ class EnhancedXStream extends XStream {
 			registerConverter(new CollectionConverter(getMapper()) {
 				@Override
 				public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
-					return PersistentList.class == type || PersistentBag.class == type;
+					return PersistentList.class == type
+							|| PersistentBag.class == type
+							|| PersistentSet.class == type;
 				}
 			});
 

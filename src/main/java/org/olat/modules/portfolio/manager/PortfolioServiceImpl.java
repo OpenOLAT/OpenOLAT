@@ -1114,7 +1114,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(pageDelegate, false)) {
 				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration(), TaxonomyCompetenceLinkLocations.PORTFOLIO));
 			}
-			updateCategories(page, getCategories(pageDelegate).stream().map(Category::getName).collect(Collectors.toList()));
+			updateCategories(page, getCategories(pageDelegate).stream().map(Category::getName).toList());
 		}
 		
 		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());

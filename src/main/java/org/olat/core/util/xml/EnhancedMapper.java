@@ -22,6 +22,7 @@ package org.olat.core.util.xml;
 import org.hibernate.collection.spi.PersistentBag;
 import org.hibernate.collection.spi.PersistentList;
 import org.hibernate.collection.spi.PersistentMap;
+import org.hibernate.collection.spi.PersistentSet;
 
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
@@ -36,15 +37,20 @@ public class EnhancedMapper extends MapperWrapper {
 	public EnhancedMapper(MapperWrapper mapper) {
 		super(mapper);
 	}
-
+	
 	@Override
 	public Class<?> realClass(String elementName) {
-		if("org.hibernate.collection.PersistentBag".equals(elementName)) {
+		if("org.hibernate.collection.PersistentBag".equals(elementName)
+				|| "org.hibernate.collection.internal.PersistentBag".equals(elementName)) {
 			return PersistentBag.class;
-		} else if("org.hibernate.collection.PersistentList".equals(elementName)) {
+		} else if("org.hibernate.collection.PersistentList".equals(elementName)
+				|| "org.hibernate.collection.internal.PersistentList".equals(elementName)) {
 			return PersistentList.class;
-		} else if("org.hibernate.collection.PersistentMap".equals(elementName)) {
+		} else if("org.hibernate.collection.PersistentMap".equals(elementName)
+				|| "org.hibernate.collection.internal.PersistentMap".equals(elementName)) {
 			return PersistentMap.class;
+		} else if("org.hibernate.collection.internal.PersistentSet".equals(elementName)) {
+			return PersistentSet.class;
 		} else {
 			return super.realClass(elementName);
 		}

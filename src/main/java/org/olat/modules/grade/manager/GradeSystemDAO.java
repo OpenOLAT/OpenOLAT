@@ -84,7 +84,7 @@ public class GradeSystemDAO {
 			sb.and().append("gs.identifier = :identifier");
 		}
 		if (searchParams.isEnabledOnly()) {
-			sb.and().append("gs.enabled is true");
+			sb.and().append("gs.enabled = true");
 		}
 		
 		TypedQuery<GradeSystem> query = dbInstance.getCurrentEntityManager()
