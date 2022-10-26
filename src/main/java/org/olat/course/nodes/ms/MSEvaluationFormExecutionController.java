@@ -30,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -51,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MSEvaluationFormExecutionController extends BasicController implements AssessmentFormCallback {
+public class MSEvaluationFormExecutionController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final Link reopenLink;
@@ -119,20 +118,6 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 
 	private boolean isSessionClosed() {
 		return EvaluationFormSessionStatus.done.equals(session.getEvaluationFormSessionStatus());
-	}
-
-	@Override
-	public void assessmentDone(UserRequest ureq) {
-		assessmentDone = true;
-		session = msService.closeSession(session, auditEnv);
-		updateUI(ureq);
-	}
-
-	@Override
-	public void assessmentReopen(UserRequest ureq) {
-		assessmentDone = false;
-		session = msService.reopenSession(session, auditEnv);
-		updateUI(ureq);
 	}
 
 	@Override
