@@ -212,7 +212,7 @@ public class CreateDocumentController extends FormBasicController {
 		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
 			VFSMetadata meta = vfsLeaf.getMetaInfo();
 			if (metadataCtrl != null) {
-				meta = metadataCtrl.getMetaInfo(meta);
+				meta = metadataCtrl.getMetaInfo(meta, true);
 			}
 			vfsService.updateMetadata(meta);
 			vfsService.resetThumbnails(vfsLeaf);
