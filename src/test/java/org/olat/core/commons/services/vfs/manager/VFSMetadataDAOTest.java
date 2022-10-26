@@ -19,9 +19,6 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
-import java.time.ZonedDateTime;
-import java.util.*;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -31,6 +28,13 @@ import org.olat.core.util.DateUtils;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * 
@@ -229,6 +233,12 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		String uri1 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName1;
 		String uri2 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName2;
 
+		List<VFSMetadata> allItemsBeforeTests = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsBeforeTests) {
+			vfsMetadataDao.removeMetadata(item);
+		}
+		dbInstance.commitAndCloseSession();
+
 		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 100L, false, uri1, "file", null);
 		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(uuid1, relativePath, fileName2, new Date(), 100L, false, uri2, "file", null);
 
@@ -257,8 +267,8 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, inNeedForTranscodingAfterUpdate.size());
 		Assert.assertEquals(metadata2, inNeedForTranscodingAfterUpdate.get(0));
 
-		List<VFSMetadata> allItemsAfterTests = vfsMetadataDao.getMetadatas(relativePath);
-		for (VFSMetadata item : allItemsAfterTests) {
+		List<VFSMetadata> allItemsBeforeCleanup = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsBeforeCleanup) {
 			vfsMetadataDao.removeMetadata(item);
 		}
 		dbInstance.commitAndCloseSession();

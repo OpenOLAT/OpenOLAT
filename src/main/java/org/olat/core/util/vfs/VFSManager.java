@@ -830,7 +830,7 @@ public class VFSManager {
 			} catch (IOException e) {
 				// something went wrong.
 				successful = false;
-				log.error("Error while copying content from source: " + inStream + " to target: " + target.getName(), e);
+				log.error("Error while copying content from source: {} to target: {}", inStream, target.getName(), e);
 			}
 		} else {
 			// source or target is null

@@ -436,22 +436,45 @@ public class MetaInfoFormController extends FormBasicController {
 		filename.setValue(name);
 	}
 	
-	public VFSMetadata getMetaInfo(VFSMetadata meta) {
-		meta.setCreator(creator.getValue());
-		meta.setComment(comment.getValue());
-		meta.setTitle(title.getValue());
-		meta.setPublisher(publisher.getValue());
-		meta.setPublicationDate(publicationMonth.getValue(), publicationYear.getValue());
-		meta.setCity(city.getValue());
-		meta.setLanguage(language.getValue());
-		meta.setSource(sourceEl.getValue());
-		meta.setUrl(url.getValue());
-		meta.setPages(pages.getValue());
+	public VFSMetadata getMetaInfo(VFSMetadata meta, boolean force) {
+		if(force || StringHelper.containsNonWhitespace(creator.getValue())) {
+			meta.setCreator(creator.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(comment.getValue())) {
+			meta.setComment(comment.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(title.getValue())) {
+			meta.setTitle(title.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(publisher.getValue())) {
+			meta.setPublisher(publisher.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(publicationMonth.getValue())
+				|| StringHelper.containsNonWhitespace(publicationYear.getValue())) {
+			meta.setPublicationDate(publicationMonth.getValue(), publicationYear.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(city.getValue())) {
+			meta.setCity(city.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(language.getValue()) ) {
+			meta.setLanguage(language.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(sourceEl.getValue())) {
+			meta.setSource(sourceEl.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(url.getValue())) {
+			meta.setUrl(url.getValue());
+		}
+		if(force || StringHelper.containsNonWhitespace(pages.getValue())) {
+			meta.setPages(pages.getValue());
+		}
 		License license = getLicenseFromFormItems(meta);
-		meta.setLicenseType(license != null && license.getLicenseType() != null ? license.getLicenseType() : null);
-		meta.setLicenseTypeName(license != null && license.getLicenseType() != null? license.getLicenseType().getName(): "");
-		meta.setLicensor(license != null && license.getLicensor() != null? license.getLicensor(): "");
-		meta.setLicenseText(license != null? LicenseUIFactory.getLicenseText(license): null);
+		if(force || license != null) {
+			meta.setLicenseType(license != null && license.getLicenseType() != null ? license.getLicenseType() : null);
+			meta.setLicenseTypeName(license != null && license.getLicenseType() != null? license.getLicenseType().getName(): "");
+			meta.setLicensor(license != null && license.getLicensor() != null? license.getLicensor(): "");
+			meta.setLicenseText(license != null? LicenseUIFactory.getLicenseText(license): null);
+		}
 		return meta;
 	}
 	
@@ -502,7 +525,7 @@ public class MetaInfoFormController extends FormBasicController {
 		if(meta == null) {
 			return null;
 		}
-		return getMetaInfo(meta);
+		return getMetaInfo(meta, true);
 	}
 
 	@Override

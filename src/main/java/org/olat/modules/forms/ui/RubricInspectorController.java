@@ -65,7 +65,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String GOOD_RATING_END_KEY = "rubric.good.rating.end";
 	private static final String GOOD_RATING_START_KEY = "rubric.good.rating.start";
-	private final String[] GOOD_RATING_KEYS = new String[] {
+	private static final String[] GOOD_RATING_KEYS = new String[] {
 			GOOD_RATING_END_KEY, GOOD_RATING_START_KEY
 	};
 
@@ -182,6 +182,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 				translateAll(getTranslator(), ENABLED_KEYS), 1);
 		noAnswerEl.setHelpTextKey("no.response.help", null);
 		noAnswerEl.addActionListener(FormEvent.ONCHANGE);
+		noAnswerEl.setAjaxOnly(true);
 		noAnswerEl.select(ENABLED_KEYS[0], rubric.isNoResponseEnabled());
 		noAnswerEl.setEnabled(!restrictedEdit);
 	}
@@ -195,6 +196,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		surveyConfigEl = uifactory.addCheckboxesHorizontal("rubric.survey.configuration", layoutCont,
 				showSurveyConfigKey, translateAll(getTranslator(), showSurveyConfigKey));
 		surveyConfigEl.addActionListener(FormEvent.ONCHANGE);
+		surveyConfigEl.setAjaxOnly(true);
 
 		// name
 		nameEl = uifactory.addTextElement("rubric.name", 128, rubric.getName(), layoutCont);
@@ -205,6 +207,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		String[] nameDisplayValues = new String[] { translate("rubric.name.execution"), translate("rubric.name.report") };
 		nameDisplayEl = uifactory.addCheckboxesHorizontal("rubric.name.display", layoutCont, nameDisplayKeys, nameDisplayValues);
 		nameDisplayEl.addActionListener(FormEvent.ONCHANGE);
+		nameDisplayEl.setAjaxOnly(true);
 		nameDisplayEl.setEvaluationOnlyVisible(true);
 		for (NameDisplay nameDisplay : rubric.getNameDisplays()) {
 			nameDisplayEl.select(nameDisplay.name(), true);
@@ -426,6 +429,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 				formOK(ureq);
 			}
 		} else if(noAnswerEl == source) {
+			doValidateAndSave(ureq);
+		} else if(source instanceof TextElement) {
 			doValidateAndSave(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);

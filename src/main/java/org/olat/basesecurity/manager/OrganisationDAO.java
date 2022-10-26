@@ -407,6 +407,43 @@ public class OrganisationDAO {
 		return new ArrayList<>(deduplicatedOrganisations);
 	}
 	
+	public Map<Long,List<String>> getUsersOrganisationsName(List<IdentityRef> identities) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select membership.identity.key, org.displayName from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key in (:identitiesKeys)")
+		  .append(" and membership.role").in(OrganisationRoles.user);
+		
+		int count = 0;
+		int batch = 5000;
+		List<Long> identitiesKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		Map<Long,List<String>> organisationsMap = new HashMap<>();
+		TypedQuery<Object[]> organisationsQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		do {
+			int toIndex = Math.min(count + batch, identitiesKeys.size());
+			List<Long> toLoad = identitiesKeys.subList(count, toIndex);
+			List<Object[]> organisations = organisationsQuery
+					.setParameter("identitiesKeys", toLoad)
+					.getResultList();
+			for(Object[] rawObject:organisations) {
+				Long identityKey = (Long)rawObject[0];
+				String name = (String)rawObject[1];
+				List<String> names = organisationsMap
+						.computeIfAbsent(identityKey, k -> new ArrayList<>(2));
+				if(!names.contains(name)) {
+					names.add(name);
+				}
+			}
+			count += batch;
+		} while(count < identitiesKeys.size());
+
+		return organisationsMap;
+	}
+	
 	public List<Organisation> getOrganisations(Collection<OrganisationRef> rootOrganisations) {
 		if(rootOrganisations == null || rootOrganisations.isEmpty()) return new ArrayList<>();
 		

@@ -433,6 +433,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public Map<Long, List<String>> getUsersOrganisationsNames(List<IdentityRef> identities) {
+		return organisationDao.getUsersOrganisationsName(identities);
+	}
+
+	@Override
 	public List<Organisation> getOrganisations(IdentityRef member, Roles roles, OrganisationRoles... organisationRoles) {
 		if(organisationRoles == null || organisationRoles.length == 0 || organisationRoles[0] == null) {
 			return Collections.emptyList();

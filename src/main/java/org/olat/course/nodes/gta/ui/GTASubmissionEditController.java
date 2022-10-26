@@ -38,6 +38,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.audiovideorecording.AVModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -65,6 +67,9 @@ public class GTASubmissionEditController extends FormBasicController {
 	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
+
+	@Autowired
+	private AVModule avModule;
 	
 	public GTASubmissionEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -96,22 +101,24 @@ public class GTASubmissionEditController extends FormBasicController {
 		boolean submissionTemplate = config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_TEMPLATE);
 		submissionTemplateEl.select(enableKeys[0], submissionTemplate);
 
+		boolean videoRecordingEnabled = avModule.isVideoRecordingEnabled();
 		allowVideoRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.video.recordings", "av.allow.video.recordings", configCont, enableKeys, enableValues);
 		boolean allowVideoRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS);
 		allowVideoRecordingsEl.select(enableKeys[0], allowVideoRecordings);
 		allowVideoRecordingsEl.addActionListener(FormEvent.ONCHANGE);
+		allowVideoRecordingsEl.setVisible(videoRecordingEnabled);
 
 		String maxVideoDuration = config.getStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, "600");
 		maxVideoDurationEl = uifactory.addTextElement("av.max.video.duration", "av.max.duration", 5, maxVideoDuration, configCont);
 		maxVideoDurationEl.setRegexMatchCheck("\\d+", "av.max.duration.error");
-		maxVideoDurationEl.setVisible(allowVideoRecordings);
+		maxVideoDurationEl.setVisible(videoRecordingEnabled && allowVideoRecordings);
 
 		AVVideoQuality videoQuality = AVVideoQuality.valueOf(config.getStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, AVVideoQuality.medium.name()));
 		videoQualityKV = AVVideoQuality.getSelectionValues(getLocale());
 		videoQualityEl = uifactory.addDropdownSingleselect("av.video.quality", configCont, videoQualityKV.keys(),
 				videoQualityKV.values());
 		videoQualityEl.select(videoQuality.name(), true);
-		videoQualityEl.setVisible(allowVideoRecordings);
+		videoQualityEl.setVisible(videoRecordingEnabled && allowVideoRecordings);
 
 		//TODO OO-6508
 		/*
@@ -168,14 +175,14 @@ public class GTASubmissionEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == allowVideoRecordingsEl /* || source == allowAudioRecordingsEl */) {//TODO OO-6508
+		if (avModule.isVideoRecordingEnabled() && source == allowVideoRecordingsEl /* || source == allowAudioRecordingsEl */) {//TODO OO-6508
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	private void updateUI() {
-		boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
+		boolean allowVideoRecordings = avModule.isVideoRecordingEnabled() && allowVideoRecordingsEl.isAtLeastSelected(1);
 		maxVideoDurationEl.setVisible(allowVideoRecordings);
 		videoQualityEl.setVisible(allowVideoRecordings);
 
@@ -238,13 +245,15 @@ public class GTASubmissionEditController extends FormBasicController {
 		boolean submissionTemplate = submissionTemplateEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_TEMPLATE, submissionTemplate);
 
-		boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
-		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS, allowVideoRecordings);
-		if (allowVideoRecordings) {
-			config.setStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, maxVideoDurationEl.getValue());
-			config.setStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, videoQualityEl.getSelectedKey());
+		if (avModule.isVideoRecordingEnabled()) {
+			boolean allowVideoRecordings = allowVideoRecordingsEl.isAtLeastSelected(1);
+			config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_VIDEO_RECORDINGS, allowVideoRecordings);
+			if (allowVideoRecordings) {
+				config.setStringValue(GTACourseNode.GTASK_MAX_VIDEO_DURATION, maxVideoDurationEl.getValue());
+				config.setStringValue(GTACourseNode.GTASK_VIDEO_QUALITY, videoQualityEl.getSelectedKey());
+			}
 		}
-		
+
 		//TODO OO-6508
 		/*
 		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
