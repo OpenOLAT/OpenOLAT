@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -349,6 +350,13 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Organisation> organisations = organisationDao.getOrganisations(null);
 		Assert.assertNotNull(organisations);
 		Assert.assertTrue(organisations.isEmpty());
+	}
+	
+	@Test
+	public void getUsersOrganisationsName() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-31");
+		Map<Long,List<String>> organisationsMap = organisationDao.getUsersOrganisationsName(List.of(member));
+		Assert.assertEquals(1, organisationsMap.size());
 	}
 	
 	@Test

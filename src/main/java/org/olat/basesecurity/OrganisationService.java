@@ -21,6 +21,7 @@ package org.olat.basesecurity;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
@@ -204,6 +205,13 @@ public interface OrganisationService {
 	 * @return A list of organizations a user can manage
 	 */
 	public List<Organisation> getOrganisations(IdentityRef member, Roles roles, OrganisationRoles... managerRole);
+	
+	/**
+	 * 
+	 * @param identities A list of identities
+	 * @return A map with the identity key and the associated names of organisation where the user is a user.
+	 */
+	public Map<Long,List<String>> getUsersOrganisationsNames(List<IdentityRef> identities);
 	
 	/**
 	 * Add a membership without inheritance on the default organization.

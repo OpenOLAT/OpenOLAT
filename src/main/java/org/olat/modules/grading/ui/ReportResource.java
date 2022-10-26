@@ -21,11 +21,17 @@ package org.olat.modules.grading.ui;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.render.StringOutput;
@@ -84,6 +90,10 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public ReportResource(Roles roles, String label, Date from, Date to,
 			RepositoryEntry referenceEntry, Identity grader, Identity manager,
@@ -146,7 +156,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			String val = userPropertyHandler.getUserProperty(graderIdentity.getUser(), translator.getLocale());
 			row.addCell(pos++, val);
 		}
-		
+
 		GraderStatus graderStatus = GraderStatusCellRenderer.getFinalStatus(graderStatistics.getGraderStatus());
 		if(graderStatus == null) {
 			pos++;
@@ -194,7 +204,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
 			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
 		}
-		
+		if(organisationModule.isEnabled()) {
+			headerRow.addCell(pos++, translator.translate("table.header.organisation"), headerStyle);
+		}
 		// entry (courses) informations 
 		headerRow.addCell(pos++, translator.translate("table.header.entry"), headerStyle);
 		headerRow.addCell(pos++, translator.translate("table.header.entry.external.ref"), headerStyle);
@@ -213,7 +225,8 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos, translator.translate("table.header.passed"), headerStyle);
 	}
 
-	private void createAssignmentsData(GradingAssignmentWithInfos assignmentWithInfos, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+	private void createAssignmentsData(GradingAssignmentWithInfos assignmentWithInfos, Map<Long,List<String>> organisationsMap,
+			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		Row row = sheet.newRow();
 		
 		int pos = 0;
@@ -245,6 +258,14 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			row.addCell(pos++, val);
 		}
 		
+		if(organisationModule.isEnabled()) {
+			List<String> orgs = organisationsMap.get(assessedIdentity.getKey());
+			if(!orgs.isEmpty()) {
+				row.addCell(pos, toString(orgs));
+			}
+			pos++;
+		}
+		
 		// entry (course) informations
 		RepositoryEntry entry = assignmentWithInfos.getEntry();
 		row.addCell(pos++, entry.getDisplayname());
@@ -269,6 +290,19 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		}
 	}
 	
+	private String toString(List<String> names) {
+		if(names.size() > 1) {
+			Collections.sort(names);
+		}
+		
+		StringBuilder sb = new StringBuilder(32);
+		for(String name:names) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(name);
+		}
+		return sb.toString();
+	}
+	
 	private void createAssignmentsData(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		GradingAssignmentSearchParameters searchParams = new GradingAssignmentSearchParameters();
 		searchParams.setClosedFromDate(from);
@@ -278,8 +312,12 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		searchParams.setReferenceEntry(referenceEntry);
 		
 		List<GradingAssignmentWithInfos> assignmentsWithInfos = gradingService.getGradingAssignmentsWithInfos(searchParams, translator.getLocale());
+		List<IdentityRef> assessedIdentities = assignmentsWithInfos.stream()
+				.map(GradingAssignmentWithInfos::getAssessedIdentity)
+				.collect(Collectors.toList());
+		Map<Long,List<String>> organisationsMap = organisationService.getUsersOrganisationsNames(assessedIdentities);
 		for(GradingAssignmentWithInfos assignmentWithInfos:assignmentsWithInfos) {
-			createAssignmentsData(assignmentWithInfos, sheet, workbook);
+			createAssignmentsData(assignmentWithInfos, organisationsMap, sheet, workbook);
 		}
 	}
 }
