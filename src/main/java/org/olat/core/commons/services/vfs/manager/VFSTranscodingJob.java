@@ -26,6 +26,7 @@ import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -100,17 +101,22 @@ public class VFSTranscodingJob extends JobWithDB {
 			updateError(metadata);
 			return false;
 		}
+		String handbrakeCliExecutable = transcodingService.getHandbrakeCliExecutable();
 		String destinationDirectoryString = transcodingService.getDirectoryString(destinationItem);
 		String masterFileName = VFSTranscodingService.masterFilePrefix + destinationFileName;
-		List<String> command = createCommand(destinationDirectoryString, masterFileName, destinationFileName);
+		List<String> command = createCommand(handbrakeCliExecutable, destinationDirectoryString, masterFileName, destinationFileName);
 
 		return runCommand(command, metadata);
 	}
 
-	private List<String> createCommand(String directoryPath, String inputFileName, String outputFileName) {
+	private List<String> createCommand(String handbrakeCliExecutable, String directoryPath, String inputFileName, String outputFileName) {
 		ArrayList<String> command = new ArrayList<>();
 
-		command.add("HandBrakeCLI");
+		if (StringHelper.containsNonWhitespace(handbrakeCliExecutable)) {
+			command.add(handbrakeCliExecutable);
+		} else {
+			command.add("HandBrakeCLI");
+		}
 		command.add("-i");
 		command.add(directoryPath + "/" + inputFileName);
 		command.add("-o");

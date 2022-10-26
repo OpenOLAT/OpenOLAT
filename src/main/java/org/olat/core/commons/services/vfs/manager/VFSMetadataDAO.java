@@ -19,13 +19,6 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
-
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
@@ -33,6 +26,12 @@ import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 
@@ -477,9 +476,16 @@ public class VFSMetadataDAO {
 	}
 
 	public List<VFSMetadata> getMetadatasInNeedForTranscoding() {
-		String query = "select meta from filemetadata as meta where transcodingStatus = " +
-				VFSMetadata.TRANSCODING_STATUS_WAITING +
+		String query = "select meta from filemetadata as meta" +
+				" where deleted = false and transcodingStatus = " + VFSMetadata.TRANSCODING_STATUS_WAITING +
 				" order by meta.creationDate asc, meta.id asc";
+		return dbInstance.getCurrentEntityManager().createQuery(query, VFSMetadata.class).getResultList();
+	}
+
+	public List<VFSMetadata> getMetadatasWithUnresolvedTranscodingStatus() {
+		String query = "select meta from filemetadata as meta" +
+				" where transcodingStatus is not null and transcodingStatus <> " + VFSMetadata.TRANSCODING_STATUS_DONE +
+				" and meta.deleted = false order by meta.creationDate asc, meta.id asc";
 		return dbInstance.getCurrentEntityManager().createQuery(query, VFSMetadata.class).getResultList();
 	}
 }

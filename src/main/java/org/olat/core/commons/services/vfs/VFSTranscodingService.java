@@ -39,6 +39,7 @@ public interface VFSTranscodingService {
 	String masterFilePrefix = "._oo_master_";
 	boolean isLocalTranscodingEnabled();
 	List<VFSMetadata> getMetadatasInNeedForTranscoding();
+	List<VFSMetadata> getMetadatasWithUnresolvedTranscodingStatus();
 
 	/**
 	 * Returns the VFS item of the destination of a transcoding job. This represents an mp4 representation
@@ -61,4 +62,6 @@ public interface VFSTranscodingService {
 	void fileDoneEvent(VFSMetadata vfsMetadata);
 
 	void deleteMasterFile(VFSItem item);
+
+	String getHandbrakeCliExecutable();
 }
