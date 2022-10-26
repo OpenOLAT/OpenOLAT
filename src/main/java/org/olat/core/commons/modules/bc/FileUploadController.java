@@ -384,7 +384,7 @@ public class FileUploadController extends FormBasicController {
 					// Upload renamed. Since we've already uploaded the file with a changed name, don't do anything much here...
 					fileOverwritten = true;
 					// ... and notify listeners.
-					finishUpload(ureq);
+					finishUpload(ureq, true);
 				} else if (buttonClickedEvent.getPosition() == 2) { // cancel
 					// Cancel. Remove the new file since it has already been uploaded. Note that we don't have to explicitly close the
 					// dialog box since it closes itself whenever something gets clicked.
@@ -398,7 +398,7 @@ public class FileUploadController extends FormBasicController {
 					//upload the file with a new name
 					fileOverwritten = true;
 					// ... and notify listeners.
-					finishUpload(ureq);
+					finishUpload(ureq, true);
 				} else if(buttonClickedEvent.getPosition() == 1) {
 					doCancel(ureq);
 				}
@@ -416,7 +416,7 @@ public class FileUploadController extends FormBasicController {
 			existingVFSItem.delete();
 			newFile.rename(fileName);
 			// ... and notify listeners.
-			finishUpload(ureq);
+			finishUpload(ureq, true);
 			
 		} else if (source == revisionListDialogBox) {
 			removeAsListenerAndDispose(revisionListCtr);
@@ -461,7 +461,7 @@ public class FileUploadController extends FormBasicController {
 				newFile.rename(fileName);
 				
 				// ... and notify listeners.
-				finishUpload(ureq);
+				finishUpload(ureq, false);
 			} else {
 				askForComment(ureq);
 			}
@@ -477,7 +477,7 @@ public class FileUploadController extends FormBasicController {
 				newFile.rename(fileName);
 				
 				// ... and notify listeners.
-				finishUpload(ureq);
+				finishUpload(ureq, false);
 			}
 		}
 	}
@@ -504,7 +504,7 @@ public class FileUploadController extends FormBasicController {
 				newFile = (VFSLeaf)existingVFSItem;
 			}
 		}
-		finishUpload(ureq);
+		finishUpload(ureq, false);
 	}
 	
 	private void doFinishRevisionList(UserRequest ureq) {
@@ -709,7 +709,7 @@ public class FileUploadController extends FormBasicController {
 		
 		if (success) {
 			String filePath = (uploadRelPath == null ? "" : uploadRelPath + "/") + newFile.getName();
-			finishSuccessfullUpload(filePath, newFile, ureq);
+			finishSuccessfullUpload(filePath, newFile, true, ureq);
 			fireEvent(ureq, Event.DONE_EVENT);										
 		} else {
 			showError("failed");
@@ -718,12 +718,12 @@ public class FileUploadController extends FormBasicController {
 		}
 	}
 	
-	private void finishUpload(UserRequest ureq) {
+	private void finishUpload(UserRequest ureq, boolean forceMetdata) {
 		// in both cases the upload must be finished and notified with a FolderEvent
 		String filePath = (uploadRelPath == null ? "" : uploadRelPath + "/") + newFile.getName();
 		VFSItem item = currentContainer.resolve(filePath);
 		if(item != null) {
-			finishSuccessfullUpload(filePath, item, ureq);
+			finishSuccessfullUpload(filePath, item, forceMetdata, ureq);
 		} else {
 			logWarn("Upload with error:" + filePath, null);
 		}
@@ -733,12 +733,12 @@ public class FileUploadController extends FormBasicController {
 	/**
 	 * Internal helper to finish the upload and add metadata
 	 */
-	private void finishSuccessfullUpload(String filePath, VFSItem item, UserRequest ureq) {
+	private void finishSuccessfullUpload(String filePath, VFSItem item, boolean forceMetadata, UserRequest ureq) {
 		if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
 			// create meta data
 			VFSMetadata meta = item.getMetaInfo();
 			if (metaDataCtr != null) {
-				meta = metaDataCtr.getMetaInfo(meta);
+				meta = metaDataCtr.getMetaInfo(meta, forceMetadata);
 			}
 			if (meta instanceof VFSMetadataImpl) {
 				((VFSMetadataImpl)meta).setFileInitializedBy(getIdentity());

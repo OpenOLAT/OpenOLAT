@@ -80,7 +80,7 @@ public class MetadataAcceptStepController extends BasicController implements Ste
 		metaInfoFormController = new MetaInfoFormController(ureq, wControl, rootForm, uploadFile);
 		
 		VFSMetadata metaInfo = vfsRepositoryService.getMetadataFor(uploadFile);
-		metaInfoFormController.getMetaInfo(metaInfo);
+		metaInfoFormController.getMetaInfo(metaInfo, true);
 		listenTo(metaInfoFormController);
 		
 		filenameController = new MetadataAcceptFilenameController(ureq, wControl, rootForm, uploadFile);
