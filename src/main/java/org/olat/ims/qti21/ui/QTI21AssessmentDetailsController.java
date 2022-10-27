@@ -504,7 +504,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
 					model, assessedIdentity, correctionReadOnly);
 			listenTo(correctionCtrl);
-			stackPanel.pushController(translate("correction"), correctionCtrl);
+			stackPanel.pushController(translate("correct"), correctionCtrl);
 		} catch(Exception e) {
 			logError("Cannot read results", e);
 			showError("error.assessment.test.session");
