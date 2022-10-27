@@ -302,7 +302,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			copyEntry.getTaxonomyLevels().add(relation);
 		}
 
-		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
+		List<Organisation> sourceOrganisations = getOrganisations(sourceEntry);
 		for(Organisation sourceOrganisation:sourceOrganisations) {
 			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, copyEntry, false);
 			copyEntry.getOrganisations().add(orgRelation);
@@ -814,12 +814,22 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public List<Organisation> getOrganisations(RepositoryEntryRef entry) {
-		return reToGroupDao.getOrganisations(entry);
+		return getOrganisations(Collections.singletonList(entry));
+	}
+	
+	@Override
+	public List<Organisation> getOrganisations(Collection<? extends RepositoryEntryRef> entries) {
+		return reToGroupDao.getOrganisations(entries);
 	}
 
 	@Override
 	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry) {
 		return repositoryEntryToOrganisationDao.getOrganisationReferences(entry);
+	}
+	
+	@Override
+	public Map<RepositoryEntryRef, List<Organisation>> getRepositoryEntryOrganisations(Collection<? extends RepositoryEntryRef> entries) {
+		return repositoryEntryToOrganisationDao.getRepositoryEntryOrganisations(entries);
 	}
 
 	@Override
@@ -899,7 +909,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(replacementOrganisation != null) {
 			List<RepositoryEntry> entries = reToGroupDao.getRepositoryEntries(organisation);
 			for(RepositoryEntry entry:entries) {
-				List<Organisation> currentOrganisationsByGroups = reToGroupDao.getOrganisations(entry);
+				List<Organisation> currentOrganisationsByGroups = getOrganisations(entry);
 				if(!currentOrganisationsByGroups.contains(replacementOrganisation)) {
 					RepositoryEntryToGroupRelation relToGroup = reToGroupDao.createRelation(replacementOrganisation.getGroup(), entry);
 					entry.getGroups().add(relToGroup);

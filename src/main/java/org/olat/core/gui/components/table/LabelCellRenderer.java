@@ -61,6 +61,10 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 	}
 
 	protected void render(StringOutput target, Translator translator, Object cellValue) {
+		if (cellValue == null) {
+			return;
+		}
+		
 		target.append("<div>");
 		target.append("<span class='o_labeled_light");
 		String elementCssClass = getElementCssClass(cellValue);

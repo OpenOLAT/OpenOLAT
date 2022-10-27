@@ -19,8 +19,12 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -31,6 +35,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryToOrganisation;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -84,6 +89,26 @@ public class RepositoryEntryToOrganisationDAO {
 				.setParameter("entryKey", re.getKey())
 				.setParameter("organisationKey", organisation.getKey())
 				.getResultList();
+	}
+	
+	public Map<RepositoryEntryRef, List<Organisation>> getRepositoryEntryOrganisations(Collection<? extends RepositoryEntryRef> entries) {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("select reToOrganisation")
+		  .append(" from repoentrytoorganisation as reToOrganisation")
+		  .append(" inner join fetch reToOrganisation.organisation")
+		  .append(" where reToOrganisation.entry.key in :entryKeys");
+		
+		List<RepositoryEntryToOrganisation> reToOrgs = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryToOrganisation.class)
+				.setParameter("entryKeys", entries.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList()))
+				.getResultList();
+		
+		Map<RepositoryEntryRef, List<Organisation>> entryRefToOrganisation = new HashMap<>();
+		for (RepositoryEntryToOrganisation reToOrg : reToOrgs) {
+			RepositoryEntryRefImpl entryRef = new RepositoryEntryRefImpl(reToOrg.getEntry().getKey());
+			entryRefToOrganisation.computeIfAbsent(entryRef, k -> new ArrayList<>()).add(reToOrg.getOrganisation());
+		}
+		return entryRefToOrganisation;
 	}
 	
 	public void delete(RepositoryEntryRef re, OrganisationRef organisation) {

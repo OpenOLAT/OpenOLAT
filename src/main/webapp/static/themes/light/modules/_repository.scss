@@ -526,3 +526,38 @@ a.o_repo_tools_status {
 .o_course_design_classic_icon {
 	background-image:url('#{$o-images-path}course/course-design-classic.png')
 }
+
+/* Bulk change */
+.o_labeled_light {
+	&.o_bulk_status_add {
+		background-color: $state-success-text;
+		border-color: $state-success-text;
+		color: $o-repo-status-color-bright;
+	}
+	&.o_bulk_status_remove {
+		background-color:  $state-danger-text;
+		border-color: $state-danger-text;
+		color: $o-repo-status-color-bright;
+	}
+}
+.o_settings_bulk_overview {
+	table {
+		width: auto;
+		tbody {
+			td {
+				border-top: 0;
+				&:is(.o_bulk_overview_change *) {
+					padding: 2px 8px;
+				}
+			}
+			.o_bulk_overview_step {
+				font-size: 20px;
+			}
+			.o_bulk_overview_change + .o_bulk_overview_step {
+				td {
+					padding: 24px 8px 8px 8px;
+				}
+			}
+		}
+	}
+}

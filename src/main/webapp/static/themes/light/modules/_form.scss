@@ -29,6 +29,15 @@
 	.o_form_example {
 		font-size: 90%;	
 	}
+	
+	.o_form_explained {
+		padding-bottom: 0;
+		margin-bottom: 0;
+	}
+
+	.o_form_explanation {
+		color: $brand-warning;
+	}
 		
 	.o_error {
 		margin-top: 1px;

@@ -665,15 +665,21 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getOrganisations() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, organisation);
+		Organisation organisation1 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
+		Organisation organisation2 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
+		RepositoryEntry re1 = repositoryService.create(null, random(), "rel1", "rel1", null, null,
+				RepositoryEntryStatusEnum.trash, organisation1);
+		RepositoryEntry re2 = repositoryService.create(null, random(), "rel2", "rel2", null, null,
+				RepositoryEntryStatusEnum.trash, organisation1);
+		RepositoryEntry re3 = repositoryService.create(null, random(), "re3", "re3", null, null,
+				RepositoryEntryStatusEnum.trash, organisation2);
 		dbInstance.commitAndCloseSession();
 		
-		List<Organisation> organisations = repositoryEntryRelationDao.getOrganisations(re);
+		List<Organisation> organisations = repositoryEntryRelationDao.getOrganisations(List.of(re1,  re2,  re3));
 		Assert.assertNotNull(organisations);
-		Assert.assertEquals(1, organisations.size());
-		Assert.assertEquals(organisation, organisations.get(0));
+		Assert.assertEquals(2, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		Assert.assertTrue(organisations.contains(organisation2));
 	}
 	
 	@Test

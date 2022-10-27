@@ -20,6 +20,8 @@
 package org.olat.repository.manager;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,9 +31,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -99,6 +103,31 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(organisations);
 		Assert.assertEquals(1, organisations.size());
 		Assert.assertEquals(organisation.getKey(), organisations.get(0).getKey());
+	}
+	
+	@Test
+	public void getRepositoryEntryOrganisations() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Repo-org-3", null, null, defOrganisation, null);
+		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Repo-org-3", null, null, defOrganisation, null);
+		RepositoryEntry re1 = repositoryService.create(null, "Asuka Langley", "rel3", "rel3", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		repositoryEntryToOrganisationDao.createRelation(organisation1, re1, true);
+		repositoryEntryToOrganisationDao.createRelation(organisation2, re1, true);
+		RepositoryEntry re2 = repositoryService.create(null, "Asuka Langley", "rel3", "rel3", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		repositoryEntryToOrganisationDao.createRelation(organisation1, re2, true);
+		dbInstance.commitAndCloseSession();
+		
+		Map<RepositoryEntryRef, List<Organisation>> repositoryEntryOrganisations = repositoryEntryToOrganisationDao.getRepositoryEntryOrganisations(List.of(re1, re2));
+		
+		Assert.assertNotNull(repositoryEntryOrganisations);
+		Assert.assertEquals(2, repositoryEntryOrganisations.size());
+		Assert.assertEquals(2, repositoryEntryOrganisations.get(new RepositoryEntryRefImpl(re1.getKey())).size());
+		List<Long> re1OrgKeys = repositoryEntryOrganisations.get(new RepositoryEntryRefImpl(re1.getKey())).stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+		Assert.assertTrue(re1OrgKeys.contains(organisation1.getKey()));
+		Assert.assertTrue(re1OrgKeys.contains(organisation2.getKey()));
+		Assert.assertEquals(1, repositoryEntryOrganisations.get(new RepositoryEntryRefImpl(re2.getKey())).size());
 	}
 	
 	@Test

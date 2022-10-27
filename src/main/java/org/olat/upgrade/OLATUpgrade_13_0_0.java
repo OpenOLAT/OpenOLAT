@@ -372,7 +372,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private void migrateRepositoryEntryToDefaultOrganisation(Long repositoryEntryKey) {
 		List<RepositoryEntry> entries = loadRepositoryEntry(repositoryEntryKey);
 		for(RepositoryEntry entry:entries) {
-			List<Organisation> currentOrganisations = repositoryEntryRelationDao.getOrganisations(entry);
+			List<Organisation> currentOrganisations = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(entry));
 			if(currentOrganisations.isEmpty()) {
 				Organisation defOrganisation = organisationService.getDefaultOrganisation();
 				repositoryEntryToOrganisationDao.createRelation(defOrganisation, entry, false);
