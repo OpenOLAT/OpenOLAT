@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -37,7 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.modules.taxonomy.ui.TaxonomyTreeTableModel.TaxonomyLevelCols;
+import org.olat.modules.taxonomy.ui.TaxonomyImportTreeTableModel.TaxonomyImportLevelCols;
 
 /**
  * Initial date: Jan 12, 2021<br>
@@ -62,12 +61,12 @@ public class TaxonomyImportStep2 extends BasicStep {
 		return new TaxonomyImportStep2Controller(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class TaxonomyImportStep2Controller extends StepFormBasicController {
+	private static class TaxonomyImportStep2Controller extends StepFormBasicController {
 
-		private TaxonomyImportContext context;
+		private final TaxonomyImportContext context;
 		
 		private FlexiTableElement tableElement;
-		private TaxonomyTreeTableModel reviewTableModel;
+		private TaxonomyImportTreeTableModel reviewTableModel;
 		
 		public TaxonomyImportStep2Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -87,29 +86,31 @@ public class TaxonomyImportStep2 extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			// Define the column model
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.key));
-			DefaultFlexiColumnModel updateWarningCol = new DefaultFlexiColumnModel(TaxonomyLevelCols.updateWarning);
-			updateWarningCol.setIconHeader(TaxonomyLevelCols.updateWarning.iconHeader());
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyImportLevelCols.key));
+			DefaultFlexiColumnModel updateWarningCol = new DefaultFlexiColumnModel(TaxonomyImportLevelCols.updateWarning);
+			updateWarningCol.setIconHeader(TaxonomyImportLevelCols.updateWarning.iconHeader());
 			updateWarningCol.setCellRenderer(new TaxonomyImportWarningRenderer());
 			columnsModel.addFlexiColumnModel(updateWarningCol);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.path));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.order));
-			DefaultFlexiColumnModel descriptionCol = new DefaultFlexiColumnModel(TaxonomyLevelCols.description);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.path));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.identifier));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.typeIdentifier));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.order));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.background));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.teaser));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.language));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyImportLevelCols.displayName));
+			DefaultFlexiColumnModel descriptionCol = new DefaultFlexiColumnModel(TaxonomyImportLevelCols.description);
 			descriptionCol.setDefaultVisible(false);
 			columnsModel.addFlexiColumnModel(descriptionCol);
 
-			reviewTableModel = new TaxonomyTreeTableModel(columnsModel);
+			reviewTableModel = new TaxonomyImportTreeTableModel(columnsModel, ureq.getLocale());
 			reviewTableModel.setObjects(context.getReviewList());
-			tableElement = uifactory.addTableElement(getWindowControl(), "table", reviewTableModel, 20, false, getTranslator(), formLayout);
-			tableElement.setSearchEnabled(true);
+
+			tableElement = uifactory.addTableElement(getWindowControl(), "table", reviewTableModel, 15, false, getTranslator(), formLayout);
 			tableElement.setCustomizeColumns(true);
 			tableElement.setEmptyTableMessageKey("table.taxonomy.level.empty");
 			tableElement.setNumOfRowsEnabled(true);
 			tableElement.setExportEnabled(false);
-			tableElement.setPageSize(20);
 			
 			// Legend to table
 	        uifactory.addStaticTextElement("import.taxonomy.review.legend.label", translate("import.taxonomy.review.legend"), formLayout);
@@ -117,13 +118,7 @@ public class TaxonomyImportStep2 extends BasicStep {
 		
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if (source == tableElement) {
-				if (event instanceof FlexiTableSearchEvent) {
-		            String searchString = ((FlexiTableSearchEvent) event).getSearch();
-		            reviewTableModel.filter(searchString, null);
-		            tableElement.reset();
-		        }
-			}
+			// Not needed
 		}
 	}
 }

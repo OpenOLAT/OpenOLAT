@@ -19,8 +19,10 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -36,11 +38,13 @@ public class TaxonomyImportContext {
 	public static final String CONTEXT_KEY = TaxonomyImportContext.class.getSimpleName();
 	
 	private Taxonomy taxonomy;
-	private boolean updatateExistingTaxonomies;
+	private boolean updateExistingTaxonomies;
 	private List<TaxonomyLevelRow> reviewList;
 	private List<TaxonomyLevel> taxonomyLevelUpdateList;
 	private List<TaxonomyLevel> taxonomyLevelCreateList;
 	private List<TaxonomyLevelType> taxonomyLevelTypeCreateList;
+	private Map<String, List<String>> nameDescriptionByLanguage;
+	private Map<TaxonomyLevel, Map<String, File>> taxonomyLevelToImage;
 	
 	public void setTaxonomy(Taxonomy taxonomy) {
 		this.taxonomy = taxonomy;
@@ -84,6 +88,22 @@ public class TaxonomyImportContext {
 	public void setTaxonomyLevelCreateList(List<TaxonomyLevel> createList) {
 		this.taxonomyLevelCreateList = createList;
 	}
+
+	public Map<String, List<String>> getNameDescriptionByLanguage() {
+		return nameDescriptionByLanguage;
+	}
+
+	public void setNameDescriptionByLanguage(Map<String, List<String>> nameDescriptionByLanguage) {
+		this.nameDescriptionByLanguage = nameDescriptionByLanguage;
+	}
+
+	public Map<TaxonomyLevel, Map<String, File>> getTaxonomyLevelToImageMap() {
+		return taxonomyLevelToImage;
+	}
+
+	public void setTaxonomyLevelToImageMap(Map<TaxonomyLevel, Map<String, File>> taxonomyLevelToImage) {
+		this.taxonomyLevelToImage = taxonomyLevelToImage;
+	}
 	
 	public List<TaxonomyLevelType> getTaxonomyLevelTypeCreateList() {
 		return taxonomyLevelTypeCreateList;
@@ -93,11 +113,11 @@ public class TaxonomyImportContext {
 		this.taxonomyLevelTypeCreateList = taxonomyLevelTypeCreateList;
 	}
 	
-	public void setUpdatateExistingTaxonomies(boolean updatateExistingTaxonomies) {
-		this.updatateExistingTaxonomies = updatateExistingTaxonomies;
+	public void setUpdateExistingTaxonomies(boolean updateExistingTaxonomies) {
+		this.updateExistingTaxonomies = updateExistingTaxonomies;
 	}
 	
-	public boolean isUpdatateExistingTaxonomies() {
-		return updatateExistingTaxonomies;
+	public boolean isUpdateExistingTaxonomies() {
+		return updateExistingTaxonomies;
 	}
 }

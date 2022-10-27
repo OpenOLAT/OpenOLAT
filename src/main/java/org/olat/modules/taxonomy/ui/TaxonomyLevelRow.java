@@ -36,31 +36,40 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 
 	private final TaxonomyLevelType type;
 	private final TaxonomyLevel taxonomyLevel;
+
+	private final String language;
 	private final String displayName;
 	private final String description;
 	private final Long parentLevelKey;
 	
 	// Only used in import wizard
 	private final boolean isUpdated;
+	private final boolean hasMultipleLangs;
+	private boolean hasBackgroundImage;
+	private boolean hasTeaserImage;
 	
 	private int numOfChildren = 0;
 	private FormLink toolsLink;
 	private TaxonomyLevelRow parent;
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String displayName, String description, FormLink toolsLink) {
-		this(taxonomyLevel, displayName, description, toolsLink, false);
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description, FormLink toolsLink) {
+		this(taxonomyLevel, language, displayName, description, toolsLink, false, false);
 	}
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel,String displayName, String description,  boolean isUpdated) {
-		this(taxonomyLevel, displayName, description, null, isUpdated);
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description,
+							boolean isUpdated, boolean hasMultipleLangs) {
+		this(taxonomyLevel, language, displayName, description, null, isUpdated, hasMultipleLangs);
 	}
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String displayName, String description, FormLink toolsLink, boolean isUpdated) {
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description, FormLink toolsLink,
+							boolean isUpdated, boolean hasMultipleLangs) {
 		this.taxonomyLevel = taxonomyLevel;
+		this.language = language;
 		this.displayName = displayName;
 		this.description = description;
 		this.toolsLink = toolsLink;
 		this.isUpdated = isUpdated;
+		this.hasMultipleLangs = hasMultipleLangs;
 		parentLevelKey = taxonomyLevel.getParent() == null ? null : taxonomyLevel.getParent().getKey();
 		type = taxonomyLevel.getType();
 	}
@@ -98,6 +107,10 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	
 	public void setParent(TaxonomyLevelRow parent) {
 		this.parent = parent;
+	}
+
+	public String getLanguage() {
+		return language;
 	}
 	
 	public String getDisplayName() {
@@ -142,6 +155,26 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 
 	public FormLink getToolsLink() {
 		return toolsLink;
+	}
+
+	public boolean hasMultipleLangs() {
+		return hasMultipleLangs;
+	}
+
+	public void setHasBackgroundImage(boolean hasBackgroundImage) {
+		this.hasBackgroundImage = hasBackgroundImage;
+	}
+
+	public void setHasTeaserImage(boolean hasTeaserImage) {
+		this.hasTeaserImage = hasTeaserImage;
+	}
+
+	public boolean hasBackgroundImage() {
+		return hasBackgroundImage;
+	}
+
+	public boolean hasTeaserImage() {
+		return hasTeaserImage;
 	}
 	
 	public boolean isUpdated() {
