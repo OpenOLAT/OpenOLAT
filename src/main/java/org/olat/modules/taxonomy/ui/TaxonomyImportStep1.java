@@ -349,7 +349,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 					if (IMAGE_MIME_TYPES.contains(WebappHelper.getMimeType(fileName))) {
 						uploadFileEl.clearError();
 						image = new File(WebappHelper.getTmpDir() + "/" + fileName);
-						System.out.println(image.length() / 1024 + " kb");
 						if (image.length() / 1024 < 5025 && destination.equals(BACKGROUND)
 						|| image.length() / 1024 < 2049 && destination.equals(TEASER)) {
 							FileUtils.copyInputStreamToFile(in, image);
