@@ -61,9 +61,9 @@ public class UserAdminPage {
 	
 	public UserAdminPage openSearchUser() {
 		//In case it stay in the way
-		By createBy = By.cssSelector(".o_tree li.o_sel_useradmin_search>div>span.o_tree_link>a");
-		OOGraphene.waitElement(createBy, browser);
-		browser.findElement(createBy).click();
+		By searchBy = By.cssSelector(".o_tree li.o_sel_useradmin_search>div>span.o_tree_link>a");
+		OOGraphene.waitElement(searchBy, browser);
+		browser.findElement(searchBy).click();
 		return assertOnSearchUser();
 	}
 	
@@ -257,8 +257,7 @@ public class UserAdminPage {
 	
 	public UserAdminPage assertNotInUserList(String username) {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[text()[contains(.,'" + username + "')]]");
-		List<WebElement> usernameEls = browser.findElements(userLinksBy);
-		Assert.assertTrue(usernameEls.isEmpty());
+		OOGraphene.waitElementDisappears(userLinksBy, 5, browser);
 		return this;
 	}
 	
