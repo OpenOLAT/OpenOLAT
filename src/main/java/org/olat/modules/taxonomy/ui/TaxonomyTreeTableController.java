@@ -97,6 +97,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private FormLink mergeButton;
 	private FormLink typeButton;
 	private FormLink moveButton;
+	private FormLink exportButton;
 	private FormLink importButton;
 	private FlexiTableElement tableEl;
 	private TaxonomyTreeTableModel model;
@@ -142,6 +143,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 		newLevelButton = uifactory.addFormLink("add.taxonomy.level", formLayout, Link.BUTTON);
 		newLevelButton.setElementCssClass("o_sel_taxonomy_new_level");
+		exportButton = uifactory.addFormLink("export.taxonomy.levels", formLayout, Link.BUTTON);
 		importButton = uifactory.addFormLink("import.taxonomy.levels", formLayout, Link.BUTTON);
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
@@ -296,6 +298,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			doMove(ureq);
 		} else if(importButton == source) {
 			doOpenImportWizard(ureq);
+		} else if(exportButton == source) {
+			doExportTaxonomyLevels(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -419,6 +423,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
         listenTo(importWizardCtrl);
         getWindowControl().pushAsModalDialog(importWizardCtrl.getInitialComponent());
 	}
+
+	private void doExportTaxonomyLevels(UserRequest ureq) {
+		ureq.getDispatchResult().setResultingMediaResource(new ExportTaxonomyLevels("UTF-8", getTranslator(), getIdentity(),
+																					taxonomy, taxonomyService, i18nManager, i18nModule));
+	}
 	
 	private void doAssignType(UserRequest ureq) {
 		if(guardModalController(typeLevelCtrl)) return;
@@ -455,7 +464,6 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private class FinishedCallback implements StepRunnerCallback {
-	    @SuppressWarnings("deprecation")
 		@Override
 	    public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 	        TaxonomyImportContext context = (TaxonomyImportContext) runContext.get(TaxonomyImportContext.CONTEXT_KEY);
