@@ -19,8 +19,10 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -43,10 +45,13 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataModel<AssessmentNodeData>
 	implements SortableFlexiTableDataModel<AssessmentNodeData>, FilterableFlexiTableModel {
 
+	private final Locale locale;
+	private boolean allGradesNummeric;
 	private List<AssessmentNodeData> backups;
 	
-	public IdentityAssessmentOverviewTableModel(FlexiTableColumnModel columnModel) {
+	public IdentityAssessmentOverviewTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 
 	@Override
@@ -78,7 +83,8 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			IdentityAssessmentOverviewSorter sorter = new IdentityAssessmentOverviewSorter(orderBy, this, null);
+			IdentityAssessmentOverviewSorter sorter = new IdentityAssessmentOverviewSorter(orderBy, this, locale);
+			sorter.setAllGradesNummeric(allGradesNummeric);
 			List<AssessmentNodeData> views = sorter.sort();
 			super.setObjects(views);
 		}
@@ -121,8 +127,24 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 
 	@Override
 	public void setObjects(List<AssessmentNodeData> objects) {
+		allGradesNummeric = objects.stream().allMatch(this::isNumeric);
 		super.setObjects(objects);
 		backups = objects;
+	}
+
+	private boolean isNumeric(AssessmentNodeData assessmentnodedata) {
+		if (assessmentnodedata.getGrade() == null) {
+			return true;
+		}
+		if (StringHelper.containsNonWhitespace(assessmentnodedata.getPerformanceClassIdent())) {
+			return false;
+		}
+		try {
+			new BigDecimal(assessmentnodedata.getGrade());
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 
 	public enum NodeCols implements FlexiSortableColumnDef {

@@ -46,10 +46,12 @@ public class SortableFlexiTableModelDelegate<T> {
 	private final SortKey orderBy;
 	private final Collator collator; 
 	private final SortableFlexiTableDataModel<T> tableModel;
+	private final Locale locale;
 	
 	public SortableFlexiTableModelDelegate(SortKey orderBy, SortableFlexiTableDataModel<T> tableModel, Locale locale) {
 		this.tableModel = tableModel;
 		this.orderBy = orderBy;
+		this.locale = locale;
 		if(orderBy != null && orderBy.getKey() != null) {
 			FlexiColumnModel colModel = getColumnModel(orderBy.getKey(), tableModel.getTableColumnModel());
 			if(colModel != null) {
@@ -88,6 +90,10 @@ public class SortableFlexiTableModelDelegate<T> {
 		return tableModel;
 	}
 	
+	public Locale getLocale() {
+		return locale;
+	}
+
 	public List<T> sort() {
 		int rowCount = tableModel.getRowCount();
 		List<T> rows = new ArrayList<>(rowCount);

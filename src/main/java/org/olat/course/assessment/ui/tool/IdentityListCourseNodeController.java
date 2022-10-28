@@ -147,6 +147,7 @@ import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.GradeSystemType;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
@@ -190,6 +191,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final boolean learningPath;
 	private final AssessmentConfig assessmentConfig;
 	protected final boolean canEditUserVisibility;
+	private GradeSystemType gradeSystemType;
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab toReviewTab;
@@ -387,7 +389,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		initExternalGradingColumns(columnsModel);
 		initCalloutColumns(columnsModel);
 
-		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseEntry, courseNode, getLocale()); 
+		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseEntry, courseNode, getLocale(), gradeSystemType); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_assessment_tool_table");
 		tableEl.setExportEnabled(true);
@@ -600,6 +602,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				initScoreColumns(columnsModel);
 				if(hasGrade) {
 					GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
+					gradeSystemType = gradeSystem.getType();
 					String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
 					DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale()));
 					gradeColumn.setHeaderLabel(gradeSystemLabel);

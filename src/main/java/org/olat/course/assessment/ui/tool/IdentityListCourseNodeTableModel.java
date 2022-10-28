@@ -38,6 +38,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
+import org.olat.modules.grade.GradeSystemType;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -58,10 +59,13 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private Float maxScore;
 	private Float cutValue;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
+	private final GradeSystemType gradeSystemType;
 	
-	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, RepositoryEntry courseEntry, CourseNode courseNode, Locale locale) {
+	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, RepositoryEntry courseEntry,
+			CourseNode courseNode, Locale locale, GradeSystemType gradeSystemType) {
 		super(columnModel);
 		this.locale = locale;
+		this.gradeSystemType = gradeSystemType;
 	
 		if (courseNode != null) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
@@ -83,7 +87,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	@Override
 	public void sort(SortKey orderBy) {
 		try {
-			List<AssessedIdentityElementRow> views = new IdentityListCourseNodeTableSortDelegate(orderBy, this, locale)
+			List<AssessedIdentityElementRow> views = new IdentityListCourseNodeTableSortDelegate(orderBy, this, locale, gradeSystemType)
 					.sort();
 			super.setObjects(views);
 		} catch (Exception e) {
