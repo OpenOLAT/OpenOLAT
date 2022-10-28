@@ -26,14 +26,14 @@
 
 package org.olat.core.util.vfs;
 
-import java.io.InputStream;
-
-import javax.servlet.http.HttpServletResponse;
-
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 
 public class VFSMediaResource implements MediaResource {
 
@@ -41,6 +41,8 @@ public class VFSMediaResource implements MediaResource {
 	//use this pseudo mime-type to force download on ie 6
 	public static final String MIME_TYPE_FORCE_DOWNLOAD = "application/force-download";
 	private VFSLeaf vfsLeaf;
+	private boolean useMaster = false;
+	private VFSLeaf vfsMasterLeaf;
 	private String encoding;
 	boolean unknownMimeType = false;
 	private boolean downloadable = false;
@@ -48,7 +50,20 @@ public class VFSMediaResource implements MediaResource {
 	public VFSMediaResource(VFSLeaf vfsLeaf) {
 		this.vfsLeaf = vfsLeaf;
 	}
-	
+
+	public void setUseMaster(boolean useMaster) {
+		this.useMaster = useMaster;
+		updateMasterLeaf();
+	}
+
+	private void updateMasterLeaf() {
+		if (useMaster) {
+			VFSContainer parent = vfsLeaf.getParentContainer();
+			String masterFileName = VFSTranscodingService.masterFilePrefix + vfsLeaf.getName();
+			vfsMasterLeaf = VFSManager.resolveOrCreateLeafFromPath(parent, masterFileName);
+		}
+	}
+
 	@Override
 	public long getCacheControlDuration() {
 		return ServletUtil.CACHE_ONE_HOUR;
@@ -60,6 +75,9 @@ public class VFSMediaResource implements MediaResource {
 	}
 	
 	public VFSLeaf getLeaf() {
+		if (useMaster) {
+			return vfsMasterLeaf;
+		}
 		return vfsLeaf;
 	}
 	
