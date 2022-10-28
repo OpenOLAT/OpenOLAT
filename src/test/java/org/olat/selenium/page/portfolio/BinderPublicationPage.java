@@ -97,7 +97,7 @@ public class BinderPublicationPage {
 	
 	public BinderPublicationPage save() {
 		By submitBy = By.cssSelector(".o_sel_pf_invitation_button_group button.btn-primary");
-		browser.findElement(submitBy).click();
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
