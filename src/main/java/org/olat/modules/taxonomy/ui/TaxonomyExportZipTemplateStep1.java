@@ -25,7 +25,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
