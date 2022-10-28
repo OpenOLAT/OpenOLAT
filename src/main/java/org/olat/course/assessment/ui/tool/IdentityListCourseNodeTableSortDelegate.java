@@ -30,9 +30,13 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.date.TimeElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.component.CompletionItem;
+import org.olat.modules.grade.GradeSystemType;
+import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
@@ -42,8 +46,11 @@ import org.olat.modules.assessment.ui.component.CompletionItem;
  */
 public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableModelDelegate<AssessedIdentityElementRow> {
 	
-	public IdentityListCourseNodeTableSortDelegate(SortKey orderBy, IdentityListCourseNodeTableModel tableModel, Locale locale) {
+	private GradeSystemType gradeSystemType;
+	
+	public IdentityListCourseNodeTableSortDelegate(SortKey orderBy, IdentityListCourseNodeTableModel tableModel, Locale locale, GradeSystemType gradeSystemType) {
 		super(orderBy, tableModel, locale);
+		this.gradeSystemType = gradeSystemType;
 	}
 	
 	@Override
@@ -53,8 +60,10 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 			Collections.sort(rows, new ScoreComparator());
 		} else if(columnIndex == IdentityCourseElementCols.currentCompletion.ordinal()) {
 			Collections.sort(rows, new CurrentCompletionComparator());
-		}  else if(columnIndex == IdentityCourseElementCols.currentRunStart.ordinal()) {
+		} else if(columnIndex == IdentityCourseElementCols.currentRunStart.ordinal()) {
 			Collections.sort(rows, new CurrentRunStartComparator());
+		} else if(columnIndex == IdentityCourseElementCols.grade.ordinal()) {
+			Collections.sort(rows, new GradeComparator());
 		} else {
 			super.sort(rows);
 		}
@@ -164,5 +173,37 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 			}
 			return completion;
 		}
+	}
+	
+	private class GradeComparator implements Comparator<AssessedIdentityElementRow> {
+		
+		private final Translator gradeTanslator;
+		
+		public GradeComparator() {
+			this.gradeTanslator = Util.createPackageTranslator(GradeUIFactory.class, getLocale());
+		}
+		
+		@Override
+		public int compare(AssessedIdentityElementRow r1, AssessedIdentityElementRow r2) {
+			String s1 = r1 != null && r1.getGrade() != null
+					? GradeUIFactory.translatePerformanceClass(gradeTanslator, r1.getPerformanceClassIdent(), r1.getGrade())
+					: null;
+			String s2 = r2 != null && r2.getGrade() != null
+					? GradeUIFactory.translatePerformanceClass(gradeTanslator, r2.getPerformanceClassIdent(), r2.getGrade())
+					: null;
+			
+			if(s1 == null || s2 == null) {
+				return compareNullObjects(s1, s2);
+			}
+			
+			if (GradeSystemType.numeric == gradeSystemType) {
+				BigDecimal grade1 = new BigDecimal(s1);
+				BigDecimal grade2 = new BigDecimal(s2);
+				return grade1.compareTo(grade2);
+			}
+			
+			return s1.compareTo(s2);
+		}
+		
 	}
 }

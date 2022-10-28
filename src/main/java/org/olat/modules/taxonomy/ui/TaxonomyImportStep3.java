@@ -73,7 +73,7 @@ public class TaxonomyImportStep3 extends BasicStep {
 		@Override
 		protected void formOK(UserRequest ureq) {
 			// Set whether to update existing taxonomies
-			context.setUpdatateExistingTaxonomies(updateTaxonomiesElement.isSelected(0));
+			context.setUpdateExistingTaxonomies(updateTaxonomiesElement.isSelected(0));
 			
 			// Fire event to get to the next step
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

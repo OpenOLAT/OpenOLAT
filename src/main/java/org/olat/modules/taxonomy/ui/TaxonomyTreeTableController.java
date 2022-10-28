@@ -19,16 +19,17 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.LocaleUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -90,12 +91,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
-	
+
 	private FormLink newLevelButton;
 	private FormLink deleteButton;
 	private FormLink mergeButton;
 	private FormLink typeButton;
 	private FormLink moveButton;
+	private FormLink exportButton;
 	private FormLink importButton;
 	private FlexiTableElement tableEl;
 	private TaxonomyTreeTableModel model;
@@ -141,6 +143,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 		newLevelButton = uifactory.addFormLink("add.taxonomy.level", formLayout, Link.BUTTON);
 		newLevelButton.setElementCssClass("o_sel_taxonomy_new_level");
+		exportButton = uifactory.addFormLink("export.taxonomy.levels", formLayout, Link.BUTTON);
 		importButton = uifactory.addFormLink("import.taxonomy.levels", formLayout, Link.BUTTON);
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
@@ -242,7 +245,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
 		String description = TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel);
-		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, displayName, description, toolsLink);
+		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, getLocale().toString(), displayName, description, toolsLink);
 		toolsLink.setUserObject(row);
 		return row;
 	}
@@ -295,6 +298,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			doMove(ureq);
 		} else if(importButton == source) {
 			doOpenImportWizard(ureq);
+		} else if(exportButton == source) {
+			doExportTaxonomyLevels(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -418,6 +423,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
         listenTo(importWizardCtrl);
         getWindowControl().pushAsModalDialog(importWizardCtrl.getInitialComponent());
 	}
+
+	private void doExportTaxonomyLevels(UserRequest ureq) {
+		ureq.getDispatchResult().setResultingMediaResource(new ExportTaxonomyLevels("UTF-8", getTranslator(), getIdentity(),
+																					taxonomy, taxonomyService, i18nManager, i18nModule));
+	}
 	
 	private void doAssignType(UserRequest ureq) {
 		if(guardModalController(typeLevelCtrl)) return;
@@ -454,102 +464,132 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private class FinishedCallback implements StepRunnerCallback {
-	    @SuppressWarnings("deprecation")
 		@Override
 	    public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 	        TaxonomyImportContext context = (TaxonomyImportContext) runContext.get(TaxonomyImportContext.CONTEXT_KEY);
-	        Locale defaultLocale = i18nModule.getOverlayLocales().get(I18nModule.getDefaultLocale());
 	         
 	        // Collect the created types for the next step
 	        List<TaxonomyLevelType> createdTypes = new ArrayList<>();
-	        for (TaxonomyLevelType newLevelType : context.getTaxonomyLevelTypeCreateList()) {
-	        	createdTypes.add(taxonomyService.createTaxonomyLevelType(newLevelType.getIdentifier(), newLevelType.getIdentifier(), null, null, true, context.getTaxonomy()));
-	        }
+			if (context.getTaxonomyLevelTypeCreateList() != null) {
+				for (TaxonomyLevelType newLevelType : context.getTaxonomyLevelTypeCreateList()) {
+					createdTypes.add(taxonomyService.createTaxonomyLevelType(newLevelType.getIdentifier(), newLevelType.getIdentifier(), null, null, true, context.getTaxonomy()));
+				}
+			}
+
 	        
 	        // Collect created levels to find parents 
 	        List<TaxonomyLevel> createdLevels = new ArrayList<>();
-	        for (TaxonomyLevel newLevel : context.getTaxonomyLevelCreateList()) {
-	        	TaxonomyLevel parent = null;
-	        	if (newLevel.getParent() != null) {
-		        	// Check whether already existing
-		        	if (newLevel.getParent().getKey() != null) {
-		        		// Take existing Level
-		        		parent = newLevel.getParent();
-		        	} else {
-		        		// Parent cannot throw exception because it must have been created already
-		        		parent = createdLevels.stream().filter(level -> level.getIdentifier().equals(newLevel.getParent().getIdentifier())).collect(Collectors.toList()).get(0);
-		        	}
-	        	}
-				
-				
-				TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), taxonomyService.createI18nSuffix(), null, null, parent, context.getTaxonomy());
-				if (newLevel instanceof TaxonomyLevelImpl) {
-					I18nItem displayNameItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DISPLAY_NAME + createdLevel.getI18nSuffix(), defaultLocale);
-					i18nManager.saveOrUpdateI18nItem(displayNameItem, ((TaxonomyLevelImpl)newLevel).getDisplayName());
-					I18nItem descriptionItem = i18nManager.getI18nItem(TaxonomyUIFactory.BUNDLE_NAME, TaxonomyUIFactory.PREFIX_DESCRIPTION + createdLevel.getI18nSuffix(), defaultLocale);
-					i18nManager.saveOrUpdateI18nItem(descriptionItem, ((TaxonomyLevelImpl)newLevel).getDescription());
-				}
-				createdLevel.setSortOrder(newLevel.getSortOrder());
-	        	
-	        	if (newLevel.getType() != null) {
-	        		TaxonomyLevelType levelType = null;
-	        		
-	        		if (newLevel.getType().getKey() == null) {
-	        			levelType = createdTypes.stream().filter(type -> type.getIdentifier().equals(newLevel.getType().getIdentifier())).findFirst().orElse(null);
-	        		} else {
-	        			levelType = newLevel.getType();
-	        		}
-	        		
-	        		createdLevel.setType(levelType);
-	        	}	        	
-	        	
-	        	createdLevel = taxonomyService.updateTaxonomyLevel(createdLevel);
-	        	createdLevels.add(createdLevel);
-	        }
-	        
-	        // Update existing taxonomies if needed
-	        if (context.isUpdatateExistingTaxonomies()) {
-		        for (TaxonomyLevel updateLevel : context.getTaxonomyLevelUpdateList()) {		        	
-		        	if (updateLevel.getType() != null) {
-		        		TaxonomyLevelType levelType = null;
-		        		
-		        		if (updateLevel.getType().getKey() == null) {
-		        			levelType = createdTypes.stream().filter(type -> type.getIdentifier().equals(updateLevel.getType().getIdentifier())).findFirst().orElse(null);
-		        		} else {
-		        			levelType = updateLevel.getType();
-		        		}
-		        		
-		        		updateLevel.setType(levelType);
-		        	}
-
-					taxonomyService.updateTaxonomyLevel(updateLevel);
-
-					Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
-					List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
-							.map(key -> i18nManager.getLocaleOrNull(key))
-							.filter(Objects::nonNull)
-							.collect(Collectors.toList());
-					String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + updateLevel.getI18nSuffix();
-					String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + updateLevel.getI18nSuffix();
-
-					for (Locale locale : locales) {
-						I18nItem displayNameItem = i18nManager.getI18nItem(
-								TaxonomyUIFactory.BUNDLE_NAME,
-								displayNameKey,
-								allOverlays.get(locale));
-						i18nManager.saveOrUpdateI18nItem(displayNameItem, ((TaxonomyLevelImpl) updateLevel).getDisplayName());
-
-						I18nItem descriptionItem = i18nManager.getI18nItem(
-								TaxonomyUIFactory.BUNDLE_NAME,
-								descriptionKey,
-								allOverlays.get(locale));
-						i18nManager.saveOrUpdateI18nItem(descriptionItem, ((TaxonomyLevelImpl) updateLevel).getDescription());
+			if (context.getTaxonomyLevelCreateList() != null) {
+				for (TaxonomyLevel newLevel : context.getTaxonomyLevelCreateList()) {
+					TaxonomyLevel parent = null;
+					if (newLevel.getParent() != null) {
+						// Check whether already existing
+						if (newLevel.getParent().getKey() != null) {
+							// Take existing Level
+							parent = newLevel.getParent();
+						} else {
+							// Parent cannot throw exception because it must have been created already
+							parent = createdLevels.stream().filter(level -> level.getIdentifier().equals(newLevel.getParent().getIdentifier())).collect(Collectors.toList()).get(0);
+						}
 					}
+
+					TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), taxonomyService.createI18nSuffix(), null, null, parent, context.getTaxonomy());
+					if (newLevel instanceof TaxonomyLevelImpl) {
+						saveOrUpdateI18nItemForTaxonomyLevel(createdLevel, context);
+					}
+
+					createdLevel.setSortOrder(newLevel.getSortOrder());
+
+					if (newLevel.getType() != null && !createdTypes.isEmpty()) {
+						createdLevel.setType(getLevelType(newLevel, createdTypes));
+					}
+
+					createdLevel = taxonomyService.updateTaxonomyLevel(createdLevel);
+					createdLevels.add(createdLevel);
+				}
+			}
+
+	        // Update existing taxonomies if needed
+	        if (context.isUpdateExistingTaxonomies()) {
+		        for (TaxonomyLevel updateLevel : context.getTaxonomyLevelUpdateList()) {
+		        	if (updateLevel.getType() != null && !createdTypes.isEmpty()) {
+						updateLevel.setType(getLevelType(updateLevel, createdTypes));
+		        	}
+					taxonomyService.updateTaxonomyLevel(updateLevel);
+					saveOrUpdateI18nItemForTaxonomyLevel(updateLevel, context);
 		        }
+
+				if (context.getTaxonomyLevelToImageMap() != null) {
+					for (TaxonomyLevel level : context.getTaxonomyLevelToImageMap().keySet()) {
+						File backImage = context.getTaxonomyLevelToImageMap().get(level).get("background");
+						File teaserImage = context.getTaxonomyLevelToImageMap().get(level).get("teaser");
+
+						TaxonomyLevel finalLevel = level;
+						if (createdLevels.stream().anyMatch(cl -> cl.getIdentifier().equals(finalLevel.getIdentifier()))) {
+							level = createdLevels.stream().filter(cl -> cl.getIdentifier().equals(finalLevel.getIdentifier())).findFirst().get();
+						}
+						if (backImage != null) {
+							taxonomyService.storeBackgroundImage(level, ureq.getIdentity(), backImage, backImage.getName());
+						}
+						if (teaserImage != null) {
+							taxonomyService.storeTeaserImage(level, ureq.getIdentity(), teaserImage, teaserImage.getName());
+						}
+					}
+				}
 	        }
-	    	
+
 	    	return StepsMainRunController.DONE_MODIFIED;
 	    }
+	}
+
+	private TaxonomyLevelType getLevelType(TaxonomyLevel level, List<TaxonomyLevelType> createdTypes) {
+		if (level.getType().getKey() == null) {
+			return createdTypes.stream().filter(type -> type.getIdentifier().equals(level.getType().getIdentifier())).findFirst().orElse(null);
+		} else {
+			return level.getType();
+		}
+	}
+
+	private void saveOrUpdateI18nItemForTaxonomyLevel(TaxonomyLevel level, TaxonomyImportContext context) {
+		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
+		List<Locale> locales = context.getNameDescriptionByLanguage().keySet().stream()
+				.map(key -> LocaleUtils.toLocale(key.toLowerCase()))
+				.collect(Collectors.toList());
+		String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + level.getI18nSuffix();
+		String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + level.getI18nSuffix();
+
+		if (context.getNameDescriptionByLanguage() != null) {
+			for (int i = 0; i < locales.size(); i++) {
+				I18nItem displayNameItem = i18nManager.getI18nItem(
+						TaxonomyUIFactory.BUNDLE_NAME,
+						displayNameKey,
+						allOverlays.get(locales.get(i)));
+				I18nItem descriptionItem = i18nManager.getI18nItem(
+						TaxonomyUIFactory.BUNDLE_NAME,
+						descriptionKey,
+						allOverlays.get(locales.get(i)));
+
+				if (context.getReviewList().stream().anyMatch(t -> t.getTaxonomyLevel().getIdentifier().equals(level.getIdentifier()))) {
+					int finalI = i;
+					if (!context.isUpdateExistingTaxonomies()
+							|| (context.isUpdateExistingTaxonomies()
+							&& !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName))) {
+						i18nManager.saveOrUpdateI18nItem(displayNameItem, context.getReviewList().stream()
+								.filter(t -> t.getTaxonomyLevel().getIdentifier().equals(level.getIdentifier()) && t.getLanguage().equals(locales.get(finalI).getLanguage().toUpperCase()))
+								.findFirst()
+								.get().getDisplayName());
+					}
+					if (!context.isUpdateExistingTaxonomies()
+							|| (context.isUpdateExistingTaxonomies()
+							&& !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.description))) {
+						i18nManager.saveOrUpdateI18nItem(descriptionItem, context.getReviewList().stream()
+								.filter(t -> t.getTaxonomyLevel().getIdentifier().equals(level.getIdentifier()) && t.getLanguage().equals(locales.get(finalI).getLanguage().toUpperCase()))
+								.findFirst()
+								.get().getDescription());
+					}
+				}
+			}
+		}
 	}
 	    
     private static class CancelCallback implements StepRunnerCallback {

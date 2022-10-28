@@ -377,7 +377,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			columnsModel.addFlexiColumnModel(selectCol);
 		}
 
-		tableModel = new IdentityAssessmentOverviewTableModel(columnsModel); 
+		tableModel = new IdentityAssessmentOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 250, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableMessageKey("nodesoverview.emptylist");

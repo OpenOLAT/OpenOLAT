@@ -1,6 +1,9 @@
 <div class="o_sel_taxonomy_levels_tree">
-	#if($r.available("add.taxonomy.level") || $r.available("import.taxonomy.levels"))
+	#if($r.available("add.taxonomy.level") || $r.available("import.taxonomy.levels") || $r.available("export.taxonomy.levels"))
 	<div class="o_button_group o_button_group_right">
+		#if($r.available("export.taxonomy.levels"))
+		$r.render("export.taxonomy.levels")
+		#end
 		#if($r.available("add.taxonomy.level"))
 			$r.render("add.taxonomy.level")
 		#end

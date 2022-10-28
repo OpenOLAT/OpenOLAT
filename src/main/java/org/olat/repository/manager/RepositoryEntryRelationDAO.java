@@ -783,16 +783,16 @@ public class RepositoryEntryRelationDAO {
 		return memberhips;
 	}
 	
-	public List<Organisation> getOrganisations(RepositoryEntryRef entry) {
+	public List<Organisation> getOrganisations(Collection<? extends RepositoryEntryRef> entries) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select relOrg from organisation as relOrg")
+		sb.append("select distinct relOrg from organisation as relOrg")
 		  .append(" inner join fetch relOrg.group as bGroup")
 		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
-		  .append(" where rel.entry.key=:repoKey");
+		  .append(" where rel.entry.key in :repoKeys");
 
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Organisation.class)
-			.setParameter("repoKey", entry.getKey())
+			.setParameter("repoKeys", entries.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList()))
 			.getResultList();
 	}
 	

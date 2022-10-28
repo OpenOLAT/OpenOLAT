@@ -164,7 +164,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		//if folder full show error msg
 		if (remainingQuotaKB == 0 ) {
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
-			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
+			String msg = translate("QuotaExceededSupport", supportAddr);
 			getWindowControl().setError(msg);
 			return null;
 		}

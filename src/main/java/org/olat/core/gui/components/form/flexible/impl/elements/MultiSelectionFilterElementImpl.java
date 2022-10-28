@@ -69,8 +69,6 @@ public class MultiSelectionFilterElementImpl  extends FormItemImpl implements Mu
 	private final SelectionValues availableValues;
 	private Set<String> selectedKeys = new HashSet<>(3);
 	
-	//TODO uh Wie den Pfad kürzen?
-
 	public MultiSelectionFilterElementImpl(WindowControl wControl, String name, SelectionValues availableValues) {
 		super(name);
 		this.wControl = wControl;

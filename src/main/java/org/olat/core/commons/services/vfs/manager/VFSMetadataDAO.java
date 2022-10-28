@@ -477,9 +477,16 @@ public class VFSMetadataDAO {
 	}
 
 	public List<VFSMetadata> getMetadatasInNeedForTranscoding() {
-		String query = "select meta from filemetadata as meta where transcodingStatus = " +
-				VFSMetadata.TRANSCODING_STATUS_WAITING +
+		String query = "select meta from filemetadata as meta" +
+				" where deleted = false and transcodingStatus = " + VFSMetadata.TRANSCODING_STATUS_WAITING +
 				" order by meta.creationDate asc, meta.id asc";
+		return dbInstance.getCurrentEntityManager().createQuery(query, VFSMetadata.class).getResultList();
+	}
+
+	public List<VFSMetadata> getMetadatasWithUnresolvedTranscodingStatus() {
+		String query = "select meta from filemetadata as meta" +
+				" where transcodingStatus is not null and transcodingStatus <> " + VFSMetadata.TRANSCODING_STATUS_DONE +
+				" and meta.deleted = false order by meta.creationDate asc, meta.id asc";
 		return dbInstance.getCurrentEntityManager().createQuery(query, VFSMetadata.class).getResultList();
 	}
 }

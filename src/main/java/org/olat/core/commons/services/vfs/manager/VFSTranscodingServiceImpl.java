@@ -31,11 +31,11 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -54,9 +54,6 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	private final JobKey vfsJobKey = new JobKey("vfsTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
 
-	@Value("${vfs.local.transcoding.enabled:false}")
-	private boolean localTranscodingEnabled;
-
 	@Autowired
 	private VFSMetadataDAO vfsMetadataDAO;
 
@@ -68,14 +65,21 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	@Autowired
 	private Scheduler scheduler;
+	@Autowired
+	private AVModule avModule;
 
 	public boolean isLocalTranscodingEnabled() {
-		return localTranscodingEnabled;
+		return avModule.isLocalTranscodingEnabled();
 	}
 
 	@Override
 	public List<VFSMetadata> getMetadatasInNeedForTranscoding() {
 		return vfsMetadataDAO.getMetadatasInNeedForTranscoding();
+	}
+
+	@Override
+	public List<VFSMetadata> getMetadatasWithUnresolvedTranscodingStatus() {
+		return vfsMetadataDAO.getMetadatasWithUnresolvedTranscodingStatus();
 	}
 
 	@Override
@@ -133,5 +137,10 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 				}
 			}
 		}
+	}
+
+	@Override
+	public String getHandbrakeCliExecutable() {
+		return avModule.getHandbrakeCliPath();
 	}
 }

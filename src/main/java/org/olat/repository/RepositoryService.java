@@ -333,6 +333,8 @@ public interface RepositoryService {
 	 */
 	public List<Organisation> getOrganisations(RepositoryEntryRef entry);
 	
+	public List<Organisation> getOrganisations(Collection<? extends RepositoryEntryRef> entries);
+	
 	/**
 	 * Add a link between organization and the specified repository entry.
 	 * 
@@ -354,6 +356,8 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry);
+	
+	public Map<RepositoryEntryRef, List<Organisation>> getRepositoryEntryOrganisations(Collection<? extends RepositoryEntryRef> entries);
 	
 	/**
 	 * Retrieve where the repository entry is linked in taxonomy.
@@ -405,9 +409,6 @@ public interface RepositoryService {
 	 * @param organisation An organization
 	 * @return A list of repository entries
 	 */
-	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation);
-	
-	
-	
+	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation);	
 	
 }

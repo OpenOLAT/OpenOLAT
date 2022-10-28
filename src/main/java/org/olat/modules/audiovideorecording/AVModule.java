@@ -28,6 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 /**
  * Initial date: 2022-10-06<br>
  *
@@ -39,11 +42,19 @@ public class AVModule extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(AVModule.class);
 	private static final String VIDEO_RECORDING_ENABLED = "av.video.recording.enabled";
 	private static final String AUDIO_RECORDING_ENABLED = "av.audio.recording.enabled";
+	private static final String LOCAL_TRANSCODING_ENABLED = "av.local.transcoding.enabled";
+	private static final String HANDBRAKE_CLI_PATH = "av.handbrakecli.path";
 
-	@Value("${av.video.recording.enabled:true}")
+	@Value("${av.video.recording.enabled:false}")
 	private boolean videoRecordingEnabled;
 	@Value("${av.audio.recording.enabled:false}")
 	private boolean audioRecordingEnabled;
+	@Value("${av.local.transcoding.enabled:false}")
+	private boolean localTranscodingEnabled;
+	@Value("${av.handbrakecli.path}")
+	private String handbrakeCliPath;
+
+	private Boolean localTranscodingPossible;
 
 	@Autowired
 	public AVModule(CoordinatorManager coordinatorManager) {
@@ -62,8 +73,20 @@ public class AVModule extends AbstractSpringModule {
 			audioRecordingEnabled = "true".equals(audioRecordingEnabledObj);
 		}
 
+		String localTranscodingEnabledObj = getStringPropertyValue(LOCAL_TRANSCODING_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(localTranscodingEnabledObj)) {
+			localTranscodingEnabled = "true".equals(localTranscodingEnabledObj);
+		}
+
+		String handbrakeCliPathObj = getStringPropertyValue(HANDBRAKE_CLI_PATH, true);
+		if (StringHelper.containsNonWhitespace(handbrakeCliPathObj)) {
+			handbrakeCliPath = handbrakeCliPathObj;
+		}
+
 		log.info("av.video.recording.enabled={}", videoRecordingEnabled);
 		log.info("av.audio.recording.enabled={}", audioRecordingEnabled);
+		log.info("av.local.transcoding.enabled={}", localTranscodingEnabled);
+		log.info("av.handbrakecli.path={}", handbrakeCliPath);
 	}
 
 	@Override
@@ -87,5 +110,53 @@ public class AVModule extends AbstractSpringModule {
 	public void setAudioRecordingEnabled(boolean audioRecordingEnabled) {
 		this.audioRecordingEnabled = audioRecordingEnabled;
 		setStringProperty(AUDIO_RECORDING_ENABLED, Boolean.toString(audioRecordingEnabled), true);
+	}
+
+	public boolean isLocalTranscodingEnabled() {
+		return localTranscodingEnabled;
+	}
+
+	public void setLocalTranscodingEnabled(boolean localTranscodingEnabled) {
+		this.localTranscodingEnabled = localTranscodingEnabled;
+		setStringProperty(LOCAL_TRANSCODING_ENABLED, Boolean.toString(localTranscodingEnabled), true);
+	}
+
+	public String getHandbrakeCliPath() {
+		return handbrakeCliPath;
+	}
+
+	public boolean isLocalTranscodingPossible() {
+		if (localTranscodingPossible == null) {
+			localTranscodingPossible = canStartHandBrake();
+		}
+		return localTranscodingPossible;
+	}
+
+	private boolean canStartHandBrake() {
+		ArrayList<String> command = new ArrayList<>();
+		if (StringHelper.containsNonWhitespace(handbrakeCliPath)) {
+			command.add(handbrakeCliPath);
+		} else {
+			command.add("HandBrakeCLI");
+		}
+		command.add("--version");
+		ProcessBuilder processBuilder = new ProcessBuilder(command);
+		Process process = null;
+		try {
+			process = processBuilder.start();
+			int exitValue = process.waitFor();
+			log.debug("HandBrakeCLI --version exit value: {}", exitValue);
+			return exitValue == 0;
+		} catch (IOException e) {
+			log.info("HandBrakeCLI --version cannot execute", e);
+			return false;
+		} catch (InterruptedException e) {
+			log.warn("HandBrakeCLI --version interrupted", e);
+			return false;
+		} finally {
+			if (process != null) {
+				process.destroy();
+			}
+		}
 	}
 }

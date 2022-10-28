@@ -151,6 +151,10 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.bulk.RepositoryBulkService;
+import org.olat.repository.bulk.SettingsBulkEditables;
+import org.olat.repository.bulk.model.SettingsContext;
+import org.olat.repository.bulk.ui.SettingsStepsStep;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.EditionSupport;
@@ -197,6 +201,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private ModifyStatusController modifyStatusCtrl;
 	private StepsMainRunController wizardCtrl;
 	private StepsMainRunController modifyOwnersWizardCtrl;
+	private StepsMainRunController settingsWizardCtrl;
 	private UserSearchController userSearchCtr;
 	private DialogBoxController copyDialogCtrl;
 	private ReferencesController referencesCtrl;
@@ -222,6 +227,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink importUrlLink;
 	private FormLink copyButton;
 	private FormLink selectButton;
+	private FormLink settingsButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
@@ -251,6 +257,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryBulkService repositoryBulkService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -777,6 +785,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.addBatchButton(modifyStatusButton);
 			modifyOwnersButton = uifactory.addFormLink("tools.modify.owners", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(modifyOwnersButton);
+			settingsButton = uifactory.addFormLink("settings.bulk", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(settingsButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(copyButton);
 			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
@@ -926,6 +936,15 @@ public class AuthorListController extends FormBasicController implements Activat
 				getWindowControl().pop();
 				cleanUp();
 			}
+		} else if(settingsWizardCtrl == source) {
+			if (event.equals(Event.CHANGED_EVENT) ) {
+				getWindowControl().pop();
+				reloadRows();
+				cleanUp();
+			} else if(event.equals(Event.CANCELLED_EVENT)) {
+				getWindowControl().pop();
+				cleanUp();
+			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
 			List<AuthoringEntryRow> rows = (List<AuthoringEntryRow>)userSearchCtr.getUserObject();
@@ -1003,6 +1022,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected void cleanUp() {
 		removeAsListenerAndDispose(confirmDeletePermanentlyCtrl);
 		removeAsListenerAndDispose(modifyOwnersWizardCtrl);
+		removeAsListenerAndDispose(settingsWizardCtrl);
 		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(modifyStatusCtrl);
@@ -1019,6 +1039,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(cmc);
 		confirmDeletePermanentlyCtrl = null;
 		modifyOwnersWizardCtrl = null;
+		settingsWizardCtrl = null;
 		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
 		modifyStatusCtrl = null;
@@ -1067,6 +1088,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doConfirmCopy(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
+			}
+		} else if(settingsButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if(!rows.isEmpty()) {
+				doChangeSettings(ureq, rows);
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
@@ -1472,6 +1500,32 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 	
+	private void doChangeSettings(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		if(guardModalController(settingsWizardCtrl)) return;
+		
+		List<Long> manageableEntryKeys = rows.stream()
+				.filter(this::canManage)
+				.map(AuthoringEntryRow::getKey)
+				.collect(Collectors.toList());
+		
+		if(manageableEntryKeys.isEmpty()) {
+			showWarning("bulk.update.nothing.applicable.selected");
+		} else {
+			List<RepositoryEntry> manageableEntries = repositoryService.loadByKeys(manageableEntryKeys);
+			SettingsBulkEditables editables = repositoryBulkService.getSettingsBulkEditables(manageableEntries);
+			if (!editables.isEditable()) {
+				showWarning("bulk.update.nothing.applicable.selected");
+			} else {
+				SettingsContext settingsContext = new SettingsContext(manageableEntries);
+				SettingsStepsStep step = new SettingsStepsStep(ureq, settingsContext, editables);
+				settingsWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step,
+						new SettingsBulkCallback(), new CancelCallback(), translate("settings.bulk.title"), null);
+				listenTo(settingsWizardCtrl);
+				getWindowControl().pushAsModalDialog(settingsWizardCtrl.getInitialComponent());
+			}
+		}
+	}
+	
 	private void doAddOwners(List<Identity> futureOwners, List<AuthoringEntryRow> rows) {
 		for(AuthoringEntryRow row:rows) {
 			RepositoryEntry re = repositoryService.loadByKey(row.getKey());
@@ -1837,6 +1891,15 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		void run();
 		
+	}
+	
+	private class SettingsBulkCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			SettingsContext context = (SettingsContext)runContext.get(SettingsContext.DEFAULT_KEY);
+			repositoryBulkService.update(context);
+			return StepsMainRunController.DONE_MODIFIED;
+		}
 	}
 	
 	private class FinishedCallback implements StepRunnerCallback {

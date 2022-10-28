@@ -48,6 +48,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.HttpRequestMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -164,10 +165,26 @@ public class TunnelMapper implements Mapper {
 			return new HttpRequestMediaResource(response);
 		} catch (ClientProtocolException | URISyntaxException e) {
 			log.error("", e);
-			return null;
+			return createMediaResourceWithError(e);
 		} catch (IOException e) {
 			log.error("Error loading URI: {}", (meth == null ? "???" : meth.getURI()), e);
-			return null;
+			return createMediaResourceWithError(e);
 		}
+	}
+	
+	/**
+	 * Helper to create a media resource that prints the technical message into an
+	 * HTML page
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private MediaResource createMediaResourceWithError(Exception e) {
+		StringMediaResource smr = new StringMediaResource();
+		String msg = e.getMessage();
+		String lookupUrl = "https://google.com/search?q=" + StringHelper.urlEncodeUTF8(e.getMessage());			
+		smr.setData("<html></body><b>Error:</b> <a href='" + lookupUrl + "' target='_blank' title='Click to google what this means'>" + msg + "</a></body></html>");
+		smr.setContentType("text/html");		
+		return smr;
 	}
 }

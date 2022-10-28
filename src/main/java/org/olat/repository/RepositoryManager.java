@@ -760,7 +760,7 @@ public class RepositoryManager {
 		
 		if(organisations != null) {
 			// sync the relation re_to_group
-			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(reloadedRe);
+			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(reloadedRe));
 			for(Organisation currentOrganisation:currentOrganisationsByGroups) {
 				if(!organisations.contains(currentOrganisation)) {
 					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);
@@ -1035,7 +1035,7 @@ public class RepositoryManager {
 
 		if(organisations != null) {
 			// sync the relation re_to_group
-			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(reloadedRe);
+			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(reloadedRe));
 			for(Organisation currentOrganisation:currentOrganisationsByGroups) {
 				if(!organisations.contains(currentOrganisation)) {
 					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);

@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -27,9 +28,12 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.grade.ui.GradeUIFactory;
 
 /**
  * 
@@ -39,10 +43,16 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDelegate<AssessmentNodeData> {
 	
+	private boolean allGradesNummeric;
+	
 	public IdentityAssessmentOverviewSorter(SortKey orderBy, SortableFlexiTableDataModel<AssessmentNodeData> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
-	
+
+	public void setAllGradesNummeric(boolean allGradesNummeric) {
+		this.allGradesNummeric = allGradesNummeric;
+	}
+
 	@Override
 	protected void sort(List<AssessmentNodeData> rows) {
 		int columnIndex = getColumnIndex();
@@ -52,6 +62,7 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 			case passed: Collections.sort(rows, new PassedComparator()); break;
 			case minMax: Collections.sort(rows, new MinMaxComparator()); break;
 			case status: Collections.sort(rows, new StatusComparator()); break;
+			case grade: Collections.sort(rows, new GradeComparator()); break;
 			default: super.sort(rows); break;
 		}
 	}
@@ -102,6 +113,38 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 			}
 			return status1.compareTo(status2);
 		}
+	}
+	
+	private class GradeComparator implements Comparator<AssessmentNodeData> {
+		
+		private Translator gradeTanslator;
+		
+		public GradeComparator() {
+			gradeTanslator = Util.createPackageTranslator(GradeUIFactory.class, getLocale());
+		}
+		
+		@Override
+		public int compare(AssessmentNodeData r1, AssessmentNodeData r2) {
+			String s1 = r1 != null && r1.getGrade() != null
+					? GradeUIFactory.translatePerformanceClass(gradeTanslator, r1.getPerformanceClassIdent(), r1.getGrade())
+					: null;
+			String s2 = r2 != null && r2.getGrade() != null
+					? GradeUIFactory.translatePerformanceClass(gradeTanslator, r2.getPerformanceClassIdent(), r2.getGrade())
+					: null;
+			
+			if(s1 == null || s2 == null) {
+				return compareNullObjects(s1, s2);
+			}
+			
+			if (allGradesNummeric) {
+				BigDecimal grade1 = new BigDecimal(s1);
+				BigDecimal grade2 = new BigDecimal(s2);
+				return grade1.compareTo(grade2);
+			}
+			
+			return s1.compareTo(s2);
+		}
+		
 	}
 
 }

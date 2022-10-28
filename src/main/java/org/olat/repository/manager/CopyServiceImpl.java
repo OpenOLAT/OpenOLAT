@@ -178,7 +178,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 		
 		// Add to organisations
-		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
+		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(Collections.singletonList(sourceEntry));
 		if (sourceOrganisations != null) {
 			for(Organisation sourceOrganisation:sourceOrganisations) {
 				RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, target, false);
