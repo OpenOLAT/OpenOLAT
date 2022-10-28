@@ -42,6 +42,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -92,6 +93,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
 	private AVSampleSolutionController avSampleSolutionController;
+	private CloseableCalloutWindowController ccwc;
+	private AVConvertingMenuController avConvertingMenuCtrl;
 
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -253,6 +256,15 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (avConvertingMenuCtrl == source) {
+			if (event == AVConvertingMenuController.PLAY_MASTER_EVENT) {
+				Solution solution = (Solution) avConvertingMenuCtrl.getUserObject();
+				doPlayMaster(ureq, solution);
+				ccwc.deactivate();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -261,11 +273,15 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		removeAsListenerAndDispose(editSolutionCtrl);
 		removeAsListenerAndDispose(addSolutionCtrl);
 		removeAsListenerAndDispose(avSampleSolutionController);
+		removeAsListenerAndDispose(avConvertingMenuCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(ccwc);
 		editSolutionCtrl = null;
 		addSolutionCtrl = null;
 		avSampleSolutionController = null;
+		avConvertingMenuCtrl = null;
 		cmc = null;
+		ccwc = null;
 	}
 
 	@Override
@@ -286,7 +302,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 				SelectionEvent se = (SelectionEvent)event;
 				SolutionRow row = solutionModel.getObject(se.getIndex());
 				if("open".equals(se.getCommand())) {
-					doOpen(ureq, row.getSolution(), row.getMode());
+					doOpen(ureq, se.getIndex(), row.getSolution(), row.getMode());
 				} else if("metadata".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
 					doEditmetadata(ureq, row.getSolution());
 				} else if("delete".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
@@ -306,17 +322,34 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		//
 	}
 	
-	private void doOpen(UserRequest ureq, Solution solution, Mode mode) {
+	private void doOpen(UserRequest ureq, int rowIndex, Solution solution, Mode mode) {
 		if (solution.isInTranscoding()) {
+			avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), solution);
+			listenTo(avConvertingMenuCtrl);
+			String targetDomId = ModeCellRenderer.CONVERTING_LINK_PREFIX + rowIndex;
+			ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					avConvertingMenuCtrl.getInitialComponent(), targetDomId, "", true, "");
+			listenTo(ccwc);
+			ccwc.activate();
 			return;
 		}
 
-		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
+		doOpenMediaInNewWindow(ureq, solution, mode);
+	}
+
+	private void doPlayMaster(UserRequest ureq, Solution solution) {
+		doOpenMediaInNewWindow(ureq, solution, Mode.VIEW);
+	}
+
+	private void doOpenMediaInNewWindow(UserRequest ureq, Solution solution, Mode mode) {
+		String fileName = solution.getFilename();
+		VFSItem vfsItem = solutionContainer.resolve(fileName);
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
 			gtaManager.markNews(courseEnv, gtaNode);
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem, solution.getFilename(), mode, courseRepoKey);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem,
+					solution.getFilename(), mode, courseRepoKey);
 			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}

@@ -31,6 +31,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.course.nodes.gta.GTAManager;
 
 public class ModeCellRenderer extends StaticFlexiCellRenderer {
+	public static final String CONVERTING_LINK_PREFIX = "o_converting_link_";
 
 	private DocEditorService docEditorService;
 
@@ -59,7 +60,9 @@ public class ModeCellRenderer extends StaticFlexiCellRenderer {
 				buttonLabel = docEditorService.getModeButtonLabel(mode, fileName, translator);
 			}
 		} else if (GTAManager.BUSY_VALUE.equals(cellValue)) {
-			icon = "o_icon o_icon_busy o_icon-spin";
+			buttonStyle = "btn btn-default btn-xs o_button_ghost";
+			buttonLabel = "<span id=\"" + CONVERTING_LINK_PREFIX + row + "\">" +
+					translator.translate("av.converting") + "</span>";
 			setNewWindow(false);
 		}
 

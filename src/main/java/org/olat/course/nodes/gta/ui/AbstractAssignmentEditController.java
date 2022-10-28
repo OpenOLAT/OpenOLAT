@@ -45,6 +45,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -106,6 +107,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private EditTaskController addTaskCtrl;
 	private EditTaskController editTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
+	private CloseableCalloutWindowController ccwc;
+	private AVConvertingMenuController avConvertingMenuCtrl;
 	
 	private final File tasksFolder;
 	protected final boolean readOnly;
@@ -305,6 +308,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (avConvertingMenuCtrl == source) {
+			if (event == AVConvertingMenuController.PLAY_MASTER_EVENT) {
+				TaskDefinition taskDefinition = (TaskDefinition) avConvertingMenuCtrl.getUserObject();
+				doPlayMaster(ureq, taskDefinition);
+				ccwc.deactivate();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -314,12 +326,16 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
 		removeAsListenerAndDispose(avTaskCtrl);
+		removeAsListenerAndDispose(avConvertingMenuCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(ccwc);
 		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
 		avTaskCtrl = null;
+		avConvertingMenuCtrl = null;
 		cmc = null;
+		ccwc = null;
 	}
 
 	@Override
@@ -345,7 +361,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 						doDelete(ureq, row.getTaskDefinition());
 					}
 				} else if("open".equals(se.getCommand())) {
-					doOpen(ureq, row.getTaskDefinition(), row.getMode());
+					doOpen(ureq, se.getIndex(),	row.getTaskDefinition(), row.getMode());
 				}
 			}
 		}
@@ -415,21 +431,37 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		cmc.activate();
 	}
 
-	private void doOpen(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+	private void doOpen(UserRequest ureq, int rowIndex, TaskDefinition taskDef, Mode mode) {
 		if (taskDef.isInTranscoding()) {
+			avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), taskDef);
+			listenTo(avConvertingMenuCtrl);
+			String targetDomId = ModeCellRenderer.CONVERTING_LINK_PREFIX + rowIndex;
+			ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					avConvertingMenuCtrl.getInitialComponent(), targetDomId, "", true, "");
+			listenTo(ccwc);
+			ccwc.activate();
 			return;
 		}
+		doOpenMediaInNewWindow(ureq, taskDef, mode);
+	}
 
-		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
+	private void doPlayMaster(UserRequest ureq, TaskDefinition taskDef) {
+		doOpenMediaInNewWindow(ureq, taskDef, Mode.VIEW);
+	}
+
+	private void doOpenMediaInNewWindow(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+		String fileName = taskDef.getFilename();
+		VFSItem vfsItem = tasksContainer.resolve(fileName);
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem, taskDef.getFilename(), mode, courseRepoKey);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem, fileName, mode,
+					courseRepoKey);
 			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}
 	}
-	
+
 	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {
 		String title = translate("warning.tasks.in.process.delete.title");
 		String text = translate("warning.tasks.in.process.delete.text");
