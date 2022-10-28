@@ -48,6 +48,9 @@
 		<Logger name="org.hibernate.type.descriptor.sql.BasicBinder" additivity="false" level="fatal">
 			<AppenderRef ref="Console" />
 		</Logger>
+		<Logger name="org.apache.activemq.audit" additivity="false" level="warn">
+			<AppenderRef ref="Console" />
+		</Logger>
 		<Logger name="org.olat.search" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>

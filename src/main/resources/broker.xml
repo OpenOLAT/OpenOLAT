@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
-   <core xmlns="urn:activemq:core">
+	<core xmlns="urn:activemq:core">
 		<!-- //TODO jee add security -->
-      <security-enabled>false</security-enabled>
-      <persistence-enabled>false</persistence-enabled>
-
-      <acceptors>
-         <acceptor name="in-vm">vm://0</acceptor>
-      </acceptors>
-
-   </core>
+		<security-enabled>false</security-enabled>
+		<persistence-enabled>false</persistence-enabled>
+		<graceful-shutdown-enabled>true</graceful-shutdown-enabled>
+		<graceful-shutdown-timeout>2000</graceful-shutdown-timeout>
+		
+		<acceptors>
+			<acceptor name="in-vm">vm://0</acceptor>
+		</acceptors>
+	</core>
 </configuration>
