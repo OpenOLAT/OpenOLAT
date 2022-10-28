@@ -61,7 +61,7 @@ public class AccessConfigurationDisabledController extends FormBasicController {
 		addFormLink.setIconRightCSS("o_icon o_icon_caret");
 		addFormLink.setEnabled(false);
 		
-		uifactory.addStaticTextElement("message", translate("create.offer.disabled"), confContainer);
+		uifactory.addStaticTextElement("message", null, translate("create.offer.disabled"), confContainer);
 	}
 
 	@Override

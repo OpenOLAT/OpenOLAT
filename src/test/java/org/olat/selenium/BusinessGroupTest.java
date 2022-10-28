@@ -499,10 +499,8 @@ public class BusinessGroupTest extends Deployments {
 			.openAdminTools()
 			.enableTools()
 			.openAdminMembers()
-			.setVisibility(true, true, false);
-		//add Kanu to the group
-		group
-			.openAdminMembers()
+			.setVisibility(true, true, false)
+			//add Kanu to the group
 			.addMember()
 			.searchMember(kanu, true)
 			.nextUsers()

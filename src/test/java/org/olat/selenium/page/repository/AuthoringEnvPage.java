@@ -167,7 +167,7 @@ public class AuthoringEnvPage {
 		browser.findElement(typeBy).click();
 		// create the course
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
-		browser.findElement(submitBy).click();
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(generaltabBy, browser);
 		OOGraphene.waitTinymce(browser);

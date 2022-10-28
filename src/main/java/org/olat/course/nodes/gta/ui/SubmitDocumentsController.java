@@ -45,6 +45,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -106,6 +107,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
 	private AVSubmissionController avSubmissionController;
+	private CloseableCalloutWindowController ccwc;
+	private AVConvertingMenuController avConvertingMenuCtrl;
 
 	private final int minDocs;
 	private final int maxDocs;
@@ -428,6 +431,15 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			checkDeadline(ureq);
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (avConvertingMenuCtrl == source) {
+			if (event == AVConvertingMenuController.PLAY_MASTER_EVENT) {
+				String fileName = (String) avConvertingMenuCtrl.getUserObject();
+				doPlayMaster(ureq, fileName);
+				ccwc.deactivate();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -439,14 +451,18 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(avSubmissionController);
+		removeAsListenerAndDispose(avConvertingMenuCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(ccwc);
 		confirmDeleteCtrl = null;
 		viewDocCtrl = null;
 		copyDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
 		avSubmissionController = null;
+		avConvertingMenuCtrl = null;
 		cmc = null;
+		ccwc = null;
 	}
 	
 	@Override
@@ -485,7 +501,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				} else if("open".equals(se.getCommand())) {
 					String filename = row.getFile().getName();
 					Mode mode = row.getMode();
-					doOpen(ureq, filename, mode);
+					doOpen(ureq, se.getIndex(), filename, mode);
 				} else if("replace".equals(se.getCommand())) {
 					doReplaceDocument(ureq, row);
 				}
@@ -540,7 +556,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		updateWarnings();
 	}
 	
-	private void doOpen(UserRequest ureq, String filename, Mode mode) {
+	private void doOpen(UserRequest ureq, int rowIndex, String filename, Mode mode) {
 		gtaManager.markNews(courseEnv, gtaNode);
 		updateWarnings();
 		checkDeadline(ureq);
@@ -550,13 +566,32 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		} else {
 			VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
 			if (vfsLeaf.canMeta() == VFSConstants.YES && vfsLeaf.getMetaInfo() != null && vfsLeaf.getMetaInfo().isInTranscoding()) {
+				avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), filename);
+				listenTo(avConvertingMenuCtrl);
+				String targetDomId = ModeCellRenderer.CONVERTING_LINK_PREFIX + rowIndex;
+				ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+						avConvertingMenuCtrl.getInitialComponent(), targetDomId, "", true, "");
+				listenTo(ccwc);
+				ccwc.activate();
 				return;
 			}
-			fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, filename, mode, null);
-			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+			doOpenMediaInNewWindow(ureq, vfsLeaf, mode);
 		}
+	}
+
+	private void doPlayMaster(UserRequest ureq, String fileName) {
+		VFSItem vfsItem = documentsContainer.resolve(fileName);
+		if (vfsItem instanceof VFSLeaf) {
+			doOpenMediaInNewWindow(ureq, (VFSLeaf)vfsItem, Mode.VIEW);
+		}
+	}
+
+	private void doOpenMediaInNewWindow(UserRequest ureq, VFSLeaf vfsLeaf, Mode mode) {
+		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), mode,
+				null);
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 	
 	private void doReplaceDocument(UserRequest ureq, SubmittedSolution row) {

@@ -19,9 +19,6 @@
  */
 package org.olat.core.commons.services.video.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -38,6 +35,9 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -75,13 +75,15 @@ public class VideoAudioPlayerController extends BasicController {
 
 		// 2) Create mapper and URL for video delivery
 		VFSLeaf vfsVideo = configs.getVfsLeaf();
-		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));		
-		VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);		
+		VFSMetadata metaData = vfsVideo.getMetaInfo();
+		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));
+		VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);
+		boolean useMaster = metaData != null && metaData.isInTranscoding();
+		videoMapper.setUseMaster(useMaster);
 		String url = registerCacheableMapper(ureq, mapperId, videoMapper);
 		videoAudioPlayerVC.contextPut("videoUrl", url + "/" + vfsVideo.getName());
 
 		// *) Add some metadata
-		VFSMetadata metaData = vfsVideo.getMetaInfo();
 		if (metaData != null) {
 			videoAudioPlayerVC.contextPut("videoTitle", metaData.getTitle());			
 		}		
