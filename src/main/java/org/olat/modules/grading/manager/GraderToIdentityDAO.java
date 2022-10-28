@@ -305,7 +305,7 @@ public class GraderToIdentityDAO {
 			sb.append(" inner join rel.entry as refEntry")
 			  .append(" inner join refEntry.olatResource as refResource");
 		}
-		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+		if(searchParams.getClosedFromDate() != null || searchParams.getClosedToDate() != null) {
 			sb.append(" left join record.assignment as assignment");
 		}
 
