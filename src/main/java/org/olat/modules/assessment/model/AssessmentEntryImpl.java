@@ -59,7 +59,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="assessmententry")
 @Table(name="o_as_entry")
 @NamedQuery(name="loadAssessmentEntryById",
-	query="select data from assessmententry data where data.key=:key")
+	query="select data from assessmententry data left join fetch data.identity ident left join fetch ident.user as usr where data.key=:key")
 @NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent",
 	query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
 public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInfo, AssessmentEntry {

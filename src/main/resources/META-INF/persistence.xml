@@ -18,7 +18,6 @@
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/PolicyImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/IdentityImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupMembershipImpl.hbm.xml</mapping-file>
@@ -26,7 +25,6 @@
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/commons/services/mark/impl/MarkImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/util/mail/model/DBMail.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/util/mail/model/DBMailAttachment.hbm.xml</mapping-file>
@@ -41,6 +39,7 @@
 		<class>org.olat.upgrade.model.UpgradeCatalogEntry</class>
 		<!-- End upgraders mapping -->
 
+		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
 		<class>org.olat.basesecurity.model.GrantImpl</class>
@@ -69,6 +68,7 @@
 		<class>org.olat.core.commons.services.license.model.LicenseTypeImpl</class>
 		<class>org.olat.core.commons.services.license.model.ResourceLicenseImpl</class>
 		<class>org.olat.core.commons.services.lock.pessimistic.PLockImpl</class>
+		<class>org.olat.core.commons.services.mark.impl.MarkImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>

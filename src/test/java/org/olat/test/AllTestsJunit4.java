@@ -474,7 +474,7 @@ import org.junit.runners.Suite;
 	org.olat.login.oauth.ADFSProviderTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.ldap.manager.LDAPLoginManagerTest.class,
-	org.olat.core.commons.services.mark.MarksTest.class,
+	org.olat.core.commons.services.mark.MarkManagerTest.class,
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests
 	org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAOTest.class,

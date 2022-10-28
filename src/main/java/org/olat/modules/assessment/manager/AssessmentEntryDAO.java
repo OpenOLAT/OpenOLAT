@@ -234,20 +234,18 @@ public class AssessmentEntryDAO {
 		nodeAssessment.setCompletion(null);
 		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.notStarted);
 		nodeAssessment.setAssessmentDoneBy(null);
-		if (nodeAssessment instanceof AssessmentEntryImpl) {
-			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
+		if (nodeAssessment instanceof AssessmentEntryImpl impl) {
 			impl.setLastModified(new Date());
 			impl.setRawPassed(null);
 			impl.setPassedOriginal(null);
 			impl.setPassedModificationIdentity(null);
 			impl.setPassedModificationDate(null);
 		}
-		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
+		return mergeAndLoadIdentity(nodeAssessment);
 	}
 	
 	public AssessmentEntry setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
-		if (nodeAssessment instanceof AssessmentEntryImpl) {
-			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
+		if (nodeAssessment instanceof AssessmentEntryImpl impl) {
 			impl.setLastVisit(lastVisit);
 			if (nodeAssessment.getFirstVisit() == null) {
 				impl.setFirstVisit(lastVisit);
@@ -256,14 +254,13 @@ public class AssessmentEntryDAO {
 			numVisits++;
 			impl.setNumberOfVisits(Integer.valueOf(numVisits));
 			impl.setLastModified(new Date());
-			return dbInstance.getCurrentEntityManager().merge(impl);
+			return mergeAndLoadIdentity(impl);
 		}
 		return nodeAssessment;
 	}
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {
-		if (nodeAssessment instanceof AssessmentEntryImpl) {
-			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
+		if (nodeAssessment instanceof AssessmentEntryImpl impl) {
 			impl.setLastModified(new Date());
 			Overridable<Boolean> passed = nodeAssessment.getPassedOverridable();
 			impl.setRawPassed(passed.getCurrent());
@@ -284,7 +281,20 @@ public class AssessmentEntryDAO {
 			impl.setObligationModIdentity(obligation.getModBy());
 			impl.setObligationModDate(obligation.getModDate());
 		}
-		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
+		return mergeAndLoadIdentity(nodeAssessment);
+	}
+	
+	/**
+	 * Merge the specified assessment entry and ensure the associated
+	 * identity and user is load.
+	 */
+	private AssessmentEntry mergeAndLoadIdentity(AssessmentEntry assessmentEntry) {
+		assessmentEntry = dbInstance.getCurrentEntityManager().merge(assessmentEntry);
+		Identity identity = assessmentEntry.getIdentity();
+		if(identity != null) {
+			identity.getUser().getKey();
+		}
+		return assessmentEntry;
 	}
 	
 	public void resetAllRootPassed(RepositoryEntry entry) {

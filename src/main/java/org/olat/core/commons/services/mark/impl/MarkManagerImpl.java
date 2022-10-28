@@ -22,15 +22,13 @@ package org.olat.core.commons.services.mark.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
-
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.mark.MarkResourceStat;
@@ -38,6 +36,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Description:<br>
@@ -55,11 +57,11 @@ public class MarkManagerImpl implements MarkManager {
 
 	@Override
 	public List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPath) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select mark from ").append(MarkImpl.class.getName()).append(" mark where ")
-			.append("mark.resId=:resId and mark.resName=:resName and mark.creator=:creator");
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select mrk from mark mrk where ")
+		  .append("mrk.resId=:resId and mrk.resName=:resName and mrk.creator=:creator");
 		if(subPath != null && !subPath.isEmpty()) {
-			sb.append(" and mark.resSubPath in (:resSubPaths)");
+			sb.append(" and mrk.resSubPath in (:resSubPaths)");
 		}
 		
 		TypedQuery<Mark> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Mark.class)
@@ -75,10 +77,10 @@ public class MarkManagerImpl implements MarkManager {
 	@Override
 	public Set<Long> getMarkResourceIds(Identity identity, String resourceTypeName, Collection<String> subPaths) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(mark.resId) from ").append(MarkImpl.class.getName()).append(" mark where ")
-			.append("mark.resName=:resName and mark.creator=:creator");
+		sb.append("select distinct(mrk.resId) from mark mrk where ")
+			.append("mrk.resName=:resName and mrk.creator=:creator");
 		if(!subPaths.isEmpty()) {
-			sb.append(" and mark.resSubPath in (:resSubPaths)");
+			sb.append(" and mrk.resSubPath in (:resSubPaths)");
 		}
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
@@ -95,27 +97,26 @@ public class MarkManagerImpl implements MarkManager {
 	@Override
 	public List<Mark> getMarks(Identity identity, Collection<String> resourceTypeName) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mark from ").append(MarkImpl.class.getName()).append(" mark where ")
-			.append("mark.creator=:creator ");
+		sb.append("select mrk from mark mrk where ")
+			.append("mrk.creator=:creator ");
 		if(resourceTypeName != null && !resourceTypeName.isEmpty()) {
-			sb.append("and mark.resName in(:resName)");
+			sb.append("and mrk.resName in (:resName)");
 		}
 
-		
 		TypedQuery<Mark> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Mark.class)
 				.setParameter("creator", identity);
 		if(resourceTypeName != null && !resourceTypeName.isEmpty()) {
 			query.setParameter("resName", resourceTypeName);
 		}
 
-		List<Mark> results = query.getResultList();
-		return results;
+		return query.getResultList();
 	}
-	
+
+	@Override
 	public List<Long> getMarksResourceId(Identity identity, String resourceTypeName) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
-		  .append(" where mark.creator=:creator and mark.resName =:resName");
+		sb.append("select mrk.resId from mark mrk")
+		  .append(" where mrk.creator=:creator and mrk.resName =:resName");
 
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("creator", identity)
@@ -147,10 +148,10 @@ public class MarkManagerImpl implements MarkManager {
 	@Override
 	public boolean isMarked(OLATResourceable ores, Identity identity, String resSubPath) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mark.key from ").append(MarkImpl.class.getName()).append(" mark where ")
-			.append("mark.resId=:resId and mark.resName=:resName and mark.creator=:creator");
+		sb.append("select mrk.key from mark mrk where ")
+			.append("mrk.resId=:resId and mrk.resName=:resName and mrk.creator=:creator");
 		if(resSubPath != null) {
-			sb.append(" and mark.resSubPath=:resSubPath");
+			sb.append(" and mrk.resSubPath=:resSubPath");
 		}
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -174,12 +175,13 @@ public class MarkManagerImpl implements MarkManager {
 		MarkImpl mark = loadMark(ores, identity, subPath);
 		if(mark == null) {
 			mark = new MarkImpl();
+			mark.setCreationDate(new Date());
 			mark.setResName(ores.getResourceableTypeName());
 			mark.setResId(ores.getResourceableId());
 			mark.setResSubPath(subPath);
 			mark.setBusinessPath(businessPath);
 			mark.setCreator(identity);
-			dbInstance.saveObject(mark);
+			dbInstance.getCurrentEntityManager().persist(mark);
 		}
 		return mark;
 	}
@@ -240,11 +242,8 @@ public class MarkManagerImpl implements MarkManager {
 	
 	@Override
 	public void deleteMarks(OLATResourceable ores) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(MarkImpl.class.getName()).append(" mark where ")
-			.append("mark.resId=:resId and mark.resName=:resName");
-		
-		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+		String query = "delete from mark mrk where mrk.resId=:resId and mrk.resName=:resName";
+		dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("resName", ores.getResourceableTypeName())
 				.setParameter("resId", ores.getResourceableId())
 				.setFlushMode(FlushModeType.AUTO)
@@ -286,12 +285,12 @@ public class MarkManagerImpl implements MarkManager {
 			}
 		} else {
 			StringBuilder sb = new StringBuilder();
-			sb.append("select count(mark.resSubPath), mark.resSubPath from ").append(MarkImpl.class.getName()).append(" mark where ")
-				.append("mark.resId=:resId and mark.resName=:resName and mark.resSubPath in (:resSubPath)");
+			sb.append("select count(mrk.resSubPath), mrk.resSubPath from mark mrk where ")
+				.append("mrk.resId=:resId and mrk.resName=:resName and mrk.resSubPath in (:resSubPath)");
 			if(identity != null) {
-				sb.append(" and mark.creator=:creator");
+				sb.append(" and mrk.creator=:creator");
 			}
-			sb.append(" group by mark.resSubPath");
+			sb.append(" group by mrk.resSubPath");
 			
 			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Object[].class)
