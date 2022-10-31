@@ -77,7 +77,6 @@ public class ImsQTI21Test extends Deployments {
 	 * jump automatically the close test). The test has one
 	 * part and 2 questions, no feedbacks, no review allowed...
 	 * 
-	 * @param authorLoginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -121,7 +120,6 @@ public class ImsQTI21Test extends Deployments {
 	 * Test the flow of a test with questions feedbacks and test
 	 * feedback.
 	 * 
-	 * @param authorLoginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -173,7 +171,6 @@ public class ImsQTI21Test extends Deployments {
 	 * tests and the resource options "show results at the end
 	 * of the test".
 	 * 
-	 * @param authorLoginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -228,7 +225,6 @@ public class ImsQTI21Test extends Deployments {
 	 * tests and the resource options "show results at the end
 	 * of the test".
 	 * 
-	 * @param authorLoginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -286,7 +282,6 @@ public class ImsQTI21Test extends Deployments {
 	/**
 	 * Test with 2 parts and test feedbacks.
 	 * 
-	 * @param authorLoginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -332,6 +327,68 @@ public class ImsQTI21Test extends Deployments {
 			.assertOnAssessmentTestFeedback("Well done")
 			.closeTest()
 			.assertOnAssessmentTestTerminated();
+	}
+	
+	/**
+	 * A test with two parts, feedback and the last part has the option
+	 * linear set, but hasn't any feedback plus "show results at the end
+	 * of the test".<br>
+	 * @see https://jira.openolat.org/browse/OO-6547
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21TestFlow_parts_noFeedbacks_lastPartLinear()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Last linear parts QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_with_parts_nofeedback_linear.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(browser);
+		qtiPage
+			.settings()
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		qtiPage
+			.clickToolbarBack()
+			.startTestPart()
+			.selectItem("First question")
+			.assertOnAssessmentItem("First question")
+			.answerSingleChoiceWithParagraph("Correct")
+			.saveAnswer()
+			.assertOnAssessmentItem("Second question")
+			.answerMultipleChoice("True")
+			.saveAnswer()
+			.endTestPart()
+			.assertOnAssessmentItem("Third question")
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.nextAnswer()
+			.assertOnAssessmentItem("Last question")
+			.answerCorrectKPrim("True", "Right")
+			.answerIncorrectKPrim("Wrong", "False")
+			.saveAnswer()
+			.nextAnswer()
+			.closeTest()
+			.assertOnAssessmentTestMaxScore(4)
+			.assertOnAssessmentTestScore(4)
+			.assertOnAssessmentTestPassed();
 	}
 	
 	/**
