@@ -63,6 +63,7 @@ public class FileCreatorController extends FormBasicController {
 	private VFSContainer baseContainer;
 	private String subfolderPath;
 	private VFSLeaf createdFile;
+	private Object userObject;
 
 	private TextElement fileNameElement;
 	private TextElement targetSubPath;
@@ -119,6 +120,14 @@ public class FileCreatorController extends FormBasicController {
 
 	}	
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isFileNmaeValid = true;

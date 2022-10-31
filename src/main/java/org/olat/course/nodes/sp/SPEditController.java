@@ -105,7 +105,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		courseFolderBaseContainer = course.getCourseFolderContainer(CourseContainerOptions.withoutElements());
 
 		myContent = createVelocityContainer("edit");
-		myContent.contextPut("fieldSetLegend", translate("fieldSetLegend"));
+		myContent.contextPut("fieldSetLegend", translate(PANE_TAB_SPCONFIG));
 		
 		moduleConfiguration.remove("iniframe");//on the fly remove deprecated stuff
 		moduleConfiguration.remove("statefulMicroWeb");
