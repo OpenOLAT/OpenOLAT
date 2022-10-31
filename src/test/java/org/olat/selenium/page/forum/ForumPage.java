@@ -102,10 +102,11 @@ public class ForumPage {
 		By newThreadBy = By.className("o_sel_forum_thread_new");
 		browser.findElement(newThreadBy).click();
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");
-		OOGraphene.waitElement(titleBy, 5, browser);
+		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
 		
 		if(alias != null) {
@@ -120,7 +121,7 @@ public class ForumPage {
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		By messageTitleBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + title + "')]]");
-		OOGraphene.waitElement(messageTitleBy, 5, browser);
+		OOGraphene.waitElement(messageTitleBy, browser);
 		return this;
 	}
 	
