@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
+import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -28,6 +29,8 @@ import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
+import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -79,6 +82,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
@@ -109,6 +113,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private AVSubmissionController avSubmissionController;
 	private CloseableCalloutWindowController ccwc;
 	private AVConvertingMenuController avConvertingMenuCtrl;
+	private VideoAudioPlayerController videoAudioPlayerController;
 
 	private final int minDocs;
 	private final int maxDocs;
@@ -436,10 +441,13 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		} else if (avConvertingMenuCtrl == source) {
 			if (event == AVConvertingMenuController.PLAY_MASTER_EVENT) {
 				String fileName = (String) avConvertingMenuCtrl.getUserObject();
-				doPlayMaster(ureq, fileName);
 				ccwc.deactivate();
 				cleanUp();
+				doPlayMaster(ureq, fileName);
 			}
+		} else if (videoAudioPlayerController == source) {
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -452,6 +460,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(avSubmissionController);
 		removeAsListenerAndDispose(avConvertingMenuCtrl);
+		removeAsListenerAndDispose(videoAudioPlayerController);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		confirmDeleteCtrl = null;
@@ -461,6 +470,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		newDocCtrl = null;
 		avSubmissionController = null;
 		avConvertingMenuCtrl = null;
+		videoAudioPlayerController = null;
 		cmc = null;
 		ccwc = null;
 	}
@@ -561,7 +571,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		updateWarnings();
 		checkDeadline(ureq);
 		VFSItem vfsItem = documentsContainer.resolve(filename);
-		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+		if (!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
 			VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
@@ -575,15 +585,33 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				ccwc.activate();
 				return;
 			}
-			doOpenMediaInNewWindow(ureq, vfsLeaf, mode);
+			String suffix = FileUtils.getFileSuffix(filename);
+			Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
+			if (videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, mode, false))) {
+				doOpenMediaInModalController(ureq, vfsLeaf, mode);
+			} else {
+				doOpenMediaInNewWindow(ureq, vfsLeaf, mode);
+			}
 		}
 	}
 
 	private void doPlayMaster(UserRequest ureq, String fileName) {
 		VFSItem vfsItem = documentsContainer.resolve(fileName);
 		if (vfsItem instanceof VFSLeaf) {
-			doOpenMediaInNewWindow(ureq, (VFSLeaf)vfsItem, Mode.VIEW);
+			doOpenMediaInModalController(ureq, (VFSLeaf)vfsItem, Mode.VIEW);
 		}
+	}
+
+	private void doOpenMediaInModalController(UserRequest ureq, VFSLeaf vfsLeaf, Mode mode) {
+		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), mode,
+				null);
+		videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
+		String title = translate("av.play");
+		cmc = new CloseableModalController(getWindowControl(), "close",
+				videoAudioPlayerController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doOpenMediaInNewWindow(UserRequest ureq, VFSLeaf vfsLeaf, Mode mode) {

@@ -35,16 +35,14 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class AVConvertingMenuController extends BasicController {
 	public static final Event PLAY_MASTER_EVENT = new Event("playmaster");
-	private final VelocityContainer mainVC;
 	private final Link playMasterLink;
 	private final Object userObject;
 
 	public AVConvertingMenuController(UserRequest ureq, WindowControl wControl, Object userObject) {
 		super(ureq, wControl);
 		this.userObject = userObject;
-		mainVC = createVelocityContainer("av_converting_menu");
+		VelocityContainer mainVC = createVelocityContainer("av_converting_menu");
 		playMasterLink = LinkFactory.createLink("av.converting.menu.playMaster", "playMaster", getTranslator(), mainVC, this, Link.LINK);
-		playMasterLink.setNewWindow(true, true);
 		playMasterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video");
 		mainVC.put("playMaster", playMasterLink);
 		putInitialPanel(mainVC);

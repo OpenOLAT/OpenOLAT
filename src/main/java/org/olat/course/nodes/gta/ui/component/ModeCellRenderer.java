@@ -20,20 +20,25 @@
 package org.olat.course.nodes.gta.ui.component;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.gta.GTAManager;
+
+import java.util.Optional;
 
 public class ModeCellRenderer extends StaticFlexiCellRenderer {
 	public static final String CONVERTING_LINK_PREFIX = "o_converting_link_";
 
-	private DocEditorService docEditorService;
+	private final DocEditorService docEditorService;
 
 	public ModeCellRenderer(String action, DocEditorService docEditorService) {
 		super("", action, true, true);
@@ -59,6 +64,13 @@ public class ModeCellRenderer extends StaticFlexiCellRenderer {
 				buttonStyle = "btn btn-default btn-xs o_button_ghost";
 				buttonLabel = docEditorService.getModeButtonLabel(mode, fileName, translator);
 			}
+			String suffix = FileUtils.getFileSuffix(fileName);
+			Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
+			videoAudioPlayer.ifPresent((DocEditor docEditor) -> {
+				if (docEditor.isSupportingFormat(suffix, mode, false)) {
+					setNewWindow(false);
+				}
+			});
 		} else if (GTAManager.BUSY_VALUE.equals(cellValue)) {
 			buttonStyle = "btn btn-default btn-xs o_button_ghost";
 			buttonLabel = "<span id=\"" + CONVERTING_LINK_PREFIX + row + "\">" +
