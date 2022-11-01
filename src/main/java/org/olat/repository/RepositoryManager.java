@@ -311,12 +311,14 @@ public class RepositoryManager {
 		String extension = FileUtils.getFileSuffix(filename);
 		if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)) {
 			targetExtension = ".jpg";
-		}
+		} else if ("gif".equalsIgnoreCase(extension)) {
+			targetExtension = ".gif";
+ 		}
 		
 		File repositoryHome = getMediaDirectory(re.getOlatResource());
 		File repoImage = new File(repositoryHome, re.getResourceableId() + targetExtension);
 
-		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
+		if(targetExtension.equals(".png") || targetExtension.equals(".jpg") || targetExtension.equals(".gif")) {
 			Size newImageSize = imageHelper.getSize(newImageFile, extension);
 			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
 				return FileUtils.copyFileToFile(newImageFile, repoImage, true);
@@ -1470,8 +1472,8 @@ public class RepositoryManager {
 				}
 
 				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.addOwner, mailing);
-				log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
-						+ "' to repoentry with key " + re.getKey());
+				log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to repoentry with key ({})",
+						ureqIdentity.getKey(), identity.getKey(), re.getKey());
 			}//else silently ignore already owner identities
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
@@ -1605,8 +1607,8 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
-				+ "' to repositoryentry with key " + re.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to repositoryentry with key {}",
+				ureqIdentity.getKey(), identity.getKey(), re.getKey());
 	}
 
 	/**
@@ -1639,8 +1641,8 @@ public class RepositoryManager {
 			} finally {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
-			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
-					+ "' as coach from repositoryentry with key " + re.getKey());
+			log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' as coach from repositoryentry with key {}",
+					ureqIdentity.getKey(), identity.getKey(), re.getKey());
 		}
 	}
 
@@ -1751,8 +1753,8 @@ public class RepositoryManager {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
 		
-			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
-				+ "' as participant from repositoryentry with key " + re.getKey());
+			log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' as participant from repositoryentry with key {}",
+					ureqIdentity.getKey(), identity.getKey(), re.getKey());
 		}
 	}
 
@@ -1803,7 +1805,7 @@ public class RepositoryManager {
 			for (Identity member : members) {
 				sb.append(member.getKey()).append(", ");
 			}
-			log.info(Tracing.M_AUDIT, sb.toString());
+			log.info(Tracing.M_AUDIT, sb);
 		}
 
 		for(Identity identity:members) {
