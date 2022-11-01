@@ -119,7 +119,11 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			log.error("Input file or output file for thumbnailing? {} -> {}", file, thumbnailFile);
 			return null;
 		}
-		
+		if(file.getName().toLowerCase().endsWith(".gif") && isAnimatedGif(file)) {
+			// Animated GIFs cannot be properly scaled, we scale only the first image
+			firstOnly = true;
+		}
+
 		if(!thumbnailFile.getParentFile().exists()) {
 			thumbnailFile.getParentFile().mkdirs();
 		}

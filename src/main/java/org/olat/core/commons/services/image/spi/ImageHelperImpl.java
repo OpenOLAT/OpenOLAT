@@ -53,13 +53,13 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.Size;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -698,8 +698,8 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	}
 	
 	public static final class SizeAndBufferedImage {
-		private Size size;
-		private Size scaledSize;
+		private final Size size;
+		private final Size scaledSize;
 		private BufferedImage image;
 		
 		public SizeAndBufferedImage(Size size, Size scaledSize) {
