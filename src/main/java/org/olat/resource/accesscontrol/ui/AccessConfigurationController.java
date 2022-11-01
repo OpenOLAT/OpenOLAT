@@ -472,7 +472,7 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		
 		IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
-		iconPanel.setElementCssClass("o_block_bottom");
+		iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
 		iconPanel.setIconCssClass("o_icon o_icon-fw " + link.getMethod().getMethodCssClass() + "_icon");
 		iconPanel.setTitle(handler.getMethodName(getLocale()));
 		offersContainer.add(iconPanel.getName(), iconPanel);
@@ -507,7 +507,7 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		if(!updated) {
 			IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
-			iconPanel.setElementCssClass("o_block_bottom");
+			iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
 			iconPanel.setIconCssClass("o_icon o_icon-fw o_ac_openaccess_icon");
 			iconPanel.setTitle(translate("offer.open.access.name"));
 			offersContainer.add(iconPanel.getName(), iconPanel);
@@ -538,7 +538,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
-		iconPanel.setElementCssClass("o_block_bottom");
+		iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
 		iconPanel.setIconCssClass("o_icon o_icon-fw o_ac_guest_icon");
 		iconPanel.setTitle(translate("offer.guest.name"));
 		offersContainer.add(iconPanel.getName(), iconPanel);
