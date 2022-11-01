@@ -156,7 +156,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		if(realSize == null) {
 			String suffix = getSuffix(getMimeType());
 			if(StringHelper.containsNonWhitespace(suffix)) {
-				if(suffix.equalsIgnoreCase("jpg") || suffix.equalsIgnoreCase("png") || suffix.equalsIgnoreCase("jpeg")) {
+				if(suffix.equalsIgnoreCase("jpg") || suffix.equalsIgnoreCase("png") || suffix.equalsIgnoreCase("jpeg")  || suffix.equalsIgnoreCase("gif")) {
 					realSize = CoreSpringFactory.getImpl(ImageService.class).getSize(media, suffix);
 				} else if(suffix.equalsIgnoreCase("mp4") || suffix.equalsIgnoreCase("m4v") || suffix.equalsIgnoreCase("flv"))  {
 					realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(media, suffix);

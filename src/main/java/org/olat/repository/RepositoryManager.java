@@ -98,7 +98,6 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
@@ -145,8 +144,6 @@ public class RepositoryManager {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -238,6 +235,11 @@ public class RepositoryManager {
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
 		}
+		imageName = repoEntryKey + ".gif";
+		image = repositoryHome.resolve(imageName);
+		if (image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
 		return null;
 	}
 	
@@ -271,7 +273,9 @@ public class RepositoryManager {
 		String extension = FileUtils.getFileSuffix(newImageFile.getName());
 		if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)) {
 			targetExtension = ".jpg";
-		}
+		} else if ("gif".equalsIgnoreCase(extension)) {
+			targetExtension = ".gif";
+ 		}
 		
 		VFSContainer repositoryHome = getMediaContainer(re.getOlatResource());
 		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + targetExtension);
@@ -282,7 +286,7 @@ public class RepositoryManager {
 			}
 		}
 
-		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
+		if(targetExtension.equals(".png") || targetExtension.equals(".jpg") || targetExtension.equals(".gif")) {
 			Size newImageSize = imageHelper.getSize(newImageFile, extension);
 			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
 				return VFSManager.copyContent(newImageFile, repoImage, false, changedBy);

@@ -418,6 +418,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
 		}
+		imageName = re.getResourceableId() + ".gif";
+		image = mediaContainer.resolve(imageName);
+		if (image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
 		return null;
 	}
 
