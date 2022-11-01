@@ -82,16 +82,28 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 		Date extensionDate = dueDate == null ? null : dueDate.getOverridenDueDate();
 		
 		if(extensionDate != null) {
-			Date deadline = refDate;
-			if(deadline == null || (refLateDate != null && refLateDate.after(deadline))) {
-				deadline = refLateDate;
+			Date effectiveDeadline = refDate;
+			if(effectiveDeadline == null || (refLateDate != null && refLateDate.after(effectiveDeadline))) {
+				effectiveDeadline = refLateDate;
 			}
-			if(deadline == null || deadline.before(submissionDate)) {
-				target.append("&#160;<span class='o_labeled_light o_process_status_extended'>").append(translator.translate("label.extended")).append("</span>");
+			if(effectiveDeadline == null || effectiveDeadline.before(submissionDate)) {
+				appendExtendedMarker(target);
+			} else if(refDate != null && refDate.before(submissionDate) && extensionDate.after(submissionDate)) {
+				appendLateMarker(target);
+			} else if(refLateDate != null && refLateDate.after(submissionDate) && extensionDate.before(submissionDate)) {
+				appendLateMarker(target);
 			}
 		} else if(refDate != null && refLateDate != null && submissionDate.after(refDate)) {
-			target.append("&#160;<span class='o_labeled_light o_process_status_late'>").append(translator.translate("label.late")).append("</span>");
+			appendLateMarker(target);
 		}
+	}
+	
+	private void appendExtendedMarker(StringOutput target) {
+		target.append("&#160;<span class='o_labeled_light o_process_status_extended'>").append(translator.translate("label.extended")).append("</span>");
+	}
+	
+	private void appendLateMarker(StringOutput target) {
+		target.append("&#160;<span class='o_labeled_light o_process_status_late'>").append(translator.translate("label.late")).append("</span>");
 	}
 	
 	public static Date cascading(CoachedElementRow ciRow) {

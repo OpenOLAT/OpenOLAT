@@ -392,7 +392,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			return "o_icon_edit";
 		}
 		String mime = WebappHelper.getMimeType(fileName);
-		if (mime.startsWith("video") || mime.startsWith("audio")) {
+		if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
 			return "o_icon_video_play";			
 		}		
 		return "o_icon_preview";
@@ -404,7 +404,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			return translator.translate("edit.button");	
 		} else {
 			String mime = WebappHelper.getMimeType(fileName);
-			if (mime != null && mime.startsWith("video") || mime.startsWith("audio")) {
+			if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
 				return translator.translate("play.button");	
 			}		
 		}		
