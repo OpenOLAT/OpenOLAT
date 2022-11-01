@@ -191,7 +191,7 @@ public class GroupTaskPage {
 		List<WebElement> buttons = browser.findElements(solutionLinkBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//div[contains(@class,'o_step_solution')]//a[contains(@class,'o_button_details')]");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_solution')]//button[contains(@class,'o_button_details')]");
 			OOGraphene.moveTo(collpaseBy, browser);
 			browser.findElement(collpaseBy).click();
 		}

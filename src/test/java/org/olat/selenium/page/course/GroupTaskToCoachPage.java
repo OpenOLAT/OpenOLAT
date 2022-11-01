@@ -143,7 +143,7 @@ public class GroupTaskToCoachPage {
 		List<WebElement> buttons = browser.findElements(uploadButtonBs);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//div[contains(@class,'o_step_review')]//a[contains(@class,'o_button_details')]");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_review')]//button[contains(@class,'o_button_details')]");
 			OOGraphene.click(collpaseBy, browser);
 			OOGraphene.waitElement(uploadButtonBs, browser);
 		}
@@ -174,7 +174,7 @@ public class GroupTaskToCoachPage {
 		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//a[contains(@class,'o_button_details')]");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//button[contains(@class,'o_button_details')]");
 			OOGraphene.click(collpaseBy, browser);
 			OOGraphene.waitElement(assessmentButtonBy, browser);
 		}
@@ -206,7 +206,7 @@ public class GroupTaskToCoachPage {
 		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
-			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//a[contains(@class,'o_button_details')]");
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//button[contains(@class,'o_button_details')]");
 			browser.findElement(collpaseBy).click();
 			OOGraphene.waitElement(assessmentButtonBy, browser);
 			browser.findElement(assessmentButtonBy).click();

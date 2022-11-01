@@ -611,8 +611,11 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			if(now.before(date)) {
 				String i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 				text = translate(i18nKey, dueDateArgs.args());
-				
-				i18nKey = dateOnly ? "msg.late.standard.coach.dateonly" : "msg.late.standard.coach";
+				if(dueDate.getOverridenDueDate() != null) {
+					i18nKey = dateOnly ? "msg.late.extended.coach.dateonly" : "msg.late.extended.coach";
+				} else {
+					i18nKey = dateOnly ? "msg.late.standard.coach.dateonly" : "msg.late.standard.coach";
+				}
 				text = translate(i18nKey, mergeArguments(lateDueDateArgs.args(), new String[] { text }));
 				
 			} else {
