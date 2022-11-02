@@ -26,18 +26,12 @@
 
 package org.olat.core.commons.modules.bc.components;
 
-import java.text.DateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
+import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
@@ -48,6 +42,7 @@ import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -58,6 +53,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -73,6 +69,14 @@ import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
+
+import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Initial Date:  Feb 12, 2004
@@ -97,6 +101,7 @@ public class ListRenderer {
 	public static final String PARAM_EPORT = "epadd";
 	/** View thumbnail */
 	public static final String PARAM_SERV_THUMBNAIL = "servthumb";
+	public static final String PARAM_VIEW_AUDIO_VIDEO = "viewaudiovideo";
 
 	private VFSRepositoryService vfsRepositoryService;
 	private VFSVersionModule vfsVersionModule;
@@ -420,8 +425,13 @@ public class ListRenderer {
 				sb.append("<a ");
 				Translator labelTranslator = Util.createPackageTranslator(DocEditorController.class, translator.getLocale());
 				String buttonLabel = getOpenButtonLabel(child, metadata, canWrite, identity, roles, labelTranslator);
-				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
-						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
+				if (isVideoAudio(name)) {
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
+							new NameValuePair(PARAM_VIEW_AUDIO_VIDEO, pos));
+				} else {
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
+							new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
+				}
 				sb.append(" title=\"").append(StringHelper.escapeHtml(buttonLabel));
 				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");	
 				   sb.append(StringHelper.escapeHtml(buttonLabel));
@@ -547,7 +557,13 @@ public class ListRenderer {
 
 		sb.append("</td></tr>");
 	}
-	
+
+	private boolean isVideoAudio(String fileName) {
+		String suffix = FileUtils.getFileSuffix(fileName);
+		Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
+		return videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, Mode.VIEW, false));
+	}
+
 	private String getOpenIconCss(VFSItem child, VFSMetadata metadata, boolean canWrite, Identity identity, Roles roles) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;

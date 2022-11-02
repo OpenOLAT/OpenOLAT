@@ -26,14 +26,6 @@
 
 package org.olat.core.commons.modules.bc.components;
 
-import java.text.Collator;
-import java.text.DateFormat;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -62,6 +54,14 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+
+import java.text.Collator;
+import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Initial Date:  Feb 11, 2004
@@ -178,6 +178,9 @@ public class FolderComponent extends AbstractComponent {
 			fireEvent(ureq, new Event(FolderCommandFactory.COMMAND_SERV_THUMBNAIL));
 			// don't redraw the file listing when serving a resource -> timestamp not consumed
 			setDirty(false);
+			return;
+		} else if (ureq.getParameter(ListRenderer.PARAM_VIEW_AUDIO_VIDEO) != null) {
+			fireEvent(ureq, new Event(FolderCommandFactory.COMMAND_VIEW_AUDIO_VIDEO));
 			return;
 		}
 
