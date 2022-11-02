@@ -741,6 +741,42 @@ div.o_reminder_custom_email {
 }
 
 
+/* Icon panel component */
+.o_icon_panel {
+	border: $o-icon-panel-border;
+	border-radius: $o-icon-panel-border-radius;
+	h3, h4 {
+		margin-top: 0;
+		margin-bottom: 15px;
+	}
+	
+	display: flex;
+	>.o_icon_panel_icon_col {
+		padding: 15px 10px;
+		border-right: $o-icon-panel-border;
+		background-color: $o-icon-panel-icon-bg-color;
+	}
+	>.o_icon_panel_content_col {
+		width: 100%;
+		overflow: hidden;
+		padding: 15px;
+		background-color: $o-icon-panel-content-bg-color;
+		.o_ac_active_wrapper {
+			display: flex;
+			.o_ac_active_icon {
+				padding-right: 3px;
+			}
+			.o_ac_active_text {
+				width: 100%;
+				overflow: hidden;
+			}
+		}
+		>.o_cmds {
+			padding-right: 15px;
+		}
+	}
+}
+
 
 /* toogle box, based on bootstrap collapse plugin */
 .o_togglebox_wrapper {

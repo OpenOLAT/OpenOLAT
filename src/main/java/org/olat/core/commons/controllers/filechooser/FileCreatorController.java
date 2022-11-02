@@ -25,11 +25,9 @@ import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,6 +61,7 @@ public class FileCreatorController extends FormBasicController {
 	private VFSContainer baseContainer;
 	private String subfolderPath;
 	private VFSLeaf createdFile;
+	private Object userObject;
 
 	private TextElement fileNameElement;
 	private TextElement targetSubPath;
@@ -91,6 +90,7 @@ public class FileCreatorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {										
 		setFormTitle("filecreator.text.newfile");
+		formLayout.setElementCssClass("o_sel_file_form");
 		
 		// Global target directory
 		String path = "/ " + baseContainer.getName();
@@ -108,17 +108,25 @@ public class FileCreatorController extends FormBasicController {
 		// The file name of the new file
 		fileNameElement = FormUIFactory.getInstance().addTextElement("fileName", "filecreator.filename", 50, "", formLayout);
 		fileNameElement.setPlaceholderKey("filecreator.filename.placeholder", null);
+		fileNameElement.setElementCssClass("o_sel_filename");
 		fileNameElement.setMandatory(true);
 
 		// Add buttons
 		FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
-		formLayout.add(buttons);		
-		Submit createFile = new FormSubmit("submit","button.create");
-		buttons.add(createFile);
+		formLayout.add(buttons);
+		uifactory.addFormSubmitButton("submit", "button.create", buttons);
 		uifactory.addFormCancelButton("cancel", buttons, ureq, getWindowControl());			
 
 	}	
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isFileNmaeValid = true;

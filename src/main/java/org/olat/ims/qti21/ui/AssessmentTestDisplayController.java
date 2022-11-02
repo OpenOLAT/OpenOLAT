@@ -1614,6 +1614,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param ureq
 	 */
 	private void confirmAdvanceTestPart(UserRequest ureq) {
+		removeControllerListener(advanceTestPartDialog);
+		advanceTestPartDialog = null;
+		
 		TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
 
 		if(nextTestPart == null) {
@@ -1661,15 +1664,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
             /* No more test parts.
              *
              * For single part tests, we terminate the test completely now as the test feedback was shown with the testPart feedback.
-             * For multi-part tests, we shall keep the test open so that the test feedback can be viewed.
+             * For multi-part tests, we shall keep the test open so that the test feedback can be viewed if feedback or review available.
              */
-            if (testSessionState.getTestPlan().getTestPartNodes().size()==1) {
+            if (testSessionState.getTestPlan().getTestPartNodes().size()==1
+            		|| !qtiWorksCtrl.hasItemReviewsOrTestFeedbacks()) {
                 eventType = CandidateTestEventType.EXIT_TEST;
                 testSessionController.exitTest(currentTimestamp);
                 candidateSession.setTerminationTime(currentTimestamp);
                 candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
             } else {
-                eventType = CandidateTestEventType.ADVANCE_TEST_PART;
+            	eventType = CandidateTestEventType.ADVANCE_TEST_PART;
             }
         }
         
@@ -2254,10 +2258,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			return qtiEl.getComponent().willShowFeedbacks(itemNode);
 		}
 		
-		/**
-		 * 
-		 * @return
-		 */
 		public boolean willShowSomeAssessmentTestFeedbacks() {
 			if(testSessionController == null
 					|| testSessionController.getTestSessionState().isExited()
@@ -2265,15 +2265,21 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				return true;
 			}
 			
+			return hasItemReviewsOrTestFeedbacks();
+		}
+		
+		public boolean hasItemReviewsOrTestFeedbacks() {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			TestPlanNodeKey currentTestPartNodeKey = testSessionState.getCurrentTestPartKey();
-			TestPlanNode currentTestPlanNode = testSessionState.getTestPlan().getNode(currentTestPartNodeKey);
-			boolean hasReviewableItems = currentTestPlanNode.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
-					.stream().anyMatch(itemNode
-							-> itemNode.getEffectiveItemSessionControl().isAllowReview()
-							|| itemNode.getEffectiveItemSessionControl().isShowFeedback());
-			if(hasReviewableItems) {
-				return true;
+			if(currentTestPartNodeKey != null) {
+				TestPlanNode currentTestPlanNode = testSessionState.getTestPlan().getNode(currentTestPartNodeKey);
+				boolean hasReviewableItems = currentTestPlanNode.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
+						.stream().anyMatch(itemNode
+								-> itemNode.getEffectiveItemSessionControl().isAllowReview()
+								|| itemNode.getEffectiveItemSessionControl().isShowFeedback());
+				if(hasReviewableItems) {
+					return true;
+				}
 			}
 			
 			//Show 'atEnd' test feedback f there's only 1 testPart

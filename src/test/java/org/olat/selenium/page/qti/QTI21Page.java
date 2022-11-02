@@ -119,7 +119,7 @@ public class QTI21Page {
 	
 	public QTI21Page selectItem(String title) {
 		By itemBy = By.xpath("//div[@id='o_qti_menu']//li[contains(@class,'o_qti_menu_item')]//a[span[contains(normalize-space(.),'" + title + "')]]");
-		OOGraphene.waitElement(itemBy, 5, browser);
+		OOGraphene.waitElement(itemBy, browser);
 		browser.findElement(itemBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -846,6 +846,11 @@ public class QTI21Page {
 		return endTest();
 	}
 	
+	/**
+	 * Suspend the test and confirm.
+	 * 
+	 * @return Itself
+	 */
 	public QTI21Page suspendTest() {
 		By suspendBy = By.cssSelector("a.o_sel_suspend_test");
 		browser.findElement(suspendBy).click();
@@ -858,17 +863,20 @@ public class QTI21Page {
 	public QTI21Page endTest() {
 		By endBy = By.cssSelector("a.o_sel_end_testpart");
 		OOGraphene.clickAndWait(endBy, browser);
-		confirm();
-		return this;
+		return confirm();
 	}
 	
+	/**
+	 * Close and confirm closing the part or test.
+	 * 
+	 * @return Itself
+	 */
 	public QTI21Page closeTest() {
 		By closeBy = By.cssSelector("a.o_sel_close_test");
 		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
-		confirm();
-		return this;
+		return confirm();
 	}
 	
 	/**
@@ -1049,14 +1057,15 @@ public class QTI21Page {
 	/**
 	 * Yes in a dialog box controller.
 	 */
-	private void confirm() {
+	private QTI21Page confirm() {
 		OOGraphene.waitBusyAndScrollTop(browser);
 		// confirm
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
-		OOGraphene.waitElement(confirmButtonBy, 5, browser);
+		OOGraphene.waitElement(confirmButtonBy, browser);
 		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
 		buttonsEl.get(0).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
 	}
 	
 	public QTI21EditorPage edit() {

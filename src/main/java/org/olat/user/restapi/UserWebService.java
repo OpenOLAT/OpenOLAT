@@ -506,7 +506,7 @@ public class UserWebService {
 	}
 	
 	/**
-	 * Update the roles of a user given its unique key identifier:
+	 * Update the status of a user given its unique key identifier:
 	 * <ul>
 	 * 	<li>1: Permanent user</li> 
 	 * 	<li>2: activ</li> 
@@ -521,7 +521,7 @@ public class UserWebService {
 	 */
 	@POST
 	@Path("{identityKey}/status")
-	@Operation(summary = "Update the roles of a user", description = "Update the roles of a user given its unique key identifier:\n" + 
+	@Operation(summary = "Update the status of a user", description = "Update the status of a user given its unique key identifier:\n" + 
 			" <ul>\n" + 
 			"  <li>1: Permanent user</li> \n" + 
 			"  <li>2: activ</li> \n" + 

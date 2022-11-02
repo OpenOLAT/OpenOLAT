@@ -53,13 +53,13 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.Size;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -118,7 +118,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {
 		try (ImageInputStream imageSrc = new FileImageInputStream(image)) {
 			String extension = FileUtils.getFileSuffix(cropedImage.getName());
-			SizeAndBufferedImage img = getImage(imageSrc, extension);
+			SizeAndBufferedImage img = getImage(imageSrc, extension, image.getName());
 			if(img != null) {
 				BufferedImage croppedImg = cropTo(img.getImage(), img.getSize(), cropSelection);
 				Size size = new Size(cropSelection.getWidth(), cropSelection.getHeight(), false);
@@ -147,7 +147,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 		try {
 			imageIns = new FileImageInputStream(image);
-			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight, false);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight, false, image.getName());
 			if(scaledSize == null) {
 				return null;
 			}
@@ -172,7 +172,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		} catch (IOException e) {
 			return null;
 		} finally {
-			closeQuietly(imageIns);
+			closeQuietly(imageIns, image.getName());
 			FileUtils.closeSafely(bos);
 		}
 	}
@@ -195,7 +195,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 				return null;
 			}
 			String extension = FileUtils.getFileSuffix(image.getName());
-			SizeAndBufferedImage scaledSize = calcScaledSize(ins, extension, maxWidth, maxHeight, fill);
+			SizeAndBufferedImage scaledSize = calcScaledSize(ins, extension, maxWidth, maxHeight, fill, image.getName());
 			if(scaledSize == null || scaledSize.getImage() == null) {
 				return null;
 			}
@@ -225,7 +225,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		} catch (CMMException e) {
 			return null;
 		} finally {
-			closeQuietly(ins);
+			closeQuietly(ins, image.getName());
 			FileUtils.closeSafely(bos);
 		}
 	}
@@ -285,7 +285,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		ImageInputStream imageSrc = null;
 		try {
 			imageSrc = new FileImageInputStream(image);
-			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, fill);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, fill, image.getName());
 			if(scaledSize == null || scaledSize.image == null) {
 				return null;
 			}
@@ -306,7 +306,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		} catch (CMMException e) {
 			return null;
 		} finally {
-			closeQuietly(imageSrc);
+			closeQuietly(imageSrc, image.getName());
 		}
 	}
 	
@@ -370,7 +370,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	}
 	
 	private static SizeAndBufferedImage calcScaledSize(ImageInputStream stream,
-			String suffix, int maxWidth, int maxHeight, boolean fill) {
+			String suffix, int maxWidth, int maxHeight, boolean fill, String imageName) {
 		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
 		if(iter.hasNext()) {
 			ImageReader reader = iter.next();
@@ -413,17 +413,17 @@ public class ImageHelperImpl extends AbstractImageHelper {
 					}
                 }
 			} catch (IOException e) {
-				log.error(e.getMessage(), e);
+				log.error("Exception when trying to read {}: {}", imageName, e.getMessage(), e);
 			} finally {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: " + suffix);
+			log.error("No reader found for given format: {}", suffix);
 		}
 		return null;
 	}
 	
-	private static SizeAndBufferedImage getImage(ImageInputStream stream, String suffix) {
+	private static SizeAndBufferedImage getImage(ImageInputStream stream, String suffix, String imageName) {
 		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
 		if(iter.hasNext()) {
 			ImageReader reader = iter.next();
@@ -451,12 +451,12 @@ public class ImageHelperImpl extends AbstractImageHelper {
 					}
                 }
 			} catch (IOException e) {
-				log.error(e.getMessage(), e);
+				log.error("Exception when trying to read {}: {}", imageName, e.getMessage(), e);
 			} finally {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: " + suffix);
+			log.error("No reader found for given format: {}", suffix);
 		}
 		return null;
 	}
@@ -687,19 +687,19 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	    return ret;
 	}
 	
-	private static final void closeQuietly(ImageInputStream ins) {
+	private static final void closeQuietly(ImageInputStream ins, String imageName) {
 		if(ins != null) {
 			try {
 				ins.close();
 			} catch (IOException e) {
-				log.error("", e);
+				log.error("Exception when trying to close {}", imageName, e);
 			}
 		}
 	}
 	
 	public static final class SizeAndBufferedImage {
-		private Size size;
-		private Size scaledSize;
+		private final Size size;
+		private final Size scaledSize;
 		private BufferedImage image;
 		
 		public SizeAndBufferedImage(Size size, Size scaledSize) {

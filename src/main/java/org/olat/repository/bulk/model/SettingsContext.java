@@ -19,6 +19,7 @@
  */
 package org.olat.repository.bulk.model;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +36,7 @@ import org.olat.repository.bulk.SettingsBulkEditable;
 public class SettingsContext {
 	
 	public static final String DEFAULT_KEY = "settingsContext";
+	public enum LifecycleType {none, publicCycle, privateCycle}
 
 	private final List<RepositoryEntry> repositoryEntries;
 	private final Set<SettingsBulkEditable> editables = new HashSet<>();
@@ -42,6 +44,7 @@ public class SettingsContext {
 	private Long educationalTypeKey;
 	private String mainLanguage;
 	private String expenditureOfWork;
+	private String location;
 	private String licenseTypeKey;
 	private String freetext;
 	private String licensor;
@@ -52,6 +55,10 @@ public class SettingsContext {
 	private boolean authorRightReference = true;
 	private boolean authorRightCopy = true;
 	private boolean authorRightDownload = true;
+	private LifecycleType lifecycleType;
+	private Long lifecyclePublicKey;
+	private Date lifecycleValidFrom;
+	private Date lifecycleValidTo;
 
 	public SettingsContext(List<RepositoryEntry> repositoryEntries) {
 		this.repositoryEntries = repositoryEntries;
@@ -103,6 +110,14 @@ public class SettingsContext {
 
 	public void setExpenditureOfWork(String expenditureOfWork) {
 		this.expenditureOfWork = expenditureOfWork;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getLicenseTypeKey() {
@@ -183,6 +198,38 @@ public class SettingsContext {
 
 	public void setAuthorRightDownload(boolean authorRightDownload) {
 		this.authorRightDownload = authorRightDownload;
+	}
+
+	public LifecycleType getLifecycleType() {
+		return lifecycleType;
+	}
+
+	public void setLifecycleType(LifecycleType lifecycleType) {
+		this.lifecycleType = lifecycleType;
+	}
+
+	public Long getLifecyclePublicKey() {
+		return lifecyclePublicKey;
+	}
+
+	public void setLifecyclePublicKey(Long lifecyclePublicKey) {
+		this.lifecyclePublicKey = lifecyclePublicKey;
+	}
+
+	public Date getLifecycleValidFrom() {
+		return lifecycleValidFrom;
+	}
+
+	public void setLifecycleValidFrom(Date lifecycleValidFrom) {
+		this.lifecycleValidFrom = lifecycleValidFrom;
+	}
+
+	public Date getLifecycleValidTo() {
+		return lifecycleValidTo;
+	}
+
+	public void setLifecycleValidTo(Date lifecycleValidTo) {
+		this.lifecycleValidTo = lifecycleValidTo;
 	}
 	
 }

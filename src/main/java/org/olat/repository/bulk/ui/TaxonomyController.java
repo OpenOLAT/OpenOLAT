@@ -65,7 +65,6 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.bulk.SettingsBulkEditable;
-import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.SettingsContext;
 import org.olat.repository.bulk.ui.TaxonomyController.BulkTaxonomyRow.BulkTaxonomyStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +89,6 @@ public class TaxonomyController extends StepFormBasicController {
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final SettingsContext context;
-	private final SettingsBulkEditables editables;
 	private final Set<TaxonomyLevel> taxonomyLevels;
 	private final Map<TaxonomyLevel, Set<RepositoryEntry>> levelToEntry;
 	private final Set<Long> taxonomyLevelCurrentKeys;
@@ -112,7 +110,6 @@ public class TaxonomyController extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.context = (SettingsContext)runContext.get(SettingsContext.DEFAULT_KEY);
-		this.editables = (SettingsBulkEditables)runContext.get(SettingsBulkEditables.DEFAULT_KEY);
 		
 		// Current taxonomy levels
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> entryRefToTaxonomyLevel = repositoryService.getTaxonomy(context.getRepositoryEntries(), false);

@@ -31,6 +31,7 @@ public enum SettingsBulkEditable {
 	educationalType,
 	mainLanguage,
 	expenditureOfWork,
+	location,
 	license,
 	licensor,
 	authorRightReference,
@@ -39,6 +40,10 @@ public enum SettingsBulkEditable {
 	taxonomyLevelsAdd,
 	taxonomyLevelsRemove,
 	organisationsAdd,
-	organisationsRemove;
+	organisationsRemove,
+	lifecycleType,
+	lifecyclePublicKey,
+	lifecycleValidFrom,
+	lifecycleValidTo;
 	
 }

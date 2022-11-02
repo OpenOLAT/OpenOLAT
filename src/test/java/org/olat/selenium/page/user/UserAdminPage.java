@@ -261,8 +261,7 @@ public class UserAdminPage {
 	
 	public UserAdminPage assertNotInUserList(String username) {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[text()[contains(.,'" + username + "')]]");
-		List<WebElement> usernameEls = browser.findElements(userLinksBy);
-		Assert.assertTrue(usernameEls.isEmpty());
+		OOGraphene.waitElementDisappears(userLinksBy, 5, browser);
 		return this;
 	}
 	

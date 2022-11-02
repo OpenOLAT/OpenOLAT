@@ -130,8 +130,8 @@ public class EditDueDatesController extends FormBasicController {
 	private void setDueDateExplanation(DateChooser dateEl, DueDate standardDueDate, DueDate lateDueDate) {
 		if(standardDueDate != null) {
 			if(lateDueDate != null) {
-				dateEl.setExampleKey("duedate.late", new String[] { formatter.formatDateAndTime(standardDueDate.getDueDate()),
-						formatter.formatDateAndTime(lateDueDate.getDueDate()) });
+				dateEl.setExampleKey("duedate.late", new String[] { formatter.formatDateAndTime(standardDueDate.getReferenceDueDate()),
+						formatter.formatDateAndTime(lateDueDate.getReferenceDueDate()) });
 			} else if(standardDueDate.getDueDate() != null) {
 				dateEl.setExampleKey("duedate.standard", new String[] { formatter.formatDateAndTime(standardDueDate.getDueDate()) });
 			} else if(standardDueDate.getMessageKey() != null) {

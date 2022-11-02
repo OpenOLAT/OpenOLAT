@@ -57,6 +57,7 @@ public class FolderCommandFactory {
 	public static final String COMMAND_DOWNLOAD_ZIP = "dzip";
 	public static final String COMMAND_ZIP = "zip";
 	public static final String COMMAND_UNZIP = "unzip";
+	public static final String COMMAND_VIEW_AUDIO_VIDEO = "viewAudioVideo";
 
 	public static final FolderCommandFactory INSTANCE = new FolderCommandFactory();
 	
@@ -96,6 +97,7 @@ public class FolderCommandFactory {
 			cmd = (CmdAddToEPortfolio)controllerCreator.createController(ureq, wControl);
 		}
 		else if (command.equals(COMMAND_DELETED_FILES)) cmd = new CmdDeletedFiles(ureq,wControl);
+		else if (command.equals(COMMAND_VIEW_AUDIO_VIDEO)) cmd = new CmdViewAudioVideo(ureq, wControl);
 		return cmd;
 	}
 }

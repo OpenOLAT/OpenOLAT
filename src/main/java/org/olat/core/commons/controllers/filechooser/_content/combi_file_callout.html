@@ -1,0 +1,20 @@
+<div>
+	#if($fileAvailable)
+		<div class="o_button_group o_button_group_right">
+			$r.render("preview")
+			<div class="btn-group">
+				$r.render("select")
+				$r.render("commands")
+			</div>
+		</div>
+		$r.render("file.available")
+	#else
+		$r.render("file.not.available")
+		<div class="o_button_group">
+			$r.render("create.edit")
+			$r.render("create")
+			$r.render("select")
+			$r.render("import")
+		</div>
+	#end
+</div>

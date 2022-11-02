@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.IconPanelItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -469,10 +470,22 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void addOffer(OfferAccess link, Collection<Organisation> offerOrganisations) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), link, handler);
+		
+		IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
+		iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
+		iconPanel.setIconCssClass("o_icon o_icon-fw " + link.getMethod().getMethodCssClass() + "_icon");
+		iconPanel.setTitle(handler.getMethodName(getLocale()));
+		offersContainer.add(iconPanel.getName(), iconPanel);
+		
+		AccessInfo infos = new AccessInfo(iconPanel, link, handler);
+		accessInfos.add(infos);
+		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
+		cont.setRootForm(mainForm);
+		iconPanel.setContent(cont.getComponent());
+		
 		infos.setOfferOrganisations(offerOrganisations);
 		forgeCatalogInfos(infos);
-		accessInfos.add(infos);
+		cont.contextPut("offer", infos);
 		
 		if (!readOnly && !managedBookings) {
 			forgeLinks(infos);
@@ -493,13 +506,21 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		if(!updated) {
-			AccessInfo infos = new AccessInfo();
+			IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
+			iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
+			iconPanel.setIconCssClass("o_icon o_icon-fw o_ac_openaccess_icon");
+			iconPanel.setTitle(translate("offer.open.access.name"));
+			offersContainer.add(iconPanel.getName(), iconPanel);
+			
+			AccessInfo infos = new AccessInfo(iconPanel);
+			accessInfos.add(infos);
+			FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
+			cont.setRootForm(mainForm);
+			iconPanel.setContent(cont.getComponent());
+			
 			infos.setOffer(offer);
 			infos.setOfferOrganisations(offerOrganisations);
-			infos.setName(translate("offer.open.access.name"));
-			infos.setIconCss("o_ac_openaccess");
 			forgeCatalogInfos(infos);
-			accessInfos.add(infos);
 			if (!readOnly) {
 				forgeLinks(infos);
 			}
@@ -516,12 +537,20 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 		}
 		
-		AccessInfo infos = new AccessInfo();
-		infos.setOffer(offer);
-		infos.setName(translate("offer.guest.name"));
-		infos.setIconCss("o_ac_guest");
-		forgeCatalogInfos(infos);
+		IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
+		iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
+		iconPanel.setIconCssClass("o_icon o_icon-fw o_ac_guest_icon");
+		iconPanel.setTitle(translate("offer.guest.name"));
+		offersContainer.add(iconPanel.getName(), iconPanel);
+		
+		AccessInfo infos = new AccessInfo(iconPanel);
 		accessInfos.add(infos);
+		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
+		cont.setRootForm(mainForm);
+		iconPanel.setContent(cont.getComponent());
+		
+		infos.setOffer(offer);
+		forgeCatalogInfos(infos);
 		
 		if (!readOnly) {
 			forgeLinks(infos);
@@ -553,19 +582,21 @@ public class AccessConfigurationController extends FormBasicController {
 	protected void forgeLinks(AccessInfo infos) {
 		if(managedBookings) return;
 		
+		infos.getIconPanel().removeAllLinks();
+		
 		FormLink editLink = uifactory.addFormLink("edit_" + (++counter), "edit", "offer.edit", null, offersContainer, Link.BUTTON);
 		editLink.setUserObject(infos);
 		editLink.setGhost(true);
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		offersContainer.add(editLink.getName(), editLink);
-		infos.setEditButton(editLink);
+		infos.getIconPanel().addLink(editLink);
 
 		FormLink delLink = uifactory.addFormLink("del_" + (++counter), "delete", "offer.delete", null, offersContainer, Link.BUTTON);
 		delLink.setUserObject(infos);
 		delLink.setGhost(true);
 		delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		offersContainer.add(delLink.getName(), delLink);
-		infos.setDeleteButton(delLink);
+		infos.getIconPanel().addLink(delLink);
 	}
 
 	private void editOpenAccessOffer(UserRequest ureq, Offer offer) {
@@ -804,8 +835,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	public class AccessInfo implements OfferWithOrganisation, OfferAccessWithOrganisation {
 		
-		private String name;
-		private String iconCss;
+		private final IconPanelItem iconPanel;
 		private Offer offer;
 		private Collection<Organisation> offerOrganisations;
 		private String catalogIcon;
@@ -814,34 +844,19 @@ public class AccessConfigurationController extends FormBasicController {
 		private OfferAccess link;
 		private AccessMethodHandler handler;
 		
-		private FormLink editButton;
-		private FormLink deleteButton;
-		
-		public AccessInfo() {
+		public AccessInfo(IconPanelItem iconPanel) {
+			this.iconPanel = iconPanel;
 		}
 
-		public AccessInfo(String name, OfferAccess link, AccessMethodHandler handler) {
-			this.name = name;
-			this.iconCss = link != null? link.getMethod().getMethodCssClass(): null;
+		public AccessInfo(IconPanelItem iconPanel, OfferAccess link, AccessMethodHandler handler) {
+			this.iconPanel = iconPanel;
 			this.offer = link != null? link.getOffer(): null;
 			this.link = link;
 			this.handler = handler;
 		}
 
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getIconCss() {
-			return iconCss;
-		}
-
-		public void setIconCss(String iconCss) {
-			this.iconCss = iconCss;
+		public IconPanelItem getIconPanel() {
+			return iconPanel;
 		}
 
 		public boolean isPaymentMethod() {
@@ -980,24 +995,9 @@ public class AccessConfigurationController extends FormBasicController {
 		public void setLink(OfferAccess link) {
 			this.link = link;
 			this.offer = link != null? link.getOffer(): null;
-			this.iconCss = link != null? link.getMethod().getMethodCssClass(): null;
+			this.iconPanel.setIconCssClass("o_icon o_icon-fw " + (link != null? link.getMethod().getMethodCssClass() + "_icon": ""));
 		}
 
-		public FormLink getEditButton() {
-			return editButton;
-		}
-
-		public void setEditButton(FormLink editButton) {
-			this.editButton = editButton;
-		}
-
-		public FormLink getDeleteButton() {
-			return deleteButton;
-		}
-
-		public void setDeleteButton(FormLink deleteButton) {
-			this.deleteButton = deleteButton;
-		}
 	}
 	
 }

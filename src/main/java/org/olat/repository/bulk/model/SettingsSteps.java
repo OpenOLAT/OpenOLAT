@@ -41,7 +41,7 @@ public class SettingsSteps {
 		taxonomy,
 		organisation,
 		authorRights,
-		lifecycle,
+		execution,
 		toolbar,
 		options,
 		overview
@@ -62,17 +62,24 @@ public class SettingsSteps {
 	private static final Set<SettingsBulkEditable> EDITABLES_ORAGANISATION = Set.of(
 			SettingsBulkEditable.organisationsAdd,
 			SettingsBulkEditable.organisationsRemove);
-	private static final Set<SettingsBulkEditable> EDITABLES_AUTHOR_SETTINGS = Set.of(
+	private static final Set<SettingsBulkEditable> EDITABLES_AUTHOR_RIGHTS = Set.of(
 			SettingsBulkEditable.authorRightReference,
 			SettingsBulkEditable.authorRightCopy,
 			SettingsBulkEditable.authorRightDownload);
+	private static final Set<SettingsBulkEditable> EDITABLES_EXECUTION = Set.of(
+			SettingsBulkEditable.location,
+			SettingsBulkEditable.lifecycleType,
+			SettingsBulkEditable.lifecyclePublicKey,
+			SettingsBulkEditable.lifecycleValidFrom,
+			SettingsBulkEditable.lifecycleValidTo);
 	
 	public static Set<SettingsBulkEditable> getEditables(Step step) {
 		switch (step) {
 		case metadata: return EDITABLES_METADATA;
 		case taxonomy: return EDITABLES_TAXONOMY;
 		case organisation: return EDITABLES_ORAGANISATION;
-		case authorRights: return EDITABLES_AUTHOR_SETTINGS;
+		case authorRights: return EDITABLES_AUTHOR_RIGHTS;
+		case execution: return EDITABLES_EXECUTION;
 		default:
 			return Set.of();
 		}

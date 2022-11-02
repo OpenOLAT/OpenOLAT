@@ -60,7 +60,8 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 		}
 		return size;
 	}
-	
+
+	@Override
 	public Size getSize(File image, String suffix) {
 		Size size = null;
 		if(StringHelper.containsNonWhitespace(suffix)) {
@@ -91,7 +92,7 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 			}
 		} catch (IOException e) {
 			// log error, don't do anything else
-			log.error("Problem while setting image size to fit for resource::" + media, e);
+			log.error("Problem while setting image size to fit for resource::{}", media, e);
 			return null;
 		} finally {
 			IOUtils.closeQuietly(fileStream);
@@ -126,7 +127,7 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: " + suffix);
+			log.error("No reader found for given format: {}", suffix);
 		}
 		return result;
 	}
@@ -150,7 +151,7 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: " + suffix);
+			log.error("No reader found for given format: {}", suffix);
 		}
 		return result;
 	}
@@ -168,7 +169,7 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 			return new Size((int)realWidth, (int)realHeight, 0, 0, false);
 		} catch (IOException e) {
 			// log error, don't do anything else
-			log.error("Problem while setting image size to fit for resource::" + media, e);
+			log.error("Problem while setting image size to fit for resource::{}", media, e);
 			return null;
 		} finally {
 			if (imageSrc != null) {
@@ -176,5 +177,24 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 			}
 		}
 	}
-
+	
+	protected boolean isAnimatedGif(File media) {
+		int numOfImages = 1;
+		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix("gif");
+		if (iter.hasNext()) {
+			ImageReader reader = iter.next();
+			try (InputStream mediaStream = new FileInputStream(media);
+				 ImageInputStream stream = new MemoryCacheImageInputStream(mediaStream)){
+				reader.setInput(stream);
+				numOfImages = reader.getNumImages(true);
+			} catch (IOException e) {
+				log.error(e.getMessage());
+			} finally {
+				reader.dispose();
+			}
+		} else {
+			log.error("No reader found for gif given format: {}", media.getName());
+		}
+		return numOfImages > 1;
+	}
 }

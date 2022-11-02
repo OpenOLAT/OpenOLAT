@@ -35,6 +35,7 @@ import org.olat.core.gui.media.MediaResource;
 public class VFSMediaMapper implements Mapper {
 	
 	private VFSLeaf vfsLeaf;
+	private boolean useMaster = false;
 	
 	public VFSMediaMapper() {
 	}
@@ -42,7 +43,11 @@ public class VFSMediaMapper implements Mapper {
 	public VFSMediaMapper(VFSLeaf vfsLeaf) {
 		this.vfsLeaf = vfsLeaf;
 	}
-	
+
+	public void setUseMaster(boolean useMaster) {
+		this.useMaster = useMaster;
+	}
+
 	public VFSMediaMapper(File file) {
 		this.vfsLeaf = new LocalFileImpl(file);
 	}
@@ -61,6 +66,8 @@ public class VFSMediaMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		return new VFSMediaResource(vfsLeaf);
+		VFSMediaResource mediaResource = new VFSMediaResource(vfsLeaf);
+		mediaResource.setUseMaster(useMaster);
+		return mediaResource;
 	}
 }

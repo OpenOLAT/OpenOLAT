@@ -862,7 +862,12 @@ public class GTAParticipantController extends GTAAbstractController implements A
 					}
 					text = translate(stdI18nKey, dueDateArgs.args());
 					
-					String lateI18nKey = lateDateOnly ? "msg.late.standard.dateonly.late.part" : "msg.late.standard.late.part";
+					String lateI18nKey;
+					if(dueDate.getOverridenDueDate() != null) {
+						lateI18nKey = lateDateOnly ? "msg.late.extended.dateonly.late.part" : "msg.late.extended.late.part";
+					} else {
+						lateI18nKey = lateDateOnly ? "msg.late.standard.dateonly.late.part" : "msg.late.standard.late.part";
+					}
 					// standard is 6
 					text = translate(lateI18nKey, mergeArguments(lateDueDateArgs.args(), new String[] {text}));
 				}

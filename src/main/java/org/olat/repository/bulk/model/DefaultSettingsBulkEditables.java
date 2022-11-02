@@ -21,6 +21,7 @@ package org.olat.repository.bulk.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.bulk.SettingsBulkEditable;
 import org.olat.repository.bulk.SettingsBulkEditables;
+import org.olat.repository.bulk.model.SettingsContext.LifecycleType;
 import org.olat.repository.bulk.model.SettingsSteps.Step;
 
 /**
@@ -62,7 +64,7 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		this.repositoryEntries = repositoryEntries;
 		this.reKeyToInfo = reKeyToInfo;
 		this.courseSelected =repositoryEntries.stream()
-				.anyMatch(entry -> CourseModule.ORES_TYPE_COURSE.equals(entry.getOlatResource().getResourceableTypeName()));
+				.anyMatch(this::isCourse);
 		
 		steps = new ArrayList<>(SettingsSteps.SELECTABLE_STEPS_SIZE);
 		if (isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.metadata))) {
@@ -76,6 +78,9 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		}
 		if (isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.authorRights))) {
 			steps.add((SettingsSteps.Step.authorRights));
+		}
+		if (courseSelected && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.execution))) {
+			steps.add((SettingsSteps.Step.execution));
 		}
 	}
 
@@ -114,11 +119,13 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case educationalType: 
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
-					&& CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName());
+					&& isCourse(repositoryEntry);
 		case mainLanguage:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case expenditureOfWork:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
+		case location:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location);
 		case license:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case licensor:
@@ -138,10 +145,26 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case organisationsRemove:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.organisations)
 					&& reKeyToInfo.get(repositoryEntry.getKey()).getOrganisationKeys().size() > 1;
+		case lifecycleType: 
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
+					&& isCourse(repositoryEntry);
+		case lifecyclePublicKey: 
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
+					&& isCourse(repositoryEntry);
+		case lifecycleValidFrom: 
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
+					&& isCourse(repositoryEntry);
+		case lifecycleValidTo: 
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
+					&& isCourse(repositoryEntry);
 		default:
 			break;
 		}
 		return false;
+	}
+
+	private boolean isCourse(RepositoryEntry repositoryEntry) {
+		return CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName());
 	}
 
 	@Override
@@ -164,6 +187,8 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return !Objects.equals(context.getMainLanguage(), repositoryEntry.getMainLanguage());
 		case expenditureOfWork:
 			return !Objects.equals(context.getExpenditureOfWork(), repositoryEntry.getExpenditureOfWork());
+		case location:
+			return !Objects.equals(context.getLocation(), repositoryEntry.getLocation());
 		case license:
 			return isLicenseChanged(repositoryEntry, context.getLicenseTypeKey(), context.getFreetext());
 		case licensor:
@@ -182,6 +207,14 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return hasOrganisationsToAdd(repositoryEntry, context.getOrganisationAddKeys());
 		case organisationsRemove:
 			return hasOrganisationsToRemove(repositoryEntry, context.getOrganisationRemoveKeys());
+		case lifecycleType:
+			return hasLifecycleTypeChange(repositoryEntry, context.getLifecycleType());
+		case lifecyclePublicKey:
+			return hasLifecyclePublicKeyChange(repositoryEntry, context.getLifecycleType(), context.getLifecyclePublicKey());
+		case lifecycleValidFrom:
+			return hasLifecycleValidFromChange(repositoryEntry, context.getLifecycleType(), context.getLifecycleValidFrom());
+		case lifecycleValidTo:
+			return hasLifecycleValidToChange(repositoryEntry, context.getLifecycleType(), context.getLifecycleValidTo());
 		default:
 			break;
 		}
@@ -256,6 +289,58 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		return false;
 	}
 
+	private boolean hasLifecycleTypeChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType) {
+		if ((LifecycleType.none == lifecycleType || lifecycleType == null) && repositoryEntry.getLifecycle() == null) {
+			return false;
+		}
+		if (LifecycleType.publicCycle == lifecycleType && repositoryEntry.getLifecycle() != null && !repositoryEntry.getLifecycle().isPrivateCycle()) {
+			return false;
+		}
+		if (LifecycleType.privateCycle == lifecycleType && repositoryEntry.getLifecycle() != null && repositoryEntry.getLifecycle().isPrivateCycle()) {
+			return false;
+		}
+		return true;
+	}
+
+	private boolean hasLifecyclePublicKeyChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Long lifecyclePublicKey) {
+		if (LifecycleType.none == lifecycleType || LifecycleType.privateCycle == lifecycleType) {
+			return false;
+		}
+		if (LifecycleType.publicCycle == lifecycleType) {
+			return repositoryEntry.getLifecycle() == null
+					|| repositoryEntry.getLifecycle().isPrivateCycle()
+					|| !Objects.equals(lifecyclePublicKey, repositoryEntry.getLifecycle().getKey());
+		}
+		return !repositoryEntry.getLifecycle().isPrivateCycle()
+				&& !Objects.equals(lifecyclePublicKey, repositoryEntry.getLifecycle().getKey());
+	}
+
+	private boolean hasLifecycleValidFromChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Date lifecycleValidFrom) {
+		if (LifecycleType.none == lifecycleType || LifecycleType.publicCycle == lifecycleType) {
+			return false;
+		}
+		if (LifecycleType.privateCycle == lifecycleType) {
+			return repositoryEntry.getLifecycle() == null
+					|| !repositoryEntry.getLifecycle().isPrivateCycle()
+					|| !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom());
+		}
+		return repositoryEntry.getLifecycle().isPrivateCycle()
+				&& !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom());
+	}
+
+	private boolean hasLifecycleValidToChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Date lifecycleValidTo) {
+		if (LifecycleType.none == lifecycleType || LifecycleType.publicCycle == lifecycleType) {
+			return false;
+		}
+		if (LifecycleType.privateCycle == lifecycleType) {
+			return repositoryEntry.getLifecycle() == null
+					|| !repositoryEntry.getLifecycle().isPrivateCycle()
+					|| !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo());
+		}
+		return repositoryEntry.getLifecycle().isPrivateCycle()
+				&& !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo());
+	}
+
 	@Override
 	public List<RepositoryEntry> getChanges(SettingsContext context, SettingsBulkEditable editable) {
 		return repositoryEntries.stream().filter(entry -> isChanged(context, editable, entry)).collect(Collectors.toList());
@@ -303,6 +388,5 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 	public Set<Organisation> getOrganisations(RepositoryEntry repositoryEntry) {
 		return reKeyToInfo.get(repositoryEntry.getKey()).getOrganisations();
 	}
-
 
 }

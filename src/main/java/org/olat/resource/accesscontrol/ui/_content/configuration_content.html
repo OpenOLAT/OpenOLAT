@@ -1,0 +1,61 @@
+#if($offer.dates)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_date_${offer.link.key}">$r.translate("offer.period")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_date_${offer.link.key}">
+		$offer.dates
+	</div>
+#end
+
+#if($offer.catalogDetails)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_cat_${offer.link.key}">$r.translate("access.info.catalog.entries")</label>
+	</div>
+	<div class="form-control-static col-sm-9 o_ac_active_wrapper" id="o_ac_cat_${offer.link.key}">
+		<div class="o_ac_active_icon">
+			$offer.catalogIcon
+		</div>
+		<div class="o_ac_active_text">
+			$offer.catalogDetails
+			#if($r.available($offer.catalogEditLink.component.componentName))
+				&nbsp;&nbsp; $r.render($offer.catalogEditLink)
+			#end
+		</div>
+	</div>
+#end
+
+#if($offer.organisationInfo)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_org_${offer.link.key}">$r.translate("access.info.organisations")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_org_${offer.link.key}">
+		$offer.organisationInfo
+	</div>
+#end
+
+#if($offer.descriptionInfo)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_desc_${offer.link.key}">$r.translate("offer.description")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_desc_${offer.link.key}">
+		$r.xssScan($offer.descriptionInfo)
+	</div>
+#end
+
+#if($offer.price)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_price_${offer.link.key}">$r.translate("access.info.price")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_price_${offer.link.key}">
+		$offer.price
+	</div>
+#end
+
+<div class="o_cmds pull-right">
+	#if($r.available($offer.editButton.component.componentName))
+		$r.render($offer.editButton)
+	#end
+	#if($r.available($offer.deleteButton.component.componentName))
+		$r.render($offer.deleteButton)
+	#end
+</div>

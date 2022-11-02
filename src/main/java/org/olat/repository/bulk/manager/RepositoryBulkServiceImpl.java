@@ -55,7 +55,10 @@ import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.DefaultSettingsBulkEditables;
 import org.olat.repository.bulk.model.RepositoryEntryInfo;
 import org.olat.repository.bulk.model.SettingsContext;
+import org.olat.repository.bulk.model.SettingsContext.LifecycleType;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,6 +94,8 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
 
 	@Override
@@ -156,9 +161,15 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			licenseType = licenseService.loadLicenseTypeByKey(context.getLicenseTypeKey());
 		}
 		
+		RepositoryEntryLifecycle publicLifecycle = null;
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecyclePublicKey)) {
+			publicLifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
+		}
+		
 		for (RepositoryEntry repositoryEntry : entries) {
-			RepositoryEntry updatedEntry = updateRepositoryEntry(context, editables, repositoryEntry, educationalType, taxonomyLevelsAdd, organisationsAdd);
-			updatedEntry =updateRepositoryEntryAccess(context, editables, updatedEntry);
+			RepositoryEntry updatedEntry = updateRepositoryEntry(context, editables, repositoryEntry, educationalType,
+					taxonomyLevelsAdd, organisationsAdd, publicLifecycle);
+			updatedEntry = updateRepositoryEntryAccess(context, editables, updatedEntry);
 			updateLicense(context, editables, updatedEntry, licenseType);
 			dbInsance.commit();
 		}
@@ -166,7 +177,8 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 
 	private RepositoryEntry updateRepositoryEntry(SettingsContext context, SettingsBulkEditables editables,
 			RepositoryEntry repositoryEntry, RepositoryEntryEducationalType educationalType,
-			List<TaxonomyLevel> taxonomyLevelsAdd, List<Organisation> organisationsAdd) {
+			List<TaxonomyLevel> taxonomyLevelsAdd, List<Organisation> organisationsAdd,
+			RepositoryEntryLifecycle publicLifecycle) {
 		boolean changed = false;
 		
 		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.authors, repositoryEntry)) {
@@ -185,14 +197,18 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			repositoryEntry.setExpenditureOfWork(context.getExpenditureOfWork());
 			changed = true;
 		}
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.location, repositoryEntry)) {
+			repositoryEntry.setLocation(context.getLocation());
+			changed = true;
+		}
 		
 		Set<TaxonomyLevel> taxonomyLevels = null;
-		if (isSelectedAndChanged(context, editables,SettingsBulkEditable.taxonomyLevelsAdd, repositoryEntry)) {
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.taxonomyLevelsAdd, repositoryEntry)) {
 			taxonomyLevels = new HashSet<>(editables.getTaxonomyLevels(repositoryEntry));
 			taxonomyLevels.addAll(taxonomyLevelsAdd);
 			changed = true;
 		}
-		if (isSelectedAndChanged(context, editables,SettingsBulkEditable.taxonomyLevelsRemove, repositoryEntry)) {
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.taxonomyLevelsRemove, repositoryEntry)) {
 			if (taxonomyLevels == null) {
 				taxonomyLevels = new HashSet<>(editables.getTaxonomyLevels(repositoryEntry));
 			}
@@ -201,12 +217,12 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		}
 		
 		List<Organisation> organisations = null;
-		if (isSelectedAndChanged(context, editables,SettingsBulkEditable.organisationsAdd, repositoryEntry)) {
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.organisationsAdd, repositoryEntry)) {
 			organisations = new ArrayList<>(editables.getOrganisations(repositoryEntry));
 			organisations.addAll(organisationsAdd);
 			changed = true;
 		}
-		if (isSelectedAndChanged(context, editables,SettingsBulkEditable.organisationsRemove, repositoryEntry)) {
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.organisationsRemove, repositoryEntry)) {
 			if (organisations == null) {
 				organisations = new ArrayList<>(editables.getOrganisations(repositoryEntry));
 			}
@@ -214,13 +230,42 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			changed = true;
 		}
 		
+		RepositoryEntryLifecycle lifecycle = repositoryEntry.getLifecycle();
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecycleType, repositoryEntry)) {
+			if (context.getLifecycleType() == null || context.getLifecycleType() == LifecycleType.none) {
+				lifecycle = null;
+			}
+		}
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecyclePublicKey, repositoryEntry)) {
+			lifecycle = publicLifecycle;
+		}
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecycleValidFrom, repositoryEntry)) {
+			if (lifecycle == null || !lifecycle.isPrivateCycle()) {
+				String softKey = "lf_" + repositoryEntry.getSoftkey();
+				lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, context.getLifecycleValidFrom(), null);
+			} else {
+				lifecycle.setValidFrom(context.getLifecycleValidFrom());
+				lifecycle = lifecycleDao.updateLifecycle(lifecycle);
+			}
+		}
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecycleValidTo, repositoryEntry)) {
+			if (lifecycle == null || !lifecycle.isPrivateCycle()) {
+				String softKey = "lf_" + repositoryEntry.getSoftkey();
+				lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, null, context.getLifecycleValidTo());
+			} else {
+				lifecycle.setValidTo(context.getLifecycleValidTo());
+				lifecycle = lifecycleDao.updateLifecycle(lifecycle);
+			}
+		}
+		repositoryEntry.setLifecycle(lifecycle);
+		
 		if (changed) {
 			return repositoryManager.setDescriptionAndName(repositoryEntry, repositoryEntry.getDisplayname(),
 					repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(), repositoryEntry.getDescription(),
 					repositoryEntry.getTeaser(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), organisations,
-					taxonomyLevels, repositoryEntry.getEducationalType());
+					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), organisations, taxonomyLevels,
+					repositoryEntry.getEducationalType());
 		}
 		return repositoryEntry;
 	}

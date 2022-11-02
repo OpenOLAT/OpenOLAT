@@ -290,6 +290,12 @@ $o-tree-dnd-hover				: $brand-warning;
 /* Tabbed pane component */
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
 
+/* Icon panel component */
+$o-icon-panel-border				: 1px solid #e7e7e7 !default;
+$o-icon-panel-border-radius			: $panel-border-radius !default;
+$o-icon-panel-icon-bg-color			: #fcfcfc !default;
+$o-icon-panel-content-bg-color		: $panel-bg !default;
+
 /* Wizard */
 $o-wizard-steps-bg-color				: #f9f9f9 !default;
 $o-wizard-steps-border-color			: #d4d4d4 !default;
@@ -415,9 +421,6 @@ $o-ac-offer-active-color			: #3c763d !default;
 $o-ac-offer-inactive-color			: #8A6D40 !default;
 $o-ac-method-border					: 1px solid #e7e7e7 !default;
 $o-ac-method-border-radius			: $panel-border-radius !default;
-$o-ac-config-offer-border			: 1px solid #e7e7e7 !default;
-$o-ac-config-offer-border-radius	: $panel-border-radius !default;
-$o-ac-config-offer-icon-bg-color	: #fcfcfc !default;
 
 /* Curriculum in course site */
 $o-coursesite-curriculum-rowelem-height-md :	40px !default;

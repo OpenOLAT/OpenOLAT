@@ -54,9 +54,9 @@ public class AssessmentCEConfigurationPage {
 	public AssessmentCEConfigurationPage setScoreAuto(float minVal, float maxVal, float cutVal) {
 		By scoreBy = By.cssSelector(".o_sel_course_ms_score input[type='checkbox']");
 		browser.findElement(scoreBy).click();
-		OOGraphene.waitBusy(browser);
-		
 		By minValBy = By.cssSelector(".o_sel_course_ms_min_val input[type='text']");
+		OOGraphene.waitElement(minValBy, browser);
+		
 		WebElement minValEl = browser.findElement(minValBy);
 		minValEl.clear();
 		minValEl.sendKeys(Float.toString(minVal));
@@ -68,9 +68,9 @@ public class AssessmentCEConfigurationPage {
 		
 		By displayAutoBy = By.cssSelector("#o_coform_passed_type input[type='radio'][value='true']");
 		browser.findElement(displayAutoBy).click();
-		OOGraphene.waitBusy(browser);
 
 		By cutValBy = By.cssSelector(".o_sel_course_ms_cut_val input[type='text']");
+		OOGraphene.waitElement(cutValBy, browser);
 		WebElement cutValEl = browser.findElement(cutValBy);
 		cutValEl.clear();
 		cutValEl.sendKeys(Float.toString(cutVal));
