@@ -41,6 +41,7 @@ import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,9 +211,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 
 	private AssessmentEntryStatus getStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			boolean setDone, boolean fullyAssessed) {
-		return setDone
-				? fullyAssessed? AssessmentEntryStatus.done: AssessmentEntryStatus.notStarted
-				: courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnvironment).getAssessmentStatus();
+		if (setDone) {
+			return fullyAssessed? AssessmentEntryStatus.done: AssessmentEntryStatus.notStarted;
+		}
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnvironment);
+		return assessmentEntry != null? assessmentEntry.getAssessmentStatus(): null;
 	}
 
 }
