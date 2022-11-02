@@ -425,7 +425,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 
 	private void doExportTaxonomyLevels(UserRequest ureq) {
-		ureq.getDispatchResult().setResultingMediaResource(new ExportTaxonomyLevels("UTF-8", getTranslator(), getIdentity(),
+		ureq.getDispatchResult().setResultingMediaResource(new ExportTaxonomyLevels("UTF-8", getTranslator(),
 																					taxonomy, taxonomyService, i18nManager, i18nModule));
 	}
 	

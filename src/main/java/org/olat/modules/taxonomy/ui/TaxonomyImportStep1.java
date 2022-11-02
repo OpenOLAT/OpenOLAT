@@ -84,7 +84,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 	private static final Logger log = Tracing.createLoggerFor(TaxonomyImportStep1.class);
 	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	private static final String ERROR_MEDIA_ZIP_UPLOAD = "error.upload.media.zip";
-	private static final String ERROR_IMPORT_TAXONOMY = "import.taxonomy.error";
 	private static final String LEVEL_DISPLAYNAME = "level.displayname";
 	private static final String LEVEL_DESCRIPTION = "level.description";
 	private static final String LEVEL_LANGUAGE = "level.language";
@@ -525,6 +524,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 			List<Integer> errorRows = new ArrayList<>();
 			
 			for (int i = 0; i < lines.length; i++) {
+				nameDescriptionByLanguage = new HashMap<>();
 				String line = lines[i];
 				
 				if (!StringHelper.containsNonWhitespace(line)) {
@@ -541,7 +541,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				
 				if (columns.length < 2) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error", null);
 					errorRows.add(i);
 					continue;
 				}
@@ -574,7 +574,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				// If no path is given
 				if (!StringHelper.containsNonWhitespace(path) || path.equals("/")) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error.no.path", null);
 					errorRows.add(i);
 					continue;
 				}
@@ -606,7 +606,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 						order = Integer.valueOf(orderString); 
 					} catch (Exception e) {
 						allOk = false;
-						inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+						inputEl.setErrorKey("import.taxonomy.error.order", null);
 						errorRows.add(i);
 						continue;
 					}
@@ -616,7 +616,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 
 				if (currentLevel == null) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error.level", null);
 					errorRows.add(i);
 					continue;
 				}
@@ -625,7 +625,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				
 				if (StringHelper.containsNonWhitespace(type) && currentLevelType == null) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error.type", null);
 					errorRows.add(i);
 					continue;
 				}
