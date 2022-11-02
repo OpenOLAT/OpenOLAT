@@ -138,7 +138,10 @@ public class ModifyOwnersStep3 extends BasicStep {
 			}
 			
 			boolean isRemoved = context.getOwnersToRemove().contains(identity);
-			boolean isAdded = context.getOwnersToAdd().contains(identity);
+			boolean isAdded = false;
+			if (context.getOwnersToAdd() != null) {
+				isAdded = context.getOwnersToAdd().contains(identity);
+			}
 			
 			if (isAlreadyOwner) {
 				if (isRemoved && isAdded) {
