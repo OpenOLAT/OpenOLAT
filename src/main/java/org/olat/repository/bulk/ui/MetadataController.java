@@ -103,7 +103,7 @@ public class MetadataController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer metadataCont = FormLayoutContainer.createDefaultFormLayout("metadataCont", getTranslator());
 		metadataCont.setFormTitle(translate("settings.bulk.metadata.title"));
-		metadataCont.setFormInfo(RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.metadata.desc"));
+		metadataCont.setFormInfo(RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.change.fields"));
 		metadataCont.setRootForm(mainForm);
 		formLayout.add(metadataCont);
 		
@@ -124,7 +124,7 @@ public class MetadataController extends StepFormBasicController {
 			}
 			decorate(educationalTypeEl, metadataCont, SettingsBulkEditable.educationalType);
 			
-			String educationalTypeInfo = "<i class='o_icon o_icon_warn'> </i> " + translate("settings.bulk.course.only");
+			String educationalTypeInfo = "<i class='o_icon o_icon_warn'> </i> " + translate("settings.bulk.course.only.single");
 			educationalTypeInfoEl = uifactory.addStaticTextElement("educational.type.info", null, educationalTypeInfo, metadataCont);
 			educationalTypeInfoEl.setElementCssClass("o_form_explanation");
 			educationalTypeInfoEl.setVisible(context.isSelected(SettingsBulkEditable.educationalType));
@@ -214,7 +214,7 @@ public class MetadataController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		context.select(SettingsBulkEditable.authors, authorsEl.isVisible());
 		if (authorsEl.isVisible()) {
-			context.setAuthors(authorsEl.getValue());
+			context.setAuthors(authorsEl.getValue().trim());
 		}
 		
 		context.select(SettingsBulkEditable.educationalType, educationalTypeEl != null && educationalTypeEl.isVisible());
@@ -225,12 +225,12 @@ public class MetadataController extends StepFormBasicController {
 		
 		context.select(SettingsBulkEditable.mainLanguage, languageEl.isVisible());
 		if (languageEl.isVisible()) {
-			context.setMainLanguage(languageEl.getValue());
+			context.setMainLanguage(languageEl.getValue().trim());
 		}
 		
 		context.select(SettingsBulkEditable.expenditureOfWork, expenditureOfWorkEl.isVisible());
 		if (expenditureOfWorkEl.isVisible()) {
-			context.setExpenditureOfWork(expenditureOfWorkEl.getValue());
+			context.setExpenditureOfWork(expenditureOfWorkEl.getValue().trim());
 		}
 		
 		context.select(SettingsBulkEditable.license, licenseEl != null && licenseEl.isVisible());
@@ -244,7 +244,7 @@ public class MetadataController extends StepFormBasicController {
 		}
 		
 		context.select(SettingsBulkEditable.licensor, licensorEl != null && licensorEl.isVisible());
-		if ( licensorEl != null && licensorEl.isVisible()) {
+		if (licensorEl != null && licensorEl.isVisible()) {
 			context.setLicensor(licensorEl.getValue());
 		}
 		

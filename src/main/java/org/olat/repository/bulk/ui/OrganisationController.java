@@ -55,7 +55,6 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.bulk.SettingsBulkEditable;
-import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.SettingsContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,7 +71,6 @@ public class OrganisationController extends StepFormBasicController {
 	private StaticTextElement organisationRemoveInfoEl;
 	
 	private final SettingsContext context;
-	private final SettingsBulkEditables editables;
 	private final Map<Long, List<Long>> repositoryEntryKeyOrganisationKeys;
 	
 	@Autowired
@@ -84,7 +82,6 @@ public class OrganisationController extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.context = (SettingsContext)runContext.get(SettingsContext.DEFAULT_KEY);
-		this.editables = (SettingsBulkEditables)runContext.get(SettingsBulkEditables.DEFAULT_KEY);
 		
 		Map<RepositoryEntryRef, List<Organisation>> repositoryEntryOrganisations = repositoryService.getRepositoryEntryOrganisations(context.getRepositoryEntries());
 		repositoryEntryKeyOrganisationKeys = new HashMap<>(repositoryEntryOrganisations.size());

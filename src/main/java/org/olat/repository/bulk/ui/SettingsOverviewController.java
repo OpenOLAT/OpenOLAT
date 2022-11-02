@@ -61,6 +61,8 @@ import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.SettingsContext;
 import org.olat.repository.bulk.model.SettingsSteps;
 import org.olat.repository.bulk.model.SettingsSteps.Step;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -92,6 +94,8 @@ public class SettingsOverviewController extends StepFormBasicController {
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 
 	public SettingsOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, SettingsSteps steps) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -261,6 +265,65 @@ public class SettingsOverviewController extends StepFormBasicController {
 			overviewSteps.add(step);
 		}
 		
+		if (steps.contains(Step.execution)) {
+			List<OverviewField> fields = new ArrayList<>(3);
+			if (context.isSelected(SettingsBulkEditable.lifecycleType)) {
+				String text;
+				switch (context.getLifecycleType()) {
+				case none: text = translate("settings.bulk.execution.period.none");
+					break;
+				case publicCycle: text = translate("settings.bulk.execution.period.public");
+					break;
+				case privateCycle: text = translate("settings.bulk.execution.period.private");
+					break;
+				default:
+					text = "-";
+					break;
+				}
+				text = translate("settings.bulk.overview.execution.period", text);
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleType);
+				String resourceItemName = createResourceLink(overviewCont, changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.lifecyclePublicKey)) {
+				RepositoryEntryLifecycle lifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
+				String text = lifecycle != null? lifecycle.getLabel(): "-";
+				text = translate("settings.bulk.overview.execution.public", text);
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecyclePublicKey);
+				String resourceItemName = createResourceLink(overviewCont, changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.lifecycleValidFrom)) {
+				String text = context.getLifecycleValidFrom() != null
+						? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidFrom())
+						: translate("settings.bulk.overview.execution.remove");
+				text = translate("settings.bulk.overview.execution.from", text);
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleValidFrom);
+				String resourceItemName = createResourceLink(overviewCont, changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.lifecycleValidTo)) {
+				String text = context.getLifecycleValidTo() != null
+						? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidTo())
+						: translate("settings.bulk.overview.execution.remove");
+				text = translate("settings.bulk.overview.execution.to", text);
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleValidTo);
+				String resourceItemName = createResourceLink(overviewCont, changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.location)) {
+				String text = translate("settings.bulk.overview.location", context.getLocation());
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.location);
+				String resourceItemName = createResourceLink(overviewCont, changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (fields.isEmpty()) {
+				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
+			}
+			OverviewStep step = new OverviewStep(translate("settings.bulk.execution.title"), fields);
+			overviewSteps.add(step);
+		}
+		
 		if (overviewSteps.isEmpty()) {
 			overviewSteps.add(new OverviewStep(null, List.of(new OverviewField(translate("settings.bulk.overview.none"), null))));
 		}
@@ -272,10 +335,10 @@ public class SettingsOverviewController extends StepFormBasicController {
 		String linkText = null;
 		if (repositoryEntries.isEmpty()) {
 			linkText = translate("settings.bulk.overview.resources.none");
-		} else if (repositoryEntries.size() == 1) {
-			linkText = translate("settings.bulk.overview.resources.one");
 		} else if (repositoryEntries.size() == totalRepositoryEntries) {
 			linkText = translate("settings.bulk.overview.resources.all");
+		} else if (repositoryEntries.size() == 1) {
+			linkText = translate("settings.bulk.overview.resources.one");
 		} else {
 			linkText = translate("settings.bulk.overview.resources.multi", String.valueOf(repositoryEntries.size()));
 		}
