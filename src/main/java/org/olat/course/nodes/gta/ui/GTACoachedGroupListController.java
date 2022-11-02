@@ -153,9 +153,19 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		List<CoachedGroupRow> rows = new ArrayList<>(coachedGroups.size());
 		for(BusinessGroup group:coachedGroups) {
 			TaskLight task = groupToTasks.get(group.getKey());
+			
+			Date syntheticSubmissionDate = null;
+			boolean hasSubmittedDocument = false;
+			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
+				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
+				if(syntheticSubmissionDate != null) {
+					hasSubmittedDocument = hasSubmittedDocument(task);
+				}
+			}
+			
 			DueDate submissionDueDate = null;
 			DueDate lateSubmissionDueDate = null;
-			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
+			if(task != null && syntheticSubmissionDate != null) {
 				DueDate dueDate = gtaManager.getSubmissionDueDate(task, null, group, gtaNode, entry, true);
 				if(dueDate != null && dueDate.getDueDate() != null) {
 					submissionDueDate = dueDate;
@@ -163,15 +173,6 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 					if(lateDueDate != null && lateDueDate.getDueDate() != null) {
 						lateSubmissionDueDate = lateDueDate;
 					}
-				}
-			}
-
-			Date syntheticSubmissionDate = null;
-			boolean hasSubmittedDocument = false;
-			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
-				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
-				if(syntheticSubmissionDate != null) {
-					hasSubmittedDocument = hasSubmittedDocument(task);
 				}
 			}
 			

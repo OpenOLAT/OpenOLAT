@@ -533,7 +533,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 				String duration = Formatter.formatDuration(lateInMilliSec);
 				return new SubmissionDateInfos(translate("msg.late.submission.date", date, duration), "o_icon_description", "o_process_status_late");
 			}
-			return new SubmissionDateInfos(translate("msg.extended.submission.date", date) + "DRU", "o_icon_description", "o_process_status_extended");
+			return new SubmissionDateInfos(translate("msg.extended.submission.date", date), "o_icon_description", "o_process_status_extended");
 		}
 		if(lateDueDate != null && lateDueDate.getReferenceDueDate() != null && submissionDate.after(dueDate.getReferenceDueDate())) {
 			long lateInMilliSec = submissionDate.getTime() - dueDate.getReferenceDueDate().getTime();

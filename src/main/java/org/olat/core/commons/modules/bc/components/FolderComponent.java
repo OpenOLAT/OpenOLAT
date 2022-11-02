@@ -179,6 +179,9 @@ public class FolderComponent extends AbstractComponent {
 			// don't redraw the file listing when serving a resource -> timestamp not consumed
 			setDirty(false);
 			return;
+		} else if (ureq.getParameter(ListRenderer.PARAM_VIEW_AUDIO_VIDEO) != null) {
+			fireEvent(ureq, new Event(FolderCommandFactory.COMMAND_VIEW_AUDIO_VIDEO));
+			return;
 		}
 
 		// regular browsing, set current container

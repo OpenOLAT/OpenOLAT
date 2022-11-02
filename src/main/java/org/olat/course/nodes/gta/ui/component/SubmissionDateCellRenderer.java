@@ -89,7 +89,11 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 			if(effectiveDeadline == null || effectiveDeadline.before(submissionDate)) {
 				appendExtendedMarker(target);
 			} else if(refDate != null && refDate.before(submissionDate) && extensionDate.after(submissionDate)) {
-				appendLateMarker(target);
+				if(refLateDate == null || refLateDate.after(submissionDate)) {
+					appendExtendedMarker(target);
+				} else {
+					appendLateMarker(target);
+				}
 			} else if(refLateDate != null && refLateDate.after(submissionDate) && extensionDate.before(submissionDate)) {
 				appendLateMarker(target);
 			}
