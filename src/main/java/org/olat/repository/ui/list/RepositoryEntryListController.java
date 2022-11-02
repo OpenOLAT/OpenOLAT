@@ -326,6 +326,7 @@ public class RepositoryEntryListController extends FormBasicController
 				TabSelectionBehavior.reloadData, List.of(
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
 						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "preparation")));
+		prepTab.setElementCssClass("o_sel_mycourses_preparation");
 		tabs.add(prepTab);
 		
 		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.active"),

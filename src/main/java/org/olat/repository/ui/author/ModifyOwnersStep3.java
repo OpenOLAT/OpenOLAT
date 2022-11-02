@@ -126,6 +126,7 @@ public class ModifyOwnersStep3 extends BasicStep {
 			}
 			
 			tableEl = uifactory.addTableElement(getWindowControl(), "reviewTable", tableModel, getTranslator(), formLayout);
+			tableEl.setElementCssClass("o_sel_modify_owners_review");
 			tableEl.setCustomizeColumns(false);
 			tableEl.setNumOfRowsEnabled(false);
 		}
