@@ -19,6 +19,14 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor;
@@ -75,14 +83,6 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;

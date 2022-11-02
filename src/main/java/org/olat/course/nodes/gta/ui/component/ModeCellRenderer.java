@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui.component;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -32,8 +34,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.gta.GTAManager;
-
-import java.util.Optional;
 
 public class ModeCellRenderer extends StaticFlexiCellRenderer {
 	public static final String CONVERTING_LINK_PREFIX = "o_converting_link_";

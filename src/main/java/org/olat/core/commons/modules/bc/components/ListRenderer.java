@@ -26,6 +26,14 @@
 
 package org.olat.core.commons.modules.bc.components;
 
+import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
@@ -69,14 +77,6 @@ import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
-
-import java.text.DateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Initial Date:  Feb 12, 2004

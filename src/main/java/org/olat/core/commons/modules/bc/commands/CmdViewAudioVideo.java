@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.doceditor.DocEditor;
@@ -35,8 +37,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-
-import java.util.List;
 
 /**
  * Initial date: 2022-11-02<br>
