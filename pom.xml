@@ -1469,8 +1469,8 @@
 						<configuration>
 							<target>
 								<mkdir dir="${project.build.directory}/downloads" />
-								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/9.0.38/apache-tomcat-arq-9.0.38.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
-								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-9.0.38.zip" dest="${project.build.directory}/arq-apache-tomcat-9.0.38" />
+								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/10.1.1/apache-tomcat-arq-10.1.1.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
+								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-10.1.1.zip" dest="${project.build.directory}/arq-apache-tomcat-10.1.1" />
 							</target>
 						</configuration>
 					</execution> 
@@ -1506,7 +1506,7 @@
 					<skipITs>${skipSeleniumTests}</skipITs>
 					<skipTests>${skipSeleniumTests}</skipTests>
 					<reuseForks>false</reuseForks>
-					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
+					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true -Dwebdriver.http.factory=jdk-http-client</argLine>
 					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
