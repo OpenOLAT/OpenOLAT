@@ -1799,11 +1799,12 @@ public class AuthorListController extends FormBasicController implements Activat
         public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
             ModifyOwnersContext context = (ModifyOwnersContext) runContext.get(ModifyOwnersContext.CONTEXT_KEY);
             	
-            List<Identity> removeOwnersList = context.getOwnersToRemove();
-            removeOwnersList.removeAll(context.getOwnersToAdd());
-            
-            List<Identity> addOwnersList = context.getOwnersToAdd();
-            addOwnersList.removeAll(context.getOwnersToRemove());
+            final List<Identity> removeOwnersList = context.getOwnersToRemove();
+            final List<Identity> addOwnersList = context.getOwnersToAdd();
+            if(addOwnersList != null) {
+            	removeOwnersList.removeAll(addOwnersList);
+            	addOwnersList.removeAll(context.getOwnersToRemove());
+            }
             
             MailPackage mailing = new MailPackage(context.isSendMail());
             
@@ -1812,8 +1813,10 @@ public class AuthorListController extends FormBasicController implements Activat
             	
 		        repositoryManager.removeOwners(getIdentity(), removeOwnersList, repoEntry, mailing);
 		        
-		        IdentitiesAddEvent addEvent = new IdentitiesAddEvent(addOwnersList);
-		        repositoryManager.addOwners(getIdentity(), addEvent, repoEntry, mailing);
+		        if(addOwnersList != null) {
+		        	IdentitiesAddEvent addEvent = new IdentitiesAddEvent(addOwnersList);
+		        	repositoryManager.addOwners(getIdentity(), addEvent, repoEntry, mailing);
+		        }
             }
             // Fire event
             return StepsMainRunController.DONE_MODIFIED;
