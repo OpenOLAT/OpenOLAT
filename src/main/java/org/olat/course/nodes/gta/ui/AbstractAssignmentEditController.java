@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -26,6 +27,8 @@ import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
+import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -58,6 +61,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -81,6 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
@@ -109,6 +114,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private DialogBoxController confirmDeleteCtrl;
 	private CloseableCalloutWindowController ccwc;
 	private AVConvertingMenuController avConvertingMenuCtrl;
+	private VideoAudioPlayerController videoAudioPlayerController;
 	
 	private final File tasksFolder;
 	protected final boolean readOnly;
@@ -313,10 +319,13 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		} else if (avConvertingMenuCtrl == source) {
 			if (event == AVConvertingMenuController.PLAY_MASTER_EVENT) {
 				TaskDefinition taskDefinition = (TaskDefinition) avConvertingMenuCtrl.getUserObject();
-				doPlayMaster(ureq, taskDefinition);
 				ccwc.deactivate();
 				cleanUp();
+				doPlayMaster(ureq, taskDefinition);
 			}
+		} else if (videoAudioPlayerController == source) {
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -327,6 +336,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(addTaskCtrl);
 		removeAsListenerAndDispose(avTaskCtrl);
 		removeAsListenerAndDispose(avConvertingMenuCtrl);
+		removeAsListenerAndDispose(videoAudioPlayerController);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		confirmDeleteCtrl = null;
@@ -334,6 +344,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		addTaskCtrl = null;
 		avTaskCtrl = null;
 		avConvertingMenuCtrl = null;
+		videoAudioPlayerController = null;
 		cmc = null;
 		ccwc = null;
 	}
@@ -442,21 +453,42 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			ccwc.activate();
 			return;
 		}
-		doOpenMediaInNewWindow(ureq, taskDef, mode);
+		String suffix = FileUtils.getFileSuffix(taskDef.getFilename());
+		Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
+		if (videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, mode, false))) {
+			doOpenMediaInModalController(ureq, taskDef, mode);
+		} else {
+			doOpenMediaInNewWindow(ureq, taskDef, mode);
+		}
 	}
 
 	private void doPlayMaster(UserRequest ureq, TaskDefinition taskDef) {
-		doOpenMediaInNewWindow(ureq, taskDef, Mode.VIEW);
+		doOpenMediaInModalController(ureq, taskDef, Mode.VIEW);
+	}
+
+	private void doOpenMediaInModalController(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
+		if (!(vfsItem instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem,
+					taskDef.getFilename(), mode, courseRepoKey);
+			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
+			String title = translate("av.play");
+			cmc = new CloseableModalController(getWindowControl(), "close",
+					videoAudioPlayerController.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 
 	private void doOpenMediaInNewWindow(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
-		String fileName = taskDef.getFilename();
-		VFSItem vfsItem = tasksContainer.resolve(fileName);
-		if(!(vfsItem instanceof VFSLeaf)) {
+		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
+		if (!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem, fileName, mode,
-					courseRepoKey);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem,
+					taskDef.getFilename(), mode, courseRepoKey);
 			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}

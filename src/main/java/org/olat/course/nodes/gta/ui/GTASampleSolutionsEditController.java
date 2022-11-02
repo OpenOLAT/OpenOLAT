@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -26,6 +27,8 @@ import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
+import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,6 +52,7 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -69,6 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
@@ -95,6 +100,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private AVSampleSolutionController avSampleSolutionController;
 	private CloseableCalloutWindowController ccwc;
 	private AVConvertingMenuController avConvertingMenuCtrl;
+	private VideoAudioPlayerController videoAudioPlayerController;
 
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -261,10 +267,13 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		} else if (avConvertingMenuCtrl == source) {
 			if (event == AVConvertingMenuController.PLAY_MASTER_EVENT) {
 				Solution solution = (Solution) avConvertingMenuCtrl.getUserObject();
-				doPlayMaster(ureq, solution);
 				ccwc.deactivate();
 				cleanUp();
+				doPlayMaster(ureq, solution);
 			}
+		} else if (videoAudioPlayerController == source) {
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -274,12 +283,14 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		removeAsListenerAndDispose(addSolutionCtrl);
 		removeAsListenerAndDispose(avSampleSolutionController);
 		removeAsListenerAndDispose(avConvertingMenuCtrl);
+		removeAsListenerAndDispose(videoAudioPlayerController);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		editSolutionCtrl = null;
 		addSolutionCtrl = null;
 		avSampleSolutionController = null;
 		avConvertingMenuCtrl = null;
+		videoAudioPlayerController = null;
 		cmc = null;
 		ccwc = null;
 	}
@@ -333,17 +344,38 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			ccwc.activate();
 			return;
 		}
-
-		doOpenMediaInNewWindow(ureq, solution, mode);
+		String suffix = FileUtils.getFileSuffix(solution.getFilename());
+		Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
+		if (videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, mode, false))) {
+			doOpenMediaInModalController(ureq, solution, mode);
+		} else {
+			doOpenMediaInNewWindow(ureq, solution, mode);
+		}
 	}
 
 	private void doPlayMaster(UserRequest ureq, Solution solution) {
-		doOpenMediaInNewWindow(ureq, solution, Mode.VIEW);
+		doOpenMediaInModalController(ureq, solution, Mode.VIEW);
+	}
+
+	private void doOpenMediaInModalController(UserRequest ureq, Solution solution, Mode mode) {
+		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
+		if (!(vfsItem instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			gtaManager.markNews(courseEnv, gtaNode);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem,
+					solution.getFilename(), mode, courseRepoKey);
+			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
+			String title = translate("av.play");
+			cmc = new CloseableModalController(getWindowControl(), "close",
+					videoAudioPlayerController.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 
 	private void doOpenMediaInNewWindow(UserRequest ureq, Solution solution, Mode mode) {
-		String fileName = solution.getFilename();
-		VFSItem vfsItem = solutionContainer.resolve(fileName);
+		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
