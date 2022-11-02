@@ -149,13 +149,16 @@ public class LinkFileCombiCalloutController extends BasicController {
 		
 		createEditLink = LinkFactory.createButton("create.edit", contentVC, this);
 		createEditLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		createEditLink.setElementCssClass("o_sel_filechooser_edit");
 		createEditLink.setPrimary(true);
 		createLink = LinkFactory.createButton("create", contentVC, this);
 		createLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		createLink.setElementCssClass("o_sel_filechooser_create");
 		selectLink = LinkFactory.createButton("select", contentVC, this);
 		selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search");
 		importLink = LinkFactory.createButton("import", contentVC, this);
 		importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+		importLink.setElementCssClass("o_sel_filechooser_import");
 		
 		fileCmp = new IconPanel("file.available");
 		fileCmp.setElementCssClass("o_block_bottom");

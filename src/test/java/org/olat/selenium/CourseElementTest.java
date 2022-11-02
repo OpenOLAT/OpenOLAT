@@ -1889,7 +1889,7 @@ public class CourseElementTest extends Deployments {
 		SinglePageConfigurationPage spConfiguration = new SinglePageConfigurationPage(browser);
 		spConfiguration
 			.selectConfiguration()
-			.newDefaultPage(content)
+			.createEditPage("sp.html", content)
 			.assertOnPreview();
 		
 		CoursePageFragment courseRuntime = courseEditor
@@ -1951,7 +1951,8 @@ public class CourseElementTest extends Deployments {
 		SinglePageConfigurationPage spConfiguration = new SinglePageConfigurationPage(browser);
 		spConfiguration
 			.selectConfiguration()
-			.openDefaultPage()
+			.createPage("nsp.html")
+			.editPage()
 			.setContent(content)
 			.uploadImage(imageFile)
 			.saveContent();

@@ -103,7 +103,7 @@ public class CourseLearnPathTest extends Deployments {
 		SinglePageConfigurationPage spConfiguration = new SinglePageConfigurationPage(browser);
 		spConfiguration
 			.selectConfiguration()
-			.newDefaultPage(content)
+			.createEditPage("lsp.html", content)
 			.assertOnPreview();
 		
 		courseEditor
