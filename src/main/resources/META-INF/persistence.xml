@@ -17,7 +17,6 @@
 		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/PolicyImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupMembershipImpl.hbm.xml</mapping-file>
