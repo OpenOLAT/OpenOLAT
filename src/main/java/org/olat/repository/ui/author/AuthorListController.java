@@ -774,8 +774,10 @@ public class AuthorListController extends FormBasicController implements Activat
 			sendMailButton = uifactory.addFormLink("tools.send.mail", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(sendMailButton);
 			modifyStatusButton = uifactory.addFormLink("tools.modify.status", formLayout, Link.BUTTON);
+			modifyStatusButton.setElementCssClass("o_sel_modify_status");
 			tableEl.addBatchButton(modifyStatusButton);
 			modifyOwnersButton = uifactory.addFormLink("tools.modify.owners", formLayout, Link.BUTTON);
+			modifyOwnersButton.setElementCssClass("o_sel_modify_owners");
 			tableEl.addBatchButton(modifyOwnersButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(copyButton);

@@ -254,11 +254,28 @@ public class AuthoringEnvPage {
 		return this;
 	}
 	
-	public void selectResource(String title) {
+	/**
+	 * @param title The title of the resource to open
+	 */
+	public void openResource(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//a[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
+	}
+	
+	/**
+	 * Select (for multi-selections) the resource with the specified title.
+	 * 
+	 * @param title The title of the learn resource
+	 * @return Itself
+	 */
+	public AuthoringEnvPage selectResource(String title) {
+		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td/input[@name='tb_ms']");
+		OOGraphene.waitElement(selectBy, browser);
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
 	public AuthoringEnvPage searchResource(String text) {
@@ -293,6 +310,14 @@ public class AuthoringEnvPage {
 		}
 		// can be warning in edition or edit mode
 		OOGraphene.waitBusy(browser);
+	}
+	
+	public ModifyOwnersPage changeOwner() {
+		By modifyOwnersBy = By.cssSelector("div.o_table_batch_buttons a.o_sel_modify_owners");
+		OOGraphene.waitElement(modifyOwnersBy, browser);
+		browser.findElement(modifyOwnersBy).click();
+		OOGraphene.waitModalWizard(browser);
+		return new ModifyOwnersPage(browser);
 	}
 	
 	/**
