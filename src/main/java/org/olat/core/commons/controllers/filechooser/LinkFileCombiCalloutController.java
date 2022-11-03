@@ -20,6 +20,9 @@
 package org.olat.core.commons.controllers.filechooser;
 
 
+import java.util.List;
+import java.util.Set;
+
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
@@ -43,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.Quota;
@@ -50,8 +54,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
+import org.olat.core.util.vfs.filters.VFSOrFilter;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 
@@ -68,11 +74,12 @@ import org.olat.modules.edusharing.VFSEdusharingProvider;
  */
 public class LinkFileCombiCalloutController extends BasicController {
 	
+	private static final Set<String> MIME_TYPE_HTML = Set.of("text/html", "application/zip");
+	
 	private VelocityContainer contentVC;
 	private EmptyState fileNotAvailableCmp;
 	private IconPanel fileCmp;
 	private VelocityContainer fileCont;
-	private Link createEditLink;
 	private Link createLink;
 	private Link selectLink;
 	private Link importLink;
@@ -147,13 +154,10 @@ public class LinkFileCombiCalloutController extends BasicController {
 		fileNotAvailableCmp.setIconCss("o_icon o_filetype_html");
 		fileNotAvailableCmp.setMessageI18nKey("file.not.available.message");
 		
-		createEditLink = LinkFactory.createButton("create.edit", contentVC, this);
-		createEditLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-		createEditLink.setElementCssClass("o_sel_filechooser_edit");
-		createEditLink.setPrimary(true);
 		createLink = LinkFactory.createButton("create", contentVC, this);
 		createLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		createLink.setElementCssClass("o_sel_filechooser_create");
+		createLink.setPrimary(true);
 		selectLink = LinkFactory.createButton("select", contentVC, this);
 		selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search");
 		importLink = LinkFactory.createButton("import", contentVC, this);
@@ -208,10 +212,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == createEditLink) {
-			doOpenCreate(ureq, true);
-		} else if (source == createLink || source == createCmdLink) {
-			doOpenCreate(ureq, false);
+		if (source == createLink || source == createCmdLink) {
+			doOpenCreate(ureq);
 		} else if (source == selectLink) {
 			doOpenSelect(ureq);
 		} else if (source == importLink || source == importCmdLink) {
@@ -282,12 +284,9 @@ public class LinkFileCombiCalloutController extends BasicController {
 				file = createCtr.getCreatedFile();
 				relFilPathIsProposal = false;
 				setRelFilePath(VFSManager.getRelativeItemPath(file, baseContainer, null));
-				boolean edit = ((Boolean)createCtr.getUserObject()).booleanValue();
 				fireEvent(ureq, Event.DONE_EVENT);
 				cleanupModal(true);
-				if (edit) {
-					doOpenWysiwygEditor(ureq);
-				}
+				doOpenWysiwygEditor(ureq);
 			} else if (event == Event.CANCELLED_EVENT){
 				cleanupModal(true);
 			}
@@ -301,19 +300,22 @@ public class LinkFileCombiCalloutController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void doOpenCreate(UserRequest ureq, boolean edit) {
+	private void doOpenCreate(UserRequest ureq) {
 		String folderPath = null;
+		String fileName = null;
 		if (StringHelper.containsNonWhitespace(relFilePath)) {
-			// remove file name from relFilePath to represent directory path
-			folderPath = relFilePath.substring(0, relFilePath.lastIndexOf("/"));
+			int folderFileIndex = relFilePath.lastIndexOf("/");
+			folderPath = relFilePath.substring(0, folderFileIndex);
+			fileName = relFilePath.substring(folderFileIndex + 1);
 		}
-		FileCreatorController fileCreatorCtrl = new FileCreatorController(ureq, getWindowControl(), baseContainer, folderPath);
-		fileCreatorCtrl.setUserObject(Boolean.valueOf(edit));
+		FileCreatorController fileCreatorCtrl = new FileCreatorController(ureq, getWindowControl(), baseContainer, folderPath, fileName);
 		displayModal(fileCreatorCtrl);
 	}
 	
 	private void doOpenSelect(UserRequest ureq) {
-		VFSItemFilter filter = new VFSSystemItemFilter();
+		VFSItemFilter filter = new VFSOrFilter(List.of(
+				new VFSContainerFilter(),
+				new VFSItemSuffixFilter(new String[] { "html", "htm" })));
 		FileChooserController fileChooserCtrl = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), baseContainer, filter, true);
 		fileChooserCtrl.setShowTitle(true);
 		fileChooserCtrl.selectPath(relFilePath);
@@ -327,7 +329,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 			// remove file name from relFilePath to represent directory path
 			folderPath = relFilePath.substring(0, relFilePath.lastIndexOf("/"));
 		}
-		FileUploadController fileUploadCtrl = new FileUploadController(getWindowControl(), baseContainer, ureq, quotaLeftKB, quotaLeftKB, null, false, true, false, false, true, true, folderPath);
+		FileUploadController fileUploadCtrl = new FileUploadController(getWindowControl(), baseContainer, ureq,
+				quotaLeftKB, quotaLeftKB, MIME_TYPE_HTML, false, true, false, false, true, true, folderPath);
 		displayModal(fileUploadCtrl);
 	}
 	
@@ -431,8 +434,20 @@ public class LinkFileCombiCalloutController extends BasicController {
 		boolean fileAvailable = file != null;
 		contentVC.contextPut("fileAvailable", Boolean.valueOf(fileAvailable));
 		
+		String filename = null;
+		if (fileAvailable) {
+			filename = file.getName();
+			int suffixIndex = filename.lastIndexOf(".");
+			if (suffixIndex > 0) {
+				filename = filename.substring(0, suffixIndex);
+			}
+		}
+		fileCmp.setTitle(filename);
+		
 		fileCont.contextPut("fileName", relFilePath);
-		fileNotAvailableCmp.setMessageI18nArgs(new String[] {relFilePath});
+		if (fileAvailable) {
+			fileCont.contextPut("fileLastModified", Formatter.getInstance(getLocale()).formatDateAndTime(file.getMetaInfo().getLastModified()));
+		}
 		
 		// Enable edit link when file is editable 
 		fileCmp.removeLink(editLink.getComponentName());
