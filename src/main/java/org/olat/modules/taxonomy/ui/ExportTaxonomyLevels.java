@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -132,6 +133,8 @@ public class ExportTaxonomyLevels implements MediaResource {
 
     private void createData(List<TaxonomyLevel> taxonomyLevels, OpenXMLWorksheet worksheet) {
         worksheet.setHeaderRows(1);
+
+        taxonomyLevels = taxonomyLevels.stream().sorted(Comparator.comparing(TaxonomyLevel::getMaterializedPathIdentifiers)).collect(Collectors.toList());
 
         for (TaxonomyLevel level : taxonomyLevels) {
             OpenXMLWorksheet.Row dataRow = worksheet.newRow();
