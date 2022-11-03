@@ -563,6 +563,11 @@ public class TaxonomyImportStep1 extends BasicStep {
 							allOk = false;
 							inputEl.setErrorKey("import.taxonomy.error.language", new String[] { language });
 							errorRows.add(i);
+						} else if (!org.olat.core.util.FileUtils.validateFilename(identifier)
+								|| !org.olat.core.util.FileUtils.validateFilename(displayName)) {
+							allOk = false;
+							inputEl.setErrorKey("import.taxonomy.error.invalid", null);
+							errorRows.add(i);
 						} else if (StringHelper.containsNonWhitespace(language)
 								&& StringHelper.containsNonWhitespace(displayName)) {
 							nameDescriptionByLanguage.put(language, Arrays.asList(displayName, description));

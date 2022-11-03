@@ -47,6 +47,7 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.i18n.I18nItem;
@@ -445,8 +446,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		teaserImageEl.clearError();
 		List<ValidationStatus> backgroundResults = new ArrayList<>();
 		teaserImageEl.validate(backgroundResults);
-		
-		defaultLocaleDisplayNameEl.clearError();
+
 		if(!StringHelper.containsNonWhitespace(defaultLocaleDisplayNameEl.getValue())) {
 			defaultLocaleDisplayNameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
@@ -466,6 +466,9 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			allOk &= false;
 		} else if(textEl.getValue().length() >= maxSize) {
 			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			allOk &= false;
+		} else if (!FileUtils.validateFilename(textEl.getValue())) {
+			textEl.setErrorKey("form.error.invalid", new String[] { textEl.getValue() });
 			allOk &= false;
 		}
 		
