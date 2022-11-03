@@ -59,6 +59,16 @@ public class MyCoursesPage {
 		return this;
 	}
 	
+	public MyCoursesPage openInPreparation() {
+		By inPreparationBy = By.className("o_sel_mycourses_preparation");
+		browser.findElement(inPreparationBy).click();
+		By inPreparationActiveBy = By.cssSelector("ul.o_segments a.o_sel_mycourses_preparation.btn-primary");
+		OOGraphene.waitElement(inPreparationActiveBy, browser);
+		By courseTableBy = By.className("o_coursetable");
+		OOGraphene.waitElement(courseTableBy, browser);
+		return this;
+	}
+	
 	public MyCoursesPage openCatalog() {
 		By catalogBy = By.className("o_sel_mycourses_catalog");
 		browser.findElement(catalogBy).click();
