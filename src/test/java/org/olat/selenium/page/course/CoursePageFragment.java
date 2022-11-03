@@ -150,6 +150,17 @@ public class CoursePageFragment {
 	}
 	
 	/**
+	 * Check only if a message is visible.
+	 * 
+	 * @return Itself
+	 */
+	public CoursePageFragment assertOnMessage() {
+		By messageBy = By.cssSelector("div.o_toolbar_message.o_warning");
+		OOGraphene.waitElement(messageBy, browser);
+		return this;
+	}
+	
+	/**
 	 * Wait until the restart button appears or make an error.
 	 * 
 	 * @return

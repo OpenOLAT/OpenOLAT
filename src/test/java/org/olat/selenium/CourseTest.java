@@ -1748,6 +1748,10 @@ public class CourseTest extends Deployments {
 			.assertInIFrame(By.xpath("//h2[text()[contains(.,'Lorem Ipsum')]]"));
 	}
 	
+	/**
+	 * Add an owner to a course directly from the author's list, and after
+	 * remove itself as an owner of the course.
+	 */
 	@Test
 	@RunAsClient
 	public void modifyOwnerCourseBatch()
@@ -1809,6 +1813,53 @@ public class CourseTest extends Deployments {
 			.assertOnCoursePage()
 			.edit()
 			.assertOnEditor();
+	}
+	
+	/**
+	 * Modify the status of a course directly in the author's list.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void modifyStatusCourseBatch()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		String title = "Status-Course-" + UUID.randomUUID().toString();
+		navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment()
+			// Create course
+			.createCourse(title, true)
+			.clickToolbarBack()
+			.closeCourse();
+		
+		AuthoringEnvPage authoringEnv = navBar
+			.openAuthoringEnvironment();
+		// First add a new owner
+		authoringEnv
+			.selectResource(title)
+			.modifyStatus(RepositoryEntryStatusEnum.published)
+			.assertOnStatus(title, RepositoryEntryStatusEnum.published);
+		
+		authoringEnv
+			.selectResource(title)
+			.modifyStatus(RepositoryEntryStatusEnum.closed)
+			.assertOnStatus(title, RepositoryEntryStatusEnum.closed)
+			.openResource(title);
+	
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.assertOnTitle(title)
+			.assertOnMessage()
+			.assertStatus(RepositoryEntryStatusEnum.closed);
 	}
 	
 	/**
