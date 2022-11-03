@@ -177,9 +177,16 @@ public interface DocEditorService {
 	 * Get the label for a button representing the current mode and file type
 	 * @param mode
 	 * @param fileName
-	 * @param translator A translator that can translate from the DocEditorController namespace
+	 * @param trans A translator that can translate from the DocEditorController namespace
 	 * @return 
 	 */
 	public String getModeButtonLabel(Mode mode, String fileName, Translator trans);
 
+	/**
+	 * Return true if the mode and file name identify the file as an audio/video file.
+	 * @param mode The of the current document
+	 * @param fileName The file name of the current document
+	 * @return True if identified as audio/video file
+	 */
+	boolean isAudioVideo(Mode mode, String fileName);
 }

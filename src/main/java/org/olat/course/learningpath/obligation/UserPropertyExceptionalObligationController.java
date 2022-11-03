@@ -88,7 +88,9 @@ public class UserPropertyExceptionalObligationController extends FormBasicContro
 				translate(handler.i18nFormElementLabelKey()))));
 		propertyNameEl = uifactory.addDropdownSingleselect("handler", "config.exceptional.obligation.user.property", formLayout, handlerKV.keys(), handlerKV.values());
 		propertyNameEl.setMandatory(true);
-		propertyNameEl.select(propertyNameEl.getKey(0), true);
+		if(!handlerKV.isEmpty()) {
+			propertyNameEl.select(propertyNameEl.getKey(0), true);
+		}
 		
 		valueEl = uifactory.addTextElement("value", "config.exceptional.obligation.user.property.value", 128, null, formLayout);
 		valueEl.setMandatory(true);
