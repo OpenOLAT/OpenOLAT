@@ -229,6 +229,7 @@ public class ExportTaxonomyLevels implements MediaResource {
                     }
 
                     if (translatedDescription != null) {
+                        translatedDescription = translatedDescription.replaceAll("[\n\r]", "");
                         taxonomyLevelLanguage = languageKey.toUpperCase();
                         attributesToItem.put("description", translatedDescription);
                     }

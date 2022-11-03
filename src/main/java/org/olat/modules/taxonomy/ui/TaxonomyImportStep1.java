@@ -165,7 +165,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 			
 			// Add input element for taxonomy levels
 			importDataElement = uifactory.addTextAreaElement("importElement", "import.taxonomy.levels", -1, 10, -1, false, true, true, null, importLayout);
-			//importDataElement.setNotEmptyCheck("import.taxonomy.levels.mandatory");
 			importDataElement.setMandatory(true);
 			importDataElement.setLineNumbersEnbaled(true);
 			importDataElement.setStripedBackgroundEnabled(true);
