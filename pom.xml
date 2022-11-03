@@ -72,8 +72,8 @@
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.2.20.Final</io.undertow>
-		<jackson.version>2.14.0-rc1</jackson.version>
-		<swagger.ui.version>4.14.3</swagger.ui.version>
+		<jackson.version>2.14.0-rc3</jackson.version>
+		<swagger.ui.version>4.15.0</swagger.ui.version>
 		<com.mysql.version>8.0.31</com.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
 		<org.infinispan.version>13.0.11.Final</org.infinispan.version>
@@ -2278,7 +2278,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.2</version>
+			<version>1.13.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
