@@ -1350,7 +1350,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		if(task == null) return false;
 		
-		Date submissionDate = task.getCollectionDate() != null ? task.getCollectionDate() : task.getSubmissionDate();
+		Date submissionDate = task.getSubmissionDate();
 		if(submissionDate != null) {
 			DueDate submissionDueDate = getSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
 			if(submissionDueDate != null && submissionDueDate.getDueDate() != null) {
@@ -1373,7 +1373,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 		TaskLateStatus status = TaskLateStatus.onTime;
 		
-		Date submissionDate = task.getCollectionDate() != null ? task.getCollectionDate() : task.getSubmissionDate();
+		Date submissionDate = task.getSubmissionDate();
 		if(submissionDate != null && task.getSubmissionDueDate() != null) {
 			DueDate submissionDueDate = getSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
 
