@@ -411,5 +411,14 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		return translator.translate("open.button");	
 	}
 
-
+	public boolean isAudioVideo(Mode mode, String fileName) {
+		if (Mode.EDIT.equals(mode)) {
+			return false;
+		}
+		String mime = WebappHelper.getMimeType(fileName);
+		if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
+			return true;
+		}
+		return false;
+	}
 }
