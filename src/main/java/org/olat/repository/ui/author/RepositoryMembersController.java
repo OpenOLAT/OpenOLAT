@@ -46,8 +46,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
-import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
-import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.ImportMember_1_MemberStep;
 import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.BusinessGroupService;
@@ -77,7 +76,6 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	
 	private final SearchMembersParams params;
 	private FormLink addMemberLink;
-	private FormLink importMemberLink; 
 	private StepsMainRunController importMembersWizard;
 	
 	@Autowired
@@ -104,10 +102,6 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setVisible(!managed);
-
-		importMemberLink = uifactory.addFormLink("import.member", formLayout, Link.BUTTON);
-		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-		importMemberLink.setVisible(!managed);
 	}
 
 	@Override
@@ -118,8 +112,6 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addMemberLink) {
-			doChooseMembers(ureq);
-		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
@@ -147,27 +139,11 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		//
 	}
 	
-	private void doChooseMembers(UserRequest ureq) {
-		removeAsListenerAndDispose(importMembersWizard);
-
-		MembersContext membersContext = MembersContext.valueOf(repoEntry, false);
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			addMembers(uureq, runContext);
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.member"), "o_sel_group_import_1_wizard");
-		listenTo(importMembersWizard);
-		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
-	}
-	
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
 		MembersContext membersContext = MembersContext.valueOf(repoEntry, false);
-		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
+		Step start = new ImportMember_1_MemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			MembersByNameContext membersByNameContext = (MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY);
@@ -180,7 +156,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.member"), "o_sel_group_import_logins_wizard");
+				translate("add.member"), "o_sel_group_import_logins_wizard");
 		listenTo(importMembersWizard);
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}

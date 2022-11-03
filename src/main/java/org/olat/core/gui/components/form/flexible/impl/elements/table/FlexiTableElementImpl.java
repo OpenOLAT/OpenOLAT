@@ -684,7 +684,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		searchEnabled = true;
 
 		String dispatchId = component.getDispatchID();
-		searchFieldEl = new AutoCompleterImpl(dispatchId + "_searchField", "search");
+		searchFieldEl = new AutoCompleterImpl(dispatchId + "_searchField", "search", translator.getLocale());
 		searchFieldEl.setDomReplacementWrapperRequired(false);
 		searchFieldEl.showLabel(false);
 		searchFieldEl.getComponent().addListener(this);

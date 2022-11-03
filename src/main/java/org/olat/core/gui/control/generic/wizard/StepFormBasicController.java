@@ -118,6 +118,10 @@ public abstract class StepFormBasicController extends FormBasicController implem
 		return (List<T>)runContext.get(key);
 	}
 	
+	public StepsRunContext getRunContext() {
+		return runContext;
+	}
+	
 	@Override
 	public void back() {
 		

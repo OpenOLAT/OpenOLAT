@@ -133,34 +133,15 @@ public class UserSearchController extends BasicController {
 	@Autowired
 	private IdentityPowerSearchQueries identitySearchQueries;
 
-	public UserSearchController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false, false);
-	}
 
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton) {
 		this(ureq, wControl, cancelbutton, false, false);
-	}
-
-
-	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, String actionKeyChooseFinish) {
-		this(ureq, windowControl, cancelbutton, userMultiSelect, false);
-		this.actionKeyChoose = actionKeyChooseFinish;
 	}
 
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect, boolean allowReturnKey) {
 		this(ureq, wControl, cancelbutton, userMultiSelect, allowReturnKey, null, false);
 	}
 
-	/**
-	 * 
-	 * 
-	 * @param ureq The user request
-	 * @param wControl The window control
-	 * @param cancelbutton 
-	 * @param userMultiSelect
-	 * @param allowReturnKey
-	 * @param wildCardOrgsForSysAdmin
-	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect,
 			boolean allowReturnKey, OrganisationRoles[] excludeRoles, boolean wildCardOrgsForSysAdmin) {
 		super(ureq, wControl);

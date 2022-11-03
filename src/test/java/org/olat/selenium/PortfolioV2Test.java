@@ -185,7 +185,8 @@ public class PortfolioV2Test extends Deployments {
 			.members();
 	
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(ryomou)
 			.nextUsers()
 			.nextOverview()
@@ -710,7 +711,8 @@ public class PortfolioV2Test extends Deployments {
 			.members();
 	
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(rei)
 			.nextUsers()
 			.nextOverview()

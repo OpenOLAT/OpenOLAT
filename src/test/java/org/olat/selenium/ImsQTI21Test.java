@@ -1735,7 +1735,8 @@ public class ImsQTI21Test extends Deployments {
 		MembersPage members = courseRuntime
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(ryomou)
 			.nextUsers()
 			.nextOverview()

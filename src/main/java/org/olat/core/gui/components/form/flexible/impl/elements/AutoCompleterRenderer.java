@@ -60,13 +60,20 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			ubu.createCopyFor(cmp).openXHREvent(command, null, false, false,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "select"));
 			
+			String noResults = translator.translate("autocompletion.results.none");
+			
 			sb.append("<input type='text' class='form-control' size='").append(inputSize).append("' id='").append(id)
 			  .append("' name='").append(id).append("' value=\"");
 			if(StringHelper.containsNonWhitespace(autoCompleter.getValue())) {
 				sb.append(StringHelper.escapeHtml(autoCompleter.getValue()));
 			}
-			sb.append("\" />");
+			sb.append("\"");
+			if (autoCompleter.hasFocus()) {
+				sb.append(" autofocus");
+			}
+			sb.append(">");
 			sb.append("<script>\n")
+			  .append("\"use strict\";")
 			  .append("jQuery(function(){\n")
 			  .append("  var fullNameTypeahead = new Bloodhound({\n")
 			  .append("   datumTokenizer: function (d) {\n")
@@ -79,9 +86,14 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			  .append("     filter: function ( response ) {\n")
 			  .append("      return jQuery.map(response, function (object) {\n")
 			  .append("       return {\n")
-			  .append("           value: '' + object.key,\n")
-			  .append("           fullName: object.value\n")
-			  .append("         };\n")
+			  .append("           cssClass: '' + object.cssClass,\n")
+			  .append("           value: '' + object.key,\n");
+			if(autoCompleter.isShowDisplayKey()) {
+				sb.append("           fullName: object.displayKey + \": \" + object.value\n");
+			} else {
+				sb.append("           fullName: object.value\n");
+			}
+			sb.append("         };\n")
 			  .append("       });\n")
 			  .append("     }\n")
 			  .append("   }\n")
@@ -95,7 +107,21 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			  .append("   minLength: ").append(minLength).append(",\n")
 			  .append("   displayKey: 'fullName',\n")
 			  .append("   limit: ").append(limit).append(",\n")
-			  .append("   source: fullNameTypeahead.ttAdapter()\n")
+			  .append("   source: fullNameTypeahead.ttAdapter(),\n")
+			  .append("   templates: {\n")
+			  .append("     suggestion: function(obj) {\n")
+			  .append("       var s = '<div>';\n")
+			  .append("       if(obj.cssClass !== \"undefined\" && obj.cssClass != null && obj.cssClass.length > 0) {\n")
+			  .append("         s += \"<i class='o_icon \" + obj.cssClass + \"'> </i> \";\n")
+			  .append("       }\n")
+			  .append("       if('AUTOCOMPLETER_NO_RESULT' === obj.value) {\n")
+			  .append("         s += '").append(noResults).append("';\n")
+			  .append("       } else {\n")
+			  .append("         s += obj.fullName;\n")
+			  .append("       }\n")
+			  .append("       return s + '</div>';")
+			  .append("     }\n")
+			  .append("   }")
 			  .append(" }).on('typeahead:selected', function (e, object) {\n")
 			  .append("   ").append(command).append(",'key',object.value,'value',object.fullName);\n")
 			  .append(" })")

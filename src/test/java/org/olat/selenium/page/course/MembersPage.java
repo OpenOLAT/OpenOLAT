@@ -56,20 +56,6 @@ public class MembersPage {
 		return new MembersWizardPage(browser);
 	}
 	
-	public MembersWizardPage importMembers() {
-		By moreBy = By.className("o_sel_add_more");
-		OOGraphene.waitElement(moreBy, browser);
-		browser.findElement(moreBy).click();
-
-		By importMembersBy = By.className("o_sel_course_import_members");
-		OOGraphene.waitElement(importMembersBy, browser);
-		browser.findElement(importMembersBy).click();
-		
-		OOGraphene.waitModalWizard(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_user_import textarea.form-control"), browser);
-		return new MembersWizardPage(browser);
-	}
-	
 	public MembersPage selectBusinessGroups() {
 		By groupsItemBy = By.cssSelector("li.o_sel_membersmgt_groups a");
 		browser.findElement(groupsItemBy).click();
@@ -164,7 +150,8 @@ public class MembersPage {
 	 * @param users Users to import
 	 */
 	public void quickImport(UserVO... users) {
-		importMembers()
+		addMember()
+			.importList()
 			.setMembers(users)
 			.nextUsers()
 			.nextOverview()

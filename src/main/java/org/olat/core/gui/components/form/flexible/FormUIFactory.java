@@ -789,7 +789,7 @@ public class FormUIFactory {
 	public AutoCompleter addTextElementWithAutoCompleter(String id, String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
 		String val = initialValue == null ? "" : initialValue;
-		AutoCompleterImpl te = new AutoCompleterImpl(id, name);
+		AutoCompleterImpl te = new AutoCompleterImpl(id, name, formLayout.getTranslator().getLocale());
 		te.setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 		setLabelIfNotNull(i18nLabel, te);
 		te.setMaxLength(maxLen);

@@ -45,6 +45,10 @@ public interface AutoCompleter extends FormItem {
 	 */
 	public void setMinLength(int minLength);
 	
+	public boolean isShowDisplayKey();
+
+	public void setShowDisplayKey(boolean showDisplayKey);
+	
 	public String getValue();
 	
 	public void setValue(String value);

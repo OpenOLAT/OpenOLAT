@@ -921,15 +921,15 @@ public class CourseElementTest extends Deployments {
 		MembersPage members = course
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant1, participant2)
 			.nextUsers()
 			.nextOverview()
 			.nextPermissions()
 			.finish();
 		//add a coach
-		course
-			.members()
+		members
 			.addMember()	
 			.searchMember(coach, true)
 			.nextUsers()
@@ -1054,21 +1054,21 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		//add coaches as course member
-		courseRuntime
-			.members()
-			.importMembers()
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.importList()
 			.setMembers(ryomou, kanu)
 			.nextUsers()
 			.nextOverview()
 			.selectRepositoryEntryRole(false, true, false)
 			.nextPermissions()
 			.finish();
-		
 		//add participatns
-		MembersPage members = courseRuntime
-			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(ryomou, student1, student2)
 			.nextUsers()
 			.nextOverview()
@@ -1443,7 +1443,8 @@ public class CourseElementTest extends Deployments {
 			.members();
 	
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, rei)
 			.nextUsers()
 			.nextOverview()
@@ -1783,7 +1784,8 @@ public class CourseElementTest extends Deployments {
 		MembersPage members = courseRuntime
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(ryomou, student)
 			.nextUsers()
 			.nextOverview()
@@ -1951,7 +1953,7 @@ public class CourseElementTest extends Deployments {
 		SinglePageConfigurationPage spConfiguration = new SinglePageConfigurationPage(browser);
 		spConfiguration
 			.selectConfiguration()
-			.createPage("nsp.html")
+			.createEditPage("nsp.html", "")
 			.editPage()
 			.setContent(content)
 			.uploadImage(imageFile)
@@ -2114,7 +2116,8 @@ public class CourseElementTest extends Deployments {
 			.members();
 			
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(user)
 			.nextUsers()
 			.nextOverview()
@@ -2607,7 +2610,8 @@ public class CourseElementTest extends Deployments {
 		MembersPage members = course
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant)
 			.nextUsers()
 			.nextOverview()
@@ -2730,7 +2734,8 @@ public class CourseElementTest extends Deployments {
 		MembersPage members = course
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant)
 			.nextUsers()
 			.nextOverview()
@@ -2827,7 +2832,8 @@ public class CourseElementTest extends Deployments {
 		MembersPage members = courseRuntime
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant)
 			.nextUsers()
 			.nextOverview()
@@ -2942,7 +2948,8 @@ public class CourseElementTest extends Deployments {
 		MembersPage members = courseRuntime
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant)
 			.nextUsers()
 			.nextOverview()

@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Collections;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,6 +32,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.generic.ajax.autocompletion.AutoCompleterListReceiver;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
@@ -38,6 +40,7 @@ import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -56,9 +59,11 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	
 	private String key;
 	private int minLength = 3;
+	private boolean showDisplayKey;
 	
-	public AutoCompleterImpl(String id, String name) {
+	public AutoCompleterImpl(String id, String name, Locale locale) {
 		super(id, name, false);
+		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, locale));
 		component = new AutoCompleterComponent(id, name, this);
 	}
 
@@ -70,6 +75,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	@Override
 	public void setListProvider(ListProvider provider, UserSession usess) {
 		mapper = new AutoCompleterMapper(provider);
+		mapper.setShowDisplayKey(showDisplayKey);
 		mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapper);
 	}
 	
@@ -109,6 +115,19 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	@Override
 	public void setMinLength(int minLength) {
 		this.minLength = minLength;
+	}
+
+	@Override
+	public boolean isShowDisplayKey() {
+		return showDisplayKey;
+	}
+
+	@Override
+	public void setShowDisplayKey(boolean showDisplayKey) {
+		this.showDisplayKey = showDisplayKey;
+		if(mapper != null) {
+			mapper.setShowDisplayKey(showDisplayKey);
+		}
 	}
 
 	@Override
@@ -152,6 +171,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	private static class  AutoCompleterMapper implements Mapper {
 		
 		private final ListProvider provider;
+		private boolean showDisplayKey;
 		
 		public AutoCompleterMapper(ListProvider provider) {
 			this.provider = provider;
@@ -161,13 +181,17 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 			return provider.getMaxEntries();
 		}
 
+		public void setShowDisplayKey(boolean showDisplayKey) {
+			this.showDisplayKey = showDisplayKey;
+		}
+
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			// Read query and generate JSON result
 			String lastN = request.getParameter(PARAM_QUERY);
 			JSONArray result;
 			if(StringHelper.containsNonWhitespace(lastN)) {
-				AutoCompleterListReceiver receiver = new AutoCompleterListReceiver(null, false);
+				AutoCompleterListReceiver receiver = new AutoCompleterListReceiver(null, showDisplayKey);
 				provider.getResult(lastN, receiver);
 				result = receiver.getResult(); 
 			} else {

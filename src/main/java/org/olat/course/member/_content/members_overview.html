@@ -19,6 +19,10 @@
 			$r.render("addMembers")
 			$r.render("addmore")
 		</div>
+		#elseif($r.visible("addMembers"))
+		<div class="btn-group">
+			$r.render("addMembers")
+		</div>
 		#end
 		
 		#if($r.visible("more"))

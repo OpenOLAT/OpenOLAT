@@ -100,7 +100,7 @@ public class UserSearchListProvider implements ListProvider {
 			String key = ident.getKey().toString();
 			String displayKey = ident.getNickName();
 			String displayText = userManager.getUserDisplayName(ident);
-			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
+			receiver.addEntry(key, displayKey, displayText, "o_icon o_icon-fw " + CSSHelper.CSS_CLASS_USER);
 		}
 		if(hasMore){
 			receiver.addEntry(".....",".....");

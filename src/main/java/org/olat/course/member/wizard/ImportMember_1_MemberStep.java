@@ -29,14 +29,16 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
  * 
+ * Initial date: 3 nov. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportMember_1a_LoginListStep extends BasicStep {
+public class ImportMember_1_MemberStep extends BasicStep {
 	
-	public ImportMember_1a_LoginListStep(UserRequest ureq, MembersContext membersContext) {
+	public ImportMember_1_MemberStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, membersContext));
-		setI18nTitleAndDescr("import.import.title", "import.import.title");
+		setI18nTitleAndDescr("import.choose.title", "import.choose.title");
 	}
 
 	@Override
@@ -46,6 +48,6 @@ public class ImportMember_1a_LoginListStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberByUsernamesController(ureq, wControl, form, runContext, ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
+		return new ImportMemberByController(ureq, wControl, form, runContext);
 	}
 }
