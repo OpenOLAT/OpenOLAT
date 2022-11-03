@@ -407,12 +407,14 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     @Override
     public String getMailDomainForUser(User user) {
         String email = user.getEmail();
-        int index = email.lastIndexOf("@");
-        if (index != -1) {
-            String domain = email.substring(index + 1);
-            if (StringHelper.containsNonWhitespace(domain)) {
-                return domain;
-            }
+        if(email != null) {
+	        int index = email.lastIndexOf("@");
+	        if (index != -1) {
+	            String domain = email.substring(index + 1);
+	            if (StringHelper.containsNonWhitespace(domain)) {
+	                return domain;
+	            }
+	        }
         }
         return "";
     }
