@@ -19,8 +19,26 @@
  */
 package org.olat.course.nodes.gta.manager;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.ExplicitTypePermission;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.persistence.CacheRetrieveMode;
+import javax.persistence.CacheStoreMode;
+import javax.persistence.LockModeType;
+import javax.persistence.Query;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -56,6 +74,7 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskDueDate;
+import org.olat.course.nodes.gta.TaskLateStatus;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
@@ -95,24 +114,8 @@ import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.CacheRetrieveMode;
-import javax.persistence.CacheStoreMode;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -1351,9 +1354,12 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		if(submissionDate != null) {
 			DueDate submissionDueDate = getSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
 			if(submissionDueDate != null && submissionDueDate.getDueDate() != null) {
+				Date extensionDate = submissionDueDate.getOverridenDueDate();
 				DueDate lateSubmissionDueDate = getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
 				if(lateSubmissionDueDate != null && lateSubmissionDueDate.getDueDate() != null && submissionDate.after(submissionDueDate.getDueDate())) {
-					return true;
+					TaskLateStatus status = evaluateSubmissionLateStatus(submissionDate, submissionDueDate.getReferenceDueDate(),
+							lateSubmissionDueDate.getReferenceDueDate(), extensionDate);
+					return status == TaskLateStatus.late;
 				}
 			}
 		}
@@ -1365,24 +1371,23 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		if(task == null) return false;
 
+		TaskLateStatus status = TaskLateStatus.onTime;
+		
 		Date submissionDate = task.getCollectionDate() != null ? task.getCollectionDate() : task.getSubmissionDate();
 		if(submissionDate != null && task.getSubmissionDueDate() != null) {
 			DueDate submissionDueDate = getSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
 
-			Date deadline = submissionDueDate == null ? null : submissionDueDate.getReferenceDueDate();
-			if(deadline != null) {
+			Date refDate = submissionDueDate.getReferenceDueDate();
+			Date extensionDate = submissionDueDate.getOverridenDueDate();
+			Date refLateDate = null;
+			if(refDate != null) {
 				DueDate lateSubmissionDueDate = getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, cNode, courseEntry, withIndividualDueDate);
-				Date lateDeadline = lateSubmissionDueDate == null ? null : lateSubmissionDueDate.getReferenceDueDate();
-				if(lateDeadline != null && lateDeadline.after(deadline)) {
-					deadline = lateDeadline;
-				}
+				refLateDate = lateSubmissionDueDate == null ? null : lateSubmissionDueDate.getReferenceDueDate();
 			}
 			
-			if(task.getSubmissionDueDate().after(deadline) && submissionDate.after(deadline)) {
-				return true;
-			}
+			status = evaluateSubmissionLateStatus(submissionDate, refDate, refLateDate, extensionDate);
 		}
-		return false;
+		return status == TaskLateStatus.extended;
 	}
 
 	@Override
@@ -1397,6 +1402,31 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			assignmentDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
 		return assignmentDueDate;
+	}
+	
+	@Override
+	public TaskLateStatus evaluateSubmissionLateStatus(Date submissionDate, Date referenceDate, Date referenceLateDate, Date extensionDate) {
+		if(submissionDate == null) return TaskLateStatus.notSubmitted;
+		
+		if(extensionDate != null) {
+			Date effectiveDeadline = referenceDate;
+			if(effectiveDeadline == null || (referenceLateDate != null && referenceLateDate.after(effectiveDeadline))) {
+				effectiveDeadline = referenceLateDate;
+			}
+			if(effectiveDeadline == null || effectiveDeadline.before(submissionDate)) {
+				return TaskLateStatus.extended;
+			} else if(referenceDate != null && referenceDate.before(submissionDate) && extensionDate.after(submissionDate)) {
+				if(referenceLateDate == null || referenceLateDate.after(submissionDate)) {
+					return TaskLateStatus.extended;
+				}
+				return TaskLateStatus.late;
+			} else if(referenceLateDate != null && referenceLateDate.after(submissionDate) && extensionDate.before(submissionDate)) {
+				return TaskLateStatus.late;
+			}
+		} else if(referenceDate != null && referenceLateDate != null && submissionDate.after(referenceDate)) {
+			return TaskLateStatus.late;
+		}
+		return TaskLateStatus.onTime;
 	}
 	
 	@Override

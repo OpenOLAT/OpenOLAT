@@ -850,6 +850,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public void archiveNodeData(ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		int flow = 0;//for beautiful ordering
 		String groupDirName = (StringHelper.containsNonWhitespace(dirName) ? dirName + "/" : "")
@@ -870,6 +871,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			File submitDirectory = gtaManager.getSubmitDirectory(course.getCourseEnvironment(), this, businessGroup);
 			String submissionDirName = groupDirName + "/" + (++flow) + "_submissions";
 			ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
+			if(gtaManager.isSubmissionExtended(task, null, businessGroup, this, courseEntry, true)) {
+				String extendedFile = submissionDirName + "/Extended_submission.txt";
+				ZipUtil.addTextFileToZip(extendedFile, "Extended", exportStream);
+			} else if(gtaManager.isSubmissionLate(task, null, businessGroup, this, courseEntry, true)) {
+				String lateFile = submissionDirName + "/Late_submission.txt";
+				ZipUtil.addTextFileToZip(lateFile, "Late", exportStream);
+			}
 		}
 
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {

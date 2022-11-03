@@ -390,6 +390,17 @@ public interface GTAManager {
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
 	/**
+	 * 
+	 * @param submissionDate
+	 * @param referenceDate
+	 * @param referenceLateDate
+	 * @param extensionDate
+	 * @return
+	 */
+	public TaskLateStatus evaluateSubmissionLateStatus(Date submissionDate, Date referenceDate, Date referenceLateDate,
+			Date extensionDate);
+	
+	/**
 	 * Check if the submission was done in extended time.
 	 * 
 	 * @param task Task with a submission date mandatory
