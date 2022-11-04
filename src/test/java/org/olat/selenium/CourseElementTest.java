@@ -1975,61 +1975,6 @@ public class CourseElementTest extends Deployments {
 			.assertImageInPage(imageFile.getName());
 	}
 	
-	/**
-	 * An author creates a course with a single page course element,
-	 * upload a PDF, publish the course and go to the page to check
-	 * if the file is available.
-	 * 
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Test
-	@RunAsClient
-	public void courseWithSinglePageWithPDF()
-	throws IOException, URISyntaxException {
-						
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-
-		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
-		loginPage.loginAs(author.getLogin(), author.getPassword());
-		
-		//create a course
-		String courseTitle = "Single PDF Course" + UUID.randomUUID();
-		NavigationPage navBar = NavigationPage.load(browser);
-		navBar
-			.openAuthoringEnvironment()
-			.createCourse(courseTitle)
-			.clickToolbarBack();
-		
-		//create a course element of type Test with the test that we create above
-		String nodeTitle = "SinglePDF";
-		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
-			.edit();
-		courseEditor
-			.createNode("sp")
-			.nodeTitle(nodeTitle);
-		
-		URL pdfUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
-		File pdfFile = new File(pdfUrl.toURI());
-
-		SinglePageConfigurationPage spConfiguration = new SinglePageConfigurationPage(browser);
-		spConfiguration
-			.selectConfiguration()
-			.uploadFile(pdfFile)
-			.assertOnPreview();
-		
-		CoursePageFragment courseRuntime = courseEditor
-			.autoPublish();
-		
-		courseRuntime
-			.clickTree()
-			.selectWithTitle(nodeTitle);
-		
-		SinglePage singlePage = new SinglePage(browser);
-		singlePage
-			.assertInFile("handInTopic1.pdf");	
-	}
-	
 
 	/**
 	 * An author creates a survey with a multiple choice
