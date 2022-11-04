@@ -80,8 +80,8 @@ public class MailManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testCreateEmail() {
-		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-1-" + UUID.randomUUID().toString());
-		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-2-" + UUID.randomUUID().toString());
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-1");
+		Identity toId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-2");
 		
 		MailBundle bundle = new MailBundle();
 		bundle.setFromId(fromId);
@@ -122,8 +122,8 @@ public class MailManagerTest extends OlatTestCase {
 	@Test
 	public void testGetOutbox() {
 		//send a mail
-		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-5-" + UUID.randomUUID().toString());
-		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-6-" + UUID.randomUUID().toString());
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-5");
+		Identity toId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-6");
 		
 		MailBundle bundle = new MailBundle();
 		bundle.setFromId(fromId);
@@ -156,8 +156,8 @@ public class MailManagerTest extends OlatTestCase {
 	public void testGetEmailByMetaId() {
 		//send a mail
 		String metaId = UUID.randomUUID().toString();
-		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-5-" + UUID.randomUUID().toString());
-		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-6-" + UUID.randomUUID().toString());
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-5");
+		Identity toId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-6");
 		dbInstance.commitAndCloseSession();
 		
 		MailBundle bundle = new MailBundle();
@@ -185,10 +185,10 @@ public class MailManagerTest extends OlatTestCase {
 	@Test
 	public void testSend_BCC() {
 		//send a mail to three ids
-		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-7-" + UUID.randomUUID().toString());
-		Identity toId_1 = JunitTestHelper.createAndPersistIdentityAsUser("mail-8-" + UUID.randomUUID().toString());
-		Identity toId_2 = JunitTestHelper.createAndPersistIdentityAsUser("mail-9-" + UUID.randomUUID().toString());
-		Identity toId_3 = JunitTestHelper.createAndPersistIdentityAsUser("mail-10-" + UUID.randomUUID().toString());
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-7");
+		Identity toId_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-8");
+		Identity toId_2 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-9");
+		Identity toId_3 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-10");
 		
 		ContactList ccs = new ContactList("unit-test-cc");
 		ccs.add(toId_1);

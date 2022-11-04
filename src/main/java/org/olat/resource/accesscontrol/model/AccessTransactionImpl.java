@@ -21,8 +21,16 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.Date;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderPart;
+import org.olat.resource.accesscontrol.Price;
+
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -35,15 +43,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.AccessTransaction;
-import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.OrderPart;
-import org.olat.resource.accesscontrol.Price;
 
 
 @Entity(name="actransaction")
@@ -72,10 +71,8 @@ public class AccessTransactionImpl implements Persistable, AccessTransaction {
 	private Date creationDate;
 	
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="amount_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="amount_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="amount_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="amount_currency_code"))
 	private PriceImpl amount;
 
 	@Column(name="trx_status", nullable=true, insertable=true, updatable=true)

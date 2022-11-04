@@ -35,10 +35,11 @@ import org.olat.resource.OLATResourceImpl;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -80,7 +81,7 @@ public class BGAreaImpl implements Persistable, BGArea {
 	@Column(name="descr", nullable=true, insertable=true, updatable=true)
 	private String description;
 	
-	@OneToOne(targetEntity=OLATResourceImpl.class)
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_resource", nullable=false, insertable=true, updatable=false)
 	private OLATResource resource;
 

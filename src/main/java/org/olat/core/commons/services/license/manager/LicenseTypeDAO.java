@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.license.manager;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 

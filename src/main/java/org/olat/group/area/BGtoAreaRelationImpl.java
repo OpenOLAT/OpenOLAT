@@ -35,10 +35,11 @@ import org.olat.group.BusinessGroupImpl;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -76,10 +77,10 @@ public class BGtoAreaRelationImpl implements Persistable, BGtoAreaRelation {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 
-	@OneToOne(targetEntity=BGAreaImpl.class)
+	@ManyToOne(targetEntity=BGAreaImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="area_fk", nullable=false, insertable=true, updatable=false)
 	private BGArea groupArea;
-	@OneToOne(targetEntity=BusinessGroupImpl.class)
+	@ManyToOne(targetEntity=BusinessGroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="group_fk", nullable=false, insertable=true, updatable=false)
 	private BusinessGroup businessGroup;
 

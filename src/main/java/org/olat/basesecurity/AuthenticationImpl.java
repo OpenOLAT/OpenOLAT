@@ -35,10 +35,11 @@ import org.olat.core.logging.AssertException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -91,7 +92,7 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	@Column(name="hashalgorithm", nullable=true, insertable=true, updatable=true)
 	private String algorithm;
 	
-	@OneToOne(targetEntity=IdentityImpl.class)
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="identity_fk", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
 

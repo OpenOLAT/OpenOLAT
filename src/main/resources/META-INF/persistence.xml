@@ -18,9 +18,6 @@
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/util/mail/model/DBMail.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/util/mail/model/DBMailAttachment.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/util/mail/model/DBMailRecipient.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 
 		<!-- Start upgraders mapping -->
@@ -78,6 +75,10 @@
 		<class>org.olat.core.commons.services.vfs.model.VFSThumbnailMetadataImpl</class>
 		<class>org.olat.core.commons.services.vfs.model.VFSRevisionImpl</class>
 		<class>org.olat.core.commons.services.vfs.model.VFSStatisticsImpl</class>
+		<class>org.olat.core.util.mail.model.DBMailImpl</class>
+		<class>org.olat.core.util.mail.model.DBMailLightImpl</class>
+		<class>org.olat.core.util.mail.model.DBMailAttachment</class>
+		<class>org.olat.core.util.mail.model.DBMailRecipient</class>
 		<class>org.olat.course.assessment.model.AssessmentModeImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToAreaImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToGroupImpl</class>

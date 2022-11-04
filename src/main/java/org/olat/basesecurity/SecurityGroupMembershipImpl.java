@@ -36,10 +36,11 @@ import org.olat.core.id.Persistable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -84,11 +85,11 @@ public class SecurityGroupMembershipImpl implements Persistable, CreateInfo, Mod
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-	
-	@OneToOne(targetEntity=IdentityImpl.class)
+
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="identity_id", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
-	@OneToOne(targetEntity=SecurityGroupImpl.class)
+	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="secgroup_id", nullable=false, insertable=true, updatable=false)
 	private SecurityGroup securityGroup;
 	
