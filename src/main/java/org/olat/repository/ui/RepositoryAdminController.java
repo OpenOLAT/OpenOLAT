@@ -61,6 +61,7 @@ public class RepositoryAdminController extends FormBasicController {
 	
 	private SingleSelection leaveEl;
 	private MultipleSelectionElement ratingEl;
+	private MultipleSelectionElement membershipEl;
 	private MultipleSelectionElement commentEl;
 	private MultipleSelectionElement myCourseSearchEl;
 	private MultipleSelectionElement taxonomyEl;
@@ -100,6 +101,11 @@ public class RepositoryAdminController extends FormBasicController {
 		ratingEl = uifactory.addCheckboxesHorizontal("my.course.rating.enabled", searchCont, keys, values);
 		ratingEl.addActionListener(FormEvent.ONCHANGE);
 		ratingEl.select(keys[0], ratingEnabled);
+
+		boolean requestMembershipEnabled = repositoryModule.isRequestMembershipEnabled();
+		membershipEl = uifactory.addCheckboxesHorizontal("rentry.request.membership", searchCont, keys, values);
+		membershipEl.addActionListener(FormEvent.ONCHANGE);
+		membershipEl.select(keys[0], requestMembershipEnabled);
 		
 		SelectionValues taxonomySV = new SelectionValues();
 		taxonomyService.getTaxonomyList().forEach(
@@ -149,7 +155,11 @@ public class RepositoryAdminController extends FormBasicController {
 			boolean on = !ratingEl.getSelectedKeys().isEmpty();
 			repositoryModule.setRatingEnabled(on);
 			getWindowControl().setInfo("saved");
-		} else if(taxonomyEl == source) {
+		} else if(membershipEl == source) {
+			boolean on = !membershipEl.getSelectedKeys().isEmpty();
+			repositoryModule.setRequestMembershipEnabled(on);
+			getWindowControl().setInfo("saved");
+		}  else if(taxonomyEl == source) {
 			List<TaxonomyRef> taxonomyRefs = taxonomyEl.getSelectedKeys().stream()
 					.map(Long::valueOf)
 					.map(TaxonomyRefImpl::new).

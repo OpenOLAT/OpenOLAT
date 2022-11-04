@@ -39,6 +39,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.Offer;
 
@@ -84,8 +85,16 @@ public class AccessDeniedFactory {
 	}
 
 	public static Controller createNotMember(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		AccessDeniedController accessDeniedCtrl = new AccessDeniedController(ureq, wControl, "access.denied.not.member", "access.denied.not.member.hint", null);
-		accessDeniedCtrl.enableMembershipRequest(entry);
+		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		AccessDeniedController accessDeniedCtrl;
+
+		if (repositoryModule.isRequestMembershipEnabled()) {
+			accessDeniedCtrl = new AccessDeniedController(ureq, wControl, "access.denied.not.member", "access.denied.not.member.hint", null);
+			accessDeniedCtrl.enableMembershipRequest(entry);
+		} else {
+			accessDeniedCtrl = new AccessDeniedController(ureq, wControl, "access.denied.not.member", "access.denied.not.member.hint.disabled", null);
+		}
+
 		return accessDeniedCtrl;
 	}
 
