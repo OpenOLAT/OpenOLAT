@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Authentication;
@@ -349,7 +350,7 @@ public class AuthenticationDAO {
 		if(maxAge > 0) {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND, -maxAge);
-			query.setParameter("maxDate", cal.getTime());
+			query.setParameter("maxDate", cal.getTime(), TemporalType.TIMESTAMP);
 		}
 		
 		List<Long> keys = query

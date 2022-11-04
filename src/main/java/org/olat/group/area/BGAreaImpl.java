@@ -25,19 +25,63 @@
 
 package org.olat.group.area;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * Description:<BR/> Initial Date: Aug 23, 2004
  * 
  * @author gnaegi
  */
-public class BGAreaImpl extends PersistentObject implements BGArea {
+@Entity
+@Table(name="o_gp_bgarea")
+public class BGAreaImpl implements Persistable, BGArea {
 
 	private static final long serialVersionUID = 4452153442327716546L;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="area_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Column(name="name", nullable=false, insertable=true, updatable=true)
 	private String name;
+	@Column(name="descr", nullable=true, insertable=true, updatable=true)
 	private String description;
+	
+	@OneToOne(targetEntity=OLATResourceImpl.class)
+	@JoinColumn(name="fk_resource", nullable=false, insertable=true, updatable=false)
 	private OLATResource resource;
 
 	/**
@@ -52,21 +96,36 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 		setResource(resource);
 		setDescription(description);
 	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
 
-	/**
-	 * @see org.olat.group.area.BGArea#getDescription()
-	 */
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * @see org.olat.group.area.BGArea#setDescription(java.lang.String)
-	 */
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
+	@Override
 	public OLATResource getResource() {
 		return resource;
 	}
@@ -75,50 +134,42 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 		this.resource = resource;
 	}
 
-	/**
-	 * @see org.olat.group.area.BGArea#getName()
-	 */
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @see org.olat.group.area.BGArea#setName(java.lang.String)
-	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "name=" + name + "::" + super.toString();
-	}
-
-	/**
-	 * @see org.olat.core.gui.ShortName#getShortName()
-	 */
+	@Override
 	public String getShortName() {
 		return getName();
 	}
 	
-	/**
-	 * Compares the keys.
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
+	@Override
+	public String toString() {
+		return "name=" + name + "::" + super.toString();
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof BGArea) {
-			BGArea area = (BGArea)obj;
+		if(obj instanceof BGArea area) {
 			return getKey() != null && getKey().equals(area.getKey());
 		}
 		return false;
 	}
 	
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() ==null ? 568301 : getKey().hashCode();

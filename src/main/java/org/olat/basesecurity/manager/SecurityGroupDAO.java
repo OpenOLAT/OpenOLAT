@@ -297,13 +297,7 @@ public class SecurityGroupDAO implements UserDataDeletable {
 				.createQuery("delete from org.olat.basesecurity.SecurityGroupMembershipImpl where securityGroup=:securityGroup")
 				.setParameter("securityGroup", secGroup)
 				.executeUpdate();
-			// 2) delete all policies
-	
-			dbInstance.getCurrentEntityManager()
-				.createQuery("delete from org.olat.basesecurity.PolicyImpl where securityGroup=:securityGroup")
-				.setParameter("securityGroup", secGroup)
-				.executeUpdate();
-			// 3) delete security group
+			// 2) delete security group
 			dbInstance.getCurrentEntityManager()
 				.remove(secGroup);
 		}

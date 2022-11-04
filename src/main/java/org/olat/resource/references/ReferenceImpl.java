@@ -27,6 +27,13 @@ package org.olat.resource.references;
 
 import java.util.Date;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
+import org.olat.core.logging.AssertException;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,19 +41,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.core.id.Persistable;
-import org.olat.core.logging.AssertException;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
 
 
 /**
@@ -59,10 +58,8 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="references")
 @Table(name="o_references")
-@NamedQueries({
-	@NamedQuery(name="referencesBySourceId", query="select v from references as v where v.source.key=:sourceKey"),
-	@NamedQuery(name="referencesByTargetId", query="select v from references as v where v.target.key=:targetKey")
-})
+@NamedQuery(name="referencesBySourceId", query="select v from references as v inner join fetch v.source as source inner join fetch v.target as target where source.key=:sourceKey")
+@NamedQuery(name="referencesByTargetId", query="select v from references as v inner join fetch v.source as source inner join fetch v.target as target where target.key=:targetKey")
 public class ReferenceImpl implements Persistable, Reference {
 
 	private static final long serialVersionUID = -6861263748211168112L;

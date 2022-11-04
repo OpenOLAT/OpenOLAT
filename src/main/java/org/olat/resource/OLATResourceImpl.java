@@ -25,9 +25,22 @@
 
 package org.olat.resource;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * A <b>OLATResourceImpl</b> is 
@@ -35,7 +48,9 @@ import org.olat.core.logging.AssertException;
  * @author Andreas
  *
  */
-public class OLATResourceImpl extends PersistentObject implements OLATResource {
+@Entity
+@Table(name="o_olatresource")
+public class OLATResourceImpl implements Persistable, OLATResource {
 
 	private static final long serialVersionUID = 4797534778467150679L;
 
@@ -43,8 +58,30 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 	 * a reserved key meaning "no key"
 	 */
 	public static final Long NULLVALUE = Long.valueOf(0l);
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="resource_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Column(name="resname", nullable=false, insertable=true, updatable=false)
 	private String resName;
+	@Column(name="resid", nullable=false, insertable=true, updatable=false)
 	private Long resId;
 
 	/**
@@ -66,45 +103,58 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 		resId = id;
 		resName = resourceable.getResourceableTypeName();
 	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
 
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
+	@Override
 	public String getResourceableTypeName() {
 		return getResName();
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
+	@Override
 	public Long getResourceableId() {
 		Long val = getResId();
 		if (val == null) throw new AssertException("hibernate should never set id to null, but to zero instead");
 		return val.equals(NULLVALUE) ? null : val;
 	}
-
-	/**
-	 * for hibernate only
-	 * @param id
-	 */
-	private void setResId(Long id) {
-		resId = id;
-	}
-
+	
 	/**
 	 * for hibernate only
 	 * @return Long
 	 */
-	private Long getResId() {
+	public Long getResId() {
 		return resId;
+	}
+	
+	/**
+	 * for hibernate only
+	 * @param id
+	 */
+	public void setResId(Long id) {
+		resId = id;
 	}
 
 	/**
 	 * for hibernate only
 	 * @return String
 	 */
-	private String getResName() {
+	public String getResName() {
 		return resName;
 	}
 
@@ -112,13 +162,10 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 	 * for hibernate only
 	 * @param typeName
 	 */
-	private void setResName(String typeName) {
+	public void setResName(String typeName) {
 		resName = typeName;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		StringBuilder desc =
@@ -144,10 +191,14 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OLATResource) {
-			OLATResource resource = (OLATResource)obj;
+		if(obj instanceof OLATResource resource) {
 			return getKey() != null && getKey().equals(resource.getKey());	
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

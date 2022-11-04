@@ -10,16 +10,9 @@
 		<mapping-file>de/bps/olat/modules/cl/Checklist.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/CheckpointResult.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/Checkpoint.hbm.xml</mapping-file>
-		<mapping-file>org/olat/commons/lifecycle/LifeCycleEntry.hbm.xml</mapping-file>
 		<mapping-file>org/olat/commons/coordinate/cluster/lock/LockImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/group/area/BGAreaImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/group/area/BGtoAreaRelationImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/SecurityGroupMembershipImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
@@ -40,6 +33,9 @@
 
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
+		<class>org.olat.basesecurity.AuthenticationImpl</class>
+		<class>org.olat.basesecurity.SecurityGroupImpl</class>
+		<class>org.olat.basesecurity.SecurityGroupMembershipImpl</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
 		<class>org.olat.basesecurity.model.GrantImpl</class>
 		<class>org.olat.basesecurity.model.GroupMembershipImpl</class>
@@ -60,6 +56,7 @@
 		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
 		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
 		<class>org.olat.commons.info.model.InfoMessageImpl</class>
+		<class>org.olat.commons.lifecycle.LifeCycleEntry</class>
 		<class>org.olat.core.commons.services.csp.model.CSPLogImpl</class>
 		<class>org.olat.core.commons.services.doceditor.model.AccessImpl</class>
 		<class>org.olat.core.commons.services.doceditor.model.UserInfoImpl</class>
@@ -121,6 +118,8 @@
 		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>
 		<class>org.olat.course.statistic.weekly.WeeklyStat</class>
 		<class>org.olat.course.style.model.ColorCategoryImpl</class>
+		<class>org.olat.group.area.BGAreaImpl</class>
+		<class>org.olat.group.area.BGtoAreaRelationImpl</class>
 		<class>org.olat.group.model.ContactView</class>
 		<class>org.olat.group.model.ContactViewExtended</class>
 		<class>org.olat.group.model.BusinessGroupShortImpl</class>
@@ -143,6 +142,7 @@
 		<class>org.olat.repository.model.RepositoryEntryToOrganisationImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryEducationalTypeImpl</class>
+		<class>org.olat.resource.OLATResourceImpl</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferToOrganisationImpl</class>

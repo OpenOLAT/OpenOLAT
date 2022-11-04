@@ -740,6 +740,7 @@ public class RepositoryManager {
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		//fetch the values
+		updatedRe.getOlatResource().getResourceableTypeName();
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();
@@ -806,6 +807,7 @@ public class RepositoryManager {
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		//fetch the values
+		updatedRe.getOlatResource().getResourceableTypeName();
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();
@@ -826,6 +828,7 @@ public class RepositoryManager {
 		//properties
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		//fetch the values
+		updatedRe.getOlatResource().getResourceableTypeName();
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();
@@ -845,6 +848,7 @@ public class RepositoryManager {
 		//properties
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		//fetch the values
+		updatedRe.getOlatResource().getResourceableTypeName();
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();
@@ -861,6 +865,7 @@ public class RepositoryManager {
 		}
 		reloadedRe.setAllowToLeaveOption(setting);
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getOlatResource().getResourceableTypeName();
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();
@@ -879,7 +884,7 @@ public class RepositoryManager {
 		reloadedRe.setDescription(description);
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-
+		updatedRe.getOlatResource().getKey();
 		dbInstance.commit();
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
@@ -947,6 +952,7 @@ public class RepositoryManager {
 		reloadedRe.setLifecycle(cycle);
 		reloadedRe.setLastModified(new Date());
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getOlatResource().getResourceableTypeName();
 		if(cycleToDelete != null) {
 			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
@@ -965,7 +971,7 @@ public class RepositoryManager {
 		reloadedRe.setExpenditureOfWork(expenditureOfWork);
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-
+		updatedRe.getOlatResource().getResourceableTypeName();
 		//fetch the values
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
@@ -1089,6 +1095,7 @@ public class RepositoryManager {
 		}
 
 		//fetch the values
+		updatedRe.getOlatResource().getResourceableTypeName();
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getCreationDate();

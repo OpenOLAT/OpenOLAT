@@ -27,9 +27,22 @@ package org.olat.basesecurity;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 /**
  * Description: <br>
@@ -39,12 +52,81 @@ import org.olat.core.id.ModifiedInfo;
  * 
  * @author Felix Jost
  */
-public class SecurityGroupMembershipImpl extends PersistentObject implements ModifiedInfo {
+
+@Entity
+@Table(name="o_bs_membership")
+public class SecurityGroupMembershipImpl implements Persistable, CreateInfo, ModifiedInfo {
+	
 	private static final long serialVersionUID = 2466302280763907357L;
 	
-	private Identity identity;
-	private SecurityGroup securityGroup;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	/**
+	 * The version is disabled, only for backward compatibility purpose.
+	 */
+	@Column(name="version", nullable=false, insertable=true, updatable=true)
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@OneToOne(targetEntity=IdentityImpl.class)
+	@JoinColumn(name="identity_id", nullable=false, insertable=true, updatable=false)
+	private Identity identity;
+	@OneToOne(targetEntity=SecurityGroupImpl.class)
+	@JoinColumn(name="secgroup_id", nullable=false, insertable=true, updatable=false)
+	private SecurityGroup securityGroup;
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public void setLastModified(Date date) {
+		this.lastModified = date;
+	}
 
 	/**
 	 * @return Identity
@@ -80,20 +162,29 @@ public class SecurityGroupMembershipImpl extends PersistentObject implements Mod
 		this.securityGroup = securityGroup;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
-	public Date getLastModified() {
-		return lastModified;
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 627239 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof SecurityGroupMembershipImpl sec) {
+			return getKey().equals(sec.getKey());
+		}
+		return false;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
-	public void setLastModified(Date date) {
-		this.lastModified = date;
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
-
+	
+	@Override
+	public String toString() {
+		return "securityGroupMembership[key=" + key + "], " + super.toString();
+	}
 }

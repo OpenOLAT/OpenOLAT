@@ -25,14 +25,70 @@
 
 package org.olat.basesecurity;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * The object is immutable
  * @author Felix Jost
  */
-public class SecurityGroupImpl extends PersistentObject implements SecurityGroup {
+
+@Entity
+@Table(name="o_bs_secgroup")
+public class SecurityGroupImpl implements Persistable, SecurityGroup {
+	
+	private static final long serialVersionUID = 2789719555367184860L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 
 	@Override
 	public String getResourceableTypeName() {
@@ -41,9 +97,11 @@ public class SecurityGroupImpl extends PersistentObject implements SecurityGroup
 
 	@Override
 	public Long getResourceableId() {
-		Long key = getKey();
-		if (key == null) throw new AssertException("not persisted yet");
-		return key;
+		Long k = getKey();
+		if (k == null) {
+			throw new AssertException("not persisted yet");
+		}
+		return k;
 	}
 	
 	@Override
@@ -56,10 +114,14 @@ public class SecurityGroupImpl extends PersistentObject implements SecurityGroup
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof SecurityGroup) {
-			SecurityGroup sec = (SecurityGroup)obj;
+		if(obj instanceof SecurityGroup sec) {
 			return getKey() != null && getKey().equals(sec.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

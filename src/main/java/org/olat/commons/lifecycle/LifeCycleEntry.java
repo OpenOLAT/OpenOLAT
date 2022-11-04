@@ -27,28 +27,69 @@ package org.olat.commons.lifecycle;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * An entry in LifeCycle-table
  *
  * @author Christian Guretzki
  */
-public class LifeCycleEntry extends PersistentObject {
+@Entity
+@Table(name="o_lifecycle")
+public class LifeCycleEntry implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -2919077675588017564L;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Version
+	private int version = 0;
+
+	@Column(name="persistenttypename", nullable=false, insertable=true, updatable=false)
 	private String persistentTypeName;
-	private Long   persistentRef;
+	@Column(name="persistentref", nullable=false, insertable=true, updatable=false)
+	private Long persistentRef;
+	@Column(name="action", nullable=false, insertable=true, updatable=false)
 	private String action;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lctimestamp", nullable=false, insertable=true, updatable=false)
 	private Date   lcTimestamp;
+	@Column(name="uservalue", nullable=true, insertable=true, updatable=false)
 	private String userValue;
 	
 
 	protected static final int PERSISTENTTYPENAME_MAXLENGTH = 50;
 
-
-	LifeCycleEntry() { 
+	LifeCycleEntry() {
+		//
 	}
 
 	LifeCycleEntry(Date lifeCycleDate, String persistentObjectTypeName, Long persistentObjectRef) { 
@@ -61,6 +102,23 @@ public class LifeCycleEntry extends PersistentObject {
 		}
 	}
 
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 	
 	/**
 	 * @return Returns the lcTimestamp.
@@ -92,7 +150,6 @@ public class LifeCycleEntry extends PersistentObject {
 		return persistentRef;
 	}
 
-
 	/**
 	 * @param resourceTypeId The resourceTypeId to set.
 	 */
@@ -100,14 +157,12 @@ public class LifeCycleEntry extends PersistentObject {
 		this.persistentRef = persistentRef;
 	}
 
-
 	/**
 	 * @return Returns the resourceTypeName.
 	 */
 	protected String getPersistentTypeName() {
 		return persistentTypeName;
 	}
-
 
 	/**
 	 * @param resourceTypeName The resourceTypeName to set.
@@ -119,14 +174,12 @@ public class LifeCycleEntry extends PersistentObject {
 		this.persistentTypeName = persistentTypeName;
 	}
 
-
 	/**
 	 * @return Returns the userValue.
 	 */
 	public String getUserValue() {
 		return userValue;
 	}
-
 
 	/**
 	 * @param userValue The userValue to set.
@@ -135,9 +188,6 @@ public class LifeCycleEntry extends PersistentObject {
 		this.userValue = userValue;
 	}
 
-
-
-
 	/**
 	 * @param lcTimestamp The lcTimestamp to set.
 	 */
@@ -145,8 +195,30 @@ public class LifeCycleEntry extends PersistentObject {
 		this.lcTimestamp = lcTimestamp;
 	}
 
+	@Override
 	public String toString() {
 		return persistentTypeName + ":" + persistentRef + ", action=" + action + ", timestamp=" + this.lcTimestamp;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 20818 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof LifeCycleEntry entry) {
+			return getKey() != null && getKey().equals(entry.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 
 }

@@ -137,6 +137,9 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	}
 
 	public void updateRepositoryEntry(RepositoryEntry entry) {
+		if(entry != null) {
+			entry.getOlatResource().getResourceableTypeName();
+		}
 		courseRepoEntry = entry;
 	}
 
