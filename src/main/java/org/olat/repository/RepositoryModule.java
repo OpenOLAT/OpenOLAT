@@ -72,6 +72,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	private static final String COMMENT_ENABLED = "repo.comment.enabled";
 	private static final String RATING_ENABLED = "repo.rating.enabled";
+	private static final String REQUEST_MEMBERSHIP_ENABLED = "repo.request.membership";
 	
 	private static final String ALLOW_TO_LEAVE_DEFAULT_OPTION = "repo.allow.to.leave";
 	
@@ -107,6 +108,9 @@ public class RepositoryModule extends AbstractSpringModule {
 	private boolean commentEnabled;
 	@Value("${repo.rating.enabled:true}")
 	private boolean ratingEnabled;
+
+	@Value("${repo.request.membership:true}")
+	private boolean requestMembershipEnabled;
 
 	@Value("${repo.lifecycle.auto.close:}")
 	private String lifecycleAutoClose;
@@ -214,6 +218,11 @@ public class RepositoryModule extends AbstractSpringModule {
 		String rating = getStringPropertyValue(RATING_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(rating)) {
 			ratingEnabled = "true".equals(rating);
+		}
+
+		String membership = getStringPropertyValue(REQUEST_MEMBERSHIP_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(membership)) {
+			requestMembershipEnabled = "true".equals(membership);
 		}
 		
 		String leaveOption = getStringPropertyValue(ALLOW_TO_LEAVE_DEFAULT_OPTION, true);
@@ -373,6 +382,15 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setRatingEnabled(boolean enabled) {
 		ratingEnabled = enabled;
 		setStringProperty(RATING_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isRequestMembershipEnabled() {
+		return requestMembershipEnabled;
+	}
+
+	public void setRequestMembershipEnabled(boolean enabled) {
+		requestMembershipEnabled = enabled;
+		setStringProperty(REQUEST_MEMBERSHIP_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public RepositoryEntryAllowToLeaveOptions getAllowToLeaveDefaultOption() {
