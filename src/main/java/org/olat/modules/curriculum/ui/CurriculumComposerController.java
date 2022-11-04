@@ -79,8 +79,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
-import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
-import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.ImportMember_1_MemberStep;
 import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
@@ -604,28 +603,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum, secCallback);
 			listenTo(moveElementCtrl);
 			
-			String title = translate("move.element.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
+			String title = translate("move.element.title", StringHelper.escapeHtml(row.getDisplayName()));
 			cmc = new CloseableModalController(getWindowControl(), "close", moveElementCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
-	}
-	
-	private void doChooseMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
-		removeAsListenerAndDispose(importMembersWizard);
-
-		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
-		MembersContext membersContext= MembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			addMembers(uureq, runContext);
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.member"), "o_sel_group_import_1_wizard");
-		listenTo(importMembersWizard);
-		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
 	
 	private void doImportMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
@@ -633,7 +615,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
 		MembersContext membersContext= MembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
-		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
+		Step start = new ImportMember_1_MemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			MembersByNameContext membersByNameContext = (MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY);
@@ -646,7 +628,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.member"), "o_sel_group_import_logins_wizard");
+				translate("add.member"), "o_sel_group_import_logins_wizard");
 		listenTo(importMembersWizard);
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
@@ -794,7 +776,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		private Link copyLink;
 		private Link deleteLink;
 		private Link addMemberLink;
-		private Link importMemberLink;
 		private Link manageMembersLink;
 		
 		private CurriculumElementRow row;
@@ -825,7 +806,6 @@ public class CurriculumComposerController extends FormBasicController implements
 				
 				manageMembersLink = addLink("manage.members", "o_icon_group", links);
 				addMemberLink = addLink("add.member", "o_icon_add_member", links);
-				importMemberLink = addLink("import.member", "o_icon_import", links);
 			}
 			
 			if(secCallback.canEditCurriculumElement(element) && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
@@ -864,9 +844,6 @@ public class CurriculumComposerController extends FormBasicController implements
 				close();
 				doCopyCurriculumElement(ureq, row);
 			} else if(addMemberLink == source) {
-				close();
-				doChooseMembers(ureq, row);
-			} else if(importMemberLink == source) {
 				close();
 				doImportMembers(ureq, row);
 			} else if(manageMembersLink == source) {

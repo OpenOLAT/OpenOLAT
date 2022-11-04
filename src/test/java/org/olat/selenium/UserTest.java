@@ -101,7 +101,7 @@ public class UserTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.searchResource(newCourse.getKey().toString())
-			.selectResource(newCourse.getTitle());
+			.openResource(newCourse.getTitle());
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
@@ -173,7 +173,7 @@ public class UserTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.searchResource(newCourse.getKey().toString())
-			.selectResource(newCourse.getTitle());
+			.openResource(newCourse.getTitle());
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course

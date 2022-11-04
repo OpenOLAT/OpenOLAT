@@ -200,7 +200,7 @@ public class CourseTest extends Deployments {
 		//select the authoring
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(marker);
+			.openResource(marker);
 		
 		new CoursePageFragment(browser)
 			.assertOnCoursePage();
@@ -338,7 +338,7 @@ public class CourseTest extends Deployments {
 		coAuthorNavBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment()
-			.selectResource(title);
+			.openResource(title);
 		//try to edit
 		CoursePageFragment coAuthorCourse = new CoursePageFragment(coAuthorBrowser);
 		coAuthorCourse
@@ -1746,6 +1746,120 @@ public class CourseTest extends Deployments {
 			.selectPage(secondPage)
 			.selectPage(firstPage)
 			.assertInIFrame(By.xpath("//h2[text()[contains(.,'Lorem Ipsum')]]"));
+	}
+	
+	/**
+	 * Add an owner to a course directly from the author's list, and after
+	 * remove itself as an owner of the course.
+	 */
+	@Test
+	@RunAsClient
+	public void modifyOwnerCourseBatch()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Lisa");
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		String title = "Owner-Course-Wizard-" + UUID.randomUUID().toString();
+		navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment()
+			// Create course
+			.createCourse(title, true)
+			.clickToolbarBack();
+		
+		AuthoringEnvPage authoringEnv = navBar
+			.openAuthoringEnvironment();
+		// First add a new owner
+		authoringEnv
+			.selectResource(title)
+			.changeOwner()
+			.nextRemoveOwners()
+			.searchUserAndAdd(user, true)
+			.assertAddOwner(user)
+			.nextReview()
+			.finish();
+		
+		// Remove itself
+		authoringEnv
+			.selectResource(title)
+			.changeOwner()
+			.removeOwner(author)
+			.nextRemoveOwners()
+			.nextAddOwners()
+			.assertRemoveOwner(author)
+			.nextReview()
+			.finish();
+
+		//Participant log in
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		// My course -> In preparation
+		NavigationPage userNavBar = NavigationPage.load(browser);
+		userNavBar
+			.openMyCourses()
+			.openInPreparation()
+			.select(title);
+
+		CoursePageFragment userCourse = new CoursePageFragment(browser);
+		userCourse
+			.assertOnCoursePage()
+			.edit()
+			.assertOnEditor();
+	}
+	
+	/**
+	 * Modify the status of a course directly in the author's list.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void modifyStatusCourseBatch()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		String title = "Status-Course-" + UUID.randomUUID().toString();
+		navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment()
+			// Create course
+			.createCourse(title, true)
+			.clickToolbarBack()
+			.closeCourse();
+		
+		AuthoringEnvPage authoringEnv = navBar
+			.openAuthoringEnvironment();
+		// First add a new owner
+		authoringEnv
+			.selectResource(title)
+			.modifyStatus(RepositoryEntryStatusEnum.published)
+			.assertOnStatus(title, RepositoryEntryStatusEnum.published);
+		
+		authoringEnv
+			.selectResource(title)
+			.modifyStatus(RepositoryEntryStatusEnum.closed)
+			.assertOnStatus(title, RepositoryEntryStatusEnum.closed)
+			.openResource(title);
+	
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.assertOnTitle(title)
+			.assertOnMessage()
+			.assertStatus(RepositoryEntryStatusEnum.closed);
 	}
 	
 	/**

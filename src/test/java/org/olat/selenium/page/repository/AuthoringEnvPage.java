@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import java.io.File;
 
 import org.junit.Assert;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -30,6 +31,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * Page to control the author environnment.
@@ -254,11 +256,34 @@ public class AuthoringEnvPage {
 		return this;
 	}
 	
-	public void selectResource(String title) {
+	public AuthoringEnvPage assertOnStatus(String title, RepositoryEntryStatusEnum status) {
+		By rowBy = By.xpath("//div[@class='o_sel_author_env']//table//tr[td/a[text()[contains(.,'" + title + "')]]]/td/span/i[contains(@class,'o_icon_repo_status_" + status.name() + "')]");
+		OOGraphene.waitElement(rowBy, browser);
+		return this;
+	}
+	
+	/**
+	 * @param title The title of the resource to open
+	 */
+	public void openResource(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//a[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
+	}
+	
+	/**
+	 * Select (for multi-selections) the resource with the specified title.
+	 * 
+	 * @param title The title of the learn resource
+	 * @return Itself
+	 */
+	public AuthoringEnvPage selectResource(String title) {
+		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td/input[@name='tb_ms']");
+		OOGraphene.waitElement(selectBy, browser);
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
 	public AuthoringEnvPage searchResource(String text) {
@@ -293,6 +318,31 @@ public class AuthoringEnvPage {
 		}
 		// can be warning in edition or edit mode
 		OOGraphene.waitBusy(browser);
+	}
+	
+	public ModifyOwnersPage changeOwner() {
+		By modifyOwnersBy = By.cssSelector("div.o_table_batch_buttons a.o_sel_modify_owners");
+		OOGraphene.waitElement(modifyOwnersBy, browser);
+		browser.findElement(modifyOwnersBy).click();
+		OOGraphene.waitModalWizard(browser);
+		return new ModifyOwnersPage(browser);
+	}
+	
+	public AuthoringEnvPage modifyStatus(RepositoryEntryStatusEnum status) {
+		By modifyOwnersBy = By.cssSelector("div.o_table_batch_buttons a.o_sel_modify_status");
+		OOGraphene.waitElement(modifyOwnersBy, browser);
+		browser.findElement(modifyOwnersBy).click();
+		OOGraphene.waitModalWizard(browser);
+		
+		By statusBy = By.cssSelector("div.modal-dialog div.o_sel_status select");
+		OOGraphene.waitElement(statusBy, browser);
+		new Select(browser.findElement(statusBy)).selectByValue(status.name());
+		
+		By modifyBy = By.cssSelector("div.modal-dialog button.btn-primary");
+		browser.findElement(modifyBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		return this;
 	}
 	
 	/**

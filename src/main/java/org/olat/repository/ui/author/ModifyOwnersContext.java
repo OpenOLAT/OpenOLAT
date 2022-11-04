@@ -22,7 +22,6 @@ package org.olat.repository.ui.author;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +36,7 @@ import org.olat.core.id.Identity;
  */
 public class ModifyOwnersContext {
 	
-	public static String CONTEXT_KEY = ModifyOwnersContext.class.getSimpleName();
+	public static final String CONTEXT_KEY = ModifyOwnersContext.class.getSimpleName();
 	
 	private List<AuthoringEntryRow> authoringEntryRows;
 	private List<Identity> owners;
@@ -118,22 +117,21 @@ public class ModifyOwnersContext {
 		
 		identities.addAll(owners);
 		
-		for (Identity newOwner : ownersToAdd) {
-			if (!identities.contains(newOwner)) {
-				identities.add(newOwner);
+		if (ownersToAdd != null) {
+			for (Identity newOwner : ownersToAdd) {
+				if (!identities.contains(newOwner)) {
+					identities.add(newOwner);
+				}
 			}
 		}
 		
 		Collator collator = Collator.getInstance(locale);
 		if (!identities.isEmpty()) {
-			Collections.sort(identities, new Comparator<Identity>() {
-		    	@Override
-		        public int compare(Identity i1, Identity i2) {
+			Collections.sort(identities, (i1, i2) -> {
 		        	String name1 = i1.getUser().getFirstName() + i1.getUser().getLastName();
 		        	String name2 = i2.getUser().getFirstName() + i2.getUser().getLastName();
 		            return collator.compare(name1, name2);
-		        }
-			});
+		        });
 		}
 		
 		return identities;

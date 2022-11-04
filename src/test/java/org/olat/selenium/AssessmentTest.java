@@ -611,7 +611,8 @@ public class AssessmentTest extends Deployments {
 		MembersPage members = course
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant1, participant2)
 			.nextUsers()
 			.nextOverview()
@@ -1100,7 +1101,8 @@ public class AssessmentTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, ryomou)
 			.nextUsers()
 			.nextOverview()
@@ -1266,7 +1268,8 @@ public class AssessmentTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, ryomou)
 			.nextUsers()
 			.nextOverview()
@@ -1436,7 +1439,8 @@ public class AssessmentTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, ryomou)
 			.nextUsers()
 			.nextOverview()
@@ -1569,7 +1573,8 @@ public class AssessmentTest extends Deployments {
 		MembersPage members = courseRuntime
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(ryomou, kanu)
 			.nextUsers()
 			.nextOverview()
@@ -1724,7 +1729,8 @@ public class AssessmentTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, ryomou)
 			.nextUsers()
 			.nextOverview()
@@ -1862,7 +1868,8 @@ public class AssessmentTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, ryomou)
 			.nextUsers()
 			.nextOverview()
@@ -1987,7 +1994,8 @@ public class AssessmentTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(kanu, ryomou)
 			.nextUsers()
 			.nextOverview()

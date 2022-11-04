@@ -43,6 +43,15 @@ public class MembersWizardPage {
 		this.browser = browser;
 	}
 	
+	public MembersWizardPage importList() {
+		By importBy = By.xpath("//div[contains(@class,'o_sel_import_type')]/label/input[@name='import.type' and @value='list']");
+		OOGraphene.waitElement(importBy, browser);
+		browser.findElement(importBy).click();
+		By listBy = By.cssSelector("div.o_sel_user_import textarea");
+		OOGraphene.waitElement(listBy, browser);
+		return this;
+	}
+	
 	public MembersWizardPage nextUsers() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_user_import_overview"), browser);

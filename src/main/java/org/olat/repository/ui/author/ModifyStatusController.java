@@ -73,6 +73,7 @@ public class ModifyStatusController extends FormBasicController {
 		statusSV.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
 		statusSV.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("cif.status.closed")));
 		statusEl = uifactory.addDropdownSingleselect("status", "noTransOnlyParam", formLayout, statusSV.keys(), statusSV.values(), null);
+		statusEl.setElementCssClass("o_sel_status");
 		String label = entries.size() == 1
 				? translate("tools.modify.status.entry", entries.get(0).getDisplayname())
 				: translate("tools.modify.status.entries", String.valueOf(entries.size()));

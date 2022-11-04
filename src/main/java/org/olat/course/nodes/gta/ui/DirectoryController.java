@@ -30,6 +30,7 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
@@ -83,7 +84,8 @@ public class DirectoryController extends BasicController implements Activateable
 	
 	private CloseableModalController cmc;
 	private SinglePageController previewCtrl;
-	
+	private VideoAudioPlayerController videoAudioPlayerController;
+
 	@Autowired
 	private UserManager userManager;
 
@@ -157,8 +159,10 @@ public class DirectoryController extends BasicController implements Activateable
 				previewLink.setIconLeftCSS("o_icon o_icon-fw " + docEditorService.getModeIcon(Mode.VIEW, document.getName()));
 				previewLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
 				previewLink.setAriaRole("button");
-				previewLink.setUserObject(vfsLeaf);			
-				previewLink.setNewWindow(true, true);
+				previewLink.setUserObject(vfsLeaf);
+				if (!docEditorService.isAudioVideo(Mode.VIEW, vfsLeaf.getName())) {
+					previewLink.setNewWindow(true, true);
+				}
 				previewLinkCompName = previewLink.getComponentName();
 			}
 			
@@ -224,8 +228,10 @@ public class DirectoryController extends BasicController implements Activateable
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(previewCtrl);
+		removeAsListenerAndDispose(videoAudioPlayerController);
 		cmc = null;
 		previewCtrl = null;
+		videoAudioPlayerController = null;
 	}
 
 	private void doDownload(UserRequest ureq, File file) {
@@ -250,8 +256,17 @@ public class DirectoryController extends BasicController implements Activateable
 	
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(this.documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		if (docEditorService.isAudioVideo(Mode.VIEW, vfsLeaf.getName())) {
+			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
+			String title = translate("av.play");
+			cmc = new CloseableModalController(getWindowControl(), "close",
+					videoAudioPlayerController.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		}
 	}
 
 	

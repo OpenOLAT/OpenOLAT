@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -733,7 +734,8 @@ public class ZipUtil {
 	 * @param dirName
 	 * @param zout
 	 */
-	public static void addDirectoryToZip(final Path path, final String baseDirName, final ZipOutputStream zout) {
+	public static int addDirectoryToZip(final Path path, final String baseDirName, final ZipOutputStream zout) {
+		AtomicInteger counter = new AtomicInteger(0);
 		try {
 			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 				@Override
@@ -745,6 +747,7 @@ public class ZipUtil {
 						
 						try(InputStream in=Files.newInputStream(file)) {
 							FileUtils.copy(in, zout);
+							counter.incrementAndGet();
 						} catch (Exception e) {
 							handleIOException("", e);
 						}
@@ -757,6 +760,7 @@ public class ZipUtil {
 		} catch (IOException e) {
 			handleIOException("", e);
 		}
+		return counter.get();
 	}
 	
 	/**

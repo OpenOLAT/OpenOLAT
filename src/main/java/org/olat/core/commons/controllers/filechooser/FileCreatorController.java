@@ -58,15 +58,15 @@ import org.olat.core.util.vfs.VFSManager;
  */
 public class FileCreatorController extends FormBasicController {
 
-	private VFSContainer baseContainer;
-	private String subfolderPath;
+	private final VFSContainer baseContainer;
+	private final String subfolderPath;
+	private final String fileName;
 	private VFSLeaf createdFile;
-	private Object userObject;
 
 	private TextElement fileNameElement;
 	private TextElement targetSubPath;
 	
-	private static final Pattern validSubPathPattern = Pattern.compile("[\\p{Alnum}-_\\./]*");		
+	private static final Pattern validSubPathPattern = Pattern.compile("[\\p{Alnum}-_\\./]*");
 
 	/**
 	 * Create a file creator instance
@@ -79,11 +79,13 @@ public class FileCreatorController extends FormBasicController {
 	 *            The root container in which the file can be created
 	 * @param subfolderPath
 	 *            A subfolder path that should be prefilled, can be NULL
+	 * @param fileName 
 	 */
-	public FileCreatorController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String subfolderPath) {
+	public FileCreatorController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String subfolderPath, String fileName) {
 		super(ureq, wControl, Util.createPackageTranslator(FileUploadController.class, ureq.getLocale()));
 		this.baseContainer = rootContainer;
 		this.subfolderPath = subfolderPath;
+		this.fileName = fileName;
 		initForm(ureq);	
 	}
 	
@@ -106,7 +108,7 @@ public class FileCreatorController extends FormBasicController {
 		targetSubPath.setLabel("ul.target.child", null);
 
 		// The file name of the new file
-		fileNameElement = FormUIFactory.getInstance().addTextElement("fileName", "filecreator.filename", 50, "", formLayout);
+		fileNameElement = FormUIFactory.getInstance().addTextElement("fileName", "filecreator.filename", 50, fileName, formLayout);
 		fileNameElement.setPlaceholderKey("filecreator.filename.placeholder", null);
 		fileNameElement.setElementCssClass("o_sel_filename");
 		fileNameElement.setMandatory(true);
@@ -117,14 +119,6 @@ public class FileCreatorController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", "button.create", buttons);
 		uifactory.addFormCancelButton("cancel", buttons, ureq, getWindowControl());			
 
-	}	
-	
-	public Object getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(Object userObject) {
-		this.userObject = userObject;
 	}
 
 	@Override
@@ -201,7 +195,7 @@ public class FileCreatorController extends FormBasicController {
 				filePath = "/" + filePath;
 			}
 			if (StringHelper.containsNonWhitespace(targetSubPath.getValue())) {
-				filePath = targetSubPath.getValue() + filePath;
+				filePath = targetSubPath.getValue() + "/" + filePath;
 			}
 			VFSItem vfsItem = baseContainer.resolve(filePath);
 			if (vfsItem != null) {

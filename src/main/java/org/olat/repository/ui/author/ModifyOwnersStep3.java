@@ -126,6 +126,7 @@ public class ModifyOwnersStep3 extends BasicStep {
 			}
 			
 			tableEl = uifactory.addTableElement(getWindowControl(), "reviewTable", tableModel, getTranslator(), formLayout);
+			tableEl.setElementCssClass("o_sel_modify_owners_review");
 			tableEl.setCustomizeColumns(false);
 			tableEl.setNumOfRowsEnabled(false);
 		}
@@ -138,7 +139,10 @@ public class ModifyOwnersStep3 extends BasicStep {
 			}
 			
 			boolean isRemoved = context.getOwnersToRemove().contains(identity);
-			boolean isAdded = context.getOwnersToAdd().contains(identity);
+			boolean isAdded = false;
+			if (context.getOwnersToAdd() != null) {
+				isAdded = context.getOwnersToAdd().contains(identity);
+			}
 			
 			if (isAlreadyOwner) {
 				if (isRemoved && isAdded) {

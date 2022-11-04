@@ -37,6 +37,7 @@ import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
+import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminListPage;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
 import org.olat.selenium.page.lecture.LectureRepositoryParticipantsPage;
@@ -133,9 +134,10 @@ public class LecturesTest extends Deployments {
 			.publish();
 		
 		//add a coach
-		course
-			.members()
-			.addMember()	
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
 			.searchMember(coach, true)
 			.nextUsers()
 			.nextOverview()
@@ -143,9 +145,9 @@ public class LecturesTest extends Deployments {
 			.nextPermissions()
 			.finish();
 		//add the participants
-		course
-			.members()
-			.importMembers()
+		members
+			.addMember()
+			.importList()
 			.setMembers(participant1, participant2)
 			.nextUsers()
 			.nextOverview()
@@ -277,8 +279,9 @@ public class LecturesTest extends Deployments {
 			.publish();
 		
 		//add a coach
-		course
-			.members()
+		MembersPage members = course
+			.members();
+		members
 			.addMember()	
 			.searchMember(coach, true)
 			.nextUsers()
@@ -287,9 +290,9 @@ public class LecturesTest extends Deployments {
 			.nextPermissions()
 			.finish();
 		//add the participants
-		course
-			.members()
-			.importMembers()
+		members
+			.addMember()
+			.importList()
 			.setMembers(participant1, participant2)
 			.nextUsers()
 			.nextOverview()
@@ -406,12 +409,12 @@ public class LecturesTest extends Deployments {
 
 		CoursePageFragment course = new CoursePageFragment(browser);
 		//add a coach
-		course
-			.members()
+		MembersPage members = course
+			.members();
+		members
 			.quickAdd(author, true, true);
 		//add the participants
-		course
-			.members()
+		members
 			.quickImport(participant1, participant2);
 		
 		//enable the lectures
@@ -541,9 +544,10 @@ public class LecturesTest extends Deployments {
 			.publish();
 		
 		//add a coach
-		course
-			.members()
-			.addMember()	
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
 			.searchMember(author, true)
 			.nextUsers()
 			.nextOverview()
@@ -551,9 +555,9 @@ public class LecturesTest extends Deployments {
 			.nextPermissions()
 			.finish();
 		//add the participants
-		course
-			.members()
-			.importMembers()
+		members
+			.addMember()
+			.importList()
 			.setMembers(participant1, participant2)
 			.nextUsers()
 			.nextOverview()

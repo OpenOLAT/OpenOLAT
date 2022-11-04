@@ -41,6 +41,7 @@ public class AutoCompleterComponent extends FormBaseComponentImpl {
 	public AutoCompleterComponent(String id, String name, AutoCompleterImpl autoCompleter) {
 		super(id, name);
 		this.autoCompleter = autoCompleter;
+		setTranslator(autoCompleter.getTranslator());
 	}
 
 	public AutoCompleter getAutoCompleter() {

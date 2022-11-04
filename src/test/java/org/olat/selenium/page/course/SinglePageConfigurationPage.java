@@ -47,7 +47,7 @@ public class SinglePageConfigurationPage {
 	}
 	
 	public SinglePageConfigurationPage createEditPage(String filename, String content) {
-		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_edit");
+		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_create");
 		OOGraphene.waitElement(editBy, browser);
 		browser.findElement(editBy).click();
 		OOGraphene.waitModalDialog(browser);
@@ -66,22 +66,6 @@ public class SinglePageConfigurationPage {
 		By saveAndCloseBy = By.cssSelector("div.o_htmleditor #o_button_saveclose a");
 		OOGraphene.waitElement(saveAndCloseBy, browser);
 		browser.findElement(saveAndCloseBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
-		return this;
-	}
-	
-	public SinglePageConfigurationPage createPage(String filename) {
-		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_create");
-		OOGraphene.waitElement(editBy, browser);
-		browser.findElement(editBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By filenameBy = By.cssSelector("fieldset.o_sel_file_form input.o_sel_filename");
-		OOGraphene.waitElement(filenameBy, browser);
-		browser.findElement(filenameBy).sendKeys(filename);
-		
-		By createBy = By.cssSelector("fieldset.o_sel_file_form button.btn-primary");
-		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

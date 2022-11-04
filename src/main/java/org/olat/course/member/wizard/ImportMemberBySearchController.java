@@ -57,6 +57,8 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 		searchController = new UserSearchFlexiController(ureq, wControl, rootForm, null,
 				new OrganisationRoles[] { OrganisationRoles.invitee, OrganisationRoles.guest }, true, false);
 		listenTo(searchController);
+		
+		
 		initForm (ureq);
 	}
 

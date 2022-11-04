@@ -110,6 +110,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		namesEl.setStripedBackgroundEnabled(true);
 		namesEl.setFixedFontWidth(true);
 		namesEl.setOriginalLineBreaks(true);
+		namesEl.setFocus(true);
 		
 		// table for duplicates
 		String page = velocity_root + "/warn_duplicates.html";

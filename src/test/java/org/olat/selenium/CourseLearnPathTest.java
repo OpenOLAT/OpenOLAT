@@ -133,7 +133,8 @@ public class CourseLearnPathTest extends Deployments {
 			.autoPublish()
 			.publish()
 			.members()
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant)
 			.nextUsers()
 			.nextOverview()
@@ -257,7 +258,8 @@ public class CourseLearnPathTest extends Deployments {
 			.members();
 		
 		membersPage
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(participant)
 			.nextUsers()
 			.nextOverview()

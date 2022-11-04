@@ -109,7 +109,6 @@ public class AppointmentEditController extends FormBasicController {
 	private FormLink teamsOpenCalLink;
 	private TextElement teamsLeadTimeEl;
 	private TextElement teamsFollowupTimeEl;
-	private SingleSelection presentersEl;
 	private TextElement teamsExternalLinkEl;
 	
 	private BigBlueButtonMeetingsCalendarController bbbCalendarCtr;
@@ -326,21 +325,11 @@ public class AppointmentEditController extends FormBasicController {
 			String leadtime = teamsMeeting == null ? null : Long.toString(teamsMeeting.getLeadTime());
 			teamsLeadTimeEl = uifactory.addTextElement("meeting.leadTime.teams", "meeting.leadTime", 8, leadtime, formLayout);
 			teamsLeadTimeEl.setEnabled(teamsEditable);
-			teamsLeadTimeEl.setExampleKey("meeting.leadTime.explain", null);
+			teamsLeadTimeEl.setExampleKey("teams.lead.time.hint", null);
 			
 			String followup = teamsMeeting == null ? null : Long.toString(teamsMeeting.getFollowupTime());
 			teamsFollowupTimeEl = uifactory.addTextElement("meeting.followupTime.teams", "meeting.followupTime", 8, followup, formLayout);
 			teamsFollowupTimeEl.setEnabled(teamsEditable);
-
-			SelectionValues presentersKeyValues = new SelectionValues();
-			presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
-			presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
-			presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
-			presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
-			presentersEl.setMandatory(true);
-			presentersEl.setEnabled(teamsEditable);
-
-			TeamsUIHelper.setDefaults(presentersEl, teamsMeeting);
 		}
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -366,14 +355,13 @@ public class AppointmentEditController extends FormBasicController {
 			layoutEl.setVisible(bbbMeeting);
 		}
 		
-		if (presentersEl != null) {
+		if (teamsCreatorEl != null) {
 			boolean teamsMeeting = meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_TEAMS);
 			teamsCreatorEl.setVisible(teamsMeeting);
 			teamsExternalLinkEl.setVisible(teamsMeeting);
 			teamsOpenCalLink.setVisible(teamsMeeting);
 			teamsLeadTimeEl.setVisible(teamsMeeting);
 			teamsFollowupTimeEl.setVisible(teamsMeeting);
-			presentersEl.setVisible(teamsMeeting);
 		}
 	}
 	
@@ -625,8 +613,8 @@ public class AppointmentEditController extends FormBasicController {
 				teamsMeeting.setReadableIdentifier(null);
 			}
 			
+			teamsMeeting.setAllowedPresenters(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name());
 			teamsMeeting.setPermanent(false);
-			teamsMeeting.setAllowedPresenters(presentersEl.getSelectedKey());
 			
 			appointment = appointmentsService.removeBBBMeeting(appointment);
 		} else {

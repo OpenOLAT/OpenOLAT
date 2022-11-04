@@ -1090,7 +1090,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 	private Set<IdentityRef> getFakeParticipantsAsOwner(RepositoryEntry entry) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select aentry.identity.key");
+		sb.append("select distinct aentry.identity.key");
 		sb.append("  from assessmententry aentry");
 		sb.and().append("aentry.repositoryEntry.key = :repoEntryKey");
 		sb.and().append("aentry.identity.key not in (");
@@ -1118,7 +1118,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	 */
 	private Set<IdentityRef> getFakeParticipantAsCoach(RepositoryEntry entry, Identity identity) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select aentry.key");
+		sb.append("select distinct aentry.key");
 		sb.append("  from assessmententry aentry");
 		sb.and().append("aentry.repositoryEntry.key = :repoEntryKey");
 		sb.and().append("aentry.identity.key = :identityKey");
@@ -1134,7 +1134,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		
 		sb = new QueryBuilder();	
-		sb.append("select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+		sb.append("select distinct participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
 		sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
 		sb.append("   and participant.role").in(GroupRoles.participant.name()).append("");
 		sb.append("   and participant.identity.key = :identityKey");

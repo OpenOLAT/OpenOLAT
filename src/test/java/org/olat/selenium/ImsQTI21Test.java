@@ -779,7 +779,7 @@ public class ImsQTI21Test extends Deployments {
 		// reopen the course as participant (default)
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(courseTitle);
+			.openResource(courseTitle);
 		
 		course
 			.switchRole(Role.participant)
@@ -887,7 +887,7 @@ public class ImsQTI21Test extends Deployments {
 		// reopen the course as participant (default)
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(courseTitle);
+			.openResource(courseTitle);
 		
 		course
 			.switchRole(Role.participant)
@@ -1004,7 +1004,7 @@ public class ImsQTI21Test extends Deployments {
 		// reopen the course as participant (default)
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(courseTitle);
+			.openResource(courseTitle);
 		
 		course
 			.switchRole(Role.participant)
@@ -1477,7 +1477,7 @@ public class ImsQTI21Test extends Deployments {
 		// author check the assignment
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(qtiTestTitle);
+			.openResource(qtiTestTitle);
 		qtiPage
 			.grading()
 			.graders()
@@ -1485,7 +1485,7 @@ public class ImsQTI21Test extends Deployments {
 		// go in assessment tool to free the results
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(courseTitle);
+			.openResource(courseTitle);
 		
 		courseRuntime
 			.assessmentTool()
@@ -1631,7 +1631,7 @@ public class ImsQTI21Test extends Deployments {
 		// author returns to test and assign the test to a new grader
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(qtiTestTitle);
+			.openResource(qtiTestTitle);
 		
 		gradingPage = qtiPage
 			.grading();
@@ -1664,7 +1664,7 @@ public class ImsQTI21Test extends Deployments {
 		// author check the assignment
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(qtiTestTitle);
+			.openResource(qtiTestTitle);
 		qtiPage
 			.grading()
 			.graders()
@@ -1672,7 +1672,7 @@ public class ImsQTI21Test extends Deployments {
 		// go in assessment tool to free the results
 		navBar
 			.openAuthoringEnvironment()
-			.selectResource(courseTitle);
+			.openResource(courseTitle);
 		
 		courseRuntime
 			.assessmentTool()
@@ -1735,7 +1735,8 @@ public class ImsQTI21Test extends Deployments {
 		MembersPage members = courseRuntime
 			.members();
 		members
-			.importMembers()
+			.addMember()
+			.importList()
 			.setMembers(ryomou)
 			.nextUsers()
 			.nextOverview()

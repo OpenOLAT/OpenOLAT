@@ -84,7 +84,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 	private static final Logger log = Tracing.createLoggerFor(TaxonomyImportStep1.class);
 	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	private static final String ERROR_MEDIA_ZIP_UPLOAD = "error.upload.media.zip";
-	private static final String ERROR_IMPORT_TAXONOMY = "import.taxonomy.error";
 	private static final String LEVEL_DISPLAYNAME = "level.displayname";
 	private static final String LEVEL_DESCRIPTION = "level.description";
 	private static final String LEVEL_LANGUAGE = "level.language";
@@ -166,7 +165,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 			
 			// Add input element for taxonomy levels
 			importDataElement = uifactory.addTextAreaElement("importElement", "import.taxonomy.levels", -1, 10, -1, false, true, true, null, importLayout);
-			//importDataElement.setNotEmptyCheck("import.taxonomy.levels.mandatory");
 			importDataElement.setMandatory(true);
 			importDataElement.setLineNumbersEnbaled(true);
 			importDataElement.setStripedBackgroundEnabled(true);
@@ -525,6 +523,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 			List<Integer> errorRows = new ArrayList<>();
 			
 			for (int i = 0; i < lines.length; i++) {
+				nameDescriptionByLanguage = new HashMap<>();
 				String line = lines[i];
 				
 				if (!StringHelper.containsNonWhitespace(line)) {
@@ -541,7 +540,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				
 				if (columns.length < 2) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error", null);
 					errorRows.add(i);
 					continue;
 				}
@@ -564,6 +563,11 @@ public class TaxonomyImportStep1 extends BasicStep {
 							allOk = false;
 							inputEl.setErrorKey("import.taxonomy.error.language", new String[] { language });
 							errorRows.add(i);
+						} else if (!org.olat.core.util.FileUtils.validateFilename(identifier)
+								|| !org.olat.core.util.FileUtils.validateFilename(displayName)) {
+							allOk = false;
+							inputEl.setErrorKey("import.taxonomy.error.invalid", null);
+							errorRows.add(i);
 						} else if (StringHelper.containsNonWhitespace(language)
 								&& StringHelper.containsNonWhitespace(displayName)) {
 							nameDescriptionByLanguage.put(language, Arrays.asList(displayName, description));
@@ -574,7 +578,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				// If no path is given
 				if (!StringHelper.containsNonWhitespace(path) || path.equals("/")) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error.no.path", null);
 					errorRows.add(i);
 					continue;
 				}
@@ -606,7 +610,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 						order = Integer.valueOf(orderString); 
 					} catch (Exception e) {
 						allOk = false;
-						inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+						inputEl.setErrorKey("import.taxonomy.error.order", null);
 						errorRows.add(i);
 						continue;
 					}
@@ -616,7 +620,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 
 				if (currentLevel == null) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error.level", null);
 					errorRows.add(i);
 					continue;
 				}
@@ -625,7 +629,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				
 				if (StringHelper.containsNonWhitespace(type) && currentLevelType == null) {
 					allOk = false;
-					inputEl.setErrorKey(ERROR_IMPORT_TAXONOMY, null);
+					inputEl.setErrorKey("import.taxonomy.error.type", null);
 					errorRows.add(i);
 					continue;
 				}

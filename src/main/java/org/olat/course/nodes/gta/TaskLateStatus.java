@@ -17,46 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.elements;
-
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
-import org.olat.core.util.UserSession;
+package org.olat.course.nodes.gta;
 
 /**
  * 
- * Initial date: 20.11.2015<br>
+ * Initial date: 3 nov. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AutoCompleter extends FormItem {
+public enum TaskLateStatus {
 	
-	public String getKey();
-	
-	public void setKey(String key);
-	
-	public int getMinLength();
-
-	/**
-	 * Set the minimal length to start a query server-side and
-	 * show the auto-completion.
-	 * 
-	 * @param minLength
-	 */
-	public void setMinLength(int minLength);
-	
-	public boolean isShowDisplayKey();
-
-	public void setShowDisplayKey(boolean showDisplayKey);
-	
-	public String getValue();
-	
-	public void setValue(String value);
-
-	public int getMaxEntries();
-	
-	public String getMapperUri();
-	
-	public void setListProvider(ListProvider provider, UserSession usess);
+	notSubmitted,
+	onTime,
+	late,
+	extended
 
 }

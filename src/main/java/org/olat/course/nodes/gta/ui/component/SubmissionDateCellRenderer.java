@@ -28,6 +28,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.TaskLateStatus;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.CoachedElementRow;
@@ -42,9 +44,11 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 	
 	private final Formatter formatter;
 	private final Translator translator;
+	private final GTAManager gtaManager;
 	
-	public SubmissionDateCellRenderer(Translator translator) {
+	public SubmissionDateCellRenderer(GTAManager gtaManager, Translator translator) {
 		this.translator = translator;
+		this.gtaManager = gtaManager;
 		formatter = Formatter.getInstance(translator.getLocale());
 	}
 
@@ -81,6 +85,19 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
 		Date extensionDate = dueDate == null ? null : dueDate.getOverridenDueDate();
 		
+		TaskLateStatus status = gtaManager.evaluateSubmissionLateStatus(submissionDate, refDate, refLateDate, extensionDate);
+		switch(status) {
+			case late:
+				appendLateMarker(target);
+				break;
+			case extended:
+				appendExtendedMarker(target);
+				break;
+			default:
+				break;
+		}
+		
+		/*
 		if(extensionDate != null) {
 			Date effectiveDeadline = refDate;
 			if(effectiveDeadline == null || (refLateDate != null && refLateDate.after(effectiveDeadline))) {
@@ -100,6 +117,7 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 		} else if(refDate != null && refLateDate != null && submissionDate.after(refDate)) {
 			appendLateMarker(target);
 		}
+		*/
 	}
 	
 	private void appendExtendedMarker(StringOutput target) {

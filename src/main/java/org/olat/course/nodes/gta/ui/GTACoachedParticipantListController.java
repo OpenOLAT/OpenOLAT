@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -276,7 +277,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus, new TaskStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate, new SubmissionDateCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate, new SubmissionDateCellRenderer(gtaManager, getTranslator())));
 		
 		DefaultFlexiColumnModel userVisibilityCol = new DefaultFlexiColumnModel(CGCols.userVisibility, new UserVisibilityCellRenderer(false));
 		userVisibilityCol.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
@@ -358,13 +359,25 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	protected final void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
 		
-		markedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MARKED_TAB_ID, translate("filter.marked"),
-				TabSelectionBehavior.clear, List.of());
+		markedTab = FlexiFiltersTabFactory.tabWithFilters(MARKED_TAB_ID, translate("filter.marked"),
+				TabSelectionBehavior.clear, List.of(
+						FlexiTableFilterValue.valueOf(
+								AssessedIdentityListState.FILTER_OBLIGATION,
+								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
+						FlexiTableFilterValue.valueOf(
+								AssessedIdentityListState.FILTER_MEMBERS,
+								List.of(ParticipantType.member.name()))));
 		markedTab.setFiltersExpanded(true);
 		tabs.add(markedTab);
 		
-		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
-				TabSelectionBehavior.clear, List.of());
+		allTab = FlexiFiltersTabFactory.tabWithFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.clear, List.of(
+						FlexiTableFilterValue.valueOf(
+								AssessedIdentityListState.FILTER_OBLIGATION,
+								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
+						FlexiTableFilterValue.valueOf(
+								AssessedIdentityListState.FILTER_MEMBERS,
+								List.of(ParticipantType.member.name()))));
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		

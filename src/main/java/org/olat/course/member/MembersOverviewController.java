@@ -57,8 +57,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
-import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
-import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.ImportMember_1_MemberStep;
 import org.olat.course.member.wizard.InvitationContext;
 import org.olat.course.member.wizard.InvitationFinishCallback;
 import org.olat.course.member.wizard.Invitation_1_MailStep;
@@ -97,7 +96,6 @@ public class MembersOverviewController extends BasicController implements Activa
 	private Link invitationLink;
 	private final Link dedupLink;
 	private final Link addMemberLink;
-	private final Link importMemberLink;
 	private final Dropdown moreDropdown;
 	private final Dropdown addMemberDropdown; 
 	private final VelocityContainer mainVC;
@@ -164,18 +162,14 @@ public class MembersOverviewController extends BasicController implements Activa
 		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 		mainVC.put("addmore", addMemberDropdown);
 		
-		importMemberLink = LinkFactory.createLink("import.member", mainVC, this);
-		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-		importMemberLink.setElementCssClass("o_sel_course_import_members");
-		importMemberLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
-		addMemberDropdown.addComponent(importMemberLink);
-		
 		if(invitationModule.isCourseInvitationEnabled() && canInvite) {
 			invitationLink = LinkFactory.createLink("invitation.member", mainVC, this);
 			invitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			invitationLink.setElementCssClass("o_sel_course_invitations");
 			invitationLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 			addMemberDropdown.addComponent(invitationLink);
+		} else {
+			addMemberDropdown.setVisible(false);
 		}
 
 		moreDropdown = new Dropdown("more", null, false, getTranslator());
@@ -212,8 +206,6 @@ public class MembersOverviewController extends BasicController implements Activa
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addMemberLink) {
-			doChooseMembers(ureq);
-		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
 		} else if (source == invitationLink) {
 			doInvitation(ureq);
@@ -282,7 +274,6 @@ public class MembersOverviewController extends BasicController implements Activa
 		unOverrideLink.setVisible(overrideManaged);
 		
 		addMemberLink.setVisible(overrideManaged);
-		importMemberLink.setVisible(overrideManaged);
 		dedupLink.setVisible(overrideManaged);
 		mainVC.setDirty(true);
 		
@@ -290,28 +281,12 @@ public class MembersOverviewController extends BasicController implements Activa
 			memberListCtrl.overrideManaged(ureq, overrideManaged);
 		}
 	}
-
-	private void doChooseMembers(UserRequest ureq) {
-		removeAsListenerAndDispose(importMembersWizard);
-
-		MembersContext membersContext = MembersContext.valueOf(repoEntry, overrideManaged);
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			addMembers(uureq, runContext);
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.member"), "o_sel_course_member_import_1_wizard");
-		listenTo(importMembersWizard);
-		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
-	}
 	
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
 		MembersContext membersContext = MembersContext.valueOf(repoEntry, overrideManaged);
-		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
+		Step start = new ImportMember_1_MemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			MembersByNameContext membersByNameContext = (MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY);
@@ -324,7 +299,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.member"), "o_sel_course_member_import_logins_wizard");
+				translate("add.member"), "o_sel_course_member_import_logins_wizard");
 		listenTo(importMembersWizard);
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
