@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -59,6 +60,7 @@ import org.olat.repository.bulk.RepositoryBulkService;
 import org.olat.repository.bulk.SettingsBulkEditable;
 import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.SettingsContext;
+import org.olat.repository.bulk.model.SettingsContext.Replacement;
 import org.olat.repository.bulk.model.SettingsSteps;
 import org.olat.repository.bulk.model.SettingsSteps.Step;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -76,6 +78,8 @@ public class SettingsOverviewController extends StepFormBasicController {
 
 	private static final String CMD_RESOURCE = "resource";
 	
+	private FormLayoutContainer overviewCont;
+
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final SettingsSteps steps;
@@ -115,7 +119,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 		setFormInfo("noTransOnlyParam",
 				new String[] {RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), null)});
 		
-		FormLayoutContainer overviewCont = FormLayoutContainer.createCustomFormLayout("overview", getTranslator(), velocity_root + "/settings_bulk_overview.html");
+		overviewCont = FormLayoutContainer.createCustomFormLayout("overview", getTranslator(), velocity_root + "/settings_bulk_overview.html");
 		overviewCont.setRootForm(mainForm);
 		formLayout.add(overviewCont);
 		
@@ -125,7 +129,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 			if (context.isSelected(SettingsBulkEditable.authors)) {
 				String text = translate("settings.bulk.overview.authors", context.getAuthors());
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.authors);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.educationalType)) {
@@ -134,19 +138,19 @@ public class SettingsOverviewController extends StepFormBasicController {
 						? translate("settings.bulk.overview.educational.type.none")
 						: translate("settings.bulk.overview.educational.type", translate(RepositoyUIFactory.getI18nKey(educationalType)));
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.educationalType);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.mainLanguage)) {
 				String text = translate("settings.bulk.overview.mainLanguage", context.getMainLanguage());
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.mainLanguage);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.expenditureOfWork)) {
 				String text = translate("settings.bulk.overview.expenditureOfWork", context.getExpenditureOfWork());
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.expenditureOfWork);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.license)) {
@@ -160,7 +164,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 					text = translate("settings.bulk.overview.license.none");
 				}
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.license);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (fields.isEmpty()) {
@@ -179,7 +183,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 					String text = translate("settings.bulk.overview.taxonomy.add", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 					List<RepositoryEntry> changes = editables.getTaxonomyLevelAddChanges(taxonomyLevel.getKey());
-					String resourceItemName = createResourceLink(overviewCont, changes);
+					String resourceItemName = createResourceLink(changes);
 					fields.add(new OverviewField(text, resourceItemName));
 				}
 			}
@@ -190,7 +194,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 					String text = translate("settings.bulk.overview.taxonomy.remove", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 					List<RepositoryEntry> changes = editables.getTaxonomyLevelRemoveChanges(taxonomyLevel.getKey());
-					String resourceItemName = createResourceLink(overviewCont, changes);
+					String resourceItemName = createResourceLink(changes);
 					fields.add(new OverviewField(text, resourceItemName));
 				}
 			}
@@ -210,7 +214,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				for (Organisation organisation : organisations) {
 					String text = translate("settings.bulk.overview.organisation.add", organisation.getDisplayName());
 					List<RepositoryEntry> changes = editables.getOrganisationAddChanges(organisation.getKey());
-					String resourceItemName = createResourceLink(overviewCont, changes);
+					String resourceItemName = createResourceLink(changes);
 					fields.add(new OverviewField(text, resourceItemName));
 				}
 			}
@@ -221,7 +225,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				for (Organisation organisation : organisations) {
 					String text = translate("settings.bulk.overview.organisation.remove", organisation.getDisplayName());
 					List<RepositoryEntry> changes = editables.getOrganisationRemoveChanges(organisation.getKey(), context.getOrganisationRemoveKeys());
-					String resourceItemName = createResourceLink(overviewCont, changes);
+					String resourceItemName = createResourceLink(changes);
 					fields.add(new OverviewField(text, resourceItemName));
 				}
 			}
@@ -239,7 +243,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 						? translate("settings.bulk.overview.author.rights.reference.add")
 						: translate("settings.bulk.overview.author.rights.reference.remove");
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.authorRightReference);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.authorRightCopy)) {
@@ -247,7 +251,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 						? translate("settings.bulk.overview.author.rights.copy.add")
 						: translate("settings.bulk.overview.author.rights.copy.remove");
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.authorRightCopy);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.authorRightDownload)) {
@@ -255,7 +259,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 						? translate("settings.bulk.overview.author.rights.download.add")
 						: translate("settings.bulk.overview.author.rights.download.remove");
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.authorRightDownload);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (fields.isEmpty()) {
@@ -282,7 +286,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				}
 				text = translate("settings.bulk.overview.execution.period", text);
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleType);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.lifecyclePublicKey)) {
@@ -290,7 +294,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				String text = lifecycle != null? lifecycle.getLabel(): "-";
 				text = translate("settings.bulk.overview.execution.public", text);
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecyclePublicKey);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.lifecycleValidFrom)) {
@@ -299,7 +303,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 						: translate("settings.bulk.overview.execution.remove");
 				text = translate("settings.bulk.overview.execution.from", text);
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleValidFrom);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.lifecycleValidTo)) {
@@ -308,19 +312,86 @@ public class SettingsOverviewController extends StepFormBasicController {
 						: translate("settings.bulk.overview.execution.remove");
 				text = translate("settings.bulk.overview.execution.to", text);
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleValidTo);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.location)) {
 				String text = translate("settings.bulk.overview.location", context.getLocation());
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.location);
-				String resourceItemName = createResourceLink(overviewCont, changes);
+				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (fields.isEmpty()) {
 				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
 			}
 			OverviewStep step = new OverviewStep(translate("settings.bulk.execution.title"), fields);
+			overviewSteps.add(step);
+		}
+		
+		if (steps.contains(Step.toolbar)) {
+			List<OverviewField> fields = new ArrayList<>(3);
+			addToolbarField(fields, SettingsBulkEditable.toolSearch, context.isToolSearch(), "settings.bulk.toolbar.search");
+			addToolbarField(fields, SettingsBulkEditable.toolCalendar, context.isToolCalendar(), "settings.bulk.toolbar.calendar");
+			addToolbarField(fields, SettingsBulkEditable.toolParticipantList, context.isToolParticipantList(), "settings.bulk.toolbar.participant.list");
+			addToolbarField(fields, SettingsBulkEditable.toolParticipantInfo, context.isToolParticipantInfo(), "settings.bulk.toolbar.participant.info");
+			addToolbarField(fields, SettingsBulkEditable.toolEmail, context.isToolEmail(), "settings.bulk.toolbar.email");
+			addToolbarField(fields, SettingsBulkEditable.toolTeams, context.isToolTeams(), "settings.bulk.toolbar.teams");
+			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButton, context.isToolBigBlueButton(), "settings.bulk.toolbar.bigbluebutton");
+			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, context.isToolBigBlueButton(), "settings.bulk.toolbar.bigbluebutton.moderator");
+			addToolbarField(fields, SettingsBulkEditable.toolZoom, context.isToolZoom(), "settings.bulk.toolbar.zoom");
+			if (context.isSelected(SettingsBulkEditable.toolBlog)) {
+				String text = null;
+				Replacement replacement = context.getToolBlog();
+				if (Replacement.remove == replacement) {
+					text = translate("settings.bulk.overview.toolbar.blog.remove");
+				} else {
+					RepositoryEntry blogEntry = repositoryManager.lookupRepositoryEntryBySoftkey(context.getToolBlogKey(), false);
+					if (blogEntry != null) {
+						if (Replacement.add == replacement) {
+							text = translate("settings.bulk.overview.toolbar.blog.add", blogEntry.getDisplayname());
+						} else if (Replacement.change == replacement) {
+							text = translate("settings.bulk.overview.toolbar.blog.change", blogEntry.getDisplayname());
+						} else if (Replacement.addChange == replacement) {
+							text = translate("settings.bulk.overview.toolbar.blog.add.change", blogEntry.getDisplayname());
+						}
+					}
+				}
+				if (StringHelper.containsNonWhitespace(text)) {
+					List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.toolBlog);
+					String resourceItemName = createResourceLink(changes);
+					fields.add(new OverviewField(text, resourceItemName));
+				}
+			}
+			if (context.isSelected(SettingsBulkEditable.toolWiki)) {
+				String text = null;
+				Replacement replacement = context.getToolWiki();
+				if (Replacement.remove == replacement) {
+					text = translate("settings.bulk.overview.toolbar.wiki.remove");
+				} else {
+					RepositoryEntry wikiEntry = repositoryManager.lookupRepositoryEntryBySoftkey(context.getToolWikiKey(), false);
+					if (wikiEntry != null) {
+						if (Replacement.add == replacement) {
+							text = translate("settings.bulk.overview.toolbar.wiki.add", wikiEntry.getDisplayname());
+						} else if (Replacement.change == replacement) {
+							text = translate("settings.bulk.overview.toolbar.wiki.change", wikiEntry.getDisplayname());
+						} else if (Replacement.addChange == replacement) {
+							text = translate("settings.bulk.overview.toolbar.wiki.add.change", wikiEntry.getDisplayname());
+						}
+					}
+				}
+				if (StringHelper.containsNonWhitespace(text)) {
+					List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.toolWiki);
+					String resourceItemName = createResourceLink(changes);
+					fields.add(new OverviewField(text, resourceItemName));
+				}
+			}
+			addToolbarField(fields, SettingsBulkEditable.toolForum, context.isToolForum(), "settings.bulk.toolbar.forum");
+			addToolbarField(fields, SettingsBulkEditable.toolDocuments, context.isToolDocuments(), "settings.bulk.toolbar.documents");
+			addToolbarField(fields, SettingsBulkEditable.toolChat, context.isToolChat(), "settings.bulk.toolbar.chat");
+			if (fields.isEmpty()) {
+				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
+			}
+			OverviewStep step = new OverviewStep(translate("settings.bulk.toolbar.title"), fields);
 			overviewSteps.add(step);
 		}
 		
@@ -331,7 +402,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 		overviewCont.contextPut("steps", overviewSteps);
 	}
 
-	private String createResourceLink(FormLayoutContainer overviewCont, List<RepositoryEntry> repositoryEntries) {
+	private String createResourceLink(List<RepositoryEntry> repositoryEntries) {
 		String linkText = null;
 		if (repositoryEntries.isEmpty()) {
 			linkText = translate("settings.bulk.overview.resources.none");
@@ -349,6 +420,17 @@ public class SettingsOverviewController extends StepFormBasicController {
 		link.setEnabled(!repositoryEntries.isEmpty());
 		link.setUserObject(repositoryEntries);
 		return linkName;
+	}
+	
+	private void addToolbarField(List<OverviewField> fields, SettingsBulkEditable editable, boolean on, String i18nKey) {
+		if (context.isSelected(editable)) {
+			String text = on
+					? translate("settings.bulk.overview.toolbar.on", translate(i18nKey))
+					: translate("settings.bulk.overview.toolbar.off", translate(i18nKey));
+			List<RepositoryEntry> changes = editables.getChanges(context, editable);
+			String resourceItemName = createResourceLink(changes);
+			fields.add(new OverviewField(text, resourceItemName));
+		}
 	}
 
 	@Override

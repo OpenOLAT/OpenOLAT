@@ -1899,7 +1899,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			SettingsContext context = (SettingsContext)runContext.get(SettingsContext.DEFAULT_KEY);
-			repositoryBulkService.update(context);
+			repositoryBulkService.update(getWindow(), getIdentity(), context);
 			return StepsMainRunController.DONE_MODIFIED;
 		}
 	}

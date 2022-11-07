@@ -33,12 +33,14 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Organisation;
 import org.olat.course.CourseModule;
+import org.olat.course.config.CourseConfig;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.bulk.SettingsBulkEditable;
 import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.SettingsContext.LifecycleType;
+import org.olat.repository.bulk.model.SettingsContext.Replacement;
 import org.olat.repository.bulk.model.SettingsSteps.Step;
 
 /**
@@ -53,18 +55,26 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 	private final Map<Long, RepositoryEntryInfo> reKeyToInfo;
 	private final boolean licenseEnabled;
 	private final String noLicenseKey;
+	private final boolean toolCalendarEnabled;
+	private final boolean toolTeamsEnables;
+	private final boolean toolBigBlueButtonEnabled;
+	private final boolean toolZoomEnabled;
 	private final boolean courseSelected;
 	private final List<SettingsSteps.Step> steps;
 	
 	public DefaultSettingsBulkEditables(List<RepositoryEntry> repositoryEntries,
 			Map<Long, RepositoryEntryInfo> reKeyToInfo, boolean licenseEnabled, String noLicenseKey,
-			boolean taxonomyEnabled, boolean organisationEnabled) {
+			boolean taxonomyEnabled, boolean organisationEnabled, boolean toolCalendarEnabled, boolean toolTeamsEnables,
+			boolean toolBigBlueButtonEnabled, boolean toolZoomEnabled) {
 		this.licenseEnabled = licenseEnabled;
 		this.noLicenseKey = noLicenseKey;
+		this.toolCalendarEnabled = toolCalendarEnabled;
+		this.toolTeamsEnables = toolTeamsEnables;
+		this.toolBigBlueButtonEnabled = toolBigBlueButtonEnabled;
+		this.toolZoomEnabled = toolZoomEnabled;
 		this.repositoryEntries = repositoryEntries;
 		this.reKeyToInfo = reKeyToInfo;
-		this.courseSelected =repositoryEntries.stream()
-				.anyMatch(this::isCourse);
+		this.courseSelected =repositoryEntries.stream().anyMatch(this::isCourse);
 		
 		steps = new ArrayList<>(SettingsSteps.SELECTABLE_STEPS_SIZE);
 		if (isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.metadata))) {
@@ -82,6 +92,9 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		if (courseSelected && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.execution))) {
 			steps.add((SettingsSteps.Step.execution));
 		}
+		if (courseSelected && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.toolbar))) {
+			steps.add((SettingsSteps.Step.toolbar));
+		}
 	}
 
 	@Override
@@ -94,6 +107,26 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		return courseSelected;
 	}
 	
+	@Override
+	public boolean isToolCalendarEnabled() {
+		return toolCalendarEnabled;
+	}
+
+	@Override
+	public boolean isToolTeamsEnables() {
+		return toolTeamsEnables;
+	}
+
+	@Override
+	public boolean isToolBigBlueButtonEnabled() {
+		return toolBigBlueButtonEnabled;
+	}
+
+	@Override
+	public boolean isToolZoomEnabled() {
+		return toolZoomEnabled;
+	}
+
 	@Override
 	public boolean isEditable() {
 		return !steps.isEmpty();
@@ -157,6 +190,48 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case lifecycleValidTo: 
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
 					&& isCourse(repositoryEntry);
+		case toolSearch:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.search)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolCalendar:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.calendar)
+					&& toolCalendarEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolParticipantList:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.participantList)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolParticipantInfo:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.participantInfo)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolEmail:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.email)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolTeams:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.teams)
+					&& toolTeamsEnables && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolBigBlueButton:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bigbluebutton)
+					&& toolBigBlueButtonEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolBigBlueButtonModeratorStartsMeeting:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bigbluebutton)
+					&& toolBigBlueButtonEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolZoom:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.zoom)
+					&& toolZoomEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolBlog:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.blog)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolWiki:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.wiki)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolForum:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.forum)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolDocuments:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.documents)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
+		case toolChat:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.chat)
+					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
 		default:
 			break;
 		}
@@ -165,6 +240,10 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 
 	private boolean isCourse(RepositoryEntry repositoryEntry) {
 		return CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName());
+	}
+
+	private boolean isCourseLocked(RepositoryEntry repositoryEntry) {
+		return reKeyToInfo.get(repositoryEntry.getKey()).isCourseLocked();
 	}
 
 	@Override
@@ -215,6 +294,34 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return hasLifecycleValidFromChange(repositoryEntry, context.getLifecycleType(), context.getLifecycleValidFrom());
 		case lifecycleValidTo:
 			return hasLifecycleValidToChange(repositoryEntry, context.getLifecycleType(), context.getLifecycleValidTo());
+		case toolSearch:
+			return context.isToolSearch() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isCourseSearchEnabled();
+		case toolCalendar:
+			return context.isToolCalendar() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isCalendarEnabled();
+		case toolParticipantList:
+			return context.isToolParticipantList() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isParticipantListEnabled();
+		case toolParticipantInfo:
+			return context.isToolParticipantInfo() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isParticipantInfoEnabled();
+		case toolEmail:
+			return context.isToolEmail() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isEmailEnabled();
+		case toolTeams:
+			return context.isToolTeams() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isTeamsEnabled();
+		case toolBigBlueButton:
+			return context.isToolBigBlueButton() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isBigBlueButtonEnabled();
+		case toolBigBlueButtonModeratorStartsMeeting:
+			return context.isToolBigBlueButtonModeratorStartsMeeting() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isBigBlueButtonModeratorStartsMeeting();
+		case toolZoom:
+			return context.isToolZoom() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isZoomEnabled();
+		case toolBlog:
+			return hasToolBlogChanged(repositoryEntry, context);
+		case toolWiki:
+			return hasToolWikiChanged(repositoryEntry, context);
+		case toolForum:
+			return context.isToolForum() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isForumEnabled();
+		case toolDocuments:
+			return context.isToolDocuments() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isDocumentsEnabled();
+		case toolChat:
+			return context.isToolChat() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isChatEnabled();
 		default:
 			break;
 		}
@@ -339,6 +446,36 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		}
 		return repositoryEntry.getLifecycle().isPrivateCycle()
 				&& !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo());
+	}
+
+	private boolean hasToolBlogChanged(RepositoryEntry repositoryEntry, SettingsContext context) {
+		Replacement replacement = context.getToolBlog();
+		if (replacement == null) {
+			return false;
+		}
+		CourseConfig courseConfig = reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig();
+		switch (replacement) {
+		case add: return !courseConfig.isBlogEnabled();
+		case change: return courseConfig.isBlogEnabled() && !Objects.equals(context.getToolBlogKey(), courseConfig.getBlogSoftKey());
+		case addChange: return !courseConfig.isBlogEnabled() || !Objects.equals(context.getToolBlogKey(), courseConfig.getBlogSoftKey());
+		case remove: return courseConfig.isBlogEnabled();
+		default: return false;
+		}
+	}
+
+	private boolean hasToolWikiChanged(RepositoryEntry repositoryEntry, SettingsContext context) {
+		Replacement replacement = context.getToolWiki();
+		if (replacement == null) {
+			return false;
+		}
+		CourseConfig courseConfig = reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig();
+		switch (replacement) {
+		case add: return !courseConfig.isWikiEnabled();
+		case change: return courseConfig.isWikiEnabled() && !Objects.equals(context.getToolWikiKey(), courseConfig.getWikiSoftKey());
+		case addChange: return !courseConfig.isWikiEnabled() || !Objects.equals(context.getToolWikiKey(), courseConfig.getWikiSoftKey());
+		case remove: return courseConfig.isWikiEnabled();
+		default: return false;
+		}
 	}
 
 	@Override

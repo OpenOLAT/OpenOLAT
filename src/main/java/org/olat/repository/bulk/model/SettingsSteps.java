@@ -72,6 +72,21 @@ public class SettingsSteps {
 			SettingsBulkEditable.lifecyclePublicKey,
 			SettingsBulkEditable.lifecycleValidFrom,
 			SettingsBulkEditable.lifecycleValidTo);
+	private static final Set<SettingsBulkEditable> EDITABLES_TOOLBAR = Set.of(
+			SettingsBulkEditable.toolSearch,
+			SettingsBulkEditable.toolCalendar,
+			SettingsBulkEditable.toolParticipantList,
+			SettingsBulkEditable.toolParticipantInfo,
+			SettingsBulkEditable.toolEmail,
+			SettingsBulkEditable.toolTeams,
+			SettingsBulkEditable.toolBigBlueButton,
+			SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting,
+			SettingsBulkEditable.toolZoom,
+			SettingsBulkEditable.toolBlog,
+			SettingsBulkEditable.toolWiki,
+			SettingsBulkEditable.toolForum,
+			SettingsBulkEditable.toolDocuments,
+			SettingsBulkEditable.toolChat);
 	
 	public static Set<SettingsBulkEditable> getEditables(Step step) {
 		switch (step) {
@@ -80,6 +95,7 @@ public class SettingsSteps {
 		case organisation: return EDITABLES_ORAGANISATION;
 		case authorRights: return EDITABLES_AUTHOR_RIGHTS;
 		case execution: return EDITABLES_EXECUTION;
+		case toolbar: return EDITABLES_TOOLBAR;
 		default:
 			return Set.of();
 		}

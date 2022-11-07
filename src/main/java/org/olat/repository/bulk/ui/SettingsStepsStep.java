@@ -122,6 +122,9 @@ public class SettingsStepsStep extends BasicStep {
 			if (editables.isEditable(Step.execution)) {
 				stepsKV.add(entry(SettingsSteps.Step.execution.name(), translate("settings.bulk.execution.title")));
 			}
+			if (editables.isEditable(Step.toolbar)) {
+				stepsKV.add(entry(SettingsSteps.Step.toolbar.name(), translate("settings.bulk.toolbar.title")));
+			}
 			stepsEl = uifactory.addCheckboxesVertical("settings.bulk.steps.steps", formLayout, stepsKV.keys(), stepsKV.values(), 1);
 			steps.stream().forEach(step -> stepsEl.select(step.name(), true));
 		}

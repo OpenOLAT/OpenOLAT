@@ -43,6 +43,14 @@ public interface SettingsBulkEditables {
 
 	public boolean isEducationalTypeEnabled();
 	
+	public boolean isToolCalendarEnabled();
+	
+	public boolean isToolTeamsEnables();
+	
+	public boolean isToolBigBlueButtonEnabled();
+	
+	public boolean isToolZoomEnabled();
+	
 	public boolean isEditable();
 	
 	public boolean isEditable(SettingsSteps.Step step);

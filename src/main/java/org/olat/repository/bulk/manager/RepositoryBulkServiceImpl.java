@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,16 +34,37 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.manager.LicenseTypeDAO;
+import org.olat.core.gui.components.Window;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
+import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.config.CourseConfigEvent;
+import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.zoom.ZoomModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
@@ -56,6 +78,9 @@ import org.olat.repository.bulk.model.DefaultSettingsBulkEditables;
 import org.olat.repository.bulk.model.RepositoryEntryInfo;
 import org.olat.repository.bulk.model.SettingsContext;
 import org.olat.repository.bulk.model.SettingsContext.LifecycleType;
+import org.olat.repository.bulk.model.SettingsContext.Replacement;
+import org.olat.repository.bulk.model.SettingsSteps;
+import org.olat.repository.bulk.model.SettingsSteps.Step;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -96,6 +121,14 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private ZoomModule zoomModule;
 	
 
 	@Override
@@ -129,18 +162,37 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			}
 		}
 		
+		for (RepositoryEntry repositoryEntry: repositoryEntries) {
+			OLATResource resource = repositoryEntry.getOlatResource();
+			if (CourseModule.ORES_TYPE_COURSE.equals(resource.getResourceableTypeName())) {
+				boolean locked = CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(resource, CourseFactory.COURSE_EDITOR_LOCK);
+				reKeyToInfo.get(repositoryEntry.getKey()).setCourseLocked(locked);
+				ICourse course = CourseFactory.loadCourse(resource);
+				reKeyToInfo.get(repositoryEntry.getKey()).setCourseConfig(course.getCourseConfig());
+			}
+		}
+		
+		boolean toolCalendarEnabled = calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar();
+		boolean toolTeamsEnables = teamsModule.isEnabled() && teamsModule.isCoursesEnabled();
+		boolean toolBigBlueButtonEnabled = bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isCoursesEnabled();
+		boolean toolZoomEnabled = zoomModule.isEnabled() && zoomModule.isEnabledForCourseTool();
+		
 		return new DefaultSettingsBulkEditables(
 				repositoryEntries,
 				reKeyToInfo,
 				licenseEnabled,
 				noLicenseKey,
 				taxonomyEnabled,
-				organisationEnabled
+				organisationEnabled,
+				toolCalendarEnabled,
+				toolTeamsEnables,
+				toolBigBlueButtonEnabled,
+				toolZoomEnabled
 				);
 	}
 	
 	@Override
-	public void update(SettingsContext context) {
+	public void update(Window window, Identity identity, SettingsContext context) {
 		List<RepositoryEntry> entries = repositoryService.loadByKeys(context.getRepositoryEntries().stream().map(RepositoryEntry::getKey).collect(Collectors.toSet()));
 		SettingsBulkEditables editables = getSettingsBulkEditables(entries);
 		
@@ -166,11 +218,27 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			publicLifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
 		}
 		
+		String verifiedBlogSoftKey = null;
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolBlog) && Replacement.remove != context.getToolBlog()) {
+			RepositoryEntry blogEntry = repositoryManager.lookupRepositoryEntryBySoftkey(context.getToolBlogKey(), false);
+			if (blogEntry != null) {
+				verifiedBlogSoftKey = blogEntry.getSoftkey();
+			}
+		}
+		String verifiedWikiSoftKey = null;
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolWiki) && Replacement.remove != context.getToolWiki()) {
+			RepositoryEntry wikiEntry = repositoryManager.lookupRepositoryEntryBySoftkey(context.getToolWikiKey(), false);
+			if (wikiEntry != null) {
+				verifiedWikiSoftKey = wikiEntry.getSoftkey();
+			}
+		}
+		
 		for (RepositoryEntry repositoryEntry : entries) {
 			RepositoryEntry updatedEntry = updateRepositoryEntry(context, editables, repositoryEntry, educationalType,
 					taxonomyLevelsAdd, organisationsAdd, publicLifecycle);
 			updatedEntry = updateRepositoryEntryAccess(context, editables, updatedEntry);
 			updateLicense(context, editables, updatedEntry, licenseType);
+			updateCourse(window, identity, context, editables, updatedEntry, verifiedBlogSoftKey, verifiedWikiSoftKey);
 			dbInsance.commit();
 		}
 	}
@@ -320,6 +388,248 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		if (changed) {
 			licenseService.update(license);
 		}
+	}
+
+	private void updateCourse(Window window, Identity identity, SettingsContext context,
+			SettingsBulkEditables editables, RepositoryEntry repositoryEntry, String verifiedBlogSoftKey,
+			String verifiedWikiSoftKey) {
+		
+		boolean changed = SettingsSteps.getEditables(Step.toolbar).stream()
+				.anyMatch(editable -> isSelectedAndChanged(context, editables, editable));
+		if (!changed) {
+			return;
+		}
+		
+		LockResult lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
+				.acquireLock(repositoryEntry.getOlatResource(), identity, CourseFactory.COURSE_EDITOR_LOCK, window);
+		if (lockEntry == null || !lockEntry.isSuccess()) {
+			return;
+		}
+		
+		OLATResourceable courseOres = repositoryEntry.getOlatResource();
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolSearch, repositoryEntry)) {
+			courseConfig.setCourseSearchEnabled(context.isToolSearch());
+			
+			ILoggingAction loggingAction = context.isToolSearch() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.search, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolCalendar, repositoryEntry)) {
+			courseConfig.setCalendarEnabled(context.isToolCalendar());
+			
+			ILoggingAction loggingAction = context.isToolCalendar() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_DISABLED;
+			
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolParticipantList, repositoryEntry)) {
+			courseConfig.setParticipantListEnabled(context.isToolParticipantList());
+			
+			ILoggingAction loggingAction = context.isToolParticipantList() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTLIST_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTLIST_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.participantList, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolParticipantInfo, repositoryEntry)) {
+			courseConfig.setParticipantInfoEnabled(context.isToolParticipantInfo());
+			
+			ILoggingAction loggingAction = context.isToolParticipantInfo() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTINFO_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTINFO_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.participantInfo, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolEmail, repositoryEntry)) {
+			courseConfig.setEmailEnabled(context.isToolEmail());
+			
+			ILoggingAction loggingAction = context.isToolEmail() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EMAIL_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EMAIL_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.email, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolTeams, repositoryEntry)) {
+			courseConfig.setTeamsEnabled(context.isToolTeams());
+			
+			ILoggingAction loggingAction = context.isToolTeams() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_TEAMS_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_TEAMS_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.teams, course.getResourceableId()), course);
+		}
+		
+		boolean bigBlueButtonChanged = false;
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolBigBlueButton, repositoryEntry)) {
+			courseConfig.setBigBlueButtonEnabled(context.isToolBigBlueButton());
+			bigBlueButtonChanged = true;
+		}
+		if (courseConfig.isBigBlueButtonEnabled() && isSelectedAndChanged(context, editables, SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, repositoryEntry)) {
+			courseConfig.setBigBlueButtonModeratorStartsMeeting(context.isToolBigBlueButtonModeratorStartsMeeting());
+			bigBlueButtonChanged = true;
+		}
+		if (bigBlueButtonChanged) {
+			ILoggingAction loggingAction = context.isToolBigBlueButton() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BIGBLUEBUTTON_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BIGBLUEBUTTON_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.bigbluebutton, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolZoom, repositoryEntry)) {
+			courseConfig.setZoomEnabled(context.isToolZoom());
+				
+			ILoggingAction loggingAction = context.isToolZoom() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_ZOOM_ENABLED :
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_ZOOM_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.zoom, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolBlog, repositoryEntry)) {
+			Boolean enabled = null;
+			Replacement replacement = context.getToolBlog();
+			if (Replacement.remove == replacement) {
+				courseConfig.setBlogEnabled(false);
+				courseConfig.setBlogSoftKey(null);
+				enabled = Boolean.FALSE;
+			} else if (verifiedBlogSoftKey != null) {
+				boolean changeBlog = false;
+				if (Replacement.add == replacement && !courseConfig.isBlogEnabled()) {
+					changeBlog = true;
+				} else if (Replacement.change == replacement 
+						&& courseConfig.isBlogEnabled() && !Objects.equals(context.getToolBlogKey(), courseConfig.getBlogSoftKey())) {
+					changeBlog = true;
+				} else if (Replacement.addChange == replacement
+						&& (!courseConfig.isBlogEnabled() || !Objects.equals(context.getToolBlogKey(), courseConfig.getBlogSoftKey()))) {
+					changeBlog = true;
+				}
+				if (changeBlog) {
+					courseConfig.setBlogEnabled(true);
+					courseConfig.setBlogSoftKey(verifiedBlogSoftKey);
+					enabled = Boolean.TRUE;
+				}
+			}
+			
+			if (enabled != null) {
+				ILoggingAction loggingAction = enabled.booleanValue()?
+						LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BLOG_ENABLED:
+						LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BLOG_DISABLED;
+				ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+				
+				CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.blog, course.getResourceableId()), course);
+			}
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolWiki, repositoryEntry)) {
+			Boolean enabled = null;
+			Replacement replacement = context.getToolWiki();
+			if (Replacement.remove == replacement) {
+				courseConfig.setWikiEnabled(false);
+				courseConfig.setWikiSoftKey(null);
+				enabled = Boolean.FALSE;
+			} else if (verifiedWikiSoftKey != null) {
+				boolean changeWiki = false;
+				if (Replacement.add == replacement && !courseConfig.isWikiEnabled()) {
+					changeWiki = true;
+				} else if (Replacement.change == replacement 
+						&& courseConfig.isWikiEnabled() && !Objects.equals(context.getToolWikiKey(), courseConfig.getWikiSoftKey())) {
+					changeWiki = true;
+				} else if (Replacement.addChange == replacement
+						&& (!courseConfig.isWikiEnabled() || !Objects.equals(context.getToolWikiKey(), courseConfig.getWikiSoftKey()))) {
+					changeWiki = true;
+				}
+				if (changeWiki) {
+					courseConfig.setWikiEnabled(true);
+					courseConfig.setWikiSoftKey(verifiedWikiSoftKey);
+					enabled = Boolean.TRUE;
+				}
+			}
+			
+			if (enabled != null) {
+				ILoggingAction loggingAction = enabled.booleanValue() ?
+						LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_WIKI_ENABLED:
+						LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_WIKI_DISABLED;
+				ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+				
+				CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.wiki, course.getResourceableId()), course);
+			}
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolForum, repositoryEntry)) {
+			courseConfig.setForumEnabled(context.isToolForum());
+			
+			ILoggingAction loggingAction = context.isToolForum() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_FORUM_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_FORUM_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.forum, course.getResourceableId()), course);
+			
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolDocuments, repositoryEntry)) {
+			courseConfig.setDocumentsEnabled(context.isToolDocuments());
+			courseConfig.setDocumentPath(null);
+			
+			ILoggingAction loggingAction = context.isToolDocuments() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_DOCUMENTS_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_DOCUMENTS_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.documents, course.getResourceableId()), course);
+		}
+		
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolChat, repositoryEntry)) {
+			courseConfig.setChatIsEnabled(context.isToolChat());
+			
+			ILoggingAction loggingAction = context.isToolChat() ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.chat, course.getResourceableId()), course);
+			
+		}
+		
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		
+		CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 	}
 	
 	private boolean isSelectedAndChanged(SettingsContext context, SettingsBulkEditables editables, SettingsBulkEditable editable) {
