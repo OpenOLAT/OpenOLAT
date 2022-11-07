@@ -161,4 +161,53 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 	margin-right: 0;
 }
 
+// We override bootstrap defaults for tooltips of glossary terms
+.o_gloss_tooltip {
+	&.tooltip.in {
+		opacity: 1;
+	}
 
+	&.tooltip.top .tooltip-arrow {
+		border-top-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.top-left .tooltip-arrow {
+		border-top-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.top-right .tooltip-arrow {
+		border-top-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.right .tooltip-arrow {
+		border-right-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.left .tooltip-arrow {
+		border-left-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.bottom .tooltip-arrow {
+		border-bottom-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.bottom-left .tooltip-arrow {
+		border-bottom-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.bottom-right .tooltip-arrow {
+		border-bottom-color: $o-gloss-tooltip-border-color;
+	}
+
+	.tooltip-inner {
+		opacity: 1;
+		font-family: $font-family-base;
+		font-size: $font-size-base;
+		line-height: $line-height-base;
+		color: $text-color;
+		background-color: $body-bg;
+		text-align: left;
+		border-radius: 5px;
+		border: 2px solid $o-gloss-tooltip-border-color;
+	}
+}
