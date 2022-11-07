@@ -82,10 +82,10 @@ public class ACOfferDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("resourceKey", resource.getKey());
 		if(atDate != null) {
-			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
+			query.setParameter("atDate", atDate, TemporalType.DATE);
 		}
 		if (organisations != null && !organisations.isEmpty()) {
-			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).toList());
 		}
 		
 		List<Object[]> loadedObjects = query.getResultList();

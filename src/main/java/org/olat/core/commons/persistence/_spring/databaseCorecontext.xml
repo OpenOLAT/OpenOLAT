@@ -30,7 +30,7 @@
 		        <prop key="hibernate.connection.username">${db.user}</prop>
 		        <prop key="hibernate.connection.password">${db.pass}</prop>
 		        <prop key="hibernate.dialect.storage_engine">innodb</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+		        <prop key="hibernate.dialect">org.olat.core.commons.persistence.MySQLDialect</prop>
 	        </props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hikariHibernateProperties" />
@@ -42,7 +42,7 @@
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
 		        <prop key="hibernate.dialect.storage_engine">innodb</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+		        <prop key="hibernate.dialect">org.olat.core.commons.persistence.MySQLDialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
