@@ -92,7 +92,7 @@ public class TaggingManagerTest extends OlatTestCase {
 		assertNotNull(tag);
 		assertEquals("Tag1", tag.getTag());
 		assertNotNull(tag.getOLATResourceable());
-		assertEquals(new Long(45l), tag.getOLATResourceable().getResourceableId());
+		assertEquals(Long.valueOf(45l), tag.getOLATResourceable().getResourceableId());
 		assertEquals("Artefact", tag.getOLATResourceable().getResourceableTypeName());
 		assertEquals("SubPath", tag.getResSubPath());
 		assertEquals("BusinessPath", tag.getBusinessPath());

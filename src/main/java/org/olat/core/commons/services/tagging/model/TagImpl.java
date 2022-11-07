@@ -20,9 +20,27 @@
 
 package org.olat.core.commons.services.tagging.model;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Persistable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * 
@@ -33,14 +51,45 @@ import org.olat.core.id.OLATResourceable;
  * Initial Date:  19 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class TagImpl extends PersistentObject implements Tag {
+@Entity
+@Table(name="o_tag")
+public class TagImpl implements Persistable, CreateInfo, Tag {
 
 	private static final long serialVersionUID = 2272529253221047436L;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="tag_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Column(name="tag", nullable=true, insertable=true, updatable=true)
 	private String tag;
+	@Column(name="resname", nullable=true, insertable=true, updatable=true)
 	private String resName;
+	@Column(name="resid", nullable=true, insertable=true, updatable=true)
 	private Long resId;
+	@Column(name="ressubpath", nullable=true, insertable=true, updatable=true)
 	private String resSubPath;
+	@Column(name="businesspath", nullable=true, insertable=true, updatable=true)
 	private String businessPath;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_author_id", nullable=false, insertable=true, updatable=false)
 	private Identity author;
 	
 	public TagImpl() {
@@ -48,10 +97,29 @@ public class TagImpl extends PersistentObject implements Tag {
 	}
 	
 	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+	
+	@Override
 	public String getTag() {
 		return tag;
 	}
-	
+
+	@Override
 	public void setTag(String tag) {
 		this.tag = tag;
 	}
@@ -126,10 +194,14 @@ public class TagImpl extends PersistentObject implements Tag {
 	public boolean equals(Object obj) {
 		if(this == obj)
 			return true;
-		if(obj instanceof TagImpl) {
-			TagImpl tagImpl = (TagImpl)obj;
+		if(obj instanceof TagImpl tagImpl) {
 			return getKey() != null && getKey().equals(tagImpl.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

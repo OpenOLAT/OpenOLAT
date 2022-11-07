@@ -15,9 +15,8 @@
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
-		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
+		
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 
 		<!-- Start upgraders mapping -->
@@ -64,6 +63,7 @@
 		<class>org.olat.core.commons.services.mark.impl.MarkImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
+		<class>org.olat.core.commons.services.tagging.model.TagImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingImpl</class>
@@ -237,6 +237,7 @@
 		<class>org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl</class>
 		<class>org.olat.modules.message.model.AssessmentMessageImpl</class>
 		<class>org.olat.modules.message.model.AssessmentMessageLogImpl</class>
+		<class>org.olat.modules.openmeetings.model.OpenMeetingsRoomReference</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>

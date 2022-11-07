@@ -77,7 +77,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		Assert.assertNotNull(checkbox.getCreationDate());
 		Assert.assertEquals(checkboxId, checkbox.getCheckboxId());
 		Assert.assertEquals("checkbox-1", checkbox.getResName());
-		Assert.assertEquals(new Long( 2345l), checkbox.getResId());
+		Assert.assertEquals(Long.valueOf(2345l), checkbox.getResId());
 		Assert.assertEquals(resSubPath, checkbox.getResSubPath());
 	}
 	
@@ -100,7 +100,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		Assert.assertEquals(checkboxId, dbCheckbox.getCheckboxId());
 		Assert.assertEquals(resSubPath, dbCheckbox.getResSubPath());
 		Assert.assertEquals("checkbox-2", dbCheckbox.getResName());
-		Assert.assertEquals(new Long( 2346l), dbCheckbox.getResId());
+		Assert.assertEquals(Long.valueOf(2346l), dbCheckbox.getResId());
 		Assert.assertEquals(resSubPath, dbCheckbox.getResSubPath());
 	}
 	
@@ -186,7 +186,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheckbox checkbox = checkboxManager.createDBCheckbox(checkboxId, ores, resSubPath);
 		
 		//create a check
-		DBCheck check = checkboxManager.createCheck(checkbox, id, new Float(1.0), Boolean.TRUE);
+		DBCheck check = checkboxManager.createCheck(checkbox, id, Float.valueOf(1.0f), Boolean.TRUE);
 		dbInstance.commitAndCloseSession();
 		//paranoia check
 		Assert.assertNotNull(check);
@@ -208,7 +208,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheckbox checkbox = checkboxManager.createDBCheckbox(checkboxId, ores, resSubPath);
 		
 		//create a check
-		DBCheck check = checkboxManager.createCheck(checkbox, id, new Float(1.0), Boolean.TRUE);
+		DBCheck check = checkboxManager.createCheck(checkbox, id, Float.valueOf(1.0f), Boolean.TRUE);
 		dbInstance.commitAndCloseSession();
 		
 		//load the check
@@ -250,7 +250,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		checkboxManager.check(checkbox, id, new Float(1.515), Boolean.FALSE);
+		checkboxManager.check(checkbox, id, Float.valueOf(1.515f), Boolean.FALSE);
 		dbInstance.commitAndCloseSession();
 		
 		//load the check

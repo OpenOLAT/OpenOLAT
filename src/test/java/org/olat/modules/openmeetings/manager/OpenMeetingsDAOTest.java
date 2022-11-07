@@ -27,6 +27,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoomReference;
 import org.olat.test.OlatTestCase;
@@ -43,6 +45,8 @@ public class OpenMeetingsDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private OpenMeetingsDAO openMeetingsDAO;
+	@Autowired
+	private BusinessGroupDAO businessGroupDao;
 	
 	@Test
 	public void createReference() {
@@ -62,7 +66,7 @@ public class OpenMeetingsDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetReferences() {
+	public void getReferences() {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 1l);
 		OpenMeetingsRoom room = new OpenMeetingsRoom();
 		room.setRoomId(123l);
@@ -95,5 +99,25 @@ public class OpenMeetingsDAOTest extends OlatTestCase {
 		Assert.assertEquals(ores.getResourceableId(), loadedRef.getResourceTypeId());
 		Assert.assertEquals(123l, loadedRef.getRoomId());
 	}
-
+	
+	@Test
+	public void createAndGetReferenceInGroup() {
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "OpenMeeting", "Open meeting desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		
+		OpenMeetingsRoom room = new OpenMeetingsRoom();
+		room.setRoomId(123l);
+		OpenMeetingsRoomReference ref = openMeetingsDAO.createReference(group, null, null, room);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(ref);
+		
+		OpenMeetingsRoomReference loadedRef = openMeetingsDAO.getReference(group, null, null);
+		
+		Assert.assertNotNull(loadedRef);
+		Assert.assertNotNull(loadedRef.getKey());
+		Assert.assertNotNull(loadedRef.getCreationDate());
+		Assert.assertNotNull(loadedRef.getLastModified());
+		
+		Assert.assertEquals(group, loadedRef.getGroup());
+	}
 }
