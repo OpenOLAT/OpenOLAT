@@ -232,9 +232,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append(" \"use strict\";");
 		if("full".equals(height)) {
 			sb.append("  var oTop = jQuery('#").append(domID).append("_diw").append("').offset().top;\n")
-			  .append("  var cssHeight = 'calc(100vh - ' + (oTop + 53) + 'px)';\n");
+			  .append("  var cssHeight = (oTop + 300 > window.innerHeight) ? '300px': 'calc(100vh - ' + (oTop + 53) + 'px)';\n");
 		}
-		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
+		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl).append("',\n")
 		  .append("    icons_url: '").append(iconsUrl).append("',\n")
@@ -245,7 +245,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			  .append("    automatic_uploads: true,\n");
 		}
 		if("full".equals(height)) {
-			sb.append("    height: cssHeight,\n");
+			sb.append("    height: cssHeight,\n")
+			  .append("    min_height:200,\n");
 		} else if(StringHelper.containsNonWhitespace(height)) {
 			sb.append("    height: '").append(config.getEditorHeight()).append("',\n");
 		} else if(currentHeight != null && currentHeight.intValue() > 20) {

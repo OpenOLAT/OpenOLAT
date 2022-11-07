@@ -80,7 +80,7 @@ public class GlossaryMarkupItemController extends BasicController {
 		// add dom id for wrapper div
 		tmContainer.contextPut("domId", domId);
 
-		String[] js = new String[]{"js/openolat/glossaryhelper.js", "js/openolat/glossaryhighlighter.js"};
+		String[] js = new String[]{"js/base64/base64.js", "js/openolat/glossaryhelper.js", "js/openolat/glossaryhighlighter.js"};
 		JSAndCSSComponent glossHelpJs = new JSAndCSSComponent("glossHelpJs", js, null);
 		tmContainer.put("glossHelpJs", glossHelpJs);
 		
