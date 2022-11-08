@@ -24,6 +24,7 @@
 */
 package org.olat.core.gui.control.generic.textmarker;
 
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -80,8 +81,9 @@ public class GlossaryMarkupItemController extends BasicController {
 		// add dom id for wrapper div
 		tmContainer.contextPut("domId", domId);
 
-		String[] js = new String[]{"js/base64/base64.js", "js/openolat/glossaryhelper.js", "js/openolat/glossaryhighlighter.js"};
-		JSAndCSSComponent glossHelpJs = new JSAndCSSComponent("glossHelpJs", js, null);
+		String[] js = new String[]{"js/openolat/glossaryhelper.js", "js/openolat/glossaryhighlighter.js"};
+		String[] css = new String[]{StaticMediaDispatcher.getStaticURI("js/openolat/glossaryhighlighter.css")};
+		JSAndCSSComponent glossHelpJs = new JSAndCSSComponent("glossHelpJs", js, css);
 		tmContainer.put("glossHelpJs", glossHelpJs);
 		
 		String glossFolderString = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
