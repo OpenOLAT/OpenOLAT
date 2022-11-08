@@ -90,7 +90,7 @@ public class CoordinatorTest extends OlatTestCase {
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 	
 		final CountDownLatch finishCount = new CountDownLatch(2);
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", new Long("123"));
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", Long.valueOf("123"));
 		
 		// thread 1
 		new Thread(new Runnable() {
@@ -197,7 +197,7 @@ public class CoordinatorTest extends OlatTestCase {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 	
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", new Long("123"));
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", Long.valueOf("123"));
 		final CountDownLatch finishCount = new CountDownLatch(2);
 		
 		// thread 1
@@ -292,7 +292,7 @@ public class CoordinatorTest extends OlatTestCase {
 
 	@Test(expected = AssertException.class) 
 	public void testNestedAssertExceptionInDoInSync() {
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testNestedAssertExceptionInDoInSync", new Long("123"));
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testNestedAssertExceptionInDoInSync", Long.valueOf("123"));
 		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
 			public Boolean execute() {
@@ -314,7 +314,7 @@ public class CoordinatorTest extends OlatTestCase {
 	
 	@Test
 	public void testSyncerAssertAlreadyDoInSyncFor() {
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testSyncerAssertAlreadyDoInSyncFor", new Long("123"));
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testSyncerAssertAlreadyDoInSyncFor", Long.valueOf("123"));
 		
 		// 1. check assertAlreadyDoInSyncFor WITHOUT sync-block => AssertException must be thrown
 		try {
@@ -343,7 +343,7 @@ public class CoordinatorTest extends OlatTestCase {
 
 	@Test
 	public void testDoInSyncPerformance() {
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), new Long("123989456"));
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), Long.valueOf("123989456"));
 		OLATResource r =  CoreSpringFactory.getImpl(OLATResourceManager.class).findOrPersistResourceable(ores);
 		int maxLoop = 500;
 

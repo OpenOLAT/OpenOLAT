@@ -25,9 +25,28 @@
 
 package org.olat.commons.coordinate.cluster.lock;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
 
 /**
  * 
@@ -37,13 +56,42 @@ import org.olat.core.logging.AssertException;
  * <P>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class LockImpl extends PersistentObject {
+@Entity
+@Table(name="oc_lock")
+public class LockImpl implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = 1978265978735682673L;
-	private Identity owner;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="lock_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Column(name="asset", nullable=false, insertable=true, updatable=false)
 	private String asset;
+	@Transient
 	private String nodeId;
+	@Column(name="windowid", nullable=true, insertable=true, updatable=false)
 	private String windowId;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.EAGER,optional=false)
+	@JoinColumn(name="identity_fk", nullable=false, insertable=true, updatable=false)
+	private Identity owner;
 
 	/**
 	* Constructor needed for Hibernate.
@@ -59,6 +107,24 @@ public class LockImpl extends PersistentObject {
 		this.asset = asset;
 		this.owner = owner;
 		this.windowId = windowId;
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	@Override
@@ -112,10 +178,14 @@ public class LockImpl extends PersistentObject {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof LockImpl) {
-			LockImpl lock = (LockImpl)obj;
+		if(obj instanceof LockImpl lock) {
 			return getKey() != null && getKey().equals(lock.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

@@ -102,7 +102,7 @@ public class LockTest extends OlatTestCase {
 
 		Identity ident = identities.get(0);
 		Identity ident2 = identities.get(1);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(LockTest.class.getName(), new Long(123456789)); 
+		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(LockTest.class.getName(), Long.valueOf(123456789)); 
 		
 		// ------------------ test the clusterlockmanager ----------------------
 		// create a lock

@@ -28,6 +28,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class VFSTranscodingDoneEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 7359886327220212903L;
+
 	public static final String command = "vfs.transcoding.done";
 
 	private final String fileName;

@@ -10,14 +10,11 @@
 		<mapping-file>de/bps/olat/modules/cl/Checklist.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/CheckpointResult.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/Checkpoint.hbm.xml</mapping-file>
-		<mapping-file>org/olat/commons/coordinate/cluster/lock/LockImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
-		
-		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 
 		<!-- Start upgraders mapping -->
 		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
@@ -51,6 +48,7 @@
 		<class>org.olat.commons.calendar.model.ImportedCalendar</class>
 		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
 		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
+		<class>org.olat.commons.coordinate.cluster.lock.LockImpl</class>
 		<class>org.olat.commons.info.model.InfoMessageImpl</class>
 		<class>org.olat.commons.lifecycle.LifeCycleEntry</class>
 		<class>org.olat.core.commons.services.csp.model.CSPLogImpl</class>
@@ -89,6 +87,7 @@
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementLight</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementStandalone</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementForCoaching</class>
+		<class>org.olat.course.db.impl.CourseDBEntryImpl</class>
 		<class>org.olat.modules.contacttracing.model.ContactTracingLocationImpl</class>
 		<class>org.olat.modules.contacttracing.model.ContactTracingRegistrationImpl</class>
 		<class>org.olat.modules.immunityproof.model.ImmunityProofImpl</class>

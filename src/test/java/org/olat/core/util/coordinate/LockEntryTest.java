@@ -69,7 +69,7 @@ public class LockEntryTest {
 	 */
 	@Test
 	public void testEqualsObject() {
-		assertFalse("Wrong equals implementation, different types are recognized as equals ",leOne.equals(new Integer(1)));
+		assertFalse("Wrong equals implementation, different types are recognized as equals ",leOne.equals(Integer.valueOf(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",leOne.equals(leThree));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",leOne.equals(null));
 		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",leOne.equals(leOne));

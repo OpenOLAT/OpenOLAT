@@ -26,6 +26,7 @@ import java.util.UUID;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
+import org.hibernate.jpa.SpecHints;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
@@ -315,7 +316,7 @@ public class VFSMetadataDAO {
 			.createQuery(updateQuery)
 			.setParameter("filename", filename)
 			.setParameter("relativePath", relativePath)
-			.setHint("javax.persistence.query.timeout", 1000)
+			.setHint(SpecHints.HINT_SPEC_QUERY_TIMEOUT, 1000)
 			.executeUpdate();
 	}
 	

@@ -34,12 +34,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.CacheRetrieveMode;
-import jakarta.persistence.CacheStoreMode;
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.Query;
-
 import org.apache.logging.log4j.Logger;
+import org.hibernate.jpa.SpecHints;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -116,6 +112,11 @@ import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
+
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.Query;
 
 
 /**
@@ -1160,8 +1161,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		List<String> taskNames = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("tasksByTaskList", String.class)
 			.setParameter("taskListKey", taskList.getKey())
-			.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
-			.setHint("javax.persistence.cache.storeMode", CacheStoreMode.BYPASS)
+			.setHint(SpecHints.HINT_SPEC_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS)
+			.setHint(SpecHints.HINT_SPEC_CACHE_STORE_MODE, CacheStoreMode.BYPASS)
 			.getResultList();
 		return taskNames.stream()
 			.filter(name -> (StringHelper.containsNonWhitespace(name)))

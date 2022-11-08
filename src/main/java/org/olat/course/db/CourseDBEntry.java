@@ -20,13 +20,14 @@
  */
 package org.olat.course.db;
 
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 
 /**
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public interface CourseDBEntry {
+public interface CourseDBEntry extends CreateInfo {
 	
 	public Long getCourseKey();
 	

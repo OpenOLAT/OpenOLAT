@@ -66,7 +66,7 @@ public class JMSTest extends OlatTestCase {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("jms");
 			
 			// send and wait some time until a message should arrive at the latest.
-			final OLATResourceable ores = OresHelper.createOLATResourceableInstance("hellojms", new Long(123));
+			final OLATResourceable ores = OresHelper.createOLATResourceableInstance("hellojms", Long.valueOf(123));
 			final CountDownLatch doneSignal = new CountDownLatch(1);
 			
 			bus.registerFor(new GenericEventListener() {
