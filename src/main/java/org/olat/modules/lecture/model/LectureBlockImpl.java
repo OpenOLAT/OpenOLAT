@@ -428,8 +428,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof LectureBlockImpl) {
-			LectureBlockImpl block = (LectureBlockImpl)obj;
+		if(obj instanceof LectureBlockImpl block) {
 			return getKey() != null && block.getKey().equals(getKey());
 		}
 		return super.equals(obj);

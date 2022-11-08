@@ -261,13 +261,11 @@ public class BinderController extends BasicController implements TooledControlle
 				removeAsListenerAndDispose(entriesCtrl);
 				entriesCtrl = null;
 				binder = portfolioService.getBinderByKey(binder.getKey());
-			} else if(event instanceof SectionSelectionEvent) {
-				SectionSelectionEvent sse = (SectionSelectionEvent)event;
+			} else if(event instanceof SectionSelectionEvent sse) {
 				List<ContextEntry> entries = new ArrayList<>();
 				entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Section", sse.getSection().getKey())));
 				doOpenEntries(ureq).activate(ureq, entries, null);
-			} else if(event instanceof PageSelectionEvent) {
-				PageSelectionEvent pse = (PageSelectionEvent)event;
+			} else if(event instanceof PageSelectionEvent pse) {
 				List<ContextEntry> entries = new ArrayList<>();
 				entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Page", pse.getPage().getKey())));
 				doOpenEntries(ureq).activate(ureq, entries, null);
@@ -275,8 +273,8 @@ public class BinderController extends BasicController implements TooledControlle
 				fireEvent(ureq, event);
 			}
 		} else if(templatesListCtrl == source) {
-			if(event instanceof OpenPageEvent) {
-				doOpenPage(ureq, ((OpenPageEvent)event).getPage());
+			if(event instanceof OpenPageEvent ope) {
+				doOpenPage(ureq, ope.getPage());
 			}
 		}
 	}

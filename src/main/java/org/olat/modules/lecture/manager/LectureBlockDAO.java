@@ -96,6 +96,7 @@ public class LectureBlockDAO {
 		block.setCompulsory(true);
 		block.setEntry(entry);
 		block.setGroups(new HashSet<>());
+		block.setTaxonomyLevels(new HashSet<>());
 		return block;
 	}
 	

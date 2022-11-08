@@ -507,7 +507,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public LectureBlock getLectureBlock(LectureBlockRef block) {
-		return lectureBlockDao.loadByKey(block.getKey());
+		LectureBlock reloadedBlock = lectureBlockDao.loadByKey(block.getKey());
+		reloadedBlock.getTaxonomyLevels().size();
+		return reloadedBlock;
 	}
 
 	@Override

@@ -770,7 +770,11 @@ public class BinderDAO {
 
 		((BinderImpl)binder).getSections().remove(section);
 		dbInstance.getCurrentEntityManager().remove(section);
-		return dbInstance.getCurrentEntityManager().merge(binder);
+		binder = dbInstance.getCurrentEntityManager().merge(binder);
+		if(binder.getOlatResource() != null) {
+			binder.getOlatResource().getResourceableTypeName();
+		}
+		return binder;
 	}
 	
 	public boolean isTemplateInUse(BinderRef template, RepositoryEntryRef entry, String subIdent) {
