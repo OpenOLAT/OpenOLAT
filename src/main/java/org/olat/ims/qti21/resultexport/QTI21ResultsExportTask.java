@@ -41,6 +41,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -138,7 +139,8 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		if(exportZip == null) {
 			exportZip = (VFSLeaf)subFolder.resolve(vfsName);
 		} else {
-			fillMetadata(exportZip, title, description);
+			String metadataDescr = Formatter.truncate(description, 31000);
+			fillMetadata(exportZip, title, metadataDescr);
 		}
 		
 		if(task.getStatus() == TaskStatus.cancelled) {

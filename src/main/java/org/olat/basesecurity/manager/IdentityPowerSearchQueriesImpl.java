@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
@@ -182,19 +183,31 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where membership.identity.key in (:identityKeys) and membership.role=:role");
 		
-		
-		List<Object[]> rawObjectsList = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKeys", identityKeys)
-				.setParameter("role", OrganisationRoles.user.name())
-				.getResultList();
-		
+		int count = 0;
+		int batch = 5000;
+
 		Map<Long,List<Long>> map = new HashMap<>();
-		for(Object[] rawObjects:rawObjectsList) {
-			Long identityKey = (Long)rawObjects[0];
-			Long organisationKey = (Long)rawObjects[1];
-			map.computeIfAbsent(identityKey, key -> new ArrayList<>(3))
-				.add(organisationKey);
-		}
+		TypedQuery<Object[]> rawObjectsQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		
+		do {
+			int toIndex = Math.min(count + batch, identityKeys.size());
+			List<Long> toLoad = identityKeys.subList(count, toIndex);
+			List<Object[]> rawObjectsList = rawObjectsQuery
+					.setParameter("identityKeys", toLoad)
+					.setParameter("role", OrganisationRoles.user.name())
+					.setFlushMode(FlushModeType.COMMIT)
+					.getResultList();
+			
+			for(Object[] rawObjects:rawObjectsList) {
+				Long identityKey = (Long)rawObjects[0];
+				Long organisationKey = (Long)rawObjects[1];
+				map.computeIfAbsent(identityKey, key -> new ArrayList<>(3))
+					.add(organisationKey);
+			}
+			count += batch;
+		} while(count < identityKeys.size());
+
 		return map;
 	}
 	

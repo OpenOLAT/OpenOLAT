@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.stream.Collectors;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -181,7 +182,23 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		return fakeParticipantParam;
 	}
 	
-	private void decorateRSetQuery(TypedQuery<?> query, QTI21StatisticSearchParams searchParams, boolean fakeParticipantParam) {
+	/**
+	 * Decorate the query with the parameters and if the list of identities is too
+	 * long for PostrgreSQL for the in(), it will loop. The query must used the identities
+	 * list or the fake participants but not both at the same time.
+	 * 
+	 * @param query The JPA query
+	 * @param searchParams The search parameters
+	 * @param firstIdentity The position of the first entry
+	 * @param batchIdentitiesLength The length of the batch of identities
+	 * @param testPart The test part (optional)
+	 * @param sections The sections list (optional)
+	 * @param fakeParticipantParam true if use the fake participants
+	 * @return true if there are still keys available for identities
+	 */
+	private int decorateRSetQuery(TypedQuery<?> query, QTI21StatisticSearchParams searchParams,
+			int firstIdentity, int batchIdentitiesLength,
+			TestPart testPart, List<AssessmentSection> sections, boolean fakeParticipantParam) {
 		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
 		if(searchParams.getCourseEntry() == null) {
 			query.setParameter("repositoryEntryKey", searchParams.getTestEntry().getKey());
@@ -192,20 +209,69 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			query.setParameter("subIdent", searchParams.getNodeIdent());
 		}
 		
+		if(testPart != null) {
+			query.setParameter("testPartId", testPart.getIdentifier().toString());
+		}
+		if(sections != null && !sections.isEmpty()) {
+			List<String> sectionIds = sections.stream()
+					.map(sect -> sect.getIdentifier().toString()).collect(Collectors.toList());
+			query.setParameter("sectionPartIds", sectionIds);
+		}
+		
+		int batchSize = -1;
+		
 		if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			query.setParameter("baseGroups", searchParams.getLimitToGroups());
 		} else if(searchParams.getLimitToIdentities() != null && !searchParams.getLimitToIdentities().isEmpty()) {
-			List<Long> keys = searchParams.getLimitToIdentities().stream()
-					.map(Identity::getKey).collect(Collectors.toList());
+			List<Identity> identities = searchParams.getLimitToIdentities();
+			if(batchIdentitiesLength > 0) {
+				int toIndex = Math.min(firstIdentity + batchIdentitiesLength, identities.size());
+				identities = identities.subList(firstIdentity, toIndex);
+				batchSize = identities.size();
+			}
+			List<Long> keys = identities.stream().map(Identity::getKey).collect(Collectors.toList());
 			query.setParameter("limitIdentityKeys", keys);
 		}
 		if (fakeParticipantParam) {
 			query.setParameter("fakeParticipantKeys", searchParams.getFakeParticipants().stream().map(IdentityRef::getKey).collect(Collectors.toSet()));
 		}
+		
+		return batchSize;
+	}
+	
+	private List<Object[]> query(TypedQuery<Object[]> rawDataQuery, QTI21StatisticSearchParams searchParams,
+			TestPart testPart, List<AssessmentSection> sections, boolean fakeParticipantParam) {
+
+		int batch = 8192;
+		
+		List<Identity> limitToIdentities = searchParams.getLimitToIdentities();
+		if(limitToIdentities == null || limitToIdentities.size() < batch) {
+			decorateRSetQuery(rawDataQuery, searchParams, 0, -1, testPart, sections, fakeParticipantParam);
+			return rawDataQuery.getResultList();
+		}
+		
+		int count = 0;
+		int batchSize = -1;
+		List<Object[]> rawObjectsList = new ArrayList<>(limitToIdentities.size() + 1);
+		
+		do {
+			batchSize = decorateRSetQuery(rawDataQuery, searchParams, count, batch, testPart, sections, fakeParticipantParam);
+			if(batchSize > 0) {
+				List<Object[]> subList = rawDataQuery
+						.setFlushMode(FlushModeType.COMMIT)
+						.getResultList();
+				
+				rawObjectsList.addAll(subList);
+			}
+			count += batchSize;
+		} while(batchSize > 0);
+
+		return rawObjectsList;
 	}
 
 	@Override
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams, Double cutValue) {
+
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select asession.score, asession.manualScore, asession.passed, asession.duration from qtiassessmenttestsession asession ");
 		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
@@ -213,8 +279,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 
 		TypedQuery<Object[]> rawDataQuery = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
-		decorateRSetQuery(rawDataQuery, searchParams, fakeParticipantParam);
-		List<Object[]> rawDatas =	rawDataQuery.getResultList();
+		List<Object[]> rawDatas = query(rawDataQuery, searchParams, null, null, fakeParticipantParam);
 		
 		int numOfPassed = 0;
 		int numOfFailed = 0;
@@ -320,19 +385,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
-		decorateRSetQuery(query, searchParams, fakeParticipantParam);
-		if(testPart != null) {
-			query.setParameter("testPartId", testPart.getIdentifier().toString());
-		}
-		if(sections != null && !sections.isEmpty()) {
-			List<String> sectionIds = sections.stream()
-					.map(sect -> sect.getIdentifier().toString()).collect(Collectors.toList());
-			query.setParameter("sectionPartIds", sectionIds);
-		}
-		
-		List<Object[]> results = query.getResultList();
+		List<Object[]> results = query(query, searchParams, testPart, sections, fakeParticipantParam);
 
-		
 		boolean hasScore = false;
 		double minScore = 0.0d;
 		double totalDuration = 0.0;
@@ -438,8 +492,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("itemIdent", itemIdent);
-		decorateRSetQuery(query, searchParams, fakeParticipantParam);
-		List<Object[]> results = query.getResultList();
+		List<Object[]> results = query(query, searchParams, null, null, fakeParticipantParam);
 		if(results.isEmpty()) {
 			return new StatisticsItem();
 		}
@@ -911,8 +964,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("itemIdent", itemRefIdent)
 				.setParameter("responseIdentifier", responseIdentifier);
-		decorateRSetQuery(query, searchParams, fakeParticipantParam);
-		List<Object[]> results = query.getResultList();
+		List<Object[]> results = query(query, searchParams, null, null, fakeParticipantParam);
 		if(results.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -946,17 +998,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		decorateRSetQuery(query, searchParams, fakeParticipantParam);
-		if(testPart != null) {
-			query.setParameter("testPartId", testPart.getIdentifier().toString());
-		}
-		if(sections != null && !sections.isEmpty()) {
-			List<String> sectionIds = sections.stream()
-					.map(sect -> sect.getIdentifier().toString()).collect(Collectors.toList());
-			query.setParameter("sectionPartIds", sectionIds);
-		}
-		
-		List<Object[]> results = query.getResultList();
+		List<Object[]> results = query(query, searchParams, testPart, sections, fakeParticipantParam);
 		if(results.isEmpty()) {
 			return new ArrayList<>();
 		}

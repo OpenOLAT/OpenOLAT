@@ -142,7 +142,7 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 		tabs.add(bookmarkTab);
 		
 		ownedGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyGroups", translate("owned.groups.2"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all")));
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "owner")));
 		ownedGroupsTab.setElementCssClass("o_sel_group_groups");
 		tabs.add(ownedGroupsTab);
 		
