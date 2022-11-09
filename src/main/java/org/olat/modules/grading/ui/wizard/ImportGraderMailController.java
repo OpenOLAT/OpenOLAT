@@ -52,7 +52,7 @@ public class ImportGraderMailController extends StepFormBasicController {
 		mailCtrl = new ContactForm(ureq, getWindowControl(), rootForm, getIdentity(), false, false, false, false);
 		mailCtrl.getAndRemoveFormTitle();
 		mailCtrl.setOptional(true);
-		mailCtrl.setSubject(mailTemplate.getSubjectTemplate());
+		mailCtrl.setSubject(mailTemplate.getSubjectTemplate(), false);
 		mailCtrl.setBody(mailTemplate);
 		mailCtrl.setRecipientsLists(Collections.singletonList(contactList));
 		initForm (ureq);
