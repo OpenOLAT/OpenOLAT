@@ -32,14 +32,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
 import org.olat.course.assessment.ui.tool.AssessmentForm;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 
 /**
@@ -156,8 +157,11 @@ public class AssessedIdentityOverviewController extends BasicController {
 	private void doOpenAssessment(UserRequest ureq) {
 		removeAsListenerAndDispose(assessmentForm);
 		
-		ICourse course = CourseFactory.loadCourse(courseOres);
-		UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(); 
+		identityEnv.setIdentity(assessedIdentity);
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
+		uce.setUserRoles(false, false, true);
+		
 		assessmentForm = new AssessmentForm(ureq, getWindowControl(), courseNode, coachCourseEnv, uce);
 		listenTo(assessmentForm);
 		

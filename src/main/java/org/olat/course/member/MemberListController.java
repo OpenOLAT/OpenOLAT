@@ -43,7 +43,8 @@ public class MemberListController extends AbstractMemberListController {
 	private final SearchMembersParams searchParams;
 	private final UserCourseEnvironment coachCourseEnv;
 	
-	public MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	// Controller is not used anymore. Keep it to the the user properties in other controllers.
+	private MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback,
 			SearchMembersParams searchParams, String infos) {
 		super(ureq, wControl, repoEntry, "all_member_list", secCallback, stackPanel);
