@@ -133,7 +133,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	private boolean editorCheckEnabled = true; // default
 	private boolean versionsEnabled = true;
 	private boolean buttonsEnabled = true;
-	private String fileToLargeError = null;
+	private String fileError;
 	private VFSEdusharingProvider edusharingProvider;
 	private Object userObject;
 	
@@ -199,13 +199,14 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		// make sure the filename doesn't start with a slash
 		this.fileName = ((relFilePath.charAt(0) == '/') ? relFilePath.substring(1) : relFilePath);
 		this.fileLeaf = (VFSLeaf) bContainer.resolve(fileName);
-		if (fileLeaf == null) throw new AssertException("file::" + getFileDebuggingPath(bContainer, relFilePath) + " does not exist!");
+		if (fileLeaf == null) {
+			setFileError(translate("error.file.not.exists"));
+			return;
+		}
 		long size = fileLeaf.getSize();
 		if ( size > FolderConfig.getMaxEditSizeLimit()) {
 			// limit to reasonable size, see OO-57
-			fileToLargeError = translate("plaintext.error.tolarge", (size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000) + "");
-			this.body = "";
-			this.editable = false;
+			setFileError(translate("plaintext.error.tolarge", (size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000) + ""));
 			return;
 		}		
 		
@@ -235,6 +236,12 @@ public class HTMLEditorController extends FormBasicController implements Activat
 			this.edusharingProvider = edusharingProvider;
 			this.edusharingProvider.setSubPath(fileLeaf);
 		}
+	}
+	
+	private void setFileError(String error) {
+		fileError = error;
+		this.body = "";
+		this.editable = false;
 	}
 	
 	private void unsetLockError() {
@@ -349,9 +356,9 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		flc.getRootForm().setMultipartEnabled(true);
-		if (fileToLargeError != null) {
+		if (fileError != null) {
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
-			vc.contextPut("fileToLargeError", fileToLargeError);
+			vc.contextPut("fileToLargeError", fileError);
 		} else {
 			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, baseContainer,
 					fileName, customLinkTreeModel, toolLinkTreeModel, formLayout, ureq.getUserSession(),
