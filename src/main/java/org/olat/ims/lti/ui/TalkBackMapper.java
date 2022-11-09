@@ -24,12 +24,12 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -62,7 +62,7 @@ public class TalkBackMapper implements Mapper, Serializable {
 			.append("<title>").append(trans.translate("talkback.title")).append("</title></head><body>")
 			.append("<div class='o_lti_talkback'>")
 			.append("<h1>").append(trans.translate("talkback.title")).append("</h1>")
-			.append("<p class='o_info'>").append(trans.translate("talkback.info")).append("</p>");
+			.append("<p class='o_hint'>").append(trans.translate("talkback.info")).append("</p>");
 		String lti_msg = request.getParameter("lti_msg");
 		if (StringHelper.containsNonWhitespace(lti_msg)) {
 			sb.append("<div class='o_note'><h3>").append(trans.translate("talkback.msg")).append("</h3><p>")

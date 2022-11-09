@@ -6,7 +6,7 @@ $r.render("newUsersSubscription")
 $r.render("dateChooser")
 </div>
 #if($r.isFalse($hasNews))
-	<div class="o_info">$r.translate("notification.noNews")</div>
+	<div class="o_hint">$r.translate("notification.noNews")</div>
 #else
 	$r.render("notificationsList")
 #end

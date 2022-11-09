@@ -1,7 +1,7 @@
 #if($guards.list.empty)
-	<div class="o_info">$r.translate("current.mode.end.info")</div>
+	<div class="o_hint">$r.translate("current.mode.end.info")</div>
 #else
-	<div class="o_info">$r.translate("current.mode.desc")</div>
+	<div class="o_hint">$r.translate("current.mode.desc")</div>
 #end
 
 #foreach($mode in $guards.list)
@@ -19,18 +19,18 @@
 	#end
 	
 	#if($mode.status == "leadtime")
-		<div class="o_info">$r.render($mode.countDown.componentName)</div>
+		<div class="o_hint">$r.render($mode.countDown.componentName)</div>
 	#end
 	
 	#if($mode.status == "assessment" || $mode.status == "leadtime")
 		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
-			<div class="o_info">$r.xssScan($mode.safeExamBrowserHint)</div>
+			<div class="o_hint">$r.xssScan($mode.safeExamBrowserHint)</div>
 		#end
 		<div class="o_button_group">$r.render($mode.go.componentName)</div>
 	#elseif($mode.status == "followup")
-		<div class="o_info">$r.translate("current.mode.followuptime.info")</div>
+		<div class="o_hint">$r.translate("current.mode.followuptime.info")</div>
 	#elseif($mode.status == "end")
-		<div class="o_info">$r.translate("current.mode.end.info")</div>
+		<div class="o_hint">$r.translate("current.mode.end.info")</div>
 		<div class="o_button_group">
 		#if($r.visible($mode.quitSEB.componentName)) 
 			$r.render($mode.quitSEB.componentName)

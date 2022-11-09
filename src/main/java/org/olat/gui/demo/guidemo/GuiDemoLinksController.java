@@ -154,12 +154,13 @@ public class GuiDemoLinksController extends BasicController {
 		counterText = TextFactory.createTextComponentFromString("text.simple.counter", "I'm counting events fron this controller: 0", null, true, mainVC);
 		TextFactory.createTextComponentFromString("text.span", "I'm a text in a SPAN", null, true, mainVC);
 
-		TextFactory.createTextComponentFromString("text.div.info", "I'm a text in a DIV (with optional CSS class <b>o_info</b>)", "o_info", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.info", "I'm a text in a DIV (with optional CSS class <b>o_info</b>)", "o_hint", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>o_note</b>)", "o_note", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.important", "I'm a text in a DIV (with optional CSS class <b>o_important</b>)", "o_important", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.success", "I'm a text in a DIV (with optional CSS class <b>o_success</b>)", "o_success", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.warning", "I'm a text in a DIV (with optional CSS class <b>o_warning</b>)", "o_warning", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.error", "I'm a text in a DIV (with optional CSS class <b>o_error</b>)", "o_error", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.advice", "I'm a text in a SPAN (with optional CSS class <b>o_hint</b>)", "o_hint", true, mainVC);
 		
 		//add sourceview control
 		Controller sourceView = new SourceViewController(ureq, wControl, this.getClass(), mainVC);

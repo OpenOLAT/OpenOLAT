@@ -1,8 +1,8 @@
 #if($dataStatus == "none")
-	<div class="o_info">$r.translate("export.user.data.none",$mailSupport)</div>
+	<div class="o_hint">$r.translate("export.user.data.none",$mailSupport)</div>
 #elseif($dataStatus == "requested" || $dataStatus == "processing")
-	<div class="o_info">$r.translate("export.user.data.processing",$mailSupport)</div>
+	<div class="o_hint">$r.translate("export.user.data.processing",$mailSupport)</div>
 #elseif($dataStatus == "ready")
-	<div class="o_info">$r.translate("export.user.data.ready",$mailSupport)</div>
+	<div class="o_hint">$r.translate("export.user.data.ready",$mailSupport)</div>
 	<div class="o_button_group">$r.render("download.data")</div>
 #end

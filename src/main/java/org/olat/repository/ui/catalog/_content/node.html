@@ -74,7 +74,7 @@
 	#end
 	## Render node list component
 	#if($isOrdering)
-		<div class="o_info">$r.translate("catalog.order.info")</div>
+		<div class="o_hint">$r.translate("catalog.order.info")</div>
 		$r.render("nodeEntries")
 		#if($r.available("entries"))
 			<hr>

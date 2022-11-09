@@ -11,7 +11,7 @@
 <div><i class="o_icon o_icon_lifecycle_date"> </i> #if($r.isNotNull($start))$start#end - #if($r.isNotNull($end))$end#end</div>
 #end
 #if($description && !${description.isEmpty()})
-	<div class="o_block_large o_info">$r.xssScan($description)</div>
+	<div class="o_block_large o_hint">$r.xssScan($description)</div>
 #end
 #if($r.isTrue($ended))
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
@@ -21,7 +21,7 @@
 	<div class="o_block_large o_error">$r.translate("error.invalid.meeting")</div>
 #else
 	#if($r.isFalse($meetingsExists) || $r.isTrue($notStarted))
-	<div class="o_block_large o_info">$r.translate("meeting.create.intro")</div>
+	<div class="o_block_large o_hint">$r.translate("meeting.create.intro")</div>
 	#end
 	
 	<div class="o_button_group">

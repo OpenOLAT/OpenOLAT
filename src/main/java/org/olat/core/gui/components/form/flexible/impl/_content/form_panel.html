@@ -15,7 +15,7 @@
 	<div class="panel-body">
 		#if ($off_desc) <p>$off_desc</p> #end
 		#if ($off_warn) <p>$off_warn</p> #end
-		#if ($off_info) <p>$off_info</p> #end
+		#if ($off_info) <p>$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end<</p> #end
 	</div>
 #end
 

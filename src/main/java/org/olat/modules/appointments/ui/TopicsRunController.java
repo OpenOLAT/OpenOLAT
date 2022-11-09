@@ -38,6 +38,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.date.DateElement;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -149,6 +151,9 @@ public class TopicsRunController extends FormBasicController implements Activate
 					|| topics.get(0).getSelectedAppointments().intValue() == 0)) {
 			doOpenTopic(ureq, topics.get(0).getTopic());
 		}
+		EmptyState emptyState = EmptyStateFactory.create("empty.state", flc.getFormItemComponent(), this);
+		emptyState.setIconCss("o_icon o_icon-fw o_appointment_icon");
+		emptyState.setMessageI18nKey("no.topics");
 	}
 
 	@Override

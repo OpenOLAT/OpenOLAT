@@ -13,7 +13,7 @@
 <div><i class="o_icon o_icon_fw o_icon_user"> </i> $r.escapeHtml($mainPresenter)</div>
 #end
 #if($r.isNotEmpty($description))
-	<div class="o_block_large o_info">$r.xssScan($description)</div>
+	<div class="o_block_large o_hint">$r.xssScan($description)</div>
 #end
 
 #if($r.isNotEmpty($externalUrl) && $r.isFalse($ended))
@@ -52,7 +52,7 @@
 #if($r.isTrue($disabled))
 	<div class="o_block_large o_error" role="alert">$r.translate("error.serverDisabled")</div>
 #elseif($r.isTrue($notStarted))
-<div class="o_block_large o_info">$r.translate("meeting.create.intro")</div>
+<div class="o_block_large o_hint">$r.translate("meeting.create.intro")</div>
 #end
 
 #if($r.visible("meeting.acknowledge.recording"))

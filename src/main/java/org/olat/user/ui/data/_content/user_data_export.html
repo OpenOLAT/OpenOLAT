@@ -1,5 +1,5 @@
 <fieldset class="o_form form-horizontal" role="form">
-	<div class="o_info">$r.translate("export.user.data.explain")</div>
+	<div class="o_hint">$r.translate("export.user.data.explain")</div>
 
 	#if($r.isTrue($processing))
 		<div class="o_warning">$r.translate("export.user.data.processing")</div>
@@ -8,9 +8,9 @@
 		</div>
 	#else
 		#if($r.isTrue($ready))
-			<div class="o_info">$r.translate("export.user.data.ready")</div>
+			<div class="o_hint">$r.translate("export.user.data.ready")</div>
 		#else
-			<div class="o_info">$r.translate("export.user.data.notReady")</div>
+			<div class="o_hint">$r.translate("export.user.data.notReady")</div>
 		#end
 		
 		<div class="form-group clearfix">

@@ -6,7 +6,7 @@
 	<div><i class="o_icon o_icon_lifecycle_date"> </i> #if($r.isNotNull($start))$start#end - #if($r.isNotNull($end))$end#end</div>
 	#end
 	#if($description && !${description.isEmpty()})
-		<div class="o_block_large o_info">$r.xssScan($description)</div>
+		<div class="o_block_large o_hint">$r.xssScan($description)</div>
 	#end
 
 	#if($r.isTrue($ended))
@@ -19,7 +19,7 @@
 	#end
 	
 	#if($r.visible("meeting.join.button"))
-		<div class="o_info">$r.translate("meeting.guest.pseudo.explain")</div>
+		<div class="o_hint">$r.translate("meeting.guest.pseudo.explain")</div>
 		<div class="clearfix">
 			#if ($f.hasLabel("meeting.guest.pseudo"))
 				$r.render("meeting.guest.pseudo_LABEL", "meeting.guest.pseudo")

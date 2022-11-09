@@ -1,7 +1,6 @@
-#set($helplink=$r.contextHelpLink("manual_admin/usermanagement/"))
 <fieldset>
 	<legend>$r.translate("admin.title")</legend>
-	<p>$r.translate("admin.description") <a href="$helplink" target="_blank">$r.translate("help.additional.informations")</a></p>
+	<p><span class="o_hint">$r.translate("admin.description") $r.contextHelpAdditionalInfo("manual_admin/administration/Automatic_Group_Lifecycle/")</span></p>
 	$r.render("process")
 </fieldset>
 $r.render("types")

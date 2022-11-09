@@ -3,11 +3,11 @@
 	<h2><i class="o_icon o_filetype_folder"> </i> $r.translate("library.notification.title")</h2>
 </div>
 #if ($hasSubscriptions == "false")
-	<p class="o_info">$r.translate("library.notification.noSubscription")</p>
+	<p class="o_hint">$r.translate("library.notification.noSubscription")</p>
 #else
 	<div class="o_notifications_news_datechooser">$r.render("dateChooser")</div>
 	#if ($hasNews == "false")
-		<p class="o_info">$noNews</p>
+		<p class="o_hint">$noNews</p>
 	#else
 		$r.render("notifications")
 	#end

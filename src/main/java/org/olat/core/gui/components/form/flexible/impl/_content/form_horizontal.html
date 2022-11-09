@@ -13,7 +13,7 @@
 #end
 #if ($off_desc) <div class="o_desc">$off_desc</div> #end
 #if ($off_warn) <div class="o_warning">$off_warn</div> #end
-#if ($off_info) <div class="o_info">$off_info</div> #end
+#if ($off_info) <div class="o_hint">$o_hint#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end<</div> #end
 
 #foreach ($item in $formitemnames)
 	#if ($f.isVisible($item))

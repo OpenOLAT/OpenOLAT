@@ -1,10 +1,10 @@
 #if($r.isNotEmpty($icalFeedLink))
 	<h4>$r.translate("cal.icalfeed.title")</h4>
-	<div class="o_info">$r.translate("cal.icalfeed.info")</div>
+	<div class="o_hint">$r.translate("cal.icalfeed.info")</div>
 	<div class="clearfix"><input type="text" value="$icalFeedLink" style="width:100%;" onclick="this.select();"/></div>
 #end
 #if($r.isNotEmpty($icalAggregatedFeedLink))
 	<h4>$r.translate("cal.icalfeed.aggregated.title")</h4>
-	<div class="o_info">$r.translate("cal.icalfeed.aggregated.info")</div>
+	<div class="o_hint">$r.translate("cal.icalfeed.aggregated.info")</div>
 	<div class="clearfix"><input type="text" value="$icalAggregatedFeedLink" style="width:100%;" onclick="this.select();"/></div>
 #end

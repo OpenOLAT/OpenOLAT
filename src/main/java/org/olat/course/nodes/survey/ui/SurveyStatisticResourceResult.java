@@ -80,7 +80,7 @@ public class SurveyStatisticResourceResult implements StatisticResourceResult {
 		}
 		Translator translator = Util.createPackageTranslator(SurveyReportingController.class, ureq.getLocale());
 		String noAccess = translator.translate("report.noaccess");
-		return new SimpleMessageController(ureq, wControl, noAccess, "o_info");
+		return new SimpleMessageController(ureq, wControl, noAccess, "o_hint");
 	}
 
 }

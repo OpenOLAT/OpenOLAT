@@ -149,7 +149,7 @@
 
 		<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h3>
 		#if($r.isNotEmpty($itemResult.rubrics))
-		<div class="o_info o_assessmentsection_rubrics">
+		<div class="o_hint o_assessmentsection_rubrics">
 			#foreach($rubric in $itemResult.rubrics)
 				<div class='rubric clearfix'>$r.render($rubric)</div>
 			#end

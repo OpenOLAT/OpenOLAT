@@ -27,6 +27,9 @@
 .o_instruction > .o_button_group {
 	margin-bottom: 0px;
 }
+.o_hint, %o_hint {
+	margin: $o-box-margin 0;
+}
 
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
 div.o_callout_overlay { 

@@ -44,6 +44,8 @@ import org.olat.core.gui.components.date.DateElement;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -178,6 +180,10 @@ public class TopicsRunCoachController extends FormBasicController {
 			createButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			createButton.setElementCssClass("o_sel_app_add_topic");
 		}
+		
+		EmptyState emptyState = EmptyStateFactory.create("empty.state", flc.getFormItemComponent(), this);
+		emptyState.setIconCss("o_icon o_icon-fw o_appointment_icon");
+		emptyState.setMessageI18nKey("no.topics");
 	}
 	
 	private void refresh() {
