@@ -122,9 +122,10 @@ public class AssessmentIdentityCourseController extends BasicController
 		CourseConfig courseConfig = course.getCourseConfig();
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+		UserCourseEnvironmentImpl assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
 				coachCourseEnv.getCourseReadOnlyDetails());
-
+		assessedUserCourseEnv.setUserRoles(false, false, true);
+		
 		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
 			certificateCtrl = new IdentityCertificatesController(ureq, wControl, coachCourseEnv, courseEntry, assessedIdentity);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
