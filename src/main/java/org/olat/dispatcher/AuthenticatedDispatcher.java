@@ -366,7 +366,11 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				pbw.open(ureq);
 				chiefController = (ChiefController)pbw;
 			} else {
-				chiefController = AuthHelper.createAuthHome(ureq);
+				if(usess.getRoles().isGuestOnly()) {
+					chiefController = AuthHelper.createGuestHome(ureq);
+				} else {
+					chiefController = AuthHelper.createAuthHome(ureq);
+				}
 				LockResourceInfos lockInfos = windows.getLockResourceInfos();
 				if(lockInfos != null) {
 					((BaseFullWebappController)chiefController).hardLockResource(lockInfos);
