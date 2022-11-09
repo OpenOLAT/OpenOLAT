@@ -434,6 +434,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 
 	private void deleteMail(DBMailLight mail, Identity identity, boolean forceRemoveRecipient) {
+		if(mail == null) return;//already deleted
+		
 		boolean delete = true;
 		List<DBMailRecipient> updates = new ArrayList<>();
 		if(mail.getFrom() != null && mail.getFrom().getRecipient() != null) {
