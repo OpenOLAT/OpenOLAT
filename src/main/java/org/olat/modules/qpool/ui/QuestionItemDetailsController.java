@@ -746,7 +746,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	private void doSelectGroup(UserRequest ureq, QuestionItem item) {
 		removeAsListenerAndDispose(selectGroupCtrl);
-		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl(), null, item);
+		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl(), null, null, item);
 		listenTo(selectGroupCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

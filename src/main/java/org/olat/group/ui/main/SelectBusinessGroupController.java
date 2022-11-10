@@ -22,11 +22,13 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -62,9 +64,13 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 	private FlexiFiltersTab bookmarkTab;
 	private FlexiFiltersTab ownedGroupsTab;
 	private FlexiFiltersTab courseGroupsTab;
+	
+	private final GroupRoles restrictToRole;
 
-	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter, Object uobject) {
+	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter, GroupRoles restrictToRole, Object uobject) {
 		super(ureq, wControl, "group_list", false, "sel-search", true, uobject);
+		this.restrictToRole = restrictToRole;
+		initFilters();
 		setFilter(filter);
 		
 		selectFilterTab(ureq, bookmarkTab);
@@ -174,15 +180,18 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 		bookmarkValues.add(SelectionValues.entry("mark", translate("cif.bookmarks")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.bookmarks"), BGSearchFilter.MARKED.name(), bookmarkValues, true));
 		// roles
-		SelectionValues roleValues = new SelectionValues();
-		if(admin) {
-			roleValues.add(SelectionValues.entry("none", translate("search.none")));
+		if(restrictToRole == null) {
+			SelectionValues roleValues = new SelectionValues();
+			if(admin) {
+				roleValues.add(SelectionValues.entry("none", translate("search.none")));
+			}
+			roleValues.add(SelectionValues.entry("all", translate("search.all")));
+			roleValues.add(SelectionValues.entry("owner", translate("search.owner")));
+			roleValues.add(SelectionValues.entry("attendee", translate("search.attendee")));
+			roleValues.add(SelectionValues.entry("waiting", translate("search.waiting")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("search.roles"), BGSearchFilter.ROLE.name(), roleValues, true));
 		}
-		roleValues.add(SelectionValues.entry("all", translate("search.all")));
-		roleValues.add(SelectionValues.entry("owner", translate("search.owner")));
-		roleValues.add(SelectionValues.entry("attendee", translate("search.attendee")));
-		roleValues.add(SelectionValues.entry("waiting", translate("search.waiting")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("search.roles"), BGSearchFilter.ROLE.name(), roleValues, true));
+
 		// author connection of groups to courses
 		SelectionValues authorValues = new SelectionValues();
 		authorValues.add(SelectionValues.entry("conn", translate("course.groups")));
@@ -235,6 +244,17 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setGroupStatus(List.of(BusinessGroupStatusEnum.active));
 		return params;
+	}
+
+	@Override
+	protected void applyFiltersToQueryParams(String quickSearch, List<FlexiTableFilter> filters, BusinessGroupQueryParams params) {
+		super.applyFiltersToQueryParams(quickSearch, filters, params);
+		
+		if(restrictToRole != null) {
+			params.setAttendee(GroupRoles.participant == restrictToRole);
+			params.setOwner(GroupRoles.owner == restrictToRole || GroupRoles.coach == restrictToRole);
+			params.setWaiting(GroupRoles.waiting == restrictToRole);
+		}
 	}
 	
 	@Override
