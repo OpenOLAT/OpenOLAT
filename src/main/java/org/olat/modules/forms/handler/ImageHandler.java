@@ -41,6 +41,7 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.StoredData;
+import org.olat.modules.ceditor.ui.ImageInspectorController;
 import org.olat.modules.ceditor.ui.ImageRunController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
@@ -108,6 +109,9 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof ImageElement) {
+			return new ImageInspectorController(ureq, wControl, (ImageElement)element, this);
+		}
 		return null;
 	}
 	
