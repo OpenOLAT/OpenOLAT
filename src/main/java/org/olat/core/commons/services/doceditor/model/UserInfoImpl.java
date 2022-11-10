@@ -62,7 +62,7 @@ public class UserInfoImpl implements UserInfo, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
-	@Column(name="o_hint", nullable=false, insertable=true, updatable=true)
+	@Column(name="o_info", nullable=false, insertable=true, updatable=true)
 	private String info;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
