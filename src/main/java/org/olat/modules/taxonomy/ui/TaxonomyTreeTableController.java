@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -87,18 +87,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 26 sept. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
+
+	private static final String TOOLS_TAXONOMY_LEVEL = "tools";
+	private static final String TOOLS_IMPORT_EXPORT = "importExportTools";
+	private static final String ACTION_SELECT = "select";
 
 	private FormLink newLevelButton;
 	private FormLink deleteButton;
 	private FormLink mergeButton;
 	private FormLink typeButton;
 	private FormLink moveButton;
-	private FormLink exportButton;
-	private FormLink importButton;
 	private FlexiTableElement tableEl;
 	private TaxonomyTreeTableModel model;
 	private BreadcrumbPanel stackPanel;
@@ -114,7 +116,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private StepsMainRunController importWizardCtrl;
 	
 	private int counter = 0;
-	private Taxonomy taxonomy;
+	private final Taxonomy taxonomy;
 	private boolean dirty = false;
 	
 	@Autowired
@@ -143,21 +145,20 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 		newLevelButton = uifactory.addFormLink("add.taxonomy.level", formLayout, Link.BUTTON);
 		newLevelButton.setElementCssClass("o_sel_taxonomy_new_level");
-		exportButton = uifactory.addFormLink("export.taxonomy.levels", formLayout, Link.BUTTON);
-		importButton = uifactory.addFormLink("import.taxonomy.levels", formLayout, Link.BUTTON);
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
 		typeButton = uifactory.addFormLink("type.taxonomy.level", formLayout, Link.BUTTON);
 		moveButton = uifactory.addFormLink("move.taxonomy.level", formLayout, Link.BUTTON);
+		uifactory.addFormLink(TOOLS_IMPORT_EXPORT, TOOLS_IMPORT_EXPORT, TOOLS_TAXONOMY_LEVEL, null, formLayout, Link.BUTTON);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.key));
-		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(ACTION_SELECT);
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.order));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.externalId, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier, ACTION_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.externalId, ACTION_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
@@ -233,7 +234,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			}
 		}
 		
-		Collections.sort(rows, new TaxonomyTreeNodeComparator());
+		rows.sort(new TaxonomyTreeNodeComparator());
 
 		model.setObjects(rows);
 		tableEl.reset(resetPage, resetInternal, true);
@@ -241,7 +242,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	
 	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
 		//tools
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), TOOLS_TAXONOMY_LEVEL, "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
 		String description = TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel);
@@ -296,15 +297,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			doAssignType(ureq);
 		} else if(moveButton == source) {
 			doMove(ureq);
-		} else if(importButton == source) {
-			doOpenImportWizard(ureq);
-		} else if(exportButton == source) {
-			doExportTaxonomyLevels(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				if("select".equals(cmd)) {
+				if(ACTION_SELECT.equals(cmd)) {
 					TaxonomyLevelRow row = model.getObject(se.getIndex());
 					doSelectTaxonomyLevel(ureq, row);
 				}
@@ -314,10 +311,12 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if("tools".equals(cmd)) {
+			if(TOOLS_TAXONOMY_LEVEL.equals(cmd)) {
 				TaxonomyLevelRow row = (TaxonomyLevelRow)link.getUserObject();
-				doOpenTools(ureq, row, link);
-			} 
+				doOpenLevelTools(ureq, row, link);
+			} else if (TOOLS_IMPORT_EXPORT.equals(cmd)) {
+				doOpenTools(ureq, link);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -362,13 +361,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(mergeCtrl == source || typeLevelCtrl == source || moveLevelCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof DeleteTaxonomyLevelEvent) {
-				loadModel(true, true);
-			}
-			cmc.deactivate();
-			cleanUp();
-		}  else if(confirmDeleteCtrl == source) {
+		} else if(mergeCtrl == source || typeLevelCtrl == source
+				|| moveLevelCtrl == source || confirmDeleteCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof DeleteTaxonomyLevelEvent) {
 				loadModel(true, true);
 			}
@@ -635,7 +629,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		cmc.activate();
 	}
 	
-	private void doOpenTools(UserRequest ureq, TaxonomyLevelRow row, FormLink link) {
+	private void doOpenLevelTools(UserRequest ureq, TaxonomyLevelRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
@@ -653,7 +647,19 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			toolsCalloutCtrl.activate();
 		}
 	}
-	
+
+	private void doOpenTools(UserRequest ureq, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl());
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
 
 	private void doConfirmMultiDelete(UserRequest ureq) {
 		Set<Integer> indexList = tableEl.getMultiSelectedIndex();
@@ -738,9 +744,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private class ToolsController extends BasicController {
-		
-		private final VelocityContainer mainVC;
+
+		private final VelocityContainer mainVC = createVelocityContainer("tools");
 		private Link editLink, moveLink, newLink, deleteLink;
+		private Link exportLink, importLink;
 		
 		private TaxonomyLevelRow row;
 		private TaxonomyLevel taxonomyLevel;
@@ -749,8 +756,6 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			super(ureq, wControl);
 			this.row = row;
 			this.taxonomyLevel = taxonomyLevel;
-			
-			mainVC = createVelocityContainer("tools");
 			
 			List<String> links = new ArrayList<>(6);
 			
@@ -766,6 +771,19 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			}
 			mainVC.contextPut("links", links);
 			
+			putInitialPanel(mainVC);
+		}
+
+		public ToolsController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+
+			List<String> links = new ArrayList<>(3);
+
+			exportLink = addLink("export.taxonomy.levels", null, links);
+			importLink = addLink("import.taxonomy.levels", null, links);
+
+			mainVC.contextPut("links", links);
+
 			putInitialPanel(mainVC);
 		}
 		
@@ -791,6 +809,12 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			} else if(deleteLink == source) {
 				close();
 				doConfirmDelete(ureq, row);
+			} else if (importLink == source) {
+				close();
+				doOpenImportWizard(ureq);
+			} else if (exportLink == source) {
+				close();
+				doExportTaxonomyLevels(ureq);
 			}
 		}
 		
