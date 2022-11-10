@@ -380,7 +380,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				}
 				sb.append(")");
 			}
-		} if (params.isParticipantAll()) {
+		} else if (params.isParticipantAll()) {
 			sb.append(" and ").append(identKey).append(" in (");
 			sb.append("select ae.identity.key from assessmententry ae");
 			sb.append(" where ae.identity.key is not null"); // exclude anonymous 
