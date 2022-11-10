@@ -1,32 +1,32 @@
 .o_page_layout {
 	&.o_container_block_1_cols {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: 100%;
 	}
 	
 	&.o_container_block_2_cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 50% 50%;
 	}
 	
 	&.o_container_block_3_cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 33% 34% 33%;
 	}
 	
 	&.o_container_block_4_cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr 1fr;
+		grid-template-columns: 25% 25% 25% 25%;
 	}
 	
 	&.o_container_block_5_cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+		grid-template-columns: 20% 20% 20% 20% 20%;
 	}
 	
 	&.o_container_block_6_cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+		grid-template-columns: 17% 16% 17% 16% 17% 16%;
 	}
 	
 	&.o_container_block_3_rows {
@@ -36,7 +36,7 @@
 	
 	&.o_container_block_2_1_rows {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 50% 50%;
 		grid-template-rows: auto auto;
 		
 		div:nth-child(3) {
@@ -46,7 +46,7 @@
 	
 	&.o_container_block_1_3_rows {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 33% 34% 33%;
 		grid-template-rows: auto auto;
 		
 		div:nth-child(1) {
@@ -56,12 +56,12 @@
 	
 	&.o_container_block_1_1l_cols {
 		display: grid;
-		grid-template-columns: 1fr 4fr;
+		grid-template-columns: 20% 80%;
 	}
 	
 	&.o_container_block_1_2_rows {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 50% 50%;
 		grid-template-rows: auto auto;
 		
 		div:nth-child(1) {
@@ -71,7 +71,7 @@
 	
 	&.o_container_block_1_2_cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 50% 50%;
 		grid-template-rows: auto auto;
 		
 		div:nth-child(1) {
@@ -80,42 +80,54 @@
 	}
 }
 
+.o_inspector_layouts .o_page_layout {
+	&.o_container_block_2_cols,
+	&.o_container_block_2_1_rows,
+	&.o_container_block_1_2_rows,
+	&.o_container_block_1_2_cols {
+		grid-template-columns: 1fr 1fr;
+	}
+	
+	&.o_container_block_3_cols,
+	&.o_container_block_1_3_rows {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+	
+	&.o_container_block_1_1l_cols {
+		grid-template-columns: 1fr 4fr;
+	}
+}
+
 @media (max-width: $screen-xs-max) {
 
 	.o_page_layout {
 		&.o_container_block_2_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(2, auto);
 		}
 		
 		&.o_container_block_3_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 		}
 		
 		&.o_container_block_4_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(4, auto);
 		}
 		
 		&.o_container_block_5_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(5, auto);
 		}
 		
 		&.o_container_block_6_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(6, auto);
 		}
 		
 		&.o_container_block_2_1_rows {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 			
 			div:nth-child(3) {
@@ -124,8 +136,7 @@
 		}
 		
 		&.o_container_block_1_3_rows {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(4, auto);
 			
 			div:nth-child(1) {
@@ -134,14 +145,12 @@
 		}
 		
 		&.o_container_block_1_1l_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(2, auto);
 		}
 		
 		&.o_container_block_1_2_rows {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 			
 			div:nth-child(1) {
@@ -150,8 +159,7 @@
 		}
 		
 		&.o_container_block_1_2_cols {
-			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 			
 			div:nth-child(1) {
