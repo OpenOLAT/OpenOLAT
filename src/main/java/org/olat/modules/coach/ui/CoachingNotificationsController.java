@@ -79,6 +79,7 @@ public class CoachingNotificationsController extends BasicController implements 
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("tool_notifications");
+		mainVC.setDomReplacementWrapperRequired(false);
 		notificationsLink = LinkFactory.createLink("coaching.notifications.link", "notifications", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 		notificationsLink.setCustomDisplayText("0");
 		notificationsLink.setElementCssClass("badge");

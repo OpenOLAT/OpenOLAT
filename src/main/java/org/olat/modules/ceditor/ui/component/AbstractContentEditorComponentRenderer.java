@@ -84,7 +84,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	protected void renderToggleInspector(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isEditable()) {
 			sb.append("<button id='o_ccedit_").append(cmp.getDispatchID()).append("' ")
-				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+				  .append("onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "edit_fragment"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
@@ -132,7 +132,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	protected void renderDuplicate(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isCloneable()) {
 			sb.append("<button id='o_ccclone_").append(cmp.getDispatchID()).append("' ")
-				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			  .append("onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
