@@ -163,6 +163,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		businessGroupName.setElementCssClass("o_sel_group_edit_title");
 		businessGroupName.setMandatory(true);
 		businessGroupName.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.title));
+		businessGroupName.setFocus(true);
 		
 		formLayout.setElementCssClass("o_sel_group_edit_group_form");
 
