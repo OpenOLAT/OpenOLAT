@@ -25,7 +25,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberListSecurityCallback;
-import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 
 /**
@@ -41,11 +40,6 @@ public class MemberListController extends AbstractMemberListController {
 			BusinessGroup group, SearchMembersParams searchParams, MemberListSecurityCallback secCallback) {
 		super(ureq, wControl, group, "all_member_list", secCallback, stackPanel);
 		this.searchParams = searchParams;
-	}
-	
-	@Override
-	protected void doOpenAssessmentTool(UserRequest ureq, MemberRow member) {
-		//
 	}
 
 	@Override

@@ -86,6 +86,7 @@ public class MembersPage {
 		
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
 		OOGraphene.waitElement(popupBy, browser);
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");

@@ -421,9 +421,14 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private AssessmentToolSecurityCallback createCourseNodeRunSecurityCallback(UserRequest ureq,
 			UserCourseEnvironment userCourseEnv) {
 		// see CourseRuntimeController.doAssessmentTool(ureq);
-		GroupRoles role = userCourseEnv.isCoach() ? GroupRoles.coach : GroupRoles.owner;
+		GroupRoles currentRole = GroupRoles.participant;
+		if (userCourseEnv.isAdmin()) {
+			currentRole = GroupRoles.owner;
+		} else if (userCourseEnv.isCoach()) {
+			currentRole = GroupRoles.coach;
+		}
 		boolean hasAssessmentRight = userCourseEnv.getCourseEnvironment().getCourseGroupManager()
-				.hasRight(userCourseEnv.getIdentityEnvironment().getIdentity(), CourseRights.RIGHT_ASSESSMENT, role);
+				.hasRight(userCourseEnv.getIdentityEnvironment().getIdentity(), CourseRights.RIGHT_ASSESSMENT, currentRole);
 
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);

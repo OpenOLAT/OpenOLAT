@@ -7,15 +7,15 @@
 	#end
 	
 	#if($r.isNotEmpty($headerRows))
-		<theader>
+		<thead>
 		#foreach($headerRow in $headerRows)
 			<tr>
 			#foreach($headerColumn in $headerRow.columns)
-				<th>$r.xssScan($headerColumn.text)</th>
-			#end	
+				<th scope="col">$r.xssScan($headerColumn.text)</th>
+			#end
 			</tr>
 		#end
-		</theader>
+		</thead>
 	#end
 
 	<tbody>
@@ -23,11 +23,11 @@
 		<tr>
 		#foreach($tableColumn in $tableRow.columns)
 			#if($r.isTrue($tableColumn.header))
-				<th>$r.xssScan($tableColumn.text)</th>
+				<th scope="row">$r.xssScan($tableColumn.text)</th>
 			#else
 				<td>$r.xssScan($tableColumn.text)</td>
 			#end
-		#end	
+		#end
 		</tr>
 	#end
 	</tbody>
