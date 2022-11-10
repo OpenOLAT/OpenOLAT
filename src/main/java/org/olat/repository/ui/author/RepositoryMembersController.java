@@ -55,7 +55,6 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
-import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
@@ -140,11 +139,6 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		} else {
 			super.event(ureq, source, event);
 		}
-	}
-	
-	@Override
-	protected void doOpenAssessmentTool(UserRequest ureq, MemberRow member) {
-		//
 	}
 	
 	private void doChooseMembers(UserRequest ureq) {

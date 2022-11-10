@@ -113,7 +113,6 @@ public class MembersOverviewController extends BasicController implements Activa
 	private final boolean managed;
 	private boolean overrideManaged = false;
 	private final RepositoryEntry repoEntry;
-	private final UserCourseEnvironment coachCourseEnv;
 	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
@@ -133,7 +132,6 @@ public class MembersOverviewController extends BasicController implements Activa
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
 		this.toolbarPanel = toolbarPanel;
-		this.coachCourseEnv = coachCourseEnv;
 		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("members_overview");
@@ -407,7 +405,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant);
-			memberListCtrl = new CourseMemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, null);
+			memberListCtrl = new CourseMemberListController(ureq, bwControl, toolbarPanel, repoEntry, secCallback, searchParams, null);
 			listenTo(memberListCtrl);
 		}
 		
