@@ -396,7 +396,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		if(fragmentCmp == null) return;
 		components.remove(fragmentCmp);
 	}
-	
+
 	public Component getInspectorComponent() {
 		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
 	}

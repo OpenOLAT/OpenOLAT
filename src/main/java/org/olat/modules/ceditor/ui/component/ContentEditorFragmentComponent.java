@@ -168,8 +168,12 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		if(cmd != null && fragment != null && getComponentName().equals(fragment)) {
 			switch(cmd) {
 				case "edit_fragment":
-					doEditFragment(ureq, true);
-					fireEvent(ureq, new EditElementEvent(pageElement.getId()));
+					if(isEditMode()) {
+						doCloseEditFragment();
+					} else {
+						doEditFragment(ureq, true);
+						fireEvent(ureq, new EditElementEvent(pageElement.getId()));
+					}
 					break;
 				case "add_element_above":
 					String aboveLinkId = "o_cmore_".concat(getDispatchID());
@@ -240,7 +244,7 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		this.editMode = false;
 		setDirty(true);
 	}
-	
+
 	public Component getInspectorComponent() {
 		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
 	}
