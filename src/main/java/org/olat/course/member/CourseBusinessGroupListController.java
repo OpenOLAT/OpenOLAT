@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -333,7 +334,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	protected void doSelectGroups(UserRequest ureq) {
 		removeAsListenerAndDispose(selectController);
 		BusinessGroupViewFilter filter = new UnmanagedGroupFilter(BusinessGroupManagedFlag.resources);
-		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter, null);
+		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter, GroupRoles.coach, null);
 		listenTo(selectController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
