@@ -66,7 +66,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.ComponentUtil;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -120,8 +119,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private DialogBoxController dbcSequence;
 	private DialogBoxController deleteSingleYesNoController;
 	private DialogBoxController deleteSequenceYesNoController;
-	private String modifiedCalendarId;
-	private boolean modifiedCalenderDirty = false;
 	
 	private final String caller;
 	private boolean dirty = false;
@@ -168,7 +165,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		printUrl = registerMapper(ureq, printMapper);
 
 		initForm(ureq);
-		
+
+		getWindowControl().getWindowBackOffice().addCycleListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
 	}
 
@@ -343,18 +341,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
-			dirty = false;
-			fireEvent(ureq, new CalendarGUIModifiedEvent());
-		} else if (event == ComponentUtil.VALIDATE_EVENT && calendarEl.getComponent().isDirty() && modifiedCalenderDirty  ) {
-			KalendarRenderWrapper kalendarRenderWrapper = calendarEl.getCalendar(modifiedCalendarId);
-			kalendarRenderWrapper.reloadKalendar();	
-		}
-		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -841,6 +827,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	@Override
 	protected void doDispose() {
+		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(CalendarManager.class));
         super.doDispose();
 	}
@@ -857,8 +844,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				// the event is for my calendar => reload it				
 				
 				//keeping a reference to the dirty calendar as reloading here raises an nested do in sync error. Using the component validation event to reload
-				modifiedCalendarId  = kalendarModifiedEvent.getCalendarId();
-				modifiedCalenderDirty = true;
 				calendarEl.getComponent().setDirty(true);
 			}
 		}

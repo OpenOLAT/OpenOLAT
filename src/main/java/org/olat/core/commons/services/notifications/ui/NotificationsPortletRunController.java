@@ -43,6 +43,7 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -51,7 +52,6 @@ import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.util.ComponentUtil;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -131,12 +131,11 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		reloadModel(sortingCriteria);
 
 		notificationsVC.put("table", tableCtr.getInitialComponent());
-		// notify us whenever we will be shown on screen shortly, so that we can reload the model if we received a subscription changed event in the meantime
-		ComponentUtil.registerForValidateEvents(notificationsVC, this);
-		
+
 		putInitialPanel(notificationsVC);
 		
 		man.registerAsListener(this, ureq.getIdentity());
+		getWindowControl().getWindowBackOffice().addCycleListener(this);
 	}
 	
 	private List<PortletEntry<Subscriber>> getAllPortletEntries() {
@@ -205,10 +204,6 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		} else if (event == ComponentUtil.VALIDATE_EVENT && needsModelReload) {
-			//updateTableModel(ureq.getLocale(), ureq.getIdentity());
-			reloadModel(sortingCriteria);
-			needsModelReload = false;
 		}
 	}
 
@@ -222,9 +217,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowid = te.getRowId();
 					Subscriber sub = notificationListModel.getSubscriberAt(rowid);
-					if (actionid.equals(CMD_LAUNCH)) {
-						NotificationUIFactory.launchSubscriptionResource(ureq, getWindowControl(), sub);
-					}
+					NotificationUIFactory.launchSubscriptionResource(ureq, getWindowControl(), sub);
 				}
 			}
 		} 
@@ -234,6 +227,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	protected void doDispose() {
 		super.doDispose();
 		man.deregisterAsListener(this);
+		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 	}
 
 	@Override
@@ -245,6 +239,9 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 			if (pe.isAtLeastOneKeyInList(notificationsList)) {
 				needsModelReload = true;
 			}
+		} else if (event == Window.BEFORE_INLINE_RENDERING && needsModelReload) {
+			reloadModel(sortingCriteria);
+			needsModelReload = false;
 		}
 	}
 	
@@ -277,7 +274,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	}
 
 	 protected Comparator<Subscriber> getComparator(final SortingCriteria sortingCriteria) {
-			return new Comparator<Subscriber>(){			
+			return new Comparator<>(){			
 				public int compare(final Subscriber subscriber1, final Subscriber subscriber2) {	
 					int comparisonResult = 0;
 				  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
@@ -340,11 +337,10 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 				}
 			}
 		 
-		 public Subscriber getSubscriberAt(int row) {
-				Subscriber subscriber = getObject(row).getValue();
-				return subscriber;
-			}
-	 }
+		public Subscriber getSubscriberAt(int row) {
+			return getObject(row).getValue();
+		}
+	}
 	 
 	 /**
 	  * Initial Date:  04.12.2007 <br>
