@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -43,7 +43,7 @@ import org.olat.modules.ceditor.ui.event.PositionEnum;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContentEditorComponent extends FormBaseComponentImpl implements ComponentCollection, ComponentEventListener, ControllerEventListener {
+public class ContentEditorComponent extends AbstractComponent implements ComponentCollection, ComponentEventListener, ControllerEventListener {
 	
 	private static final ContentEditorComponentRenderer RENDERER = new ContentEditorComponentRenderer();
 
