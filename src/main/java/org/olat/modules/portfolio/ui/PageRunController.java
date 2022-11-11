@@ -293,7 +293,6 @@ public class PageRunController extends BasicController implements TooledControll
 			stackPanel.addTool(deleteLink, Align.left);
 		}
 		
-		stackPanel.addTool(allPagesLink, null);
 		stackPanel.addTool(helpLink, Align.rightEdge, false, "o_chelp_wrapper");
 	}
 	

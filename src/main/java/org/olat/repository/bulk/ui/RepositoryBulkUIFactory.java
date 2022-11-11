@@ -55,6 +55,7 @@ public class RepositoryBulkUIFactory {
 		case organisation: return new OrganisationStep(ureq, steps);
 		case authorRights: return new AuthorRightsStep(ureq, steps);
 		case execution: return new ExecutionStep(ureq, steps);
+		case toolbar: return new ToolbarStep(ureq, steps);
 		case overview:
 		default: return new SettingsOverviewStep(ureq, steps);
 		}

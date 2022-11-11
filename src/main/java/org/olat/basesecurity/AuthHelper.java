@@ -198,7 +198,7 @@ public class AuthHelper {
 	 * @param ureq The authenticated user request.
 	 * @return The chief controller
 	 */
-	private static ChiefController createGuestHome(UserRequest ureq) {
+	public static ChiefController createGuestHome(UserRequest ureq) {
 		if (!ureq.getUserSession().isAuthenticated()) throw new AssertException("not authenticated!");
 
 		BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();

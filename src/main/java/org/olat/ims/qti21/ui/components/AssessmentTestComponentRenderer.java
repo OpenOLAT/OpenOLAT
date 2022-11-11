@@ -196,7 +196,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	private void renderTestEntry(StringOutput sb, AssessmentTestComponent component, Translator translator) {
 		int numOfParts = component.getAssessmentTest().getTestParts().size();
 		sb.append("<h4>").append(translator.translate("test.entry.page.title")).append("</h4>")
-		  .append("<div class='o_info'>")
+		  .append("<div class='o_hint'>")
 		  .append(translator.translate("test.entry.page.text", new String[]{ Integer.toString(numOfParts) }))
 		  .append("</div><div class='o_button_group'>");
 		//precondition -> up to
@@ -560,8 +560,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		//test part review
 		component.getTestSessionController().getTestSessionState().getTestPlan()
-			.getTestPartNodes().forEach((testPartNode)
-					-> renderReview(renderer, sb, component, testPartNode, ubu, translator));
+			.getTestPartNodes().forEach(testPartNode -> renderReview(renderer, sb, component, testPartNode, ubu, translator));
 
 		//controls
 		/*
@@ -601,8 +600,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				sb.append("<div class='o_qti_menu_buttonstyle'>");
 				sb.append("<ul class='o_testpartnavigation'>");
 				
-				node.getChildren().forEach((childNode)
-					-> renderReview(renderer, sb, component, childNode, ubu, translator));
+				node.getChildren().forEach(childNode -> renderReview(renderer, sb, component, childNode, ubu, translator));
 		
 				sb.append("</ul></div>");
 			}
@@ -624,8 +622,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("</header>");
 			sb.append("<ul class='o_testpartnavigation_inner list-unstyled'>");
 			
-			sectionNode.getChildren().forEach((childNode)
-					-> renderReview(renderer, sb, component, childNode, ubu, translator));
+			sectionNode.getChildren().forEach(childNode -> renderReview(renderer, sb, component, childNode, ubu, translator));
 			
 			sb.append("</ul>");
 		}
@@ -693,8 +690,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			}
 			sb.append("</h3>");
 
-			testFeedback.getChildren().forEach((flow)
-				-> renderFlow(renderer, sb, component, null, null, flow, ubu, translator));
+			testFeedback.getChildren().forEach(flow -> renderFlow(renderer, sb, component, null, null, flow, ubu, translator));
 			sb.append("</div>");
 		}
 	}
@@ -711,8 +707,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			
 			//part, sections and item refs
 			sb.append("<ul class='o_testpartnavigation list-unstyled'>");
-			component.getCurrentTestPartNode().getChildren().forEach((node)
-					-> renderNavigation(renderer, sb, component, node, ubu, translator));
+			component.getCurrentTestPartNode().getChildren().forEach(node -> renderNavigation(renderer, sb, component, node, ubu, translator));
 			sb.append("</ul>");
 			
 			// test controls
@@ -756,8 +751,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
-		sectionNode.getChildren().forEach((child)
-				-> renderNavigation(renderer, sb, component, child, ubu, translator));
+		sectionNode.getChildren().forEach(child -> renderNavigation(renderer, sb, component, child, ubu, translator));
 		sb.append("</ul></li>");
 	}
 	
@@ -767,7 +761,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(selectedSection != null && selectedSection.getRubricBlocks().size() > 0) {
 			for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {
 				sb.append("<div class='rubric'>");//@view (candidate)
-				rubricBlock.getBlocks().forEach((block) -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
+				rubricBlock.getBlocks().forEach(block -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
 				sb.append("</div>");
 			}
 		}

@@ -9,7 +9,7 @@
 #end
 <div class="o_iframedisplay">
 	#if($r.isTrue($newWindow))
-		<div class="o_info">$r.translate("popup.info")</div>
+		<div class="o_hint">$r.translate("popup.info")</div>
 	#end
 	
 	<form id="frmConnect" name="frmConnect" action="${initiateLoginUrl}" method="post" enctype="application/x-www-form-urlencoded" #if($r.isTrue($newWindow)) target="_blank" #else target="connectframe" #end>

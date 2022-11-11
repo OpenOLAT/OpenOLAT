@@ -446,7 +446,11 @@ public class LinkFileCombiCalloutController extends BasicController {
 		
 		fileCont.contextPut("fileName", relFilePath);
 		if (fileAvailable) {
-			fileCont.contextPut("fileLastModified", Formatter.getInstance(getLocale()).formatDateAndTime(file.getMetaInfo().getLastModified()));
+			if (file.getMetaInfo() != null) {
+				fileCont.contextPut("fileLastModified", Formatter.getInstance(getLocale()).formatDateAndTime(file.getMetaInfo().getLastModified()));
+			} else {
+				fileCont.contextRemove("fileLastModified");
+			}
 		}
 		
 		// Enable edit link when file is editable 

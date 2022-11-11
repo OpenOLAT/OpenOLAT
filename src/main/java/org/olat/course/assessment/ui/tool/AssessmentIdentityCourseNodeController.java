@@ -82,7 +82,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private final CourseNode courseNode;
 	private final Identity assessedIdentity;
 	private final UserCourseEnvironment coachCourseEnv;
-	private final UserCourseEnvironment assessedUserCourseEnvironment;
+	private final UserCourseEnvironmentImpl assessedUserCourseEnvironment;
 	private final boolean showTitle;
 	
 	@Autowired
@@ -106,6 +106,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
 		assessedUserCourseEnvironment = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
 				coachCourseEnv.getCourseReadOnlyDetails());
+		assessedUserCourseEnvironment.setUserRoles(false, false, true);
 		assessedUserCourseEnvironment.getScoreAccounting().evaluateAll();
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));

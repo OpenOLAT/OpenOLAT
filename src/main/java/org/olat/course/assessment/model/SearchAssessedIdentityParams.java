@@ -240,11 +240,11 @@ public class SearchAssessedIdentityParams {
 	}
 
 	public boolean isParticipantFakeParticipants() {
-		if (isCoach()) {
-			return getParticipantTypes() == null || getParticipantTypes().isEmpty() || (hasFakeParticipants() && getParticipantTypes().contains(ParticipantType.fakeParticipant));
-		}
 		if (isAdmin()) {
 			return getParticipantTypes() != null && hasFakeParticipants() && getParticipantTypes().contains(ParticipantType.fakeParticipant);
+		}
+		if (isCoach()) {
+			return getParticipantTypes() == null || getParticipantTypes().isEmpty() || (hasFakeParticipants() && getParticipantTypes().contains(ParticipantType.fakeParticipant));
 		}
 		return false;
 	}

@@ -139,7 +139,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	private void updateOpenLink() {
 		if (editLink != null) mainVC.remove(editLink);
 		
-		if (vfsLeaf != null && !hints.isToPdf()) {
+		if (vfsLeaf != null && !hints.isToPdf() && !hints.isOnePage()) {
 			Mode mode = getMode();
 			if (mode != null) {
 				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,

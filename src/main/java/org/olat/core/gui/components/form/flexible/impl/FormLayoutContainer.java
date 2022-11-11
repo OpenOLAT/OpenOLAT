@@ -453,6 +453,14 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.contextPut("off_warn", warning);
 	}
 	
+	public void setFormInfoHelp(String url) {
+		if (url == null) {
+			formLayoutContainer.contextRemove("off_info_help_url");
+		} else {
+			formLayoutContainer.contextPut("off_info_help_url", url);
+		}
+	}
+	
 	/**
 	 * Set an optional context help link for this form. If you use a custom
 	 * template this will have no effect

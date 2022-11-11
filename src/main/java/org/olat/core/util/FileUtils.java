@@ -506,6 +506,16 @@ public class FileUtils {
 	public static boolean copyFileToDir(File sourceFile, File targetDir, boolean move, String wt) {
 			return copyFileToDir(sourceFile, targetDir, move, null, wt);
 	}
+	
+	public static boolean copyFileToStream(File image, OutputStream target) {
+		try(InputStream source = new FileInputStream(image)) {
+			cpio(source, target, "");
+			return true;
+		} catch(Exception e) {
+			log.error("Could not copy file", e);
+			return false;
+		}
+	}
 
 	/**
 	 * Copy an InputStream to an OutputStream, until EOF. Use only when you don't

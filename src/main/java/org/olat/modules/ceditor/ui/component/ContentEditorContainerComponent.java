@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -60,7 +60,7 @@ import org.olat.modules.ceditor.ui.event.PositionEnum;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContentEditorContainerComponent extends FormBaseComponentImpl implements ContentEditorFragment, ComponentEventListener, ControllerEventListener {
+public class ContentEditorContainerComponent extends AbstractComponent implements ContentEditorFragment, ComponentEventListener, ControllerEventListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(ContentEditorContainerComponent.class);
 	private static final ContentEditorContainerComponentRenderer RENDERER = new ContentEditorContainerComponentRenderer();
@@ -396,7 +396,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		if(fragmentCmp == null) return;
 		components.remove(fragmentCmp);
 	}
-	
+
 	public Component getInspectorComponent() {
 		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
 	}

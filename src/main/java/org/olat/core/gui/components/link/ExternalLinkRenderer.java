@@ -44,7 +44,7 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 		//class
 		sb.append("<a class=\"");
 		if (!link.isEnabled()) {
-			sb.append(" o_disabled ");
+			sb.append("o_disabled");
 		}
 		if(StringHelper.containsNonWhitespace(link.getElementCssClass())) {
 			sb.append(" ").append(link.getElementCssClass());
@@ -61,9 +61,6 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 		}
 		if(StringHelper.containsNonWhitespace(link.getTooltip())) {
 			sb.append(" rel=\"noopener noreferrer\"");
-		}
-		if(StringHelper.containsNonWhitespace(link.getElementCssClass())) {
-			sb.append(" class=\"").append(link.getElementCssClass()).append("\"");
 		}
 		sb.append(">");
 		

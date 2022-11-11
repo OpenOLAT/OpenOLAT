@@ -44,6 +44,20 @@ public enum SettingsBulkEditable {
 	lifecycleType,
 	lifecyclePublicKey,
 	lifecycleValidFrom,
-	lifecycleValidTo;
+	lifecycleValidTo,
+	toolSearch,
+	toolCalendar,
+	toolParticipantList,
+	toolParticipantInfo,
+	toolEmail,
+	toolTeams,
+	toolBigBlueButton,
+	toolBigBlueButtonModeratorStartsMeeting,
+	toolZoom,
+	toolBlog,
+	toolWiki,
+	toolForum,
+	toolDocuments,
+	toolChat;
 	
 }

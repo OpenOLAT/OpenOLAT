@@ -61,7 +61,7 @@ public class ExportTaxonomyLevels implements MediaResource {
 
     private static final Logger log = Tracing.createLoggerFor(ExportTaxonomyLevels.class);
 
-    private static final String MEDIA_FOLDER = "/media/";
+    private static final String MEDIA_FOLDER = "/media";
 
     private final String encoding;
     private final Taxonomy taxonomy;
@@ -71,7 +71,7 @@ public class ExportTaxonomyLevels implements MediaResource {
     private final I18nManager i18nManager;
 
     // Map<Map<TaxonomyLevel, LanguageKey>, Map<typeOfAttribute, attributeValue>> (typeOfAttribute: {displayName, description})
-    private Map<Map<TaxonomyLevel, String>, Map<String, String>> attributesToLevels = new HashMap<>();
+    private final Map<Map<TaxonomyLevel, String>, Map<String, String>> attributesToLevels = new HashMap<>();
 
     public ExportTaxonomyLevels(String encoding, Translator translator, Taxonomy taxonomy,
                                 TaxonomyService taxonomyService, I18nManager i18nManager, I18nModule i18nModule) {
@@ -188,24 +188,30 @@ public class ExportTaxonomyLevels implements MediaResource {
 
             Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
             Collection<String> languageKeys = i18nModule.getEnabledLanguageKeys();
+            Map<String, TaxonomyLevel> taxonomyLevelToMaterializedPathIdentifier = new HashMap<>();
 
+            // Removing duplicates
             for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+                taxonomyLevelToMaterializedPathIdentifier.put(taxonomyLevel.getMaterializedPathIdentifiers(), taxonomyLevel);
+            }
+
+            for (TaxonomyLevel taxonomyLevel : taxonomyLevelToMaterializedPathIdentifier.values()) {
                 String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix();
                 String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + taxonomyLevel.getI18nSuffix();
 
                 String taxonomyPath = taxonomyLevel.getMaterializedPathIdentifiers();
-                LocalFileImpl backgroundImage = ((LocalFileImpl) taxonomyService.getBackgroundImage(taxonomyLevel));
-                LocalFileImpl teaserImage = ((LocalFileImpl) taxonomyService.getTeaserImage(taxonomyLevel));
+                LocalFileImpl backgroundImage = (LocalFileImpl) taxonomyService.getBackgroundImage(taxonomyLevel);
+                LocalFileImpl teaserImage = (LocalFileImpl) taxonomyService.getTeaserImage(taxonomyLevel);
 
                 if (backgroundImage != null) {
-                    ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "/background/" + backgroundImage.getBasefile().getName(), backgroundImage.getBasefile(), zout);
+                    ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "background/" + backgroundImage.getBasefile().getName(), backgroundImage.getBasefile(), zout);
                 } else {
-                    zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "/background/"));
+                    zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "background/"));
                 }
                 if (teaserImage != null) {
-                    ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "/teaser/" + teaserImage.getBasefile().getName(), teaserImage.getBasefile(), zout);
+                    ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "teaser/" + teaserImage.getBasefile().getName(), teaserImage.getBasefile(), zout);
                 } else {
-                    zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "/teaser/"));
+                    zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "teaser/"));
                 }
 
                 for (String languageKey : languageKeys) {

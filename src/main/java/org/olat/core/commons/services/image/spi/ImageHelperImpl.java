@@ -32,7 +32,6 @@ import java.awt.color.CMMException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -79,7 +78,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(ImageHelperImpl.class);
 	
-	private static final String OUTPUT_FORMAT = "jpeg";
 
 	@Override
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {	
@@ -141,20 +139,16 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * @return
 	 */
 	@Override
-	public Size scaleImage(File image, String imageExt, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
-		
-		ImageInputStream imageIns = null;
-		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
-		try {
-			imageIns = new FileImageInputStream(image);
+	public Size scaleImage(File image, String imageExt, VFSLeaf scaledImage, int maxWidth, int maxHeight) {	
+		try(OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
+				ImageInputStream imageIns = new FileImageInputStream(image)) {
+			
 			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight, false, image.getName());
 			if(scaledSize == null) {
 				return null;
 			}
 			if(!scaledSize.getScaledSize().isChanged() && isSameFormat(image, scaledImage)) {
-				InputStream cloneIns = new FileInputStream(image);
-				IOUtils.copy(cloneIns, bos);
-				IOUtils.closeQuietly(cloneIns);
+				FileUtils.copyFileToStream(image, bos);
 				return scaledSize.getScaledSize();
 			} else {
 				BufferedImage imageSrc = scaledSize.getImage();
@@ -171,9 +165,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 			}
 		} catch (IOException e) {
 			return null;
-		} finally {
-			closeQuietly(imageIns, image.getName());
-			FileUtils.closeSafely(bos);
 		}
 	}
 	
@@ -308,51 +299,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		} finally {
 			closeQuietly(imageSrc, image.getName());
 		}
-	}
-	
-	private static String getImageFormat(File image) {
-		String extension = FileUtils.getFileSuffix(image.getName());
-		if(StringHelper.containsNonWhitespace(extension)) {
-			return extension.toLowerCase();
-		}
-		return OUTPUT_FORMAT;
-	}
-	
-	private static String getImageFormat(VFSLeaf image) {
-		String extension = FileUtils.getFileSuffix(image.getName());
-		if(StringHelper.containsNonWhitespace(extension)) {
-			return extension.toLowerCase();
-		}
-		return OUTPUT_FORMAT;
-	}
-	
-	private static boolean isSameFormat(File source, VFSLeaf scaled) {
-		String sourceExt = FileUtils.getFileSuffix(source.getName());
-		String scaledExt = getImageFormat(scaled);
-		if(sourceExt != null && sourceExt.equals(scaledExt)) {
-			return true;
-		}
-		return false;
-	}
-	
-	private static boolean isSameFormat(VFSLeaf source, VFSLeaf scaled) {
-		String sourceExt = FileUtils.getFileSuffix(source.getName());
-		String scaledExt = getImageFormat(scaled);
-		if(sourceExt != null && sourceExt.equals(scaledExt)) {
-			return true;
-		}
-		return false;
-	}
-	
-	private static boolean isSameFormat(File source, String sourceExt, File scaled) {
-		if(!StringHelper.containsNonWhitespace(sourceExt)) {
-			sourceExt = FileUtils.getFileSuffix(source.getName());
-		}
-		String scaledExt = getImageFormat(scaled);
-		if(sourceExt != null && sourceExt.equals(scaledExt)) {
-			return true;
-		}
-		return false;
 	}
 	
 	/**

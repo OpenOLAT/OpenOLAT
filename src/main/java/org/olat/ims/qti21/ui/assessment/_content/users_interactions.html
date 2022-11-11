@@ -1,6 +1,6 @@
 <fieldset class="o_form form-horizontal" role="form">
 #if($r.isEmpty($interactionWrappers)) 
-	<div class="o_info">$r.translate("grade.no.items")</div>
+	<div class="o_hint">$r.translate("grade.no.items")</div>
 #end
 #foreach($interactionWrapper in $interactionWrappers)
 	<h4>${foreach.count}. $r.translate("assessed.identity")</h4> ##$interactionWrapper.fullName

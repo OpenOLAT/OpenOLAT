@@ -24,10 +24,10 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -53,7 +53,7 @@ import org.olat.modules.ceditor.ui.event.SaveElementEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContentEditorFragmentComponent extends FormBaseComponentImpl implements ContentEditorFragment, ComponentEventListener, ControllerEventListener {
+public class ContentEditorFragmentComponent extends AbstractComponent implements ContentEditorFragment, ComponentEventListener, ControllerEventListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(ContentEditorFragmentComponent.class);
 	private static final ContentEditorFragmentComponentRenderer RENDERER = new ContentEditorFragmentComponentRenderer();
@@ -168,8 +168,12 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		if(cmd != null && fragment != null && getComponentName().equals(fragment)) {
 			switch(cmd) {
 				case "edit_fragment":
-					doEditFragment(ureq, true);
-					fireEvent(ureq, new EditElementEvent(pageElement.getId()));
+					if(isEditMode()) {
+						doCloseEditFragment();
+					} else {
+						doEditFragment(ureq, true);
+						fireEvent(ureq, new EditElementEvent(pageElement.getId()));
+					}
 					break;
 				case "add_element_above":
 					String aboveLinkId = "o_cmore_".concat(getDispatchID());
@@ -240,7 +244,7 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 		this.editMode = false;
 		setDirty(true);
 	}
-	
+
 	public Component getInspectorComponent() {
 		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
 	}

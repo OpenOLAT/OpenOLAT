@@ -4,21 +4,21 @@ $r.render("table")
 #end
 
 #if ($alreadyin != "")
-<div class="o_info">
+<div class="o_hint">
 	<h5>$r.translate("import.title.finish.alreadyin")</h5>
 	$alreadyin
 </div>
 #end
 
 #if ($notfound != "")
-<div class="o_info">
+<div class="o_hint">
 	<h5>$r.translate("import.title.finish.notfound")</h5>
 	$notfound
 </div>
 #end
 
 #if ($isanonymous != "")
-<div class="o_info">
+<div class="o_hint">
 	<h5>$r.translate("import.title.finish.isanonymous")</h5>
 	$isanonymous
 </div>

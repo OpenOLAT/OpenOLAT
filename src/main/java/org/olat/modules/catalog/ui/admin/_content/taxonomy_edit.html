@@ -8,10 +8,9 @@
 		#end
 	</div>
 </div>
-#set($helplink=$r.contextHelpLink("manual_admin/administration/Modules_Taxonomy/"))
 <fieldset class="o_block_large_top">
 	<legend>$r.translate("taxonomy.title")</legend>
-	<p>$r.translate("taxonomy.edit.description") <a href="$helplink" target="_blank">$r.translate("help.additional.informations")</a></p>
+	<p><span class="o_hint">$r.translate("taxonomy.edit.description") $r.contextHelpAdditionalInfo("manual_admin/administration/Modules_Taxonomy/")</span></p>
 </fieldset>
 #if($r.available("taxonomy.selection"))
 	<div class="o_block">

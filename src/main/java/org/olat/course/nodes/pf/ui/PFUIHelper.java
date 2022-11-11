@@ -60,15 +60,15 @@ public class PFUIHelper {
 			String i18nKey;
 			String cssClass;
 			if(now.before(start)) {
-				cssClass = "o_info";
+				cssClass = "o_hint";
 				i18nKey = "msg.period.before";
 			} else if(now.after(start) && now.before(end)) {
 				long timeDiff = end.getTime() - now.getTime();
 				if(timeDiff <= 0) {
-					cssClass = "o_info";
+					cssClass = "o_hint";
 					i18nKey = "msg.period.after";
 				} else if(timeDiff > TWO_DAYS_IN_MILLISEC) {// 2 days		
-					cssClass = "o_info";
+					cssClass = "o_hint";
 					i18nKey = "msg.period.within";
 				} else if(timeDiff > ONE_DAY_IN_MILLISEC) {				
 					cssClass = "o_warning";
@@ -81,7 +81,7 @@ public class PFUIHelper {
 					mainVC.put("timer", timerCmp);
 				}
 			} else {
-				cssClass = "o_info";
+				cssClass = "o_hint";
 				i18nKey = "msg.period.after";
 			}
 			

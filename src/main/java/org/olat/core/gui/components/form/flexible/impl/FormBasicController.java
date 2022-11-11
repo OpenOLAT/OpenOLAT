@@ -642,6 +642,14 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
+	protected void setFormInfoHelp(String url) {
+		if (url == null) {
+			flc.contextRemove("off_info_help_url");
+		} else {
+			flc.contextPut("off_info_help_url", url);
+		}
+	}
+	
 	protected void setFormContextHelp(String url) {
 		if (url == null) {
 			flc.contextRemove("off_chelp_url");

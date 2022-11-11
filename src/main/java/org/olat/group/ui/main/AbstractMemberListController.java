@@ -154,7 +154,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	public static final String TABLE_ACTION_IM = "tbl_im";
 	public static final String TABLE_ACTION_HOME = "tbl_home";
 	public static final String TABLE_ACTION_CONTACT = "tbl_contact";
-	public static final String TABLE_ACTION_ASSESSMENT = "tbl_assessment";
 
 	protected FlexiTableElement membersTable;
 	protected MemberListTableModel memberListModel;
@@ -954,8 +953,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		toolbarPanel.pushController(fullname, contactCtrl);
 	}
 	
-	protected abstract void doOpenAssessmentTool(UserRequest ureq, MemberRow member);
-	
 	protected List<Long> getMemberKeys(List<MemberRow> members) {
 		List<Long> keys = new ArrayList<>(members.size());
 		if(!members.isEmpty()) {
@@ -1176,9 +1173,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			//links
 			addLink("home", TABLE_ACTION_HOME, "o_icon o_icon_home", links);
 			addLink("contact", TABLE_ACTION_CONTACT, "o_icon o_icon_mail", links);
-			if(repoEntry != null && "CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName())) {
-				addLink("assessment", TABLE_ACTION_ASSESSMENT, "o_icon o_icon_certificate", links);
-			}
 			
 			links.add("-");
 			
@@ -1229,8 +1223,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 					doOpenVisitingCard(ureq, row);
 				} else if(TABLE_ACTION_CONTACT.equals(cmd)) {
 					doOpenContact(ureq, row);
-				} else if(TABLE_ACTION_ASSESSMENT.equals(cmd)) {
-					doOpenAssessmentTool(ureq, row);
 				}
 			}
 		}

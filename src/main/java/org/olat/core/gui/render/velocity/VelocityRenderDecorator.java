@@ -503,6 +503,22 @@ public class VelocityRenderDecorator implements Closeable {
 		}
 		return sb;
 	}
+	
+	public StringOutput contextHelpAdditionalInfo(String page) {
+		StringOutput sb = new StringOutput();
+		if (getHelpModule().isHelpEnabled()) {
+			Locale locale = renderer.getTranslator().getLocale();
+			String url = getHelpModule().getManualProvider().getURL(locale, page);
+			if(url != null) {
+				sb.append("<span class=\"o_chelp_additonal_info\">")
+				  .append("<a href=\"").append(url)
+				  .append("\" target=\"_blank\">")
+				  .append(renderer.getTranslator().translate("help.additional.informations"))
+				  .append("</a></span>");
+			}
+		}
+		return sb;
+	}
 
 	/**
 	 * Create a js command to open a specific page in the manual.

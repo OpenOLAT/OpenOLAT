@@ -1,9 +1,9 @@
 <div class="o_sel_publish_update">
 <h4>$r.translate("publish.step.update.title")</h4>
 #if($r.available("updateNotes"))
-	<div class='o_info'>$r.translate("publish.update.description")</div>
+	<div class='o_hint'>$r.translate("publish.update.description")</div>
 	$r.render("updateNotes")
 #else
-	<div class='o_info'>$r.translate("publish.update.nothing")</div>
+	<div class='o_hint'>$r.translate("publish.update.nothing")</div>
 #end
 </div>

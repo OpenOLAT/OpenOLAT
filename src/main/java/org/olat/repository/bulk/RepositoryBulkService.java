@@ -21,6 +21,8 @@ package org.olat.repository.bulk;
 
 import java.util.List;
 
+import org.olat.core.gui.components.Window;
+import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.bulk.model.SettingsContext;
 
@@ -34,6 +36,6 @@ public interface RepositoryBulkService {
 	
 	public SettingsBulkEditables getSettingsBulkEditables(List<RepositoryEntry> repositoryEntries);
 	
-	public void update(SettingsContext context);
+	public void update(Window window, Identity identity, SettingsContext context);
 
 }

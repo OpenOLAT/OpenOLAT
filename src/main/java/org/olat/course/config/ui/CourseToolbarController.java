@@ -920,7 +920,7 @@ public class CourseToolbarController extends FormBasicController {
 		}
 		
 		if(updateGlossary) {
-			ILoggingAction loggingAction = enableCalendar ?
+			ILoggingAction loggingAction = enableGlossary ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_ENABLED:
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_DISABLED;
 
@@ -939,7 +939,7 @@ public class CourseToolbarController extends FormBasicController {
 
 	private void doSelectBlog(UserRequest ureq) {
 		blogSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, BlogFileResource.TYPE_NAME,
-				translate("blog.select.titile"));
+				translate("blog.select.title"));
 		listenTo(blogSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				blogSearchCtrl.getInitialComponent(), true, translate("blog.select.title"));
@@ -967,7 +967,7 @@ public class CourseToolbarController extends FormBasicController {
 
 	private void doSelectWiki(UserRequest ureq) {
 		wikiSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME,
-				translate("wiki.select.titile"));
+				translate("wiki.select.title"));
 		listenTo(wikiSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				wikiSearchCtrl.getInitialComponent(), true, translate("wiki.select.title"));

@@ -45,7 +45,7 @@ public class ImportHelper {
 	}
 	
 	protected static final void infoMessage(AbstractConfigurationRow row, String i18nKey, String[] args, Translator translator) {
-		String htmlMsg = "<div class='o_info'><i class='o_icon o_icon_info'> </i> " + translator.translate(i18nKey, args) + "</div>";
+		String htmlMsg = "<div class='o_hint'><i class='o_icon o_icon_info'> </i> " + translator.translate(i18nKey, args) + "</div>";
 		row.setMessage(concatMessage(row.getMessage(), htmlMsg));
 	}
 	

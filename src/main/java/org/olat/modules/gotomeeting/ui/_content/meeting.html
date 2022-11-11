@@ -7,7 +7,7 @@
 </div>
 <div><i class="o_icon o_icon_lifecycle_date"> </i> $start - $end</div>
 #if($description && !${description.isEmpty()})
-	<div class="o_block_large o_info">$r.xssScan($description)</div>
+	<div class="o_block_large o_hint">$r.xssScan($description)</div>
 #end
 <div class="o_button_group">
 #if($r.available("training.start") && $r.visible("training.start"))

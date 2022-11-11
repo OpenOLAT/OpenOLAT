@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Organisation;
+import org.olat.course.config.CourseConfig;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -42,6 +43,8 @@ public class RepositoryEntryInfo implements RepositoryEntryRef {
 	private Set<TaxonomyLevel> taxonomyLevels;
 	private Set<Long> organisationKeys;
 	private Set<Organisation> organisations;
+	private boolean courseLocked;
+	private CourseConfig courseConfig;
 	
 	public RepositoryEntryInfo(Long key) {
 		this.key = key;
@@ -84,6 +87,22 @@ public class RepositoryEntryInfo implements RepositoryEntryRef {
 	public void setOrganisations(Set<Organisation> organisations) {
 		this.organisations = organisations;
 		this.organisationKeys = organisations.stream().map(Organisation::getKey).collect(Collectors.toSet());
+	}
+
+	public boolean isCourseLocked() {
+		return courseLocked;
+	}
+
+	public void setCourseLocked(boolean courseLocked) {
+		this.courseLocked = courseLocked;
+	}
+
+	public CourseConfig getCourseConfig() {
+		return courseConfig;
+	}
+
+	public void setCourseConfig(CourseConfig courseConfig) {
+		this.courseConfig = courseConfig;
 	}
 	
 }

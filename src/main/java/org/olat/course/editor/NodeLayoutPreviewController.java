@@ -65,10 +65,10 @@ public class NodeLayoutPreviewController extends BasicController {
 		collapseCtrl = new ExpandController(ureq, wControl, "edit-" + courseNode.getIdent());
 		listenTo(collapseCtrl);
 		
-		emptyHeaderCmp = TextFactory.createTextComponentFromString("header.empty", translate("layout.preview.header.empty"), "o_info", false, mainVC);
+		emptyHeaderCmp = TextFactory.createTextComponentFromString("header.empty", translate("layout.preview.header.empty"), "o_hint", false, mainVC);
 		tabPane.addTab(translate("layout.preview.header"), emptyHeaderCmp);
 		
-		emptyOverviewCmp = TextFactory.createTextComponentFromString("overview.empty", translate("layout.preview.overview.empty"), "o_info", false, mainVC);
+		emptyOverviewCmp = TextFactory.createTextComponentFromString("overview.empty", translate("layout.preview.overview.empty"), "o_hint", false, mainVC);
 		tabPane.addTab(translate("layout.preview.overview"), emptyOverviewCmp);
 		
 		putInitialPanel(mainVC);

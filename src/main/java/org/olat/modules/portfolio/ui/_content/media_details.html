@@ -1,6 +1,6 @@
 <h2><i class="o_icon o_icon-lg $iconCssClass"> </i> $title</h2>
 #if($r.isNotEmpty($media.description))
-	<div class="o_info">$r.xssScan($media.description)</div>
+	<div class="o_hint">$r.xssScan($media.description)</div>
 #end
 <div class="row o_block_large">
 	<div class="col-md-6">$r.render("media")</div>

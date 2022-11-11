@@ -37,6 +37,7 @@ public class SettingsContext {
 	
 	public static final String DEFAULT_KEY = "settingsContext";
 	public enum LifecycleType {none, publicCycle, privateCycle}
+	public enum Replacement {add, change, addChange, remove}
 
 	private final List<RepositoryEntry> repositoryEntries;
 	private final Set<SettingsBulkEditable> editables = new HashSet<>();
@@ -59,6 +60,23 @@ public class SettingsContext {
 	private Long lifecyclePublicKey;
 	private Date lifecycleValidFrom;
 	private Date lifecycleValidTo;
+	private boolean toolSearch = true;
+	private boolean toolCalendar = true;
+	private boolean toolParticipantList = true;
+	private boolean toolParticipantInfo = true;
+	private boolean toolEmail = true;
+	private boolean toolTeams = true;
+	private boolean toolBigBlueButton = true;
+	private boolean toolBigBlueButtonModeratorStartsMeeting = true;
+	private boolean toolZoom = true;
+	private Replacement toolBlog;
+	private String toolBlogKey;
+	private Replacement toolWiki;
+	private String toolWikiKey;
+	private boolean toolForum = true;
+	private boolean toolDocuments = true;
+	private boolean toolChat = true;
+	private boolean toolGlossary;
 
 	public SettingsContext(List<RepositoryEntry> repositoryEntries) {
 		this.repositoryEntries = repositoryEntries;
@@ -230,6 +248,142 @@ public class SettingsContext {
 
 	public void setLifecycleValidTo(Date lifecycleValidTo) {
 		this.lifecycleValidTo = lifecycleValidTo;
+	}
+
+	public boolean isToolSearch() {
+		return toolSearch;
+	}
+
+	public void setToolSearch(boolean toolSearch) {
+		this.toolSearch = toolSearch;
+	}
+
+	public boolean isToolCalendar() {
+		return toolCalendar;
+	}
+
+	public void setToolCalendar(boolean toolCalendar) {
+		this.toolCalendar = toolCalendar;
+	}
+
+	public boolean isToolParticipantList() {
+		return toolParticipantList;
+	}
+
+	public void setToolParticipantList(boolean toolParticipantList) {
+		this.toolParticipantList = toolParticipantList;
+	}
+
+	public boolean isToolParticipantInfo() {
+		return toolParticipantInfo;
+	}
+
+	public void setToolParticipantInfo(boolean toolParticipantInfo) {
+		this.toolParticipantInfo = toolParticipantInfo;
+	}
+
+	public boolean isToolEmail() {
+		return toolEmail;
+	}
+
+	public void setToolEmail(boolean toolEmail) {
+		this.toolEmail = toolEmail;
+	}
+
+	public boolean isToolTeams() {
+		return toolTeams;
+	}
+
+	public void setToolTeams(boolean toolTeams) {
+		this.toolTeams = toolTeams;
+	}
+
+	public boolean isToolBigBlueButton() {
+		return toolBigBlueButton;
+	}
+
+	public void setToolBigBlueButton(boolean toolBigBlueButton) {
+		this.toolBigBlueButton = toolBigBlueButton;
+	}
+
+	public boolean isToolBigBlueButtonModeratorStartsMeeting() {
+		return toolBigBlueButtonModeratorStartsMeeting;
+	}
+
+	public void setToolBigBlueButtonModeratorStartsMeeting(boolean toolBigBlueButtonModeratorStartsMeeting) {
+		this.toolBigBlueButtonModeratorStartsMeeting = toolBigBlueButtonModeratorStartsMeeting;
+	}
+
+	public boolean isToolZoom() {
+		return toolZoom;
+	}
+
+	public void setToolZoom(boolean toolZoom) {
+		this.toolZoom = toolZoom;
+	}
+
+	public Replacement getToolBlog() {
+		return toolBlog;
+	}
+
+	public void setToolBlog(Replacement toolBlog) {
+		this.toolBlog = toolBlog;
+	}
+
+	public String getToolBlogKey() {
+		return toolBlogKey;
+	}
+
+	public void setToolBlogKey(String toolBlogKey) {
+		this.toolBlogKey = toolBlogKey;
+	}
+
+	public Replacement getToolWiki() {
+		return toolWiki;
+	}
+
+	public void setToolWiki(Replacement toolWiki) {
+		this.toolWiki = toolWiki;
+	}
+
+	public String getToolWikiKey() {
+		return toolWikiKey;
+	}
+
+	public void setToolWikiKey(String toolWikiKey) {
+		this.toolWikiKey = toolWikiKey;
+	}
+
+	public boolean isToolForum() {
+		return toolForum;
+	}
+
+	public void setToolForum(boolean toolForum) {
+		this.toolForum = toolForum;
+	}
+
+	public boolean isToolDocuments() {
+		return toolDocuments;
+	}
+
+	public void setToolDocuments(boolean toolDocuments) {
+		this.toolDocuments = toolDocuments;
+	}
+
+	public boolean isToolChat() {
+		return toolChat;
+	}
+
+	public void setToolChat(boolean toolChat) {
+		this.toolChat = toolChat;
+	}
+
+	public boolean isToolGlossary() {
+		return toolGlossary;
+	}
+
+	public void setToolGlossary(boolean toolGlossary) {
+		this.toolGlossary = toolGlossary;
 	}
 	
 }

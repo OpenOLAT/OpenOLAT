@@ -5,7 +5,7 @@ $r.render("display")
 	<i class="o_icon o_icon_dev o_icon-fw"> </i> <a id="o_qti_debug_outcomes_l" href="#o_qti_debug_outcomes" data-toggle="collapse" data-target="#o_qti_debug_outcomes" aria-expanded="$showOutcomes" #if(!$showOutcomes) class="o_opener collapsed" #else class="o_opener o_in" #end>
 	<i class="o_icon o_icon-fw o_icon-lg"> </i> $r.translate("debug.outcomes")</a>
 	<div id="o_qti_debug_outcomes" class="collapse #if($showOutcomes) in #end" aria-expanded="$showOutcomes">
-		<table class="o_info small table table-hover"><tbody>
+		<table class="o_hint small table table-hover"><tbody>
 		#foreach($response in $responses)
 			<tr><th scope="row">${response.identifier}</th><td>$r.xssScan(${response.stringuifiedValue})<td></td>
 		#end

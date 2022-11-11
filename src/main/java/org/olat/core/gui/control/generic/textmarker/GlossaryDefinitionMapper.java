@@ -27,6 +27,7 @@ import java.util.Set;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.glossary.GlossaryItem;
@@ -35,8 +36,8 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -115,7 +116,8 @@ class GlossaryDefinitionMapper implements Mapper {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<dd><dt>").append(foundItem.getGlossTerm()).append("</dt><dl>")
 		  .append(foundItem.getGlossDef()).append("</dl></dd>");
-		resource.setData(sb.toString());
+		String filteredHtml = StringHelper.xssScan(sb);
+		resource.setData(filteredHtml);
 		resource.setEncoding("utf-8");
 
 		if (log.isDebugEnabled()) log.debug("loaded definition for " + glossaryMainTerm);

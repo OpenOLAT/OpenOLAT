@@ -311,8 +311,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		sb.append("<h4><a href='#modal-correct-solution' data-toggle='collapse' data-target='#modal-correct-solution' class=\"o_opener\" onclick=\"jQuery(this).toggleClass('o_in'); return false;\"><i class='o_icon o_icon-fw o_icon-lg'> </i> ").append(StringHelper.escapeHtml(feedbackTitle)).append("</a></h4>");
 		sb.append("<div id='modal-correct-solution' class='collapse'><div class='o_togglebox_content clearfix'>");
 		
-		modalFeedback.getFlowStatics().forEach((flow)
-			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		modalFeedback.getFlowStatics().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 
 		sb.append("</div></div></div>");
 		
@@ -371,8 +370,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 		}
 		
-		modalFeedback.getFlowStatics().forEach((flow)
-			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		modalFeedback.getFlowStatics().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 
 		sb.append("</div>");
 	}
@@ -405,8 +403,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 		}
 		
-		modalFeedback.getFlowStatics().forEach((flow)
-			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		modalFeedback.getFlowStatics().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 
 		sb.append("</div>");
 	}
@@ -475,8 +472,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				FeedbackBlock feedbackBlock = (FeedbackBlock)block;
 				if(component.isFeedback(feedbackBlock, itemSessionState)) {
 					sb.append("<div class='o_info feedbackBlock '").append(getAtClass(feedbackBlock)).append(">");
-					feedbackBlock.getBlocks().forEach((child)
-							-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+					feedbackBlock.getBlocks().forEach(child -> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 					sb.append("</div>");
 				}
 				break;
@@ -494,27 +490,23 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					renderer.setMathJax(true);
 				}
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
-				((Div)block).getFlows().forEach((flow)
-						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+				((Div)block).getFlows().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 				renderEndTag(sb, block);
 				break;
 			}
 			case Ul.QTI_CLASS_NAME:
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
-				((Ul)block).getLis().forEach((li)
-						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
+				((Ul)block).getLis().forEach(li -> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
 				renderEndTag(sb, block);
 				break;
 			case Ol.QTI_CLASS_NAME:
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
-				((Ol)block).getLis().forEach((li)
-						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
+				((Ol)block).getLis().forEach(li -> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
 				renderEndTag(sb, block);
 				break;
 			case Dl.QTI_CLASS_NAME:
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
-				((Dl)block).getDlElements().forEach((dlElement)
-						-> renderDlElement(renderer, sb, component, resolvedAssessmentItem, itemSessionState, dlElement, ubu, translator));
+				((Dl)block).getDlElements().forEach(dlElement -> renderDlElement(renderer, sb, component, resolvedAssessmentItem, itemSessionState, dlElement, ubu, translator));
 				renderEndTag(sb, block);
 				break;
 				
@@ -527,13 +519,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				if(block instanceof AtomicBlock) {
 					AtomicBlock atomicBlock = (AtomicBlock)block;
-					atomicBlock.getInlines().forEach((child)
-							-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+					atomicBlock.getInlines().forEach(child -> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 					
 				} else if(block instanceof SimpleBlock) {
 					SimpleBlock simpleBlock = (SimpleBlock)block;
-					simpleBlock.getBlocks().forEach((child)
-							-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+					simpleBlock.getBlocks().forEach(child -> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 				}
 				renderEndTag(sb, block);
 			}
@@ -636,12 +626,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		renderStartHtmlTag(sb, component, resolvedAssessmentItem, dlElement, null);
 		switch(dlElement.getQtiClassName()) {
 			case Dt.QTI_CLASS_NAME:
-				((Dt)dlElement).getInlines().forEach((inline)
-						-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
+				((Dt)dlElement).getInlines().forEach(inline -> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
 				break;
 			case Dd.QTI_CLASS_NAME:
-				((Dd)dlElement).getFlows().forEach((flow)
-						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+				((Dd)dlElement).getFlows().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 				break;
 			default:
 				//ignore other type
@@ -680,8 +668,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				FeedbackInline feedbackInline = (FeedbackInline)inline;
 				if(component.isFeedback(feedbackInline, itemSessionState)) {
 					sb.append("<span class='feedbackInline ").append(getAtClass(feedbackInline)).append("'>");
-					feedbackInline.getInlines().forEach((child)
-							-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+					feedbackInline.getInlines().forEach(child -> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 					sb.append("</span>");
 				}
 				break;
@@ -724,8 +711,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, inline, null);
 				if(inline instanceof SimpleInline) {
 					SimpleInline simpleInline = (SimpleInline)inline;
-					simpleInline.getInlines().forEach((child)
-							-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+					simpleInline.getInlines().forEach(child -> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 				}
 				renderEndTag(sb, inline);
 			}
@@ -738,8 +724,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			renderer.setMathJax(true);
 		}
 		renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
-		span.getInlines().forEach((child)
-			-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+		span.getInlines().forEach(child -> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 		renderEndTag(sb, span);
 	}
 	
@@ -763,8 +748,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		sb.append(">");
 
-		a.getInlines().forEach((child)
-				-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+		a.getInlines().forEach(child -> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 		renderEndTag(sb, a);
 	}
 	
@@ -838,8 +822,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("<button type='button' onclick=\"return QtiWorksRendering.showInfoControlContent(this)\" class='btn btn-default'>")
 		  .append("<span>").append(StringHelper.escapeHtml(infoControl.getTitle())).append("</span></button>")
 		  .append("<div class='infoControlContent o_info'>");
-		infoControl.getChildren().forEach((flow)
-				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		infoControl.getChildren().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 		sb.append("</div></div>");
 	}
 	
@@ -1593,14 +1576,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					}
 				} else {
 					renderStartHtmlTag(out, component, resolvedAssessmentItem, fElement, null);
-					fElement.getChildren().forEach((child)
-							-> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
+					fElement.getChildren().forEach(child -> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
 					renderEndTag(out, fElement);
 				}
 			} else {
 				renderStartHtmlTag(out, component, resolvedAssessmentItem, fElement, null);
-				fElement.getChildren().forEach((child)
-						-> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
+				fElement.getChildren().forEach(child -> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
 				renderEndTag(out, fElement);
 			}
 		} else if(mathElement instanceof TextRun) {

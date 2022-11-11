@@ -15,7 +15,7 @@
 		#end
 		<div class="o_date">$r.translateWithPackage("org.olat.modules.webFeed.ui.blog","feed.last.change") $!helper.getLastModified($feed)	</div>
 		#if ($!feed.getDescription() && $feed.getDescription() != "")
-			<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser($feed)</div>
+			<div class="o_desc o_hint">$!helper.getFeedDescriptionForBrowser($feed)</div>
 		#end
 		
 		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )			

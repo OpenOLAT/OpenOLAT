@@ -1,6 +1,6 @@
 <div class="o_form #if ($off_css_class) $off_css_class #end clearfix">
 #if ($off_title) <fieldset><legend>$off_title</legend> #end
-#if ($off_desc) <div class="o_info">$off_desc</div> #end
+#if ($off_desc) <div class="o_hint">$off_desc</div> #end
 
 	#foreach($nodeSelection in $nodeSelections)
 		<div style="margin-left:${nodeSelection.getUserObject().getIndentation()}0px; ">

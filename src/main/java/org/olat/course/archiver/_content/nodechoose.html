@@ -6,7 +6,7 @@
 </div>
 #if($hasNodes)
 	#if (!$hideTitle)
-	<p class="o_info">$r.translate("nodechoose.intro.$nodeType")</p>
+	<p class="o_hint">$r.translate("nodechoose.intro.$nodeType")</p>
 	#end
 	$r.render("nodeTable")
 	<div class="o_button_group">$r.render("archive")</div>

@@ -205,11 +205,14 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 					},
 					title: function() {
 				        var elem = jQuery(this);
+						var glossaryContents = elem.data('glossaryContents');
+						if (glossaryContents) {
+							return glossaryContents;
+						}
 				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
-				        	if(data != null && data != "" &&
-				        			(elem.attr('data-original-title') == null || elem.attr('data-original-title') == "")) {
+				        	if (data != null && data !== '' && !glossaryContents) {
 				        		jQuery('.tooltip').remove();
-				        		elem.attr('data-original-title', data);
+								elem.data('glossaryContents', data);
 				        		var tool = elem.tooltip('show');
 				        		tool.data('bs.tooltip').tip().addClass('o_gloss_tooltip');
 				        	}
