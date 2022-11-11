@@ -29,6 +29,8 @@ public interface MediaRenderingHints {
 	
 	public boolean isToPdf();
 	
+	public boolean isOnePage();
+	
 	public boolean isExtendedMetadata();
 
 }
