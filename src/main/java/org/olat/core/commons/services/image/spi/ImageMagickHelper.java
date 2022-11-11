@@ -34,6 +34,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.NamedLeaf;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -119,14 +120,35 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			log.error("Input file or output file for thumbnailing? {} -> {}", file, thumbnailFile);
 			return null;
 		}
-		if(file.getName().toLowerCase().endsWith(".gif") && isAnimatedGif(file)) {
+		
+		ExtendedImageInfos imageInfos = null;
+		if(isSameFormat(file, null, thumbnailFile)) {
+			String extension = FileUtils.getFileSuffix(file.getName());
+			imageInfos = getImageInfos(file, extension);
+			if(imageInfos.getWidth() <= maxWidth && imageInfos.getHeight() <= maxHeight) {
+				FileUtils.copyFileToFile(file, thumbnailFile, false);
+				return new FinalSize(imageInfos.getWidth(), imageInfos.getHeight());
+			}
+		}
+		
+		if(file.getName().toLowerCase().endsWith(".gif")) {
 			// Animated GIFs cannot be properly scaled, we scale only the first image
-			firstOnly = true;
+			if(imageInfos != null) {
+				firstOnly = imageInfos.getNumOfImages() > 1;
+			} else if(isAnimatedGif(file)) {
+				firstOnly = true;
+			}
 		}
 
 		if(!thumbnailFile.getParentFile().exists()) {
 			thumbnailFile.getParentFile().mkdirs();
 		}
+		
+		return executeThumbnailCmd(file, thumbnailFile, firstOnly, maxWidth, maxHeight, fill);
+	}
+	
+	private final FinalSize executeThumbnailCmd(File file, File thumbnailFile, boolean firstOnly,
+			int maxWidth, int maxHeight, boolean fill) {
 
 		List<String> cmds = new ArrayList<>();
 		cmds.add("convert");

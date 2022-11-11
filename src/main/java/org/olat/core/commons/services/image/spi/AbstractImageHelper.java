@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.ImageHelperSPI;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -49,6 +50,8 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(AbstractImageHelper.class);
 
+	protected static final String OUTPUT_FORMAT = "jpeg";
+	
 	@Override
 	public Size getSize(VFSLeaf image, String suffix) {
 		Size size = null;
@@ -156,6 +159,31 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 		return result;
 	}
 	
+	protected ExtendedImageInfos getImageInfos(File media, String suffix) {
+		ExtendedImageInfos result = null;
+		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+		boolean gif = "gif".equalsIgnoreCase(suffix);
+		if (iter.hasNext()) {
+			ImageReader reader = iter.next();
+			try (InputStream mediaStream = new FileInputStream(media);
+				 ImageInputStream stream = new MemoryCacheImageInputStream(mediaStream)){
+				reader.setInput(stream);
+				int readerMinIndex = reader.getMinIndex();
+				int width = reader.getWidth(readerMinIndex);
+				int height = reader.getHeight(readerMinIndex);
+				int numOfImages = gif ? reader.getNumImages(true) : 1;
+				result = new ExtendedImageInfos(width, height, numOfImages, false);
+			} catch (IOException e) {
+				log.error(e.getMessage());
+			} finally {
+				reader.dispose();
+			}
+		} else {
+			log.error("No reader found for given format: {}", suffix);
+		}
+		return result;
+	}
+	
 	private Size getImageSizeFallback(File media) {
 		BufferedImage imageSrc = null;
 		try (InputStream fileStream = new FileInputStream(media)) {
@@ -196,5 +224,59 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 			log.error("No reader found for gif given format: {}", media.getName());
 		}
 		return numOfImages > 1;
+	}
+	
+	protected static boolean isSameFormat(File source, VFSLeaf scaled) {
+		String sourceExt = FileUtils.getFileSuffix(source.getName());
+		String scaledExt = getImageFormat(scaled);
+		return (sourceExt != null && sourceExt.equals(scaledExt));
+	}
+	
+	protected static boolean isSameFormat(VFSLeaf source, VFSLeaf scaled) {
+		String sourceExt = FileUtils.getFileSuffix(source.getName());
+		String scaledExt = getImageFormat(scaled);
+		return (sourceExt != null && sourceExt.equals(scaledExt));
+	}
+	
+	protected static boolean isSameFormat(File source, String sourceExt, File scaled) {
+		if(!StringHelper.containsNonWhitespace(sourceExt)) {
+			sourceExt = FileUtils.getFileSuffix(source.getName());
+		}
+		String scaledExt = getImageFormat(scaled);
+		return (sourceExt != null && sourceExt.equals(scaledExt));
+	}
+	
+	protected static String getImageFormat(File image) {
+		String extension = FileUtils.getFileSuffix(image.getName());
+		if(StringHelper.containsNonWhitespace(extension)) {
+			return extension.toLowerCase();
+		}
+		return OUTPUT_FORMAT;
+	}
+	
+	protected static String getImageFormat(VFSLeaf image) {
+		String extension = FileUtils.getFileSuffix(image.getName());
+		if(StringHelper.containsNonWhitespace(extension)) {
+			return extension.toLowerCase();
+		}
+		return OUTPUT_FORMAT;
+	}
+	
+	public static class ExtendedImageInfos extends Size {
+		
+		private int numOfImages;
+		
+		public ExtendedImageInfos(int width, int height, int numOfImages, boolean changed) {
+			super(width, height, 0, 0, changed);
+			this.numOfImages = numOfImages;
+		}
+
+		public int getNumOfImages() {
+			return numOfImages;
+		}
+
+		public void setNumOfImages(int numOfImages) {
+			this.numOfImages = numOfImages;
+		}
 	}
 }

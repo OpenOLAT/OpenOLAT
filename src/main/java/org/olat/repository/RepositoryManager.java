@@ -199,7 +199,7 @@ public class RepositoryManager {
 
 		VFSLeaf targetFile = getImage(target);
 		if(targetFile != null) {
-			targetFile.delete();
+			targetFile.deleteSilently();
 		}
 
 		String sourceImageSuffix = FileUtils.getFileSuffix(srcFile.getName());
@@ -214,7 +214,7 @@ public class RepositoryManager {
 	public void deleteImage(RepositoryEntry re) {
 		VFSLeaf imgFile = getImage(re);
 		if (imgFile != null) {
-			imgFile.delete();
+			imgFile.deleteSilently();
 		}
 	}
 
