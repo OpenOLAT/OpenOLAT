@@ -21,7 +21,7 @@ package org.olat.core.gui.components.panel;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -34,7 +34,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PanelRenderer implements ComponentRenderer {
+public class PanelRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,

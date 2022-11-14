@@ -33,8 +33,6 @@ import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
-import org.olat.core.gui.components.htmlsite.NewInlineUriEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -97,7 +95,6 @@ public class CPDisplayController extends BasicController implements Activateable
 	private CPManifestTreeModel ctm;
 	private VFSContainer rootContainer;
 	private String selNodeId;
-	private HtmlStaticPageComponent cpComponent;
 	private IFrameDisplayController cpContentCtr;
 	private SearchInputController searchCtrl;
 	private Link pdfLink;
@@ -230,7 +227,6 @@ public class CPDisplayController extends BasicController implements Activateable
 				UserObject userObject = (UserObject)node.getUserObject();
 				String nodeUri = userObject.getHref();
 				if (cpContentCtr != null) cpContentCtr.setCurrentURI(nodeUri);
-				if (cpComponent != null) cpComponent.setCurrentURI(nodeUri);
 				if (showMenu) cpTree.setSelectedNodeId(node.getIdent());
 				// activate the selected node in the menu (skips the root node that is
 				// empty anyway and saves one user click)
@@ -245,7 +241,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		} else if (initialUri != null) {
 			// set page
 			if (cpContentCtr != null) cpContentCtr.setCurrentURI(initialUri);
-			if (cpComponent != null) cpComponent.setCurrentURI(initialUri);
 			// update menu
 			TreeNode newNode = ctm.lookupTreeNodeByHref(initialUri);
 			if (newNode != null) { // user clicked on a link which is listed in the
@@ -313,12 +308,6 @@ public class CPDisplayController extends BasicController implements Activateable
 				TreeEvent te = (TreeEvent) event;
 				switchToPage(ureq, te);
 			}
-		} else if (source == cpComponent) {
-			if (event instanceof NewInlineUriEvent) {
-				NewInlineUriEvent nue = (NewInlineUriEvent) event;
-				// adjust the tree selection to the current choice if found
-				selectTreeNode(ureq, nue.getNewUri());
-			}
 		} else if (source == nextLink) {
 			TreeNode nextUri = (TreeNode)nextLink.getUserObject();
 			switchToPage(ureq, nextUri);
@@ -343,11 +332,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cpContentCtr) { // a .html click within the contentpackage
-			if (event instanceof NewInlineUriEvent) {
-				NewInlineUriEvent nue = (NewInlineUriEvent) event;
-				// adjust the tree selection to the current choice if found
-				selectTreeNode(ureq, nue.getNewUri());
-			} else if (event instanceof NewIframeUriEvent) {
+			if (event instanceof NewIframeUriEvent) {
 				NewIframeUriEvent nue =  (NewIframeUriEvent) event;
 				selectTreeNode(ureq, nue.getNewUri());
 			}// else ignore (e.g. misplaced olatcmd event (inner olat link found in a
@@ -494,7 +479,6 @@ public class CPDisplayController extends BasicController implements Activateable
 				|| identifierRes.toLowerCase().endsWith(FILE_SUFFIX_XML)) {
 			// display html files inline or in an iframe
 			if (cpContentCtr != null) cpContentCtr.setCurrentURI(identifierRes);
-			if (cpComponent != null) cpComponent.setCurrentURI(identifierRes);
 
 		} else {
 			// Also display pdf and other files in the iframe if it has been
@@ -538,7 +522,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		ctm = null;
 		myContent = null;
 		rootContainer = null;
-		cpComponent = null;
         super.doDispose();
 	}
 
