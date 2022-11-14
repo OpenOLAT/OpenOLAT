@@ -1,8 +1,8 @@
 #if ($isassessable)	
-	#if($attempts > 0)
+	#if($r.isNotNull($attempts) && $attempts > 0)
 		$r.render("assessment")
 	
-		#if ($comment)
+		#if ($r.isNotEmpty($comment))
 		<div class="panel panel-default o_comment">
 		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
 	  			<h4 class="panel-title">
@@ -10,16 +10,17 @@
 	  				$r.translate("comment.yourcomment")
 	  			</h4>
 	  		</div>
-		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
+			<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
 				$comment
 	  		</div>
 		</div></div>
 		<script>
+		"use strict";
 		jQuery('#collapseComment').on('hide.bs.collapse', function () {
-				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 		})
 		jQuery('#collapseComment').on('show.bs.collapse', function () {
-				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 		})
 		</script>
 		#end
