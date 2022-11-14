@@ -46,7 +46,7 @@ public class VideoMediaMapper implements Mapper  {
 		VFSItem mediaFile = mediaBase.resolve(relPath);
 		if (mediaFile instanceof VFSLeaf && !relPath.endsWith("xml")){
 			VFSMediaResource res =  new VFSMediaResource((VFSLeaf)mediaFile);
-			if (relPath.toLowerCase().endsWith("srt") && relPath.toLowerCase().endsWith("vtt")) {
+			if (relPath.toLowerCase().endsWith("srt") || relPath.toLowerCase().endsWith("vtt")) {
 				// SRT caption files are supposed to be UTF-8, see
 				// https://en.wikipedia.org/wiki/SubRip#Text_encoding
 				res.setEncoding("utf-8");				

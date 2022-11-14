@@ -100,4 +100,25 @@ public class VideoSubtitlesHelperTest extends OlatTestCase {
 
 		Assert.assertEquals(expectedVttContents, vttContents);
 	}
+
+	@Test
+	public void isVttTest() {
+		String simpleVttContents = "WEBVTT\n" +
+				"\n" +
+				"00:00:00.000 --> 00:00:04.000\n" +
+				"Simple VTT";
+
+		String notVtt = "1\n" +
+				"00:00:10,260 --> 00:00:15,980\n" +
+				"Subtitle text\n";
+
+		String vttWithTitle = "WEBVTT - Spanish language subtitle track\n" +
+				"\n" +
+				"00:00:00.000 --> 00:00:04.000\n" +
+				"VTT simple";
+
+		Assert.assertTrue(VideoSubtitlesHelper.isVtt(new ByteArrayInputStream(simpleVttContents.getBytes(StandardCharsets.UTF_8))));
+		Assert.assertFalse(VideoSubtitlesHelper.isVtt(new ByteArrayInputStream(notVtt.getBytes(StandardCharsets.UTF_8))));
+		Assert.assertTrue(VideoSubtitlesHelper.isVtt(new ByteArrayInputStream(vttWithTitle.getBytes(StandardCharsets.UTF_8))));
+	}
 }
