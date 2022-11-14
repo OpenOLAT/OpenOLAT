@@ -55,11 +55,8 @@ class FormButtonComponent extends FormBaseComponentImpl {
 		this.isSubmitAndValidate = isSubmitAndValidateButton;
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	FormButton getFormButton(){
+	@Override
+	public FormButton getFormItem(){
 		return formButton;
 	}
 	/**
@@ -74,12 +71,8 @@ class FormButtonComponent extends FormBaseComponentImpl {
 		this.isSubmitAndValidate = isSubmitAndValidate;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
 }

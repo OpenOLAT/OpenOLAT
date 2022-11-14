@@ -57,7 +57,7 @@ public abstract class AbstractLearningProgressCellRenderer implements FlexiCellR
 			URLBuilder ubu, Translator translator) {
 		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(cellValue);
 		if (assessmentEvaluation != null) {
-			LearningProgressComponent learningProgressComponent = new LearningProgressComponent("progress-" + CodeHelper.getRAMUniqueID(), locale);
+			LearningProgressComponent learningProgressComponent = new LearningProgressComponent("progress-" + CodeHelper.getRAMUniqueID(), locale, null);
 			learningProgressComponent.setChartVisible(chartVisible);
 			learningProgressComponent.setLabelVisible(labelVisible);
 			learningProgressComponent.setFullyAssessed(assessmentEvaluation.getFullyAssessed());

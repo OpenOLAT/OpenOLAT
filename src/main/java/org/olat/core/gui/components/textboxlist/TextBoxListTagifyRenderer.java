@@ -71,7 +71,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 * @param translator
 	 */
 	private void renderEnabledMode(TextBoxListElementComponent tblComponent, StringOutput sb, Translator translator) {
-		TextBoxListElementImpl te = tblComponent.getTextElementImpl();
+		TextBoxListElementImpl te = tblComponent.getFormItem();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
 		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems());
@@ -82,8 +82,8 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			  .append(StringHelper.containsNonWhitespace(tblComponent.getIconTitleKey()) ? " title='" + translator.translate(tblComponent.getIconTitleKey()) + "'" : "")
 			  .append("> </i>");
 		}
-		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
-			sb.append("&nbsp;").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp;");
+		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getFormItem().getLabelText())) {
+			sb.append("&nbsp;").append(tblComponent.getFormItem().getLabelText()).append("&nbsp;");
 		}
 		if (tblComponent.showSaveButton()) {
 			sb.append("<span class='input-group input-group-sm'>");
@@ -120,7 +120,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderTagifyMode(TextBoxListElementComponent tblComponent, StringOutput sb) {
-		TextBoxListElementImpl te = tblComponent.getTextElementImpl();
+		TextBoxListElementImpl te = tblComponent.getFormItem();
 		Form rootForm = te.getRootForm();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
@@ -285,8 +285,8 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			  	  .append("> </i>");
 		}
 		
-		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
-			output.append("&nbsp;").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp;");
+		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getFormItem().getLabelText())) {
+			output.append("&nbsp;").append(tblComponent.getFormItem().getLabelText()).append("&nbsp;");
 		}
 		
 		if (items != null) {

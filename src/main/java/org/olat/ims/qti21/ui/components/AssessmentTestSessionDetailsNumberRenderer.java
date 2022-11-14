@@ -45,7 +45,7 @@ public class AssessmentTestSessionDetailsNumberRenderer implements FlexiCellRend
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translate) {
 		
-		Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof QTI21AssessmentTestSessionDetails && ((QTI21AssessmentTestSessionDetails)obj).isError()) {
 			target.append("<span title=\"").append(translator.translate("error.assessment.test.session")).append("\">")
 			      .append("<i class='o_icon o_icon_error'> </i> ").append(translator.translate("error.assessment.test.session.short"))

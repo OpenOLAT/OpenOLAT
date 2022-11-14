@@ -42,7 +42,7 @@ class UserInterestsRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		UserInterestsComponent uiCmp = (UserInterestsComponent)source;
-		UserInterestsElement uiFte = uiCmp.getUserInterestsElement();
+		UserInterestsElement uiFte = uiCmp.getFormItem();
 		List<String> userInterests = uiFte.getUserInterests();
 		if(!userInterests.isEmpty()) {
 			sb.append("<ul class='list-unstyled'>");

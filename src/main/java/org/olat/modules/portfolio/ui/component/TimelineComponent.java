@@ -44,11 +44,18 @@ public class TimelineComponent extends FormBaseComponentImpl {
 	private Date startTime, endTime;
 	private String containerId;
 	private List<TimelinePoint> points;
+	private final TimelineElement element;
 	
-	public TimelineComponent(String name) {
+	public TimelineComponent(String name, TimelineElement element) {
 		super(name);
+		this.element = element;
 	}
 	
+	@Override
+	public TimelineElement getFormItem() {
+		return element;
+	}
+
 	public String getContainerId() {
 		return containerId;
 	}

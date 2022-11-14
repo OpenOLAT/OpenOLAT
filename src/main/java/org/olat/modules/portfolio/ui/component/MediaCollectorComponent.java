@@ -20,9 +20,9 @@
 package org.olat.modules.portfolio.ui.component;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -38,7 +38,7 @@ import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaCollectorComponent extends FormBaseComponentImpl implements ControllerEventListener {
+public class MediaCollectorComponent extends AbstractComponent implements ControllerEventListener {
 	
 	private CloseableModalController cmc;
 	private CollectArtefactController collectorCtrl;

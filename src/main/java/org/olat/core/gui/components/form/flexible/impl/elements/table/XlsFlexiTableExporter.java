@@ -66,7 +66,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 					OpenXMLWorksheet sheet = workbook.nextWorksheet();
 					createHeader(columns, translator, sheet, workbook);
 					createData(ftC, columns, translator, sheet, workbook);
-					if(ftC.getFlexiTableElement().getTableDataModel() instanceof FlexiTableFooterModel) {
+					if(ftC.getFormItem().getTableDataModel() instanceof FlexiTableFooterModel) {
 						createFooter(ftC, columns, translator, sheet, workbook);
 					}
 				} catch (IOException e) {
@@ -91,7 +91,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 
 	protected void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator,
 			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
-		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
+		FlexiTableDataModel<?> dataModel = ftC.getFormItem().getTableDataModel();
 		
 		int numOfRow = dataModel.getRowCount();
 		int numOfColumns = columns.size();
@@ -109,7 +109,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 		
 		boolean footerHeader = false;
 		int numOfCols = columns.size();
-		FlexiTableFooterModel footerDataModel = (FlexiTableFooterModel)ftC.getFlexiTableElement().getTableDataModel(); 
+		FlexiTableFooterModel footerDataModel = (FlexiTableFooterModel)ftC.getFormItem().getTableDataModel(); 
 
 		Row dataRow = sheet.newRow();
 		for (int j = 0; j<numOfCols; j++) {
@@ -128,7 +128,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 	
 	protected void createCell(FlexiTableComponent ftC, FlexiColumnModel cd, Row dataRow, int row, int col, Translator translator,
 			OpenXMLWorkbook workbook) {
-		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
+		FlexiTableDataModel<?> dataModel = ftC.getFormItem().getTableDataModel();
 		
 		try {
 			int colIndex = cd.getColumnIndex();

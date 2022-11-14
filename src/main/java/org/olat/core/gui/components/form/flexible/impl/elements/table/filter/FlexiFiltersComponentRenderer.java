@@ -45,7 +45,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		
 		FlexiFiltersComponent ffC = (FlexiFiltersComponent)source;
-		FlexiFiltersElementImpl ffE = ffC.getFlexiFiltersElement();
+		FlexiFiltersElementImpl ffE = ffC.getFormItem();
 		boolean alwaysOn = ffE.isAlwaysExpanded();
 		boolean expanded = ffE.isExpanded();
 		boolean largeSearch = ffE.isLargeSearch();

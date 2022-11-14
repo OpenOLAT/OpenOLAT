@@ -39,7 +39,7 @@ public class CurriculumElementIndentRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		CurriculumElementWithViewsRow rowWithView = (CurriculumElementWithViewsRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+		CurriculumElementWithViewsRow rowWithView = (CurriculumElementWithViewsRow)source.getFormItem().getTableDataModel().getObject(row);
 		indent(target, rowWithView);
 		if(cellValue instanceof String) {
 			target.append(StringHelper.escapeHtml((String)cellValue));

@@ -61,7 +61,7 @@ public class TextElementRendererTest {
 		when(textElementImplMock.getRootForm()).thenReturn(formMock);
 		when(textElementImplMock.getAutocomplete()).thenReturn(AUTOCOMPLETE_NONE);
 		when(textElementComponentMock.isEnabled()).thenReturn(ENABLED);
-		when(textElementComponentMock.getTextElementImpl()).thenReturn(textElementImplMock);
+		when(textElementComponentMock.getFormItem()).thenReturn(textElementImplMock);
 		
 		sut.render(null, stringOutput, textElementComponentMock, null, null, null, null);
 
@@ -79,7 +79,7 @@ public class TextElementRendererTest {
 		when(textElementImplMock.getRootForm()).thenReturn(formMock);
 		when(textElementImplMock.isEnabled()).thenReturn(ENABLED);
 		when(textElementImplMock.getAutocomplete()).thenReturn(null);
-		when(textElementComponentMock.getTextElementImpl()).thenReturn(textElementImplMock);
+		when(textElementComponentMock.getFormItem()).thenReturn(textElementImplMock);
 		
 		sut.render(null, stringOutput, textElementComponentMock, null, null, null, null);
 
@@ -91,7 +91,7 @@ public class TextElementRendererTest {
 		when(textElementImplMock.getRootForm()).thenReturn(formMock);
 		when(textElementImplMock.isEnabled()).thenReturn(DISABLED);
 		when(textElementImplMock.getAutocomplete()).thenReturn(AUTOCOMPLETE_NONE);
-		when(textElementComponentMock.getTextElementImpl()).thenReturn(textElementImplMock);
+		when(textElementComponentMock.getFormItem()).thenReturn(textElementImplMock);
 		
 		sut.render(null, stringOutput, textElementComponentMock, null, null, null, null);
 

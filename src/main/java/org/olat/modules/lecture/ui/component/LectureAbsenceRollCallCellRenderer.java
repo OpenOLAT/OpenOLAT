@@ -38,7 +38,7 @@ public class LectureAbsenceRollCallCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof LectureAbsenceRollCallRow) {
 			LectureAbsenceRollCallRow rollCall = (LectureAbsenceRollCallRow)obj;
 			int absent = rollCall.getRollCall().getLecturesAbsentNumber();

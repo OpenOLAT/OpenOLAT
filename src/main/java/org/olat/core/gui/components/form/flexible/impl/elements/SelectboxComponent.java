@@ -54,9 +54,11 @@ class SelectboxComponent extends FormBaseComponentImpl {
 		this.selectionWrapper = selectionWrapper;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
+	@Override
+	public SelectboxSelectionImpl getFormItem() {
+		return selectionWrapper;
+	}
+
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

@@ -1095,7 +1095,7 @@ public class EditMembershipController extends FormBasicController {
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 				URLBuilder ubu, Translator translator) {
-			MemberCurriculumOption memberRow = (MemberCurriculumOption)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			MemberCurriculumOption memberRow = (MemberCurriculumOption)source.getFormItem().getTableDataModel().getObject(row);
 			indent(target, memberRow);
 			if(cellValue instanceof String) {
 				target.append(StringHelper.escapeHtml((String)cellValue));

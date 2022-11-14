@@ -45,13 +45,11 @@ class TextElementComponent extends FormBaseComponentImpl {
 		this.element = element;
 	}
 	
-	TextElementImpl getTextElementImpl(){
+	@Override
+	public TextElementImpl getFormItem()  {
 		return element;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

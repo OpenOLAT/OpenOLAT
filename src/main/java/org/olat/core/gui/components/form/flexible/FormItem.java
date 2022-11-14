@@ -128,11 +128,11 @@ import org.olat.core.util.ValidationStatus;
  * @author patrickb
  */
 public interface FormItem extends FormBaseComponentIdProvider {
-	public final static String ERRORC = "_ERROR";
+	public static final String ERRORC = "_ERROR";
 
-	public final static String EXAMPLEC = "_EXAMPLE";
+	public static final String EXAMPLEC = "_EXAMPLE";
 
-	public final static String LABELC = "_LABEL";
+	public static final String LABELC = "_LABEL";
 	
 	/**
 	 * called if just the form values must be remembered for the next render

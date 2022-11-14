@@ -34,7 +34,7 @@ import org.olat.core.gui.translator.Translator;
 public class ModifyOwnersReviewResourceRenderer extends DefaultFlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		ModifyOwnersReviewTableRow tableRow = (ModifyOwnersReviewTableRow) source.getFlexiTableElement().getTableDataModel().getObject(row);
+		ModifyOwnersReviewTableRow tableRow = (ModifyOwnersReviewTableRow) source.getFormItem().getTableDataModel().getObject(row);
 		
 		if (tableRow.hasChildren()) {
 			target.append("<strong>");

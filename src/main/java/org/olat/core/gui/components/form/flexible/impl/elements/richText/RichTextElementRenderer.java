@@ -61,7 +61,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		RichTextElementComponent teC = (RichTextElementComponent) source;
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 		// DOM ID used to identify the rich text element in the browser DOM
 		String domID = teC.getFormDispatchId();
 
@@ -113,7 +113,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	
 	private void renderDisabled(StringOutput sb, String domID, RichTextElementComponent teC) {
 		int rows = teC.getRows();
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 
 		// Read only view
 		sb.append("<div ")
@@ -138,7 +138,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderOneLine(StringOutput sb, String domID, RichTextElementComponent teC) {
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 		te.setRenderingMode(TextMode.oneLine);
 		String htmlVal = StringHelper.escapeHtml(te.getRawValue(TextMode.oneLine));
 
@@ -159,7 +159,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderMultiLine(StringOutput sb, String domID, RichTextElementComponent teC) {
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 		te.setRenderingMode(TextMode.multiLine);
 		int cols = teC.getCols();
 		int rows = teC.getRows();
@@ -191,7 +191,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	}
 
 	private void renderTinyMCE(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 		te.setRenderingMode(TextMode.formatted);
 		RichTextConfiguration config = te.getEditorConfiguration();
 
@@ -299,7 +299,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	}
 	
 	private String getImageUploadURL(Renderer renderer, RichTextElementComponent teC, URLBuilder ubu) {
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 		RichTextConfiguration configuration = te.getEditorConfiguration();
 		VFSContainer baseContainer = configuration.getLinkBrowserBaseContainer();
 		if(baseContainer != null && baseContainer.canWrite() == VFSConstants.YES && te.getRootForm().isMultipartEnabled()) {
@@ -315,7 +315,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderTinyMCETextarea(StringOutput sb, String domID, RichTextElementComponent teC) {
-		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextElementImpl te = teC.getFormItem();
 		int rows = teC.getRows();
 		String value = te.getRawValue(TextMode.formatted);
 		

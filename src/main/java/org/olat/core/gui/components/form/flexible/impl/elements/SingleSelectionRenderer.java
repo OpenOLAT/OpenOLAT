@@ -43,7 +43,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		SingleSelectionComponent teC = (SingleSelectionComponent) source;
-		Layout layout = teC.getSingleSelectionImpl().getLayout();
+		Layout layout = teC.getFormItem().getLayout();
 		if(layout == Layout.vertical) {
 			renderVertical(sb, teC);
 		} else {
@@ -54,15 +54,16 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 	private void renderVertical(StringOutput sb, SingleSelectionComponent source) {
 		RadioElementComponent[] radios = source.getRadioComponents();
 		String css = source.getElementCssClass();
-		boolean hasCss = css != null || source.getSingleSelectionImpl().isRenderAsCard() || source.getSingleSelectionImpl().isRenderAsButtonGroup();
+		SingleSelectionImpl ssF = source.getFormItem();
+		boolean hasCss = css != null || ssF.isRenderAsCard() || ssF.isRenderAsButtonGroup();
 
 		if (hasCss) {
 			sb.append("<div class=\"")
 				.append(css, css != null)
-				.append(" o_radio_cards", source.getSingleSelectionImpl().isRenderAsCard())
-				.append(" o_radio_buttons btn-group-vertical", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+				.append(" o_radio_cards", ssF.isRenderAsCard())
+				.append(" o_radio_buttons btn-group-vertical", ssF.isRenderAsButtonGroup())
 				.append("\"")
-				.append("data-toggle=\"buttons\"", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+				.append("data-toggle=\"buttons\"", ssF.isRenderAsButtonGroup())
 				.append(">");
 			
 		}
@@ -78,11 +79,11 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String css = source.getElementCssClass();
 		
 		sb.append("<div class=\"form-inline ")
-			.append("o_radio_cards ", source.getSingleSelectionImpl().isRenderAsCard())
-			.append("o_radio_buttons btn-group ", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+			.append("o_radio_cards ", source.getFormItem().isRenderAsCard())
+			.append("o_radio_buttons btn-group ", source.getFormItem().isRenderAsButtonGroup())
 			.append(css, css != null)
 			.append("\"")
-			.append("data-toggle=\"buttons\"", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+			.append("data-toggle=\"buttons\"", source.getFormItem().isRenderAsButtonGroup())
 			.append(">");
 		
 		RadioElementComponent[] radios = source.getRadioComponents();
@@ -100,7 +101,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String value = ssec.getValue();
 		String formDispatchId = ssec.getFormDispatchId();
 		
-		boolean buttonGroupStyle = source.getSingleSelectionImpl().isRenderAsButtonGroup();
+		boolean buttonGroupStyle = source.getFormItem().isRenderAsButtonGroup();
 		boolean hasCustomCss = StringHelper.containsNonWhitespace(ssec.getCustomCssClass());
 		boolean disabled = !ssec.isEnabled();
 		boolean selected = ssec.isSelected();
@@ -117,12 +118,12 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
 		}
 		sb.append(">", !inline)
-		  .append("<label ").append("class='", inline || source.getSingleSelectionImpl().isRenderAsButtonGroup())
+		  .append("<label ").append("class='", inline || source.getFormItem().isRenderAsButtonGroup())
 		  					.append("radio-inline ", inline)			// ... and inline a class on the label (bootstrap)
 		  					.append("btn btn-default ", inline && buttonGroupStyle)
 		  					.append(ssec.getCustomCssClass(), inline && buttonGroupStyle && hasCustomCss)
 		  					.append(" active", inline && buttonGroupStyle && selected)
-		  					.append("' ", inline || source.getSingleSelectionImpl().isRenderAsButtonGroup())
+		  					.append("' ", inline || source.getFormItem().isRenderAsButtonGroup())
 		  					.append("disabled ", inline && disabled);
 		
 		if(inline && source.getWidthInPercent() > 0) {
@@ -149,7 +150,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(">");
 		
-		if (source.getSingleSelectionImpl().isRenderAsCard()) {
+		if (source.getFormItem().isRenderAsCard()) {
 			// Card style rendering
 			sb.append("<span class='o_radio_card'><span class='o_radio_text_wrapper'>");
 			if (StringHelper.containsNonWhitespace(value)) {

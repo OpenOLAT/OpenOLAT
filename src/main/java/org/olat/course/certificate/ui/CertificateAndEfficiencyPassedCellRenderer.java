@@ -42,7 +42,7 @@ public class CertificateAndEfficiencyPassedCellRenderer extends PassedCellRender
 	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		Object tableRow = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object tableRow = source.getFormItem().getTableDataModel().getObject(row);
 		if (tableRow instanceof CertificateAndEfficiencyStatementRow) {
 			CertificateAndEfficiencyStatementRow certRow = (CertificateAndEfficiencyStatementRow) tableRow;
 			if (certRow.isStatement()) {

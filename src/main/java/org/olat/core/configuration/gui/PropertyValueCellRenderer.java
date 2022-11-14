@@ -57,7 +57,7 @@ public class PropertyValueCellRenderer implements FlexiCellRenderer{
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 		URLBuilder ubu, Translator translator) {
-		Object content = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object content = source.getFormItem().getTableDataModel().getObject(row);
 		
 		if (content instanceof OlatPropertiesTableContentRow) {
 			if (cellValue instanceof String) {	

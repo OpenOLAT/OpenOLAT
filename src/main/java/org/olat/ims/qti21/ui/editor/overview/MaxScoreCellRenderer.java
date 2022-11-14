@@ -45,7 +45,7 @@ public class MaxScoreCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof Double) {
-			ControlObjectRow objectRow = (ControlObjectRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			ControlObjectRow objectRow = (ControlObjectRow)source.getFormItem().getTableDataModel().getObject(row);
 			Double estimatedMaxScore = objectRow.getEstimatedMaxScore();
 			Double totalMaxScore = objectRow.getMaxScore();
 			String estimated = AssessmentHelper.getRoundedScore(estimatedMaxScore);
@@ -53,7 +53,7 @@ public class MaxScoreCellRenderer implements FlexiCellRenderer {
 			if(estimated != null && total != null) {
 				target.append(estimated);
 				if(!estimated.equals(total)) {
-					String explanation = translator.translate("max.score.configuration.explain", new String[] { estimated, total });
+					String explanation = translator.translate("max.score.configuration.explain", estimated, total);
 					target.append(" <i class='o_icon o_icon_warn' title='").append(explanation).append("'> </i>");
 				}	
 			} else if(estimated != null) {

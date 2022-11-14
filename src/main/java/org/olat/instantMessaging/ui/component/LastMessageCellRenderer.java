@@ -39,7 +39,7 @@ public class LastMessageCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof String) {
-			Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			Object obj = source.getFormItem().getTableDataModel().getObject(row);
 			if(obj instanceof RosterRow && ((RosterRow)obj).hasUnreadMessages()) {
 				target.append("<strong>").append((String)cellValue).append("</strong>");
 			} else {

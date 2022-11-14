@@ -48,7 +48,7 @@ public class PortfolioElementCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof PortfolioElementRow) {
 			render(target, (PortfolioElementRow)cellValue, null);
 		} else if(cellValue instanceof String) {
-			Object objRow = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			Object objRow = source.getFormItem().getTableDataModel().getObject(row);
 			if(objRow instanceof PortfolioElementRow) {
 				render(target, (PortfolioElementRow)objRow, (String)cellValue);
 			} else {

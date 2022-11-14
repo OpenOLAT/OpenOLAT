@@ -54,7 +54,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult, String[] args) {
 		
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		String id = ftC.getFormDispatchId();
 		
 		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
@@ -90,7 +90,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderTable(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, URLBuilder ubu, Translator translator,
 			RenderResult renderResult) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		String id = ftC.getFormDispatchId();
 		
 		sb.append("<div class='o_table_wrapper o_table_flexi")
@@ -557,7 +557,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	protected void renderTreeButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		if(ftE.getTreeTableDataModel() != null) {
 			String dispatchId = ftE.getFormDispatchId();
 
@@ -585,9 +585,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderBulkActions(Renderer renderer, StringOutput sb, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
-		if(!hasVisibleBulkActions(ftC) && ftC.getFlexiTableElement().getSelectionMode() != SelectionMode.multi) return;
+		if(!hasVisibleBulkActions(ftC) && ftC.getFormItem().getSelectionMode() != SelectionMode.multi) return;
 		
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		List<FormItem> items = ftE.getBatchButtons();
 		int numOf = ftE.getNumOfMultiSelectedIndex();
 		if(ftE.getTableDataModel() instanceof FlexiTableSelectionDelegate) {
@@ -612,7 +612,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	private boolean hasVisibleBulkActions(FlexiTableComponent ftC) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		List<FormItem> items = ftE.getBatchButtons();
 		if(items != null && !items.isEmpty()) {
 			return items.stream().anyMatch(FormItem::isVisible);
@@ -626,7 +626,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {
 		
 		String id = ftC.getFormDispatchId();
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		
 		// the really selected rowid (from the tabledatamodel)
@@ -651,7 +651,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			URLBuilder ubu, Translator translator, RenderResult renderResult);
 
 	protected void renderPagesLinks(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		int pageSize = ftE.getPageSize();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		int rows = dataModel.getRowCount();
@@ -676,7 +676,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	private void renderSmallPageSize(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 	
 		Form theForm = ftE.getRootForm();
 		String dispatchId = ftE.getFormDispatchId();
@@ -723,7 +723,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	private void renderPageBackLink(StringOutput sb, FlexiTableComponent ftC, int page) {
 		boolean disabled = (page <= 0);
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		Form theForm = ftE.getRootForm();
 		sb.append("<li").append(" class='disabled'", disabled).append("><a href=\"");
 		if(disabled) {
@@ -738,7 +738,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
 		boolean disabled = (page >= maxPage);
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		Form theForm = ftE.getRootForm();
 		sb.append("<li ").append(" class='disabled'", disabled).append("><a href=\"");
 		if(disabled) {
@@ -791,7 +791,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	private void appendPagenNumberLink(StringOutput sb, FlexiTableComponent ftC, int page, int i) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		Form theForm = ftE.getRootForm();
 		sb.append("<li").append(" class='active'", (page == i)).append("><a href=\"javascript:")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,

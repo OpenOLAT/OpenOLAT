@@ -25,6 +25,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
@@ -44,6 +45,11 @@ class StaticTextElementComponent extends FormBaseComponentImpl {
 		return wrapper.getValue();
 	}
 	
+	@Override
+	public FormItem getFormItem() {
+		return wrapper;
+	}
+
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

@@ -52,7 +52,7 @@ public class LectureBlockTimesCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue == null) {
-			cellValue = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			cellValue = source.getFormItem().getTableDataModel().getObject(row);
 		}
 
 		if(cellValue instanceof DailyLectureBlockRow) {

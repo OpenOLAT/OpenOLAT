@@ -44,13 +44,11 @@ public class AbstractInlineElementComponent extends FormBaseComponentImpl {
 		RENDERER = HTMLRenderer;
 	}
 	
-	InlineElement getInlineElement(){
+	@Override
+	public InlineElement getFormItem() {
 		return aie;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

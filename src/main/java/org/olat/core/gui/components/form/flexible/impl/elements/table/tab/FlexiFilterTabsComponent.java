@@ -48,7 +48,8 @@ public class FlexiFilterTabsComponent extends FormBaseComponentImpl implements C
 		this.element = element;
 	}
 
-	public FlexiFilterTabsElementImpl getFlexiFilterTabsElement() {
+	@Override
+	public FlexiFilterTabsElementImpl getFormItem() {
 		return element;
 	}
 		

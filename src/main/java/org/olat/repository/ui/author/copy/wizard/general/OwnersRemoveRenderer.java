@@ -44,7 +44,7 @@ public class OwnersRemoveRenderer extends StaticFlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		Object rowObject = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object rowObject = source.getFormItem().getTableDataModel().getObject(row);
 		
 		if (rowObject instanceof Identity) {
 			Identity rowIdentity = (Identity) rowObject;

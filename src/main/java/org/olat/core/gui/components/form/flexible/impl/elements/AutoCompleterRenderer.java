@@ -44,7 +44,7 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 
 		AutoCompleterComponent cmp = (AutoCompleterComponent)source;
-		AutoCompleter autoCompleter = cmp.getAutoCompleter();
+		AutoCompleter autoCompleter = cmp.getFormItem();
 		
 		int limit = autoCompleter.getMaxEntries();
 		if(limit <= 0) {

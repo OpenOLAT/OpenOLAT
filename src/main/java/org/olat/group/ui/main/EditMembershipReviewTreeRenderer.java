@@ -51,6 +51,6 @@ public class EditMembershipReviewTreeRenderer implements FlexiCellRenderer {
 	}
 	
 	private EditMembershipReviewTableRow getRow(FlexiTableComponent source, int row) {
-		return (EditMembershipReviewTableRow) source.getFlexiTableElement().getTableDataModel().getObject(row);
+		return (EditMembershipReviewTableRow) source.getFormItem().getTableDataModel().getObject(row);
 	}
 }

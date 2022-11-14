@@ -40,7 +40,7 @@ public class CorrectedFlexiCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof CorrectionIdentityRow) {
 			render(target, (CorrectionIdentityRow)obj);
 		} else if(obj instanceof CorrectionRow) {

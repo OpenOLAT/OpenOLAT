@@ -48,7 +48,8 @@ public class FlexiFiltersComponent extends FormBaseComponentImpl implements Comp
 		this.element = element;
 	}
 	
-	public FlexiFiltersElementImpl getFlexiFiltersElement() {
+	@Override
+	public FlexiFiltersElementImpl getFormItem() {
 		return element;
 	}
 	

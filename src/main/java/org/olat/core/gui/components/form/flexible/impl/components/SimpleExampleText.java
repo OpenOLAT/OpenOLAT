@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.components;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -51,6 +52,11 @@ public class SimpleExampleText extends FormBaseComponentImpl {
 		this.setDomReplaceable(false);
 	}
 
+	@Override
+	public FormItem getFormItem() {
+		return null;
+	}
+
 	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
 
 		@Override
@@ -73,9 +79,6 @@ public class SimpleExampleText extends FormBaseComponentImpl {
 
 	};
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

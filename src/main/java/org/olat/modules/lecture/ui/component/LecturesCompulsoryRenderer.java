@@ -41,7 +41,7 @@ public class LecturesCompulsoryRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue != null) {
-			Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			Object obj = source.getFormItem().getTableDataModel().getObject(row);
 			if(obj instanceof LectureBlockAndRollCallRow) {
 				LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)obj;
 				render(target, cellValue, rollCallRow.getRow());

@@ -55,7 +55,7 @@ public class GradingDeadlineStatusCellRenderer implements FlexiCellRenderer {
 			if(status == GradingAssignmentStatus.unassigned || status == GradingAssignmentStatus.done) {
 				renderStatusWithIcon(renderer, target, status);
 			} else {
-				Object rowObject = source.getFlexiTableElement().getTableDataModel().getObject(row);
+				Object rowObject = source.getFormItem().getTableDataModel().getObject(row);
 				if(rowObject instanceof GradingAssignmentRow) {
 					GradingAssignmentRow assignmentRow = (GradingAssignmentRow)rowObject;
 					render(renderer, target, assignmentRow.getDeadline(), assignmentRow.getExtendedDeadline(), status);

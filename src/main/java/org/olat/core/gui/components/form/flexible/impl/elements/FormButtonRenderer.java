@@ -48,7 +48,7 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 
 		FormButtonComponent fsC = (FormButtonComponent) source;
-		FormButton fs = fsC.getFormButton();
+		FormButton fs = fsC.getFormItem();
 		String id = fsC.getFormDispatchId();
 		//may be no id needed.. problems if the same submit button is 
 		//rendered twice, e.g. usability

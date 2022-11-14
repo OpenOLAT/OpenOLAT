@@ -22,6 +22,7 @@ package org.olat.modules.grade.ui.component;
 import java.util.NavigableSet;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.modules.grade.GradeScoreRange;
 
@@ -37,9 +38,21 @@ public class GradeScoreRangeTable extends FormBaseComponentImpl {
 	
 	private int numColumns = 3;
 	private NavigableSet<GradeScoreRange> gradeScoreRanges;
+	
+	private final GradeScoreRangeTableItem element;
 
 	public GradeScoreRangeTable(String name) {
+		this(name, null);
+	}
+	
+	public GradeScoreRangeTable(String name, GradeScoreRangeTableItem element) {
 		super(name);
+		this.element = element;
+	}
+	
+	@Override
+	public FormItem getFormItem() {
+		return element;
 	}
 
 	public int getNumColumns() {
