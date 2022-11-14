@@ -86,7 +86,8 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 		setRows(rows);
 	}
 
-	RichTextElementImpl getRichTextElementImpl() {
+	@Override
+	public RichTextElementImpl getFormItem() {
 		return element;
 	}
 
@@ -147,11 +148,11 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 		if (CMD_FILEBROWSER.equals(moduleUri) || CMD_IMAGEBROWSER.equals(moduleUri)
 				|| CMD_FLASHPLAYERBROWSER.equals(moduleUri) || CMD_MEDIABROWSER.equals(moduleUri)) {
 			// Get currently edited relative file path
-			String fileName = getRichTextElementImpl().getEditorConfiguration().getLinkBrowserRelativeFilePath();
+			String fileName = getFormItem().getEditorConfiguration().getLinkBrowserRelativeFilePath();
 			createFileSelectorPopupWindow(ureq, moduleUri, fileName);
 			setDirty(false);
 		} else if(StringHelper.containsNonWhitespace(ureq.getParameter("browser"))) {
-			String fileName = getRichTextElementImpl().getEditorConfiguration().getLinkBrowserRelativeFilePath();
+			String fileName = getFormItem().getEditorConfiguration().getLinkBrowserRelativeFilePath();
 			createFileSelectorPopupWindow(ureq, ureq.getParameter("browser"), fileName);
 		} else {
 			String cmd = ureq.getParameter("cmd");

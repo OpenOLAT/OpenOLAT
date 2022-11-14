@@ -154,7 +154,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 
 			AbstractInlineElementComponent aiec = (AbstractInlineElementComponent) source;
 
-			InlineTextElement itei = (InlineTextElement) aiec.getInlineElement();
+			InlineTextElement itei = (InlineTextElement) aiec.getFormItem();
 			StringBuilder htmlVal = new StringBuilder();
 			
 			/**

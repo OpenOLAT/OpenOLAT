@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool.component;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
@@ -50,10 +51,14 @@ public class AssessmentModeProgressionComponent extends FormBaseComponentImpl {
 	private int loggedIn = -1;
 	private AssessmentMode.Status status;
 	
-	public AssessmentModeProgressionComponent(String name, AssessmentMode assessmentMode, Translator translator) {
+	private final AssessmentModeProgressionItem element;
+	
+	public AssessmentModeProgressionComponent(String name, AssessmentMode assessmentMode,
+			AssessmentModeProgressionItem element, Translator translator) {
 		super(name);
 		setTranslator(translator);
 		this.assessmentMode = assessmentMode;
+		this.element = element;
 		status = assessmentMode.getStatus();
 		assessmentModeCoordinationService = CoreSpringFactory.getImpl(AssessmentModeCoordinationService.class);
 		progressBar = new ProgressBar(name.concat("_progress"));
@@ -65,13 +70,18 @@ public class AssessmentModeProgressionComponent extends FormBaseComponentImpl {
 		setDomReplacementWrapperRequired(false);
 	}
 	
+	@Override
+	public FormItem getFormItem() {
+		return element;
+	}
+
 	public ProgressBar getProgressBar() {
 		return progressBar;
 	}
 	
 	public String getInformations() {
 		String i18nKey = status == Status.none || status == Status.leadtime ? "assessment.progress.wait.infos" : "assessment.progress.started.infos";
-		return getTranslator().translate(i18nKey, new String[] { Integer.toString(planned), Integer.toString(loggedIn) });
+		return getTranslator().translate(i18nKey, Integer.toString(planned), Integer.toString(loggedIn));
 	}
 	
 	public void setMax(int i) {

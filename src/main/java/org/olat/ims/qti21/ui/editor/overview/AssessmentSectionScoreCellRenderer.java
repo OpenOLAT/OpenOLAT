@@ -49,7 +49,7 @@ public class AssessmentSectionScoreCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		ControlObjectRow object = (ControlObjectRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+		ControlObjectRow object = (ControlObjectRow)source.getFormItem().getTableDataModel().getObject(row);
 		if(object.getControlObject() instanceof AssessmentSection || object.getControlObject() instanceof TestPart) {
 			scoreRenderer.render(renderer, target, cellValue, row, source, ubu, translator);
 		} else {

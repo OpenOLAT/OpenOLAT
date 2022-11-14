@@ -38,7 +38,7 @@ public class AssessmentModeProgressionItem extends FormItemImpl {
 	public AssessmentModeProgressionItem(String name, AssessmentMode assessmentMode, Translator translator) {
 		super(name);
 		setTranslator(translator);
-		component = new AssessmentModeProgressionComponent(name, assessmentMode, translator);
+		component = new AssessmentModeProgressionComponent(name, assessmentMode, this, translator);
 	}
 	
 	@Override

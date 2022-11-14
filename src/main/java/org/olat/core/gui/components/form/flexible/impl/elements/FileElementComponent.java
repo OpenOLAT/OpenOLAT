@@ -45,7 +45,8 @@ public class FileElementComponent extends FormBaseComponentImpl implements Compo
 		this.element = element;
 	}
 	
-	protected FileElementImpl getFileElementImpl(){
+	@Override
+	public FileElementImpl getFormItem(){
 		return element;
 	}
 	

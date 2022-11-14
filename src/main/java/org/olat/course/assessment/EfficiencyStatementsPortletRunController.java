@@ -34,6 +34,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -41,7 +42,6 @@ import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.util.ComponentUtil;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -116,7 +116,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);
-    //disable the default sorting for this table
+		//disable the default sorting for this table
 		tableConfig.setSortingEnabled(false);
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans);
 		listenTo(tableCtr);
@@ -124,15 +124,15 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		cd0.setIsPopUpWindowAction(true, "height=600, width=800, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
 		tableCtr.addColumnDescriptor(cd0);
 		
-		this.sortingCriteria = getPersistentSortingConfiguration(ureq);
+		sortingCriteria = getPersistentSortingConfiguration(ureq);
 		reloadModel(sortingCriteria);
 
-		this.efficiencyStatementsVC.put("table", tableCtr.getInitialComponent());
+		efficiencyStatementsVC.put("table", tableCtr.getInitialComponent());
 
-		ComponentUtil.registerForValidateEvents(efficiencyStatementsVC, this);
 		putInitialPanel(efficiencyStatementsVC);
 		
 		CourseModule.registerForCourseType(this, ureq.getIdentity());
+		getWindowControl().getWindowBackOffice().addCycleListener(this);
 	}
 	
 	/**
@@ -142,8 +142,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 */
 	private List<PortletEntry<UserEfficiencyStatementLight>> getAllPortletEntries() {
 		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());	
-		List<PortletEntry<UserEfficiencyStatementLight>> portletEntryList = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
-		return portletEntryList;
+		return convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
 	}
 	
 	/**
@@ -177,20 +176,14 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 			reloadModel(getPersistentManuallySortedItems());
 		}
 	}
-	
-  /**
-   * 
-   * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, java.util.List)
-   */
+
+	@Override
 	protected void reloadModel(List<PortletEntry<UserEfficiencyStatementLight>> sortedItems) {			
 		efficiencyStatementsListModel = new EfficiencyStatementsTableDataModel(sortedItems,2);
 		tableCtr.setTableDataModel(efficiencyStatementsListModel);
 	}
 	
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink){
 			// activate homes tab in top navigation and active calendar menu item
@@ -198,8 +191,6 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		} else if (event == ComponentUtil.VALIDATE_EVENT && needReloadModel) {			
-			reloadModel(sortingCriteria);
 		}
 	}
 
@@ -233,6 +224,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	@Override
 	protected void doDispose() {
 		CourseModule.deregisterForCourseType(this);
+		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		super.doDispose();
 	}
 	
@@ -240,11 +232,13 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	public void event(Event event) {
 		if (event instanceof AssessmentChangedEvent) {
 			AssessmentChangedEvent ace = (AssessmentChangedEvent)event;
-			
 			if (cOwner.getKey().equals(ace.getIdentityKey()) && 
 					ace.getCommand().equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
 				needReloadModel = true;
 			}
+		} else if (event == Window.BEFORE_INLINE_RENDERING && needReloadModel) {
+			reloadModel(sortingCriteria);
+			needReloadModel = false;
 		}
 	}
 	
@@ -253,7 +247,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * creates the table model for the manual sorting, and instantiates the PortletToolSortingControllerImpl.
 	 * @param ureq
 	 * @param wControl
-	 * @return a PortletToolSortingControllerImpl istance.
+	 * @return a PortletToolSortingControllerImpl instance.
 	 */
 	protected PortletToolSortingControllerImpl<UserEfficiencyStatementLight> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
@@ -361,9 +355,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 			super(objects, numCols);
 		}
 
-		/**
-		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-		 */
+		@Override
 		public final Object getValueAt(int row, int col) {			
 			PortletEntry<UserEfficiencyStatementLight> entry = getObject(row);
 			UserEfficiencyStatementLight statement = entry.getValue();
@@ -386,22 +378,23 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * Initial Date:  07.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-  private class EfficiencyStatementPortletEntry implements PortletEntry<UserEfficiencyStatementLight> {
-  	private UserEfficiencyStatementLight value;
-  	private Long key;
+	private static class EfficiencyStatementPortletEntry implements PortletEntry<UserEfficiencyStatementLight> {
+		private final UserEfficiencyStatementLight value;
+		private final Long key;
   	
-  	public EfficiencyStatementPortletEntry(UserEfficiencyStatementLight efficiencyStatement) {
-  		value = efficiencyStatement;
-  		key = efficiencyStatement.getCourseRepoKey();
-  	}
+		public EfficiencyStatementPortletEntry(UserEfficiencyStatementLight efficiencyStatement) {
+			value = efficiencyStatement;
+			key = efficiencyStatement.getCourseRepoKey();
+		}
+
+		@Override
+		public Long getKey() {
+			return key;
+		}
   	
-  	public Long getKey() {
-  		return key;
-  	}
-  	
-  	public UserEfficiencyStatementLight getValue() {
-  		return value;
-  	}
-  }
-  
+		@Override
+		public UserEfficiencyStatementLight getValue() {
+			return value;
+		}
+	}
 }

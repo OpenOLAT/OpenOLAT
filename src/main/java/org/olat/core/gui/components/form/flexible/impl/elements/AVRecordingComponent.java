@@ -32,10 +32,17 @@ public class AVRecordingComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new AVRecordingRenderer();
 
 	private final String posterName;
+	private final AVRecordingImpl element;
 
-	public AVRecordingComponent(String name, String posterName) {
+	public AVRecordingComponent(String name, String posterName, AVRecordingImpl element) {
 		super(name);
 		this.posterName = posterName;
+		this.element = element;
+	}
+
+	@Override
+	public AVRecordingImpl getFormItem() {
+		return element;
 	}
 
 	public String getRecordedFileId() {

@@ -27,7 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
-import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 
@@ -40,7 +40,7 @@ import org.olat.core.logging.AssertException;
  * Initial Date:  11.01.2007 <br>
  * @author patrickb
  */
-public abstract class FormBaseComponentImpl extends AbstractComponent implements FormBaseComponentIdProvider{	
+public abstract class FormBaseComponentImpl extends AbstractComponent implements FormBaseComponent {	
 
 	public FormBaseComponentImpl(String name) {
 		super(name);
@@ -57,7 +57,8 @@ public abstract class FormBaseComponentImpl extends AbstractComponent implements
 	public FormBaseComponentImpl(String id, String name, Translator translator) {
 		super(id, name, translator);
 	}
-	
+
+	@Override
 	public String getFormDispatchId(){		
 		return DISPPREFIX.concat(super.getDispatchID());
 	}

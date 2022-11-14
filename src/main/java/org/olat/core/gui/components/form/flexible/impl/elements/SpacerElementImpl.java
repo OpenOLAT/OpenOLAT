@@ -40,7 +40,7 @@ public class SpacerElementImpl extends FormItemImpl implements SpacerElement {
 	
 	public SpacerElementImpl(String name) {
 		super(name);
-		component = new SpacerElementComponent(name);
+		component = new SpacerElementComponent(name, this);
 	}
 
 

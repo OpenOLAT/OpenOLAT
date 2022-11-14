@@ -50,7 +50,7 @@ public class SelectSectionsCellRenderer implements FlexiCellRenderer {
 			SharedItemRow itemRow = (SharedItemRow)cellValue;
 			List<AssessedBinderSection> sections = itemRow.getSections();
 			if(sections != null && sections.size() > 0) {
-				FlexiTableElementImpl ftE = source.getFlexiTableElement();
+				FlexiTableElementImpl ftE = source.getFormItem();
 				String id = source.getFormDispatchId();
 				Form rootForm = ftE.getRootForm();
 				

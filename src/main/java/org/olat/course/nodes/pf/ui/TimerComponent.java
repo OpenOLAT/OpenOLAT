@@ -23,8 +23,8 @@ package org.olat.course.nodes.pf.ui;
 import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.ValidationResult;
 
 /**
@@ -33,7 +33,7 @@ import org.olat.core.gui.render.ValidationResult;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TimerComponent extends FormBaseComponentImpl {
+public class TimerComponent extends AbstractComponent {
 
 	private static final TimerComponentRenderer RENDERER = new TimerComponentRenderer();
 	

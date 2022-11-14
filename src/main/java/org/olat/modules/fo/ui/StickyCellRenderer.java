@@ -44,7 +44,7 @@ public class StickyCellRenderer implements FlexiCellRenderer {
 			if (renderer == null) {
 				target.append(title);
 			} else {
-				Object type = source.getFlexiTableElement().getTableDataModel().getValueAt(row, ThreadListCols.type.ordinal());
+				Object type = source.getFormItem().getTableDataModel().getValueAt(row, ThreadListCols.type.ordinal());
 				if(type instanceof Integer) {
 					boolean sticky = Status.getStatus((Integer)type).isSticky();
 					if(sticky) {

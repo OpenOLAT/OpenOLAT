@@ -17,34 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user.propertyhandlers;
+package org.olat.core.gui.components.form.flexible;
 
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
  * 
- * Initial date: 05.09.2014<br>
+ * Initial date: 11 nov. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class UserInterestsComponent extends FormBaseComponentImpl {
-	
-	private static final ComponentRenderer RENDERER = new UserInterestsRenderer();
-	private final UserInterestsElement element;
-	
-	public UserInterestsComponent(UserInterestsElement element) {
-		super(element.getName());
-		this.element = element;
-	}
-	
-	@Override
-	public UserInterestsElement getFormItem() {
-		return element;
-	}
+public interface FormBaseComponent extends FormBaseComponentIdProvider {
 
-	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
-	}
+	public FormItem getFormItem();
+	
 }

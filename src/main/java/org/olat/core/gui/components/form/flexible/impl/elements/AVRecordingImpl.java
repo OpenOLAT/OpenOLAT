@@ -67,7 +67,7 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 		super(name);
 		this.identity = identity;
 		this.config = config;
-		component = new AVRecordingComponent(name, posterName);
+		component = new AVRecordingComponent(name, posterName, this);
 	}
 
 	@Override

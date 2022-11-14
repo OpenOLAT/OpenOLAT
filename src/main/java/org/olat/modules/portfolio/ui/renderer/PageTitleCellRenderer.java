@@ -41,7 +41,7 @@ public class PageTitleCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		
-		FlexiTableElementImpl tEl = source.getFlexiTableElement();
+		FlexiTableElementImpl tEl = source.getFormItem();
 		Object rowValue = tEl.getTableDataModel().getObject(row);
 		if(rowValue instanceof SharedPageRow) {
 			SharedPageRow page = (SharedPageRow)rowValue;

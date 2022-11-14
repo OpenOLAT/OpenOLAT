@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import java.lang.management.MemoryType;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
@@ -35,13 +36,20 @@ public class MemoryComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new MemoryRenderer();
 	
 	private final MemoryType memoryType;
+	private final MemoryElementImpl element;
 	
-	public MemoryComponent(String name, MemoryType memoryType) {
+	public MemoryComponent(String name, MemoryType memoryType, MemoryElementImpl element) {
 		super(name);
 		this.memoryType = memoryType;
+		this.element = element;
 		setDomReplacementWrapperRequired(false);
 	}
 	
+	@Override
+	public FormItem getFormItem() {
+		return element;
+	}
+
 	public MemoryType getMemoryType() {
 		return memoryType;
 	}

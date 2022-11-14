@@ -40,7 +40,8 @@ class MultipleSelectionComponent extends FormBaseComponentImpl {
 		this.element = element;
 	}
 	
-	MultipleSelectionElementImpl getMultipleSelectionElement() {
+	@Override
+	public MultipleSelectionElementImpl getFormItem() {
 		return element;
 	}
 

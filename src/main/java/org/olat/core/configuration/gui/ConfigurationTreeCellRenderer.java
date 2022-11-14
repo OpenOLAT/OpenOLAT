@@ -92,7 +92,7 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		FlexiTableElementImpl ftE = source.getFlexiTableElement();
+		FlexiTableElementImpl ftE = source.getFormItem();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		if(treeTableModel != null) {
 			if(isFlat(ftE)) {
@@ -137,7 +137,7 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 	
 	private void renderIndented(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		FlexiTableElementImpl ftE = source.getFlexiTableElement();
+		FlexiTableElementImpl ftE = source.getFormItem();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		
 		String id = source.getFormDispatchId();
@@ -176,9 +176,9 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 	
 	protected String href(FlexiTableComponent source, int row) {
 		String href = null;
-		FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
+		FlexiTableDataModel<?> model = source.getFormItem().getTableDataModel();
 		if(model instanceof FlexiBusinessPathModel) {
-			Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			Object object = source.getFormItem().getTableDataModel().getObject(row);
 			href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
 		}
 		if(StringHelper.containsNonWhitespace(href)) {

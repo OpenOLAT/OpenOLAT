@@ -38,7 +38,7 @@ public class TimelineElement extends FormItemImpl {
 	
 	public TimelineElement(String name) {
 		super(name);
-		component = new TimelineComponent(name.concat("_CMP"));
+		component = new TimelineComponent(name.concat("_CMP"), this);
 	}
 	
 	public String getContainerId() {

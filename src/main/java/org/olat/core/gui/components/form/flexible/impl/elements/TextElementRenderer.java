@@ -46,7 +46,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		TextElementComponent teC = (TextElementComponent) source;
-		TextElementImpl te = teC.getTextElementImpl();
+		TextElementImpl te = teC.getFormItem();
 		String id = teC.getFormDispatchId();
 
 		String value = te.getValue();

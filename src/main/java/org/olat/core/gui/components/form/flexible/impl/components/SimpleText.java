@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl.components;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -57,10 +58,12 @@ public class SimpleText extends FormBaseComponentImpl {
 		this.text = text;
 		setDirty(true);
 	}
+
+	@Override
+	public FormItem getFormItem() {
+		return null;
+	}
 	
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

@@ -109,7 +109,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			String value, String cssClass, int maxlength, Translator translator) {
 		TextElementComponent teC = jsdcc.getTextElementComponent();
 		String format = jsdcc.getDateChooserDateFormat();
-		TextElementImpl te = teC.getTextElementImpl();
+		TextElementImpl te = teC.getFormItem();
 		if(value == null) {
 			value = "";
 		}
@@ -186,7 +186,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	
 	private void renderDateChooserDisabled(StringOutput sb, JSDateChooserComponent jsdcc, String value, String cssClass, int maxLength) {
 		TextElementComponent teC = jsdcc.getTextElementComponent();
-		TextElementImpl te = teC.getTextElementImpl();
+		TextElementImpl te = teC.getFormItem();
 		//display size cannot be bigger the maxlenght given by dateformat
 
 		String id = teC.getFormDispatchId();
@@ -276,7 +276,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	}
 	
 	private StringOutput renderMS(StringOutput dc, String id, String receiverId, JSDateChooserComponent teC, int time) {
-		TextElementImpl te = teC.getTextElementComponent().getTextElementImpl();
+		TextElementImpl te = teC.getTextElementComponent().getFormItem();
 		boolean actionDateOnly = teC.getFormItem().isActionDateOnly();
 		int action = actionDateOnly ? 0 : te.getAction();
 		
@@ -297,7 +297,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String value, TextElementComponent teC, int maxlength) {
-		TextElementImpl te = teC.getTextElementImpl();
+		TextElementImpl te = teC.getFormItem();
 		
 		//display size cannot be bigger the maxlenght given by dateformat
 		te.displaySize = te.displaySize <= maxlength ? te.displaySize : maxlength;

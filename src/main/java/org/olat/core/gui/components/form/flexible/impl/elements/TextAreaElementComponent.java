@@ -78,13 +78,11 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 		this.originalLineBreaks = originalLineBreaks;
 	}
 
-	TextAreaElementImpl getTextAreaElementImpl() {
+	@Override
+	public TextAreaElementImpl getFormItem() {
 		return element;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

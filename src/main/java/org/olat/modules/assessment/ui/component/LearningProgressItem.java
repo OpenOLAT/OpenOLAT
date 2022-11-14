@@ -19,48 +19,44 @@
  */
 package org.olat.modules.assessment.ui.component;
 
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import java.util.Locale;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
  * 
- * Initial date: 14 Feb 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 11 nov. 2022<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DoneChart extends FormBaseComponentImpl {
+public class LearningProgressItem extends FormItemImpl {
 	
-	private static final DoneChartRenderer RENDERER = new DoneChartRenderer();
+	private final LearningProgressComponent component;
 	
-	private int donePercent;
-	private final DoneChartItem element;
-
-	public DoneChart(String name) {
-		this(name, null);
-	}
-	
-	public DoneChart(String name, DoneChartItem element) {
+	public LearningProgressItem(String name, Locale locale) {
 		super(name);
-		this.element = element;
-	}
-	
-	@Override
-	public FormItem getFormItem() {
-		return element;
-	}
-
-	public int getDonePercent() {
-		return donePercent;
-	}
-	
-	public void setDonePercent(int donePercent) {
-		this.donePercent = donePercent;
-		setDirty(true);
+		component = new LearningProgressComponent(name, locale, this);
 	}
 
 	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+	public void evalFormRequest(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	public void reset() {
+		//
+	}
+
+	@Override
+	protected Component getFormItemComponent() {
+		return component;
+	}
+
+	@Override
+	protected void rootFormAvailable() {
+		//
 	}
 }

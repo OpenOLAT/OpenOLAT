@@ -46,9 +46,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		MultipleSelectionComponent stC = (MultipleSelectionComponent)source;
-		MultipleSelectionElementImpl stF = stC.getMultipleSelectionElement();
+		MultipleSelectionElementImpl stF = stC.getFormItem();
 		if(stF.getLayout() == Layout.vertical) {
-			int columns = stC.getMultipleSelectionElement().getColumns();
+			int columns = stF.getColumns();
 			if(columns <= 1) {
 				renderVertical(sb, stC);
 			} else {
@@ -62,7 +62,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderDropDown(StringOutput sb, MultipleSelectionComponent stC) {
-		MultipleSelectionElementImpl stF = stC.getMultipleSelectionElement();
+		MultipleSelectionElementImpl stF = stC.getFormItem();
 		long listId = CodeHelper.getRAMUniqueID();
 		long buttonTitleId = CodeHelper.getRAMUniqueID();
 		String buttonGroupId = "o_" + Long.toString(CodeHelper.getRAMUniqueID());
@@ -290,7 +290,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	
 	
 	private void renderCheckbox(StringOutput sb, CheckboxElement check, MultipleSelectionComponent stC, boolean inline) {
-		MultipleSelectionElementImpl stF = stC.getMultipleSelectionElement();
+		MultipleSelectionElementImpl stF = stC.getFormItem();
 
 		String subStrName = "name='" + check.getGroupingName() + "'";
 			

@@ -44,7 +44,8 @@ public class AutoCompleterComponent extends FormBaseComponentImpl {
 		setTranslator(autoCompleter.getTranslator());
 	}
 
-	public AutoCompleter getAutoCompleter() {
+	@Override
+	public AutoCompleter getFormItem() {
 		return autoCompleter;
 	}
 	

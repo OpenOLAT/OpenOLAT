@@ -20,6 +20,7 @@
 package org.olat.modules.assessment.ui.component;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
@@ -33,11 +34,22 @@ public class PassedChart extends FormBaseComponentImpl {
 	private static final PassedChartRenderer RENDERER = new PassedChartRenderer();
 	
 	private PassedPercent passedPercent;
-
+	private final PassedChartItem element;
+	
 	public PassedChart(String name) {
+		this(name, null);
+	}
+
+	public PassedChart(String name, PassedChartItem element) {
 		super(name);
+		this.element = element;
 	}
 	
+	@Override
+	public FormItem getFormItem() {
+		return element;
+	}
+
 	public PassedPercent getPassedPercent() {
 		return passedPercent;
 	}

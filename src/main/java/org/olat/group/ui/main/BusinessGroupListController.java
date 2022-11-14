@@ -460,7 +460,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 
 		@Override
 		protected String getId(Object cellValue, int row, FlexiTableComponent source) {
-			BusinessGroupRow businessGroup = (BusinessGroupRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			BusinessGroupRow businessGroup = (BusinessGroupRow)source.getFormItem().getTableDataModel().getObject(row);
 			return "o-tools-" + businessGroup.getKey();
 		}
 	}

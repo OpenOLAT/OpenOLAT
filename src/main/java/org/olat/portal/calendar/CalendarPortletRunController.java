@@ -50,7 +50,6 @@ import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.util.ComponentUtil;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -76,7 +75,6 @@ public class CalendarPortletRunController extends BasicController {
 
 	private VelocityContainer calendarVC;
 	private TableController tableController;
-	private boolean dirty = false;
 	private Link showAllLink;
 	
 	@Autowired
@@ -96,8 +94,6 @@ public class CalendarPortletRunController extends BasicController {
 		calendarVC = createVelocityContainer("calendarPortlet");
 		showAllLink = LinkFactory.createLink("calendar.showAll", calendarVC, this);
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
-
-		ComponentUtil.registerForValidateEvents(calendarVC, this);
 		
 		Date date = new Date();
 		String today = DateFormat.getTimeInstance(DateFormat.MEDIUM, ureq.getLocale()).format(date);
@@ -158,11 +154,6 @@ public class CalendarPortletRunController extends BasicController {
 		return events;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink) {
@@ -171,16 +162,9 @@ public class CalendarPortletRunController extends BasicController {
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		} else if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
-			List<KalendarEvent> events = getMatchingEvents(ureq, getWindowControl());
-			tableController.setTableDataModel(new EventsModel(events));
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableController) {

@@ -46,7 +46,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		
 		FlexiFilterTabsComponent tabCmp = (FlexiFilterTabsComponent)source;
-		FlexiFilterTabsElementImpl tabEl = tabCmp.getFlexiFilterTabsElement();
+		FlexiFilterTabsElementImpl tabEl = tabCmp.getFormItem();
 
 		List<FlexiFiltersTab> tabs = tabEl.getFilterTabs();
 		List<FlexiFiltersTab> customTabs = tabEl.getCustomFilterTabs();

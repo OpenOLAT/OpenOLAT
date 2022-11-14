@@ -40,7 +40,7 @@ public class NotCorrectedFlexiCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		
-		Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof CorrectionRow) {
 			CorrectionRow itemRow = (CorrectionRow)obj;
 			if(itemRow.isManualCorrection() && itemRow.getNumNotCorrected() > 0) {

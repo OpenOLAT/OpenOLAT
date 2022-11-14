@@ -58,7 +58,7 @@ public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCell
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		FlexiTableElementImpl ftE = source.getFlexiTableElement();
+		FlexiTableElementImpl ftE = source.getFormItem();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		
 		if(treeTableModel != null) {

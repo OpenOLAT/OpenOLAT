@@ -38,7 +38,7 @@ public class MemoryElementImpl extends FormItemImpl implements MemoryElement {
 	
 	public MemoryElementImpl(String name, MemoryType heap) {
 		super(name);
-		component = new MemoryComponent(name, heap);
+		component = new MemoryComponent(name, heap, this);
 	}
 	
 	@Override

@@ -67,7 +67,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		Translator trans = getTranslator(translator);
 		//
 		FileElementComponent fileComp = (FileElementComponent) source;
-		FileElementImpl fileElem = fileComp.getFileElementImpl();
+		FileElementImpl fileElem = fileComp.getFormItem();
 		String id = fileComp.getFormDispatchId();
 		// Calculate current file name: either from already uploaded file or
 		// from initial file or empty

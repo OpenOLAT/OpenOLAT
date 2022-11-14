@@ -46,7 +46,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			RenderResult renderResult, String[] args) {
 		
 		FlexiTableComponent ftC = (FlexiTableComponent)source;
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		String id = ftC.getFormDispatchId();
 
 		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
@@ -105,8 +105,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 	protected void renderRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 		sb.append("<div class='");
-		if(ftC.getFlexiTableElement().getCssDelegate() != null) {
-			String cssClass = ftC.getFlexiTableElement().getCssDelegate().getRowCssClass(FlexiTableRendererType.custom, row);
+		if(ftC.getFormItem().getCssDelegate() != null) {
+			String cssClass = ftC.getFormItem().getCssDelegate().getRowCssClass(FlexiTableRendererType.custom, row);
 			if (cssClass == null) {
 				sb.append("o_table_row row");
 			} else {
@@ -117,7 +117,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		}
 		sb.append("'>");
 
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		VelocityContainer container = ftE.getRowRenderer();
 		container.contextPut("f", new FormDecorator(ftE.getRootForm()));
 

@@ -208,7 +208,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		
 		String cellAction = getAction();
 		if(StringHelper.containsNonWhitespace(cellAction)) {
-			FlexiTableElementImpl ftE = source.getFlexiTableElement();
+			FlexiTableElementImpl ftE = source.getFormItem();
 			String id = source.getFormDispatchId();
 			Form rootForm = ftE.getRootForm();
 			NameValuePair pair = new NameValuePair(cellAction, Integer.toString(row));
@@ -297,9 +297,9 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 	
 	private String href(FlexiTableComponent source, int row) {
 		String href = null;
-		FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
+		FlexiTableDataModel<?> model = source.getFormItem().getTableDataModel();
 		if(model instanceof FlexiBusinessPathModel) {
-			Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			Object object = source.getFormItem().getTableDataModel().getObject(row);
 			href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
 		}
 		if(!StringHelper.containsNonWhitespace(href)) {

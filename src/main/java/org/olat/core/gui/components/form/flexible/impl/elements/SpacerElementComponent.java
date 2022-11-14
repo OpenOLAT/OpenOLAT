@@ -33,9 +33,20 @@ public class SpacerElementComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new SpacerElementRenderer();
 	
 	private String spacerCssClass;
+	private final SpacerElementImpl element;
 	
 	public SpacerElementComponent(String name) {
+		this(name, null);
+	}
+	
+	public SpacerElementComponent(String name, SpacerElementImpl element) {
 		super(name);
+		this.element = element;
+	}
+	
+	@Override
+	public SpacerElementImpl getFormItem() {
+		return element;
 	}
 
 	public String getSpacerCssClass() {

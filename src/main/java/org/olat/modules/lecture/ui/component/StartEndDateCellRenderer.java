@@ -54,7 +54,7 @@ public class StartEndDateCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		
-		Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof AbsenceNoticeRow) {
 			AbsenceNoticeRow noticeRow = (AbsenceNoticeRow)obj;
 			

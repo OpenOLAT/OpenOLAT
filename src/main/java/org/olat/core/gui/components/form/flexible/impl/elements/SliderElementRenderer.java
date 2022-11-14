@@ -42,7 +42,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		
 		SliderElementComponent sec = (SliderElementComponent)source;
-		SliderElement sel = sec.getSliderElement();
+		SliderElement sel = sec.getFormItem();
 		String formDispatchFieldId = sel.getRootForm().getDispatchFieldId();
 		double value = sec.hasValue()
 				? sec.getValue()

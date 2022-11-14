@@ -45,7 +45,8 @@ public class TextBoxListElementComponent extends TextBoxListComponent  {
 		this.element = element;
 	}
 	
-	public TextBoxListElementImpl getTextElementImpl(){
+	@Override
+	public TextBoxListElementImpl getFormItem() {
 		return element;
 	}
 

@@ -46,7 +46,8 @@ public class AutoCompletionMultiSelectionComponent extends FormBaseComponentImpl
 		this.autoCompletionMultiSelection = autoCompleter;
 	}
 
-	public AutoCompletionMultiSelectionImpl getAutoCompletionMultiSelection() {
+	@Override
+	public AutoCompletionMultiSelectionImpl getFormItem() {
 		return autoCompletionMultiSelection;
 	}
 

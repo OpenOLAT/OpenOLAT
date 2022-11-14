@@ -60,6 +60,11 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 		// to minimize DOM tree we provide our own DOM ID (o_c12245)
 		this.setDomReplacementWrapperRequired(false);
 	}
+	
+	@Override
+	public FormItem getFormItem() {
+		return null;
+	}
 
 	/**
 	 * return true: the component is mandatory; false: the component is optional
@@ -82,11 +87,6 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 		return item.getHelpUrl();
 	}
 
-	
-	
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

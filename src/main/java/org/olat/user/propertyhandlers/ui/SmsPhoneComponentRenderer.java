@@ -41,7 +41,7 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		SmsPhoneComponent smsCmp = (SmsPhoneComponent)source;
-		SmsPhoneElement smsFte = smsCmp.getSmsPhoneElement();
+		SmsPhoneElement smsFte = smsCmp.getFormItem();
 		String id = smsCmp.getFormDispatchId();
 		String phoneNumber = smsFte.getPhone();
 		if(!StringHelper.containsNonWhitespace(phoneNumber)) {

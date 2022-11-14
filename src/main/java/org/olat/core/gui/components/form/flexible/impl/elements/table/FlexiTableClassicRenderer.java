@@ -50,7 +50,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	
 	@Override
 	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
 		      
@@ -200,7 +200,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if (!fcm.isSortable() || fcm.getSortKey() == null) {
 			sb.append(header);	
 		} else {
-			FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+			FlexiTableElementImpl ftE = ftC.getFormItem();
 			
 			Boolean asc = null;
 			String sortKey = fcm.getSortKey();
@@ -265,7 +265,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
 		int numOfCols = columnsModel.getColumnCount();
 		Form theForm = ftE.getRootForm();
@@ -378,7 +378,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	private void renderCell(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 
 		int alignment = fcm.getAlignment();
@@ -441,7 +441,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	@Override
 	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		
 		boolean hasSelectAll = false;
 		boolean selection = ftE.getSelectionMode() != SelectionMode.disabled;

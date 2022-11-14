@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl.components;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -83,6 +84,11 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 	
 	public SimpleFormErrorText(String name, String text) { 
 		this(name, text, false);
+	}
+	
+	@Override
+	public FormItem getFormItem() {
+		return null;
 	}
 	
 	public String getText() {

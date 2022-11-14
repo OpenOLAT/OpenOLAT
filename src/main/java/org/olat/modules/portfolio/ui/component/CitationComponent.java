@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui.component;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.portfolio.Citation;
@@ -36,9 +37,20 @@ public class CitationComponent extends FormBaseComponentImpl {
 	
 	private Citation citation;
 	private DublinCoreMetadata dublinCoreMetadata;
+	private final CitationElement element;
 	
 	public CitationComponent(String name) {
+		this(name, null);
+	}
+	
+	public CitationComponent(String name, CitationElement element) {
 		super(name);
+		this.element = element;
+	}
+	
+	@Override
+	public FormItem getFormItem() {
+		return element;
 	}
 
 	public Citation getCitation() {

@@ -41,7 +41,7 @@ public class AutoCompletionMultiSelectionRenderer extends DefaultComponentRender
 			RenderResult renderResult, String[] args) {
 
 		AutoCompletionMultiSelectionComponent cmp = (AutoCompletionMultiSelectionComponent)source;
-		AutoCompletionMultiSelectionImpl acms = cmp.getAutoCompletionMultiSelection();
+		AutoCompletionMultiSelectionImpl acms = cmp.getFormItem();
 		FormLink button = acms.getButton();
 		
 		renderer.render(button.getComponent(), sb, null);

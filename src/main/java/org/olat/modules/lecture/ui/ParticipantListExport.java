@@ -49,7 +49,7 @@ public class ParticipantListExport extends XlsFlexiTableExporter {
 			if(colIndex < ParticipantListRepositoryController.USER_PROPS_OFFSET) {
 				switch(ParticipantsCols.values()[colIndex]) {
 					case rate:
-						FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
+						FlexiTableDataModel<?> dataModel = ftC.getFormItem().getTableDataModel();
 						Object rate = dataModel.getValueAt(row, colIndex);
 						if(rate instanceof Number) {
 							dataRow.addCell(col, (Number)rate, workbook.getStyles().getPercentStyle());

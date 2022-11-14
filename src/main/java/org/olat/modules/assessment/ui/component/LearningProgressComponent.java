@@ -22,6 +22,7 @@ package org.olat.modules.assessment.ui.component;
 import java.util.Locale;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -47,13 +48,21 @@ public class LearningProgressComponent extends FormBaseComponentImpl {
 	private boolean chartVisible = true;
 	private boolean labelVisible = true;
 	
-	public LearningProgressComponent(String name, Locale locale) {
+	private final LearningProgressItem element;
+	
+	public LearningProgressComponent(String name, Locale locale, LearningProgressItem element) {
 		super(name);
+		this.element = element;
 		setDomReplacementWrapperRequired(false);
 		translator = Util.createPackageTranslator(AssessedIdentityListController.class, locale);
 		setTranslator(translator);
 	}
 	
+	@Override
+	public FormItem getFormItem() {
+		return element;
+	}
+
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

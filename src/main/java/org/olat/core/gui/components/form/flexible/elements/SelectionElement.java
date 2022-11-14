@@ -26,14 +26,13 @@
 
 package org.olat.core.gui.components.form.flexible.elements;
 
-import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 
 /**
  * @author patrickb
  */
-public interface SelectionElement extends FormItem, FormBaseComponentIdProvider{
+public interface SelectionElement extends FormItem {
 
 	/**
 	 * @param which

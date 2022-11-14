@@ -42,7 +42,6 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.util.ComponentUtil;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
@@ -222,11 +221,6 @@ public class DevelopmentController extends BasicController {
 				myContent.contextPut("autorefresh", "true");
 			} else {
 				myContent.contextPut("autorefresh", "false");
-			}
-		} else if (event == ComponentUtil.VALIDATE_EVENT) {
-			// todo update mode
-			if (treeShown) {
-				updateComponentTree();
 			}
 		}
 	}

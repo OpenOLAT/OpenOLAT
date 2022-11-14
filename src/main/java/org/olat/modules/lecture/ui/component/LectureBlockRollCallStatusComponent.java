@@ -110,7 +110,8 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 		return rollCall.getLecturesAbsentNumber();
 	}
 
-	public LectureBlockRollCallStatusItem getLectureBlockRollCallStatusItem() {
+	@Override
+	public LectureBlockRollCallStatusItem getFormItem() {
 		return element;
 	}
 

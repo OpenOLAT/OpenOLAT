@@ -49,7 +49,8 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 		this.sliderElement = sliderElement;
 	}
 	
-	public SliderElement getSliderElement() {
+	@Override
+	public SliderElement getFormItem() {
 		return sliderElement;
 	}
 	

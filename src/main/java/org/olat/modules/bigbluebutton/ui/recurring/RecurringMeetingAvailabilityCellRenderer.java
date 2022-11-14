@@ -38,7 +38,7 @@ public class RecurringMeetingAvailabilityCellRenderer implements FlexiCellRender
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof Boolean) {
-			RecurringMeeting meeting = (RecurringMeeting)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			RecurringMeeting meeting = (RecurringMeeting)source.getFormItem().getTableDataModel().getObject(row);
 			if(meeting.isDeleted()) {
 				target.append("<span><i class='o_icon o_icon_cancelled'> </i></span>");
 			} else if(((Boolean)cellValue).booleanValue()) {

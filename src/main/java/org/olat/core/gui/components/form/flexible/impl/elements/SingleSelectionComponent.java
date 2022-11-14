@@ -48,7 +48,8 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		this.element = element;
 	}
 	
-	SingleSelectionImpl getSingleSelectionImpl(){
+	@Override
+	public SingleSelectionImpl getFormItem() {
 		return element;
 	}
 	

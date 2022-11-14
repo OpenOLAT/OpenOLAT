@@ -44,7 +44,7 @@ public class LectureInfosRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(Boolean.TRUE.equals(cellValue)) {
-			AuthoringEntryRow item = (AuthoringEntryRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			AuthoringEntryRow item = (AuthoringEntryRow)source.getFormItem().getTableDataModel().getObject(row);
 			if(item.isLectureEnabled()) {
 				target.append("<i class='o_icon o_icon-fw o_icon_lecture'> </i>");
 				if(item.isRollCallEnabled()) {

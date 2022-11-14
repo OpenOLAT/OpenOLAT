@@ -51,7 +51,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		//
 		TextAreaElementComponent teC = (TextAreaElementComponent) source;
-		TextAreaElementImpl te = teC.getTextAreaElementImpl();
+		TextAreaElementImpl te = teC.getFormItem();
 
 		String id = teC.getFormDispatchId();
 		

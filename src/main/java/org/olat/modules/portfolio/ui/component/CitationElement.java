@@ -37,7 +37,7 @@ public class CitationElement extends FormItemImpl {
 	
 	public CitationElement(String name) {
 		super(name);
-		component = new CitationComponent(name.concat("_CMP"));
+		component = new CitationComponent(name.concat("_CMP"), this);
 	}
 	
 	public Citation getCitation() {

@@ -39,7 +39,8 @@ public class SmsPhoneComponent extends FormBaseComponentImpl {
 		this.element = element;
 	}
 	
-	public SmsPhoneElement getSmsPhoneElement() {
+	@Override
+	public SmsPhoneElement getFormItem() {
 		return element;
 	}
 

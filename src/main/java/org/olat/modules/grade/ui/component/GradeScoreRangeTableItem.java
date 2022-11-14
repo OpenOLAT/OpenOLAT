@@ -17,34 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user.propertyhandlers;
+package org.olat.modules.grade.ui.component;
 
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
  * 
- * Initial date: 05.09.2014<br>
+ * Initial date: 11 nov. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class UserInterestsComponent extends FormBaseComponentImpl {
+public class GradeScoreRangeTableItem extends FormItemImpl {
 	
-	private static final ComponentRenderer RENDERER = new UserInterestsRenderer();
-	private final UserInterestsElement element;
+	private final GradeScoreRangeTable component;
 	
-	public UserInterestsComponent(UserInterestsElement element) {
-		super(element.getName());
-		this.element = element;
-	}
-	
-	@Override
-	public UserInterestsElement getFormItem() {
-		return element;
+	public GradeScoreRangeTableItem(String name) {
+		super(name);
+		component = new GradeScoreRangeTable(name);
 	}
 
 	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+	public void evalFormRequest(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	public void reset() {
+		//
+	}
+
+	@Override
+	protected Component getFormItemComponent() {
+		return component;
+	}
+
+	@Override
+	protected void rootFormAvailable() {
+		//
 	}
 }

@@ -35,7 +35,7 @@ public class ModifyOwnersReviewStateRenderer extends DefaultFlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		ModifyOwnersReviewTableRow tableRow = (ModifyOwnersReviewTableRow) source.getFlexiTableElement().getTableDataModel().getObject(row);
+		ModifyOwnersReviewTableRow tableRow = (ModifyOwnersReviewTableRow) source.getFormItem().getTableDataModel().getObject(row);
 		
 		switch (tableRow.getState()) {
 			case added:

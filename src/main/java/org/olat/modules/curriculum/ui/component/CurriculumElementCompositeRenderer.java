@@ -43,7 +43,7 @@ public class CurriculumElementCompositeRenderer extends StaticFlexiCellRenderer 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		CurriculumElementWithViewsRow view = (CurriculumElementWithViewsRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+		CurriculumElementWithViewsRow view = (CurriculumElementWithViewsRow)source.getFormItem().getTableDataModel().getObject(row);
 		if(view.isCurriculumElementOnly()) {
 			getLabelDelegate().render(renderer, target, cellValue, row, source, ubu, translator);
 		} else {

@@ -37,7 +37,7 @@ import org.olat.core.gui.translator.Translator;
 public class ExportableFlexiTableDataModelDelegate  {
 	
 	public MediaResource export(FlexiTableComponent ftC, Translator translator) {
-		List<FlexiColumnModel> columns = getColumnModels(ftC.getFlexiTableElement());
+		List<FlexiColumnModel> columns = getColumnModels(ftC.getFormItem());
 		return export(ftC, columns, translator);
 	}
 	
