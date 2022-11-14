@@ -164,11 +164,11 @@ public class UserSearchFlexiController extends FormBasicController {
 	}
 	
 	private void init(UserRequest ureq, UserSearchProvider searchProvider, GroupRoles repositoryEntryRole,
-			OrganisationRoles[] excludedRoles, boolean multiSelection, boolean showSelectButton) {
+			OrganisationRoles[] excludedRoles, boolean multiSelect, boolean showSelectButton) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
-		this.multiSelection = multiSelection;
+		this.multiSelection = multiSelect;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -205,6 +205,7 @@ public class UserSearchFlexiController extends FormBasicController {
 
 				completerEl = uifactory.addTextElementWithAutoCompleter("quick.search", "quick.search", 64, null, quickSearchFormContainer);
 				completerEl.setListProvider(search, ureq.getUserSession());
+				completerEl.setHelpTextKey("quick.search.help", null);
 				completerEl.setMinLength(3);
 				completerEl.setShowDisplayKey(isAdministrativeUser);
 				completerEl.setFocus(true);
