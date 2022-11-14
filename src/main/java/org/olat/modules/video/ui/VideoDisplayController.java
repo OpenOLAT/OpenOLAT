@@ -81,6 +81,7 @@ import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
+import org.olat.modules.video.manager.VideoSubtitlesHelper;
 import org.olat.modules.video.ui.component.ContinueAtCommand;
 import org.olat.modules.video.ui.component.ContinueCommand;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
@@ -469,6 +470,8 @@ public class VideoDisplayController extends BasicController {
 	}
 	
 	private void loadTracks() {
+		VideoSubtitlesHelper.upgradeTracks(
+				videoManager.getMasterContainer(videoEntry.getOlatResource()), getIdentity());
 		Map<String, String> trackfiles = new HashMap<>();
 		Map<String, VFSLeaf> configTracks = videoManager.getAllTracks(videoEntry.getOlatResource());
 		for (Map.Entry<String, VFSLeaf> track : configTracks.entrySet()) {

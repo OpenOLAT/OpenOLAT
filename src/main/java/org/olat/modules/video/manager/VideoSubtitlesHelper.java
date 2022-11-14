@@ -20,21 +20,32 @@
 package org.olat.modules.video.manager;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.video.VideoManager;
 
 /**
  * Initial date: 2022-11-07<br>
@@ -50,12 +61,55 @@ public class VideoSubtitlesHelper {
 	private static final String timeCodeRegex = "^(\\d{2}):(\\d{2}):(\\d{2}),(\\d{3}) --> (\\d{2}):(\\d{2}):(\\d{2}),(\\d{3})$";
 	private static final Pattern timeCodePattern = Pattern.compile(timeCodeRegex);
 
+	public static void upgradeTracks(VFSContainer tracksContainer, Identity savedBy) {
+		List<VFSItem> tracks = tracksContainer.getItems(new VideoSubtitleVfsFilter());
+		for (VFSItem track : tracks) {
+			String trackName = track.getName();
+			String suffix = FileUtils.getFileSuffix(trackName);
+			String baseName = trackName.substring(0, trackName.length() - suffix.length());
+			String newTrackName = baseName + VideoManager.FILETYPE_VTT;
+
+			if (isVtt((VFSLeaf) track)) {
+				if (!VideoManager.FILETYPE_VTT.equals(suffix)) {
+					track.rename(newTrackName);
+				}
+			} else {
+				if (tracksContainer.resolve(newTrackName) == null) {
+					VFSLeaf newTrack = tracksContainer.createChildLeaf(newTrackName);
+					try {
+						convertSrtToVtt(((VFSLeaf) track).getInputStream(), newTrack.getOutputStream(false));
+						CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(newTrack, savedBy);
+					} catch (Exception e) {
+						log.error("Cannot convert non-VTT to VTT", e);
+					}
+				}
+				track.deleteSilently();
+			}
+		}
+	}
+
 	public static boolean isVtt(VFSLeaf vfsLeaf) {
 		if (vfsLeaf == null) {
 			return false;
 		}
 
-		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(vfsLeaf.getInputStream()))) {
+		return isVtt(vfsLeaf.getInputStream());
+	}
+
+	public static boolean isVtt(File file) {
+		if (file == null) {
+			return false;
+		}
+
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			return isVtt(fileInputStream);
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	public static boolean isVtt(InputStream inputStream) {
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (StringHelper.containsNonWhitespace(line)) {
@@ -63,7 +117,7 @@ public class VideoSubtitlesHelper {
 				}
 			}
 		} catch (Exception e) {
-			log.error("Unable to load VFSLeaf  " + vfsLeaf.getName(), e);
+			log.error("Unable to read from input stream", e);
 		}
 
 		return false;
@@ -75,8 +129,22 @@ public class VideoSubtitlesHelper {
 		aggregatingCaptionText
 	}
 
+	public static boolean isConvertibleSrt(File file) {
+		if (file == null) {
+			return false;
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			convertSrtToVtt(fileInputStream, baos);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	public static void convertSrtToVtt(InputStream inputStream, OutputStream outputStream) throws Exception {
-		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
 			String line;
 			int sequenceNumber;
 			int checkSequenceNumber = 1;
@@ -123,15 +191,6 @@ public class VideoSubtitlesHelper {
 			log.error("Exception while reading SRT input stream", e);
 			throw e;
 		}
-	}
-
-	public static void convertSrtToVtt(VFSLeaf vfsLeaf, VFSContainer targetContainer, String fileName) throws Exception {
-		if (vfsLeaf == null) {
-			throw new IOException("Input missing");
-		}
-
-		VFSLeaf vttVfsLeaf = targetContainer.createChildLeaf(fileName);
-		convertSrtToVtt(vfsLeaf.getInputStream(), vttVfsLeaf.getOutputStream(false));
 	}
 
 	public static Pair<Long, Long> parseSrtTimeCode(String timeCodeString) {
@@ -192,5 +251,13 @@ public class VideoSubtitlesHelper {
 		sb.append(String.format("%02d:%02d:%02d.%03d", toHours, toMinutes, toSeconds, toMilliseconds));
 
 		return sb.toString();
+	}
+
+	static class VideoSubtitleVfsFilter implements VFSItemFilter {
+
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			return vfsItem instanceof VFSLeaf && vfsItem.getName().startsWith(VideoManagerImpl.TRACK);
+		}
 	}
 }

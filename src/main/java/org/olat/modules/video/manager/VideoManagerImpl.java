@@ -239,8 +239,17 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public VFSLeaf getTrack(OLATResource videoResource, String lang) {
-		String path = TRACK + lang + DOT + FILETYPE_SRT;
-		return resolveFromMasterContainer(videoResource, path);
+		String vttPath = TRACK + lang + DOT + FILETYPE_VTT;
+		VFSLeaf vttLeaf = resolveFromMasterContainer(videoResource, vttPath);
+		if (vttLeaf != null) {
+			return vttLeaf;
+		}
+		String srtPath = TRACK + lang + DOT + FILETYPE_SRT;
+		VFSLeaf srtLeaf = resolveFromMasterContainer(videoResource, srtPath);
+		if (srtLeaf != null) {
+			return srtLeaf;
+		}
+		return null;
 	}
 	
 	/**
@@ -1273,12 +1282,9 @@ public class VideoManagerImpl implements VideoManager {
 	private static class TrackFilter implements VFSItemFilter {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
-			if(vfsItem instanceof VFSLeaf) { 
-				String name = vfsItem.getName().toLowerCase();
-				int idx = name.lastIndexOf('.');
-				if (idx >= 0 && !name.startsWith(".")) { 
-					return VideoManager.FILETYPE_SRT.equals(name.substring(idx + 1));
-				}
+			if(vfsItem instanceof VFSLeaf) {
+				String suffix = FileUtils.getFileSuffix(vfsItem.getName());
+				return VideoManager.FILETYPE_SRT.equals(suffix) || VideoManager.FILETYPE_VTT.equals(suffix);
 			}
 			return false;
 		}
