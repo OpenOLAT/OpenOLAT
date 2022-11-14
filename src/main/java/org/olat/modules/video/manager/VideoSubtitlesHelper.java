@@ -113,7 +113,7 @@ public class VideoSubtitlesHelper {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (StringHelper.containsNonWhitespace(line)) {
-					return line.equals(VTT_MARKER);
+					return line.startsWith(VTT_MARKER);
 				}
 			}
 		} catch (Exception e) {
