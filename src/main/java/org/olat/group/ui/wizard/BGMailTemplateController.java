@@ -106,7 +106,6 @@ public class BGMailTemplateController extends FormBasicController {
 			mailTemplate.setSubjectTemplate(subjectElem.getValue());
 		}
 		if(bodyElem != null) {
-			System.out.println(bodyElem.getValue());
 			mailTemplate.setBodyTemplate(bodyElem.getValue());
 		}
 		if(ccSender != null) {
