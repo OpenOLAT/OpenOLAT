@@ -56,6 +56,7 @@ public class OpenOLATPolicy {
 	private static final Pattern OLATINTERNALURL = Pattern.compile("javascript:parent\\.goto(node|tool)\\(['\"]?[a-zA-Z0-9]+['\"]?\\)");
 	private static final Pattern NUMBERORPERCENT = Pattern.compile("(\\d)+(%{0,1})");
 	private static final Pattern COLORCODE = Pattern.compile("(#([0-9a-fA-F]{6}|[0-9a-fA-F]{3}))");
+	private static final String[] VARIABLES = new String[] { "$courseUrl", "$groupUrl", "$curriculumUrl" };
 
 	public static final PolicyFactory POLICY_DEFINITION = new HtmlPolicyBuilder()
 		.allowStyling()
@@ -166,7 +167,7 @@ public class OpenOLATPolicy {
 		.allowAttributes("rel")
 			.matching(false,"nofollow").onElements("a")
 		.allowAttributes("href")
-			.matching(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL, ANCHOR))
+			.matching(new OrPredicate(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL, ANCHOR), new StringsPredicate(VARIABLES)))
 			.onElements("a")
 	    .allowAttributes("onclick")
 			.matching(new OnClickValues())
@@ -368,6 +369,55 @@ public class OpenOLATPolicy {
 		}
 	}
 	
+	private static class OrPredicate implements Predicate<String> {
+		
+		private final Predicate<String> a;
+		private final Predicate<String> b;
+		
+		public OrPredicate(Predicate<String> a,  Predicate<String> b) {
+			this.a = a;
+			this.b = b;
+		}
+		
+		@Override
+		public boolean apply(String s) {
+			return a.apply(s) || b.apply(s);
+		}
+		
+		@Override
+		public boolean test(String s) {
+			return apply(s);
+		}
+	}
+	
+	private static class StringsPredicate implements Predicate<String> {
+
+		private final String[] strings;
+		
+		public StringsPredicate(String[] strings) {
+			this.strings = strings;
+		}
+		
+		@Override
+		public boolean apply(String s) {
+			for(int i=strings.length; i-->0; ) {
+				if(strings[i].equalsIgnoreCase(s)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		// Needed for Java8 compat with later Guava that extends
+		// java.util.function.Predicate.
+		// For some reason the default test method implementation that calls
+		// through to apply is not assumed here.
+		@Override
+		public boolean test(String s) {
+			return apply(s);
+		}
+	}
+	
 	private static class Patterns implements Predicate<String> {
 		
 		private final Pattern a;
@@ -376,11 +426,7 @@ public class OpenOLATPolicy {
 		private final Pattern d;
 		
 		public Patterns(Pattern a, Pattern b) {
-			this(a, b, null);
-		}
-		
-		public Patterns(Pattern a, Pattern b, Pattern c) {
-			this(a, b ,c , null);
+			this(a, b, null, null);
 		}
 		
 		public Patterns(Pattern a, Pattern b, Pattern c, Pattern d) {
