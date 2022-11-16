@@ -577,3 +577,7 @@
 		border: solid 1px $btn-default-border;
 	}
 }
+
+.first-letter-capitalize:first-letter {
+	text-transform: capitalize;
+}
