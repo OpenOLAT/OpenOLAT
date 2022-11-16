@@ -57,10 +57,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSAndFilter;
 import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSOrFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 
@@ -316,9 +318,11 @@ public class LinkFileCombiCalloutController extends BasicController {
 	}
 	
 	private void doOpenSelect(UserRequest ureq) {
-		VFSItemFilter filter = new VFSOrFilter(List.of(
-				new VFSContainerFilter(),
-				new VFSItemSuffixFilter(new String[] { "html", "htm" })));
+		VFSItemFilter filter = new VFSAndFilter(List.of(
+				new VFSSystemItemFilter(),
+				new VFSOrFilter(List.of(
+						new VFSContainerFilter(),
+						new VFSItemSuffixFilter(new String[] { "html", "htm" })))));
 		FileChooserController fileChooserCtrl = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), baseContainer, filter, true);
 		fileChooserCtrl.setShowTitle(true);
 		fileChooserCtrl.selectPath(relFilePath);
