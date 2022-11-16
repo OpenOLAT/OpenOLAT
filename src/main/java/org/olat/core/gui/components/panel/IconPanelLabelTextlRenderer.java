@@ -59,11 +59,15 @@ public class IconPanelLabelTextlRenderer extends DefaultComponentRenderer {
 				String id = "o_text_label_" + i;
 				sb.append("<div class='form-horizontal'>");
 				sb.append("<label class='control-label col-sm-3' for=\"").append(id).append("\">");
-				sb.append(labelText.getLabel());
+				if (StringHelper.containsNonWhitespace(labelText.getLabel())) {
+					sb.append(labelText.getLabel());
+				}
 				sb.append("</label>");
 				sb.append("</div>");
 				sb.append("<div class='form-control-static col-sm-9' id=\"").append(id).append("\">");
-				sb.append(labelText.getText());
+				if (StringHelper.containsNonWhitespace(labelText.getText())) {
+					sb.append(labelText.getText());
+				}
 				sb.append("</div>");
 			}
 		}
