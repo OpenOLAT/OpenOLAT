@@ -1,54 +1,11 @@
 <fieldset class="o_form form-horizontal o_qti_configuration">
 	<legend>
-	#if ($type == "Assessment")
-		$r.contextHelpWithWrapper("manual_user/course_elements/Assessment/#course_element_test")
-	#elseif ($type == "Self-Assessment")
-		$r.contextHelpWithWrapper("manual_user/tests/Tests_at_course_level/")
-	#else
-		$r.contextHelpWithWrapper("manual_user/course_elements/Assessment/#course_element_form")
+	#if ($r.isNotNull($helpUrl))
+		$r.contextHelpWithWrapper($helpUrl)
 	#end
 	$repEntryTitle</legend>
-	
-	#if ($dontRenderRepositoryButton)
-		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("file.name")</label>
-			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview.link")</div>
-		</div>
-		<div class="form-group">
-			<div class="col-sm-offset-3 col-sm-9">
-			$r.render("command.changeRepFile")
-			#if($r.available("command.editRepFile"))
-				$r.render("command.editRepFile")
-			#end
-			#if($r.available("command.preview"))
-				$r.render("command.preview")
-			#end
-			</div>
-		</div>
-
-		#if ($showOutcomes)
-			<div class="o_block">
-				#o_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
-				<table class="table table-condensed table-striped">
-					<tbody>
-						#foreach($key in $outcomes.keySet())
-		        	 		<tr><td>$key:</td><td>$outcomes.get($key)</td></tr>
-		           		 #end
-		            </tbody>
-				</table>
-				#o_togglebox_end()
-			</div>
-		#end		
-	#else
-		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("file.name")</label>
-			<div class="col-sm-9"><p class="form-control-static">$!chosentest</p></div>
-		</div>
-		<div class="form-group">
-			<div class="col-sm-offset-3 col-sm-9">$r.render("command.chooseRepFile")</div>
-		</div>	
-	#end
 </fieldset>
+$r.render("reference")
 #if($r.available("iqeditform"))
 	$r.render("iqeditform")
 #end

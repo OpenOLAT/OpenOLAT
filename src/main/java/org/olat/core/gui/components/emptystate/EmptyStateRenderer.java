@@ -52,9 +52,15 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 				: "o_icon_empty_objects";
 		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
 		sb.append("</div>");
-		String message = StringHelper.containsNonWhitespace(emptyState.getMessageI18nKey())
-				? translator.translate(emptyState.getMessageI18nKey(), emptyState.getMessageI18nArgs())
-				: Util.createPackageTranslator(EmptyState.class, translator.getLocale()).translate("default.message");
+		
+		String message = null;
+		if (StringHelper.containsNonWhitespace(emptyState.getMessageTranslated())) {
+			message = emptyState.getMessageTranslated();
+		} else if (StringHelper.containsNonWhitespace(emptyState.getMessageI18nKey())) {
+			message = translator.translate(emptyState.getMessageI18nKey(), emptyState.getMessageI18nArgs());
+		} else {
+			Util.createPackageTranslator(EmptyState.class, translator.getLocale()).translate("default.message");
+		}
 		sb.append("<h3 class='o_empty_msg'>").append(message).append("</h3>");
 		if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
 			sb.append("<div class='o_empty_hint'>").append(translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs())).append("</div>");

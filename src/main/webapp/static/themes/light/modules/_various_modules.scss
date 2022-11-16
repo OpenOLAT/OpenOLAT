@@ -749,6 +749,10 @@ div.o_reminder_custom_email {
 		margin-top: 0;
 		margin-bottom: 15px;
 	}
+	.o_icon_panel_tagline {
+		@extend %o_small;
+		margin: 0;	
+	}
 	
 	display: flex;
 	>.o_icon_panel_icon_col {

@@ -43,6 +43,7 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 	private Component content;
 	private String iconCssClass;
 	private String title;
+	private String tagline;
 	
 	public IconPanel(String name) {
 		super(name);
@@ -136,7 +137,7 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 	List<Component> getLinks() {
 		return links;
 	}
-
+	
 	public String getTitle() {
 		return title;
 	}
@@ -144,6 +145,14 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 	public void setTitle(String title) {
 		this.title = title;
 		setDirty(true);
+	}
+
+	public String getTagline() {
+		return tagline;
+	}
+
+	public void setTagline(String tagline) {
+		this.tagline = tagline;
 	}
 
 }

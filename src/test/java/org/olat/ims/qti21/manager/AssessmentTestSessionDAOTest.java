@@ -378,6 +378,27 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getTestSessionsCount() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4a");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4b");
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		dbInstance.commit();
+		//create an assessment test session
+		testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, null, false);
+		testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry2, assessedIdentity2, null, null, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		Long testSessions = testSessionDao.getTestSessionsCount(courseEntry, subIdent, testEntry);
+		assertThat(testSessions).isEqualTo(2);
+	}
+	
+	@Test
 	public void hasRunningTestSessions() {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();

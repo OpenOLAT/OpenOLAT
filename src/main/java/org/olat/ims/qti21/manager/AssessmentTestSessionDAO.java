@@ -369,6 +369,27 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
+	public Long getTestSessionsCount(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(session) from qtiassessmenttestsession session")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey and ");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.append("session.subIdent=:subIdent");
+		} else {
+			sb.append("session.subIdent is null");
+		}
+		sb.append(" and session.exploded=false and session.cancelled=false");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		return query.getSingleResult();
+	}
+	
 	/**
 	 * A complete list of test sessions inclusive exploded and/or cancelled.
 	 * 

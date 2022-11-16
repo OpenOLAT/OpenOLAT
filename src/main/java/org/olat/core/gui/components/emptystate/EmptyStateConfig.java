@@ -38,6 +38,8 @@ public interface EmptyStateConfig {
 	public String getMessageI18nKey();
 
 	public String[] getMessageI18nArgs();
+	
+	public String getMessageTranslated();
 
 	public String getHintI18nKey();
 

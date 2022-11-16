@@ -1,0 +1,28 @@
+<div classe="o_re_reference">
+	#if($repositoryEntryAvailable)
+		<div class="o_button_group o_button_group_right">
+			$r.render("preview")
+			<div class="btn-group">
+				$r.render("replace")
+				$r.render("commands")
+			</div>
+		</div>
+		$r.render("reference")
+	#else
+		$r.render("empty.state")
+		<div class="o_button_group">
+			$r.render("select")
+			#if($r.available("create"))
+				$r.render("create")
+			#end
+			#if($r.available("import") && $r.available("import.dropdown"))
+				<div class="btn-group">
+					$r.render("import")
+					$r.render("import.dropdown")
+				</div>
+			#elseif($r.available("import"))
+				$r.render("import")
+			#end
+		</div>
+	#end
+</div>

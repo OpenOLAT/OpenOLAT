@@ -22,12 +22,12 @@ package org.olat.core.gui.components.panel;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -113,6 +113,7 @@ public class ListPanel extends AbstractComponent implements ComponentCollection 
 		return content;
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
