@@ -165,7 +165,6 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
@@ -208,7 +207,6 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
@@ -295,7 +293,6 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
@@ -343,7 +340,6 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>

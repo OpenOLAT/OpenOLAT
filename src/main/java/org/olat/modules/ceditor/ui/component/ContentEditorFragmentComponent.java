@@ -175,6 +175,13 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 						fireEvent(ureq, new EditElementEvent(pageElement.getId()));
 					}
 					break;
+				case "inspect_fragment":
+					if(isInspectorVisible()) {
+						setInspectorVisible(false, false);
+					} else {
+						setInspectorVisible(true, false);
+					}
+					break;
 				case "add_element_above":
 					String aboveLinkId = "o_cmore_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddElementEvent(aboveLinkId, this, PageElementTarget.above));
@@ -243,6 +250,11 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private void doCloseEditFragment() {
 		this.editMode = false;
 		setDirty(true);
+	}
+	
+	@Override
+	public boolean hasInspector() {
+		return inspectorPart != null;
 	}
 
 	public Component getInspectorComponent() {

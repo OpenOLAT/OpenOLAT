@@ -82,15 +82,22 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	}
 	
 	protected void renderToggleInspector(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
-		if(cmp.isEditable()) {
-			sb.append("<button id='o_ccedit_").append(cmp.getDispatchID()).append("' ")
-				  .append("onclick=\"");// add elements directly in container
+		boolean hasInspector = cmp.hasInspector();	
+		sb.append("<button id='o_ccinspect_").append(cmp.getDispatchID()).append("' ");
+		if(hasInspector) {
+			sb.append("onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
-					new NameValuePair(VelocityContainer.COMMAND_ID, "edit_fragment"),
+					new NameValuePair(VelocityContainer.COMMAND_ID, "inspect_fragment"),
 					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-			sb.append(" return false;\" class='o_sel_edit_element").append(" active", cmp.isInspectorVisible()).append("' title='").append(translator.translate("edit"))
-			  .append("'><i class='o_icon o_icon-fw o_icon_inspect'> </i> <span>").append(translator.translate("edit")).append("</span></button>");
+			sb.append(" return false;\"");
+		} else {
+			sb.append(" disabled");
 		}
+		String title = cmp.isInspectorVisible() ? translator.translate("inspector.hide") : translator.translate("inspector.show");
+		sb.append(" class='o_sel_elementinspector").append(" active", cmp.isInspectorVisible())
+		  .append("' title='").append(title).append("'><i class='o_icon o_icon-fw o_icon_inspect'> </i> <span>")
+		  .append(title).append("</span></button>");
+			
 	}
 	
 	protected void renderMoveUp(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
