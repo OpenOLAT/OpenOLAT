@@ -27,7 +27,7 @@
 package org.olat.core.gui.components.tabbedpane;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
@@ -42,7 +42,7 @@ import org.olat.core.util.StringHelper;
 /**
  * @author Felix Jost
  */
-public class TabbedPaneRenderer implements ComponentRenderer {
+public class TabbedPaneRenderer extends DefaultComponentRenderer {
 
 
 	@Override

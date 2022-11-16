@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -46,7 +46,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author patrickb
  */
-class FormWrapperContainerRenderer implements ComponentRenderer {
+class FormWrapperContainerRenderer extends DefaultComponentRenderer {
 
 	private static final Set<String> acceptedInstructions = new HashSet<>();
 	static {

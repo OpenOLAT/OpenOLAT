@@ -198,6 +198,12 @@ public class XSSFilterParamTest {
 			// video tag
 			{ "<video src=\"http://localhost/win/video.mp4\" width=\"320\" height=\"240\"></video>", "<video src=\"http://localhost/win/video.mp4\" width=\"320\" height=\"240\"></video>" },
 			{ "<audio src=\"http://localhost/win/video.mp4\"></audio>", "<audio src=\"http://localhost/win/video.mp4\"></audio>" },
+			// some variables found in mails (exact match)
+			{ "<a href=\"$courseUrl\">Href with variable</a>", "<a href=\"$courseUrl\">Href with variable</a>" },
+			{ "<a href=\"$groupUrl\">Href with variable</a>", "<a href=\"$groupUrl\">Href with variable</a>" },
+			{ "<a href=\"$curriculumUrl\">Href with variable</a>", "<a href=\"$curriculumUrl\">Href with variable</a>" },
+			{ "<a href=\"$courseUrlNotValid\">Href with variable</a>", "<a>Href with variable</a>" },
+			{ "<a href=\"not$courseUrl\">Href with variable</a>", "<a>Href with variable</a>" },
 			
 			{ null, "" } // be tolerant	
         });

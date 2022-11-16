@@ -169,7 +169,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 
 		boolean withMail = businessGroupModule.getNumberOfDayBeforeDeactivationMail() > 0;
 		boolean automatic = businessGroupModule.isAutomaticGroupInactivationEnabled();
-		boolean excluded = updateExcludeFromAutomaticMethodsEl(automatic);
+		boolean excluded = updateExcludeFromAutomaticMethodsEl();
 		String mode = buildMode(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle(), withMail);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
 		
@@ -241,8 +241,8 @@ public class BusinessGroupStatusController extends FormBasicController {
 		uifactory.addStaticTextElement("status.inactivation.by", inactivatedByStr, formLayout);
 		
 		boolean withMail = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail() > 0;
-		boolean automatic = businessGroupModule.isAutomaticGroupInactivationEnabled();
-		boolean excluded = updateExcludeFromAutomaticMethodsEl(automatic);
+		boolean automatic = businessGroupModule.isAutomaticGroupSoftDeleteEnabled();
+		boolean excluded = updateExcludeFromAutomaticMethodsEl();
 		String mode = buildMode(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle(), withMail);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
 
@@ -313,7 +313,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		uifactory.addStaticTextElement("status.soft.delete.by", softDeletedByStr, formLayout);
 		
 		boolean automatic = businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled();
-		boolean excluded = updateExcludeFromAutomaticMethodsEl(automatic);
+		boolean excluded = updateExcludeFromAutomaticMethodsEl();
 		String mode = buildMode(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle(), null);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
 		
@@ -364,8 +364,11 @@ public class BusinessGroupStatusController extends FormBasicController {
 		return sb.toString();
 	}
 	
-	private boolean updateExcludeFromAutomaticMethodsEl(boolean isAutomatic) {
+	private boolean updateExcludeFromAutomaticMethodsEl() {
 		boolean excluded = false;
+		boolean isAutomatic = businessGroupModule.isAutomaticGroupInactivationEnabled()
+				|| businessGroupModule.isAutomaticGroupSoftDeleteEnabled()
+				|| businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled();
 		if(isAutomatic) {
 			if((StringHelper.containsNonWhitespace(businessGroup.getManagedFlagsString()) && businessGroupModule.isGroupLifecycleExcludeManaged())
 				|| (LTI13Service.LTI_GROUP_TYPE.equals(businessGroup.getTechnicalType()) && businessGroupModule.isGroupLifecycleExcludeLti())

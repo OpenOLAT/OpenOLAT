@@ -32,7 +32,6 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlsite.NewInlineUriEvent;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
@@ -173,8 +172,6 @@ public class SPRunController extends BasicController implements Activateable2 {
 			if (event instanceof OlatCmdEvent) {
 				// refire to listening controllers
 				fireEvent(ureq, event);
-			} else if (event instanceof NewInlineUriEvent) {
-				//do nothing
 			}
 		}
 	}

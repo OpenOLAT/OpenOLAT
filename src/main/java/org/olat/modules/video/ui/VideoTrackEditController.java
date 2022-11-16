@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.manager.VideoSubtitlesHelper;
 import org.olat.modules.video.ui.VideoTracksTableModel.TrackTableCols;
 import org.olat.modules.video.ui.event.TrackUploadEvent;
 import org.olat.resource.OLATResource;
@@ -86,6 +87,7 @@ public class VideoTrackEditController extends FormBasicController {
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), generalCont);
 		tableEl.setCustomizeColumns(false);
+		VideoSubtitlesHelper.upgradeTracks(videoManager.getMasterContainer(videoResource), getIdentity());
 		Map<String, VFSLeaf> tracks = videoManager.getAllTracks(videoResource);
 		List<TrackTableRow> rows = new ArrayList<>(tracks.size());
 		for (Map.Entry<String, VFSLeaf> entry : tracks.entrySet()) {

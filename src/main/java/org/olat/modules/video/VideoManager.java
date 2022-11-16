@@ -45,8 +45,9 @@ import org.olat.resource.OLATResource;
  */
 public interface VideoManager {
 	
-	public static final String FILETYPE_SRT = "srt";
-	public static final String DOT = "." ;
+	String FILETYPE_SRT = "srt";
+	String FILETYPE_VTT = "vtt";
+	String DOT = "." ;
 	
 	/**
 	 * Checks for video file.

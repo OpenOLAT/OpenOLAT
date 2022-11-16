@@ -106,13 +106,10 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 
 	private Map<String, String> cssPathToId = new HashMap<>();
 	private Map<String, Integer> cssPathToIndex = new HashMap<>();
-	private final Comparator<String> cssIndexComparator = new Comparator<String>(){
-		@Override
-		public int compare(String css1, String css2) {
-			int index1 = cssPathToIndex.get(css1);
-			int index2 = cssPathToIndex.get(css2);
-			return (index1 - index2);
-		}
+	private final Comparator<String> cssIndexComparator = (css1, css2) -> {
+		int index1 = cssPathToIndex.get(css1);
+		int index2 = cssPathToIndex.get(css2);
+		return (index1 - index2);
 	};
 	private int cssCounter = 0;
 

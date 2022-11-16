@@ -28,6 +28,7 @@ package org.olat.group.ui.wizard;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
@@ -50,7 +52,7 @@ import org.olat.core.util.mail.MailTemplate;
 public class BGMailTemplateController extends FormBasicController {
 
 	private TextElement subjectElem;
-	private TextElement bodyElem;
+	private RichTextElement bodyElem;
 	private SelectionElement sendMail;
 	private SelectionElement ccSender;
 	private SelectionElement defaultTemplate;
@@ -168,7 +170,11 @@ public class BGMailTemplateController extends FormBasicController {
 			subjectElem.setDisplaySize(60);
 			subjectElem.setMandatory(true);
 		
-			bodyElem = uifactory.addTextAreaElement("bodyElem", "mailtemplateform.body", -1, 15, 60, true, false, template.getBodyTemplate(), formLayout);
+			String body = template.getBodyTemplate();
+			if(body != null && !StringHelper.isHtml(body)) {
+				body = Formatter.escWithBR(body).toString();
+			}
+			bodyElem = uifactory.addRichTextElementForStringDataMinimalistic("bodyElem", "mailtemplateform.body", body, 15, 60, formLayout, getWindowControl());
 			bodyElem.setMandatory(true);
 			MailHelper.setVariableNamesAsHelp(bodyElem, template, getLocale());
 		}

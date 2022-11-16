@@ -74,6 +74,7 @@ public class MembersWizardPage {
 		try {
 			By contactFormBy = By.cssSelector("fieldset.o_sel_contact_form");
 			OOGraphene.waitElement(contactFormBy, browser);
+			OOGraphene.waitTinymce(browser);
 			OOGraphene.waitBusyAndScrollTop(browser);
 			OOGraphene.finishStep(browser);
 		} catch (Exception e) {

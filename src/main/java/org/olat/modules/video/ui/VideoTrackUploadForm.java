@@ -21,9 +21,13 @@ package org.olat.modules.video.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -34,10 +38,14 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.VideoManagerImpl;
+import org.olat.modules.video.manager.VideoSubtitlesHelper;
 import org.olat.modules.video.ui.event.TrackUploadEvent;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +59,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class VideoTrackUploadForm extends FormBasicController {
-	
+
+	private static final Logger log = Tracing.createLoggerFor(VideoTrackUploadForm.class);
 	private FileElement fileEl;
 	private SingleSelection langsItem;
 	private VFSContainer mediaContainer;
@@ -95,7 +104,12 @@ public class VideoTrackUploadForm extends FormBasicController {
 		fileEl.clearError();
 		if (fileEl.isUploadSuccess()) {
 			String filename = fileEl.getUploadFileName();
-			if(!filename.endsWith(VideoManager.FILETYPE_SRT)) {
+			String suffix = FileUtils.getFileSuffix(filename);
+			if (!VideoManager.FILETYPE_SRT.equals(suffix) && !VideoManager.FILETYPE_VTT.equals(suffix)) {
+				fileEl.setErrorKey("track.upload.error.filetype", null);
+				allOk &= false;
+			} else if (!VideoSubtitlesHelper.isVtt(fileEl.getUploadFile()) &&
+					!VideoSubtitlesHelper.isConvertibleSrt(fileEl.getUploadFile())) {
 				fileEl.setErrorKey("track.upload.error.filetype", null);
 				allOk &= false;
 			}
@@ -110,11 +124,31 @@ public class VideoTrackUploadForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (fileEl.isUploadSuccess()) {
-			String uploadfilename = VideoManagerImpl.TRACK + langsItem.getSelectedKey()
-				+ VideoManager.DOT + VideoManager.FILETYPE_SRT;
-			fileEl.setUploadFileName(uploadfilename);
-			VFSLeaf track = fileEl.moveUploadFileTo(mediaContainer);
-			fireEvent(ureq, new TrackUploadEvent(langsItem.getSelectedKey(), track));
+			String newTrackName = VideoManagerImpl.TRACK + langsItem.getSelectedKey() + VideoManager.DOT + VideoManager.FILETYPE_VTT;
+			if (VideoSubtitlesHelper.isVtt(fileEl.getUploadFile())) {
+				fileEl.setUploadFileName(newTrackName);
+				VFSItem oldFile = mediaContainer.resolve(newTrackName);
+				if (oldFile instanceof VFSLeaf && oldFile.exists()) {
+					oldFile.deleteSilently();
+				}
+				VFSLeaf track = fileEl.moveUploadFileTo(mediaContainer);
+				fireEvent(ureq, new TrackUploadEvent(langsItem.getSelectedKey(), track));
+			} else if (VideoSubtitlesHelper.isConvertibleSrt(fileEl.getUploadFile())) {
+				log.info("User upload of a non-VTT file that is convertible to VTT");
+				VFSItem existingItem = mediaContainer.resolve(newTrackName);
+				if (existingItem != null) {
+					existingItem.deleteSilently();
+				}
+				VFSLeaf newTrack = mediaContainer.createChildLeaf(newTrackName);
+				try (FileInputStream fileInputStream = new FileInputStream(fileEl.getUploadFile())) {
+					VideoSubtitlesHelper.convertSrtToVtt(fileInputStream, newTrack.getOutputStream(false));
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(newTrack, getIdentity());
+					fireEvent(ureq, new TrackUploadEvent(langsItem.getSelectedKey(), newTrack));
+				} catch (Exception e) {
+					log.error("Cannot convert non-VTT to VTT", e);
+					getWindowControl().setWarning(translate("track.upload.error.filetype"));
+				}
+			}
 		}
 	}
 
