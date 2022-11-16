@@ -205,7 +205,7 @@ public class UserSearchFlexiController extends FormBasicController {
 
 				completerEl = uifactory.addTextElementWithAutoCompleter("quick.search", "quick.search", 64, null, quickSearchFormContainer);
 				completerEl.setListProvider(search, ureq.getUserSession());
-				completerEl.setHelpTextKey("quick.search.help", null);
+				completerEl.setExampleKey("quick.search.help", null);
 				completerEl.setMinLength(3);
 				completerEl.setShowDisplayKey(isAdministrativeUser);
 				completerEl.setFocus(true);
