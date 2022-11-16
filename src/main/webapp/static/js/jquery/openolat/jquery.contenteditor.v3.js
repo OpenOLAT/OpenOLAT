@@ -140,18 +140,25 @@
 					o_info.contentEditorWindowListener = null;
 				} else {
 					var jTarget = jQuery(e.target);
-					var excludedEls = jTarget.closest(".o_popover").length > 0
-						|| jTarget.closest(".o_page_add_in_container").length > 0
-						|| jTarget.closest(".tox-tinymce").length > 0
-						|| jTarget.closest(".tox-dialog").length > 0
-						|| jTarget.closest(".mce-content-body").length > 0
+					var excludedEls = jTarget.closest(".o_page_add_in_container").length > 0 
+						// Modal dialogs
+						|| jTarget.closest(".o_popover").length > 0
 						|| jTarget.closest(".o_layered_panel .popover").length > 0
 						|| jTarget.closest(".o_layered_panel .modal-dialog").length > 0
+						// TinyMCE
+						|| jTarget.closest(".tox-tinymce").length > 0
+						|| jTarget.closest(".tox-dialog").length > 0
+						|| jTarget.closest(".tox-dialog-wrap__backdrop").length > 0
+						|| jTarget.closest(".mce-content-body").length > 0
+						// MathLive
+						|| jTarget.closest(".ML__keyboard").length > 0
+						// Mediaelement.js
+						|| jTarget.closest(".mejs__overlay-button").length > 0
+						|| jTarget.closest(".mejs__controls").length > 0
+						// Content editor
+						|| jTarget.closest(".o_ceditor_inspector").length > 0
 						|| jTarget.closest(".o_evaluation_editor_form").length > 0
 						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
-						|| jTarget.closest(".tox-dialog-wrap__backdrop").length > 0
-						|| jTarget.closest(".ML__keyboard").length > 0
-						|| jTarget.closest(".o_ceditor_inspector").length > 0
 						|| jTarget.closest("a").length > 0 || jTarget.closest("button").length > 0
 						|| e.target.nodeName == 'BODY';
 					

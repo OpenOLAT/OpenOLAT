@@ -19,11 +19,15 @@
  */
 package org.olat.modules.video.ui;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * table-model for to list de available subtitle-tracks in the metadata
@@ -32,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTableRow>{
+public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTableRow> implements SortableFlexiTableDataModel<TrackTableRow> {
 
 	private final Locale locale;
 	
@@ -43,12 +47,24 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		TrackTableRow track = getObject(row);
+		return getValueAt(getObject(row), col);
+	}
+
+	@Override
+	public Object getValueAt(TrackTableRow track, int col) {
 		switch(TrackTableCols.values()[col]) {
 			case file: return track.getTrack() == null ? "-" : track.getTrack().getName();
 			case language: return new Locale(track.getLanguage()).getDisplayLanguage(locale);
 			case delete: return track.getDeleteLink();
 			default: return "";
+		}
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if (orderBy != null) {
+			List<TrackTableRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
 		}
 	}
 
@@ -70,7 +86,7 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != delete;
 		}
 
 		@Override

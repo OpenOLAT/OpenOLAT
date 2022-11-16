@@ -38,6 +38,8 @@ public interface ContentEditorFragment extends ComponentCollection {
 	
 	public void setEditMode(boolean editMode);
 	
+	public boolean hasInspector();
+	
 	public boolean isInspectorVisible();
 	
 	public void setInspectorVisible(boolean visible, boolean silently);

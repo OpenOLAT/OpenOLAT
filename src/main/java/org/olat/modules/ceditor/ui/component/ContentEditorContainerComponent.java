@@ -105,6 +105,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 		if(cmd != null && fragment != null && getComponentName().equals(fragment)) {
 			switch(cmd) {
 				case "edit_fragment":
+				case "inspect_fragment":
 					if(isEditMode()) {
 						doCloseEditFragment();
 					} else {
@@ -395,6 +396,11 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	public void removeComponent(ContentEditorFragment fragmentCmp) {
 		if(fragmentCmp == null) return;
 		components.remove(fragmentCmp);
+	}
+
+	@Override
+	public boolean hasInspector() {
+		return inspectorPart != null;
 	}
 
 	public Component getInspectorComponent() {

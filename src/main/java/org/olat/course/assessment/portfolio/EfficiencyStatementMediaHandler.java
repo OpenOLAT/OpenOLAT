@@ -43,7 +43,6 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
-import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
@@ -139,11 +138,6 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
-	}
-	
-	@Override
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		return null;
 	}
 
 	@Override

@@ -57,6 +57,10 @@ public class CreateFileHandler extends FileHandler {
 		return builder.build();
 	}
 	
+	public CreateFileHandler() {
+		super(true);
+	}
+	
 	@Override
 	public String getType() {
 		return "bc.create";
