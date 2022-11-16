@@ -188,19 +188,20 @@ public class BusinessGroupStatusController extends FormBasicController {
 			}
 		}
 
+		boolean mailSent = businessGroupLifecycleManager.getInactivationEmailDate(businessGroup) != null;
 		Date inactivationDate = businessGroupLifecycleManager.getInactivationDate(businessGroup);
 		String inactivation = formatter.formatDate(inactivationDate);
 		long days = DateUtils.countDays(ureq.getRequestTimestamp(), inactivationDate);
 		String[] args = new String[] { inactivation, Long.toString(Math.abs(days)) };
-		String prefix = statusPrefix(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
-		
+		String prefix = statusPrefix(mailSent, automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
+
 		String plan;
 		if(days == 0) {
-			plan = prefix + " " + translate("status.inactivation.at.today", args);
+			plan = prefix + translate("status.inactivation.at.today", args);
 		} else if(days == 1) {
-			plan = prefix + " " + translate("status.inactivation.at.singular", args);
+			plan = prefix + translate("status.inactivation.at.singular", args);
 		} else if(days > 1) {
-			plan = prefix + " " + translate("status.inactivation.at", args);
+			plan = prefix + translate("status.inactivation.at", args);
 		} else if(days == -1) {
 			plan = translate("status.inactivation.overdue.singular", args);
 		} else {
@@ -209,6 +210,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 
 		StaticTextElement plannedEl = uifactory.addStaticTextElement("status.inactivation.planned", plan, formLayout);
 		plannedEl.setHelpText(translate("status.inactivation.planned.hint"));
+		plannedEl.setElementCssClass("first-letter-capitalize");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -264,16 +266,17 @@ public class BusinessGroupStatusController extends FormBasicController {
 		Date planedDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
 		if(planedDate != null) {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
+			boolean mailSent = businessGroupLifecycleManager.getSoftDeleteEmailDate(businessGroup) != null;
 			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
-			String prefix = statusPrefix(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
+			String prefix = statusPrefix(mailSent, automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
 			
 			String plan;
 			if(numOfDaysBeforeDelete == 0) {
-				plan = prefix + " " + translate("status.soft.delete.planned.days.of.today", args);
+				plan = prefix + translate("status.soft.delete.planned.days.of.today", args);
 			} else if(numOfDaysBeforeDelete == 1) {
-				plan = prefix + " " + translate("status.soft.delete.planned.days.of.singular", args);
+				plan = prefix + translate("status.soft.delete.planned.days.of.singular", args);
 			} else if(numOfDaysBeforeDelete > 1) {
-				plan = prefix + " " + translate("status.soft.delete.planned.days.of", args);
+				plan = prefix +  translate("status.soft.delete.planned.days.of", args);
 			} else if(numOfDaysBeforeDelete == -1) {
 				plan = translate("status.soft.delete.overdue.days.singular", args);
 			} else {
@@ -282,6 +285,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 			
 			StaticTextElement plannedEl = uifactory.addStaticTextElement("status.soft.delete.planned", plan, formLayout);
 			plannedEl.setHelpText(translate("status.soft.delete.planned.hint"));
+			plannedEl.setElementCssClass("first-letter-capitalize");
 		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -321,7 +325,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		if(planedDate != null) {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
 			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
-			String prefix = statusPrefix(automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
+			String prefix = statusPrefix(false, automatic, excluded || businessGroup.isExcludeFromAutoLifecycle());
 			
 			String plan;
 			if(numOfDaysBeforeDelete == 0 || numOfDaysBeforeDelete == 1) {
@@ -345,9 +349,12 @@ public class BusinessGroupStatusController extends FormBasicController {
 		restoreButton = uifactory.addFormLink("restore", buttonsCont, Link.BUTTON);
 	}
 	
-	private String statusPrefix(boolean auto, boolean excludedFromAutoLifecycle) {
+	private String statusPrefix(boolean mailSent, boolean auto, boolean excludedFromAutoLifecycle) {
+		if(mailSent) {
+			return "";
+		}
 		String i18nAuto = auto && !excludedFromAutoLifecycle ? "status.automatic" : "status.manual";
-		return translate(i18nAuto);
+		return translate(i18nAuto) + " ";
 	}
 	
 	private String buildMode(boolean auto, boolean excludedFromAutoLifecycle, Boolean days) {
