@@ -95,6 +95,7 @@ public class VideoTrackEditController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		tableEl.setNumOfRowsEnabled(false);
+		tableEl.sort(TrackTableCols.file.name(), true);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
@@ -139,6 +140,7 @@ public class VideoTrackEditController extends FormBasicController {
 				TrackUploadEvent fEvent = (TrackUploadEvent)event;
 				TrackTableRow row = forgeRow(fEvent.getLang(), fEvent.getTrack());
 				List<TrackTableRow> rows = tableModel.getObjects();
+				rows.stream().filter((r) -> fEvent.getLang().equals(r.getLanguage())).findFirst().ifPresent(rows::remove);
 				rows.add(row);
 				tableModel.setObjects(rows);
 				tableEl.reset(true, true, true);
