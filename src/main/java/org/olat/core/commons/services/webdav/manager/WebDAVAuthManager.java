@@ -122,27 +122,34 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		List<Authentication> authentications = securityManager.findAuthenticationsByAuthusername(username, providers);
 		if(authentications != null && !authentications.isEmpty()) {
 			for(Authentication authentication:authentications) {
-				if("auth".equals(digestAuth.getQop())) {
-					String nonce = digestAuth.getNonce();
-					String response = digestAuth.getResponse();
-	
-					String ha1 = authentication.getCredential();
-					
-					String a2 = httpMethod + ":" + digestAuth.getUri();
-					String ha2 = Encoder.md5hash(a2);
-					
-					String ver = ha1 + ":" + nonce + ":" + digestAuth.getNc() + ":" + digestAuth.getCnonce() + ":" + digestAuth.getQop() + ":" + ha2;
-					String verity = Encoder.md5hash(ver);
-					if(verity.equals(response)) {
-						return authentication.getIdentity();
-					} else if(log.isInfoEnabled()) {
-						// don't log as error, happens all the time with certain clients, e.g. Microsoft-WebDAV-MiniRedir
-						log.info("Verity: {} doesn't equals response: {}", verity, response);
-					}
+				if(match(httpMethod, digestAuth, authentication)) {
+					return authentication.getIdentity();
 				}
 			}
 		}
 		return null;
+	}
+	
+	public boolean match(String httpMethod, DigestAuthentication digestAuth, Authentication authentication) {
+		if("auth".equals(digestAuth.getQop())) {
+			String nonce = digestAuth.getNonce();
+			String response = digestAuth.getResponse();
+
+			String ha1 = authentication.getCredential();
+			
+			String a2 = httpMethod + ":" + digestAuth.getUri();
+			String ha2 = Encoder.md5hash(a2);
+			
+			String ver = ha1 + ":" + nonce + ":" + digestAuth.getNc() + ":" + digestAuth.getCnonce() + ":" + digestAuth.getQop() + ":" + ha2;
+			String verity = Encoder.md5hash(ver);
+			if(verity.equals(response)) {
+				return true;
+			} else if(log.isInfoEnabled()) {
+				// don't log as error, happens all the time with certain clients, e.g. Microsoft-WebDAV-MiniRedir
+				log.info("Verity: {} doesn't equals response: {}", verity, response);
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -353,7 +360,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, BaseSecurity.DEFAULT_ISSUER,
-						authUsername, digestToken, Encoder.Algorithm.md5_iso_8859_1);
+						authUsername, digestToken, Encoder.Algorithm.md5_utf_8);
 				log.info(Tracing.M_AUDIT, "{} created new WebDAV (HA1) authentication for identity: {} ({})", doer.getKey(), identity.getKey(), authUsername);
 				dbInstance.commit();
 			} catch(DBRuntimeException e) {
@@ -361,13 +368,13 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				dbInstance.commitAndCloseSession();
 			}
 		} else {
-			String md5DigestToken = Encoder.encrypt(digestToken, null, Encoder.Algorithm.md5_iso_8859_1);
+			String md5DigestToken = Encoder.encrypt(digestToken, null, Encoder.Algorithm.md5_utf_8);
 			if (!md5DigestToken.equals(authHa1.getCredential()) || !authHa1.getAuthusername().equals(authUsername)) {
 				try {
 					dbInstance.commit();
 					authHa1.setCredential(md5DigestToken);
 					authHa1.setAuthusername(authUsername);
-					authHa1.setAlgorithm(Encoder.Algorithm.md5_iso_8859_1.name());
+					authHa1.setAlgorithm(Encoder.Algorithm.md5_utf_8.name());
 					securityManager.updateAuthentication(authHa1);
 					log.info(Tracing.M_AUDIT, "{} set new WebDAV (HA1) password for identity: {} ({})", doer.getKey(), identity.getKey(), authUsername);
 					dbInstance.commit();

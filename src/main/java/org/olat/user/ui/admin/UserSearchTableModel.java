@@ -19,9 +19,12 @@
  */
 package org.olat.user.ui.admin;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
@@ -46,11 +49,13 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 	private final Date now;
 	private final UserModule userModule;
 	private final UserLifecycleManager lifecycleManager;
+	private final Set<Long> guestsKeys;
 	
-	public UserSearchTableModel(FlexiTableDataSourceDelegate<IdentityPropertiesRow> source,
+	public UserSearchTableModel(FlexiTableDataSourceDelegate<IdentityPropertiesRow> source, Collection<Long> guestsKeys,
 			FlexiTableColumnModel columnModel, UserModule userModule, UserLifecycleManager lifecycleManager) {
 		super(source, columnModel);
 		this.userModule = userModule;
+		this.guestsKeys = new HashSet<>(guestsKeys);
 		this.lifecycleManager = lifecycleManager;
 		now = CalendarUtils.startOfDay(new Date());
 	}
@@ -95,7 +100,8 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		if(userModule.isUserAutomaticDeactivation()
 				&& (userRow.getStatus().equals(Identity.STATUS_ACTIV)
 						|| userRow.getStatus().equals(Identity.STATUS_PENDING)
-						|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))) {
+						|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
+				&& (userRow.getExpirationDate() != null || userRow.getReactivationDate() != null || !guestsKeys.contains(userRow.getIdentityKey()))) {
 			return lifecycleManager.getDaysUntilDeactivation(userRow, now);
 		}
 		return null;
@@ -110,7 +116,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 	
 	@Override
 	public DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> createCopyWithEmptyList() {
-		return new UserSearchTableModel(null, getTableColumnModel(), userModule, lifecycleManager);
+		return new UserSearchTableModel(null, guestsKeys, getTableColumnModel(), userModule, lifecycleManager);
 	}
 	
 	public enum UserCols implements FlexiSortableColumnDef {

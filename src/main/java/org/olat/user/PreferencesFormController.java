@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.services.doceditor.DocEditor;
@@ -107,7 +107,7 @@ public class PreferencesFormController extends FormBasicController {
 	 *          edited. Not necessarily the same as ureq.getIdentity()
 	 */
 	public PreferencesFormController(UserRequest ureq, WindowControl wControl, Identity tobeChangedIdentity) {
-		super(ureq, wControl, Util.createPackageTranslator(SystemRolesAndRightsController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(UserAdminController.class, ureq.getLocale()));
 		this.tobeChangedIdentity = tobeChangedIdentity;
 		initForm(ureq);
 	}

@@ -163,6 +163,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private final UserSearchTableSettings settings;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	private final List<Long> guestsKeys;
 	private final List<Organisation> manageableOrganisations;
 	
 	private boolean tableDirty = false;
@@ -200,6 +201,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 				OrganisationRoles.administrator, OrganisationRoles.principal,
 				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
 		
+		SearchIdentityParams identityParams = new SearchIdentityParams();
+		identityParams.setRoles(new OrganisationRoles[]{ OrganisationRoles.guest });
+		identityParams.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+		guestsKeys = securityManager.getIdentitiesByPowerSearch(identityParams, 0, -1)
+				.stream().map(Identity::getKey).collect(Collectors.toList());
+
 		initForm(ureq);
 		if(stackPanel != null) {
 			stackPanel.addListener(this);
@@ -248,7 +255,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.organisations, new IdentityOrganisationsCellRenderer()));
 		}
 		
-		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule, userLifecycleManager);
+		tableModel = new UserSearchTableModel(new EmptyDataSource(), guestsKeys, columnsModel, userModule, userLifecycleManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmptyTableSettings("error.no.user.found", null, "o_icon_user");

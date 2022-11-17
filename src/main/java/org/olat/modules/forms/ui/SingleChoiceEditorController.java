@@ -144,6 +144,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		if (source instanceof TextElement) {
 			doSave(ureq);
 		} else if (addChoiceEl == source) {
+			doSave(ureq);
 			doAddChoice();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {

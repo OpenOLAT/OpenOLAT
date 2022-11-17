@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
 import org.junit.Test;
@@ -75,6 +76,14 @@ public class EncoderTest {
 		String ha1_umlaut_utf8 = Encoder.encrypt(rawUmlautDigest, null, Encoder.Algorithm.md5_noSalt);
 		String ha1_umlaut_iso = Encoder.encrypt(rawUmlautDigest, null, Encoder.Algorithm.md5_iso_8859_1);
 		Assert.assertNotEquals(ha1_umlaut_utf8, ha1_umlaut_iso);		
+	}
+	
+	@Test
+	public void testDigestCompared() {
+		String rawDigest = digest("zgc_1", "w\u20ACbdav");
+		String ha1_openolat = Encoder.encrypt(rawDigest, null, Encoder.Algorithm.md5_utf_8);
+		String ha1_apache = DigestUtils.md5Hex(rawDigest);
+		Assert.assertEquals(ha1_apache, ha1_openolat);		
 	}
 	
 	private String digest(String authUsername, String password) {
