@@ -1,6 +1,6 @@
 {
 	"name": "@frentix/oopaella",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Paella player for OpenOlat",
 	"main": "src/index.js",
 	"scripts": {
