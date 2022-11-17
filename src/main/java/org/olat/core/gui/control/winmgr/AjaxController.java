@@ -286,7 +286,7 @@ public class AjaxController extends DefaultController {
 	
 	private void appendBusinessPathInfos(UserRequest ureq, Writer writer) throws IOException {
 		ChiefController ctrl = wboImpl.getChiefController();
-		String documentTitle = ctrl == null ? "" : ctrl.getWindow().getTitle();
+		String documentTitle = ctrl == null ? "" : ctrl.getWindow().getTitle().getValue();
 		writer.append(",\"documentTitle\":").append(JSONObject.quote(documentTitle));
 
 		StringBuilder bc = new StringBuilder(128);

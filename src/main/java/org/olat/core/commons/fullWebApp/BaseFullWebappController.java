@@ -312,6 +312,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
+		
+		// Set initial title
+		getWindow().setTitle(getTranslator(), translate("page.appname") + " - " + translate("page.title"));
+		mainVc.contextPut("windowTitle", getWindow().getTitle());
 	}
 	
 	@Override
