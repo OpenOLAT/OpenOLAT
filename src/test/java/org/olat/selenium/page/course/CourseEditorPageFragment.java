@@ -45,24 +45,13 @@ public class CourseEditorPageFragment {
 	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
-	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
+	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
 	
 	public static final By tabNavTabsBy = By.cssSelector("ul.nav.nav-tabs");
-	
-	/*public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
-	static {
-		chooseRepoEntriesButtonList.add(chooseCpButton);
-		chooseRepoEntriesButtonList.add(chooseWikiButton);
-		chooseRepoEntriesButtonList.add(chooseTestButton);
-		chooseRepoEntriesButtonList.add(chooseFeedButton);
-		chooseRepoEntriesButtonList.add(chooseScormButton);
-		chooseRepoEntriesButtonList.add(choosePortfolioButton);
-		chooseRepoEntriesButtonList.add(chooseSurveyButton);
-	}*/
 	
 	private WebDriver browser;
 	
