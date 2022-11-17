@@ -57,6 +57,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Or;
@@ -441,19 +442,32 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	private boolean isNotForDuplicatesAnswers(Not not) {	
 		if(not.getChildren().size() == 1 && not.getChildren().get(0) instanceof Or) {
 			Or or = (Or)not.getChildren().get(0);
-			for(Expression expression:or.getChildren()) {
-				if(expression instanceof StringMatch || expression instanceof Equal) {
-					List<Expression> variables = expression.getExpressions();
-					if(variables.size() == 2
-							&& variables.get(0) instanceof Variable
-							&& variables.get(1) instanceof Variable) {
-						Variable var1 = (Variable)variables.get(0);
-						Variable var2 = (Variable)variables.get(1);
-						String responseIdentifier1 = var1.getIdentifier().toString();
-						String responseIdentifier2 = var2.getIdentifier().toString();
-						return responseIdentifierToTextEntry.containsKey(responseIdentifier1)
-								&& responseIdentifierToTextEntry.containsKey(responseIdentifier2);
+			if(isStringMatchOrEquals(or)) {
+				return true;
+			} else {
+				for(Expression expression:or.getExpressions()) {
+					if(expression instanceof And && isStringMatchOrEquals(expression)) {
+						return true;
 					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean isStringMatchOrEquals(Expression parent) {
+		for(Expression expression:parent.getExpressions()) {
+			if(expression instanceof StringMatch || expression instanceof Equal) {
+				List<Expression> variables = expression.getExpressions();
+				if(variables.size() == 2
+						&& variables.get(0) instanceof Variable
+						&& variables.get(1) instanceof Variable) {
+					Variable var1 = (Variable)variables.get(0);
+					Variable var2 = (Variable)variables.get(1);
+					String responseIdentifier1 = var1.getIdentifier().toString();
+					String responseIdentifier2 = var2.getIdentifier().toString();
+					return responseIdentifierToTextEntry.containsKey(responseIdentifier1)
+							&& responseIdentifierToTextEntry.containsKey(responseIdentifier2);
 				}
 			}
 		}
@@ -810,10 +824,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					not.getExpressions().add(or);
 					
 					for(int j=i; j-->0; ) {
-						Expression match = match(responseIdentifiers.get(i), responseIdentifiers.get(j), not);
-						if(match != null) {
-							or.getExpressions().add(match);
-						}
+						match(responseIdentifiers.get(i), responseIdentifiers.get(j), or);
 					}
 					
 					// in case of a mix numerical and text entries
@@ -869,14 +880,62 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	private Expression match(String responseIdentifier1, String responseIdentifier2, ExpressionParent parent) {
+	/**
+	 * The idea (null && null) or (!null && !null && match).
+	 * StringMatch considers only strings, but an empty response is not
+	 * an empty string but a null object.<br>
+	 * This block returns true if both responses are null or
+	 * both responses are strings and equals.
+	 * 
+	 * @param responseIdentifier1 The first response identifier
+	 * @param responseIdentifier2 The second response identifier
+	 * @param parentOr The parent element
+	 */
+	private void match(String responseIdentifier1, String responseIdentifier2, ExpressionParent parentOr) {
 		AbstractEntry entry1 = responseIdentifierToTextEntry.get(responseIdentifier1);
 		AbstractEntry entry2 = responseIdentifierToTextEntry.get(responseIdentifier2);
 		if(entry1 instanceof TextEntry && entry2 instanceof TextEntry
 				&& shareSomeAlternatives((TextEntry)entry1, (TextEntry)entry2)) {
-			return stringMatch(responseIdentifier1, responseIdentifier2, parent);
+			
+			{
+				And and = new And(parentOr);
+				parentOr.getExpressions().add(and);
+				IsNull null1 = new IsNull(and);
+				and.getExpressions().add(null1);
+				Variable var1 = new Variable(null1);
+				var1.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier1));
+				null1.getExpressions().add(var1);
+				
+				IsNull null2 = new IsNull(and);
+				and.getExpressions().add(null2);
+				Variable var2 = new Variable(null2);
+				var2.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier2));
+				null2.getExpressions().add(var2);
+			}
+			
+			{
+				And and = new And(parentOr);
+				parentOr.getExpressions().add(and);
+				Not not1 = new Not(and);
+				and.getExpressions().add(not1);
+				IsNull null1 = new IsNull(not1);
+				not1.getExpressions().add(null1);
+				Variable var1 = new Variable(null1);
+				var1.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier1));
+				null1.getExpressions().add(var1);
+				
+				Not not2 = new Not(and);
+				and.getExpressions().add(not2);
+				IsNull null2 = new IsNull(not2);
+				not2.getExpressions().add(null2);
+				Variable var2 = new Variable(null2);
+				var2.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier2));
+				null2.getExpressions().add(var2);
+				
+				StringMatch match = stringMatch(responseIdentifier1, responseIdentifier2, and);
+				and.getExpressions().add(match);
+			}
 		}
-		return null;
 	}
 	
 	public boolean entriesSharesAlternatives() {
@@ -1076,10 +1135,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			not.getExpressions().add(or);
 			
 			for(int j=count; j-->0; ) {
-				Expression match = match(responseIdentifiers.get(count), responseIdentifiers.get(j), not);
-				if(match != null) {
-					or.getExpressions().add(match);
-				}
+				match(responseIdentifiers.get(count), responseIdentifiers.get(j), or);
 			}
 			
 			// in case of a mix numerical and text entries
