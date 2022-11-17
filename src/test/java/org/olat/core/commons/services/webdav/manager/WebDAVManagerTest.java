@@ -128,6 +128,27 @@ public class WebDAVManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void handleDigestAuthenticationSpecialCharacter() {
+		String username = "zgc_1";
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(username, "w\u20ACbdav");
+		authManager.authenticate(id, username, "w\u20ACbdav", new AuthenticationStatus());
+		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
+		
+		HttpServletRequest request = new MockHttpServletRequest("PROPFIND", "/");
+		String nonce = "57f6ad3c28094eeb88bca5791dc9c777";
+		String uri = "/";
+		String cnonce = "66285ba3e389aaeee6c536d06ea7fa3d";
+		String nc = "00000001";
+		String qop = "auth";
+		String response = "341458001c109fbd3668bbac4cdf1e88";
+
+		DigestAuthentication digested = new DigestAuthentication(username, WebDAVManagerImpl.BASIC_AUTH_REALM, nonce, uri, cnonce, nc, response, qop);
+		UserSession usess = webDAVManager.handleDigestAuthentication(digested, request);
+		Assert.assertNotNull(usess);
+		dbInstance.commit();
+	}
+	
+	@Test
 	public void handleDigestAuthentication_denied() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-3");
 		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword(), new AuthenticationStatus());

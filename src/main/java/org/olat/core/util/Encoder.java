@@ -68,6 +68,11 @@ public class Encoder {
 		 */
 		md5_iso_8859_1("MD5", 1, false, "ISO-8859-1"),
 		/**
+		 * md5 with one iteration and salted (conversion string to bytes made with UTF-8)
+		 */
+		md5_utf_8("MD5", 1, false, "UTF-8"),
+		
+		/**
 		 * SHA-1 with 100 iterations and salted
 		 */
 		sha1("SHA-1", 100, true, null),
